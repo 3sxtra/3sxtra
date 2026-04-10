@@ -2,7 +2,9 @@
 
 ## 1. Architecture Overview
 
-The game state engine is a **three-tier hierarchical state machine** running inside a **cooperative task scheduler**. The entire system was originally designed for arcade/PS2 hardware and has been progressively modernized with a data-driven MenuScreen registry and RmlUi overlays.
+The game state engine is a **three-tier hierarchical state machine** running inside a **cooperative task scheduler**. The entire system was originally designed for arcade/PS2 hardware and has been progressively modernized with a data-driven MenuScreen registry-based architecture and RmlUi overlays.
+
+The rollbacking mechanism relies on a composite state consisting of both [`GameState`](src/include/game_state.h) (core waypoints, player positions, etc.) and [`EffectState`](src/include/game_state.h) (transient visual effects, timers, etc.).
 
 ```mermaid
 graph TD
@@ -42,7 +44,7 @@ graph TD
         G11["G_No[1]=11 — Next Q (special)"]
         G12["G_No[1]=12 — Menu → Select Transition"]
     end
-    
+
     GAME_MODE --> G00
     GAME_MODE --> G01
     GAME_MODE --> G02
@@ -53,29 +55,29 @@ graph TD
 
 ### 2.1 `G_No[0]` — Top-Level Mode (3 values)
 
-| Value | Function | Purpose |
-|-------|----------|---------|
-| 0 | `Wait_Auto_Load()` | Idle while assets load (renders background) |
-| 1 | `Loop_Demo()` | Attract-mode demo loop (logo → title → demo fight → ranking → cycle) |
-| 2 | `Game()` | Active gameplay (dispatches to G_No[1]) |
+| Value | Function           | Purpose                                                              |
+| ----- | ------------------ | -------------------------------------------------------------------- |
+| 0     | `Wait_Auto_Load()` | Idle while assets load (renders background)                          |
+| 1     | `Loop_Demo()`      | Attract-mode demo loop (logo → title → demo fight → ranking → cycle) |
+| 2     | `Game()`           | Active gameplay (dispatches to G_No[1])                              |
 
 ### 2.2 `G_No[1]` — Game States (13 values: Game00–Game12)
 
-| State | Name | Key Transitions |
-|-------|------|-----------------|
-| **0** | Title Screen | → 12 (menu transition) |
-| **1** | Character Select | → 2 (fight start) |
-| **2** | Fight (8 sub-states) | → 3 (win), 4 (loss), 9 (bonus) |
-| **3** | Win/Loss Result | → 5 (next CPU), 12 (VS menu), 8 (ending), 11 (next Q boss) |
-| **4** | Loser Scene | → 7 (continue) |
-| **5** | Next CPU Opponent | → 2 (next fight), 9 (bonus stage) |
-| **6** | Game Over | → ranking → attract loop (G_No[0]=1) |
-| **7** | Continue Countdown | → 6 (game over) |
-| **8** | Ending Sequence | → 6 (game over / credits) |
-| **9** | Bonus Stage | → 10 (post-bonus) |
-| **10** | Post-Bonus | → 2 (next fight) |
-| **11** | Next Q (Special Boss) | → 2 (fight) or 9 (bonus) |
-| **12** | Menu→Select Transition | → 1 (char select) |
+| State  | Name                   | Key Transitions                                            |
+| ------ | ---------------------- | ---------------------------------------------------------- |
+| **0**  | Title Screen           | → 12 (menu transition)                                     |
+| **1**  | Character Select       | → 2 (fight start)                                          |
+| **2**  | Fight (8 sub-states)   | → 3 (win), 4 (loss), 9 (bonus)                             |
+| **3**  | Win/Loss Result        | → 5 (next CPU), 12 (VS menu), 8 (ending), 11 (next Q boss) |
+| **4**  | Loser Scene            | → 7 (continue)                                             |
+| **5**  | Next CPU Opponent      | → 2 (next fight), 9 (bonus stage)                          |
+| **6**  | Game Over              | → ranking → attract loop (G_No[0]=1)                       |
+| **7**  | Continue Countdown     | → 6 (game over)                                            |
+| **8**  | Ending Sequence        | → 6 (game over / credits)                                  |
+| **9**  | Bonus Stage            | → 10 (post-bonus)                                          |
+| **10** | Post-Bonus             | → 2 (next fight)                                           |
+| **11** | Next Q (Special Boss)  | → 2 (fight) or 9 (bonus)                                   |
+| **12** | Menu→Select Transition | → 1 (char select)                                          |
 
 ### 2.3 `G_No[2]` and `G_No[3]` — Sub-States
 
@@ -83,7 +85,7 @@ Each Game state uses `G_No[2]` and sometimes `G_No[3]` as sub-state indices for 
 
 ## 3. ModeType — The Game Mode Enum
 
-Defined in [types.h](file:///d:/3sxtra/src/include/types.h#L39-L47):
+Defined in [types.h](../src/include/types.h#L39-L47):
 
 ```c
 typedef enum ModeType {
@@ -102,24 +104,27 @@ typedef enum ModeType {
 
 ## 4. The Task Scheduler
 
-11 slots, cooperative (non-preemptive), defined in [main.c](file:///d:/3sxtra/src/main.c#L662-L712):
+The scheduler operates with a fixed capacity of `TASK_SLOT_COUNT` (11 slots), using a cooperative (non-preemptive) model, defined in [main.c](../src/main.c#L662-L712):
 
-| Slot | Name | Purpose |
-|------|------|---------|
-| 0 | TASK_INIT | Boot sequence (Init_Task) — exits after setup |
-| 1 | TASK_ENTRY | Coin-insert / start button handling |
-| 2 | TASK_RESET | Soft reset handling |
-| 3 | TASK_MENU | Menu system (Menu_Task) |
-| 4 | TASK_PAUSE | Pause menu |
-| 5 | TASK_GAME | Main game loop (Game_Task) |
-| 6 | TASK_SAVER | Auto-save processing |
-| 7–8 | Unused | — |
-| 9 | TASK_DEBUG | Debug overlays |
-| 10 | Unused | — |
+| Slot | Name       | Purpose                                       |
+| ---- | ---------- | --------------------------------------------- |
+| 0    | TASK_INIT  | Boot sequence (Init_Task) — exits after setup |
+| 1    | TASK_ENTRY | Coin-insert / start button handling           |
+| 2    | TASK_RESET | Soft reset handling                           |
+| 3    | TASK_MENU  | Menu system (Menu_Task)                       |
+| 4    | TASK_PAUSE | Pause menu                                    |
+| 5    | TASK_GAME  | Main game loop (Game_Task)                    |
+| 6    | TASK_SAVER | Auto-save processing                          |
+| 7    | Slot 7     | Reserved/Unused                               |
+| 8    | Slot 8     | Reserved/Unused                               |
+| 9    | TASK_DEBUG | Debug overlays                                |
+| 10   | Slot 10    | Reserved/Unused                               |
 
 Tasks use a `condition` flag: 0=inactive, 1=active, 2=ready (activates next frame), 3=paused.
 
 ## 5. The Boot Sequence
+
+The boot sequence is orchestrated by `njUserInit()`, which serves as the primary subsystem initializer, ensuring that memory management, sequencers, and PPG/Zlib resources are correctly initialized before the task scheduler begins processing tasks of type `TASK_INIT`.
 
 ```mermaid
 graph LR
@@ -131,20 +136,20 @@ graph LR
     NJINIT --> CPINIT["cpInitTask()"]
     CPINIT --> TASKREADY["cpReadyTask(TASK_INIT, Init_Task)"]
     TASKREADY --> LOOP["Frame Loop"]
-    
+
     subgraph "Init_Task Phases"
         I1["Init_Task_1st<br/>Clear globals, defaults"]
         I2["Init_Task_Aload<br/>Load saved options"]
         I3["Init_Task_2nd<br/>Warning/disclaimer"]
         I4["Init_Task_End<br/>Start game tasks"]
     end
-    
+
     LOOP --> I1 --> I2 --> I3 --> I4
     I4 --> GTASK["cpReadyTask(TASK_GAME, Game_Task)"]
     I4 --> ETASK["cpReadyTask(TASK_ENTRY, Entry_Task)"]
     I4 --> DTASK["cpReadyTask(TASK_DEBUG, Debug_Task)"]
     I4 --> EXIT["cpExitTask(TASK_INIT)"]
-    
+
     GTASK --> DEMO["G_No[0]=1 → Loop_Demo (attract mode)"]
 ```
 
@@ -155,18 +160,18 @@ graph LR
 
 ### 6.1 Legacy Menu
 
-`Menu_Task()` in [menu.c](file:///d:/3sxtra/src/sf33rd/Source/Game/menu/menu.c) dispatches via `task_ptr->r_no[0]` to 14 `MenuState` values, and then via `r_no[1]` to specific sub-screens.
+`Menu_Task()` in [menu.c](../src/sf33rd/Source/Game/menu/menu.c) dispatches via `task_ptr->r_no[0]` to 14 `MenuState` values, and then via `r_no[1]` to specific sub-screens.
 
 ### 6.2 Modern MenuScreen Registry
 
-The legacy jump tables have been **migrated** to a data-driven [MenuScreen registry](file:///d:/3sxtra/src/port/menu_screen_registry.c):
+The legacy jump tables have been **migrated** to a data-driven [MenuScreen registry](../src/port/menu_screen_registry.c):
 
 - **~40 named screens** with lifecycle callbacks (`on_enter`, `on_tick`, `on_exit`)
 - **Phase state machine**: ENTER → WAIT → FADE_IN → ACTIVE → FADE_OUT → EXIT
 - **RmlUi integration**: Each screen can show/hide its RmlUi document
 - **Three dispatch contexts**: After_Title (main menus), Training, In_Game
 
-Screen implementations live in [src/port/screens/ms_*.c](file:///d:/3sxtra/src/port/screens/).
+Screen implementations live in [src/port/screens/ms\_\*.c](../src/port/screens/).
 
 ## 7. Configuration System
 
@@ -202,13 +207,13 @@ typedef enum AppMode {
 
 There are **five key injection points** where `AppMode` would modify behavior:
 
-| # | Location | What Changes |
-|---|----------|--------------|
-| 1 | **CLI/Config** — `cli_parser.c` + `config.h` | New `--mode <name>` arg + `CFG_KEY_APP_MODE` config key |
-| 2 | **Boot** — `Init_Task_End()` in `init3rd.c` | Skip attract loop, jump to specific G_No state, pre-select Mode_Type |
-| 3 | **Menu** — `MenuScreen_Goto()` / `After_Title()` | Restrict available menu items, auto-select modes |
-| 4 | **Game States** — `game.c` Game03/06/07 | Disable continue screen, force game-over after N rounds, etc. |
-| 5 | **Loop_Demo** — `Loop_Demo()` in `game.c` | Custom attract sequences for cabinets |
+| #   | Location                                         | What Changes                                                         |
+| --- | ------------------------------------------------ | -------------------------------------------------------------------- |
+| 1   | **CLI/Config** — `cli_parser.c` + `config.h`     | New `--mode <name>` arg + `CFG_KEY_APP_MODE` config key              |
+| 2   | **Boot** — `Init_Task_End()` in `init3rd.c`      | Skip attract loop, jump to specific G_No state, pre-select Mode_Type |
+| 3   | **Menu** — `MenuScreen_Goto()` / `After_Title()` | Restrict available menu items, auto-select modes                     |
+| 4   | **Game States** — `game.c` Game03/06/07          | Disable continue screen, force game-over after N rounds, etc.        |
+| 5   | **Loop_Demo** — `Loop_Demo()` in `game.c`        | Custom attract sequences for cabinets                                |
 
 ### 8.3 Example: Arcade Boot Mode
 
@@ -217,6 +222,7 @@ There are **five key injection points** where `AppMode` would modify behavior:
 ```
 
 Would:
+
 - Skip the disclaimer/warning screen (`Init_Task_2nd`)
 - Start at title screen immediately (no Capcom logo)
 - Set `Mode_Type = MODE_ARCADE` and lock it
@@ -232,6 +238,7 @@ Would:
 ```
 
 Would:
+
 - Skip directly to character select (`G_No[1] = 1`)
 - Set `Mode_Type = MODE_VERSUS` and lock it
 - Force 2/3 or 3/5 round count from config
@@ -241,13 +248,53 @@ Would:
 - Auto-reset to character select after match conclusion
 - Optionally auto-save replays
 
-### 8.6 Example: LAN Lobby Mode
+### 8.5 Example: Kiosk Mode
+
+```
+--mode kiosk
+```
+
+Would:
+
+- Set `Mode_Type = MODE_ARCADE`
+- Set a strict session timer overlay
+- Restrict pause menu
+- Force auto-reset to attract loop if idle for too long or match finishes
+- Prevent accessing configuration menus
+
+### 8.6 Example: Training Only Mode
+
+```
+--mode training-only
+```
+
+Would:
+
+- Skip main menus and immediately enter `MENU_SCREEN_TRAINING_MODE`
+- Set `Mode_Type = MODE_NORMAL_TRAINING`
+- Restrict exit to OS or soft reset instead of returning to main menu
+
+### 8.7 Example: Spectator Mode
+
+```
+--mode spectator
+```
+
+Would:
+
+- Boot directly to replay menu or connect to lobby purely as a spectator
+- Set `Mode_Type = MODE_REPLAY` or `MODE_NETWORK` with spectator flags
+- Restrict any input that affects match state
+- Show custom broadcast/spectator UI overlays
+
+### 8.8 Example: LAN Lobby Mode
 
 ```
 --mode lan
 ```
 
 Would:
+
 - Skip the disclaimer/warning screen (`Init_Task_2nd`)
 - Skip the title screen and main menus entirely
 - Set `Mode_Type = MODE_NETWORK` and lock it
@@ -255,12 +302,13 @@ Would:
 - Restrict exiting the lobby (backing out could exit to OS or just reset the connection)
 - Ideal for offline event setups or head-to-head arcade cabinets connected via local network
 
-### 8.7 Where it fits in the existing code
+### 8.9 Where it fits in the existing code
 
 > [!TIP]  
 > The existing `g_font_test_mode` in `Init_Task_End()` is exactly the right pattern. You'd extend it with an `AppMode g_app_mode` global that gates behavior at the five injection points above.
 
 The `MenuScreen` registry already supports this well — you can:
+
 - Remove screens by not mapping them in `g_legacy_to_screen[]`
 - Add new screens (e.g., `MENU_SCREEN_TOURNAMENT_LOBBY` already exists!)
 - Skip screens by calling `MenuScreen_Goto()` directly from `Init_Task_End()`
@@ -271,25 +319,28 @@ The `Configuration` system supports this because config.ini keys are simple stri
 
 ## 9. Key Files Reference
 
-| File | Purpose |
-|------|---------|
-| [game.c](file:///d:/3sxtra/src/sf33rd/Source/Game/game.c) | Master state machine (Game00–Game12, Loop_Demo) |
-| [init3rd.c](file:///d:/3sxtra/src/sf33rd/Source/Game/init3rd.c) | Boot sequence (Init_Task) |
-| [main.c](file:///d:/3sxtra/src/main.c) | Entry point, task scheduler, frame loop |
-| [menu.c](file:///d:/3sxtra/src/sf33rd/Source/Game/menu/menu.c) | Menu state machine |
-| [menu_screen_registry.c](file:///d:/3sxtra/src/port/menu_screen_registry.c) | Modern MenuScreen registry |
-| [menu_screen.h](file:///d:/3sxtra/src/include/port/menu_screen.h) | MenuScreen types & API |
-| [types.h](file:///d:/3sxtra/src/include/types.h) | ModeType enum |
-| [workuser_system.h](file:///d:/3sxtra/src/sf33rd/Source/Game/engine/workuser_system.h) | G_No, Mode_Type, game globals |
-| [game_state.h](file:///d:/3sxtra/src/include/game_state.h) | Rollback serialization struct |
-| [cli_parser.c](file:///d:/3sxtra/src/port/config/cli_parser.c) | CLI argument handling |
-| [config.h](file:///d:/3sxtra/src/port/config/config.h) | INI config key definitions |
-| [work_sys.h](file:///d:/3sxtra/src/sf33rd/Source/Game/system/work_sys.h) | Save slots, system state |
+| File                                                                    | Purpose                                         |
+| ----------------------------------------------------------------------- | ----------------------------------------------- |
+| [game.c](../src/sf33rd/Source/Game/game.c)                              | Master state machine (Game00–Game12, Loop_Demo) |
+| [init3rd.c](../src/sf33rd/Source/Game/init3rd.c)                        | Boot sequence (Init_Task)                       |
+| [main.c](../src/main.c)                                                 | Entry point, task scheduler, frame loop         |
+| [menu.c](../src/sf33rd/Source/Game/menu/menu.c)                         | Menu state machine                              |
+| [menu_screen_registry.c](../src/port/menu_screen_registry.c)            | Modern MenuScreen registry                      |
+| [menu_screen.h](../src/include/port/menu_screen.h)                      | MenuScreen types & API                          |
+| [types.h](../src/include/types.h)                                       | ModeType enum                                   |
+| [workuser_system.h](../src/sf33rd/Source/Game/engine/workuser_system.h) | G_No, Mode_Type, game globals                   |
+| [game_state.h](../src/include/game_state.h)                             | Rollback serialization struct                   |
+| [cli_parser.c](../src/port/config/cli_parser.c)                         | CLI argument handling                           |
+| [config.h](../src/port/config/config.h)                                 | INI config key definitions                      |
+| [work_sys.h](../src/sf33rd/Source/Game/system/work_sys.h)               | Save slots, system state                        |
 
 ## 10. Considerations
 
 > [!WARNING]
 > **Netplay Rollback**: The `GameState` struct in `game_state.h` serializes most of the game globals for rollback. Any new mode-specific state that affects deterministic simulation must be added to `GameState`, `GameState_Save()`, and `GameState_Load()`. UI-only state (which menu screen is shown) is safe to leave out.
+
+> [!WARNING]
+> **Pointer and Rendering Sanitization**: To ensure deterministic checksums own rollback, all transient pointers within the state must be sanitized. This includes zeroing out waypoints or address pointers such as `target_adrs`, `hit_adrs`, etc., before serialization to prevent non-deterministic memory addresses from affecting the hash.
 
 > [!IMPORTANT]
 > **Mode_Type vs. AppMode**: These are different axes. `Mode_Type` controls _in-game behavior_ (arcade vs. VS vs. training). `AppMode` would control the _application shell_ (boot flow, menu layout, session rules). A tournament `AppMode` could still use `MODE_VERSUS` as the `Mode_Type`. They compose, not conflict.

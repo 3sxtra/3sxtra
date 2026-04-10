@@ -40,6 +40,9 @@
 #include "port/sdl/rmlui/rmlui_mode_menu.h"      /* rmlui_mode_menu_show/hide */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_mode */
 
+/* Native IMGUI modernization */
+#include "port/ui/native_imgui.h"
+
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
  *
@@ -51,6 +54,7 @@
 /* Track whether we are in the "exiting" sub-state (free[0]/free[1] fade) */
 static bool s_exiting = false;
 static s16 s_exit_target = 0; /* AT_Jmp_Tbl index to transition to */
+static bool s_wait_done = false;
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter — extracted from Mode_Select case 0 (~55 lines of init)
@@ -68,6 +72,9 @@ static void mode_select_enter(struct _TASK* task_ptr) {
 
     s_exiting = false;
     s_exit_target = 0;
+    s_wait_done = false;
+    
+    NativeUI_Clear();
 
     /* ── Replicate Mode_Select case 0 ── */
     FadeOut(1, 0xFF, 8);
@@ -110,26 +117,10 @@ static void mode_select_enter(struct _TASK* task_ptr) {
         Message_Data[ix].order = 3;
     }
 
-    if (!use_rmlui || !rmlui_menu_mode) {
-        effect_57_init(0x64, MENU_HEADER_MODE_MENU, 0, 0x3F, 2);
-        Order[0x64] = 1;
-        Order_Dir[0x64] = 8;
-        Order_Timer[0x64] = 1;
-    }
-    Menu_Suicide[0] = 0;
-
     if (use_rmlui && rmlui_menu_mode) {
         rmlui_mode_menu_show();
     } else {
-        effect_04_init(0, 0, 0, 0x48);
-
-        for (ix = 0; ix < loop_counter; ix++) {
-            effect_61_init(0, ix + 0x50, 0, 0, (u32)ix, ix, 0x7047);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
-        }
-        Menu_Cursor_Move = loop_counter;
+        effect_04_init(0, 0, 0, 0x48); // keep the background blue bars
     }
 }
 
@@ -155,11 +146,8 @@ static void mode_select_enter(struct _TASK* task_ptr) {
  *  Order[0x4E] and asset-check calls just need to happen after the wait timer
  *  expires and before or during fade-in.  We call them once via a flag.
  * ═══════════════════════════════════════════════════════════════════════════ */
-
-static bool s_wait_done = false;
-
 static void mode_select_tick(struct _TASK* task_ptr) {
-    s16 PL_id;
+    s16 PL_id = 0;
     s16 loop_counter = 7;
 
     /* ── Handle the "exiting" sub-state ── */
@@ -169,6 +157,7 @@ static void mode_select_tick(struct _TASK* task_ptr) {
         if (Exit_Sub(task_ptr, 0, s_exit_target) != 0) {
             /* Exit_Sub sets r_no[1] = s_exit_target, r_no[2]=0, r_no[3]=0.
              * Now exit the registry so legacy dispatch picks it up. */
+            NativeUI_Clear();
             MenuScreen_ExitToLegacy(task_ptr);
         }
         return;
@@ -185,73 +174,72 @@ static void mode_select_tick(struct _TASK* task_ptr) {
         Suicide[3] = 0;
     }
 
-    /* ── VS skip guard: if no P2, skip item 1 (VS) ── */
-    if (Connect_Status == 0 && Menu_Cursor_Y[0] == 1) {
-        Menu_Cursor_Y[0] = 2;
+    if (use_rmlui && rmlui_menu_mode) {
+        // ... (if needed we can leave rmlui logic here)
     } else {
-        PL_id = 0;
+        // Bypass legacy input loop for Native IMGUI
+        uint16_t pad = Check_Menu_Lever(0, 0);
+        if (pad == 0) pad = Check_Menu_Lever(1, 0);
+        
+        NativeUI_ProcessInput(pad, pad);
+        NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
+        NativeUI_Header(MENU_HEADER_MODE_MENU);
 
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, loop_counter - 1, 1) == 0) {
-            PL_id = 1;
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, loop_counter - 1, 1);
-        }
-    }
-
-    /* ── Input dispatch ── */
-    switch (IO_Result) {
-    case 0x100: /* Confirm button */
-        switch (Menu_Cursor_Y[0]) {
-        case 0: /* Arcade */
+        if (NativeUI_Button("ARCADE")) {
             G_No[2] += 1;
             Mode_Type = MODE_ARCADE;
-            if (use_rmlui && rmlui_menu_mode)
-                rmlui_mode_menu_hide();
             task_ptr->r_no[0] = 5;
             cpExitTask(TASK_SAVER);
             Decide_PL(PL_id);
-            /* Exit to legacy — game takes over */
+            NativeUI_Clear();
             MenuScreen_ExitToLegacy(task_ptr);
-            break;
+        }
 
-        case 1: /* VS Mode */
+        if (NativeUI_ButtonEx("VS MODE", Connect_Status == 0)) {
             Setup_VS_Mode(task_ptr);
             G_No[1] = 12;
             G_No[2] = 1;
             Mode_Type = MODE_VERSUS;
-            if (use_rmlui && rmlui_menu_mode)
-                rmlui_mode_menu_hide();
             cpExitTask(TASK_MENU);
-            /* Exit to legacy — game takes over */
+            NativeUI_Clear();
             MenuScreen_ExitToLegacy(task_ptr);
-            break;
+        }
 
-        case 3: /* Network */
+        if (NativeUI_Button("TRAINING")) {
+            s_exiting = true;
+            s_exit_target = 4;
+            task_ptr->free[0] = 0;
+        }
+
+        if (NativeUI_Button("NETWORK")) {
             s_exiting = true;
             s_exit_target = 21; /* AT index for Network_Lobby */
             task_ptr->free[0] = 0;
-            if (use_rmlui && rmlui_menu_mode) {
-                rmlui_mode_menu_hide();
-            }
-            break;
-
-        case 2: /* Training (cursor 2 → AT index 4) */
-        case 4: /* System Direction (cursor 4 → AT index 6) */
-        case 5: /* Options (cursor 5 → AT index 7) */
-        case 6: /* Exit (cursor 6 → AT index 8) */
-            s_exiting = true;
-            s_exit_target = Menu_Cursor_Y[0] + 2;
-            task_ptr->free[0] = 0;
-            if (use_rmlui && rmlui_menu_mode) {
-                rmlui_mode_menu_hide();
-            }
-            break;
-
-        default:
-            break;
         }
 
-        SE_selected();
-        break;
+        if (NativeUI_Button("SYSTEM DIRECTION")) {
+            s_exiting = true;
+            s_exit_target = 6;
+            task_ptr->free[0] = 0;
+        }
+
+        if (NativeUI_Button("OPTIONS")) {
+            s_exiting = true;
+            s_exit_target = 7;
+            task_ptr->free[0] = 0;
+        }
+
+        if (NativeUI_Button("EXIT")) {
+            s_exiting = true;
+            s_exit_target = 8;
+            task_ptr->free[0] = 0;
+        }
+
+        NativeUI_End();
+        
+        if (s_exiting || s_exit_target) {
+            SE_selected();
+        }
     }
 }
 
