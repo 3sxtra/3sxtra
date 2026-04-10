@@ -34,6 +34,13 @@ static void fx_option_enter(struct _TASK* task_ptr) {
 
     /* Show the RmlUi document immediately */
     rmlui_fx_option_show();
+
+    /* Spawn the native "OPTION MENU" sprite header natively since fx_option 
+     * relies on the legacy sprite rather than an HTML title. */
+    Order[0x4F] = 1;
+    Order_Dir[0x4F] = 8;
+    Order_Timer[0x4F] = 1;
+    effect_57_init(0x4F, MENU_HEADER_OPTION_MENU, 0, 0x3F, 2);
 }
 
 static void fx_option_tick(struct _TASK* task_ptr) {
@@ -92,6 +99,10 @@ static void fx_option_exit(struct _TASK* task_ptr) {
     s_shoulder_l_prev = false;
     s_shoulder_r_prev = false;
     rmlui_fx_option_hide();
+
+    /* Kill the native header when leaving FX Options */
+    Order[0x4F] = 4;
+    Order_Timer[0x4F] = 4;
 }
 
 extern MenuScreen g_screens[MENU_SCREEN_COUNT];

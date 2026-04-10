@@ -100,9 +100,11 @@ static void option_select_enter(struct _TASK* task_ptr) {
     Order_Timer[0x64] = 1;
 
     /* ── Option_Select case 0 specific setup ── */
-    Order[0x4E] = 2;
-    Order_Dir[0x4E] = 0;
-    Order_Timer[0x4E] = 1;
+    if (!use_rmlui || !rmlui_menu_option) {
+        Order[0x4E] = 2;
+        Order_Dir[0x4E] = 0;
+        Order_Timer[0x4E] = 1;
+    }
 
     if (!use_rmlui || !rmlui_menu_option) {
         effect_57_init(0x4F, MENU_HEADER_OPTION_MENU, 0, 0x3F, 2);

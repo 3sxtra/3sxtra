@@ -17,6 +17,7 @@
 
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* AT_JMP_COUNT */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut/FadeIn/FadeInit */
+#include "sf33rd/Source/Game/rendering/texgroup.h" /* load_any_texture_patnum */
 
 #include <string.h> /* memset (if needed) */
 
@@ -170,6 +171,16 @@ void MenuScreen_Tick(struct _TASK* task_ptr) {
             /* One-shot: call on_enter, advance to WAIT.
              * RmlUI show is NOT called here — screens call their own
              * rmlui_*_show() from on_enter when appropriate. */
+            if (scr->header_type != (MenuHeader)-1) {
+                // Guaranteed header spritesheet preload. We do this in ENTER
+                // so the async texture load has the entire WAIT/FADE_IN duration
+                // (typically ~16 frames) to populate VRAM before ACTIVE phase natively draws it.
+                // WE MUST PURGE IT FIRST: If a sub-menu overwrote the VRAM slot but didn't clear the ok flag,
+                // the load request will be silently dismissed, resulting in VRAM corruption upon native draw!
+                purge_texture_group_of_this(0x7F30);
+                load_any_texture_patnum(0x7F30, 0xC, 0);
+            }
+
             if (scr->on_enter) {
                 scr->on_enter(task_ptr);
             }

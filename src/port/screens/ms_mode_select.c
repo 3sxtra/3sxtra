@@ -80,6 +80,7 @@ static void mode_select_enter(struct _TASK* task_ptr) {
     FadeOut(1, 0xFF, 8);
     task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
+
     Mode_Type = MODE_ARCADE;
     Present_Mode = 1;
 
@@ -115,6 +116,10 @@ static void mode_select_enter(struct _TASK* task_ptr) {
 
     for (ix = 0; ix < 4; ix++) {
         Message_Data[ix].order = 3;
+    }
+
+    if (use_rmlui) {
+        rmlui_wrapper_hide_all_game_documents();
     }
 
     if (use_rmlui && rmlui_menu_mode) {

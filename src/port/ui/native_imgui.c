@@ -240,7 +240,6 @@ void NativeUI_Header(int header_type) {
         Order_Dir[slot] = 8;
         Order_Timer[slot] = 1;
         effect_57_init(slot, (MenuHeader)header_type, 0, 0x3F, 2);
-        load_any_texture_patnum(0x7F30, 0xC, 0); // Guarantee texture is in VRAM
     }
 }
 
