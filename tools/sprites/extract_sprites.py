@@ -221,6 +221,12 @@ GROUP_DEFAULT_COLCD = {
     94: 300,
 }
 
+# Per-group AFS Palette Overlays
+# Maps group_idx -> (afs_entry_idx, colcd_base), meaning "Extract AFS entry X and inject it 1:1 at RAM bank Y"
+GROUP_PAL_OVERLAY_BASE = {
+    82: (1451, 428), # AFS 1451 contains exactly the 80 UI palettes needed for Group 82, overlaid at Bank 428
+}
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Group / Character Extraction
@@ -541,6 +547,20 @@ def cmd_stages(args):
                     )
                     if has_data:
                         pal_banks[bank_idx] = rt_dump[bank_idx]
+
+        # Explicit AFS Palette Injection
+        if grp.group_idx in GROUP_PAL_OVERLAY_BASE:
+            overlay_afs_idx, overlay_base = GROUP_PAL_OVERLAY_BASE[grp.group_idx]
+            from sprite_common import decode_palette_banks
+            overlay_data = read_afs_file(afs_path, entries[overlay_afs_idx])
+            
+            # Use swapped R/B ARGB decode since user explicitly requested it
+            # and buttons showed better shading on ARGB mapping
+            banks = decode_palette_banks(overlay_data, apply_clut=False)
+            for i, bank in enumerate(banks):
+                if overlay_base + i < 512:
+                    swapped = [(c[2], c[1], c[0], c[3]) if c[3] > 0 else (0,0,0,0) for c in bank]
+                    pal_banks[overlay_base + i] = swapped
 
         stage_str = f"stage {stage:02d}" if stage is not None else "effect"
         print(f"\n  Group {grp.group_idx:02d} ({stage_str}): {grp.desc}")

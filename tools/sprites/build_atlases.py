@@ -83,7 +83,8 @@ class TextureAtlasBuilder:
 
             if y + f.height + self.padding > self.max_height:
                 # Move to next atlas
-                atlases.append((current_img, current_meta))
+                used_h = y + shelf_height + self.padding
+                atlases.append((current_img.crop((0, 0, self.max_width, used_h)), current_meta))
                 current_img = Image.new(
                     "RGBA", (self.max_width, self.max_height), (0, 0, 0, 0)
                 )
@@ -108,7 +109,8 @@ class TextureAtlasBuilder:
             shelf_height = max(shelf_height, f.height)
 
         if current_meta:
-            atlases.append((current_img, current_meta))
+            used_h = y + shelf_height + self.padding
+            atlases.append((current_img.crop((0, 0, self.max_width, used_h)), current_meta))
 
         return atlases
 
@@ -299,6 +301,18 @@ def process_stage_group(afs_path, entries, grp, output_dir, engine_pal_map, colc
             if has_data:
                 pal_banks[bank_idx] = rt_dump[bank_idx]
 
+    # Explicit AFS Palette Injection
+    from extract_sprites import GROUP_PAL_OVERLAY_BASE
+    if grp.group_idx in GROUP_PAL_OVERLAY_BASE:
+        overlay_afs_idx, overlay_base = GROUP_PAL_OVERLAY_BASE[grp.group_idx]
+        from sprite_common import decode_palette_banks
+        overlay_data = read_afs_file(afs_path, entries[overlay_afs_idx])
+        banks = decode_palette_banks(overlay_data, apply_clut=False)
+        for i, bank in enumerate(banks):
+            if overlay_base + i < 512:
+                swapped = [(c[2], c[1], c[0], c[3]) if c[3] > 0 else (0,0,0,0) for c in bank]
+                pal_banks[overlay_base + i] = swapped
+
     os.makedirs(output_dir, exist_ok=True)
     grp_name = f"group_{group_idx:02d}"
     print(f"  Building Atlases for {grp_name} (Stage {stage}) ({num_frames} frames)...")
@@ -446,6 +460,18 @@ def process_per_character_group(
         pal_data = read_afs_file(afs_path, entries[char["pal_apfn"]])
         # Build full ColorRAM with this character's palette in banks 0-15
         pal_banks = build_char_colorram(afs_path, entries, pal_data, 0)
+
+        # Explicit AFS Palette Injection
+        from extract_sprites import GROUP_PAL_OVERLAY_BASE
+        if grp.group_idx in GROUP_PAL_OVERLAY_BASE:
+            overlay_afs_idx, overlay_base = GROUP_PAL_OVERLAY_BASE[grp.group_idx]
+            from sprite_common import decode_palette_banks
+            overlay_data = read_afs_file(afs_path, entries[overlay_afs_idx])
+            banks = decode_palette_banks(overlay_data, apply_clut=False)
+            for i, bank in enumerate(banks):
+                if overlay_base + i < 512:
+                    swapped = [(c[2], c[1], c[0], c[3]) if c[3] > 0 else (0,0,0,0) for c in bank]
+                    pal_banks[overlay_base + i] = swapped
 
         print(
             f"  Building {grp_name} with {char_name}'s palette ({num_frames} frames)..."

@@ -376,6 +376,11 @@ static void CollectGamepadImages(ControllerImage_GamepadDeviceInfo* info, Contro
     } else if (info->inherits) {
         CollectGamepadImages(
             (ControllerImage_GamepadDeviceInfo*)SDL_GetPointerProperty(DeviceGuidMap, info->inherits, NULL), device);
+    } else if (SDL_strcmp(info->type, "xbox360") != 0) {
+        // if this doesn't inherit from anything, and it isn't the xbox360
+        //  device itself, make it inherit from the xbox360 device.
+        CollectGamepadImages(
+            (ControllerImage_GamepadDeviceInfo*)SDL_GetPointerProperty(DeviceGuidMap, "xbox360", NULL), device);
     }
 
     const ControllerImage_Item* leftxy = NULL;
@@ -1076,7 +1081,7 @@ const char* ControllerImage_GetSVGForAxis(ControllerImage_GamepadDevice* device,
     const char* defaultsvg = device->axes_svg[iaxis][0];
     if (!svg) {
         if (!defaultsvg) {
-            SDL_SetError("No image available"); // !!! FIXME: default to some xbox thing?
+            SDL_SetError("No image available");
             return NULL;
         } else {
             // We don't have a variant but we do have a default svg (variant 0)
@@ -1101,7 +1106,7 @@ const char* ControllerImage_GetSVGForButton(ControllerImage_GamepadDevice* devic
     const char* defaultsvg = device->buttons_svg[ibutton][0];
     if (!svg) {
         if (!defaultsvg) {
-            SDL_SetError("No image available"); // !!! FIXME: default to some xbox thing?
+            SDL_SetError("No image available");
             return NULL;
         } else {
             // We don't have a variant but we do have a default svg (variant 0)

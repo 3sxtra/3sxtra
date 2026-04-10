@@ -438,7 +438,9 @@ static void apply_remix_preview() {
         u16* colors = &ColorRAM[start_row][0];
 
         std::vector<int> ramp_indices;
+        ramp_indices.reserve(count); // turbo: preallocate to avoid reallocations during ramp detection
         std::vector<int> global_indices;
+        global_indices.reserve(count); // turbo: preallocate to avoid reallocations during color filtering
         for (size_t i = 0; i < count; i++) {
             if (i % 16 != 0 && colors[i] != 0) {
                 global_indices.push_back((int)i);
@@ -450,7 +452,9 @@ static void apply_remix_preview() {
 
                 for (int sub = 0; sub < 4; sub++) {
                     std::vector<u16> sub_colors;
+                    sub_colors.reserve(15); // turbo: each sub-block is exactly 15 colors
                     std::vector<int> sub_idx;
+                    sub_idx.reserve(15); // turbo: each sub-block is exactly 15 indices
                     for (int i = 1; i < 16; i++) {
                         int idx = (int)(r * 64 + sub * 16 + i);
                         sub_colors.push_back(colors[idx]);
@@ -480,6 +484,7 @@ static void apply_remix_preview() {
             case FX_RAMP: {
                 /* Per-bank dispatch: group ramp_indices by (idx / 16) */
                 std::vector<int> bank_chunk;
+                bank_chunk.reserve(15); // turbo: group by 16-color bank, index 0 is transparent so max 15
                 int prev_bank = -1;
                 for (int idx : ramp_indices) {
                     int bank = idx / 16;
