@@ -39,6 +39,12 @@ static int s_id_stack_size = 0;
 
 // Grid navigation
 static int s_grid_columns = 1;
+static int s_focus_delta = 0;
+
+// Scroll state
+static int s_scroll_max_visible = 0;
+static int s_scroll_current_offset = 0;
+static bool s_in_scroll_list = false;
 
 void NativeUI_PushID(int dynamic_id) {
     if (s_id_stack_size < 16) {
@@ -125,6 +131,8 @@ void NativeUI_Clear(void) {
     s_frame_counter = 0;
     s_focus_index = 0;
     Menu_Cursor_Y[0] = 0;
+    s_scroll_current_offset = 0;
+    s_in_scroll_list = false;
 }
 
 void NativeUI_Begin(int start_x, int start_y, NativeUIDir dir) {
@@ -179,6 +187,22 @@ static void AdvanceLayout(int width, int height) {
     }
 }
 
+void NativeUI_BeginScrollList(int visible_elements) {
+    s_scroll_max_visible = visible_elements;
+    s_in_scroll_list = true;
+    
+    // Automatically shift sliding focus bracket based on target cursor
+    if (s_focus_index < s_scroll_current_offset) {
+        s_scroll_current_offset = s_focus_index;
+    } else if (s_focus_index >= s_scroll_current_offset + s_scroll_max_visible) {
+        s_scroll_current_offset = s_focus_index - s_scroll_max_visible + 1;
+    }
+}
+
+void NativeUI_EndScrollList(void) {
+    s_in_scroll_list = false;
+}
+
 void NativeUI_Header(int header_type) {
     bool is_new = false;
     int slot = AllocSlot((uint32_t)header_type + 0x10000, &is_new);
@@ -195,27 +219,39 @@ bool NativeUI_ButtonEx(const char* label, bool disabled) {
     int my_index = s_current_index++;
     
     // Auto-skip disabled elements using the directional delta
-    extern int s_focus_delta;
     if (s_focus_index == my_index && disabled) {
         s_focus_index += (s_focus_delta != 0) ? s_focus_delta : 1;
     }
 
     bool is_focused = (s_focus_index == my_index) && !disabled;
     
+    // Visually occlude the element if it scrolled out of layout bounds
+    bool is_visible = true;
+    if (s_in_scroll_list) {
+        if (my_index < s_scroll_current_offset || my_index >= s_scroll_current_offset + s_scroll_max_visible) {
+            is_visible = false;
+        }
+    }
+    
+    if (!is_visible) {
+        // Pure Logical Processing: Do NOT allocate visual hashing or layout bounds to prevent 
+        // exhausting the 128-element memory cache! The GC will naturally sweep it.
+        return false;
+    }
+    
     uint32_t hash = HashId(label);
     
     bool is_new = false;
     int slot = AllocSlot(hash, &is_new);
     
-    if (slot != -1 && is_new) { // Effect spawn ignores disabled state to draw greyed text
+    if (slot != -1 && is_new) { 
         Order[slot] = 1;
         Order_Dir[slot] = 4;
-        /* Legacy spawned in on_enter (Timer 20). 
-         * We spawn in on_tick (13 frames later: Wait 5 + Fade 8).
-         * Therefore: 20 - 13 = 7 to achieve exactly synchronous alignment 
-         * with the cursor background's red entrance bar! */
-        Order_Timer[slot] = my_index + 7; 
-        effect_61_init(0, slot, 0, 0, my_index, my_index, 0x7047); 
+        int visual_index = my_index - s_scroll_current_offset;
+        Order_Timer[slot] = visual_index + 7; // Use visual offset for animation sequence
+        
+        // type dictates literal Graphic text lookup (ARCADE). flag pushes vertical coordinate!
+        effect_61_init(0, slot, 0, 0, visual_index, my_index, 0x7047); 
     }
     
     NativeUI_Label(label);
@@ -234,8 +270,6 @@ bool NativeUI_Button(const char* label) {
 void NativeUI_Label(const char* label) {
     AdvanceLayout(0, 16); 
 }
-
-int s_focus_delta = 0;
 
 void NativeUI_ProcessInput(uint16_t pad_input, uint16_t io_result) {
     s_focus_delta = 0;

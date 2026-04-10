@@ -26,6 +26,17 @@ void NativeUI_Clear(void);
 void NativeUI_Begin(int start_x, int start_y, NativeUIDir dir);
 
 /**
+ * @brief Initialize a scrolling layout boundary.
+ * @param visible_elements The max number of items to display on screen.
+ */
+void NativeUI_BeginScrollList(int visible_elements);
+
+/**
+ * @brief Conclude the scrolling layout boundary context.
+ */
+void NativeUI_EndScrollList(void);
+
+/**
  * @brief End a Native GUI frame. Any dynamically allocated effects
  *        from the previous frame that weren't drawn this frame 
  *        will be garbage collected and terminated.
