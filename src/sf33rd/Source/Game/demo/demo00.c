@@ -54,7 +54,6 @@ s32 Warning() {
     switch (D_No[1]) {
     case WARN_INIT:
         D_No[1] = WARN_FADE_IN;
-        D_No[1] = WARN_DONE;
         D_Timer = 120;
         FadeInit();
         Next_Demo = 0;

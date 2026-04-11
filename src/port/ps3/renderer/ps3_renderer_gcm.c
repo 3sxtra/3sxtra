@@ -24,6 +24,12 @@
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"
 
+// 2D Primitive Includes
+#include "port/rendering/renderer.h"
+#include "sf33rd/Source/Common/PPGFile.h"
+#include "sf33rd/Source/Game/rendering/aboutspr.h"
+#include "structs.h"
+
 #define LO_16_BITS(x) ((x) & 0xFFFF)
 #define HI_16_BITS(x) (((x) >> 16) & 0xFFFF)
 
@@ -92,7 +98,8 @@ typedef struct {
     int h;
     float pal_mode;
     CellGcmTexture rsx_texture;
-    uint32_t pad[3];
+    uint32_t last_mem_handle; // Finding #4: dirty tracking — skip re-upload if handle unchanged
+    uint32_t pad[2];
 } TextureState;
 
 static TextureState system_textures[CELL_GCM_MAX_TEXTURES];
@@ -110,6 +117,31 @@ static uint32_t vtx_offset = 0;
 static GcmVertex batch_vertices[RENDER_TASK_MAX * 6];
 static GcmRenderTask merge_temp[RENDER_TASK_MAX];
 static const int g_resolution_scale = 1;
+
+// 2D Primitive Queue
+#define RENDER_2D_PRIM_MAX 200
+typedef struct {
+    Vec3 v[4];
+    union {
+        u32 color;
+        WORK* work;
+    } attr;
+    u32 type;
+    s32 next;
+} Render2DPrim;
+
+typedef struct {
+    s16 ix1st;
+    s16 total;
+    Render2DPrim prim[RENDER_2D_PRIM_MAX];
+} Render2DQueue;
+
+static Render2DQueue s_Render2DQueue;
+
+static void Renderer_2DQueueInit(void) {
+    s_Render2DQueue.ix1st = -1;
+    s_Render2DQueue.total = 0;
+}
 
 // Matrix
 static float mvp[16];
@@ -184,7 +216,7 @@ static void tex_pool_init(void* base, uint32_t size) {
     mem_list_head = head;
 }
 
-static void* tex_pool_alloc(uint32_t size) {
+void* tex_pool_alloc(uint32_t size) {
     sys_mutex_lock(tex_pool_mutex, 0);
     uint32_t align_size = (size + 127) & ~127; // 128 byte align
     int curr = mem_list_head;
@@ -220,7 +252,7 @@ static void* tex_pool_alloc(uint32_t size) {
     return NULL;
 }
 
-static void tex_pool_free(void* ptr) {
+void tex_pool_free(void* ptr) {
     if (!ptr) return;
     sys_mutex_lock(tex_pool_mutex, 0);
     // NEW-10: Use uintptr_t to avoid truncation on 64-bit address space
@@ -380,6 +412,21 @@ static void dummy_flip_callback(const uint32_t head) {
     (void)head; // Dummy callback for PPU
 }
 
+void CRS_Renderer_UpdateTexture(int textureId, const void* data, int x, int y, int width, int height) {
+    (void)data; (void)x; (void)y; (void)width; (void)height;
+    uint32_t th = (uint32_t)textureId;
+    if ((th & 0xFFFF) == 0) th = (th & 0xFFFF0000) | 1000;
+    const int tex_handle = LO_16_BITS(th);
+    if (tex_handle < 1 || tex_handle > FL_TEXTURE_MAX) return;
+    int tex_idx = tex_handle - 1;
+
+    // tex_pool_free acquires tex_pool_mutex internally
+    if (system_textures[tex_idx].pixels) {
+        tex_pool_free(system_textures[tex_idx].pixels);
+        system_textures[tex_idx].pixels = NULL;
+    }
+}
+
 void CRS_Renderer_Init(void) {
     static int initialized = 0;
     if (initialized) return;
@@ -412,18 +459,10 @@ void CRS_Renderer_Init(void) {
 
     // CRITICAL: cellGcmInit reserves the first CELL_GCM_INIT_STATE_OFFSET (0x1000 = 4KB) bytes
     // of the command buffer for internal structures (flip subroutine CALL targets, driver state).
-    // The illegal 'CALL 0x0' at offset 0x188 lived inside this reserved region.
     // Our triple-buffered slices MUST start AFTER this header to avoid corrupting it.
     s_cb_usable_base = (uint8_t*)host_addr + 0x1000; // CELL_GCM_INIT_STATE_OFFSET
     printf("[GCM] CB usable base: %p (host_addr + 0x1000), context->begin: %p\n",
            s_cb_usable_base, (void*)s_gcm_context->begin);
-
-    // RSX SAFETY LANDING PAD: Write a 'RETURN' instruction at offset 0.
-    // If any internal GCM mechanism still issues 'CALL 0x0', this ensures the RSX
-    // immediately pops back instead of executing garbage. Must be AFTER cellGcmInit
-    // so we don't corrupt the init sequence, but offset 0 is before the 0x1000 header
-    // so it should be safe to plant here.
-    *(uint32_t*)host_addr = 0x00020000; // CELL_GCM_METHOD_FLAG_RETURN
 
     // Pre-compute the triple-buffered slice geometry.
     // cellGcmInit already mapped host_addr to RSX IO space, so cellGcmAddressToOffset
@@ -569,6 +608,7 @@ void CRS_Renderer_Init(void) {
     // G-04 Audit Fix: Use ±1.0 Z range for 24-bit depth precision (Z24S8)
     build_ortho_matrix(0.0f, 384.0f, 224.0f, 0.0f, -1.0f, 1.0f);
 
+    Renderer_2DQueueInit();
     printf("[GCM] Context created! Res: %dx%d\n", display_width, display_height);
 }
 
@@ -726,11 +766,16 @@ void CRS_Renderer_EndFrame(void) {
     uint32_t next_frame = (frame_index + 1) % BUFFER_COUNT;
     cellGcmSetJumpCommand(s_gcm_context, s_slice_offset[next_frame]);
     
-    // Set CPU pointer to the next slice's base BEFORE flushing.
-    // cellGcmFlush sets the hardware PUT register to this coordinate.
-    // The RSX executes the JUMP, lands at s_slice_offset[next_frame],
-    // sees GET == PUT, and idles until the next BeginFrame.
+    // FIRST FLUSH: Advance PUT so RSX reads the JUMP command.
+    // If we skip this, PUT simply jumps backwards, the RSX thinks the ring
+    // buffer wrapped, and it ignores the JUMP entirely, executing garbage!
+    cellGcmFlush(s_gcm_context);
+    
+    // SECOND FLUSH: Context switch. Reset CPU pointers to the next slice
+    // and flush to align GET and PUT at the new slice start, idling the RSX.
+    s_gcm_context->begin = s_slice_addr[next_frame];
     s_gcm_context->current = s_slice_addr[next_frame];
+    s_gcm_context->end = (uint32_t*)((uint8_t*)s_slice_addr[next_frame] + s_slice_size);
     cellGcmFlush(s_gcm_context);
     
     frame_index = next_frame;
@@ -897,8 +942,12 @@ void CRS_Renderer_SetTexture(unsigned int th) {
 
     TextureState* tstate = &system_textures[tex_idx];
 
+    // Finding #1: PSMCT32 (0) and PSMCT24 (1) are direct-color formats, same as PSMCT16 (2)
+    const bool is_color = (fl_texture->format == SCE_GS_PSMCT16 ||
+                           fl_texture->format == SCE_GS_PSMCT32 ||
+                           fl_texture->format == SCE_GS_PSMCT24);
+
     if (!tstate->pixels) {
-        bool is_color = (fl_texture->format == SCE_GS_PSMCT16);
         uint32_t bpp = is_color ? 4 : 1;
         uint32_t raw_data_width = (fl_texture->format == SCE_GS_PSMT4) ? (fl_texture->width / 2) : fl_texture->width;
         uint32_t raw_pitch = raw_data_width * bpp;
@@ -954,21 +1003,34 @@ void CRS_Renderer_SetTexture(unsigned int th) {
         else tstate->pal_mode = 0.0f;
     }
 
+    // Finding #4: Skip re-upload if the underlying system memory buffer hasn't changed.
+    // Texture data was being re-copied to RSX VRAM on every bind (~200+/frame).
+    if (tstate->last_mem_handle == fl_texture->mem_handle && fl_texture->mem_handle != 0) {
+        goto set_task_handle;
+    }
+    tstate->last_mem_handle = fl_texture->mem_handle;
+
+    {
     uint8_t* conv = (uint8_t*)tstate->pixels;
     
-    // Decoding
-    uint32_t raw_data_width = (fl_texture->format == SCE_GS_PSMT4) ? (fl_texture->width / 2) : fl_texture->width;
-    uint32_t bpp = (fl_texture->format == SCE_GS_PSMCT16) ? 4 : 1;
-    uint32_t raw_pitch = raw_data_width * ((fl_texture->format == SCE_GS_PSMCT16) ? 2 : 1);
-    uint32_t aligned_pitch = (raw_data_width * bpp + 63) & ~63;
-
-    if (fl_texture->format == SCE_GS_PSMT8 || fl_texture->format == SCE_GS_PSMT4) {
+    // Decoding — convert PS2 GS pixel formats to RSX-native textures
+    switch (fl_texture->format) {
+    case SCE_GS_PSMT8:
+    case SCE_GS_PSMT4: {
+        // Indexed textures — raw byte copy (palette lookup done in fragment shader)
+        uint32_t raw_data_width = (fl_texture->format == SCE_GS_PSMT4) ? (fl_texture->width / 2) : fl_texture->width;
+        uint32_t aligned_pitch = (raw_data_width + 63) & ~63;
         for (int y = 0; y < fl_texture->height; y++) {
-            memcpy(conv + (y * aligned_pitch), raw + (y * raw_pitch), raw_pitch);
+            memcpy(conv + (y * aligned_pitch), raw + (y * raw_data_width), raw_data_width);
         }
-    } else if (fl_texture->format == SCE_GS_PSMCT16) {
+        break;
+    }
+    case SCE_GS_PSMCT16: {
+        // 16-bit direct color (RGB5A1) → expand to ARGB8888
+        uint32_t raw_pitch_16 = fl_texture->width * 2;
+        uint32_t aligned_pitch = (fl_texture->width * 4 + 63) & ~63;
         for (int y = 0; y < fl_texture->height; y++) {
-            const uint8_t* src_row = raw + (y * raw_pitch);
+            const uint8_t* src_row = raw + (y * raw_pitch_16);
             uint32_t* dst_row = (uint32_t*)(conv + (y * aligned_pitch));
             for (int x = 0; x < fl_texture->width; x++) {
                 uint8_t out[4] = {0};
@@ -976,8 +1038,46 @@ void CRS_Renderer_SetTexture(unsigned int th) {
                 dst_row[x] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
             }
         }
+        break;
     }
+    case SCE_GS_PSMCT32: {
+        // Finding #1: 32-bit direct color — PS2 stores as LE RGBA → bytes [R,G,B,A]
+        // RSX A8R8G8B8 on BE stores [A,R,G,B]. Use build_swizzled_rgba for conversion.
+        uint32_t raw_pitch_32 = fl_texture->width * 4;
+        uint32_t aligned_pitch = (fl_texture->width * 4 + 63) & ~63;
+        for (int y = 0; y < fl_texture->height; y++) {
+            const uint8_t* src_row = raw + (y * raw_pitch_32);
+            uint32_t* dst_row = (uint32_t*)(conv + (y * aligned_pitch));
+            for (int x = 0; x < fl_texture->width; x++) {
+                const uint8_t* p = &src_row[x * 4];
+                dst_row[x] = build_swizzled_rgba(p[0], p[1], p[2], p[3]);
+            }
+        }
+        break;
+    }
+    case SCE_GS_PSMCT24: {
+        // Finding #1: 24-bit direct color — PS2 stores 3 bytes per pixel [R,G,B], no alpha
+        uint32_t raw_pitch_24 = fl_texture->width * 3;
+        uint32_t aligned_pitch = (fl_texture->width * 4 + 63) & ~63;
+        for (int y = 0; y < fl_texture->height; y++) {
+            const uint8_t* src_row = raw + (y * raw_pitch_24);
+            uint32_t* dst_row = (uint32_t*)(conv + (y * aligned_pitch));
+            for (int x = 0; x < fl_texture->width; x++) {
+                const uint8_t* p = &src_row[x * 3];
+                dst_row[x] = build_swizzled_rgba(p[0], p[1], p[2], 255);
+            }
+        }
+        break;
+    }
+    default:
+        // Finding #5: Diagnostic for unhandled formats
+        printf("[GCM] WARNING: Unsupported texture format %d for tex_handle %d (size %dx%d)\n",
+               fl_texture->format, texture_handle, fl_texture->width, fl_texture->height);
+        break;
+    }
+    } // end of scope for conv
     
+set_task_handle:
     if (render_task_count > 0) {
         // Tie task to current texture
         render_tasks[render_task_count - 1].texture_handle = current_th;
@@ -1017,9 +1117,13 @@ static void draw_quad(const GcmVertex* v, bool textured) {
         uint8_t a = (c >> 24) & 0xFF;
         uint8_t r = (c >> 16) & 0xFF;
         uint8_t g = (c >> 8) & 0xFF;
-        uint8_t b = (c >> 0) & 0xFF;
-        // G-MED-03 Audit Fix: ABGR ensures proper RGBA extraction in Cg for CELL_GCM_VERTEX_UB
-        b_vertices[i].color = (a << 24) | (b << 16) | (g << 8) | r;
+        uint8_t b_ch = (c >> 0) & 0xFF;
+        // Finding #2: Vertex color byte-order analysis.
+        // CELL_GCM_VERTEX_UB reads 4 bytes in memory order → ATTR2.xyzw.
+        // On BE, uint32 MSB = byte[0]. VP does `color / 255.0` so ATTR2.x=R, .y=G, .z=B, .w=A.
+        // Pack as (R << 24) | (G << 16) | (B << 8) | A → BE bytes [R,G,B,A] → correct RGBA.
+        // (Reference uses ABGR which swaps channels — our order is correct.)
+        b_vertices[i].color = (r << 24) | (g << 16) | (b_ch << 8) | a;
 
         if (textured) {
             b_vertices[i].u = v[v_idx].u;
@@ -1114,4 +1218,183 @@ void CRS_Renderer_DrawSprite2(const Sprite2* sprite2) {
 }
 
 
+// ---------------------------------------------------------
+// Engine Native 2D Overlays and Spline Text Queueing
+// ---------------------------------------------------------
 
+void Renderer_Init(void) {}
+
+void Renderer_DrawSolidQuadVtx(const RendererVertex* vertices, int count) {
+    if (count != 4) return;
+    GcmVertex v[4];
+    for (int i = 0; i < 4; i++) {
+        v[i].x = vertices[i].x;
+        v[i].y = vertices[i].y;
+        v[i].z = vertices[i].z;
+        v[i].color = vertices[0].color;
+        v[i].u = 0;
+        v[i].v = 0;
+    }
+    draw_quad(v, false);
+}
+
+void Renderer_DrawSpriteVtx(const RendererVertex* vertices, int count) {
+    if (count != 4) return;
+
+    GcmVertex v[4];
+    for (int i = 0; i < 4; i++) {
+        v[i].x = vertices[i].x;
+        v[i].y = vertices[i].y;
+        v[i].z = vertices[i].z;
+        v[i].color = vertices[0].color;
+        v[i].u = vertices[i].u;
+        v[i].v = vertices[i].v;
+    }
+    draw_quad(v, true);
+}
+
+// Static state for PPG engine integration
+static int s_CurrentPPGPageIndex = -1;
+static Texture* s_CurrentTexture = NULL;
+
+void Renderer_SetCurrentTexture(Texture* tex) {
+    s_CurrentTexture = tex;
+}
+
+int Renderer_GetCurrentPPGPageIndex(void) {
+    return s_CurrentPPGPageIndex;
+}
+
+void Renderer_SetTexture(int textureId) {
+    u32 texCode;
+
+    if (textureId >= 0x10000) {
+        texCode = (u32)textureId;
+    } else if (textureId < 0) {
+        u16 palHandle = ppgGetCurrentPaletteHandle();
+        texCode = (u32)(-textureId) | ((u32)palHandle << 16);
+    } else if (s_CurrentTexture != NULL) {
+        s32 ix = textureId - s_CurrentTexture->ixNum1st;
+        if (ix >= 0 && ix < s_CurrentTexture->total && s_CurrentTexture->handle != NULL) {
+            u16 texHandle = s_CurrentTexture->handle[ix].b16[0];
+            if (texHandle == 0) return;
+            s_CurrentPPGPageIndex = ix;
+            u16 palHandle = 0;
+            if (s_CurrentTexture->handle[ix].b16[1] & 0x4000) {
+                palHandle = ppgGetCurrentPaletteHandle();
+            }
+            texCode = texHandle | ((u32)palHandle << 16);
+        } else {
+            u16 palHandle = ppgGetCurrentPaletteHandle();
+            texCode = (u32)textureId | ((u32)palHandle << 16);
+        }
+    } else {
+        u16 palHandle = ppgGetCurrentPaletteHandle();
+        texCode = (u32)textureId | ((u32)palHandle << 16);
+    }
+
+    if (texCode == 0) return;
+    
+    // Instead of SDLGameRenderer_SetTexture, we natively update current_th
+    CRS_Renderer_SetTexture(texCode);
+}
+
+void Renderer_DrawTexturedQuadVtx(const RendererVertex* vertices, int count) {
+    if (count != 4) return;
+
+    GcmVertex v[4];
+    for (int i = 0; i < 4; i++) {
+        v[i].x = vertices[i].x;
+        v[i].y = vertices[i].y;
+        v[i].z = vertices[i].z;
+        v[i].color = vertices[0].color;
+        v[i].u = vertices[i].u;
+        v[i].v = vertices[i].v;
+    }
+    draw_quad(v, true);
+}
+
+void Renderer_Queue2DPrimitive(const f32* pos, f32 priority, uintptr_t data, int type) {
+    s32 i;
+    s32 ix = s_Render2DQueue.total;
+    s32 prev;
+
+    if (ix >= RENDER_2D_PRIM_MAX) {
+        printf("[GCM] Renderer: 2D primitive buffer overflow\n");
+        return;
+    }
+
+    if (type == 0) {
+        s_Render2DQueue.prim[ix].v[0].z = s_Render2DQueue.prim[ix].v[1].z = s_Render2DQueue.prim[ix].v[2].z =
+            s_Render2DQueue.prim[ix].v[3].z = priority;
+        s_Render2DQueue.prim[ix].v[0].x = pos[0];
+        s_Render2DQueue.prim[ix].v[0].y = pos[1];
+        s_Render2DQueue.prim[ix].v[1].x = pos[2];
+        s_Render2DQueue.prim[ix].v[1].y = pos[3];
+        s_Render2DQueue.prim[ix].v[2].x = pos[4];
+        s_Render2DQueue.prim[ix].v[2].y = pos[5];
+        s_Render2DQueue.prim[ix].v[3].x = pos[6];
+        s_Render2DQueue.prim[ix].v[3].y = pos[7];
+        s_Render2DQueue.prim[ix].type = 0;
+        s_Render2DQueue.prim[ix].attr.color = (u32)data;
+    } else if (type == 1) {
+        s_Render2DQueue.prim[ix].v[0].z = priority;
+        s_Render2DQueue.prim[ix].v[0].y = pos[0];
+        s_Render2DQueue.prim[ix].type = 1;
+        s_Render2DQueue.prim[ix].attr.work = (WORK*)data;
+    }
+
+    s_Render2DQueue.prim[ix].next = -1;
+
+    if (s_Render2DQueue.ix1st == -1) {
+        s_Render2DQueue.ix1st = ix;
+    } else {
+        i = s_Render2DQueue.ix1st;
+        prev = -1;
+
+        while (1) {
+            if (priority > s_Render2DQueue.prim[i].v[0].z) {
+                if (prev == -1) {
+                    s_Render2DQueue.ix1st = ix;
+                    s_Render2DQueue.prim[ix].next = i;
+                } else {
+                    s_Render2DQueue.prim[prev].next = ix;
+                    s_Render2DQueue.prim[ix].next = i;
+                }
+                break;
+            }
+
+            if (s_Render2DQueue.prim[i].next == -1) {
+                s_Render2DQueue.prim[i].next = ix;
+                break;
+            }
+
+            prev = i;
+            i = s_Render2DQueue.prim[i].next;
+        }
+    }
+
+    s_Render2DQueue.total += 1;
+}
+
+void Renderer_Flush2DPrimitives(void) {
+    Quad prm;
+    s32 i, j;
+
+    for (i = s_Render2DQueue.ix1st; i != -1; i = s_Render2DQueue.prim[i].next) {
+        switch (s_Render2DQueue.prim[i].type) {
+        case 0:
+            for (j = 0; j < 4; j++) {
+                prm.v[j] = s_Render2DQueue.prim[i].v[j];
+            }
+            CRS_Renderer_DrawSolidQuad(&prm, s_Render2DQueue.prim[i].attr.color);
+            break;
+
+        case 1:
+            shadow_drawing(s_Render2DQueue.prim[i].attr.work, (s16)s_Render2DQueue.prim[i].v[0].y);
+            break;
+        }
+    }
+
+    Renderer_2DQueueInit();
+}

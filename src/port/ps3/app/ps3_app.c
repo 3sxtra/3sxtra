@@ -127,13 +127,10 @@ int PS3App_FullInit(void) {
                     if (eq_ret == CELL_OK) {
                         printf("[PS3] SPURS Event Queue attached on port: %d\n", g_spurs_port);
 
-                        /* NOTE: CELL_ENOTCONN warnings on spup=1 are benign.
-                         * They come from the CellSpursKernel's internal trace notification
-                         * system (SPU address 0x0ab98) trying to signal on an unbound port.
-                         * RPCS3 rejects a second cellSpursAttachLv2EventQueue with
-                         * CELL_SPURS_CORE_ERROR_STAT (0x8041070a), so we cannot attach
-                         * a queue to port 1. These warnings are harmless and do not affect
-                         * SPURS workload execution. */
+                        /* NOTE: Port 1 (isys=1) is used by the SPURS audio/trace sub-system.
+                         * If left unattached, SPU notifications will drop, resulting in `CELL_ENOTCONN`
+                         * and permanently starving threads (e.g. ps3_audio_feeder) of completion buffers. 
+                         * The audio module natively attaches its queue to Port 1 in ps3_audio_init. */
 
                         /* Initialize audio after SPURS event queue is attached */
                         ps3_audio_init();

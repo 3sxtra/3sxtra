@@ -34,12 +34,14 @@ void tarPADDestroy(void) {
 }
 
 void tarPADRead(void) {
-    for (int i = 0; i < 2; i++) {
+    int pad_out = 0;
+    
+    // Scan all 7 potential PS3 controller ports and assign the first two active to P1 and P2
+    for (int p = 0; p < 7 && pad_out < 2; p++) {
         CellPadData pad_data;
-        if (cellPadGetData(i, &pad_data) == CELL_PAD_OK && pad_data.len > 0) {
+        if (cellPadGetData(p, &pad_data) == CELL_PAD_OK && pad_data.len > 0) {
             u32 io = 0;
 
-            // H-07 Audit Fix: Use proper d1/d2 byte offsets for button mapping
             uint8_t d1 = pad_data.button[CELL_PAD_BTN_OFFSET_DIGITAL1];
             uint8_t d2 = pad_data.button[CELL_PAD_BTN_OFFSET_DIGITAL2];
 
@@ -62,26 +64,32 @@ void tarPADRead(void) {
             if (d1 & CELL_PAD_CTRL_START) io |= SWK_START;
             if (d1 & CELL_PAD_CTRL_SELECT) io |= SWK_BACK;
 
-            tarpad_root[i].sw = io;
+            tarpad_root[pad_out].sw = io;
 
             if (pad_data.len >= 8) {
-                tarpad_root[i].stick[0].x = pad_data.button[CELL_PAD_BTN_OFFSET_ANALOG_RIGHT_X] - 128;
-                tarpad_root[i].stick[0].y = pad_data.button[CELL_PAD_BTN_OFFSET_ANALOG_RIGHT_Y] - 128;
-                tarpad_root[i].stick[1].x = pad_data.button[CELL_PAD_BTN_OFFSET_ANALOG_LEFT_X] - 128;
-                tarpad_root[i].stick[1].y = pad_data.button[CELL_PAD_BTN_OFFSET_ANALOG_LEFT_Y] - 128;
+                tarpad_root[pad_out].stick[0].x = pad_data.button[CELL_PAD_BTN_OFFSET_ANALOG_RIGHT_X] - 128;
+                tarpad_root[pad_out].stick[0].y = pad_data.button[CELL_PAD_BTN_OFFSET_ANALOG_RIGHT_Y] - 128;
+                tarpad_root[pad_out].stick[1].x = pad_data.button[CELL_PAD_BTN_OFFSET_ANALOG_LEFT_X] - 128;
+                tarpad_root[pad_out].stick[1].y = pad_data.button[CELL_PAD_BTN_OFFSET_ANALOG_LEFT_Y] - 128;
             }
 
-            tarpad_root[i].state = 1;
-            tarpad_root[i].conn.port = i;
-            tarpad_root[i].kind = 1;
-        } else {
-            tarpad_root[i].sw = 0;
-            tarpad_root[i].stick[0].x = 0;
-            tarpad_root[i].stick[0].y = 0;
-            tarpad_root[i].stick[1].x = 0;
-            tarpad_root[i].stick[1].y = 0;
+            // Mark as connected and ready
+            tarpad_root[pad_out].state = 1;
+            tarpad_root[pad_out].conn.port = pad_out;
+            tarpad_root[pad_out].kind = 1;
+            
+            pad_out++;
         }
     }
 
-
+    // Explicitly disconnect any remaining engine slots (no phantom inputs)
+    for (; pad_out < 2; pad_out++) {
+        tarpad_root[pad_out].sw = 0;
+        tarpad_root[pad_out].stick[0].x = 0;
+        tarpad_root[pad_out].stick[0].y = 0;
+        tarpad_root[pad_out].stick[1].x = 0;
+        tarpad_root[pad_out].stick[1].y = 0;
+        tarpad_root[pad_out].state = 0;  // KEY FIX: Actually tell the engine it's disconnected
+        tarpad_root[pad_out].kind = 0;
+    }
 }

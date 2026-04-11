@@ -23,6 +23,10 @@
 #include "sf33rd/Source/Compress/Lz77/Lz77Dec.h"
 #include "sf33rd/Source/Compress/zlibApp.h"
 #include "structs.h"
+#ifdef PLATFORM_PS3
+#include <stdlib.h>   /* memalign, free */
+#include <string.h>   /* memcpy */
+#endif
 
 #include <SDL3/SDL.h>
 
@@ -497,7 +501,25 @@ static ssize_t ppgDecompress(s32 koCmpr, void* srcAdrs, s32 srcSize, void* dstAd
         break;
 
     case 2:
+#ifdef PLATFORM_PS3
+        /* PS3: edgeZlib SPU DMA requires 16-byte aligned buffers.
+         * PPG/PPL chunk data is only 4-byte aligned within AFS payloads,
+         * so pre-align the source here to avoid the slow proxy path. */
+        if (((uintptr_t)srcAdrs & 0xF) != 0) {
+            void* alignedSrc = memalign(16, (srcSize + 15) & ~15);
+            if (alignedSrc) {
+                memcpy(alignedSrc, srcAdrs, srcSize);
+                rnum = zlib_Decompress(alignedSrc, srcSize, dstAdrs, dstSize);
+                free(alignedSrc);
+            } else {
+                rnum = zlib_Decompress(srcAdrs, srcSize, dstAdrs, dstSize);
+            }
+        } else {
+            rnum = zlib_Decompress(srcAdrs, srcSize, dstAdrs, dstSize);
+        }
+#else
         rnum = zlib_Decompress(srcAdrs, srcSize, dstAdrs, dstSize);
+#endif
         break;
     }
 

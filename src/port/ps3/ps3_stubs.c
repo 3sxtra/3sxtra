@@ -69,24 +69,97 @@ void SDLGameRenderer_DrawSprite2(const Sprite2* sprite2) {
 }
 
 /* ========================================================================= */
-/*  SDLMessageRenderer stubs                                                  */
+/*  SDLMessageRenderer → GCM routing (Finding #3: was fully stubbed)          */
 /* ========================================================================= */
 
 SDL_Texture* message_canvas = NULL;
 
-void SDLMessageRenderer_Initialize(SDL_Renderer* renderer)  { (void)renderer; }
-void SDLMessageRenderer_BeginFrame(void)                    { }
+// The message renderer uses a single dynamic texture for font glyphs.
+// We allocate one slot in the texture pool and re-upload when CreateTexture is called.
+static void* msg_tex_pixels = NULL;
+static uint32_t msg_tex_offset = 0;
+static int msg_tex_w = 0, msg_tex_h = 0;
+static CellGcmTexture msg_rsx_texture;
+static int msg_tex_ready = 0;
+
+void SDLMessageRenderer_Initialize(SDL_Renderer* renderer) { (void)renderer; }
+void SDLMessageRenderer_BeginFrame(void) {}
 
 void SDLMessageRenderer_CreateTexture(int width, int height, void* pixels, int format) {
-    (void)width; (void)height; (void)pixels; (void)format;
+    (void)format;
+    if (!pixels || width <= 0 || height <= 0) return;
+
+    // Free old allocation
+    if (msg_tex_pixels) {
+        extern void tex_pool_free(void* ptr);
+        tex_pool_free(msg_tex_pixels);
+        msg_tex_pixels = NULL;
+        msg_tex_ready = 0;
+    }
+
+    uint32_t pitch = ((uint32_t)width * 4 + 63) & ~63;
+    extern void* tex_pool_alloc(uint32_t size);
+    msg_tex_pixels = tex_pool_alloc(pitch * (uint32_t)height);
+    if (!msg_tex_pixels) return;
+
+    // Copy pixel data (assumed ARGB8888)
+    const uint8_t* src = (const uint8_t*)pixels;
+    uint8_t* dst = (uint8_t*)msg_tex_pixels;
+    for (int y = 0; y < height; y++) {
+        memcpy(dst + y * pitch, src + y * width * 4, (uint32_t)width * 4);
+    }
+
+    cellGcmAddressToOffset(msg_tex_pixels, &msg_tex_offset);
+    msg_tex_w = width;
+    msg_tex_h = height;
+
+    msg_rsx_texture.format = CELL_GCM_TEXTURE_A8R8G8B8 | CELL_GCM_TEXTURE_LN | CELL_GCM_TEXTURE_NR;
+    msg_rsx_texture.mipmap = 1;
+    msg_rsx_texture.dimension = CELL_GCM_TEXTURE_DIMENSION_2;
+    msg_rsx_texture.cubemap = CELL_GCM_FALSE;
+    msg_rsx_texture.remap = CELL_GCM_TEXTURE_REMAP_ORDER_XYXY << 16 |
+                             CELL_GCM_TEXTURE_REMAP_FROM_A << 14 |
+                             CELL_GCM_TEXTURE_REMAP_FROM_R << 12 |
+                             CELL_GCM_TEXTURE_REMAP_FROM_G << 10 |
+                             CELL_GCM_TEXTURE_REMAP_FROM_B << 8 |
+                             CELL_GCM_TEXTURE_REMAP_REMAP << 6 |
+                             CELL_GCM_TEXTURE_REMAP_REMAP << 4 |
+                             CELL_GCM_TEXTURE_REMAP_REMAP << 2 |
+                             CELL_GCM_TEXTURE_REMAP_REMAP;
+    msg_rsx_texture.width = width;
+    msg_rsx_texture.height = height;
+    msg_rsx_texture.depth = 1;
+    msg_rsx_texture.pitch = pitch;
+    msg_rsx_texture.location = CELL_GCM_LOCATION_LOCAL;
+    msg_rsx_texture.offset = msg_tex_offset;
+    msg_tex_ready = 1;
 }
 
 void SDLMessageRenderer_DrawTexture(int x0, int y0, int x1, int y1,
                                      int u0, int v0, int u1, int v1,
                                      unsigned int color) {
-    (void)x0; (void)y0; (void)x1; (void)y1;
-    (void)u0; (void)v0; (void)u1; (void)v1;
-    (void)color;
+    if (!msg_tex_ready || !msg_tex_pixels) return;
+
+    // Convert texel coords to normalized UVs
+    float fu0 = (float)u0 / (float)msg_tex_w;
+    float fv0 = (float)v0 / (float)msg_tex_h;
+    float fu1 = (float)u1 / (float)msg_tex_w;
+    float fv1 = (float)v1 / (float)msg_tex_h;
+
+    // Use CRS_Renderer_DrawTexturedQuad by temporarily binding via a Sprite
+    Sprite spr;
+    spr.v[0].x = (float)x0; spr.v[0].y = (float)y0; spr.v[0].z = 0.0f;
+    spr.v[1].x = (float)x1; spr.v[1].y = (float)y0; spr.v[1].z = 0.0f;
+    spr.v[2].x = (float)x1; spr.v[2].y = (float)y1; spr.v[2].z = 0.0f;
+    spr.v[3].x = (float)x0; spr.v[3].y = (float)y1; spr.v[3].z = 0.0f;
+    spr.t[0].s = fu0; spr.t[0].t = fv0;
+    spr.t[1].s = fu1; spr.t[1].t = fv0;
+    spr.t[2].s = fu1; spr.t[2].t = fv1;
+    spr.t[3].s = fu0; spr.t[3].t = fv1;
+
+    // TODO: bind msg_rsx_texture to TEXUNIT0 for this draw
+    // For now, route through CRS_Renderer_DrawTexturedQuad which uses current_th
+    CRS_Renderer_DrawTexturedQuad(&spr, color);
 }
 
 /* ========================================================================= */

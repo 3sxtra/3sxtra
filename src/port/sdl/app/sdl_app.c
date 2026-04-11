@@ -559,16 +559,15 @@ int SDLApp_Init() {
         SDL_Log("SDL_GPU Initialized Successfully.");
 
         // VSync OFF — native frame pacing handles timing.
-        // Try IMMEDIATE (no vsync) first; fall back to MAILBOX then FIFO.
-        // Pi4's v3dv Vulkan driver does not support IMMEDIATE, so without
-        // this fallback the swapchain silently stays at FIFO (60fps cap).
+        // Prefer MAILBOX (tear-free, low latency — replaces pending frames
+        // instead of queueing), then IMMEDIATE, then FIFO as last resort.
         vsync_enabled = false;
         {
             SDL_GPUPresentMode mode = SDL_GPU_PRESENTMODE_VSYNC; // worst-case default
-            if (SDL_WindowSupportsGPUPresentMode(gpu_device, window, SDL_GPU_PRESENTMODE_IMMEDIATE)) {
-                mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
-            } else if (SDL_WindowSupportsGPUPresentMode(gpu_device, window, SDL_GPU_PRESENTMODE_MAILBOX)) {
+            if (SDL_WindowSupportsGPUPresentMode(gpu_device, window, SDL_GPU_PRESENTMODE_MAILBOX)) {
                 mode = SDL_GPU_PRESENTMODE_MAILBOX;
+            } else if (SDL_WindowSupportsGPUPresentMode(gpu_device, window, SDL_GPU_PRESENTMODE_IMMEDIATE)) {
+                mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
             }
 
             const char* mode_name = (mode == SDL_GPU_PRESENTMODE_IMMEDIATE) ? "IMMEDIATE"

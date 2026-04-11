@@ -4,15 +4,17 @@ struct V2F {
     float4 color : COLOR;
 };
 
+// C-02 Audit Fix: Explicit row_major for matrix bound from C array.
+// C-03 Audit Fix: CELL_GCM_VERTEX_UB passes 0-255, must be normalized in shader
+// or it will cause huge color values resulting in a blown out / invisible image.
 V2F main(float4 position : ATTR0, 
          float2 texcoord : ATTR1, 
          float4 color : ATTR2,
-         uniform float4x4 mvp) 
+         uniform row_major float4x4 mvp) 
 {
     V2F OUT;
     OUT.position = mul(mvp, position);
-    // RSX expects Y-flip or not depending on projection, we will handle in matrix
     OUT.texcoord = texcoord;
-    OUT.color = color;
+    OUT.color = color / 255.0;
     return OUT;
 }

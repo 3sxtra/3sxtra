@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "port/ps3/app/ps3_app.h"
 
 static uint32_t audio_port_num;
 static sys_ppu_thread_t audio_thread_id;
@@ -19,6 +20,7 @@ static int audio_module_loaded = 0; // A-03: Track whether CELL_SYSMODULE_AUDIO 
 static sys_event_queue_t audio_event_queue;
 static int audio_event_queue_created = 0;
 static sys_ipc_key_t audio_queue_key;
+static uint8_t audio_spurs_port; // SPU Port mapping for SPURS audio signaling
 
 extern void SPU_TickAudio(int16_t* outbuf, uint32_t samples_per_channel);
 
@@ -54,9 +56,14 @@ static void audio_thread_entry(uint64_t arg) {
 
     while (audio_thread_running) {
         sys_event_t audio_event;
-        // Block the PPU entirely until the hardware triggers the queue saying the buffer depleted a block
-        int res = sys_event_queue_receive(audio_event_queue, &audio_event, 0); // 0 = wait forever
-        if (res != CELL_OK) {
+        // Use a 100ms timeout instead of waiting forever (SYS_NO_TIMEOUT)
+        // to ensure the thread can gracefully shut down if the main app crashes
+        int res = sys_event_queue_receive(audio_event_queue, &audio_event, 100000);
+        
+        if (res == (int)0x80010008 /* CELL_ETIMEDOUT */) {
+            if (!audio_thread_running) break;
+            continue;
+        } else if (res != CELL_OK) {
             printf("[PS3] Audio event queue receive failed (0x%X), shutting down thread.\n", res);
             break;
         }
@@ -139,6 +146,18 @@ void ps3_audio_init(void) {
         if (qret == CELL_OK) {
             audio_event_queue_created = 1;
             cellAudioSetNotifyEventQueue(audio_queue_key);
+            
+            // Fix: SPU task running audio requests buffers via SPURS events on spup=1.
+            // If the event queue is mapped dynamically (returning e.g. Port 17), the SPU 
+            // drops its Completion Events (CELL_ENOTCONN) and starves the audio feeder thread.
+            // Hardcode SPU Port 1 mapping using isDynamic = 0.
+            audio_spurs_port = 1;
+            int sq_ret = cellSpursAttachLv2EventQueue(PS3App_GetSpurs(), audio_event_queue, &audio_spurs_port, 0);
+            if (sq_ret != CELL_OK) {
+                printf("[PS3] FATAL: Failed to attach Audio Event Queue to SPURS (0x%X)\n", sq_ret);
+            } else {
+                printf("[PS3] Audio Event Queue successfully attached to SPURS port %d\n", audio_spurs_port);
+            }
         } else {
             printf("[PS3] Error: Failed to create audio event queue (0x%X). Deadlock inevitable.\n", qret);
         }
@@ -182,6 +201,7 @@ void ps3_audio_quit(void) {
 
     // Step 2: Remove notification FIRST to unblock the event queue receive
     if (audio_event_queue_created) {
+        cellSpursDetachLv2EventQueue(PS3App_GetSpurs(), audio_spurs_port);
         cellAudioRemoveNotifyEventQueue(audio_queue_key);
     }
 

@@ -5,9 +5,30 @@
  * Wraps zlib's inflate API using a dedicated MemMan heap for
  * zlib's internal allocations instead of the system malloc.
  *
+ * On PS3, uses the hardware-accelerated edgeZlib pipeline via SPURS
+ * to decompress on SPU, avoiding the missing libz dependency.
+ *
  * Part of the Compress module.
  * Originally from the PS2 compression module.
  */
+
+#ifdef PLATFORM_PS3
+#include <cell/spurs.h>
+#include <cell/spurs/task.h>
+#include <cell/spurs/event_flag.h>
+#include <edge/zlib/edgezlib_ppu.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "port/ps3/app/ps3_app.h"
+
+static CellSpursTaskset2 s_zlib_taskset;
+static EdgeZlibInflateQHandle s_zlib_queue = 0;
+static void* s_zlib_task_context = NULL;
+static void* s_zlib_queue_buffer = NULL;
+__attribute__((aligned(128))) static CellSpursEventFlag s_zlib_event_flag;
+#endif
+
 #include "common.h"
 #include "sf33rd/Source/Common/MemMan.h"
 #include "structs.h"
@@ -30,15 +51,52 @@ static void* zlib_Malloc(void*, u32, u32);
 static void zlib_Free(void*, void*);
 
 /**
+ * Early SPURS initialization for the edgeZlib pipeline.
+ * Must be called immediately after cellSpursInitializeWithAttribute to avoid
+ * CELL_ENOTCONN errors from SPU kernel threads trying to signal event ports
+ * that haven't been bound yet.
+ */
+void zlib_InitSpurs(void) {
+#ifdef PLATFORM_PS3
+    struct CellSpurs* spurs = PS3App_GetSpurs();
+    if (spurs && !s_zlib_queue) {
+        CellSpursTasksetAttribute2 attr;
+        cellSpursTasksetAttribute2Initialize(&attr);
+        cellSpursCreateTaskset2(spurs, &s_zlib_taskset, &attr);
+
+        uint32_t contextSize = edgeZlibGetInflateTaskContextSaveSize();
+        s_zlib_task_context = memalign(128, contextSize);
+        /* S-MED-01: Queue depth 32 to handle rapid scene transitions */
+        uint32_t queueSize = edgeZlibGetInflateQueueSize(32);
+        s_zlib_queue_buffer = memalign(128, queueSize);
+
+        s_zlib_queue = edgeZlibCreateInflateQueue(spurs, 32, s_zlib_queue_buffer, queueSize);
+
+        cellSpursEventFlagInitializeIWL(spurs, &s_zlib_event_flag,
+                                        CELL_SPURS_EVENT_FLAG_CLEAR_AUTO,
+                                        CELL_SPURS_EVENT_FLAG_SPU2PPU);
+
+        edgeZlibCreateInflateTask2(&s_zlib_taskset, s_zlib_task_context, s_zlib_queue);
+        printf("[PS3] edgeZlib SPURS taskset and event flag initialized\n");
+    }
+#endif
+}
+
+/**
  * @brief Initialise the zlib wrapper with a dedicated memory region.
  *
  * @param tempAdrs Pointer to the temporary memory region for zlib allocations.
  * @param tempSize Size of the memory region in bytes.
  */
 void zlib_Initialize(void* tempAdrs, s32 tempSize) {
-    if (tempAdrs == NULL || tempSize <= 0) {
-        while (1) {}
+    if (tempAdrs == NULL) {
+        return;
     }
+
+#ifdef PLATFORM_PS3
+    /* Ensure SPURS-side is set up (no-op if zlib_InitSpurs was already called) */
+    zlib_InitSpurs();
+#endif
 
     mmHeapInitialize(&zlib.mobj, tempAdrs, tempSize, ALIGN_UP(sizeof(_MEMMAN_CELL), 16), "- for zlib -");
 
@@ -59,6 +117,77 @@ static void zlib_Free(void* opaque, void* adrs) {
 
 /** @brief Decompress a zlib-compressed buffer into the destination. */
 ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) {
+#ifdef PLATFORM_PS3
+    if (!s_zlib_queue) return 0;
+    if (srcSize <= 0 || dstSize <= 0) return 0;
+
+    /* edgeZlib (SPU DMA) requires 16-byte alignment for all source and destination buffers. */
+    void* actualSrc = srcBuff;
+    void* actualDst = dstBuff;
+    bool freeSrc = false;
+    bool freeDst = false;
+
+    if (((uintptr_t)srcBuff & 0xF) != 0 || ((uintptr_t)dstBuff & 0xF) != 0) {
+        void *caller = __builtin_return_address(0);
+        printf("[PS3] zlib_Decompress: Alignment proxy engaged (SRC: %p [%s], DST: %p [%s], caller: %p, srcSize: %d, dstSize: %d)\n",
+               srcBuff, ((uintptr_t)srcBuff & 0xF) ? "UNALIGNED" : "ok",
+               dstBuff, ((uintptr_t)dstBuff & 0xF) ? "UNALIGNED" : "ok",
+               caller, srcSize, dstSize);
+
+        if (((uintptr_t)srcBuff & 0xF) != 0) {
+            actualSrc = memalign(16, (srcSize + 15) & ~15);
+            if (!actualSrc) return 0;
+            memcpy(actualSrc, srcBuff, srcSize);
+            freeSrc = true;
+        }
+
+        if (((uintptr_t)dstBuff & 0xF) != 0) {
+            actualDst = memalign(16, (dstSize + 15) & ~15);
+            if (!actualDst) {
+                if (freeSrc) free(actualSrc);
+                return 0;
+            }
+            freeDst = true;
+        }
+    }
+
+    const uint8_t* compressedData = (const uint8_t*)actualSrc;
+    uint32_t compressedSize = srcSize;
+
+    /* Strip 2-byte zlib header (CMF+FLG) if present — edgeZlib expects raw deflate. */
+    uint8_t cmf = compressedData[0];
+    uint8_t flg = compressedData[1];
+
+    if (cmf == 0x78 && (((cmf << 8) + flg) % 31 == 0)) {
+        compressedData += 2;
+        compressedSize -= 2;
+    }
+
+    /* Guarantee that SPU DMA doesn't overwrite adjacent stack bytes by putting work counter in .bss.
+     * S-LOW-01 Audit Note: This function is NOT reentrant — concurrent calls will race on
+     * s_workCounter. Currently safe because zlib_Decompress is only called from the main thread. */
+    static __attribute__((aligned(128))) uint32_t s_workCounter = 0;
+    s_workCounter = 1;
+
+    edgeZlibAddInflateQueueElement(s_zlib_queue,
+                                   compressedData, compressedSize,
+                                   actualDst, dstSize,
+                                   &s_workCounter, &s_zlib_event_flag, 1,
+                                   kEdgeZlibInflateTask_Inflate);
+
+    uint16_t outBits = 1;
+    cellSpursEventFlagWait(&s_zlib_event_flag, &outBits, CELL_SPURS_EVENT_FLAG_AND);
+
+    if (freeDst) {
+        memcpy(dstBuff, actualDst, dstSize);
+        free(actualDst);
+    }
+    if (freeSrc) {
+        free(actualSrc);
+    }
+
+    return dstSize;
+#else
     if (srcBuff == NULL || dstBuff == NULL) {
         return 0;
     }
@@ -92,4 +221,5 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
     }
 
     return zlib.info.total_out;
+#endif
 }
