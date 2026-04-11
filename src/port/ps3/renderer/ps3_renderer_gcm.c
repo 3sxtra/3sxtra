@@ -54,7 +54,20 @@ static uint32_t depth_offset;
 
 // Buffers
 static void* host_addr = NULL;
+static void* s_cb_usable_base = NULL; // First usable byte after GCM's 4KB internal header (offset 0x1000)
 static volatile uint32_t* s_label_addr = NULL; // Restored label for async sync
+
+// Pre-computed slice geometry (calculated once at init, used every frame)
+static uint32_t s_slice_size = 0;           // Bytes per slice
+static void*    s_slice_addr[BUFFER_COUNT]; // CPU address of each slice start
+static uint32_t s_slice_offset[BUFFER_COUNT]; // RSX IO offset of each slice start
+static sys_semaphore_t vblank_sem;
+static sys_mutex_t tex_pool_mutex;
+
+static void vblank_handler(const uint32_t head) {
+    (void)head;
+    sys_semaphore_post(vblank_sem, 1);
+}
 
 // Rendering State
 static int frame_index = 0;
@@ -172,6 +185,7 @@ static void tex_pool_init(void* base, uint32_t size) {
 }
 
 static void* tex_pool_alloc(uint32_t size) {
+    sys_mutex_lock(tex_pool_mutex, 0);
     uint32_t align_size = (size + 127) & ~127; // 128 byte align
     int curr = mem_list_head;
 
@@ -195,16 +209,20 @@ static void* tex_pool_alloc(uint32_t size) {
                 tex_pool[curr].size = align_size;
             }
             tex_pool[curr].is_free = false;
-            return (uint8_t*)tex_pool_base + tex_pool[curr].offset;
+            void* ret_ptr = (uint8_t*)tex_pool_base + tex_pool[curr].offset;
+            sys_mutex_unlock(tex_pool_mutex);
+            return ret_ptr;
         }
         curr = tex_pool[curr].next_idx;
     }
     printf("[GCM] ERROR: Texture Pool OOM! Failed to allocate %u bytes.\n", align_size);
+    sys_mutex_unlock(tex_pool_mutex);
     return NULL;
 }
 
 static void tex_pool_free(void* ptr) {
     if (!ptr) return;
+    sys_mutex_lock(tex_pool_mutex, 0);
     // NEW-10: Use uintptr_t to avoid truncation on 64-bit address space
     uintptr_t offset_wide = (uintptr_t)((uint8_t*)ptr - (uint8_t*)tex_pool_base);
     uint32_t offset = (uint32_t)offset_wide; // Safe: offsets within 128MB pool always fit
@@ -239,10 +257,12 @@ static void tex_pool_free(void* ptr) {
                 tex_pool[curr].prev_idx = -1;
                 free_list_head = curr;
             }
+            sys_mutex_unlock(tex_pool_mutex);
             return;
         }
         curr = tex_pool[curr].next_idx;
     }
+    sys_mutex_unlock(tex_pool_mutex);
 }
 
 static void build_ortho_matrix(float left, float right, float bottom, float top, float zNear, float zFar) {
@@ -365,6 +385,14 @@ void CRS_Renderer_Init(void) {
     if (initialized) return;
     initialized = 1;
 
+    sys_semaphore_attribute_t sem_attr;
+    sys_semaphore_attribute_initialize(sem_attr);
+    sys_semaphore_create(&vblank_sem, &sem_attr, 0, 1);
+
+    sys_mutex_attribute_t mut_attr;
+    sys_mutex_attribute_initialize(mut_attr);
+    sys_mutex_create(&tex_pool_mutex, &mut_attr);
+
     printf("[GCM] Initializing libgcm...\n");
 
     // 1. Initialize GCM
@@ -382,15 +410,42 @@ void CRS_Renderer_Init(void) {
     s_gcm_context = gCellGcmCurrentContext;
     printf("[GCM] cellGcmInit returned: %d, Context handle: %p\n", init_ret, (void*)s_gcm_context);
 
-    // Flip mode and handler are managed by cellResc. DO NOT SET THEM HERE!
+    // CRITICAL: cellGcmInit reserves the first CELL_GCM_INIT_STATE_OFFSET (0x1000 = 4KB) bytes
+    // of the command buffer for internal structures (flip subroutine CALL targets, driver state).
+    // The illegal 'CALL 0x0' at offset 0x188 lived inside this reserved region.
+    // Our triple-buffered slices MUST start AFTER this header to avoid corrupting it.
+    s_cb_usable_base = (uint8_t*)host_addr + 0x1000; // CELL_GCM_INIT_STATE_OFFSET
+    printf("[GCM] CB usable base: %p (host_addr + 0x1000), context->begin: %p\n",
+           s_cb_usable_base, (void*)s_gcm_context->begin);
 
+    // RSX SAFETY LANDING PAD: Write a 'RETURN' instruction at offset 0.
+    // If any internal GCM mechanism still issues 'CALL 0x0', this ensures the RSX
+    // immediately pops back instead of executing garbage. Must be AFTER cellGcmInit
+    // so we don't corrupt the init sequence, but offset 0 is before the 0x1000 header
+    // so it should be safe to plant here.
+    *(uint32_t*)host_addr = 0x00020000; // CELL_GCM_METHOD_FLAG_RETURN
+
+    // Pre-compute the triple-buffered slice geometry.
+    // cellGcmInit already mapped host_addr to RSX IO space, so cellGcmAddressToOffset
+    // works here. We cache the offsets to avoid re-resolving them every frame.
+    // NOTE: We intentionally do NOT call cellGcmMapMainMemory — cellGcmInit's ioSize
+    // parameter (GCM_HOST_SIZE=8MB) already mapped the full block. A second
+    // cellGcmMapMainMemory on the same address creates a conflicting IO mapping
+    // that causes cellGcmAddressToOffset to return the WRONG offset for JUMP targets.
+    {
+        uint32_t usable_size = GCM_CB_SIZE - 0x1000;
+        s_slice_size = usable_size / BUFFER_COUNT;
+        for (int i = 0; i < BUFFER_COUNT; i++) {
+            s_slice_addr[i] = (uint8_t*)s_cb_usable_base + (i * s_slice_size);
+            cellGcmAddressToOffset(s_slice_addr[i], &s_slice_offset[i]);
+            printf("[GCM] Slice %d: addr=%p, RSX offset=0x%x, size=0x%x\n",
+                   i, s_slice_addr[i], s_slice_offset[i], s_slice_size);
+        }
+    }
 
     // G-11 Audit Fix: Setup label for async polling to prevent PPU thread starvation
     s_label_addr = cellGcmGetLabelAddress(LABEL_INDEX_FRAME_FENCE);
     *s_label_addr = 0;
-
-    uint32_t host_offset;
-    cellGcmMapMainMemory(host_addr, GCM_HOST_SIZE, &host_offset);
     // SYS-MED-02 Audit Fix: Check display capabilities before configuring
     // Required by Application Requirements for real hardware certification
     uint32_t active_resolution_id;
@@ -449,15 +504,13 @@ void CRS_Renderer_Init(void) {
     cellGcmSetDisplayBuffer(1, color_offset[1], color_pitch, display_width, display_height);
     cellGcmSetDisplayBuffer(2, color_offset[2], color_pitch, display_width, display_height);
 
-    // Bypassing cellGcmSetFlipMode(CELL_GCM_DISPLAY_VSYNC) implicitly caused the RSX to execute
-    // a "call 0x0" on flip because the flip command buffer target wasn't configured!
     // We must reset the flip status, enable vsync, and provide a dummy flip handler.
     cellGcmResetFlipStatus();
     cellGcmSetFlipMode(CELL_GCM_DISPLAY_VSYNC);
 
     // cellGcmSetFlipHandler sets a PPU callback that runs during the flip interrupt.
     cellGcmSetFlipHandler(dummy_flip_callback);
-    cellGcmSetVBlankHandler(dummy_flip_callback);
+    cellGcmSetVBlankHandler(vblank_handler);
     cellGcmSetGraphicsHandler(dummy_flip_callback);
     cellGcmSetQueueHandler(dummy_flip_callback);
     
@@ -526,6 +579,21 @@ void CRS_Renderer_BeginFrame(void) {
 #if DEBUG
     printf("[GCM] BeginFrame\n");
 #endif
+
+    // Track the status of the three buffers. If the RSX hasn't finished the frame index 
+    // we're wrapping around to, the CPU MUST stall to prevent overwriting queued buffers.
+    uint32_t wait_for_frame = s_frame_labels[frame_index];
+    if (wait_for_frame > 0) {
+        while (*s_label_addr < wait_for_frame) {
+            sys_timer_usleep(100); // 0.1ms micro-yield to keep OS responsive
+        }
+    }
+
+    // Use pre-computed slice geometry. Slices start at offset 0x1000 to avoid
+    // the GCM internal header region (CELL_GCM_INIT_STATE_OFFSET).
+    s_gcm_context->begin   = s_slice_addr[frame_index];
+    s_gcm_context->current = s_slice_addr[frame_index];
+    s_gcm_context->end     = (uint32_t*)((uint8_t*)s_slice_addr[frame_index] + s_slice_size);
 
     // Use current backbuffer
     setup_surface_struct(&surface, color_offset[frame_index]);
@@ -637,27 +705,39 @@ void CRS_Renderer_EndFrame(void) {
     printf("[GCM] EndFrame\n");
 #endif
 
-    // Execute direct flip without rescaling
+    // Execute direct flip without rescaling.
+    // NOTE: We do NOT use cellGcmSetWaitFlip here. That inserts an RSX-side
+    // semaphore acquire that waits for the display controller to confirm the
+    // previous flip. On frame 0, no prior flip exists, so the internal semaphore
+    // (0x40000010) is never signaled → permanent GPU deadlock.
+    // CPU-side pacing is sufficient: VBlank semaphore (60Hz lock) + label fence
+    // (prevents overwriting in-flight command buffers).
     cellGcmSetFlip(s_gcm_context, frame_index);
     
-    // Write the current frame ID to the backend label so the PPU knows the RSX completed it
+    // Write frame fence label BEFORE the jump so the RSX executes it in THIS frame's slice.
+    // Previously this was after cellGcmFlush, which placed it into the next slice's memory
+    // where the RSX couldn't see it until the next frame (one-frame fence desync).
     cellGcmSetWriteBackEndLabel(s_gcm_context, LABEL_INDEX_FRAME_FENCE, s_current_frame_id);
-    cellGcmFlush(s_gcm_context);
-
-    // Save the frame label for the buffer we just sent
     s_frame_labels[frame_index] = s_current_frame_id;
     
-    frame_index = (frame_index + 1) % BUFFER_COUNT;
+    // JUMP to the start of the NEXT slice using pre-computed RSX offsets.
+    // These offsets were resolved once at init time via cellGcmAddressToOffset,
+    // BEFORE any conflicting IO mappings could confuse the resolution.
+    uint32_t next_frame = (frame_index + 1) % BUFFER_COUNT;
+    cellGcmSetJumpCommand(s_gcm_context, s_slice_offset[next_frame]);
+    
+    // Set CPU pointer to the next slice's base BEFORE flushing.
+    // cellGcmFlush sets the hardware PUT register to this coordinate.
+    // The RSX executes the JUMP, lands at s_slice_offset[next_frame],
+    // sees GET == PUT, and idles until the next BeginFrame.
+    s_gcm_context->current = s_slice_addr[next_frame];
+    cellGcmFlush(s_gcm_context);
+    
+    frame_index = next_frame;
     s_current_frame_id++;
 
-    // Check if the RSX is finished with the *next* buffer we are about to use
-    // If the RSX hasn't finished the frame index we're wrapping around to, we must yield the PPU
-    uint32_t wait_for_frame = s_frame_labels[frame_index];
-    if (wait_for_frame > 0) {
-        while (*s_label_addr < wait_for_frame) {
-            sys_timer_usleep(100); // 0.1ms micro-yield to keep OS responsive
-        }
-    }
+    // Pace main logic tick to exactly 60Hz. If a VBlank already passed, this immediately consumes it.
+    sys_semaphore_wait(vblank_sem, 0);
 }
 
 // ---------------------------------------------------------

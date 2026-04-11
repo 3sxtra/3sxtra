@@ -578,11 +578,13 @@ void palUpdateGhostDC() {
 
     for (i = 0; i < col3rd_w.palDC.total; i++) {
         if (col3rd_w.upBits & (1 << i)) {
-            flLockPalette(NULL, col3rd_w.palDC.handle[i], &bits, 2);
-            dstAdrs = bits.ptr;
-            srcAdrs = &colPalBuffDC[i << 6];
-            palConvRowTim2CI8Clut(srcAdrs, dstAdrs, 0x40);
-            flUnlockPalette(col3rd_w.palDC.handle[i]);
+            if (col3rd_w.palDC.handle[i] != 0 &&
+                flLockPalette(NULL, col3rd_w.palDC.handle[i], &bits, 2)) {
+                dstAdrs = bits.ptr;
+                srcAdrs = &colPalBuffDC[i << 6];
+                palConvRowTim2CI8Clut(srcAdrs, dstAdrs, 0x40);
+                flUnlockPalette(col3rd_w.palDC.handle[i]);
+            }
         }
     }
 
@@ -597,11 +599,13 @@ void palUpdateGhostCP3(s32 pal, s32 nums) {
     u16* dstAdrs;
 
     for (i = pal; i < (pal + nums); i++) {
-        flLockPalette(NULL, col3rd_w.palCP3.handle[i], &bits, 2);
-        dstAdrs = bits.ptr;
-        srcAdrs = (u16*)&ColorRAM[i];
-        palConvRowTim2CI8Clut(srcAdrs, dstAdrs, 0x40);
-        flUnlockPalette(col3rd_w.palCP3.handle[i]);
+        if (col3rd_w.palCP3.handle[i] != 0 &&
+            flLockPalette(NULL, col3rd_w.palCP3.handle[i], &bits, 2)) {
+            dstAdrs = bits.ptr;
+            srcAdrs = (u16*)&ColorRAM[i];
+            palConvRowTim2CI8Clut(srcAdrs, dstAdrs, 0x40);
+            flUnlockPalette(col3rd_w.palCP3.handle[i]);
+        }
     }
 }
 

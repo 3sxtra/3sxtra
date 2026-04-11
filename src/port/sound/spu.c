@@ -431,7 +431,24 @@ void SPU_Upload(u32 dst, void* src, u32 size) {
     SDL_LockMutex(soundLock);
     TRACE_LOCK_AFTER(soundLockCtx);
 
-    memcpy(&ram[dst >> 1], src, size);
+    // Bounds-check: On real hardware, SPU RAM is isolated — overflows are harmless.
+    // In our software emulation, ram[] is a regular array in .bss, so an oversized
+    // upload would trample adjacent globals (pad data, sound pointers, etc.).
+    // The 'Head ' corruption in cellPadGetData was caused by exactly this overflow.
+    u32 dst_sample = dst >> 1;
+    u32 ram_size = sizeof(ram) / sizeof(ram[0]); // 1048576 u16 entries = 2MB
+    if (dst_sample >= ram_size) {
+        SDL_UnlockMutex(soundLock);
+        TRACE_LOCK_UNLOCK(soundLockCtx);
+        return;
+    }
+    u32 max_bytes = (ram_size - dst_sample) * sizeof(u16);
+    if (size > max_bytes) {
+        printf("[SPU] WARNING: Upload clamped! dst=0x%x size=%u max=%u\n", dst, size, max_bytes);
+        size = max_bytes;
+    }
+
+    memcpy(&ram[dst_sample], src, size);
 
     SDL_UnlockMutex(soundLock);
     TRACE_LOCK_UNLOCK(soundLockCtx);

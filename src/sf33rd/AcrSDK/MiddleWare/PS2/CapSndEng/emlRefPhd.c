@@ -15,6 +15,20 @@
 
 #include <string.h>
 
+// PHD data is embedded as raw PS2 little-endian byte arrays.
+// On big-endian platforms (PS3/PPC), multi-byte fields must be byte-swapped.
+#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
+static inline u32 PHD_LE32(u32 v) {
+    return ((v & 0xFF) << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00) | ((v >> 24) & 0xFF);
+}
+static inline u16 PHD_LE16(u16 v) {
+    return (v >> 8) | (v << 8);
+}
+#else
+#define PHD_LE32(v) (v)
+#define PHD_LE16(v) (v)
+#endif
+
 #define PHD_PAN_CENTER 64
 #define PHD_PAN_MIN (-64)
 #define PHD_PAN_MAX 63
@@ -67,17 +81,17 @@ s32 GetNumSplit(_ps2_head_chunk* pHEAD, u8 prog) {
         return -1;
     }
 
-    pPROG = (_ps2_prog_chunk*)((uintptr_t)pHEAD + (u32)pHEAD->progChunkOffset);
+    pPROG = (_ps2_prog_chunk*)((uintptr_t)pHEAD + PHD_LE32(pHEAD->progChunkOffset));
     if (IsSafeProgChunk(pPROG) != 1) {
         return -2;
     }
 
-    if (pPROG->maxProgNum < prog) {
+    if (PHD_LE32(pPROG->maxProgNum) < prog) {
         return -11;
     }
 
-    offset = pPROG->progParamOffset[prog];
-    if (offset == -1) {
+    offset = PHD_LE32(pPROG->progParamOffset[prog]);
+    if (offset == 0xFFFFFFFF) {
         return -11;
     }
 
@@ -95,9 +109,9 @@ s32 GetPhdParam(CSE_PHDPADDR* pHDPA, _ps2_head_chunk* pHEAD, u8 prog, u8 note, u
     _ps2_smpl_param* pSPRM;
     _ps2_vagi_param* pVPRM;
 
-    pPROG = (_ps2_prog_chunk*)((uintptr_t)&pHEAD->tag + (u32)pHEAD->progChunkOffset);
-    pSMPL = (_ps2_smpl_chunk*)((uintptr_t)&pHEAD->tag + (u32)pHEAD->smplChunkOffset);
-    pVAGI = (_ps2_vagi_chunk*)((uintptr_t)&pHEAD->tag + (u32)pHEAD->vagiChunkOffset);
+    pPROG = (_ps2_prog_chunk*)((uintptr_t)&pHEAD->tag + PHD_LE32(pHEAD->progChunkOffset));
+    pSMPL = (_ps2_smpl_chunk*)((uintptr_t)&pHEAD->tag + PHD_LE32(pHEAD->smplChunkOffset));
+    pVAGI = (_ps2_vagi_chunk*)((uintptr_t)&pHEAD->tag + PHD_LE32(pHEAD->vagiChunkOffset));
 
     if (IsSafeHeadChunk(pHEAD) != 1) {
         return -1;
@@ -115,10 +129,10 @@ s32 GetPhdParam(CSE_PHDPADDR* pHDPA, _ps2_head_chunk* pHEAD, u8 prog, u8 note, u
         return -4;
     }
 
-    pPPRM = (_ps2_prog_param*)((uintptr_t)pPROG + pPROG->progParamOffset[prog]);
+    pPPRM = (_ps2_prog_param*)((uintptr_t)pPROG + PHD_LE32(pPROG->progParamOffset[prog]));
     pSBLK = &pPPRM->splitBlock[index];
-    pSPRM = &pSMPL->smplParam[pSBLK->sampleIndex];
-    pVPRM = &pVAGI->vagiParam[pSPRM->vagiIndex];
+    pSPRM = &pSMPL->smplParam[PHD_LE16(pSBLK->sampleIndex)];
+    pVPRM = &pVAGI->vagiParam[PHD_LE16(pSPRM->vagiIndex)];
 
     if (!(pSBLK->lowKey > note) && !(note > pSBLK->highKey)) {
         pHDPA->pPprm = pPPRM;
@@ -167,9 +181,9 @@ s32 CalcPhdParam(CSE_PHDP* pPHDP, CSE_PHDPADDR* pHDPA, u8 note, u32 SpuTopAddr) 
     pPHDP->pitch += (note - pHDPA->pSprm->base) * CENTS_PER_SEMITONE;
     pPHDP->bendLow = pHDPA->pSblk->bendLow;
     pPHDP->bendHigh = pHDPA->pSblk->bendHigh;
-    pPHDP->adsr1 = pHDPA->pSprm->ADSR1;
-    pPHDP->adsr2 = pHDPA->pSprm->ADSR2;
-    pPHDP->s_addr = SpuTopAddr + pHDPA->pVprm->vagOffset;
-    pPHDP->freq = pHDPA->pVprm->sampleRate;
+    pPHDP->adsr1 = PHD_LE16(pHDPA->pSprm->ADSR1);
+    pPHDP->adsr2 = PHD_LE16(pHDPA->pSprm->ADSR2);
+    pPHDP->s_addr = SpuTopAddr + PHD_LE32(pHDPA->pVprm->vagOffset);
+    pPHDP->freq = PHD_LE32(pHDPA->pVprm->sampleRate);
     return 0;
 }
