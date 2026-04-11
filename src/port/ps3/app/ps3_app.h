@@ -14,6 +14,7 @@ void PS3App_Exit(void);
 
 bool PS3App_IsFrameRateUncapped(void);
 bool PS3App_IsVSyncEnabled(void);
+bool PS3App_IsSystemDrawing(void);
 uint64_t PS3App_GetTargetFrameTimeNS(void);
 
 struct CellSpurs;

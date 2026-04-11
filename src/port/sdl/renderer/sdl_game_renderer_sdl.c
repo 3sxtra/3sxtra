@@ -397,21 +397,30 @@ static SDL_Texture* bake_idx_tex(SDL_Renderer* renderer, int ti, int palette_han
     if (!surf || !pal)
         return NULL;
 
-    // Find LRU eviction slot (prefer empty slots first)
-    int evict = 0;
+    // ⚡ Warp Optimization: Evict same palette first.
+    // If a palette animates, its hash changes but its handle stays the same.
+    // Overwriting the SAME handle's slot prevents animated palettes from
+    // duplicating across all 16 slots and evicting other static palettes.
+    int evict = -1;
+    int empty_slot = -1;
+    int oldest_slot = 0;
     uint8_t worst_age = 0;
     const uint8_t clock = idx_pal_lru_clock[ti];
     for (int s = 0; s < IDX_PAL_SLOTS; s++) {
-        if (idx_pal_handle[ti][s] == 0) {
+        if (idx_pal_handle[ti][s] == palette_handle) {
             evict = s;
-            goto found;
-        } // empty
+            goto found; // Overwrite stale version of the SAME palette
+        }
+        if (idx_pal_handle[ti][s] == 0 && empty_slot == -1) {
+            empty_slot = s; // track first empty slot
+        }
         const uint8_t age = (uint8_t)(clock - idx_pal_lru[ti][s]);
-        if (age > worst_age) {
+        if (age >= worst_age) {
             worst_age = age;
-            evict = s;
+            oldest_slot = s;
         }
     }
+    evict = (empty_slot != -1) ? empty_slot : oldest_slot;
 found:;
 
     // Reuse existing SDL_Texture if present in this slot (update pixels in place)

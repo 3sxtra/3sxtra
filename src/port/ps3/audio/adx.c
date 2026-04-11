@@ -271,6 +271,7 @@ static ADXTrack* alloc_track() {
 void ADX_Init(void) {
     sys_mutex_attribute_t attr;
     sys_mutex_attribute_initialize(attr);
+    attr.attr_recursive = SYS_SYNC_RECURSIVE;
     sys_mutex_create(&adx_mutex, &attr);
 }
 

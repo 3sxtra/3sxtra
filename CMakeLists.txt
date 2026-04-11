@@ -495,7 +495,7 @@ set(CMAKE_C_STANDARD 99)
 if(PLATFORM_PS3)
     set_target_properties(3sx PROPERTIES SUFFIX ".elf")
     
-    set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES> -o <TARGET>")
+    set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES> -o <TARGET> -Wl,-Map,3sx.map")
     set(PS3_SDK_LIB_DIR "C:/usr/local/cell/target/ppu/lib")
     target_link_libraries(3sx PRIVATE
         "${PS3_SDK_LIB_DIR}/libdbgfont.a"

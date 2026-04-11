@@ -27,9 +27,14 @@
 #include <SDL3/SDL.h>
 
 #define MAGIC_TO_INT(str) ((str[0] << 0x18) | (str[1] << 0x10) | (str[2] << 0x8) | (str[3]))
+#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
+#define REVERT_U32(val) (val)
+#define REVERT_U16(val) (val)
+#else
 #define REVERT_U32(val)                                                                                                \
     (((val & 0xFF) << 0x18) | ((val & 0xFF00) << 8) | ((val >> 8) & 0xFF00) | ((val >> 0x18) & 0xFF))
 #define REVERT_U16(val) (((val >> 8) & 0xFF) | ((val & 0xFF) << 8))
+#endif
 #define REVERT_U8(val) (((val << 4) & 0xF0) | ((val >> 4) & 0xF))
 
 #define CODE_0(val) ((val & 0xF0) << 8) + ((val & 0xF) << 4)
@@ -72,7 +77,7 @@ static void ppgSetupContextFromPPG(PPGFileHeader* ppg, plContext* bits);
 /** @brief Initialise the PPG memory pool from the given region. */
 void ppg_Initialize(void* lcmAdrs, s32 lcmSize) {
     if (lcmAdrs == NULL) {
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     mmHeapInitialize(&ppg_w.mm, lcmAdrs, lcmSize, ALIGN_UP(sizeof(_MEMMAN_CELL), 16), "- for PPG -");
@@ -538,7 +543,7 @@ s32 ppgSetupCmpChunk(u8* srcAdrs, s32 num, u8* dstAdrs) {
 
     if (mltSize != ppgDecompress(koCmpr, cmpAdrs, cmpSize, dstAdrs, mltSize)) {
         flLogOut("圧縮データの解凍に失敗しました。\n"); // Failed to decompress the compressed data.
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     return 1;
@@ -563,7 +568,7 @@ s32 ppgSetupPalChunk(Palette* pch, u8* adrs, s32 size, s32 ixNum1st, s32 num, s3
     }
 
     if (pch->be) {
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     pch->be = 0;
@@ -677,7 +682,7 @@ error_handler:
     }
 
     pch->handle = NULL;
-    while (1) {}
+    fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
 }
 
 /** @brief Locate and load a pPAL palette chunk directly from pre-parsed data. */
@@ -691,7 +696,7 @@ s32 ppgSetupPalChunkDir(Palette* pch, PPLFileHeader* ppl, u8* adrs, s32 ixNum1st
     }
 
     if (pch->be) {
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     pch->be = 0;
@@ -740,7 +745,7 @@ error_handler:
 
     pch->handle = NULL;
     flLogOut("パレットハンドルの取得に失敗しました。( dir )\n"); // Failed to acquire palette handle. (dir)
-    while (1) {}
+    fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
 }
 
 /** @brief Swap endianness of pixel/palette data based on format parameters. */
@@ -791,7 +796,7 @@ s32 ppgSetupTexChunkSeqs(Texture* tch, PPGFileHeader* ppg, u8* adrs, s32 ixNum1s
     }
 
     if (tch->be) {
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     tch->be = 0;
@@ -810,7 +815,7 @@ s32 ppgSetupTexChunkSeqs(Texture* tch, PPGFileHeader* ppg, u8* adrs, s32 ixNum1s
 
     if (tch->handle == NULL) {
         flLogOut("テクスチャハンドル記憶領域が確保できませんでした。\n"); // Failed to allocate texture handle memory.
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     for (i = 0; i < ixNums; i++) {
@@ -855,7 +860,7 @@ error_handler:
     ppgFree(tch->handle);
     tch->handle = NULL;
     flLogOut("スプライト用テクスチャハンドルの取得に失敗しました。\n"); // Failed to acquire sprite texture handle.
-    while (1) {}
+    fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
 }
 
 /** @brief Write decoded dot data into a texture's source buffer at the given code offset. */
@@ -1070,7 +1075,7 @@ s32 ppgSetupTexChunk_1st(Texture* tch, u8* adrs, ssize_t size, s32 ixNum1st, s32
     }
 
     if (tch->be) {
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     tch->be = 0;
@@ -1156,7 +1161,7 @@ error_handler:
 
     tch->handle = NULL;
     tch->offset = NULL;
-    while (1) {}
+    fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
 }
 
 /** @brief Update the accumulated texture counter for deferred setup. */
@@ -1181,7 +1186,7 @@ s32 ppgSetupTexChunk_2nd(Texture* tch, s32 ixNum) {
     if (tch->textures <= tch->accnum) {
         // Handle acquisition process has been called more times than the number of data stored in the texture chunk.
         flLogOut("ハンドル取得処理がテクスチャチャンクに格納されているデータ数以上に呼ばれました。\n");
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     hnof = tch->handle + (ixNum - tch->ixNum1st);
@@ -1190,7 +1195,7 @@ s32 ppgSetupTexChunk_2nd(Texture* tch, s32 ixNum) {
     if (tch->srcAdrs == NULL) {
         // Texture chunk data has already been lost.
         flLogOut("テクスチャチャンクデータが既に失われています。\n");
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     ppg = (PPGFileHeader*)(tch->srcAdrs + tch->offset[hnof->b16[1]]);
@@ -1232,7 +1237,7 @@ s32 ppgSetupTexChunk_3rd(Texture* tch, s32 ixNum, u32 attribute) {
     if (tch->srcAdrs == NULL) {
         // Texture chunk data has already been lost.
         flLogOut("テクスチャチャンクデータが既に失われています。\n");
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     ppg = (PPGFileHeader*)(tch->srcAdrs + (tch->offset[hnof->b16[1] & PPG_TEX_OFFSET_MASK]));
@@ -1247,26 +1252,41 @@ s32 ppgSetupTexChunk_3rd(Texture* tch, s32 ixNum, u32 attribute) {
     if (mltAdrs == NULL) {
         // Failed to allocate texture data expansion area.
         flLogOut("テクスチャデータ展開領域が確保できませんでした。\n");
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     if (mltSize != ppgDecompress(koCmpr, cmpAdrs, cmpSize, mltAdrs, mltSize)) {
         // Failed to acquire sprite texture handle.
         flLogOut("テクスチャデータの解凍に失敗しました。\n");
         ppgPushDecBuff(mltAdrs);
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     unused_s5 = 0;
+    {
+        char dbg_buf[256];
+        sprintf(dbg_buf, "[PPG] ppgSetupTexChunk_3rd: mltAdrs=%p, mltSize=%d, ppg=%p, bpp=%d\n", mltAdrs, mltSize, ppg, bits.bitdepth);
+        flLogOut(dbg_buf);
+    }
     ppgChangeDataEndian(mltAdrs, mltSize, ppg->pixel & 4, ppg->formARGB == 0x8888, bits.bitdepth, unused_s5);
     bits.ptr = mltAdrs;
+    {
+        char dbg_buf[256];
+        sprintf(dbg_buf, "[PPG] Calling flCreateTextureHandle: ixNum=%d, size=%d\n", ixNum, mltSize);
+        flLogOut(dbg_buf);
+    }
     hnof->b16[0] = flCreateTextureHandle(ixNum, &bits, attribute);
+    {
+        char dbg_buf[256];
+        sprintf(dbg_buf, "[PPG] Handle returned: %d\n", hnof->b16[0]);
+        flLogOut(dbg_buf);
+    }
     ppgPushDecBuff(mltAdrs);
 
     if (hnof->b16[0] == 0) {
         // Failed to acquire texture handle.
         flLogOut("テクスチャハンドルの取得に失敗しました。\n");
-        while (1) {}
+        fatal_error("HUNG AT %s:%d", __FILE__, __LINE__);
     }
 
     return 1;

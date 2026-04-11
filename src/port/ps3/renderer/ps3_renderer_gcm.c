@@ -1,5 +1,6 @@
 #include "ps3_renderer_gcm.h"
 #include <cell/gcm.h>
+#include "port/ps3/app/ps3_app.h"
 #include <Cg/cg.h>
 #include <sys/timer.h>
 #include <sys/memory.h>
@@ -7,6 +8,7 @@
 #include <sys/spu_thread.h>
 #include <sys/spu_thread_group.h>
 #include <sys/spu_image.h>
+#include <sys/synchronization.h>
 
 
 // G-11 Audit Fix: Label-based GPU sync replaces cellGcmFinish stall
@@ -46,14 +48,18 @@ static uint32_t display_width = 0;
 static uint32_t display_height = 0;
 static uint32_t color_pitch = 0;
 static uint32_t depth_pitch = 0;
-static uint32_t color_offset[2];
+#define BUFFER_COUNT 3
+static uint32_t color_offset[BUFFER_COUNT];
 static uint32_t depth_offset;
 
 // Buffers
 static void* host_addr = NULL;
 static volatile uint32_t* s_label_addr = NULL; // Restored label for async sync
+
 // Rendering State
 static int frame_index = 0;
+static uint32_t s_frame_labels[BUFFER_COUNT] = {0, 0, 0};
+static uint32_t s_current_frame_id = 1;
 static CellGcmSurface surface;
 static CellGcmContextData* s_gcm_context = NULL;
 static CGprogram cg_vp;
@@ -66,12 +72,17 @@ static CGparameter cg_fp_is_palettized;
 static CGparameter cg_fp_tex_dimensions;
 
 // Texture State Map
-static void* tex_pixels[CELL_GCM_MAX_TEXTURES] = {0};
-static CellGcmTexture rsx_textures[CELL_GCM_MAX_TEXTURES];
-static uint32_t tex_offsets[CELL_GCM_MAX_TEXTURES];
-static int tex_w[CELL_GCM_MAX_TEXTURES] = {0};
-static int tex_h[CELL_GCM_MAX_TEXTURES] = {0};
-static float tex_pal_mode[CELL_GCM_MAX_TEXTURES] = {0};
+typedef struct {
+    void* pixels;
+    uint32_t offset;
+    int w;
+    int h;
+    float pal_mode;
+    CellGcmTexture rsx_texture;
+    uint32_t pad[3];
+} TextureState;
+
+static TextureState system_textures[CELL_GCM_MAX_TEXTURES];
 
 // Palette State Map
 static CellGcmTexture rsx_palettes[CELL_GCM_MAX_PALETTES + 1];
@@ -118,11 +129,12 @@ static void* local_memory_alloc_init(const uint32_t size, const uint32_t alignme
     
     void* ptr = (uint8_t*)config.localAddress + s_local_mem_allocated;
     s_local_mem_allocated += aligned_size;
+    memset(ptr, 0, aligned_size);
     return ptr;
 }
 
 // ---------------------------------------------------------
-// Texture Memory Pool (First-Fit Allocator)
+// Texture Memory Pool (First-Fit O(1) Allocator)
 // ---------------------------------------------------------
 #define POOL_MAX_BLOCKS 2048
 
@@ -130,39 +142,62 @@ typedef struct {
     uint32_t offset;
     uint32_t size;
     bool is_free;
+    int prev_idx;
+    int next_idx;
 } TexMemBlock;
 
 static TexMemBlock tex_pool[POOL_MAX_BLOCKS];
-static int tex_pool_count = 0;
+static int free_list_head = -1;
+static int mem_list_head = -1;
 static void* tex_pool_base = NULL;
 
 static void tex_pool_init(void* base, uint32_t size) {
     tex_pool_base = base;
-    tex_pool[0].offset = 0;
-    tex_pool[0].size = size;
-    tex_pool[0].is_free = true;
-    tex_pool_count = 1;
+    for (int i = 0; i < POOL_MAX_BLOCKS; i++) {
+        tex_pool[i].prev_idx = -1;
+        tex_pool[i].next_idx = (i < POOL_MAX_BLOCKS - 1) ? i + 1 : -1;
+    }
+    free_list_head = 0;
+
+    int head = free_list_head;
+    free_list_head = tex_pool[head].next_idx;
+
+    tex_pool[head].offset = 0;
+    tex_pool[head].size = size;
+    tex_pool[head].is_free = true;
+    tex_pool[head].prev_idx = -1;
+    tex_pool[head].next_idx = -1;
+    
+    mem_list_head = head;
 }
 
 static void* tex_pool_alloc(uint32_t size) {
     uint32_t align_size = (size + 127) & ~127; // 128 byte align
-    for (int i = 0; i < tex_pool_count; i++) {
-        if (tex_pool[i].is_free && tex_pool[i].size >= align_size) {
-            // Split memory block if there's sufficient room
-            if (tex_pool[i].size > align_size && tex_pool_count < POOL_MAX_BLOCKS) {
-                // Shift array right
-                for (int j = tex_pool_count; j > i + 1; j--) {
-                    tex_pool[j] = tex_pool[j - 1];
+    int curr = mem_list_head;
+
+    while (curr != -1) {
+        if (tex_pool[curr].is_free && tex_pool[curr].size >= align_size) {
+            if (tex_pool[curr].size > align_size && free_list_head != -1) {
+                int new_node = free_list_head;
+                free_list_head = tex_pool[new_node].next_idx;
+
+                tex_pool[new_node].offset = tex_pool[curr].offset + align_size;
+                tex_pool[new_node].size = tex_pool[curr].size - align_size;
+                tex_pool[new_node].is_free = true;
+                
+                tex_pool[new_node].prev_idx = curr;
+                tex_pool[new_node].next_idx = tex_pool[curr].next_idx;
+                
+                if (tex_pool[curr].next_idx != -1) {
+                    tex_pool[tex_pool[curr].next_idx].prev_idx = new_node;
                 }
-                tex_pool[i+1].offset = tex_pool[i].offset + align_size;
-                tex_pool[i+1].size = tex_pool[i].size - align_size;
-                tex_pool[i+1].is_free = true;
-                tex_pool_count++;
-                tex_pool[i].size = align_size;
+                tex_pool[curr].next_idx = new_node;
+                tex_pool[curr].size = align_size;
             }
-            tex_pool[i].is_free = false;
-            return (uint8_t*)tex_pool_base + tex_pool[i].offset;
+            tex_pool[curr].is_free = false;
+            return (uint8_t*)tex_pool_base + tex_pool[curr].offset;
         }
+        curr = tex_pool[curr].next_idx;
     }
     printf("[GCM] ERROR: Texture Pool OOM! Failed to allocate %u bytes.\n", align_size);
     return NULL;
@@ -173,27 +208,40 @@ static void tex_pool_free(void* ptr) {
     // NEW-10: Use uintptr_t to avoid truncation on 64-bit address space
     uintptr_t offset_wide = (uintptr_t)((uint8_t*)ptr - (uint8_t*)tex_pool_base);
     uint32_t offset = (uint32_t)offset_wide; // Safe: offsets within 128MB pool always fit
-    for (int i = 0; i < tex_pool_count; i++) {
-        if (tex_pool[i].offset == offset && !tex_pool[i].is_free) {
-            tex_pool[i].is_free = true;
+    
+    int curr = mem_list_head;
+    while (curr != -1) {
+        if (tex_pool[curr].offset == offset && !tex_pool[curr].is_free) {
+            tex_pool[curr].is_free = true;
+            
             // Merge with next block if free
-            if (i + 1 < tex_pool_count && tex_pool[i+1].is_free) {
-                tex_pool[i].size += tex_pool[i+1].size;
-                for (int j = i + 1; j < tex_pool_count - 1; j++) {
-                    tex_pool[j] = tex_pool[j+1];
+            int nxt = tex_pool[curr].next_idx;
+            if (nxt != -1 && tex_pool[nxt].is_free) {
+                tex_pool[curr].size += tex_pool[nxt].size;
+                tex_pool[curr].next_idx = tex_pool[nxt].next_idx;
+                if (tex_pool[nxt].next_idx != -1) {
+                    tex_pool[tex_pool[nxt].next_idx].prev_idx = curr;
                 }
-                tex_pool_count--;
+                tex_pool[nxt].next_idx = free_list_head;
+                tex_pool[nxt].prev_idx = -1;
+                free_list_head = nxt;
             }
+            
             // Merge with previous block if free
-            if (i > 0 && tex_pool[i-1].is_free) {
-                tex_pool[i-1].size += tex_pool[i].size;
-                for (int j = i; j < tex_pool_count - 1; j++) {
-                    tex_pool[j] = tex_pool[j+1];
+            int prv = tex_pool[curr].prev_idx;
+            if (prv != -1 && tex_pool[prv].is_free) {
+                tex_pool[prv].size += tex_pool[curr].size;
+                tex_pool[prv].next_idx = tex_pool[curr].next_idx;
+                if (tex_pool[curr].next_idx != -1) {
+                    tex_pool[tex_pool[curr].next_idx].prev_idx = prv;
                 }
-                tex_pool_count--;
+                tex_pool[curr].next_idx = free_list_head;
+                tex_pool[curr].prev_idx = -1;
+                free_list_head = curr;
             }
             return;
         }
+        curr = tex_pool[curr].next_idx;
     }
 }
 
@@ -308,6 +356,10 @@ static void CRS_Renderer_ResetState(void) {
 // ---------------------------------------------------------
 // Init
 // ---------------------------------------------------------
+static void dummy_flip_callback(const uint32_t head) {
+    (void)head; // Dummy callback for PPU
+}
+
 void CRS_Renderer_Init(void) {
     static int initialized = 0;
     if (initialized) return;
@@ -329,6 +381,7 @@ void CRS_Renderer_Init(void) {
     int init_ret = cellGcmInit(GCM_CB_SIZE, GCM_HOST_SIZE, host_addr);
     s_gcm_context = gCellGcmCurrentContext;
     printf("[GCM] cellGcmInit returned: %d, Context handle: %p\n", init_ret, (void*)s_gcm_context);
+
     // Flip mode and handler are managed by cellResc. DO NOT SET THEM HERE!
 
 
@@ -377,11 +430,13 @@ void CRS_Renderer_Init(void) {
     
     void* color_buf_0 = local_memory_alloc_init(color_pitch * display_height, 0x100000);
     void* color_buf_1 = local_memory_alloc_init(color_pitch * display_height, 0x100000);
+    void* color_buf_2 = local_memory_alloc_init(color_pitch * display_height, 0x100000);
     // G-LOW-02: Depth buffer only needs 64KB alignment per SDK
     void* depth_buf = local_memory_alloc_init(depth_pitch * display_height, 0x10000);
 
     cellGcmAddressToOffset(color_buf_0, &color_offset[0]);
     cellGcmAddressToOffset(color_buf_1, &color_offset[1]);
+    cellGcmAddressToOffset(color_buf_2, &color_offset[2]);
     cellGcmAddressToOffset(depth_buf, &depth_offset);
     
     // We are deliberately skipping cellResc. The PS3's cellResc library performs 
@@ -392,13 +447,20 @@ void CRS_Renderer_Init(void) {
 
     cellGcmSetDisplayBuffer(0, color_offset[0], color_pitch, display_width, display_height);
     cellGcmSetDisplayBuffer(1, color_offset[1], color_pitch, display_width, display_height);
+    cellGcmSetDisplayBuffer(2, color_offset[2], color_pitch, display_width, display_height);
 
-    // Bypassing cellGcmSetFlipMode(CELL_GCM_DISPLAY_VSYNC) explicitly because it injects 
-    // an NV406E RSX semaphore wait on every flip. Without a complex sys_event_queue manual 
-    // VBlank handler in the OS to wake the semaphore, the RSX will remain deadlocked.
+    // Bypassing cellGcmSetFlipMode(CELL_GCM_DISPLAY_VSYNC) implicitly caused the RSX to execute
+    // a "call 0x0" on flip because the flip command buffer target wasn't configured!
+    // We must reset the flip status, enable vsync, and provide a dummy flip handler.
+    cellGcmResetFlipStatus();
+    cellGcmSetFlipMode(CELL_GCM_DISPLAY_VSYNC);
 
-
-
+    // cellGcmSetFlipHandler sets a PPU callback that runs during the flip interrupt.
+    cellGcmSetFlipHandler(dummy_flip_callback);
+    cellGcmSetVBlankHandler(dummy_flip_callback);
+    cellGcmSetGraphicsHandler(dummy_flip_callback);
+    cellGcmSetQueueHandler(dummy_flip_callback);
+    
     // 3. Setup initial surface
     setup_surface_struct(&surface, color_offset[0]);
     cellGcmSetSurface(s_gcm_context, &surface);
@@ -479,8 +541,10 @@ void CRS_Renderer_BeginFrame(void) {
     const uint8_t ca = flPs2State.FrameClearColor >> 24;
     
     // Temporarily enable depth writes for clear if needed, though we only clear color here
-    cellGcmSetClearColor(s_gcm_context, (ca << 24) | (cr << 16) | (cg << 8) | cb);
-    cellGcmSetClearSurface(s_gcm_context, CELL_GCM_CLEAR_R | CELL_GCM_CLEAR_G | CELL_GCM_CLEAR_B | CELL_GCM_CLEAR_A);
+    if (!PS3App_IsSystemDrawing()) {
+        cellGcmSetClearColor(s_gcm_context, (ca << 24) | (cr << 16) | (cg << 8) | cb);
+            cellGcmSetClearSurface(s_gcm_context, CELL_GCM_CLEAR_R | CELL_GCM_CLEAR_G | CELL_GCM_CLEAR_B | CELL_GCM_CLEAR_A);
+    }
     
     // G-10 Audit Fix: Invalidate texture cache once per frame, not per-bind
     cellGcmSetInvalidateTextureCache(s_gcm_context, CELL_GCM_INVALIDATE_TEXTURE);
@@ -528,10 +592,11 @@ void CRS_Renderer_RenderFrame(void) {
             // Setup texture state
             int tex_id = LO_16_BITS(current_texture_handle) - 1;
             int pal_id = HI_16_BITS(current_texture_handle) - 1;
-            bool textured = (tex_id >= 0 && tex_id < CELL_GCM_MAX_TEXTURES && tex_pixels[tex_id]);
+            TextureState* tstate = (tex_id >= 0 && tex_id < CELL_GCM_MAX_TEXTURES) ? &system_textures[tex_id] : NULL;
+            bool textured = (tstate != NULL && tstate->pixels != NULL);
             
             if (textured) {
-                cellGcmSetTexture(s_gcm_context, 0, &rsx_textures[tex_id]);
+                cellGcmSetTexture(s_gcm_context, 0, &tstate->rsx_texture);
                 cellGcmSetTextureControl(s_gcm_context, 0, CELL_GCM_TRUE, 0, 0, 0);
                 cellGcmSetTextureFilter(s_gcm_context, 0, 0, CELL_GCM_TEXTURE_NEAREST, CELL_GCM_TEXTURE_NEAREST, CELL_GCM_TEXTURE_CONVOLUTION_MIN);
                 cellGcmSetTextureAddress(s_gcm_context, 0, CELL_GCM_TEXTURE_CLAMP_TO_EDGE, CELL_GCM_TEXTURE_CLAMP_TO_EDGE, CELL_GCM_TEXTURE_CLAMP_TO_EDGE, CELL_GCM_TEXTURE_UNSIGNED_REMAP_NORMAL, CELL_GCM_TEXTURE_ZFUNC_LESS, 0);
@@ -542,10 +607,10 @@ void CRS_Renderer_RenderFrame(void) {
                     cellGcmSetTextureFilter(s_gcm_context, 1, 0, CELL_GCM_TEXTURE_NEAREST, CELL_GCM_TEXTURE_NEAREST, CELL_GCM_TEXTURE_CONVOLUTION_MIN);
                     cellGcmSetTextureAddress(s_gcm_context, 1, CELL_GCM_TEXTURE_CLAMP_TO_EDGE, CELL_GCM_TEXTURE_CLAMP_TO_EDGE, CELL_GCM_TEXTURE_CLAMP_TO_EDGE, CELL_GCM_TEXTURE_UNSIGNED_REMAP_NORMAL, CELL_GCM_TEXTURE_ZFUNC_LESS, 0);
                     
-                    float is_pal[4] = {tex_pal_mode[tex_id], 0.0f, 0.0f, 0.0f};
+                    float is_pal[4] = {tstate->pal_mode, 0.0f, 0.0f, 0.0f};
                     cellGcmSetFragmentProgramParameter(s_gcm_context, cg_fp, cg_fp_is_palettized, is_pal, fp_offset);
                     
-                    float t_dim[4] = {(float)tex_w[tex_id], (float)tex_h[tex_id], 0.0f, 0.0f};
+                    float t_dim[4] = {(float)tstate->w, (float)tstate->h, 0.0f, 0.0f};
                     cellGcmSetFragmentProgramParameter(s_gcm_context, cg_fp, cg_fp_tex_dimensions, t_dim, fp_offset);
                 } else {
                     cellGcmSetTextureControl(s_gcm_context, 1, CELL_GCM_FALSE, 0, 0, 0);
@@ -571,22 +636,28 @@ void CRS_Renderer_EndFrame(void) {
 #if DEBUG
     printf("[GCM] EndFrame\n");
 #endif
-    
-    // cellGcmSetWaitFlip is strictly prohibited here - it deadlocks the FIRST frame!
 
     // Execute direct flip without rescaling
     cellGcmSetFlip(s_gcm_context, frame_index);
-    static uint32_t finish_ref = 1;
-    cellGcmSetWriteBackEndLabel(s_gcm_context, LABEL_INDEX_FRAME_FENCE, finish_ref);
     
+    // Write the current frame ID to the backend label so the PPU knows the RSX completed it
+    cellGcmSetWriteBackEndLabel(s_gcm_context, LABEL_INDEX_FRAME_FENCE, s_current_frame_id);
     cellGcmFlush(s_gcm_context);
 
-    while (*s_label_addr != finish_ref) {
-        sys_timer_usleep(250);
-    }
-    finish_ref++;
+    // Save the frame label for the buffer we just sent
+    s_frame_labels[frame_index] = s_current_frame_id;
+    
+    frame_index = (frame_index + 1) % BUFFER_COUNT;
+    s_current_frame_id++;
 
-    frame_index = (frame_index + 1) % 2;
+    // Check if the RSX is finished with the *next* buffer we are about to use
+    // If the RSX hasn't finished the frame index we're wrapping around to, we must yield the PPU
+    uint32_t wait_for_frame = s_frame_labels[frame_index];
+    if (wait_for_frame > 0) {
+        while (*s_label_addr < wait_for_frame) {
+            sys_timer_usleep(100); // 0.1ms micro-yield to keep OS responsive
+        }
+    }
 }
 
 // ---------------------------------------------------------
@@ -629,9 +700,9 @@ void CRS_Renderer_CreateTexture(unsigned int th) { }
 void CRS_Renderer_DestroyTexture(unsigned int texture_handle) { 
     if (texture_handle < 1 || texture_handle > FL_TEXTURE_MAX) return;
     int tex_idx = texture_handle - 1;
-    if (tex_pixels[tex_idx]) {
-        tex_pool_free(tex_pixels[tex_idx]);
-        tex_pixels[tex_idx] = NULL;
+    if (system_textures[tex_idx].pixels) {
+        tex_pool_free(system_textures[tex_idx].pixels);
+        system_textures[tex_idx].pixels = NULL;
     }
 }
 
@@ -744,7 +815,9 @@ void CRS_Renderer_SetTexture(unsigned int th) {
     int pixels = fl_texture->width * fl_texture->height;
     if (pixels == 0) return;
 
-    if (!tex_pixels[tex_idx]) {
+    TextureState* tstate = &system_textures[tex_idx];
+
+    if (!tstate->pixels) {
         bool is_color = (fl_texture->format == SCE_GS_PSMCT16);
         uint32_t bpp = is_color ? 4 : 1;
         uint32_t raw_data_width = (fl_texture->format == SCE_GS_PSMT4) ? (fl_texture->width / 2) : fl_texture->width;
@@ -752,13 +825,13 @@ void CRS_Renderer_SetTexture(unsigned int th) {
         uint32_t aligned_pitch = (raw_pitch + 63) & ~63;
         
         // Allocate space in local memory via formal allocator
-        tex_pixels[tex_idx] = tex_pool_alloc(aligned_pitch * fl_texture->height);
+        tstate->pixels = tex_pool_alloc(aligned_pitch * fl_texture->height);
         
-        if (!tex_pixels[tex_idx]) return; // OOM safety
+        if (!tstate->pixels) return; // OOM safety
 
-        cellGcmAddressToOffset(tex_pixels[tex_idx], &tex_offsets[tex_idx]);
+        cellGcmAddressToOffset(tstate->pixels, &tstate->offset);
 
-        CellGcmTexture* tex = &rsx_textures[tex_idx];
+        CellGcmTexture* tex = &tstate->rsx_texture;
         if (is_color) {
             tex->format = CELL_GCM_TEXTURE_A8R8G8B8 | CELL_GCM_TEXTURE_LN | CELL_GCM_TEXTURE_NR;
             tex->remap = CELL_GCM_TEXTURE_REMAP_ORDER_XYXY << 16 |
@@ -793,15 +866,15 @@ void CRS_Renderer_SetTexture(unsigned int th) {
         tex->height = fl_texture->height;
         tex->depth = 1;
         tex->location = CELL_GCM_LOCATION_LOCAL;
-        tex->offset = tex_offsets[tex_idx];
-        tex_w[tex_idx] = fl_texture->width;
-        tex_h[tex_idx] = fl_texture->height;
-        if (fl_texture->format == SCE_GS_PSMT4) tex_pal_mode[tex_idx] = 2.0f;
-        else if (fl_texture->format == SCE_GS_PSMT8) tex_pal_mode[tex_idx] = 1.0f;
-        else tex_pal_mode[tex_idx] = 0.0f;
+        tex->offset = tstate->offset;
+        tstate->w = fl_texture->width;
+        tstate->h = fl_texture->height;
+        if (fl_texture->format == SCE_GS_PSMT4) tstate->pal_mode = 2.0f;
+        else if (fl_texture->format == SCE_GS_PSMT8) tstate->pal_mode = 1.0f;
+        else tstate->pal_mode = 0.0f;
     }
 
-    uint8_t* conv = (uint8_t*)tex_pixels[tex_idx];
+    uint8_t* conv = (uint8_t*)tstate->pixels;
     
     // Decoding
     uint32_t raw_data_width = (fl_texture->format == SCE_GS_PSMT4) ? (fl_texture->width / 2) : fl_texture->width;

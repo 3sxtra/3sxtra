@@ -37,6 +37,7 @@
 #include "port/task_api.h"                         /* Task_IsActive */
 
 /* RmlUi Phase 3 */
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/sdl/rmlui/rmlui_mode_menu.h"      /* rmlui_mode_menu_show/hide */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_mode */
 

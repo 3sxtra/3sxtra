@@ -194,9 +194,15 @@ bool PS3App_PollEvents(void) {
     return s_is_running;
 }
 
+bool PS3App_IsSystemDrawing(void) {
+    return s_system_drawing;
+}
+
 void PS3App_BeginFrame(void) {
     // NEW-4: Skip framebuffer writes during system overlay drawing
-    if (s_system_drawing) return;
+    // We MUST call this every frame to reset the render task counters,
+    // even if s_system_drawing is true, otherwise the vertex buffer will overflow
+    // as the game engine continues to push tasks!
     /* Reset render state for the new frame */
     CRS_Renderer_BeginFrame();
 }

@@ -77,7 +77,7 @@ typedef struct ReadRequest {
     AFSReadState state;
 } ReadRequest;
 
-static AFS afs = { 0 };
+static AFS afs = { .file_path = NULL, .disk_fd = -1, .entry_count = 0, .entries = NULL };
 static ReadRequest requests[AFS_MAX_READ_REQUESTS] = { { 0 } };
 static sys_mutex_t read_mutex;
 static int mutex_initialized = 0;
@@ -197,6 +197,7 @@ static bool init_afs(const char* file_path) {
         free(afs.entries);
         afs.entries = NULL;
     }
+    afs.entry_count = 0;
 
     char full_path[1024];
     if (file_path[0] != '/') {
@@ -281,6 +282,7 @@ static bool init_afs(const char* file_path) {
     afs.disk_fd = fd;
     sys_mutex_attribute_t mutex_attr;
     sys_mutex_attribute_initialize(mutex_attr);
+    mutex_attr.attr_recursive = SYS_SYNC_RECURSIVE;
     sys_mutex_create(&read_mutex, &mutex_attr);
     mutex_initialized = 1;
 
@@ -290,6 +292,7 @@ static bool init_afs(const char* file_path) {
         audio_disk_fd = audio_fd;
         sys_mutex_attribute_t audio_mutex_attr;
         sys_mutex_attribute_initialize(audio_mutex_attr);
+        audio_mutex_attr.attr_recursive = SYS_SYNC_RECURSIVE;
         sys_mutex_create(&audio_read_mutex, &audio_mutex_attr);
         audio_mutex_initialized = 1;
     } else {
@@ -339,6 +342,7 @@ void AFS_Finish(void) {
     free(afs.file_path);
     free(afs.entries);
     memset(&afs, 0, sizeof(afs));
+    afs.disk_fd = -1;
     memset(requests, 0, sizeof(requests));
 }
 

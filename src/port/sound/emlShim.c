@@ -228,6 +228,11 @@ void emlShimInit() {
 
     SDL_UnlockMutex(soundLock);
     TRACE_LOCK_UNLOCK(soundLockCtx);
+
+#ifdef __CELLOS_LV2__
+    extern void ps3_audio_signal_ready(void);
+    ps3_audio_signal_ready();
+#endif
 }
 
 static int gcVoices() {

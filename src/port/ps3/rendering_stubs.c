@@ -48,9 +48,11 @@ const unsigned char* SDL_GetKeyboardState(int* a) { if(a) *a = 0; return 0; }
 void SDL_ShowOpenFolderDialog(void* a, void* b, void* c, void* d, void* e) {}
 
 // Compression stubs
-void zlib_Decompress(void* a, void* b, unsigned int c, unsigned int d) {}
+#include "sf33rd/Source/Compress/zlibApp.h"
+#include <sys/types.h>
+ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) { return dstSize; }
 void zlib_InitSpurs(void) {}
-void zlib_Initialize(void) {}
+void zlib_Initialize(void* srcBuff, s32 srcSize) {}
 
 // SPU/Testing/MenuBridge stubs
 void MenuBridge_Init(void) {}
