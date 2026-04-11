@@ -12,7 +12,7 @@
 
 #include <SDL3/SDL.h>
 
-#ifndef PLATFORM_RPI4
+#if !defined(PLATFORM_RPI4) && !defined(PLATFORM_PS3)
 typedef enum FlowState { INIT, DIALOG_OPENED, COPY_ERROR, COPY_SUCCESS } ResourceCopyingFlowState;
 
 static ResourceCopyingFlowState flow_state = INIT;
@@ -20,11 +20,20 @@ static ResourceCopyingFlowState flow_state = INIT;
 
 /** @brief Check whether a file exists at the given path. */
 static bool file_exists(const char* path) {
+#if defined(PLATFORM_PS3)
+    FILE* f = fopen(path, "rb");
+    if (f) {
+        fclose(f);
+        return true;
+    }
+    return false;
+#else
     SDL_PathInfo path_info;
     if (!SDL_GetPathInfo(path, &path_info)) {
         return false;
     }
     return path_info.type == SDL_PATHTYPE_FILE;
+#endif
 }
 
 /** @brief Check if a named file exists in the resources directory. */
@@ -36,7 +45,7 @@ static bool check_if_file_present(const char* filename) {
 }
 
 /** @brief Ensure the resources directory exists (create if missing). */
-#ifndef PLATFORM_RPI4
+#if !defined(PLATFORM_RPI4) && !defined(PLATFORM_PS3)
 static void create_resources_directory() {
     char* path = Resources_GetPath(NULL);
     SDL_CreateDirectory(path);
@@ -159,11 +168,11 @@ bool Resources_CheckIfPresent() {
 
 /** @brief Drive the resource-copying state machine (dialog → copy → done). */
 bool Resources_RunResourceCopyingFlow() {
-#if defined(PLATFORM_RPI4)
-    /* Batocera / headless Linux has no desktop dialog backend.
+#if defined(PLATFORM_RPI4) || defined(PLATFORM_PS3)
+    /* Batocera / headless Linux / PS3 has no desktop dialog backend.
        Log a clear error instead of spinning forever or crashing. */
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Resources not found. On RPi4/Batocera, place SF33RD.AFS in the rom/ folder "
+                 "Resources not found. On RPi4/Batocera/PS3, place SF33RD.AFS in the rom/ folder "
                  "next to the executable (no file-picker available).");
     return false;
 #else

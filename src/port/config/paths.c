@@ -58,8 +58,13 @@ const char* Paths_GetPrefPath() {
     }
 
     /* Standard mode: AppData */
+#ifdef PLATFORM_PS3
+    pref_path = "/dev_hdd0/game/3SX00001/USRDIR/";
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Standard mode (PS3): using %s\n", pref_path);
+#else
     pref_path = SDL_GetPrefPath("CrowdedStreet", "3SX");
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Standard mode: using %s\n", pref_path);
+#endif
     return pref_path;
 }
 
@@ -142,6 +147,11 @@ const char* Paths_GetBasePath() {
             /* On Android, assets must be accessed via relative paths to
              * utilize the AssetManager. Keep base path empty. */
             s_base_path[0] = '\0';
+#elif defined(PLATFORM_PS3)
+            /* Force PS3 base path to the standard app installation directory.
+             * This prevents RPCS3 from attempting to resolve relative to /app_home/
+             * when booting an ELF directly, ensuring reliable asset locators. */
+            SDL_strlcpy(s_base_path, "/dev_hdd0/game/3SX00001/USRDIR/", sizeof(s_base_path));
 #else
             const char* sdl_base = SDL_GetBasePath();
             if (sdl_base) {

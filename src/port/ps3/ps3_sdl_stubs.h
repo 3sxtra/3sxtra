@@ -307,9 +307,37 @@ static inline size_t ps3_strlcpy(char* dst, const char* src, size_t n) {
 #define SDL_strtok_r strtok_r
 #define SDL_snprintf snprintf
 #define SDL_vsnprintf vsnprintf
-/* STUB-MED-01 Audit Fix: Surface accidental usage instead of silent NULL crash */
-#define SDL_asprintf(p, f, ...) (fatal_error("SDL_asprintf not implemented on PS3"), 0)
-#define SDL_vasprintf(p, f, a) (fatal_error("SDL_vasprintf not implemented on PS3"), 0)
+/* STUB-MED-01 Audit Fix: Implement asprintf dynamically */
+static inline int ps3_vasprintf(char **strp, const char *fmt, va_list ap) {
+    va_list ap2;
+    va_copy(ap2, ap);
+    int size = vsnprintf(NULL, 0, fmt, ap2);
+    va_end(ap2);
+    if (size < 0) {
+        *strp = NULL;
+        return -1;
+    }
+    *strp = (char *)malloc(size + 1);
+    if (!*strp) return -1;
+    int ret = vsnprintf(*strp, size + 1, fmt, ap);
+    if (ret < 0) {
+        free(*strp);
+        *strp = NULL;
+        return -1;
+    }
+    return ret;
+}
+
+static inline int ps3_asprintf(char **strp, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = ps3_vasprintf(strp, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+#define SDL_asprintf ps3_asprintf
+#define SDL_vasprintf ps3_vasprintf
 #define SDL_free(p) free(p)
 #define SDL_malloc(s) malloc(s)
 #define SDL_calloc(n, s) calloc(n, s)

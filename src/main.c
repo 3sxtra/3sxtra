@@ -168,6 +168,7 @@ static void afs_init() {
     char* file_path = Resources_GetPath("SF33RD.AFS");
 
     SDL_PathInfo info;
+    memset(&info, 0, sizeof(info));
     if (SDL_GetPathInfo(file_path, &info) && info.type == SDL_PATHTYPE_FILE) {
         AFS_Init(file_path);
         SDL_free(file_path);
@@ -737,7 +738,7 @@ void cpReadyTask(TaskID num, void* func_adrs) {
 
     memset(task_ptr, 0, sizeof(struct _TASK));
 
-    task_ptr->func_adrs = func_adrs;
+    task_ptr->func_adrs = (void (*)())func_adrs;
     task_ptr->condition = 2;
 }
 
