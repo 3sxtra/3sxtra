@@ -149,8 +149,8 @@ typedef int (SDLCALL *SDL_ThreadFunction)(void* data);
 extern void fatal_error(const char* fmt, ...);
 /* STUB-MED-01 Audit Fix: Surface accidental usage instead of silent NULL crash */
 #define SDL_CreateThread(f, n, d) (fatal_error("SDL_CreateThread not implemented on PS3"), (SDL_Thread*)NULL)
-#define SDL_DetachThread(t) ((void)0)
-#define SDL_WaitThread(t, s) ((void)0)
+#define SDL_DetachThread(t) fatal_error("SDL_DetachThread not implemented on PS3")
+#define SDL_WaitThread(t, s) fatal_error("SDL_WaitThread not implemented on PS3")
 
 /* Video/Window Stubs */
 typedef void* SDL_Window;

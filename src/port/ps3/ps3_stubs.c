@@ -68,6 +68,14 @@ void SDLGameRenderer_DrawSprite2(const Sprite2* sprite2) {
     CRS_Renderer_DrawSprite2(sprite2);
 }
 
+void SDLGameRenderer_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count) {
+    for (int i = 0; i < count; i++) {
+        if (active_layers[chips[i].id]) {
+            CRS_Renderer_DrawSprite2(&chips[i]);
+        }
+    }
+}
+
 /* ========================================================================= */
 /*  SDLMessageRenderer → GCM routing (Finding #3: was fully stubbed)          */
 /* ========================================================================= */
@@ -157,7 +165,10 @@ void SDLMessageRenderer_DrawTexture(int x0, int y0, int x1, int y1,
     spr.t[2].s = fu1; spr.t[2].t = fv1;
     spr.t[3].s = fu0; spr.t[3].t = fv1;
 
-    // TODO: bind msg_rsx_texture to TEXUNIT0 for this draw
+    // Bind msg_rsx_texture to TEXUNIT0 for this draw
+    extern CellGcmContextData* gCellGcmCurrentContext;
+    cellGcmSetTexture(gCellGcmCurrentContext, 0, &msg_rsx_texture);
+    
     // For now, route through CRS_Renderer_DrawTexturedQuad which uses current_th
     CRS_Renderer_DrawTexturedQuad(&spr, color);
 }

@@ -36,7 +36,7 @@ void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float w, float h
 // Structural / Engine / Window stubs for PS3 port
 int Renderer_LZ77Enqueue(const unsigned char* a, unsigned int b, unsigned int c, int d, int e, unsigned int f, unsigned int g) { return 0; }
 void* LoadFullSpriteOverride(unsigned char a, unsigned short b, unsigned char c) { return 0; }
-void SDLGameRenderer_FlushSprite2Batch(void) {}
+
 void LagtestRenderer_Render(void) {}
 
 // Exposed by ps3_renderer_gcm.c

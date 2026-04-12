@@ -61,13 +61,7 @@ static uint32_t depth_offset;
 
 // Buffers
 static void* host_addr = NULL;
-static void* s_cb_usable_base = NULL; // First usable byte after GCM's 4KB internal header (offset 0x1000)
 static volatile uint32_t* s_label_addr = NULL; // Restored label for async sync
-
-// Pre-computed slice geometry (calculated once at init, used every frame)
-static uint32_t s_slice_size = 0;           // Bytes per slice
-static void*    s_slice_addr[BUFFER_COUNT]; // CPU address of each slice start
-static uint32_t s_slice_offset[BUFFER_COUNT]; // RSX IO offset of each slice start
 static sys_semaphore_t vblank_sem;
 static sys_mutex_t tex_pool_mutex;
 
@@ -452,11 +446,13 @@ void CRS_Renderer_Init(void) {
     printf("[GCM] Initializing libgcm...\n");
 
     // 1. Initialize GCM
-    // Command buffer must be large enough that the FIFO ring buffer's internal
-    // call/return mechanism never wraps to a stale target (0x0 -> Dead FIFO).
-    // 4MB CB + 8MB host memory gives generous headroom.
-    #define GCM_CB_SIZE   (4 * 1024 * 1024)
-    #define GCM_HOST_SIZE (8 * 1024 * 1024)
+    // The PS3 command buffer is an infinite, continuous FIFO stream managed by
+    // libgcm internally. We allocate a ring buffer via cellGcmInit and NEVER
+    // manually reset context->current/begin/end. When the buffer nears capacity,
+    // libgcm's inline macros automatically inject a JUMP to wrap the GPU back
+    // to context->begin without breaking the PUT/GET relationship.
+    #define GCM_CB_SIZE   (1 * 1024 * 1024)
+    #define GCM_HOST_SIZE (2 * 1024 * 1024)
     host_addr = memalign(1024 * 1024, GCM_HOST_SIZE);
     
     // Clear the memory to prevent emulator RSX parsers from interpreting garbage as commands (e.g. call 0x0)
@@ -464,32 +460,8 @@ void CRS_Renderer_Init(void) {
     
     int init_ret = cellGcmInit(GCM_CB_SIZE, GCM_HOST_SIZE, host_addr);
     s_gcm_context = gCellGcmCurrentContext;
-    printf("[GCM] cellGcmInit returned: %d, Context handle: %p\n", init_ret, (void*)s_gcm_context);
-
-    // CRITICAL: cellGcmInit reserves the first CELL_GCM_INIT_STATE_OFFSET (0x1000 = 4KB) bytes
-    // of the command buffer for internal structures (flip subroutine CALL targets, driver state).
-    // Our triple-buffered slices MUST start AFTER this header to avoid corrupting it.
-    s_cb_usable_base = (uint8_t*)host_addr + 0x1000; // CELL_GCM_INIT_STATE_OFFSET
-    printf("[GCM] CB usable base: %p (host_addr + 0x1000), context->begin: %p\n",
-           s_cb_usable_base, (void*)s_gcm_context->begin);
-
-    // Pre-compute the triple-buffered slice geometry.
-    // cellGcmInit already mapped host_addr to RSX IO space, so cellGcmAddressToOffset
-    // works here. We cache the offsets to avoid re-resolving them every frame.
-    // NOTE: We intentionally do NOT call cellGcmMapMainMemory — cellGcmInit's ioSize
-    // parameter (GCM_HOST_SIZE=8MB) already mapped the full block. A second
-    // cellGcmMapMainMemory on the same address creates a conflicting IO mapping
-    // that causes cellGcmAddressToOffset to return the WRONG offset for JUMP targets.
-    {
-        uint32_t usable_size = GCM_CB_SIZE - 0x1000;
-        s_slice_size = usable_size / BUFFER_COUNT;
-        for (int i = 0; i < BUFFER_COUNT; i++) {
-            s_slice_addr[i] = (uint8_t*)s_cb_usable_base + (i * s_slice_size);
-            cellGcmAddressToOffset(s_slice_addr[i], &s_slice_offset[i]);
-            printf("[GCM] Slice %d: addr=%p, RSX offset=0x%x, size=0x%x\n",
-                   i, s_slice_addr[i], s_slice_offset[i], s_slice_size);
-        }
-    }
+    printf("[GCM] cellGcmInit returned: %d, context->begin: %p, context->end: %p\n",
+           init_ret, (void*)s_gcm_context->begin, (void*)s_gcm_context->end);
 
     // G-11 Audit Fix: Setup label for async polling to prevent PPU thread starvation
     s_label_addr = cellGcmGetLabelAddress(LABEL_INDEX_FRAME_FENCE);
@@ -541,6 +513,17 @@ void CRS_Renderer_Init(void) {
     cellGcmAddressToOffset(color_buf_1, &color_offset[1]);
     cellGcmAddressToOffset(color_buf_2, &color_offset[2]);
     cellGcmAddressToOffset(depth_buf, &depth_offset);
+
+    // Diagnostic: Verify display buffers are in non-overlapping local memory regions
+    // (NOT in IO/host space where the command buffer slices live)
+    printf("[GCM] Display Buffer 0: local offset=0x%x, size=0x%x\n",
+           color_offset[0], color_pitch * display_height);
+    printf("[GCM] Display Buffer 1: local offset=0x%x, size=0x%x\n",
+           color_offset[1], color_pitch * display_height);
+    printf("[GCM] Display Buffer 2: local offset=0x%x, size=0x%x\n",
+           color_offset[2], color_pitch * display_height);
+    printf("[GCM] Depth Buffer:     local offset=0x%x, size=0x%x\n",
+           depth_offset, depth_pitch * display_height);
     
     // We are deliberately skipping cellResc. The PS3's cellResc library performs 
     // an internal blit right before flipping. Because we did not fully configure 
@@ -618,6 +601,12 @@ void CRS_Renderer_Init(void) {
     build_ortho_matrix(0.0f, 384.0f, 224.0f, 0.0f, -1.0f, 1.0f);
 
     Renderer_2DQueueInit();
+
+    // Flush all init commands so the RSX processes them.
+    // We do NOT park the RSX or manually manipulate context pointers.
+    // The FIFO is a continuous stream — libgcm manages wrapping internally.
+    cellGcmFlush(s_gcm_context);
+
     printf("[GCM] Context created! Res: %dx%d\n", display_width, display_height);
 }
 
@@ -629,8 +618,9 @@ void CRS_Renderer_BeginFrame(void) {
     printf("[GCM] BeginFrame\n");
 #endif
 
-    // Track the status of the three buffers. If the RSX hasn't finished the frame index 
-    // we're wrapping around to, the CPU MUST stall to prevent overwriting queued buffers.
+    // Wait for the GPU to finish rendering the frame whose display buffer we're
+    // about to reuse. The label is written by cellGcmSetWriteBackEndLabel at the
+    // end of each frame — if the GPU hasn't reached it yet, stall the CPU.
     uint32_t wait_for_frame = s_frame_labels[frame_index];
     if (wait_for_frame > 0) {
         while (*s_label_addr < wait_for_frame) {
@@ -638,11 +628,10 @@ void CRS_Renderer_BeginFrame(void) {
         }
     }
 
-    // Use pre-computed slice geometry. Slices start at offset 0x1000 to avoid
-    // the GCM internal header region (CELL_GCM_INIT_STATE_OFFSET).
-    s_gcm_context->begin   = s_slice_addr[frame_index];
-    s_gcm_context->current = s_slice_addr[frame_index];
-    s_gcm_context->end     = (uint32_t*)((uint8_t*)s_slice_addr[frame_index] + s_slice_size);
+    // DO NOT reset context->begin/current/end here!
+    // The PS3 command buffer is an infinite continuous stream. libgcm manages
+    // ring-buffer wrapping internally via its callback mechanism. Manually
+    // rewinding the pointers breaks the PUT/GET relationship and kills the FIFO.
 
     // Use current backbuffer
     setup_surface_struct(&surface, color_offset[frame_index]);
@@ -651,17 +640,13 @@ void CRS_Renderer_BeginFrame(void) {
     // Reset recurring viewport/blend/mask state
     CRS_Renderer_ResetState();
 
-    // Clear screen
+    // Clear screen — always clear regardless of system draw state
     const uint8_t cr = (flPs2State.FrameClearColor >> 16) & 0xFF;
     const uint8_t cg = (flPs2State.FrameClearColor >> 8) & 0xFF;
     const uint8_t cb = flPs2State.FrameClearColor & 0xFF;
     const uint8_t ca = flPs2State.FrameClearColor >> 24;
-    
-    // Temporarily enable depth writes for clear if needed, though we only clear color here
-    if (!PS3App_IsSystemDrawing()) {
-        cellGcmSetClearColor(s_gcm_context, (ca << 24) | (cr << 16) | (cg << 8) | cb);
-            cellGcmSetClearSurface(s_gcm_context, CELL_GCM_CLEAR_R | CELL_GCM_CLEAR_G | CELL_GCM_CLEAR_B | CELL_GCM_CLEAR_A);
-    }
+    cellGcmSetClearColor(s_gcm_context, (ca << 24) | (cr << 16) | (cg << 8) | cb);
+    cellGcmSetClearSurface(s_gcm_context, CELL_GCM_CLEAR_R | CELL_GCM_CLEAR_G | CELL_GCM_CLEAR_B | CELL_GCM_CLEAR_A);
     
     // G-10 Audit Fix: Invalidate texture cache once per frame, not per-bind
     cellGcmSetInvalidateTextureCache(s_gcm_context, CELL_GCM_INVALIDATE_TEXTURE);
@@ -671,9 +656,13 @@ void CRS_Renderer_BeginFrame(void) {
 
 void CRS_Renderer_RenderFrame(void) {
     if (render_task_count == 0) return;
-#if DEBUG
-    printf("[GCM] RenderFrame (Tasks: %d)\n", render_task_count);
-#endif
+    {
+        static int rf_diag = 0;
+        if (rf_diag < 5) {
+            printf("[GCM] RenderFrame: %d tasks, z[0]=%f\n", render_task_count, render_tasks[0].z);
+            rf_diag++;
+        }
+    }
 
     stable_sort_render_tasks();
 
@@ -682,9 +671,10 @@ void CRS_Renderer_RenderFrame(void) {
     
     cellGcmSetFragmentProgram(s_gcm_context, cg_fp, fp_offset);
     
-    cellGcmSetVertexDataArray(s_gcm_context, 0, 0, sizeof(GcmVertex), 3, CELL_GCM_VERTEX_F, CELL_GCM_LOCATION_LOCAL, vtx_offset + offsetof(GcmVertex, x));
-    cellGcmSetVertexDataArray(s_gcm_context, 1, 0, sizeof(GcmVertex), 2, CELL_GCM_VERTEX_F, CELL_GCM_LOCATION_LOCAL, vtx_offset + offsetof(GcmVertex, u));
-    cellGcmSetVertexDataArray(s_gcm_context, 2, 0, sizeof(GcmVertex), 4, CELL_GCM_VERTEX_UB, CELL_GCM_LOCATION_LOCAL, vtx_offset + offsetof(GcmVertex, color));
+    uint32_t current_vtx_offset = vtx_offset + frame_index * (RENDER_TASK_MAX * 6 * sizeof(GcmVertex));
+    cellGcmSetVertexDataArray(s_gcm_context, 0, 0, sizeof(GcmVertex), 3, CELL_GCM_VERTEX_F, CELL_GCM_LOCATION_LOCAL, current_vtx_offset + offsetof(GcmVertex, x));
+    cellGcmSetVertexDataArray(s_gcm_context, 1, 0, sizeof(GcmVertex), 2, CELL_GCM_VERTEX_F, CELL_GCM_LOCATION_LOCAL, current_vtx_offset + offsetof(GcmVertex, u));
+    cellGcmSetVertexDataArray(s_gcm_context, 2, 0, sizeof(GcmVertex), 4, CELL_GCM_VERTEX_UB, CELL_GCM_LOCATION_LOCAL, current_vtx_offset + offsetof(GcmVertex, color));
     
     cellGcmSetInvalidateVertexCache(s_gcm_context);
     cellGcmSetDepthTestEnable(s_gcm_context, CELL_GCM_FALSE);
@@ -701,9 +691,10 @@ void CRS_Renderer_RenderFrame(void) {
             int vtx_count = batch_count * 6;
             
             // Map the batch vertices to our vtx_buffer in RSX memory
+            int frame_vtx_idx = frame_index * (RENDER_TASK_MAX * 6);
             for (int j = 0; j < batch_count; j++) {
                 GcmRenderTask* batch_task = &render_tasks[batch_start + j];
-                memcpy(&vtx_buffer[(batch_start + j) * 6], &batch_vertices[batch_task->original_index * 6], sizeof(GcmVertex) * 6);
+                memcpy(&vtx_buffer[frame_vtx_idx + (batch_start + j) * 6], &batch_vertices[batch_task->original_index * 6], sizeof(GcmVertex) * 6);
             }
             
             // Setup texture state
@@ -737,7 +728,7 @@ void CRS_Renderer_RenderFrame(void) {
             } else {
                 cellGcmSetTextureControl(s_gcm_context, 0, CELL_GCM_FALSE, 0, 0, 0);
                 cellGcmSetTextureControl(s_gcm_context, 1, CELL_GCM_FALSE, 0, 0, 0);
-                float is_pal[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+                float is_pal[4] = {-1.0f, 0.0f, 0.0f, 0.0f};
                 cellGcmSetFragmentProgramParameter(s_gcm_context, cg_fp, cg_fp_is_palettized, is_pal, fp_offset);
             }
             
@@ -754,40 +745,28 @@ void CRS_Renderer_EndFrame(void) {
     printf("[GCM] EndFrame\n");
 #endif
 
-    // Execute direct flip without rescaling.
-    // NOTE: We do NOT use cellGcmSetWaitFlip here. That inserts an RSX-side
-    // semaphore acquire that waits for the display controller to confirm the
-    // previous flip. On frame 0, no prior flip exists, so the internal semaphore
-    // (0x40000010) is never signaled → permanent GPU deadlock.
-    // CPU-side pacing is sufficient: VBlank semaphore (60Hz lock) + label fence
-    // (prevents overwriting in-flight command buffers).
+    // Issue flip for the current display buffer
     cellGcmSetFlip(s_gcm_context, frame_index);
     
-    // Write frame fence label BEFORE the jump so the RSX executes it in THIS frame's slice.
-    // Previously this was after cellGcmFlush, which placed it into the next slice's memory
-    // where the RSX couldn't see it until the next frame (one-frame fence desync).
+    // Write frame fence label so the CPU can detect when the GPU finishes this frame.
+    // BeginFrame polls this label to prevent overwriting in-flight display buffers.
     cellGcmSetWriteBackEndLabel(s_gcm_context, LABEL_INDEX_FRAME_FENCE, s_current_frame_id);
     s_frame_labels[frame_index] = s_current_frame_id;
     
-    // JUMP to the start of the NEXT slice using pre-computed RSX offsets.
-    // These offsets were resolved once at init time via cellGcmAddressToOffset,
-    // BEFORE any conflicting IO mappings could confuse the resolution.
-    uint32_t next_frame = (frame_index + 1) % BUFFER_COUNT;
-    cellGcmSetJumpCommand(s_gcm_context, s_slice_offset[next_frame]);
-    
-    // FIRST FLUSH: Advance PUT so RSX reads the JUMP command.
-    // If we skip this, PUT simply jumps backwards, the RSX thinks the ring
-    // buffer wrapped, and it ignores the JUMP entirely, executing garbage!
+    // Flush the command stream to advance PUT so the RSX sees all our commands.
     cellGcmFlush(s_gcm_context);
+    cellGcmSetWaitFlip(s_gcm_context); // SDK pattern: stall RSX until flip occurs
+
+    // Wait for the flip we just issued to be acknowledged by the display controller.
+    // This is placed AFTER the flush so the RSX can actually execute the flip command.
+    // On the first call, cellGcmResetFlipStatus() was already called during init,
+    // so the first flip will be accepted immediately.
+    while (cellGcmGetFlipStatus() != 0) {
+        sys_timer_usleep(200);
+    }
+    cellGcmResetFlipStatus();
     
-    // SECOND FLUSH: Context switch. Reset CPU pointers to the next slice
-    // and flush to align GET and PUT at the new slice start, idling the RSX.
-    s_gcm_context->begin = s_slice_addr[next_frame];
-    s_gcm_context->current = s_slice_addr[next_frame];
-    s_gcm_context->end = (uint32_t*)((uint8_t*)s_slice_addr[next_frame] + s_slice_size);
-    cellGcmFlush(s_gcm_context);
-    
-    frame_index = next_frame;
+    frame_index = (frame_index + 1) % BUFFER_COUNT;
     s_current_frame_id++;
 
     // Check OS callbacks every frame before VSync stall to guarantee exit signals are processed
@@ -856,7 +835,7 @@ void CRS_Renderer_CreatePalette(unsigned int ph) {
         if(!palette_pixels[palette_index]) return;
 
         CellGcmTexture* ptex = &rsx_palettes[palette_index];
-        ptex->format = CELL_GCM_TEXTURE_A8R8G8B8 | CELL_GCM_TEXTURE_LN | CELL_GCM_TEXTURE_NR;
+        ptex->format = CELL_GCM_TEXTURE_A8R8G8B8 | CELL_GCM_TEXTURE_LN;
         ptex->mipmap = 1;
         ptex->dimension = CELL_GCM_TEXTURE_DIMENSION_2;
         ptex->cubemap = CELL_GCM_FALSE;
@@ -974,7 +953,7 @@ void CRS_Renderer_SetTexture(unsigned int th) {
 
         CellGcmTexture* tex = &tstate->rsx_texture;
         if (is_color) {
-            tex->format = CELL_GCM_TEXTURE_A8R8G8B8 | CELL_GCM_TEXTURE_LN | CELL_GCM_TEXTURE_NR;
+            tex->format = CELL_GCM_TEXTURE_A8R8G8B8 | CELL_GCM_TEXTURE_LN;
             tex->remap = CELL_GCM_TEXTURE_REMAP_ORDER_XYXY << 16 |
                          CELL_GCM_TEXTURE_REMAP_FROM_A << 14 |
                          CELL_GCM_TEXTURE_REMAP_FROM_R << 12 |
@@ -987,7 +966,7 @@ void CRS_Renderer_SetTexture(unsigned int th) {
             tex->pitch = fl_texture->width * 4;
             tex->pitch = (tex->pitch + 63) & ~63;
         } else {
-            tex->format = CELL_GCM_TEXTURE_B8 | CELL_GCM_TEXTURE_LN | CELL_GCM_TEXTURE_NR;
+            tex->format = CELL_GCM_TEXTURE_B8 | CELL_GCM_TEXTURE_LN;
             tex->remap = CELL_GCM_TEXTURE_REMAP_ORDER_XYXY << 16 |
                          CELL_GCM_TEXTURE_REMAP_FROM_B << 14 | // map index byte directly into Alpha for the shader
                          CELL_GCM_TEXTURE_REMAP_FROM_B << 12 |
@@ -1124,7 +1103,7 @@ static void draw_quad(const GcmVertex* v, bool textured) {
         int v_idx = draw_order[i];
         b_vertices[i].x = v[v_idx].x * g_resolution_scale;
         b_vertices[i].y = v[v_idx].y * g_resolution_scale;
-        b_vertices[i].z = task->z;
+        b_vertices[i].z = (task->z >= 0.0f && task->z <= 1.0f) ? task->z : 0.5f; // Force valid Z if it exceeds bounds!
         b_vertices[i].u = v[v_idx].u;
         b_vertices[i].v = v[v_idx].v;
         

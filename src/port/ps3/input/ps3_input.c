@@ -101,11 +101,18 @@ void SDLPad_GetButtonState(int id, SDLPad_ButtonState* state) {
 }
 
 void SDLPad_RumblePad(int id, bool low_freq_enabled, Uint8 high_freq_rumble) {
-    // I-04 Audit Fix: Implement rumble via cellPadSetActDirect
-    // Motor layout: [0]=large motor (low freq), [1]=small motor (high freq), [2-5]=reserved
-    CellPadActParam act;
-    memset(&act, 0, sizeof(act));
-    act.motor[0] = low_freq_enabled ? 1 : 0;      // Large motor: 0=off, 1=on
-    act.motor[1] = high_freq_rumble;               // Small motor: 0=off, 1-255=intensity
-    cellPadSetActDirect(id, &act);
+    if (id < 0 || id >= 7) return;
+
+    CellPadInfo2 PadInfo;
+    if (cellPadGetInfo2(&PadInfo) == CELL_PAD_OK) {
+        if (PadInfo.port_status[id] & CELL_PAD_STATUS_CONNECTED) {
+            if (PadInfo.device_capability[id] & CELL_PAD_CAPABILITY_ACTUATOR) {
+                CellPadActParam act;
+                memset(&act, 0, sizeof(act));
+                act.motor[0] = low_freq_enabled ? 1 : 0;      // Large motor: 0=off, 1=on
+                act.motor[1] = high_freq_rumble;               // Small motor: 0=off, 1-255=intensity
+                cellPadSetActDirect(id, &act);
+            }
+        }
+    }
 }

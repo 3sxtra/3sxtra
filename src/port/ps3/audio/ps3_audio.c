@@ -21,6 +21,8 @@ static sys_event_queue_t audio_event_queue;
 static int audio_event_queue_created = 0;
 static sys_ipc_key_t audio_queue_key;
 static uint8_t audio_spurs_port; // SPU Port mapping for SPURS audio signaling
+static sys_semaphore_t audio_ready_sem;
+static int audio_ready_sem_created = 0;
 
 extern void SPU_TickAudio(int16_t* outbuf, uint32_t samples_per_channel);
 
@@ -29,6 +31,9 @@ extern void SPU_TickAudio(int16_t* outbuf, uint32_t samples_per_channel);
 void ps3_audio_signal_ready(void) {
     printf("[PS3] Audio subsystem signaled ready\n");
     audio_subsystem_ready = 1;
+    if (audio_ready_sem_created) {
+        sys_semaphore_post(audio_ready_sem, 1);
+    }
 }
 
 static void audio_thread_entry(uint64_t arg) {
@@ -38,10 +43,17 @@ static void audio_thread_entry(uint64_t arg) {
 
     printf("[PS3] Audio feeder thread started, waiting for subsystem ready...\n");
 
-    /* Spin-wait until the main thread has finished initializing SPU_Init /
+    /* Wait until the main thread has finished initializing SPU_Init /
      * emlShimInit so that soundLock and timer_cb are valid pointers. */
     while (audio_thread_running && !audio_subsystem_ready) {
-        sys_timer_usleep(1000); /* sleep 1ms to avoid burning CPU */
+        if (audio_ready_sem_created) {
+            int err = sys_semaphore_wait(audio_ready_sem, 100000); /* 100ms timeout */
+            if (err == CELL_OK) {
+                break;
+            }
+        } else {
+            sys_timer_usleep(1000); /* sleep 1ms fallback */
+        }
     }
 
     if (!audio_thread_running) {
@@ -139,6 +151,12 @@ void ps3_audio_init(void) {
     audio_param.attr     = 0;
     audio_param.level    = 1.0f;
 
+    sys_semaphore_attribute_t sem_attr;
+    sys_semaphore_attribute_initialize(sem_attr);
+    if (sys_semaphore_create(&audio_ready_sem, &sem_attr, 0, 1) == CELL_OK) {
+        audio_ready_sem_created = 1;
+    }
+
     if (cellAudioPortOpen(&audio_param, &audio_port_num) == CELL_OK) {
         audio_port_opened = 1;
 
@@ -218,10 +236,14 @@ void ps3_audio_quit(void) {
         audio_port_opened = 0;
     }
 
-    // Step 5: Destroy event queue
+    // Step 5: Destroy event queue and semaphore
     if (audio_event_queue_created) {
         sys_event_queue_destroy(audio_event_queue, 0);
         audio_event_queue_created = 0;
+    }
+    if (audio_ready_sem_created) {
+        sys_semaphore_destroy(audio_ready_sem);
+        audio_ready_sem_created = 0;
     }
 
     // Step 6: Quit cellAudio system

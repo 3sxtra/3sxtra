@@ -121,23 +121,35 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
     if (!s_zlib_queue) return 0;
     if (srcSize <= 0 || dstSize <= 0) return 0;
 
+    const uint8_t* realSrc = (const uint8_t*)srcBuff;
+    uint32_t realSrcSize = srcSize;
+
+    /* Strip 2-byte zlib header (CMF+FLG) if present — edgeZlib expects raw deflate. */
+    uint8_t cmf = realSrc[0];
+    uint8_t flg = realSrc[1];
+
+    if (cmf == 0x78 && (((cmf << 8) + flg) % 31 == 0)) {
+        realSrc += 2;
+        realSrcSize -= 2;
+    }
+
     /* edgeZlib (SPU DMA) requires 16-byte alignment for all source and destination buffers. */
-    void* actualSrc = srcBuff;
+    void* actualSrc = (void*)realSrc;
     void* actualDst = dstBuff;
     bool freeSrc = false;
     bool freeDst = false;
 
-    if (((uintptr_t)srcBuff & 0xF) != 0 || ((uintptr_t)dstBuff & 0xF) != 0) {
+    if (((uintptr_t)realSrc & 0xF) != 0 || ((uintptr_t)dstBuff & 0xF) != 0) {
         void *caller = __builtin_return_address(0);
         printf("[PS3] zlib_Decompress: Alignment proxy engaged (SRC: %p [%s], DST: %p [%s], caller: %p, srcSize: %d, dstSize: %d)\n",
-               srcBuff, ((uintptr_t)srcBuff & 0xF) ? "UNALIGNED" : "ok",
+               realSrc, ((uintptr_t)realSrc & 0xF) ? "UNALIGNED" : "ok",
                dstBuff, ((uintptr_t)dstBuff & 0xF) ? "UNALIGNED" : "ok",
-               caller, srcSize, dstSize);
+               caller, realSrcSize, dstSize);
 
-        if (((uintptr_t)srcBuff & 0xF) != 0) {
-            actualSrc = memalign(16, (srcSize + 15) & ~15);
+        if (((uintptr_t)realSrc & 0xF) != 0) {
+            actualSrc = memalign(16, (realSrcSize + 15) & ~15);
             if (!actualSrc) return 0;
-            memcpy(actualSrc, srcBuff, srcSize);
+            memcpy(actualSrc, realSrc, realSrcSize);
             freeSrc = true;
         }
 
@@ -152,21 +164,25 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
     }
 
     const uint8_t* compressedData = (const uint8_t*)actualSrc;
-    uint32_t compressedSize = srcSize;
-
-    /* Strip 2-byte zlib header (CMF+FLG) if present — edgeZlib expects raw deflate. */
-    uint8_t cmf = compressedData[0];
-    uint8_t flg = compressedData[1];
-
-    if (cmf == 0x78 && (((cmf << 8) + flg) % 31 == 0)) {
-        compressedData += 2;
-        compressedSize -= 2;
-    }
+    uint32_t compressedSize = realSrcSize;
 
     /* Guarantee that SPU DMA doesn't overwrite adjacent stack bytes by putting work counter in .bss.
      * S-LOW-01 Audit Note: This function is NOT reentrant — concurrent calls will race on
      * s_workCounter. Currently safe because zlib_Decompress is only called from the main thread. */
     static __attribute__((aligned(128))) uint32_t s_workCounter = 0;
+
+    /* Drain any lingering completion from a previous call.
+     * If the previous SPU task hasn't finished yet (s_workCounter != 0),
+     * wait for it now to prevent queue saturation and deadlock.
+     * This is the fix for the SPURS producer-consumer deadlock: without this
+     * guard, rapid sequential calls can overwhelm the event queue (capacity 32)
+     * causing SPUs to block on sys_spu_thread_send_event while the PPU blocks
+     * on cellSpursEventFlagWait — circular deadlock. */
+    if (s_workCounter != 0) {
+        uint16_t drainBits = 1;
+        cellSpursEventFlagWait(&s_zlib_event_flag, &drainBits, CELL_SPURS_EVENT_FLAG_AND);
+        s_workCounter = 0;
+    }
     s_workCounter = 1;
 
     edgeZlibAddInflateQueueElement(s_zlib_queue,
