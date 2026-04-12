@@ -7,6 +7,7 @@
 #include <sysutil/sysutil_sysparam.h>
 #include <sys/spu_thread.h>
 #include <sys/spu_thread_group.h>
+#include <sysutil/sysutil_common.h>
 #include <sys/spu_image.h>
 #include <sys/synchronization.h>
 
@@ -356,6 +357,14 @@ static void setup_surface_struct(CellGcmSurface* surf, uint32_t offset) {
     surf->colorLocation[0] = CELL_GCM_LOCATION_LOCAL;
     surf->colorOffset[0] = offset;
     surf->colorPitch[0] = color_pitch;
+
+    // C-11 Audit Fix: Sony RSX driver requires all unused color targets to have a minimum pitch of 64.
+    // If these are left as 0, any 2D surface clears (NV3089/M2MF) will crash or NOP.
+    for (int i = 1; i < 4; i++) {
+        surf->colorLocation[i] = CELL_GCM_LOCATION_LOCAL;
+        surf->colorOffset[i] = 0;
+        surf->colorPitch[i] = 64;
+    }
     
     surf->depthFormat = CELL_GCM_SURFACE_Z24S8;
     surf->depthLocation = CELL_GCM_LOCATION_LOCAL;
@@ -781,6 +790,9 @@ void CRS_Renderer_EndFrame(void) {
     frame_index = next_frame;
     s_current_frame_id++;
 
+    // Check OS callbacks every frame before VSync stall to guarantee exit signals are processed
+    cellSysutilCheckCallback();
+
     // Pace main logic tick to exactly 60Hz. If a VBlank already passed, this immediately consumes it.
     sys_semaphore_wait(vblank_sem, 0);
 }
@@ -987,12 +999,15 @@ void CRS_Renderer_SetTexture(unsigned int th) {
                          CELL_GCM_TEXTURE_REMAP_REMAP;
             tex->pitch = (fl_texture->format == SCE_GS_PSMT4) ? (fl_texture->width / 2) : fl_texture->width;
             tex->pitch = (tex->pitch + 63) & ~63;
+            if (tex->pitch == 0) tex->pitch = 64; // Fallback to avoid empty regions
         }
         tex->mipmap = 1;
         tex->dimension = CELL_GCM_TEXTURE_DIMENSION_2;
         tex->cubemap = CELL_GCM_FALSE;
         tex->width = (fl_texture->format == SCE_GS_PSMT4) ? (fl_texture->width / 2) : fl_texture->width;
+        if (tex->width == 0) tex->width = 1;
         tex->height = fl_texture->height;
+        if (tex->height == 0) tex->height = 1;
         tex->depth = 1;
         tex->location = CELL_GCM_LOCATION_LOCAL;
         tex->offset = tstate->offset;
