@@ -999,7 +999,7 @@ static const uint8_t ps2_clut_shuffle[256] = {
 
 static void read_rgba16_color(const uint8_t* p, uint8_t* out) {
     // 16-bit PSMCT16 from flPS2ConvertContext (LE order):
-    // p[0] is strictly R & G components, p[1] is B & A components
+    // p holds bits 0-7 = R + partial G, bits 8-15 = partial G + B + A
     uint16_t pixel = p[0] | (p[1] << 8);   // Read as little-endian
     out[0] = s_5to8[pixel & 0x1F];         // R (bits 0-4)
     out[1] = s_5to8[(pixel >> 5) & 0x1F];  // G (bits 5-9)
@@ -1071,10 +1071,10 @@ void CRS_Renderer_CreatePalette(unsigned int ph) {
                 read_rgba16_color(&raw[i * 2], out);
                 pal_cache[i] = build_argb8888(out[0], out[1], out[2], out[3]);
             } else {
-                // PS2 GS PSMCT32 bytes in memory: [A, R, G, B]
+                // PS2 GS PSMCT32 bytes in memory: [R, G, B, A]
                 const uint8_t* p = raw + (i * 4);
-                uint8_t a = (p[0] >= 128) ? 255 : (p[0] * 2);
-                pal_cache[i] = build_argb8888(p[1], p[2], p[3], a); // ARGB8888 for RSX
+                uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2); // A is byte 3
+                pal_cache[i] = build_argb8888(p[0], p[1], p[2], a); // ARGB8888 for RSX
             }
         }
         memset(&pal_cache[16], 0, (256 - 16) * 4); // clear to safe black
@@ -1086,10 +1086,10 @@ void CRS_Renderer_CreatePalette(unsigned int ph) {
                 read_rgba16_color(&raw[src_idx * 2], out);
                 pal_cache[i] = build_argb8888(out[0], out[1], out[2], out[3]);
             } else {
-                // PS2 GS PSMCT32 bytes in memory: [A, R, G, B]
+                // PS2 GS PSMCT32 bytes in memory: [R, G, B, A]
                 const uint8_t* p = raw + (src_idx * 4);
-                uint8_t a = (p[0] >= 128) ? 255 : (p[0] * 2);
-                pal_cache[i] = build_argb8888(p[1], p[2], p[3], a); // ARGB8888 for RSX
+                uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2); // A is byte 3
+                pal_cache[i] = build_argb8888(p[0], p[1], p[2], a); // ARGB8888 for RSX
             }
         }
     }
@@ -1218,7 +1218,7 @@ void CRS_Renderer_SetTexture(unsigned int th) {
     tstate->h = fl_texture->height;
     if (fl_texture->format == SCE_GS_PSMT4)
         tstate->pal_mode = 2.0f;
-    else if (fl_texture->format == SCE_GS_PSMT8 || fl_texture->format == SCE_GS_PSMCT16)
+    else if (fl_texture->format == SCE_GS_PSMT8)
         tstate->pal_mode = 1.0f;
     else
         tstate->pal_mode = 0.0f;
@@ -1267,9 +1267,9 @@ void CRS_Renderer_SetTexture(unsigned int th) {
                 const uint8_t* src_row = raw + (y * raw_pitch_32);
                 uint32_t* dst_row = (uint32_t*)(conv + (y * aligned_pitch));
                 for (int x = 0; x < fl_texture->width; x++) {
-                    const uint8_t* p = &src_row[x * 4]; // PS2: [0]=A, [1]=R, [2]=G, [3]=B
-                    uint8_t a = (p[0] >= 128) ? 255 : (p[0] * 2);
-                    dst_row[x] = build_argb8888(p[1], p[2], p[3], a);
+                    const uint8_t* p = &src_row[x * 4]; // PS2: [0]=R, [1]=G, [2]=B, [3]=A
+                    uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2);
+                    dst_row[x] = build_argb8888(p[0], p[1], p[2], a);
                 }
             }
             break;

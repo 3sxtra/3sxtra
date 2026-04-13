@@ -72,9 +72,6 @@ typedef struct ADXLoopInfo {
     bool looping_enabled;
     int start_sample;
     int end_sample;
-    uint8_t* data;
-    int data_size;
-    int position;
 } ADXLoopInfo;
 
 typedef struct ADXTrack {
@@ -86,6 +83,8 @@ typedef struct ADXTrack {
     ADXLoopInfo loop_info;
     ADXContext ctx;
     bool exhausted;
+    s16 leftover_buf[1024 * ADX_MAX_CHANNELS];
+    int leftover_samples;
 } ADXTrack;
 
 static ADXTrack tracks[TRACKS_MAX] = { 0 };
@@ -129,51 +128,6 @@ static bool track_reached_eof(ADXTrack* track) {
     return (track->size - (int)track->used_bytes) <= 0;
 }
 
-static bool track_loop_filled(ADXTrack* track) {
-    if (track->loop_info.looping_enabled) {
-        return track->processed_samples >= track->loop_info.end_sample;
-    } else {
-        return false;
-    }
-}
-
-static bool track_needs_decoding(ADXTrack* track) {
-    if (track->loop_info.looping_enabled) {
-        return !track_loop_filled(track);
-    } else {
-        return !track_reached_eof(track);
-    }
-}
-
-static int track_add_samples_to_loop(ADXTrack* track, uint8_t* buf, int num_samples) {
-    ADXLoopInfo* loop_info = &track->loop_info;
-    if (!loop_info->looping_enabled) {
-        return 0;
-    }
-
-    const int buf_sample_start = MAX(loop_info->start_sample - track->processed_samples, 0);
-    const int buf_sample_end = MIN(loop_info->end_sample - track->processed_samples, num_samples);
-
-    if (buf_sample_end > buf_sample_start) {
-        const int buf_start = buf_sample_start * N_CHANNELS * BYTES_PER_SAMPLE;
-        const int buf_end = buf_sample_end * N_CHANNELS * BYTES_PER_SAMPLE;
-        const int buf_len = buf_end - buf_start;
-
-        if (loop_info->position + buf_len <= loop_info->data_size) {
-            memcpy(loop_info->data + loop_info->position, buf + buf_start, buf_len);
-            loop_info->position += buf_len;
-
-            if (loop_info->position == loop_info->data_size) {
-                loop_info->position = 0;
-            }
-        }
-    }
-
-    const int overflow = MAX(track->processed_samples + num_samples - loop_info->end_sample, 0);
-    track->processed_samples += num_samples;
-    return overflow;
-}
-
 static void loop_info_init(ADXLoopInfo* info, const uint8_t* data) {
     if (!data)
         return;
@@ -201,29 +155,11 @@ static void loop_info_init(ADXLoopInfo* info, const uint8_t* data) {
     if (info->looping_enabled) {
         if (info->end_sample <= info->start_sample) {
             info->looping_enabled = false;
-            return;
         }
-        info->data_size = (info->end_sample - info->start_sample) * BYTES_PER_SAMPLE * N_CHANNELS;
-        // M-03 Audit Fix: Cap loop buffer at 8MB to prevent OOM on PS3
-        if (info->data_size > (8 * 1024 * 1024)) {
-            printf("[ADX] WARNING: Loop buffer too large (%d bytes), capping at 8MB\n", info->data_size);
-            info->data_size = 8 * 1024 * 1024;
-            info->end_sample = info->start_sample + (info->data_size / (BYTES_PER_SAMPLE * N_CHANNELS));
-        }
-        info->data = malloc(info->data_size);
-        if (!info->data) {
-            printf("[ADX] loop_info_init: malloc failed for loop buffer (%d bytes)\n", info->data_size);
-            info->looping_enabled = false;
-            return;
-        }
-        info->position = 0;
     }
 }
 
 static void loop_info_destroy(ADXLoopInfo* info) {
-    if (info->looping_enabled) {
-        free(info->data);
-    }
     memset(info, 0, sizeof(ADXLoopInfo));
 }
 
@@ -253,6 +189,7 @@ static void track_init(ADXTrack* track, int file_id, void* buf, size_t buf_size,
 
     track->used_bytes = track->ctx.data_offset;
     track->processed_samples = 0;
+    track->leftover_samples = 0;
     track->exhausted = false;
 
     if (looping_allowed) {
@@ -411,47 +348,57 @@ void ADX_MixFloatPCM(float* out_buffer, int num_frames) {
         while (samples_written < total_samples_req && max_iters-- > 0) {
             int samples_needed = total_samples_req - samples_written;
 
-            // 1. Queue loaded loop buffer if we are looping
-            if (track_loop_filled(track)) {
-                if (!track->loop_info.data) {
-                    track->exhausted = true;
-                    break;
+            if (track->loop_info.looping_enabled) {
+                int samples_until_loop = (track->loop_info.end_sample - track->processed_samples) * track->ctx.channels;
+                if (samples_needed > samples_until_loop) {
+                    samples_needed = samples_until_loop;
                 }
-                int loop_avail = (track->loop_info.data_size - track->loop_info.position) / sizeof(int16_t);
-                int mix_amt = MIN(samples_needed, loop_avail);
-                if (mix_amt <= 0) {
-                    track->loop_info.position = 0;
-                    continue;
-                }
+            }
 
-                int16_t* src_s16 = (int16_t*)(track->loop_info.data + track->loop_info.position);
-                for (int m = 0; m < mix_amt; m++) {
-                    float s = (float)src_s16[m] / 32768.0f;
+            if (samples_needed <= 0 && track->loop_info.looping_enabled) {
+                // Seek back to start_sample (aligned to block boundary)
+                if (track->ctx.samples_per_block > 0) {
+                    int frame_idx = track->loop_info.start_sample / track->ctx.samples_per_block;
+                    track->used_bytes = track->ctx.data_offset + frame_idx * track->ctx.frame_size;
+                    track->processed_samples = frame_idx * track->ctx.samples_per_block;
+                }
+                memset(track->ctx.ch_state, 0, sizeof(track->ctx.ch_state));
+                track->leftover_samples = 0;
+                continue;
+            }
+
+            int samples_to_copy = 0;
+
+            if (track->leftover_samples > 0) {
+                samples_to_copy = MIN(samples_needed, track->leftover_samples);
+                for (int m = 0; m < samples_to_copy; m++) {
+                    float s = (float)track->leftover_buf[m] / 32768.0f;
                     out_buffer[samples_written + m] += s * master_gain;
                 }
 
-                track->loop_info.position += mix_amt * sizeof(int16_t);
-                if (track->loop_info.position >= track->loop_info.data_size) {
-                    track->loop_info.position = 0; // restart loop
+                if (samples_to_copy < track->leftover_samples) {
+                    memmove(track->leftover_buf, track->leftover_buf + samples_to_copy,
+                           (track->leftover_samples - samples_to_copy) * sizeof(s16));
                 }
-                samples_written += mix_amt;
-            }
-            // 2. Decode fresh samples if available
-            else if (track_needs_decoding(track)) {
-                int remaining = track->size - (int)track->used_bytes;
-                if (remaining <= 0) {
+                track->leftover_samples -= samples_to_copy;
+                
+                samples_written += samples_to_copy;
+                track->processed_samples += (samples_to_copy / track->ctx.channels);
+
+            } else {
+                int remaining_bytes = track->size - (int)track->used_bytes;
+                if (remaining_bytes < track->ctx.frame_size) {
                     track->exhausted = true;
                     break;
                 }
 
-                int16_t decode_buf[1024 * N_CHANNELS];
-                int samples_to_decode = MIN(samples_needed, 1024 * N_CHANNELS);
+                int samples_to_decode = 1024 * track->ctx.channels;
                 int bytes_consumed = 0;
 
                 int ret = ADX_Decode(&track->ctx,
                                      track->data + track->used_bytes,
-                                     remaining,
-                                     decode_buf,
+                                     remaining_bytes,
+                                     track->leftover_buf,
                                      &samples_to_decode,
                                      &bytes_consumed);
 
@@ -461,22 +408,7 @@ void ADX_MixFloatPCM(float* out_buffer, int num_frames) {
                 }
 
                 track->used_bytes += bytes_consumed;
-
-                int spc = samples_to_decode / track->ctx.channels;
-                int overflow = track_add_samples_to_loop(track, (uint8_t*)decode_buf, spc);
-                int overflow_total = overflow * track->ctx.channels;
-                int samples_to_queue = samples_to_decode - overflow_total;
-
-                for (int m = 0; m < samples_to_queue; m++) {
-                    float s = (float)decode_buf[m] / 32768.0f;
-                    out_buffer[samples_written + m] += s * master_gain;
-                }
-                samples_written += samples_to_queue;
-            }
-            // 3. Exhausted and not looping
-            else {
-                track->exhausted = true;
-                break;
+                track->leftover_samples = samples_to_decode;
             }
         }
     }
