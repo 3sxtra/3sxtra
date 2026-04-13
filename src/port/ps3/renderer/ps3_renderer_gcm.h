@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #define RENDER_TASK_MAX 8192
-#define CELL_GCM_MAX_TEXTURES 256
+#define CELL_GCM_MAX_TEXTURES 1024
 #define CELL_GCM_MAX_PALETTES 1088
 
 typedef struct {

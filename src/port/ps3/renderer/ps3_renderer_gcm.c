@@ -1007,7 +1007,7 @@ static void read_rgba16_color(const uint8_t* p, uint8_t* out) {
     out[3] = (pixel & 0x8000) ? 255 : 0;   // A (bit 15)
 }
 
-static uint32_t build_swizzled_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+static uint32_t build_argb8888(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
@@ -1069,12 +1069,12 @@ void CRS_Renderer_CreatePalette(unsigned int ph) {
             if (is_16bit) {
                 uint8_t out[4] = { 0 };
                 read_rgba16_color(&raw[i * 2], out);
-                pal_cache[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
+                pal_cache[i] = build_argb8888(out[0], out[1], out[2], out[3]);
             } else {
-                // PS2 GS PSMCT32 bytes in memory: [R, G, B, A]
+                // PS2 GS PSMCT32 bytes in memory: [A, R, G, B]
                 const uint8_t* p = raw + (i * 4);
-                uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2);
-                pal_cache[i] = (a << 24) | (p[0] << 16) | (p[1] << 8) | p[2]; // ARGB8888 for RSX
+                uint8_t a = (p[0] >= 128) ? 255 : (p[0] * 2);
+                pal_cache[i] = build_argb8888(p[1], p[2], p[3], a); // ARGB8888 for RSX
             }
         }
         memset(&pal_cache[16], 0, (256 - 16) * 4); // clear to safe black
@@ -1084,12 +1084,12 @@ void CRS_Renderer_CreatePalette(unsigned int ph) {
             if (is_16bit) {
                 uint8_t out[4] = { 0 };
                 read_rgba16_color(&raw[src_idx * 2], out);
-                pal_cache[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
+                pal_cache[i] = build_argb8888(out[0], out[1], out[2], out[3]);
             } else {
-                // PS2 GS PSMCT32 bytes in memory: [R, G, B, A]
+                // PS2 GS PSMCT32 bytes in memory: [A, R, G, B]
                 const uint8_t* p = raw + (src_idx * 4);
-                uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2);
-                pal_cache[i] = (a << 24) | (p[0] << 16) | (p[1] << 8) | p[2]; // ARGB8888 for RSX
+                uint8_t a = (p[0] >= 128) ? 255 : (p[0] * 2);
+                pal_cache[i] = build_argb8888(p[1], p[2], p[3], a); // ARGB8888 for RSX
             }
         }
     }
@@ -1255,7 +1255,7 @@ void CRS_Renderer_SetTexture(unsigned int th) {
                 for (int x = 0; x < fl_texture->width; x++) {
                     uint8_t out[4] = { 0 };
                     read_rgba16_color(&src_row[x * 2], out);
-                    dst_row[x] = (out[3] << 24) | (out[0] << 16) | (out[1] << 8) | out[2];
+                    dst_row[x] = build_argb8888(out[0], out[1], out[2], out[3]);
                 }
             }
             break;
@@ -1267,9 +1267,9 @@ void CRS_Renderer_SetTexture(unsigned int th) {
                 const uint8_t* src_row = raw + (y * raw_pitch_32);
                 uint32_t* dst_row = (uint32_t*)(conv + (y * aligned_pitch));
                 for (int x = 0; x < fl_texture->width; x++) {
-                    const uint8_t* p = &src_row[x * 4]; // PS2: [0]=R, [1]=G, [2]=B, [3]=A
-                    uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2);
-                    dst_row[x] = (a << 24) | (p[0] << 16) | (p[1] << 8) | p[2];
+                    const uint8_t* p = &src_row[x * 4]; // PS2: [0]=A, [1]=R, [2]=G, [3]=B
+                    uint8_t a = (p[0] >= 128) ? 255 : (p[0] * 2);
+                    dst_row[x] = build_argb8888(p[1], p[2], p[3], a);
                 }
             }
             break;
@@ -1283,7 +1283,7 @@ void CRS_Renderer_SetTexture(unsigned int th) {
                 uint32_t* dst_row = (uint32_t*)(conv + (y * aligned_pitch));
                 for (int x = 0; x < fl_texture->width; x++) {
                     const uint8_t* p = &src_row[x * 3];
-                    dst_row[x] = build_swizzled_rgba(p[0], p[1], p[2], 255);
+                    dst_row[x] = build_argb8888(p[0], p[1], p[2], 255);
                 }
             }
             break;

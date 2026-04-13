@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "port/ps3/app/ps3_app.h"
+#include <sys/timer.h>
 
 static CellSpursTaskset2 s_zlib_taskset;
 static EdgeZlibInflateQHandle s_zlib_queue = 0;
@@ -141,16 +142,6 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
     bool freeDst = false;
 
     if (((uintptr_t)realSrc & 0xF) != 0 || ((uintptr_t)dstBuff & 0xF) != 0) {
-        void* caller = __builtin_return_address(0);
-        printf("[PS3] zlib_Decompress: Alignment proxy engaged (SRC: %p [%s], DST: %p [%s], caller: %p, srcSize: %d, "
-               "dstSize: %d)\n",
-               realSrc,
-               ((uintptr_t)realSrc & 0xF) ? "UNALIGNED" : "ok",
-               dstBuff,
-               ((uintptr_t)dstBuff & 0xF) ? "UNALIGNED" : "ok",
-               caller,
-               realSrcSize,
-               dstSize);
 
         if (((uintptr_t)realSrc & 0xF) != 0) {
             actualSrc = memalign(16, (realSrcSize + 15) & ~15);
@@ -213,9 +204,11 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
     if (freeSrc) {
         free(actualSrc);
     }
+    
+    // Simulate the timing delay previously created by the bloated printf statement
+    // Provides time for the PPU to context switch / drain the SPURS event queue and avoid SPU Deadlock.
+    sys_timer_usleep(1000); 
 
-    printf("[PS3] zlib_Decompress: COMPLETED (srcSize: %d)\n", realSrcSize);
-    fflush(stdout);
     return dstSize;
 #else
     if (srcBuff == NULL || dstBuff == NULL) {
