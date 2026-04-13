@@ -9,9 +9,11 @@
 #include <cell/error.h>
 #include "port/ps3/app/ps3_app.h"
 #include "port/ps3/renderer/ps3_renderer_gcm.h"
+#include "port/ps3/renderer/spu_sort_dispatch.h"
 #include "port/ps3/audio/ps3_audio.h"
 #include "rendering/game_renderer.h"
 #include <cell/pad.h>
+#include <sys/ppu_thread.h>
 
 #include <sys/process.h>
 #include <stdlib.h>
@@ -27,6 +29,23 @@ static CellSpurs g_spurs;
 static bool g_spurs_initialized = false;
 static sys_event_queue_t g_spurs_event_queue = 0;
 static uint8_t g_spurs_port = 0;
+
+static sys_ppu_thread_t g_spurs_pump_thread;
+static volatile bool g_spurs_pump_running = false;
+
+static void spurs_pump_thread_entry(uint64_t arg) {
+    (void)arg;
+    sys_event_t event;
+    while (g_spurs_pump_running) {
+        // Wait on the spurs event queue with a 100ms timeout
+        int res = sys_event_queue_receive(g_spurs_event_queue, &event, 100000);
+        if (res == CELL_OK) {
+            // Discard event to keep queue unblocked
+        }
+    }
+    sys_ppu_thread_exit(0);
+}
+
 // No global renderer context needed at app level yet
 
 struct CellSpurs* PS3App_GetSpurs(void) {
@@ -34,6 +53,8 @@ struct CellSpurs* PS3App_GetSpurs(void) {
 }
 
 int PS3App_PreInit(void) {
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
     printf("[PS3] App PreInit\n");
     return 0;
 }
@@ -43,12 +64,11 @@ int PS3App_PreInit(void) {
 #define CELL_SYSUTIL_REQUEST_EXITGAME2 (0x0104)
 #endif
 
-static void sysutil_callback(uint64_t status, uint64_t param, void *userdata) {
+static void sysutil_callback(uint64_t status, uint64_t param, void* userdata) {
     (void)param;
     (void)userdata;
     // L-03 Audit Fix: Handle both EXITGAME and EXITGAME2 as required by SDK
-    if (status == CELL_SYSUTIL_REQUEST_EXITGAME ||
-        status == CELL_SYSUTIL_REQUEST_EXITGAME2) {
+    if (status == CELL_SYSUTIL_REQUEST_EXITGAME || status == CELL_SYSUTIL_REQUEST_EXITGAME2) {
         s_is_running = false;
     }
     // NEW-4: Pause rendering when the OS draws system overlays (trophy popups,
@@ -56,8 +76,7 @@ static void sysutil_callback(uint64_t status, uint64_t param, void *userdata) {
     // will wipe the overlay's framebuffer region, making it invisible.
     else if (status == CELL_SYSUTIL_DRAWING_BEGIN) {
         s_system_drawing = true;
-    }
-    else if (status == CELL_SYSUTIL_DRAWING_END) {
+    } else if (status == CELL_SYSUTIL_DRAWING_END) {
         s_system_drawing = false;
     }
 }
@@ -65,7 +84,7 @@ static void sysutil_callback(uint64_t status, uint64_t param, void *userdata) {
 int PS3App_FullInit(void) {
     printf("[PS3] App FullInit\n");
     cellSysutilRegisterCallback(0, sysutil_callback, NULL);
-    
+
     // Audit Fix: Load required system modules explicitly (check return per Application Requirements)
     int mod_ret;
     mod_ret = cellSysmoduleLoadModule(CELL_SYSMODULE_GCM);
@@ -120,16 +139,25 @@ int PS3App_FullInit(void) {
                 sys_event_queue_attribute_t eq_attr;
                 memset(&eq_attr, 0, sizeof(sys_event_queue_attribute_t));
                 sys_event_queue_attribute_initialize(eq_attr);
-                
+
                 int eq_ret = sys_event_queue_create(&g_spurs_event_queue, &eq_attr, SYS_EVENT_QUEUE_LOCAL, 32);
                 if (eq_ret == CELL_OK) {
                     eq_ret = cellSpursAttachLv2EventQueue(&g_spurs, g_spurs_event_queue, &g_spurs_port, 0);
                     if (eq_ret == CELL_OK) {
                         printf("[PS3] SPURS Event Queue attached on port: %d\n", g_spurs_port);
 
+                        g_spurs_pump_running = true;
+                        sys_ppu_thread_create(&g_spurs_pump_thread,
+                                              spurs_pump_thread_entry,
+                                              0,
+                                              100,
+                                              16384,
+                                              SYS_PPU_THREAD_CREATE_JOINABLE,
+                                              "spurs_eq_pump");
+
                         /* NOTE: Port 1 (isys=1) is used by the SPURS audio/trace sub-system.
                          * If left unattached, SPU notifications will drop, resulting in `CELL_ENOTCONN`
-                         * and permanently starving threads (e.g. ps3_audio_feeder) of completion buffers. 
+                         * and permanently starving threads (e.g. ps3_audio_feeder) of completion buffers.
                          * The audio module natively attaches its queue to Port 1 in ps3_audio_init. */
 
                         /* Initialize audio after SPURS event queue is attached */
@@ -139,6 +167,9 @@ int PS3App_FullInit(void) {
                             extern void zlib_InitSpurs(void);
                             zlib_InitSpurs();
                         }
+
+                        /* P1 Audit Fix: Initialize SPU sort after SPURS is ready */
+                        SPUSort_Init();
                     } else {
                         printf("[PS3] FATAL: cellSpursAttachLv2EventQueue failed: %x\n", eq_ret);
                         exit(1);
@@ -147,7 +178,6 @@ int PS3App_FullInit(void) {
                     printf("[PS3] FATAL: sys_event_queue_create failed: %x\n", eq_ret);
                     exit(1);
                 }
-                
 
             } else {
                 printf("[PS3] FATAL: cellSpursInitializeWithAttribute failed: %x\n", ret);
@@ -172,11 +202,19 @@ void PS3App_Quit(void) {
     // Note: cellGcm does not have a formal teardown API — the RSX context,
     // display buffers, and local memory are reclaimed by the OS at process exit.
     // The host memory from memalign could be freed but is about to be reclaimed anyway.
-    
+
     ps3_audio_quit();
+
+    /* P1 Audit Fix: Shut down SPU sort before SPURS teardown */
+    SPUSort_Shutdown();
 
     if (g_spurs_initialized) {
         if (g_spurs_event_queue) {
+            if (g_spurs_pump_running) {
+                g_spurs_pump_running = false;
+                uint64_t retval;
+                sys_ppu_thread_join(g_spurs_pump_thread, &retval);
+            }
             cellSpursDetachLv2EventQueue(&g_spurs, g_spurs_port);
             sys_event_queue_destroy(g_spurs_event_queue, 0);
         }
@@ -213,6 +251,8 @@ void PS3App_EndFrame(void) {
     }
     /* Flush all queued render tasks to the framebuffer, then swap */
     CRS_Renderer_RenderFrame();
+#if DEBUG
+#endif
     CRS_Renderer_EndFrame();
 }
 

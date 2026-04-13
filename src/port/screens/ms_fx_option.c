@@ -35,7 +35,7 @@ static void fx_option_enter(struct _TASK* task_ptr) {
     /* Show the RmlUi document immediately */
     rmlui_fx_option_show();
 
-    /* Spawn the native "OPTION MENU" sprite header natively since fx_option 
+    /* Spawn the native "OPTION MENU" sprite header natively since fx_option
      * relies on the legacy sprite rather than an HTML title. */
     Order[0x4F] = 1;
     Order_Dir[0x4F] = 8;

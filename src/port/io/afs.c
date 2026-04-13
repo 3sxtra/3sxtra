@@ -11,6 +11,11 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
+#if defined(PLATFORM_PS3)
+#include <sys/ppu_thread.h>
+#include <sys/mutex.h>
+#endif
+
 // Inspired by https://github.com/MaikelChan/AFSLib
 
 #define AFS_MAGIC 0x41465300
@@ -172,6 +177,9 @@ static bool init_afs(const char* file_path) {
 }
 
 static SDL_AtomicInt preload_shutdown_flag;
+#if defined(PLATFORM_PS3)
+static sys_ppu_thread_t ps3_preload_thread;
+#endif
 static SDL_Thread* preload_thread = NULL;
 
 static int preload_thread_func(void* ptr) {
@@ -218,7 +226,33 @@ static int preload_thread_func(void* ptr) {
     return 0;
 }
 
+#if defined(PLATFORM_PS3)
+static void ps3_preload_thread_wrapper(uint64_t arg) {
+    preload_thread_func((void*)(uintptr_t)arg);
+    sys_ppu_thread_exit(0);
+}
+
+static sys_ppu_thread_t ps3_preload_thread;
+static SDL_IOStream* ps3_sync_io = NULL;
+static sys_mutex_t ps3_sync_io_mutex;
+#endif
+
 static bool init_asyncio(const char* file_path) {
+#if defined(PLATFORM_PS3)
+    // ⚡ Bolt [PS3 Fallback]: SDL_AsyncIO is unsupported on PS3.
+    // We use a persistent synchronous IO handle protected by a mutex
+    // for BGM streams and cache-miss reads before the preload thread finishes.
+    sys_mutex_attribute_t mutex_attr;
+    sys_mutex_attribute_initialize(mutex_attr);
+    sys_mutex_create(&ps3_sync_io_mutex, &mutex_attr);
+    
+    ps3_sync_io = SDL_IOFromFile(file_path, "rb");
+    if (!ps3_sync_io) {
+        printf("[AFS] Failed to open %s for PS3 sync IO fallback\n", file_path);
+        return false;
+    }
+    return true;
+#else
     asyncio_queue = SDL_CreateAsyncIOQueue();
     if (asyncio_queue == NULL) {
         return false;
@@ -235,6 +269,7 @@ static bool init_asyncio(const char* file_path) {
     }
 
     return true;
+#endif
 }
 
 bool AFS_Init(const char* file_path) {
@@ -248,21 +283,46 @@ bool AFS_Init(const char* file_path) {
 
     SDL_SetAtomicInt(&preload_shutdown_flag, 0);
     char* path_copy = SDL_strdup(file_path);
+#if defined(PLATFORM_PS3)
+    if (sys_ppu_thread_create(&ps3_preload_thread, ps3_preload_thread_wrapper, (uint64_t)(uintptr_t)path_copy, 1000, 16384, SYS_PPU_THREAD_CREATE_JOINABLE, "AFS_Preload") != 0) {
+        SDL_free(path_copy);
+    } else {
+        preload_thread = (SDL_Thread*)1; // Dummy non-null value
+    }
+#else
     preload_thread = SDL_CreateThread(preload_thread_func, "AFS_Preload", path_copy);
     if (preload_thread == NULL) {
         SDL_free(path_copy);
     }
+#endif
 
     return true;
 }
 
 void AFS_Finish() {
     SDL_SetAtomicInt(&preload_shutdown_flag, 1);
+#if defined(PLATFORM_PS3)
+    if (preload_thread) {
+        uint64_t retval;
+        sys_ppu_thread_join(ps3_preload_thread, &retval);
+        preload_thread = NULL;
+    }
+#else
     if (preload_thread) {
         SDL_WaitThread(preload_thread, NULL);
         preload_thread = NULL;
     }
+#endif
 
+#if defined(PLATFORM_PS3)
+    if (ps3_sync_io != NULL) {
+        sys_mutex_lock(ps3_sync_io_mutex, 0);
+        SDL_CloseIO(ps3_sync_io);
+        ps3_sync_io = NULL;
+        sys_mutex_unlock(ps3_sync_io_mutex);
+        sys_mutex_destroy(ps3_sync_io_mutex);
+    }
+#else
     // ⚡ Bolt: Close the persistent async I/O handle before destroying the queue.
     if (persistent_asyncio != NULL) {
         SDL_CloseAsyncIO(persistent_asyncio, true, asyncio_queue, NULL);
@@ -273,6 +333,12 @@ void AFS_Finish() {
         }
         persistent_asyncio = NULL;
     }
+
+    if (asyncio_queue != NULL) {
+        SDL_DestroyAsyncIOQueue(asyncio_queue);
+        asyncio_queue = NULL;
+    }
+#endif
 
     // Free preloaded file data
     if (afs.entries) {
@@ -410,6 +476,21 @@ void AFS_Read(AFSHandle handle, int sectors, void* buf) {
 
     request->state = AFS_READ_STATE_READING;
 
+#if defined(PLATFORM_PS3)
+    sys_mutex_lock(ps3_sync_io_mutex, 0);
+    SDL_SeekIO(ps3_sync_io, offset, SDL_IO_SEEK_SET);
+    size_t bytes_read = SDL_ReadIO(ps3_sync_io, buf, sectors * 2048);
+    sys_mutex_unlock(ps3_sync_io_mutex);
+
+    if (bytes_read != (size_t)(sectors * 2048)) {
+        printf("[AFS] Sync IO error on PS3! Expected %d bytes, got %zu\n", sectors * 2048, bytes_read);
+        request->state = AFS_READ_STATE_ERROR;
+        return;
+    }
+
+    request->sector += sectors;
+    request->state = AFS_READ_STATE_FINISHED;
+#else
     // ⚡ Bolt: Reuse persistent handle — eliminates per-read open() syscall.
     const bool success = SDL_ReadAsyncIO(persistent_asyncio, buf, offset, sectors * 2048, asyncio_queue, request);
 
@@ -420,6 +501,7 @@ void AFS_Read(AFSHandle handle, int sectors, void* buf) {
     }
 
     request->sector += sectors;
+#endif
 }
 
 void AFS_ReadSync(AFSHandle handle, int sectors, void* buf) {
@@ -430,9 +512,12 @@ void AFS_ReadSync(AFSHandle handle, int sectors, void* buf) {
     AFS_Read(handle, sectors, buf);
 
     // Fast path: preloaded data completes immediately
-    if (requests[handle].state == AFS_READ_STATE_FINISHED) {
+    // On PS3, AFS_Read also guarantees state == AFS_READ_STATE_FINISHED on success due to sync I/O fallback
+    if (requests[handle].state == AFS_READ_STATE_FINISHED || requests[handle].state == AFS_READ_STATE_ERROR) {
         return;
     }
+
+#if !defined(PLATFORM_PS3)
 
     SDL_AsyncIOOutcome outcome;
 
@@ -445,6 +530,7 @@ void AFS_ReadSync(AFSHandle handle, int sectors, void* buf) {
             break;
         }
     }
+#endif
 }
 
 void AFS_Stop(AFSHandle handle) {

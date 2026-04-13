@@ -70,6 +70,11 @@ static int last_scancode[INPUT_SOURCES_MAX] = { 0 };
 static bool s_netplay_key_guard = false;
 static int last_joy_input[INPUT_SOURCES_MAX] = { 0 };
 
+// Cached joystick button indices for L2/R2 triggers per device slot.
+// -1 = not detected / triggers handled via axis events.
+// Populated at gamepad connect time by parsing SDL's mapping string.
+static int trigger_btn_index[INPUT_SOURCES_MAX][2]; // [0]=L2, [1]=R2
+
 static int input_source_index_from_joystick_id(SDL_JoystickID id) {
     for (int i = 0; i < INPUT_SOURCES_MAX; i++) {
         const SDLPad_InputSource* input_source = &input_sources[i];
@@ -163,6 +168,50 @@ static void handle_gamepad_added_event(SDL_GamepadDeviceEvent* event) {
 
         input_source->type = SDLPAD_INPUT_GAMEPAD;
         input_source->gamepad.gamepad = gamepad;
+        trigger_btn_index[i][0] = -1; // L2
+        trigger_btn_index[i][1] = -1; // R2
+
+        // On Android, KEYCODE_BUTTON_L2/R2 may arrive as joystick button
+        // events that SDL doesn't automatically map to trigger axes.
+        // Parse the mapping string to discover or infer their button indices.
+        {
+            char* mapping = SDL_GetGamepadMapping(gamepad);
+            if (mapping) {
+
+                const char* lt = strstr(mapping, "lefttrigger:b");
+                const char* rt = strstr(mapping, "righttrigger:b");
+
+                // If triggers are mapped as buttons, record their indices
+                if (lt) trigger_btn_index[i][0] = atoi(lt + 13);
+                if (rt) trigger_btn_index[i][1] = atoi(rt + 13);
+
+                // If triggers are NOT mapped at all (no axis or button binding),
+                // find the highest button index already used in the mapping.
+                // On Android, SDL's auto-mapping assigns sequential indices for
+                // all known buttons (A,B,X,Y,Back,Guide,Start,Sticks,Shoulders,
+                // D-pad). L2/R2 are the next two indices after those.
+                bool lt_missing = !strstr(mapping, "lefttrigger:");
+                bool rt_missing = !strstr(mapping, "righttrigger:");
+                if (lt_missing || rt_missing) {
+                    // Scan for highest button index in the mapping (e.g. "dpright:b14")
+                    int max_btn = -1;
+                    const char* p = mapping;
+                    while ((p = strstr(p, ":b")) != NULL) {
+                        int btn_idx = atoi(p + 2);
+                        if (btn_idx > max_btn) max_btn = btn_idx;
+                        p += 2;
+                    }
+                    if (max_btn >= 0) {
+                        if (lt_missing) trigger_btn_index[i][0] = max_btn + 1;
+                        if (rt_missing) trigger_btn_index[i][1] = max_btn + 2;
+                        SDL_Log("Inferred trigger buttons: L2=b%d R2=b%d (from max mapped b%d)",
+                                trigger_btn_index[i][0], trigger_btn_index[i][1], max_btn);
+                    }
+                }
+                SDL_free(mapping);
+            }
+        }
+
         SDL_Log("Opened gamepad at input_source index %d", i);
         ControllerImage_Module_OnGamepadAdded(gamepad, i);
         break;
@@ -270,22 +319,37 @@ void SDLPad_HandleJoystickDeviceEvent(SDL_JoyDeviceEvent* event) {
 
 void SDLPad_HandleJoystickButtonEvent(SDL_JoyButtonEvent* event) {
     int index = input_source_index_from_joystick_id(event->which);
-    if (index < 0 || input_sources[index].type != SDLPAD_INPUT_JOYSTICK)
+    if (index < 0)
         return;
 
-    if (event->down) {
-        last_joy_input[index] = INPUT_ID_JOY_BTN_BASE + event->button;
-    } else {
-        // Clear stale value on release so it isn't re-read after button is no longer held
-        if (last_joy_input[index] == INPUT_ID_JOY_BTN_BASE + event->button) {
-            last_joy_input[index] = 0;
+    if (input_sources[index].type == SDLPAD_INPUT_JOYSTICK) {
+        if (event->down) {
+            last_joy_input[index] = INPUT_ID_JOY_BTN_BASE + event->button;
+        } else {
+            // Clear stale value on release so it isn't re-read after button is no longer held
+            if (last_joy_input[index] == INPUT_ID_JOY_BTN_BASE + event->button) {
+                last_joy_input[index] = 0;
+            }
+        }
+    } else if (input_sources[index].type == SDLPAD_INPUT_GAMEPAD) {
+        // On Android, KEYCODE_BUTTON_L2/R2 arrive as joystick button events
+        // that SDL may not map to trigger axis events. Match against the
+        // cached trigger button indices we discovered at connect time.
+        SDLPad_ButtonState* state = &button_state[index];
+        if (event->button == trigger_btn_index[index][0] && trigger_btn_index[index][0] >= 0) {
+            state->left_trigger = event->down ? SDL_MAX_SINT16 : 0;
+        } else if (event->button == trigger_btn_index[index][1] && trigger_btn_index[index][1] >= 0) {
+            state->right_trigger = event->down ? SDL_MAX_SINT16 : 0;
         }
     }
 }
 
 void SDLPad_HandleJoystickAxisEvent(SDL_JoyAxisEvent* event) {
     int index = input_source_index_from_joystick_id(event->which);
-    if (index < 0 || input_sources[index].type != SDLPAD_INPUT_JOYSTICK)
+    if (index < 0)
+        return;
+
+    if (input_sources[index].type != SDLPAD_INPUT_JOYSTICK)
         return;
 
     if (abs(event->value) > SDLPAD_AXIS_EVENT_THRESHOLD) {
@@ -540,6 +604,17 @@ void SDLPad_GetButtonState(int id, SDLPad_ButtonState* state) {
         return;
     }
     memcpy(state, &button_state[id], sizeof(SDLPad_ButtonState));
+
+    // Safety net: poll trigger axes directly from SDL for gamepad devices.
+    // Some gamepads (e.g. arcade sticks with digital triggers) may not
+    // generate axis-motion events on all platforms, but SDL_GetGamepadAxis
+    // returns the correct current value when polled.
+    if (input_sources[id].type == SDLPAD_INPUT_GAMEPAD && input_sources[id].gamepad.gamepad) {
+        Sint16 lt = SDL_GetGamepadAxis(input_sources[id].gamepad.gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
+        Sint16 rt = SDL_GetGamepadAxis(input_sources[id].gamepad.gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
+        if (lt > state->left_trigger)  state->left_trigger = lt;
+        if (rt > state->right_trigger) state->right_trigger = rt;
+    }
 }
 
 void SDLPad_RumblePad(int id, bool low_freq_enabled, Uint8 high_freq_rumble) {

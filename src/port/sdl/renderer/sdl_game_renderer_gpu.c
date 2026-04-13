@@ -232,7 +232,8 @@ static void insertion_sort_quads(void) {
 // turbo
 // What: Convert O(N log N) quad merge sort into an O(N) adaptive radix/insertion sort.
 // Target: CPU Algorithmic Complexity / Branch Prediction.
-// Expected Impact: Eliminates the O(N log N) merge sort overhead and associated branch mispredictions. Gameplay typically features near-sorted z-depths where insertion sort achieves O(N).
+// Expected Impact: Eliminates the O(N log N) merge sort overhead and associated branch mispredictions. Gameplay
+// typically features near-sorted z-depths where insertion sort achieves O(N).
 static void stable_sort_quads(void) {
     if (quad_count <= 1)
         return;

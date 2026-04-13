@@ -315,6 +315,8 @@ if(PLATFORM_PS3)
     list(FILTER GAME_SRC EXCLUDE REGEX "src/netplay/.*")
     list(FILTER GAME_SRC EXCLUDE REGEX "src/arcade/rom_load\\.c")
     list(FILTER GAME_SRC EXCLUDE REGEX "src/test/.*")
+    # SPU .c files are compiled to SPU ELF via custom command (below), not as PPU sources.
+    # PPU-side dispatch code lives in src/port/ps3/renderer/ (not spu/ subdir).
     list(FILTER GAME_SRC EXCLUDE REGEX "src/port/ps3/renderer/spu/.*\\.c")
 else()
     list(FILTER GAME_SRC EXCLUDE REGEX "src/port/ps3/")
@@ -498,7 +500,6 @@ if(PLATFORM_PS3)
     set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES> -o <TARGET> -Wl,-Map,3sx.map")
     set(PS3_SDK_LIB_DIR "C:/usr/local/cell/target/ppu/lib")
     target_link_libraries(3sx PRIVATE
-        "${PS3_SDK_LIB_DIR}/libdbgfont.a"
         "${PS3_SDK_LIB_DIR}/libaudio_stub.a"
         "${PS3_SDK_LIB_DIR}/libsysmodule_stub.a"
         "${PS3_SDK_LIB_DIR}/libio_stub.a"
@@ -522,7 +523,8 @@ if(PLATFORM_PS3)
     add_custom_command(
         OUTPUT ${SPU_OBJ}
         COMMAND ${SPU_GCC_CMD} -O3 -fpic ${CMAKE_SOURCE_DIR}/src/port/ps3/renderer/spu/spu_sort_task.c -o ${SPU_BIN}
-        COMMAND ${PPU_OBJCOPY_CMD} -I binary -O elf64-powerpc-celloslv2 -B powerpc:common64 ${SPU_BIN} ${SPU_OBJ}
+        COMMAND ${PPU_OBJCOPY_CMD} -I binary -O elf64-powerpc-celloslv2 -B powerpc:common64 spu_sort_task.spu.elf ${SPU_OBJ}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS ${CMAKE_SOURCE_DIR}/src/port/ps3/renderer/spu/spu_sort_task.c
         COMMENT "Compiling SPU Sort Task..."
     )

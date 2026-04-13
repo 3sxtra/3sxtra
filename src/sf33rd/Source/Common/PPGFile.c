@@ -24,8 +24,8 @@
 #include "sf33rd/Source/Compress/zlibApp.h"
 #include "structs.h"
 #ifdef PLATFORM_PS3
-#include <stdlib.h>   /* memalign, free */
-#include <string.h>   /* memcpy */
+#include <stdlib.h> /* memalign, free */
+#include <string.h> /* memcpy */
 #endif
 
 #include <SDL3/SDL.h>
@@ -89,7 +89,14 @@ void ppg_Initialize(void* lcmAdrs, s32 lcmSize) {
 
 /** @brief Allocate from the front of the PPG heap. */
 static void* ppgMallocF(s32 size) {
-    return mmAlloc(&ppg_w.mm, size, 0);
+    void* ptr = mmAlloc(&ppg_w.mm, size, 0);
+#ifdef PLATFORM_PS3
+    if (!ptr) {
+        extern int printf(const char*, ...);
+        printf("[PS3] ppgMallocF failed! size=%d\n", size);
+    }
+#endif
+    return ptr;
 }
 
 /** @brief Allocate from the rear of the PPG heap. */
@@ -630,6 +637,15 @@ s32 ppgSetupPalChunk(Palette* pch, u8* adrs, s32 size, s32 ixNum1st, s32 num, s3
     koCmpr = ppl->compress & 3;
     ppgSetupContextFromPPL(ppl, &bits);
     pch->handle = ppgMallocF(pch->total * 2);
+#ifdef PLATFORM_PS3
+    {
+        extern int printf(const char*, ...);
+        printf("[PS3] ppgSetupPalChunkDir: requesting %d handles (%d bytes). ptr=%p\n",
+               pch->total,
+               pch->total * 2,
+               pch->handle);
+    }
+#endif
 
     if (pch->handle != NULL) {
         for (i = 0; i < pch->total; i++) {
@@ -729,6 +745,15 @@ s32 ppgSetupPalChunkDir(Palette* pch, PPLFileHeader* ppl, u8* adrs, s32 ixNum1st
     pch->srcSize = bits.pitch * bits.height;
     pch->total = REVERT_U16(ppl->palettes);
     pch->handle = ppgMallocF(pch->total * 2);
+#ifdef PLATFORM_PS3
+    {
+        extern int printf(const char*, ...);
+        printf("[PS3] ppgSetupPalChunkDir: requesting %d handles (%d bytes). ptr=%p\n",
+               pch->total,
+               pch->total * 2,
+               pch->handle);
+    }
+#endif
 
     if (pch->handle != NULL) {
         for (i = 0; i < pch->total; i++) {
@@ -1287,7 +1312,12 @@ s32 ppgSetupTexChunk_3rd(Texture* tch, s32 ixNum, u32 attribute) {
     unused_s5 = 0;
     {
         char dbg_buf[256];
-        sprintf(dbg_buf, "[PPG] ppgSetupTexChunk_3rd: mltAdrs=%p, mltSize=%d, ppg=%p, bpp=%d\n", mltAdrs, mltSize, ppg, bits.bitdepth);
+        sprintf(dbg_buf,
+                "[PPG] ppgSetupTexChunk_3rd: mltAdrs=%p, mltSize=%d, ppg=%p, bpp=%d\n",
+                mltAdrs,
+                mltSize,
+                ppg,
+                bits.bitdepth);
         flLogOut(dbg_buf);
     }
     ppgChangeDataEndian(mltAdrs, mltSize, ppg->pixel & 4, ppg->formARGB == 0x8888, bits.bitdepth, unused_s5);

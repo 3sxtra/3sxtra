@@ -220,14 +220,19 @@ int main(int argc, char* argv[]) {
 
     init_windows_console();
 
+#ifdef PLATFORM_PS3
+    extern int PS3App_PreInit(void);
+    PS3App_PreInit();
+#endif
+
     /* ── Synchronous resource check ─────────────────────────────
      * Verify required assets exist BEFORE creating the game window.
      * This prevents a fullscreen window from obscuring setup dialogs
      * on devices that focus one window at a time.
      * On desktop: triggers the folder-dialog copy flow if missing.
-     * On RPi4/headless: logs an error (no dialog backend). */
+     * On RPi4/headless/PS3: logs an error (no dialog backend). */
     if (!Resources_CheckIfPresent()) {
-#ifdef PLATFORM_RPI4
+#if defined(PLATFORM_RPI4) || defined(PLATFORM_PS3)
         fatal_error("Resources not found. Place SF33RD.AFS in the rom/ folder "
                     "next to the executable.");
 #else

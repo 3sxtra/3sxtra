@@ -385,7 +385,9 @@ void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int 
 
             cb_timer--;
             if (!cb_timer) {
+                SDL_UnlockMutex(soundLock);
                 timer_cb();
+                SDL_LockMutex(soundLock);
                 cb_timer = 192;
             }
         }
@@ -401,6 +403,10 @@ void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int 
 
 static void nullcb() {}
 
+void SPU_RunTimerTick(void) {
+    if (timer_cb) timer_cb();
+}
+
 void SPU_Init(void (*cb)()) {
     SDL_AudioSpec spec;
 
@@ -414,6 +420,7 @@ void SPU_Init(void (*cb)()) {
     TRACE_LOCK_ANNOUNCE(soundLockCtx);
     TRACE_LOCK_NAME(soundLockCtx, "soundLock", 9);
 
+#ifndef __CELLOS_LV2__
     spec.channels = 2;
     spec.format = SDL_AUDIO_S16;
     spec.freq = 48000;
@@ -424,6 +431,7 @@ void SPU_Init(void (*cb)()) {
     }
 
     SDL_ResumeAudioStreamDevice(stream);
+#endif
 }
 
 void SPU_Upload(u32 dst, void* src, u32 size) {

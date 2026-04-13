@@ -262,6 +262,19 @@ void Check_LDREQ_Queue() {
 
     if (!ldreq_break) {
         if (q_ldreq->be != 0) {
+#ifdef PLATFORM_PS3
+            {
+                static int ldreq_diag = 0;
+                if (ldreq_diag < 20) {
+                    printf("[LDREQ] Processing type=%d ix=%d rno=%d be=%d\n",
+                           q_ldreq->type,
+                           q_ldreq->ix,
+                           q_ldreq->rno,
+                           q_ldreq->be);
+                    ldreq_diag++;
+                }
+            }
+#endif
             if (q_ldreq->type < LDREQ_PROCESS_COUNT) {
                 ldreq_process[q_ldreq->type](q_ldreq);
             } else {

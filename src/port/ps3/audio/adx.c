@@ -64,8 +64,8 @@ static void pool_free(void* ptr) {
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define ADX_RB16(p) ((uint16_t)(((const uint8_t*)(p))[0] << 8 | ((const uint8_t*)(p))[1]))
-#define ADX_RB32(p) \
-    ((uint32_t)(((const uint8_t*)(p))[0] << 24 | ((const uint8_t*)(p))[1] << 16 | ((const uint8_t*)(p))[2] << 8 | \
+#define ADX_RB32(p)                                                                                                    \
+    ((uint32_t)(((const uint8_t*)(p))[0] << 24 | ((const uint8_t*)(p))[1] << 16 | ((const uint8_t*)(p))[2] << 8 |      \
                 ((const uint8_t*)(p))[3]))
 
 typedef struct ADXLoopInfo {
@@ -105,7 +105,7 @@ static void* load_file(int file_id, int* size) {
     *size = file_size;
     const unsigned int sectors = (file_size + 2048 - 1) / 2048;
     const size_t buff_size = (size_t)sectors * 2048;
-    
+
     void* buff = pool_alloc(buff_size);
     if (!buff) {
         printf("[ADX] load_file: allocation failed for %zu bytes (file_id %d)\n", buff_size, file_id);
@@ -175,7 +175,8 @@ static int track_add_samples_to_loop(ADXTrack* track, uint8_t* buf, int num_samp
 }
 
 static void loop_info_init(ADXLoopInfo* info, const uint8_t* data) {
-    if (!data) return;
+    if (!data)
+        return;
 
     const uint8_t version = data[0x12];
     switch (version) {
@@ -203,6 +204,12 @@ static void loop_info_init(ADXLoopInfo* info, const uint8_t* data) {
             return;
         }
         info->data_size = (info->end_sample - info->start_sample) * BYTES_PER_SAMPLE * N_CHANNELS;
+        // M-03 Audit Fix: Cap loop buffer at 8MB to prevent OOM on PS3
+        if (info->data_size > (8 * 1024 * 1024)) {
+            printf("[ADX] WARNING: Loop buffer too large (%d bytes), capping at 8MB\n", info->data_size);
+            info->data_size = 8 * 1024 * 1024;
+            info->end_sample = info->start_sample + (info->data_size / (BYTES_PER_SAMPLE * N_CHANNELS));
+        }
         info->data = malloc(info->data_size);
         if (!info->data) {
             printf("[ADX] loop_info_init: malloc failed for loop buffer (%d bytes)\n", info->data_size);
@@ -268,8 +275,13 @@ static ADXTrack* alloc_track() {
     return &tracks[index];
 }
 
+static bool adx_initialized = false;
+
 void ADX_Init(void) {
+    if (adx_initialized) return;
+    adx_initialized = true;
     sys_mutex_attribute_t attr;
+    memset(&attr, 0, sizeof(attr));
     sys_mutex_attribute_initialize(attr);
     attr.attr_recursive = SYS_SYNC_RECURSIVE;
     sys_mutex_create(&adx_mutex, &attr);
@@ -326,8 +338,7 @@ void ADX_StartSeamless(void) {
     ADX_Pause(false);
 }
 
-void ADX_ResetEntry(void) {
-}
+void ADX_ResetEntry(void) {}
 
 void ADX_StartAfs(int file_id) {
     ADX_Stop();
@@ -342,8 +353,10 @@ void ADX_SetOutVol(int volume) {
     // M-11 Audit Fix: Implement dB-to-linear gain conversion
     // ADX volume is typically in centiBels (1/100 dB), range roughly -1000 to 0
     float gain = powf(10.0f, (float)volume / 2000.0f);
-    if (gain < 0.0f) gain = 0.0f;
-    if (gain > 1.0f) gain = 1.0f;
+    if (gain < 0.0f)
+        gain = 0.0f;
+    if (gain > 1.0f)
+        gain = 1.0f;
     master_gain = gain;
 }
 
@@ -354,8 +367,10 @@ void ADX_SetMono(bool mono) {
 void ADX_ProcessTracks(void) {}
 
 ADXState ADX_GetState(void) {
-    if (!has_tracks) return ADX_STATE_STOP;
-    if (is_paused) return ADX_STATE_STOP;
+    if (!has_tracks)
+        return ADX_STATE_STOP;
+    if (is_paused)
+        return ADX_STATE_STOP;
     return ADX_STATE_PLAYING;
 }
 
@@ -364,15 +379,17 @@ void ADX_MixFloatPCM(float* out_buffer, int num_frames) {
     int total_samples_req = num_frames * N_CHANNELS;
     memset(out_buffer, 0, total_samples_req * sizeof(float));
 
-    if (is_paused || !has_tracks) return;
+    if (is_paused || !has_tracks)
+        return;
 
     sys_mutex_lock(adx_mutex, 0);
 
     for (int i = 0; i < num_tracks; i++) {
         const int track_idx = (first_track_index + i) % TRACKS_MAX;
         ADXTrack* track = &tracks[track_idx];
-        
-        if (track->exhausted) continue;
+
+        if (track->exhausted)
+            continue;
 
         /* Critical: if somehow a track made it here with NULL data, kill it. */
         if (!track->data) {
@@ -385,7 +402,7 @@ void ADX_MixFloatPCM(float* out_buffer, int num_frames) {
 
         while (samples_written < total_samples_req && max_iters-- > 0) {
             int samples_needed = total_samples_req - samples_written;
-            
+
             // 1. Queue loaded loop buffer if we are looping
             if (track_loop_filled(track)) {
                 if (!track->loop_info.data) {
@@ -398,13 +415,13 @@ void ADX_MixFloatPCM(float* out_buffer, int num_frames) {
                     track->loop_info.position = 0;
                     continue;
                 }
-                
+
                 int16_t* src_s16 = (int16_t*)(track->loop_info.data + track->loop_info.position);
                 for (int m = 0; m < mix_amt; m++) {
                     float s = (float)src_s16[m] / 32768.0f;
                     out_buffer[samples_written + m] += s * master_gain;
                 }
-                
+
                 track->loop_info.position += mix_amt * sizeof(int16_t);
                 if (track->loop_info.position >= track->loop_info.data_size) {
                     track->loop_info.position = 0; // restart loop
@@ -459,13 +476,14 @@ void ADX_MixFloatPCM(float* out_buffer, int num_frames) {
     // Cleanup exhausted tracks from the front
     while (num_tracks > 0) {
         ADXTrack* track = &tracks[first_track_index];
-        if (!track->exhausted) break;
-        
+        if (!track->exhausted)
+            break;
+
         track_destroy(track);
         num_tracks -= 1;
         first_track_index = (first_track_index + 1) % TRACKS_MAX;
     }
-    
+
     if (num_tracks == 0) {
         first_track_index = 0;
         has_tracks = false;

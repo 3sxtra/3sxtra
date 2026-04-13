@@ -379,8 +379,8 @@ static void CollectGamepadImages(ControllerImage_GamepadDeviceInfo* info, Contro
     } else if (SDL_strcmp(info->type, "xbox360") != 0) {
         // if this doesn't inherit from anything, and it isn't the xbox360
         //  device itself, make it inherit from the xbox360 device.
-        CollectGamepadImages(
-            (ControllerImage_GamepadDeviceInfo*)SDL_GetPointerProperty(DeviceGuidMap, "xbox360", NULL), device);
+        CollectGamepadImages((ControllerImage_GamepadDeviceInfo*)SDL_GetPointerProperty(DeviceGuidMap, "xbox360", NULL),
+                             device);
     }
 
     const ControllerImage_Item* leftxy = NULL;

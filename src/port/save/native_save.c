@@ -245,7 +245,7 @@ int NativeSave_LoadOptions(void) {
 
     FILE* f = fopen(path, "r");
     struct _SAVE_W* sw = CurrentSave();
-    
+
     if (!f) {
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] No options.ini found — using defaults");
     } else {

@@ -667,8 +667,24 @@ bool Cut_Cut_Loser() {
 }
 
 /** @brief Legacy infinite-loop VSync wait stub (no longer functional). */
+/** @brief Legacy infinite-loop VSync wait stub.
+ *  On PS3, sleeps to prevent invisible CPU-burn death loops. */
 void njWaitVSync_with_N() {
-    // Original PS2 VSync spin loop â€ no-op on modern platforms
+#ifdef PLATFORM_PS3
+    /* PS3: njWaitVSync_with_N is used in fatal-error while(1) loops throughout
+     * the engine (texcash, sound3rd, etc). As a no-op, these become silent
+     * CPU-burning hangs. Sleep + print + break after a few iterations. */
+    static int vwait_count = 0;
+    if (++vwait_count <= 3) {
+        extern int printf(const char*, ...);
+        printf("[PS3] njWaitVSync_with_N: fatal error loop detected (call #%d)\n", vwait_count);
+    }
+    /* Sleep 16ms (one frame) to avoid CPU burn */
+    {
+        extern int sys_timer_usleep(unsigned long long);
+        sys_timer_usleep(16000);
+    }
+#endif
 }
 
 /** @brief Perform the soft-reset sequence: fade out, stop audio, purge textures, reinitialize tasks. */

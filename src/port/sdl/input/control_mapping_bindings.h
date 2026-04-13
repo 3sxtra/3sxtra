@@ -24,12 +24,14 @@ static inline int ControlMapping_GetPlayerDeviceID(int player_num) {
 }
 
 static inline InputID ControlMapping_GetPlayerMapping(int player_num, const char* action) {
-    (void)player_num; (void)action;
+    (void)player_num;
+    (void)action;
     return INPUT_ID_UNKNOWN;
 }
 
 static inline const char* ControlMapping_GetPlayerMappingIconURI(int player_num, int index) {
-    (void)player_num; (void)index;
+    (void)player_num;
+    (void)index;
     return "";
 }
 

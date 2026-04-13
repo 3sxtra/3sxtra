@@ -13,6 +13,7 @@
 
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "common.h"
+#include <stdio.h>
 
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_copyright.h"
@@ -240,6 +241,7 @@ void OPBG_Init() {
     s16 i;
     s16 key;
 
+    printf("[BOOT] OPBG_Init: START\n");
     mmDebWriteTag("\nOPENING\n\n");
     ppgOpnBgList.tex = &ppgOpnBgTex;
     ppgOpnBgList.pal = palGetChunkGhostCP3();
@@ -247,25 +249,33 @@ void OPBG_Init() {
 
     if ((key = Search_ramcnt_type(0x1D)) == 0) {
         // Opening demo texture has not been loaded.
+        printf("[BOOT] OPBG_Init: Search_ramcnt_type(0x1D) FAILED — no opening texture\n");
         flLogOut("オープニングデモテクスチャが読み込まれていません。\n");
         return;
     }
 
     loadSize = Get_size_data_ramcnt_key(key);
     loadAdrs = (void*)Get_ramcnt_address(key);
+    printf("[BOOT] OPBG_Init: key=%d, loadAdrs=%p, loadSize=%u\n", key, loadAdrs, (unsigned)loadSize);
     ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 602, 91, 0, 0);
+    printf("[BOOT] OPBG_Init: ppgSetupTexChunk_1st done, textures=%d\n", ppgOpnBgTex.textures);
 
     for (i = 0; i < ppgOpnBgTex.textures; i++) {
         ppgSetupTexChunk_2nd(NULL, i + 602);
         ppgSetupTexChunk_3rd(NULL, i + 602, 1);
     }
+    printf("[BOOT] OPBG_Init: all tex chunks done\n");
 
     Opening_Now = 1;
+    printf("[BOOT] OPBG_Init: calling make_texcash_work(9)\n");
     make_texcash_work(9);
+    printf("[BOOT] OPBG_Init: calling mlt_obj_melt2\n");
     mlt_obj_melt2(&mts[9], 0x8C40);
+    printf("[BOOT] OPBG_Init: calling sound_trg_init + opening_init\n");
     sound_trg_init();
     opening_init();
     Zoom_Value_Set(0x40);
+    printf("[BOOT] OPBG_Init: COMPLETE\n");
 }
 
 /** @brief Tick the opening BG demo and render the scrolling layers. */

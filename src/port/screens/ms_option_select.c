@@ -191,33 +191,32 @@ static void option_select_tick(struct _TASK* task_ptr) {
     if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, ix + 6, 0xFF) == 0) {
         MC_Move_Sub(Check_Menu_Lever(1, 0), 0, ix + 6, 0xFF);
     }
-    
+
     /* ── Render NativeUI declaratively to match legacy focus ── */
     if (!use_rmlui || !rmlui_menu_option) {
         const int OPTION_UNLOCKED_GRAPHIC_START = 91;
         const int OPTION_LOCKED_GRAPHIC_START = 84;
         NativeUI_SetFocusIndex(Menu_Cursor_Y[0]);
         NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
-        NativeUI_SetGraphicOffset(ix ? OPTION_UNLOCKED_GRAPHIC_START : OPTION_LOCKED_GRAPHIC_START); 
-        NativeUI_SetMasterPlayer(1); // Bind to Menu_Suicide[1] (which is ALIVE=0) since Menu_Suicide[0]=1 (DEAD)
+        NativeUI_SetGraphicOffset(ix ? OPTION_UNLOCKED_GRAPHIC_START : OPTION_LOCKED_GRAPHIC_START);
+        NativeUI_SetMasterPlayer(1);    // Bind to Menu_Suicide[1] (which is ALIVE=0) since Menu_Suicide[0]=1 (DEAD)
         NativeUI_SetLetterType(0x70A7); // Use narrower font for option select
-        
+
         NativeUI_Button("GAME OPTION");
         NativeUI_Button("BUTTON CONFIG.");
         NativeUI_Button("SYSTEM DIRECTION");
         NativeUI_Button("SOUND");
         NativeUI_Button("SAVE / LOAD");
-        
+
         if (ix) {
             NativeUI_Button("EXTRA OPTION");
         }
-        
+
         NativeUI_Button("FX OPTION");
         NativeUI_Button("EXIT");
-        
+
         NativeUI_End();
     }
-
 
     /* ── Input dispatch ── */
     if (IO_Result == 0x100 || IO_Result == 0x200) {

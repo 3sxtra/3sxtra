@@ -25,7 +25,20 @@ typedef struct {
     int index;
 } GcmRenderTask;
 
-// The CRS_Renderer_* API is implemented in ps3_renderer_gcm.c
-// No longer need PS3_Renderer_* prefixes for the external API.
+void CRS_Renderer_Init(void);
+void CRS_Renderer_BeginFrame(void);
+void CRS_Renderer_RenderFrame(void);
+void CRS_Renderer_EndFrame(void);
+void CRS_Renderer_CreateTexture(unsigned int th);
+void CRS_Renderer_DestroyTexture(unsigned int th);
+void CRS_Renderer_UnlockTexture(unsigned int th);
+void CRS_Renderer_CreatePalette(unsigned int ph);
+void CRS_Renderer_DestroyPalette(unsigned int ph);
+void CRS_Renderer_UnlockPalette(unsigned int ph);
+void CRS_Renderer_SetTexture(unsigned int th);
+void CRS_Renderer_DrawTexturedQuad(const Sprite* sprite, unsigned int color);
+void CRS_Renderer_DrawSolidQuad(const Quad* vertices, unsigned int color);
+void CRS_Renderer_DrawSprite(const Sprite* sprite, unsigned int color);
+void CRS_Renderer_DrawSprite2(const Sprite2* sprite2);
 
 #endif // PS3_RENDERER_GCM_H

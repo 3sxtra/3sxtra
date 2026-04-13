@@ -19,10 +19,10 @@
 #define AFS_CACHE_MAX_SIZE (64 * 1024)
 
 typedef struct {
-    int file_num;       /* AFS file index cached, -1 = empty */
-    void* data;         /* Cached data (memalign'd to 16) */
-    uint32_t size;      /* Size of cached data */
-    uint32_t age;       /* Incremented on every cache miss; lower = older */
+    int file_num;  /* AFS file index cached, -1 = empty */
+    void* data;    /* Cached data (memalign'd to 16) */
+    uint32_t size; /* Size of cached data */
+    uint32_t age;  /* Incremented on every cache miss; lower = older */
 } AFSCacheSlot;
 
 static AFSCacheSlot s_cache[AFS_CACHE_SLOTS];
@@ -31,27 +31,31 @@ static uint32_t s_cache_age = 0;
 static char* local_strdup(const char* s) {
     size_t len = strlen(s) + 1;
     char* d = malloc(len);
-    if (d) memcpy(d, s, len);
+    if (d)
+        memcpy(d, s, len);
     return d;
 }
 
 static unsigned int ReadU32LE(int fd) {
     unsigned char b[4];
     uint64_t read_bytes = 0;
-    if (cellFsRead(fd, b, 4, &read_bytes) != CELL_FS_SUCCEEDED || read_bytes != 4) return 0;
+    if (cellFsRead(fd, b, 4, &read_bytes) != CELL_FS_SUCCEEDED || read_bytes != 4)
+        return 0;
     return b[0] | (b[1] << 8) | (b[2] << 16) | (b[3] << 24);
 }
 
 static unsigned int ReadU32BE(int fd) {
     unsigned char b[4];
     uint64_t read_bytes = 0;
-    if (cellFsRead(fd, b, 4, &read_bytes) != CELL_FS_SUCCEEDED || read_bytes != 4) return 0;
+    if (cellFsRead(fd, b, 4, &read_bytes) != CELL_FS_SUCCEEDED || read_bytes != 4)
+        return 0;
     return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
 }
 
 static void read_string(int fd, char* dst) {
     uint64_t read_bytes = 0;
-    if (cellFsRead(fd, dst, AFS_MAX_NAME_LENGTH, &read_bytes) != CELL_FS_SUCCEEDED || read_bytes != AFS_MAX_NAME_LENGTH) {
+    if (cellFsRead(fd, dst, AFS_MAX_NAME_LENGTH, &read_bytes) != CELL_FS_SUCCEEDED ||
+        read_bytes != AFS_MAX_NAME_LENGTH) {
         memset(dst, 0, AFS_MAX_NAME_LENGTH);
     }
 }
@@ -90,11 +94,16 @@ static int audio_mutex_initialized = 0;
 
 static bool is_valid_attribute_data(unsigned int attributes_offset, unsigned int attributes_size, long file_size,
                                     unsigned int entries_end_offset, unsigned int entry_count) {
-    if ((attributes_offset == 0) || (attributes_size == 0)) return false;
-    if (attributes_size > (file_size - entries_end_offset)) return false;
-    if (attributes_size < (entry_count * AFS_ATTRIBUTE_ENTRY_SIZE)) return false;
-    if (attributes_offset < entries_end_offset) return false;
-    if (attributes_offset > (file_size - attributes_size)) return false;
+    if ((attributes_offset == 0) || (attributes_size == 0))
+        return false;
+    if (attributes_size > (file_size - entries_end_offset))
+        return false;
+    if (attributes_size < (entry_count * AFS_ATTRIBUTE_ENTRY_SIZE))
+        return false;
+    if (attributes_offset < entries_end_offset)
+        return false;
+    if (attributes_offset > (file_size - attributes_size))
+        return false;
     return true;
 }
 
@@ -138,7 +147,8 @@ static AFSCacheSlot* cache_evict(void) {
 }
 
 static void cache_store(int file_num, const void* data, uint32_t size) {
-    if (size > AFS_CACHE_MAX_SIZE) return; /* Too large to cache */
+    if (size > AFS_CACHE_MAX_SIZE)
+        return; /* Too large to cache */
 
     AFSCacheSlot* slot = cache_find(file_num);
     if (slot) {
@@ -148,7 +158,8 @@ static void cache_store(int file_num, const void* data, uint32_t size) {
 
     slot = cache_evict();
     slot->data = memalign(16, (size + 15) & ~15);
-    if (!slot->data) return;
+    if (!slot->data)
+        return;
     memcpy(slot->data, data, size);
     slot->file_num = file_num;
     slot->size = size;
@@ -264,7 +275,8 @@ static bool init_afs(const char* file_path) {
         attributes_offset = ReadU32LE(fd);
         attributes_size = ReadU32LE(fd);
 
-        if (is_valid_attribute_data(attributes_offset, attributes_size, file_size, entries_end_offset, afs.entry_count)) {
+        if (is_valid_attribute_data(
+                attributes_offset, attributes_size, file_size, entries_end_offset, afs.entry_count)) {
             has_attributes = true;
         }
     }
@@ -281,6 +293,7 @@ static bool init_afs(const char* file_path) {
 
     afs.disk_fd = fd;
     sys_mutex_attribute_t mutex_attr;
+    memset(&mutex_attr, 0, sizeof(mutex_attr));
     sys_mutex_attribute_initialize(mutex_attr);
     mutex_attr.attr_recursive = SYS_SYNC_RECURSIVE;
     sys_mutex_create(&read_mutex, &mutex_attr);
@@ -291,6 +304,7 @@ static bool init_afs(const char* file_path) {
     if (cellFsOpen(full_path, CELL_FS_O_RDONLY, &audio_fd, NULL, 0) == CELL_FS_SUCCEEDED) {
         audio_disk_fd = audio_fd;
         sys_mutex_attribute_t audio_mutex_attr;
+        memset(&audio_mutex_attr, 0, sizeof(audio_mutex_attr));
         sys_mutex_attribute_initialize(audio_mutex_attr);
         audio_mutex_attr.attr_recursive = SYS_SYNC_RECURSIVE;
         sys_mutex_create(&audio_read_mutex, &audio_mutex_attr);
@@ -351,12 +365,12 @@ unsigned int AFS_GetFileCount(void) {
 }
 
 unsigned int AFS_GetSize(int file_num) {
-    if ((file_num < 0) || (file_num >= (int)afs.entry_count)) return 0;
+    if ((file_num < 0) || (file_num >= (int)afs.entry_count))
+        return 0;
     return afs.entries[file_num].size;
 }
 
-void AFS_RunServer(void) {
-}
+void AFS_RunServer(void) {}
 
 AFSHandle AFS_Open(int file_num) {
     for (int i = 0; i < AFS_MAX_READ_REQUESTS; i++) {
@@ -373,10 +387,12 @@ AFSHandle AFS_Open(int file_num) {
 }
 
 void AFS_Read(AFSHandle handle, int sectors, void* buf) {
-    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS) return;
-    
+    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS)
+        return;
+
     ReadRequest* request = &requests[handle];
-    if (!request->initialized) return;
+    if (!request->initialized)
+        return;
 
     if (afs.disk_fd < 0 || !mutex_initialized) {
         request->state = AFS_READ_STATE_ERROR;
@@ -417,8 +433,15 @@ void AFS_Read(AFSHandle handle, int sectors, void* buf) {
     int ret_read = cellFsRead(afs.disk_fd, buf, size, &read_bytes);
 
     if (ret_lseek != CELL_FS_SUCCEEDED || ret_read != CELL_FS_SUCCEEDED || read_bytes != size) {
-        printf("[AFS] ERROR: Read failed! Handle=%d, File=%d, Offset=%lu, ReqSize=%lu, ReadSize=%lu, LSeekRet=0x%x, ReadRet=0x%x\n",
-               handle, request->file_num, offset, (unsigned long)size, (unsigned long)read_bytes, ret_lseek, ret_read);
+        printf("[AFS] ERROR: Read failed! Handle=%d, File=%d, Offset=%lu, ReqSize=%lu, ReadSize=%lu, LSeekRet=0x%x, "
+               "ReadRet=0x%x\n",
+               handle,
+               request->file_num,
+               offset,
+               (unsigned long)size,
+               (unsigned long)read_bytes,
+               ret_lseek,
+               ret_read);
         request->state = AFS_READ_STATE_ERROR;
     } else {
         /* Cache small full-file reads for MRU reuse */
@@ -428,7 +451,7 @@ void AFS_Read(AFSHandle handle, int sectors, void* buf) {
         request->sector += sectors;
         request->state = AFS_READ_STATE_FINISHED;
     }
-    
+
     sys_mutex_unlock(read_mutex);
 }
 
@@ -439,9 +462,11 @@ void AFS_ReadSync(AFSHandle handle, int sectors, void* buf) {
 /* F-HIGH-01 Audit Fix: Audio-thread read path using separate fd + mutex.
  * Eliminates serialization of audio reads behind the main thread's disk I/O. */
 void AFS_ReadSyncAudio(AFSHandle handle, int sectors, void* buf) {
-    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS) return;
+    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS)
+        return;
     ReadRequest* request = &requests[handle];
-    if (!request->initialized) return;
+    if (!request->initialized)
+        return;
 
     /* Fallback to normal path if audio fd not available */
     if (audio_disk_fd < 0 || !audio_mutex_initialized) {
@@ -468,6 +493,8 @@ void AFS_ReadSyncAudio(AFSHandle handle, int sectors, void* buf) {
         printf("[AFS] ERROR: Audio read failed! Handle=%d, File=%d\n", handle, request->file_num);
         request->state = AFS_READ_STATE_ERROR;
     } else {
+        // M-04 Audit Fix: Protect request state writes under the audio mutex
+        // to prevent TOCTOU races if the main thread closes/reopens the handle
         request->sector += sectors;
         request->state = AFS_READ_STATE_FINISHED;
     }
@@ -480,20 +507,24 @@ void AFS_Stop(AFSHandle handle) {
 }
 
 void AFS_Close(AFSHandle handle) {
-    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS) return;
+    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS)
+        return;
     memset(&requests[handle], 0, sizeof(ReadRequest));
 }
 
 AFSReadState AFS_GetState(AFSHandle handle) {
-    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS) return AFS_READ_STATE_ERROR;
+    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS)
+        return AFS_READ_STATE_ERROR;
     return requests[handle].state;
 }
 
 unsigned int AFS_GetSectorCount(AFSHandle handle) {
-    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS) return 0;
+    if (handle < 0 || handle >= AFS_MAX_READ_REQUESTS)
+        return 0;
     ReadRequest* request = &requests[handle];
     // F-04 Audit Fix: Bounds check file_num before accessing entries (matches H-08 in AFS_Read)
-    if (request->file_num < 0 || request->file_num >= (int)afs.entry_count) return 0;
+    if (request->file_num < 0 || request->file_num >= (int)afs.entry_count)
+        return 0;
     unsigned int size = afs.entries[request->file_num].size;
     return (size + 2048 - 1) / 2048;
 }

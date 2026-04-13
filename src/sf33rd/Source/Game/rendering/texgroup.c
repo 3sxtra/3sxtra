@@ -4,6 +4,17 @@
  */
 
 #include "sf33rd/Source/Game/rendering/texgroup.h"
+
+#ifdef PLATFORM_PS3
+#define REVERT_U16(x) (uint16_t)((((uint16_t)(x) & 0xFF) << 8) | (((uint16_t)(x) & 0xFF00) >> 8))
+#define REVERT_U32(x)                                                                                                  \
+    (uint32_t)((((uint32_t)(x) & 0xFF) << 24) | (((uint32_t)(x) & 0xFF00) << 8) | (((uint32_t)(x) & 0xFF0000) >> 8) |  \
+               (((uint32_t)(x) & 0xFF000000) >> 24))
+#else
+#define REVERT_U16(x) (x)
+#define REVERT_U32(x) (x)
+#endif
+
 #include "arcade/arcade_balance.h"
 #include "common.h"
 #include "main.h"
@@ -154,23 +165,23 @@ void q_ldreq_texture_group(REQ* curr) {
         }
 
         curr->rno = 1;
-        curr->fnum = bsd->apfn;
+        curr->fnum = (int16_t)REVERT_U16(bsd->apfn);
 
-        if (bsd->apfn == -1) {
+        if ((int16_t)REVERT_U16(bsd->apfn) == -1) {
             *curr->result |= lpr_wrdata[curr->id];
             curr->be = 0;
         }
 
-        if (bsd->num_of_1st == 0) {
-            curr->group = obj_group_table[bsd->num_of_1st + 1];
+        if (REVERT_U16(bsd->num_of_1st) == 0) {
+            curr->group = obj_group_table[REVERT_U16(bsd->num_of_1st) + 1];
         } else {
-            curr->group = obj_group_table[bsd->num_of_1st];
+            curr->group = obj_group_table[REVERT_U16(bsd->num_of_1st)];
         }
 
         curr->lds = &texgrplds[curr->group];
 
         if (curr->lds->ok) {
-            if (bsd->ix1st == 1 || bsd->ix1st == 2) {
+            if ((int16_t)REVERT_U16(bsd->ix1st) == 1 || (int16_t)REVERT_U16(bsd->ix1st) == 2) {
                 switch (rckey_work[curr->lds->key].type) {
                 case 3:
                     if (curr->id) {
@@ -197,7 +208,7 @@ void q_ldreq_texture_group(REQ* curr) {
                 }
 
                 // A duplicate transfer occurred. File number: %d\n
-                flLogOut("二重転送が発生しました。ファイル番号：%d\n", bsd->apfn);
+                flLogOut("二重転送が発生しました。ファイル番号：%d\n", (int16_t)REVERT_U16(bsd->apfn));
                 // Original PS2 code hung here. Treat as already loaded and continue.
                 *curr->result |= lpr_wrdata[curr->id];
                 curr->be = 0;
@@ -258,13 +269,13 @@ void q_ldreq_texture_group(REQ* curr) {
         case 1:
             fsClose(curr);
             ldadr = Get_ramcnt_address(curr->key);
-            curr->lds->texture_table = ldadr + bsd->to_tex;
+            curr->lds->texture_table = ldadr + REVERT_U32(bsd->to_tex);
             curr->lds->trans_table = ldadr;
             curr->lds->ok = 1;
 
-            switch (bsd->ix1st) {
+            switch ((int16_t)REVERT_U16(bsd->ix1st)) {
             case 1:
-                ldchd = ldadr + bsd->to_chd;
+                ldchd = ldadr + REVERT_U32(bsd->to_chd);
 
                 // Explanation:
                 //
@@ -302,7 +313,7 @@ void q_ldreq_texture_group(REQ* curr) {
 
                     // Akuma specific code
                     if (curr->ix == 15) {
-                        trsbas = (u16*)(((u32*)texgrplds[15].trans_table)[166] + texgrplds[15].trans_table);
+                        trsbas = (u16*)(REVERT_U32(((u32*)texgrplds[15].trans_table)[166]) + texgrplds[15].trans_table);
                         count = *trsbas;
                         count -= 1;
                         trsbas[0] = count;
@@ -390,7 +401,7 @@ void checkSelObjFileLoaded() {
     lds = &texgrplds[obj_group_table[0x69E0]];
 
     while (1) {
-        rnum = load_it_use_this_key(bsd->apfn, lds->key);
+        rnum = load_it_use_this_key((int16_t)REVERT_U16(bsd->apfn), lds->key);
 
         if (rnum != 0) {
             break;
@@ -398,7 +409,7 @@ void checkSelObjFileLoaded() {
     }
 
     ldadr = Get_ramcnt_address(lds->key);
-    lds->texture_table = ldadr + bsd->to_tex;
+    lds->texture_table = ldadr + REVERT_U32(bsd->to_tex);
     lds->trans_table = ldadr;
     lds->ok = 1;
     omSelObjNowOnMemoryType = mpp_w.language;
@@ -468,9 +479,9 @@ static s32 load_any_texture_grpnum(u8 grp, u8 kokey) {
         return 0;
     }
 
-    lds->key = load_it_use_any_key(bsd->apfn, kokey, grp);
+    lds->key = load_it_use_any_key((int16_t)REVERT_U16(bsd->apfn), kokey, grp);
     ldadr = Get_ramcnt_address(lds->key);
-    lds->texture_table = ldadr + bsd->to_tex;
+    lds->texture_table = ldadr + REVERT_U32(bsd->to_tex);
     lds->trans_table = ldadr;
     lds->ok = 1;
     return 1;

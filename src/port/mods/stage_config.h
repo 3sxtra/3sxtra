@@ -68,9 +68,15 @@ void StageConfig_SetDefaultLayer(int layer_idx);
 #else
 
 static inline void StageConfig_Init(void) {}
-static inline void StageConfig_Load(int stage_index) { (void)stage_index; }
-static inline void StageConfig_Save(int stage_index) { (void)stage_index; }
-static inline void StageConfig_SetDefaultLayer(int layer_idx) { (void)layer_idx; }
+static inline void StageConfig_Load(int stage_index) {
+    (void)stage_index;
+}
+static inline void StageConfig_Save(int stage_index) {
+    (void)stage_index;
+}
+static inline void StageConfig_SetDefaultLayer(int layer_idx) {
+    (void)layer_idx;
+}
 
 #endif
 

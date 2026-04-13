@@ -39,18 +39,41 @@
 #include "renderer/ps3_renderer_gcm.h"
 SDL_Texture* cps3_canvas = NULL;
 
-void SDLGameRenderer_Init(SDL_Renderer* renderer)       { (void)renderer; CRS_Renderer_Init(); }
-void SDLGameRenderer_BeginFrame(void)                   { CRS_Renderer_BeginFrame(); }
-void SDLGameRenderer_RenderFrame(void)                  { CRS_Renderer_RenderFrame(); }
-void SDLGameRenderer_EndFrame(void)                     { CRS_Renderer_EndFrame(); }
+void SDLGameRenderer_Init(SDL_Renderer* renderer) {
+    (void)renderer;
+    CRS_Renderer_Init();
+}
+void SDLGameRenderer_BeginFrame(void) {
+    CRS_Renderer_BeginFrame();
+}
+void SDLGameRenderer_RenderFrame(void) {
+    CRS_Renderer_RenderFrame();
+}
+void SDLGameRenderer_EndFrame(void) {
+    CRS_Renderer_EndFrame();
+}
 
-void SDLGameRenderer_CreateTexture(unsigned int th)     { CRS_Renderer_CreateTexture(th); }
-void SDLGameRenderer_DestroyTexture(unsigned int th)    { CRS_Renderer_DestroyTexture(th); }
-void SDLGameRenderer_UnlockTexture(unsigned int th)     { CRS_Renderer_UnlockTexture(th); }
-void SDLGameRenderer_CreatePalette(unsigned int ph)     { CRS_Renderer_CreatePalette(ph); }
-void SDLGameRenderer_DestroyPalette(unsigned int ph)    { CRS_Renderer_DestroyPalette(ph); }
-void SDLGameRenderer_UnlockPalette(unsigned int ph)     { CRS_Renderer_UnlockPalette(ph); }
-void SDLGameRenderer_SetTexture(unsigned int th)        { CRS_Renderer_SetTexture(th); }
+void SDLGameRenderer_CreateTexture(unsigned int th) {
+    CRS_Renderer_CreateTexture(th);
+}
+void SDLGameRenderer_DestroyTexture(unsigned int th) {
+    CRS_Renderer_DestroyTexture(th);
+}
+void SDLGameRenderer_UnlockTexture(unsigned int th) {
+    CRS_Renderer_UnlockTexture(th);
+}
+void SDLGameRenderer_CreatePalette(unsigned int ph) {
+    CRS_Renderer_CreatePalette(ph);
+}
+void SDLGameRenderer_DestroyPalette(unsigned int ph) {
+    CRS_Renderer_DestroyPalette(ph);
+}
+void SDLGameRenderer_UnlockPalette(unsigned int ph) {
+    CRS_Renderer_UnlockPalette(ph);
+}
+void SDLGameRenderer_SetTexture(unsigned int th) {
+    CRS_Renderer_SetTexture(th);
+}
 
 void SDLGameRenderer_DrawTexturedQuad(const Sprite* sprite, unsigned int color) {
     CRS_Renderer_DrawTexturedQuad(sprite, color);
@@ -90,12 +113,15 @@ static int msg_tex_w = 0, msg_tex_h = 0;
 static CellGcmTexture msg_rsx_texture;
 static int msg_tex_ready = 0;
 
-void SDLMessageRenderer_Initialize(SDL_Renderer* renderer) { (void)renderer; }
+void SDLMessageRenderer_Initialize(SDL_Renderer* renderer) {
+    (void)renderer;
+}
 void SDLMessageRenderer_BeginFrame(void) {}
 
 void SDLMessageRenderer_CreateTexture(int width, int height, void* pixels, int format) {
     (void)format;
-    if (!pixels || width <= 0 || height <= 0) return;
+    if (!pixels || width <= 0 || height <= 0)
+        return;
 
     // Free old allocation
     if (msg_tex_pixels) {
@@ -108,7 +134,8 @@ void SDLMessageRenderer_CreateTexture(int width, int height, void* pixels, int f
     uint32_t pitch = ((uint32_t)width * 4 + 63) & ~63;
     extern void* tex_pool_alloc(uint32_t size);
     msg_tex_pixels = tex_pool_alloc(pitch * (uint32_t)height);
-    if (!msg_tex_pixels) return;
+    if (!msg_tex_pixels)
+        return;
 
     // Copy pixel data (assumed ARGB8888)
     const uint8_t* src = (const uint8_t*)pixels;
@@ -121,19 +148,16 @@ void SDLMessageRenderer_CreateTexture(int width, int height, void* pixels, int f
     msg_tex_w = width;
     msg_tex_h = height;
 
-    msg_rsx_texture.format = CELL_GCM_TEXTURE_A8R8G8B8 | CELL_GCM_TEXTURE_LN | CELL_GCM_TEXTURE_NR;
+    // H-04 Audit Fix: Remove NR flag to match game texture convention (normalized 0-1 range).
+    msg_rsx_texture.format = CELL_GCM_TEXTURE_A8R8G8B8 | CELL_GCM_TEXTURE_LN;
     msg_rsx_texture.mipmap = 1;
     msg_rsx_texture.dimension = CELL_GCM_TEXTURE_DIMENSION_2;
     msg_rsx_texture.cubemap = CELL_GCM_FALSE;
-    msg_rsx_texture.remap = CELL_GCM_TEXTURE_REMAP_ORDER_XYXY << 16 |
-                             CELL_GCM_TEXTURE_REMAP_FROM_A << 14 |
-                             CELL_GCM_TEXTURE_REMAP_FROM_R << 12 |
-                             CELL_GCM_TEXTURE_REMAP_FROM_G << 10 |
-                             CELL_GCM_TEXTURE_REMAP_FROM_B << 8 |
-                             CELL_GCM_TEXTURE_REMAP_REMAP << 6 |
-                             CELL_GCM_TEXTURE_REMAP_REMAP << 4 |
-                             CELL_GCM_TEXTURE_REMAP_REMAP << 2 |
-                             CELL_GCM_TEXTURE_REMAP_REMAP;
+    msg_rsx_texture.remap = CELL_GCM_TEXTURE_REMAP_ORDER_XYXY << 16 | CELL_GCM_TEXTURE_REMAP_FROM_A << 14 |
+                            CELL_GCM_TEXTURE_REMAP_FROM_R << 12 | CELL_GCM_TEXTURE_REMAP_FROM_G << 10 |
+                            CELL_GCM_TEXTURE_REMAP_FROM_B << 8 | CELL_GCM_TEXTURE_REMAP_REMAP << 6 |
+                            CELL_GCM_TEXTURE_REMAP_REMAP << 4 | CELL_GCM_TEXTURE_REMAP_REMAP << 2 |
+                            CELL_GCM_TEXTURE_REMAP_REMAP;
     msg_rsx_texture.width = width;
     msg_rsx_texture.height = height;
     msg_rsx_texture.depth = 1;
@@ -143,10 +167,10 @@ void SDLMessageRenderer_CreateTexture(int width, int height, void* pixels, int f
     msg_tex_ready = 1;
 }
 
-void SDLMessageRenderer_DrawTexture(int x0, int y0, int x1, int y1,
-                                     int u0, int v0, int u1, int v1,
-                                     unsigned int color) {
-    if (!msg_tex_ready || !msg_tex_pixels) return;
+void SDLMessageRenderer_DrawTexture(int x0, int y0, int x1, int y1, int u0, int v0, int u1, int v1,
+                                    unsigned int color) {
+    if (!msg_tex_ready || !msg_tex_pixels)
+        return;
 
     // Convert texel coords to normalized UVs
     float fu0 = (float)u0 / (float)msg_tex_w;
@@ -156,19 +180,31 @@ void SDLMessageRenderer_DrawTexture(int x0, int y0, int x1, int y1,
 
     // Use CRS_Renderer_DrawTexturedQuad by temporarily binding via a Sprite
     Sprite spr;
-    spr.v[0].x = (float)x0; spr.v[0].y = (float)y0; spr.v[0].z = 0.0f;
-    spr.v[1].x = (float)x1; spr.v[1].y = (float)y0; spr.v[1].z = 0.0f;
-    spr.v[2].x = (float)x1; spr.v[2].y = (float)y1; spr.v[2].z = 0.0f;
-    spr.v[3].x = (float)x0; spr.v[3].y = (float)y1; spr.v[3].z = 0.0f;
-    spr.t[0].s = fu0; spr.t[0].t = fv0;
-    spr.t[1].s = fu1; spr.t[1].t = fv0;
-    spr.t[2].s = fu1; spr.t[2].t = fv1;
-    spr.t[3].s = fu0; spr.t[3].t = fv1;
+    spr.v[0].x = (float)x0;
+    spr.v[0].y = (float)y0;
+    spr.v[0].z = 0.0f;
+    spr.v[1].x = (float)x1;
+    spr.v[1].y = (float)y0;
+    spr.v[1].z = 0.0f;
+    spr.v[2].x = (float)x1;
+    spr.v[2].y = (float)y1;
+    spr.v[2].z = 0.0f;
+    spr.v[3].x = (float)x0;
+    spr.v[3].y = (float)y1;
+    spr.v[3].z = 0.0f;
+    spr.t[0].s = fu0;
+    spr.t[0].t = fv0;
+    spr.t[1].s = fu1;
+    spr.t[1].t = fv0;
+    spr.t[2].s = fu1;
+    spr.t[2].t = fv1;
+    spr.t[3].s = fu0;
+    spr.t[3].t = fv1;
 
     // Bind msg_rsx_texture to TEXUNIT0 for this draw
     extern CellGcmContextData* gCellGcmCurrentContext;
     cellGcmSetTexture(gCellGcmCurrentContext, 0, &msg_rsx_texture);
-    
+
     // For now, route through CRS_Renderer_DrawTexturedQuad which uses current_th
     CRS_Renderer_DrawTexturedQuad(&spr, color);
 }
@@ -177,9 +213,11 @@ void SDLMessageRenderer_DrawTexture(int x0, int y0, int x1, int y1,
 /*  SDLDebugText stubs                                                        */
 /* ========================================================================= */
 
-void SDLDebugText_Initialize(SDL_Renderer* renderer)    { (void)renderer; }
-void SDLDebugText_Render(void)                          { }
-void SDLDebugText_Destroy(void)                         { }
+void SDLDebugText_Initialize(SDL_Renderer* renderer) {
+    (void)renderer;
+}
+void SDLDebugText_Render(void) {}
+void SDLDebugText_Destroy(void) {}
 
 // Removed Config, Keymap, Resources, and Paths stubs to let the native port system compile.
 /* ========================================================================= */
@@ -190,15 +228,15 @@ void fatal_error(const char* fmt, ...) {
     va_list args, args_copy;
     va_start(args, fmt);
     va_copy(args_copy, args);
-    fprintf(stderr, "\n=== FATAL ERROR ===\n");
-    fprintf(stderr, "[fmt pointer: %p]\n", fmt);
-    fprintf(stderr, "RAW FMT: ");
-    fprintf(stderr, "%s", fmt);
-    fprintf(stderr, "\nFORMATTED: ");
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n===================\n");
-    fflush(stderr);
-    
+    fprintf(stdout, "\n=== FATAL ERROR ===\n");
+    fprintf(stdout, "[fmt pointer: %p]\n", fmt);
+    fprintf(stdout, "RAW FMT: ");
+    fprintf(stdout, "%s", fmt);
+    fprintf(stdout, "\nFORMATTED: ");
+    vfprintf(stdout, fmt, args);
+    fprintf(stdout, "\n===================\n");
+    fflush(stdout);
+
     // Also write to file so we can read it easily outside of the emulator
     FILE* f = fopen("/dev_hdd0/game/3SX00001/USRDIR/fatal.log", "w");
     if (f) {
@@ -207,7 +245,7 @@ void fatal_error(const char* fmt, ...) {
         fprintf(f, "\nRAW FMT: %s\n", fmt);
         fclose(f);
     }
-    
+
     va_end(args_copy);
     va_end(args);
     // SYS-HIGH-01 Audit Fix: Clean shutdown before exit to prevent corrupted
@@ -252,28 +290,33 @@ void stop_if(bool condition) {
 
 void* Rom_Load(const char* path, size_t* size) {
     (void)path;
-    if (size) *size = 0;
+    if (size)
+        *size = 0;
     return NULL;
 }
 
 /* ========================================================================= */
 /*  zlib stubs (inflate decompression — no-op for now)                        */
 /* ========================================================================= */
-// zlib isn't compiled or linked for PS3 (no zlib.h in toolchain).
+// C-03 Audit Fix: zlib isn't compiled or linked for PS3 (no zlib.h in toolchain).
+// Return errors instead of calling fatal_error so callers can gracefully fall back.
 typedef void z_stream;
 #define Z_OK 0
 #define Z_STREAM_END 1
+#define Z_DATA_ERROR (-3)
 
 int inflateInit_(z_stream* strm, const char* version, int stream_size) {
-    (void)strm; (void)version; (void)stream_size;
-    printf("[PS3] inflateInit_ stub — FATAL: PPU-side zlib decompression is not implemented.\n");
-    printf("[PS3] Ensure all memory buffers are 16-byte aligned to use the edgeZlib pipeline.\n");
-    fatal_error("zlib fallback path reached (unaligned buffers)");
-    return Z_OK;
+    (void)strm;
+    (void)version;
+    (void)stream_size;
+    printf("[PS3] WARNING: inflateInit_ stub called — PPU-side zlib decompression is not implemented.\n");
+    printf("[PS3] Ensure all memory buffers are 16-byte aligned to use the edgeZlib SPURS pipeline.\n");
+    return Z_DATA_ERROR; // Signal failure so callers can handle gracefully
 }
 
 int inflate(z_stream* strm, int flush) {
-    (void)strm; (void)flush;
+    (void)strm;
+    (void)flush;
     return Z_STREAM_END;
 }
 
@@ -288,30 +331,111 @@ int inflateEnd(z_stream* strm) {
 /*  never actually called on PS3. Provide no-op stubs to satisfy linker.     */
 /* ========================================================================= */
 
-int scePad2GetState(int port, int slot)        { (void)port; (void)slot; return 0; }
-int scePad2Read(int port, int slot, void* buf) { (void)port; (void)slot; (void)buf; return 0; }
-int scePad2GetButtonProfile(int port, int slot, void* p) { (void)port; (void)slot; (void)p; return 0; }
-int sceVibGetProfile(int port, int slot, void* p) { (void)port; (void)slot; (void)p; return 0; }
-int sceVibSetActParam(int port, int slot, void* p) { (void)port; (void)slot; (void)p; return 0; }
+int scePad2GetState(int port, int slot) {
+    (void)port;
+    (void)slot;
+    return 0;
+}
+int scePad2Read(int port, int slot, void* buf) {
+    (void)port;
+    (void)slot;
+    (void)buf;
+    return 0;
+}
+int scePad2GetButtonProfile(int port, int slot, void* p) {
+    (void)port;
+    (void)slot;
+    (void)p;
+    return 0;
+}
+int sceVibGetProfile(int port, int slot, void* p) {
+    (void)port;
+    (void)slot;
+    (void)p;
+    return 0;
+}
+int sceVibSetActParam(int port, int slot, void* p) {
+    (void)port;
+    (void)slot;
+    (void)p;
+    return 0;
+}
 
-int sceMcInit(void) { return 0; }
-int sceMcSync(int mode, int* cmd, int* result) { (void)mode; (void)cmd; if(result) *result = 0; return 0; }
+int sceMcInit(void) {
+    return 0;
+}
+int sceMcSync(int mode, int* cmd, int* result) {
+    (void)mode;
+    (void)cmd;
+    if (result)
+        *result = 0;
+    return 0;
+}
 int sceMcGetDir(int port, int slot, const char* name, unsigned int mode, int max, void* table) {
-    (void)port; (void)slot; (void)name; (void)mode; (void)max; (void)table; return 0;
+    (void)port;
+    (void)slot;
+    (void)name;
+    (void)mode;
+    (void)max;
+    (void)table;
+    return 0;
 }
 int sceMcGetInfo(int port, int slot, int* type, int* free_c, int* format) {
-    (void)port; (void)slot; if(type) *type = 0; if(free_c) *free_c = 0; if(format) *format = 0; return 0;
+    (void)port;
+    (void)slot;
+    if (type)
+        *type = 0;
+    if (free_c)
+        *free_c = 0;
+    if (format)
+        *format = 0;
+    return 0;
 }
 int sceMcOpen(int port, int slot, const char* name, int flags) {
-    (void)port; (void)slot; (void)name; (void)flags; return -1;
+    (void)port;
+    (void)slot;
+    (void)name;
+    (void)flags;
+    return -1;
 }
-int sceMcRead(int fd, void* buf, int size) { (void)fd; (void)buf; (void)size; return 0; }
-int sceMcClose(int fd) { (void)fd; return 0; }
-int sceMcMkdir(int port, int slot, const char* name) { (void)port; (void)slot; (void)name; return 0; }
-int sceMcWrite(int fd, const void* buf, int size) { (void)fd; (void)buf; (void)size; return 0; }
-int sceMcDelete(int port, int slot, const char* name) { (void)port; (void)slot; (void)name; return 0; }
-int sceMcFormat(int port, int slot) { (void)port; (void)slot; return 0; }
-int sceMcUnformat(int port, int slot) { (void)port; (void)slot; return 0; }
+int sceMcRead(int fd, void* buf, int size) {
+    (void)fd;
+    (void)buf;
+    (void)size;
+    return 0;
+}
+int sceMcClose(int fd) {
+    (void)fd;
+    return 0;
+}
+int sceMcMkdir(int port, int slot, const char* name) {
+    (void)port;
+    (void)slot;
+    (void)name;
+    return 0;
+}
+int sceMcWrite(int fd, const void* buf, int size) {
+    (void)fd;
+    (void)buf;
+    (void)size;
+    return 0;
+}
+int sceMcDelete(int port, int slot, const char* name) {
+    (void)port;
+    (void)slot;
+    (void)name;
+    return 0;
+}
+int sceMcFormat(int port, int slot) {
+    (void)port;
+    (void)slot;
+    return 0;
+}
+int sceMcUnformat(int port, int slot) {
+    (void)port;
+    (void)slot;
+    return 0;
+}
 
 /* ========================================================================= */
 /*  SDLApp_Exit — called from menu.c directly                                */
@@ -327,8 +451,8 @@ void SDLApp_Exit(void) {
 /*  Netplay stubs — referenced directly from engine code                      */
 /* ========================================================================= */
 
-void Netplay_HandleMenuExit(void) { }
-void Netplay_CancelMatchmaking(void) { }
+void Netplay_HandleMenuExit(void) {}
+void Netplay_CancelMatchmaking(void) {}
 
 /* ========================================================================= */
 /*  Test runner stubs (guarded by DEBUG)                                       */
@@ -341,4 +465,4 @@ void Netplay_CancelMatchmaking(void) { }
 /*  RmlUI stubs                                                               */
 /* ========================================================================= */
 
-void rmlui_wrapper_hide_all_game_documents(void) { }
+void rmlui_wrapper_hide_all_game_documents(void) {}

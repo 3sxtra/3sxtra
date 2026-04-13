@@ -75,28 +75,55 @@ int Netplay_GetBattleStartFrame(void);
 
 #else
 
-static inline void Netplay_SetPlayerNumber(int p) { (void)p; }
-static inline int Netplay_GetPlayerNumber(void) { return 0; }
-static inline void Netplay_SetRemoteIP(const char* ip) { (void)ip; }
-static inline void Netplay_SetLocalPort(unsigned short p) { (void)p; }
-static inline void Netplay_SetRemotePort(unsigned short p) { (void)p; }
+static inline void Netplay_SetPlayerNumber(int p) {
+    (void)p;
+}
+static inline int Netplay_GetPlayerNumber(void) {
+    return 0;
+}
+static inline void Netplay_SetRemoteIP(const char* ip) {
+    (void)ip;
+}
+static inline void Netplay_SetLocalPort(unsigned short p) {
+    (void)p;
+}
+static inline void Netplay_SetRemotePort(unsigned short p) {
+    (void)p;
+}
 static inline void Netplay_EnterLobby(void) {}
 static inline void Netplay_Begin(void) {}
 static inline void Netplay_Run(void) {}
-static inline NetplaySessionState Netplay_GetSessionState(void) { return NETPLAY_SESSION_IDLE; }
+static inline NetplaySessionState Netplay_GetSessionState(void) {
+    return NETPLAY_SESSION_IDLE;
+}
 static inline void Netplay_HandleMenuExit(void) {}
-static inline void Netplay_GetNetworkStats(NetworkStats* stats) { (void)stats; }
-static inline bool Netplay_IsEnabled(void) { return false; }
-static inline bool Netplay_PollEvent(NetplayEvent* out) { (void)out; return false; }
-static inline void Netplay_SetStunSocket(void* socket) { (void)socket; }
-static inline void Netplay_SetNegotiatedFT(int ft) { (void)ft; }
-static inline int Netplay_GetNegotiatedFT(void) { return 0; }
-static inline int Netplay_GetPlayerHandle(void) { return 0; }
-static inline int Netplay_GetBattleStartFrame(void) { return 0; }
+static inline void Netplay_GetNetworkStats(NetworkStats* stats) {
+    (void)stats;
+}
+static inline bool Netplay_IsEnabled(void) {
+    return false;
+}
+static inline bool Netplay_PollEvent(NetplayEvent* out) {
+    (void)out;
+    return false;
+}
+static inline void Netplay_SetStunSocket(void* socket) {
+    (void)socket;
+}
+static inline void Netplay_SetNegotiatedFT(int ft) {
+    (void)ft;
+}
+static inline int Netplay_GetNegotiatedFT(void) {
+    return 0;
+}
+static inline int Netplay_GetPlayerHandle(void) {
+    return 0;
+}
+static inline int Netplay_GetBattleStartFrame(void) {
+    return 0;
+}
 
 #endif
-
-
 
 #ifdef __cplusplus
 }

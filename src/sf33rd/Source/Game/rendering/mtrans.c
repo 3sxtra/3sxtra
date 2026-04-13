@@ -3,6 +3,16 @@
  * Main Graphics Rendering and Transformation Engine
  */
 
+#ifdef PLATFORM_PS3
+#define REVERT_U16(x) (uint16_t)((((uint16_t)(x) & 0xFF) << 8) | (((uint16_t)(x) & 0xFF00) >> 8))
+#define REVERT_U32(x)                                                                                                  \
+    (uint32_t)((((uint32_t)(x) & 0xFF) << 24) | (((uint32_t)(x) & 0xFF00) << 8) | (((uint32_t)(x) & 0xFF0000) >> 8) |  \
+               (((uint32_t)(x) & 0xFF000000) >> 24))
+#else
+#define REVERT_U16(x) (x)
+#define REVERT_U32(x) (x)
+#endif
+
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "common.h"
 #include "port/rendering/legacy_matrix.h"
@@ -102,8 +112,8 @@ typedef struct {
     s32 dh;        // Tile height (from TEX.wh)
     s32 wh;        // Tile class: 1, 2, or 4
     s32 size;      // Decoded tile size in bytes: (wh*wh) << 6
-    u16 tile_code; // trsptr->code (index into texture table)
-    u16 attr;      // trsptr->attr (raw, before XOR with WORK flip)
+    u16 tile_code; // REVERT_U16(trsptr->code) (index into texture table)
+    u16 attr;      // REVERT_U16(trsptr->attr) (raw, before XOR with WORK flip)
     u8* tex_data;  // Pointer to compressed tile data (&((u8*)texptr)[1])
 } CGTileDesc;
 
@@ -150,9 +160,9 @@ static CGTileCacheEntry* cg_build_tile_descs(u32 cg_number) {
             }
 
             u32 n = cg_number - texgrpdat[i].num_of_1st;
-            u16* trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
+            u16* trsbas = (u16*)(texgrplds[i].trans_table + REVERT_U32(((u32*)texgrplds[i].trans_table)[n]));
             u32* textbl = (u32*)texgrplds[i].texture_table;
-            s32 count = *trsbas;
+            s32 count = REVERT_U16(*trsbas);
             trsbas++;
             TileMapEntry* trsptr = (TileMapEntry*)trsbas;
 
@@ -164,15 +174,15 @@ static CGTileCacheEntry* cg_build_tile_descs(u32 cg_number) {
             for (s32 t = 0; t < e->count; t++, trsptr++) {
                 CGTileDesc* d = &e->tiles[t];
                 // Accumulate offsets in the unflipped (positive) direction
-                cx += trsptr->x;
-                cy += trsptr->y;
+                cx += (int16_t)REVERT_U16(trsptr->x);
+                cy += (int16_t)REVERT_U16(trsptr->y);
                 d->cum_x = cx;
                 d->cum_y = cy;
-                d->tile_code = trsptr->code;
-                d->attr = trsptr->attr;
+                d->tile_code = REVERT_U16(trsptr->code);
+                d->attr = REVERT_U16(trsptr->attr);
 
                 // Resolve TEX pointer and parse dimensions
-                TEX* texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+                TEX* texptr = (TEX*)((uintptr_t)textbl + REVERT_U32(((u32*)textbl)[REVERT_U16(trsptr->code)]));
                 d->dw = (texptr->wh & 0xE0) >> 2;
                 d->dh = (texptr->wh & 0x1C) * 2;
                 d->wh = (texptr->wh & 3) + 1;
@@ -258,24 +268,24 @@ static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count, const u
     f32 x = 0, y = 0;
     for (s32 i = 0; i < count; i++) {
         if (flip & 0x8000) {
-            x += trsptr[i].x;
+            x += (int16_t)REVERT_U16(trsptr[i].x);
         } else {
-            x -= trsptr[i].x;
+            x -= (int16_t)REVERT_U16(trsptr[i].x);
         }
         if (flip & 0x4000) {
-            y -= trsptr[i].y;
+            y -= (int16_t)REVERT_U16(trsptr[i].y);
         } else {
-            y += trsptr[i].y;
+            y += (int16_t)REVERT_U16(trsptr[i].y);
         }
 
         s32 dw, dh;
         if (textbl != NULL) {
-            const TEX* texptr = (const TEX*)((uintptr_t)textbl + textbl[trsptr[i].code]);
+            const TEX* texptr = (const TEX*)((uintptr_t)textbl + REVERT_U32(textbl[REVERT_U16(trsptr[i].code)]));
             dw = (texptr->wh & 0xE0) >> 2;
             dh = (texptr->wh & 0x1C) * 2;
         } else {
-            dw = ((trsptr[i].attr & 0xC00) >> 7) + 8;
-            dh = ((trsptr[i].attr & 0x300) >> 5) + 8;
+            dw = ((REVERT_U16(trsptr[i].attr) & 0xC00) >> 7) + 8;
+            dh = ((REVERT_U16(trsptr[i].attr) & 0x300) >> 5) + 8;
         }
 
         f32 left = x - (dw * BOOL(flip & 0x8000));
@@ -551,15 +561,16 @@ static void search_trsptr(uintptr_t trstbl, s32 i, s32 n, s32 cods, s32 atrs, s3
     atrd &= 0x3FFF;
 
     for (j = i; j < n; j++) {
-        tmpbas = (u16*)(trstbl + ((u32*)trstbl)[j]);
-        ctemp = *tmpbas;
+        tmpbas = (u16*)(trstbl + REVERT_U32(((u32*)trstbl)[j]));
+        ctemp = REVERT_U16(*tmpbas);
         tmpbas++;
         tmpptr = (TileMapEntry*)tmpbas;
 
         while (ctemp != 0) {
-            if (!(tmpptr->attr & 0x1000) && (tmpptr->code == cods) && ((tmpptr->attr & 0xF) == atrs)) {
-                tmpptr->code = codd;
-                tmpptr->attr = (tmpptr->attr & 0xC000) | atrd;
+            if (!(REVERT_U16(tmpptr->attr) & 0x1000) && (REVERT_U16(tmpptr->code) == cods) &&
+                ((REVERT_U16(tmpptr->attr) & 0xF) == atrs)) {
+                tmpptr->code = REVERT_U16(codd);
+                tmpptr->attr = REVERT_U16((REVERT_U16(tmpptr->attr) & 0xC000) | atrd);
             }
 
             ctemp--;
@@ -603,8 +614,8 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     n -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
-    count = *trsbas;
+    trsbas = (u16*)(texgrplds[i].trans_table + REVERT_U32(((u32*)texgrplds[i].trans_table)[n]));
+    count = REVERT_U16(*trsbas);
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
@@ -628,21 +639,21 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     while (count--) {
         if (attr & 0x8000) {
-            x += trsptr->x;
+            x += (int16_t)REVERT_U16(trsptr->x);
         } else {
-            x -= trsptr->x;
+            x -= (int16_t)REVERT_U16(trsptr->x);
         }
 
         if (attr & 0x4000) {
-            y -= trsptr->y;
+            y -= (int16_t)REVERT_U16(trsptr->y);
         } else {
-            y += trsptr->y;
+            y += (int16_t)REVERT_U16(trsptr->y);
         }
 
-        dw = ((trsptr->attr & 0xC00) >> 7) + 8;
-        dh = ((trsptr->attr & 0x300) >> 5) + 8;
+        dw = ((REVERT_U16(trsptr->attr) & 0xC00) >> 7) + 8;
+        dh = ((REVERT_U16(trsptr->attr) & 0x300) >> 5) + 8;
 
-        if (!(trsptr->attr & 0x2000)) {
+        if (!(REVERT_U16(trsptr->attr) & 0x2000)) {
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
             }
@@ -652,8 +663,8 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
                                  dw,
                                  dh,
                                  mt->mltgidx16,
-                                 trsptr->code,
-                                 palo + ((trsptr->attr ^ attr) & 0xE00F),
+                                 REVERT_U16(trsptr->code),
+                                 palo + ((REVERT_U16(trsptr->attr) ^ attr) & 0xE00F),
                                  wk->my_clear_level,
                                  mt->id);
         } else {
@@ -666,8 +677,8 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
                                  dw,
                                  dh,
                                  mt->mltgidx32,
-                                 trsptr->code,
-                                 palo + ((trsptr->attr ^ attr) & 0xE00F),
+                                 REVERT_U16(trsptr->code),
+                                 palo + ((REVERT_U16(trsptr->attr) ^ attr) & 0xE00F),
                                  wk->my_clear_level,
                                  mt->id);
         }
@@ -716,8 +727,8 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     n -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
-    count = *trsbas;
+    trsbas = (u16*)(texgrplds[i].trans_table + REVERT_U32(((u32*)texgrplds[i].trans_table)[n]));
+    count = REVERT_U16(*trsbas);
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
@@ -740,21 +751,21 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     while (count--) {
         if (attr & 0x8000) {
-            x += trsptr->x;
+            x += (int16_t)REVERT_U16(trsptr->x);
         } else {
-            x -= trsptr->x;
+            x -= (int16_t)REVERT_U16(trsptr->x);
         }
 
         if (attr & 0x4000) {
-            y -= trsptr->y;
+            y -= (int16_t)REVERT_U16(trsptr->y);
         } else {
-            y += trsptr->y;
+            y += (int16_t)REVERT_U16(trsptr->y);
         }
 
-        dw = ((trsptr->attr & 0xC00) >> 7) + 8;
-        dh = ((trsptr->attr & 0x300) >> 5) + 8;
+        dw = ((REVERT_U16(trsptr->attr) & 0xC00) >> 7) + 8;
+        dh = ((REVERT_U16(trsptr->attr) & 0x300) >> 5) + 8;
 
-        if (!(trsptr->attr & 0x2000)) {
+        if (!(REVERT_U16(trsptr->attr) & 0x2000)) {
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
             }
@@ -764,8 +775,8 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
                                  dw,
                                  dh,
                                  mt->mltgidx16,
-                                 trsptr->code,
-                                 (trsptr->attr ^ attr) & 0xE000,
+                                 REVERT_U16(trsptr->code),
+                                 (REVERT_U16(trsptr->attr) ^ attr) & 0xE000,
                                  wk->my_clear_level,
                                  mt->id);
         } else {
@@ -778,8 +789,8 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
                                  dw,
                                  dh,
                                  mt->mltgidx32,
-                                 trsptr->code,
-                                 (trsptr->attr ^ attr) & 0xE000,
+                                 REVERT_U16(trsptr->code),
+                                 (REVERT_U16(trsptr->attr) ^ attr) & 0xE000,
                                  wk->my_clear_level,
                                  mt->id);
         }
@@ -813,13 +824,13 @@ s16 getObjectHeight(u16 cgnum) {
     }
 
     cgnum -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)((s8*)texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[cgnum]);
-    count = *trsbas;
+    trsbas = (u16*)((s8*)texgrplds[i].trans_table + REVERT_U32(((u32*)texgrplds[i].trans_table)[cgnum]));
+    count = REVERT_U16(*trsbas);
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
 
     for (maxHeight = height = 0; count--; trsptr++) {
-        height = height + trsptr->y;
+        height = height + (int16_t)REVERT_U16(trsptr->y);
 
         if (height > maxHeight) {
             maxHeight = height;
@@ -869,9 +880,9 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     n -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
+    trsbas = (u16*)(texgrplds[i].trans_table + REVERT_U32(((u32*)texgrplds[i].trans_table)[n]));
     textbl = (u32*)texgrplds[i].texture_table;
-    count = *trsbas;
+    count = REVERT_U16(*trsbas);
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
@@ -922,23 +933,23 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
             while (count--) {
                 if (attr & 0x8000) {
-                    x += trsptr->x;
+                    x += (int16_t)REVERT_U16(trsptr->x);
                 } else {
-                    x -= trsptr->x;
+                    x -= (int16_t)REVERT_U16(trsptr->x);
                 }
 
                 if (attr & 0x4000) {
-                    y -= trsptr->y;
+                    y -= (int16_t)REVERT_U16(trsptr->y);
                 } else {
-                    y += trsptr->y;
+                    y += (int16_t)REVERT_U16(trsptr->y);
                 }
 
-                texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+                texptr = (TEX*)((uintptr_t)textbl + REVERT_U32(((u32*)textbl)[REVERT_U16(trsptr->code)]));
                 dw = (texptr->wh & 0xE0) >> 2;
                 dh = (texptr->wh & 0x1C) * 2;
                 wh = (texptr->wh & 3) + 1;
                 size = (wh * wh) << 6;
-                cc.parts.offset = trsptr->code;
+                cc.parts.offset = REVERT_U16(trsptr->code);
 
                 switch (wh) {
                 case 1:
@@ -957,7 +968,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                                          dh,
                                          mt->mltgidx16,
                                          code,
-                                         palo | ((trsptr->attr ^ attr) & 0xC000),
+                                         palo | ((REVERT_U16(trsptr->attr) ^ attr) & 0xC000),
                                          wk->my_clear_level,
                                          mt->id);
                     break;
@@ -977,7 +988,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                                          dh,
                                          mt->mltgidx32,
                                          code,
-                                         palo | (((trsptr->attr ^ attr) & 0xC000) | 0x2000),
+                                         palo | (((REVERT_U16(trsptr->attr) ^ attr) & 0xC000) | 0x2000),
                                          wk->my_clear_level,
                                          mt->id);
                     break;
@@ -1013,23 +1024,23 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
         while (count--) {
             if (attr & 0x8000) {
-                x += trsptr->x;
+                x += (int16_t)REVERT_U16(trsptr->x);
             } else {
-                x -= trsptr->x;
+                x -= (int16_t)REVERT_U16(trsptr->x);
             }
 
             if (attr & 0x4000) {
-                y -= trsptr->y;
+                y -= (int16_t)REVERT_U16(trsptr->y);
             } else {
-                y += trsptr->y;
+                y += (int16_t)REVERT_U16(trsptr->y);
             }
 
-            texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+            texptr = (TEX*)((uintptr_t)textbl + REVERT_U32(((u32*)textbl)[REVERT_U16(trsptr->code)]));
             dw = (texptr->wh & 0xE0) >> 2;
             dh = (texptr->wh & 0x1C) * 2;
             wh = (texptr->wh & 3) + 1;
             size = (wh * wh) << 6;
-            cc.parts.offset = trsptr->code;
+            cc.parts.offset = REVERT_U16(trsptr->code);
 
             switch (wh) {
             case 1:
@@ -1048,7 +1059,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                                      dh,
                                      mt->mltgidx16,
                                      code,
-                                     palo | ((trsptr->attr ^ attr) & 0xC000),
+                                     palo | ((REVERT_U16(trsptr->attr) ^ attr) & 0xC000),
                                      wk->my_clear_level,
                                      mt->id);
                 break;
@@ -1068,7 +1079,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                                      dh,
                                      mt->mltgidx32,
                                      code,
-                                     palo | (((trsptr->attr ^ attr) & 0xC000) | 0x2000),
+                                     palo | (((REVERT_U16(trsptr->attr) ^ attr) & 0xC000) | 0x2000),
                                      wk->my_clear_level,
                                      mt->id);
                 break;
@@ -1230,9 +1241,9 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     n -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
+    trsbas = (u16*)(texgrplds[i].trans_table + REVERT_U32(((u32*)texgrplds[i].trans_table)[n]));
     textbl = (u32*)texgrplds[i].texture_table;
-    count = *trsbas;
+    count = REVERT_U16(*trsbas);
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
@@ -1285,26 +1296,26 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
             while (count--) {
                 if (flip & 0x8000) {
-                    x += trsptr->x;
+                    x += (int16_t)REVERT_U16(trsptr->x);
                 } else {
-                    x -= trsptr->x;
+                    x -= (int16_t)REVERT_U16(trsptr->x);
                 }
 
                 if (flip & 0x4000) {
-                    y -= trsptr->y;
+                    y -= (int16_t)REVERT_U16(trsptr->y);
                 } else {
-                    y += trsptr->y;
+                    y += (int16_t)REVERT_U16(trsptr->y);
                 }
 
-                texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+                texptr = (TEX*)((uintptr_t)textbl + REVERT_U32(((u32*)textbl)[REVERT_U16(trsptr->code)]));
                 dw = (texptr->wh & 0xE0) >> 2;
                 dh = (texptr->wh & 0x1C) * 2;
                 wh = (texptr->wh & 3) + 1;
                 size = (wh * wh) << 6;
-                attr = trsptr->attr;
+                attr = REVERT_U16(trsptr->attr);
                 palt = (attr & 0x1FF) + palo;
                 attr = (attr ^ flip) & 0xC000;
-                cc.parts.offset = trsptr->code;
+                cc.parts.offset = REVERT_U16(trsptr->code);
 
                 switch (wh) {
                 case 1:
@@ -1383,26 +1394,26 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
         while (count--) {
             if (flip & 0x8000) {
-                x += trsptr->x;
+                x += (int16_t)REVERT_U16(trsptr->x);
             } else {
-                x -= trsptr->x;
+                x -= (int16_t)REVERT_U16(trsptr->x);
             }
 
             if (flip & 0x4000) {
-                y -= trsptr->y;
+                y -= (int16_t)REVERT_U16(trsptr->y);
             } else {
-                y += trsptr->y;
+                y += (int16_t)REVERT_U16(trsptr->y);
             }
 
-            texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+            texptr = (TEX*)((uintptr_t)textbl + REVERT_U32(((u32*)textbl)[REVERT_U16(trsptr->code)]));
             dw = (texptr->wh & 0xE0) >> 2;
             dh = (texptr->wh & 0x1C) * 2;
             wh = (texptr->wh & 3) + 1;
             size = (wh * wh) << 6;
-            attr = trsptr->attr;
+            attr = REVERT_U16(trsptr->attr);
             palt = (attr & 0x1FF) + palo;
             attr = (attr ^ flip) & 0xC000;
-            cc.parts.offset = trsptr->code;
+            cc.parts.offset = REVERT_U16(trsptr->code);
 
             switch (wh) {
             case 1:
@@ -1610,9 +1621,9 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     n -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
+    trsbas = (u16*)(texgrplds[i].trans_table + REVERT_U32(((u32*)texgrplds[i].trans_table)[n]));
     textbl = (u32*)texgrplds[i].texture_table;
-    count = *trsbas;
+    count = REVERT_U16(*trsbas);
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
@@ -1662,26 +1673,26 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
             while (count--) {
                 if (flip & 0x8000) {
-                    x += trsptr->x;
+                    x += (int16_t)REVERT_U16(trsptr->x);
                 } else {
-                    x -= trsptr->x;
+                    x -= (int16_t)REVERT_U16(trsptr->x);
                 }
 
                 if (flip & 0x4000) {
-                    y -= trsptr->y;
+                    y -= (int16_t)REVERT_U16(trsptr->y);
                 } else {
-                    y += trsptr->y;
+                    y += (int16_t)REVERT_U16(trsptr->y);
                 }
 
-                texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+                texptr = (TEX*)((uintptr_t)textbl + REVERT_U32(((u32*)textbl)[REVERT_U16(trsptr->code)]));
                 dw = (texptr->wh & 0xE0) >> 2;
                 dh = (texptr->wh & 0x1C) * 2;
                 wh = (texptr->wh & 3) + 1;
                 size = (wh * wh) << 6;
-                attr = trsptr->attr;
+                attr = REVERT_U16(trsptr->attr);
                 palt = (attr & 0x1FF) + palo;
                 attr = (attr ^ flip) & 0xC000;
-                cc.parts.offset = trsptr->code;
+                cc.parts.offset = REVERT_U16(trsptr->code);
 
                 switch (wh) {
                 case 1:
@@ -1751,26 +1762,26 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
         while (count--) {
             if (flip & 0x8000) {
-                x += trsptr->x;
+                x += (int16_t)REVERT_U16(trsptr->x);
             } else {
-                x -= trsptr->x;
+                x -= (int16_t)REVERT_U16(trsptr->x);
             }
 
             if (flip & 0x4000) {
-                y -= trsptr->y;
+                y -= (int16_t)REVERT_U16(trsptr->y);
             } else {
-                y += trsptr->y;
+                y += (int16_t)REVERT_U16(trsptr->y);
             }
 
-            texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+            texptr = (TEX*)((uintptr_t)textbl + REVERT_U32(((u32*)textbl)[REVERT_U16(trsptr->code)]));
             dw = (texptr->wh & 0xE0) >> 2;
             dh = (texptr->wh & 0x1C) * 2;
             wh = (texptr->wh & 3) + 1;
             size = (wh * wh) << 6;
-            attr = trsptr->attr;
+            attr = REVERT_U16(trsptr->attr);
             palt = (attr & 0x1FF) + palo;
             attr = (attr ^ flip) & 0xC000;
-            cc.parts.offset = trsptr->code;
+            cc.parts.offset = REVERT_U16(trsptr->code);
 
             switch (wh) {
             case 1:
@@ -2148,7 +2159,7 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
     {
         const f32 x1 = x + w;
         const f32 y1 = y - h;
-        
+
         chip->v[0].x = x * s_mtx_00 + y * s_mtx_10 + s_mtx_tx;
         chip->v[1].x = x1 * s_mtx_00 + y1 * s_mtx_10 + s_mtx_tx;
         chip->v[0].y = x * s_mtx_01 + y * s_mtx_11 + s_mtx_ty;
@@ -2862,22 +2873,22 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
         return;
     }
 
-    n = *(u32*)grplds->trans_table / 4;
+    n = REVERT_U32(*(u32*)grplds->trans_table) / 4;
     textbl = (u32*)grplds->texture_table;
     cd16 = 0;
     cd32 = 0;
 
     for (i = 0; i < n; i++) {
-        trsbas = (u16*)(grplds->trans_table + ((u32*)grplds->trans_table)[i]);
-        count = *trsbas;
+        trsbas = (u16*)(grplds->trans_table + REVERT_U32(((u32*)grplds->trans_table)[i]));
+        count = REVERT_U16(*trsbas);
         trsbas++;
         trsptr = (TileMapEntry*)trsbas;
 
         while (count != 0) {
-            attr = trsptr->attr;
+            attr = REVERT_U16(trsptr->attr);
 
             if (!(attr & 0x1000)) {
-                texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+                texptr = (TEX*)((uintptr_t)textbl + REVERT_U32(((u32*)textbl)[REVERT_U16(trsptr->code)]));
                 dd = (((texptr->wh & 0xE0) << 5) - 0x400) | (((texptr->wh & 0x1C) << 6) - 0x100);
                 wh = (texptr->wh & 3) + 1;
                 size = (wh * wh) << 6;
@@ -2888,22 +2899,22 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
                 case 2:
                     lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx16, cd16, palt, 0);
                     attr = (attr & 0xC000) | 0x1000 | dd;
-                    trsptr->attr |= 0x1000;
+                    trsptr->attr = REVERT_U16(REVERT_U16(trsptr->attr) | 0x1000);
                     attr |= palt;
-                    search_trsptr(grplds->trans_table, i, n, trsptr->code, palt, cd16, attr);
-                    trsptr->code = cd16;
-                    trsptr->attr = attr;
+                    search_trsptr(grplds->trans_table, i, n, REVERT_U16(trsptr->code), palt, cd16, attr);
+                    trsptr->code = REVERT_U16(cd16);
+                    trsptr->attr = REVERT_U16(attr);
                     cd16 += 1;
                     break;
 
                 case 4:
                     lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx32, cd32, palt, 1);
                     attr = (attr & 0xC000) | 0x3000 | dd;
-                    trsptr->attr |= 0x1000;
+                    trsptr->attr = REVERT_U16(REVERT_U16(trsptr->attr) | 0x1000);
                     attr |= palt;
-                    search_trsptr(grplds->trans_table, i, n, trsptr->code, palt, cd32, attr);
-                    trsptr->code = cd32;
-                    trsptr->attr = attr;
+                    search_trsptr(grplds->trans_table, i, n, REVERT_U16(trsptr->code), palt, cd32, attr);
+                    trsptr->code = REVERT_U16(cd32);
+                    trsptr->attr = REVERT_U16(attr);
                     cd32 += 1;
                     break;
                 }

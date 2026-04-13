@@ -396,7 +396,8 @@ s32 flLockPalette(Rect* lprect, u32 th, plContext* lpcontext, u32 flag) {
 
 /** @brief Internal lock — allocate a CPU-side buffer and convert pixel format. */
 s32 flPS2LockTexture(Rect* unused1, FLTexture* lpflTexture, plContext* lpcontext, u32 flag, s32 unused2) {
-    (void)unused1; (void)unused2;
+    (void)unused1;
+    (void)unused2;
     u8* buff_ptr;
     u8* buff_ptr1;
     plContext src;

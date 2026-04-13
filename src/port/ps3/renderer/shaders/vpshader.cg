@@ -15,6 +15,7 @@ V2F main(float4 position : ATTR0,
     V2F OUT;
     OUT.position = mul(mvp, position);
     OUT.texcoord = texcoord;
-    OUT.color = color / 255.0;
+    // CELL_GCM_VERTEX_UB256 normalizes 0-255 → 0.0-1.0 in hardware; no shader divide needed
+    OUT.color = color;
     return OUT;
 }

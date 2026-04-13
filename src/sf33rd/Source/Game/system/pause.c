@@ -342,7 +342,8 @@ static void Setup_Come_Out(struct _TASK* task_ptr) {
 
 /* ══════════════════════════════════════════════════════════════════════════�
  *  Accessor functions � decouple menu_input.c from TASK_PAUSE internals
- * ══════════════════════════════════════════════════════════════════════════� */
+ * ══════════════════════════════════════════════════════════════════════════�
+ */
 
 /** @brief Set the flash overlay sub-state (used by menu_input.c). */
 void Pause_SetFlashPhase(u8 phase) {

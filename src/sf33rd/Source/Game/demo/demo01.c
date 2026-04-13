@@ -10,6 +10,7 @@
  */
 
 #include "common.h"
+#include <stdio.h>
 #include "main.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/demo/demo_states.h"
@@ -28,19 +29,31 @@ s16 Title() {
     // njSetBackColor(0, 0, 0);
 
     switch (D_No[1]) {
-    case TITLE_WAIT_LOAD:
+    case TITLE_WAIT_LOAD: {
+#ifdef PLATFORM_PS3
+        static int wait_frames = 0;
+        if (++wait_frames % 60 == 1)
+            printf("[BOOT] Title: WAIT_LOAD frame %d, ldreq_break=%d\n", wait_frames, Check_LDREQ_Break());
+#endif
         if (Check_LDREQ_Clear() != 0) {
+#ifdef PLATFORM_PS3
+            printf("[BOOT] Title: LDREQ CLEAR after %d frames, calling Standby_BGM(0x34)\n", wait_frames);
+            wait_frames = 0;
+#endif
             Standby_BGM(0x34);
+            printf("[BOOT] Title: Standby_BGM(0x34) returned OK\n");
             D_No[1] += 1;
             D_Timer = 20;
         }
 
         break;
+    }
 
     case TITLE_PLAY_OPENING:
         if (D_Timer != 0) {
             D_Timer -= 1;
         } else if (opening_demo()) {
+            printf("[BOOT] Title: opening_demo() complete\n");
             D_No[1] += 1;
             D_Timer = 40;
         }

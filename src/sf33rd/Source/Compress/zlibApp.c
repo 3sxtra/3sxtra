@@ -67,14 +67,13 @@ void zlib_InitSpurs(void) {
         uint32_t contextSize = edgeZlibGetInflateTaskContextSaveSize();
         s_zlib_task_context = memalign(128, contextSize);
         /* S-MED-01: Queue depth 32 to handle rapid scene transitions */
-        uint32_t queueSize = edgeZlibGetInflateQueueSize(32);
+        uint32_t queueSize = edgeZlibGetInflateQueueSize(2048);
         s_zlib_queue_buffer = memalign(128, queueSize);
 
-        s_zlib_queue = edgeZlibCreateInflateQueue(spurs, 32, s_zlib_queue_buffer, queueSize);
+        s_zlib_queue = edgeZlibCreateInflateQueue(spurs, 2048, s_zlib_queue_buffer, queueSize);
 
-        cellSpursEventFlagInitializeIWL(spurs, &s_zlib_event_flag,
-                                        CELL_SPURS_EVENT_FLAG_CLEAR_AUTO,
-                                        CELL_SPURS_EVENT_FLAG_SPU2PPU);
+        cellSpursEventFlagInitializeIWL(
+            spurs, &s_zlib_event_flag, CELL_SPURS_EVENT_FLAG_CLEAR_AUTO, CELL_SPURS_EVENT_FLAG_SPU2PPU);
 
         edgeZlibCreateInflateTask2(&s_zlib_taskset, s_zlib_task_context, s_zlib_queue);
         printf("[PS3] edgeZlib SPURS taskset and event flag initialized\n");
@@ -118,8 +117,10 @@ static void zlib_Free(void* opaque, void* adrs) {
 /** @brief Decompress a zlib-compressed buffer into the destination. */
 ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) {
 #ifdef PLATFORM_PS3
-    if (!s_zlib_queue) return 0;
-    if (srcSize <= 0 || dstSize <= 0) return 0;
+    if (!s_zlib_queue)
+        return 0;
+    if (srcSize <= 0 || dstSize <= 0)
+        return 0;
 
     const uint8_t* realSrc = (const uint8_t*)srcBuff;
     uint32_t realSrcSize = srcSize;
@@ -140,15 +141,21 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
     bool freeDst = false;
 
     if (((uintptr_t)realSrc & 0xF) != 0 || ((uintptr_t)dstBuff & 0xF) != 0) {
-        void *caller = __builtin_return_address(0);
-        printf("[PS3] zlib_Decompress: Alignment proxy engaged (SRC: %p [%s], DST: %p [%s], caller: %p, srcSize: %d, dstSize: %d)\n",
-               realSrc, ((uintptr_t)realSrc & 0xF) ? "UNALIGNED" : "ok",
-               dstBuff, ((uintptr_t)dstBuff & 0xF) ? "UNALIGNED" : "ok",
-               caller, realSrcSize, dstSize);
+        void* caller = __builtin_return_address(0);
+        printf("[PS3] zlib_Decompress: Alignment proxy engaged (SRC: %p [%s], DST: %p [%s], caller: %p, srcSize: %d, "
+               "dstSize: %d)\n",
+               realSrc,
+               ((uintptr_t)realSrc & 0xF) ? "UNALIGNED" : "ok",
+               dstBuff,
+               ((uintptr_t)dstBuff & 0xF) ? "UNALIGNED" : "ok",
+               caller,
+               realSrcSize,
+               dstSize);
 
         if (((uintptr_t)realSrc & 0xF) != 0) {
             actualSrc = memalign(16, (realSrcSize + 15) & ~15);
-            if (!actualSrc) return 0;
+            if (!actualSrc)
+                return 0;
             memcpy(actualSrc, realSrc, realSrcSize);
             freeSrc = true;
         }
@@ -156,7 +163,8 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
         if (((uintptr_t)dstBuff & 0xF) != 0) {
             actualDst = memalign(16, (dstSize + 15) & ~15);
             if (!actualDst) {
-                if (freeSrc) free(actualSrc);
+                if (freeSrc)
+                    free(actualSrc);
                 return 0;
             }
             freeDst = true;
@@ -178,21 +186,25 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
      * guard, rapid sequential calls can overwhelm the event queue (capacity 32)
      * causing SPUs to block on sys_spu_thread_send_event while the PPU blocks
      * on cellSpursEventFlagWait — circular deadlock. */
-    if (s_workCounter != 0) {
-        uint16_t drainBits = 1;
-        cellSpursEventFlagWait(&s_zlib_event_flag, &drainBits, CELL_SPURS_EVENT_FLAG_AND);
-        s_workCounter = 0;
-    }
-    s_workCounter = 1;
+    // Ensure flag is cleared before submission to prevent instant bypass
+    cellSpursEventFlagClear(&s_zlib_event_flag, 1);
 
     edgeZlibAddInflateQueueElement(s_zlib_queue,
-                                   compressedData, compressedSize,
-                                   actualDst, dstSize,
-                                   &s_workCounter, &s_zlib_event_flag, 1,
+                                   compressedData,
+                                   compressedSize,
+                                   actualDst,
+                                   dstSize,
+                                   &s_workCounter,
+                                   &s_zlib_event_flag,
+                                   1,
                                    kEdgeZlibInflateTask_Inflate);
 
+    // Wait synchronously for SPU to complete
     uint16_t outBits = 1;
     cellSpursEventFlagWait(&s_zlib_event_flag, &outBits, CELL_SPURS_EVENT_FLAG_AND);
+
+    // Clear flag after to ensure strict state
+    cellSpursEventFlagClear(&s_zlib_event_flag, 1);
 
     if (freeDst) {
         memcpy(dstBuff, actualDst, dstSize);
@@ -202,6 +214,8 @@ ssize_t zlib_Decompress(void* srcBuff, s32 srcSize, void* dstBuff, s32 dstSize) 
         free(actualSrc);
     }
 
+    printf("[PS3] zlib_Decompress: COMPLETED (srcSize: %d)\n", realSrcSize);
+    fflush(stdout);
     return dstSize;
 #else
     if (srcBuff == NULL || dstBuff == NULL) {

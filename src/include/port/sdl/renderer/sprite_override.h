@@ -76,17 +76,28 @@ void* LoadUIPageOverride(unsigned int tex_handle, unsigned int pal_handle);
 
 #else
 
-static inline void* LoadFullSpriteOverride(int group_index, int cg_number) { (void)group_index; (void)cg_number; return 0; }
-static inline void* LoadBGTileOverride(int type, int stage, int gbix) { (void)type; (void)stage; (void)gbix; return 0; }
+static inline void* LoadFullSpriteOverride(int group_index, int cg_number) {
+    (void)group_index;
+    (void)cg_number;
+    return 0;
+}
+static inline void* LoadBGTileOverride(int type, int stage, int gbix) {
+    (void)type;
+    (void)stage;
+    (void)gbix;
+    return 0;
+}
 static inline void ClearBGTileCache(void) {}
 static inline void SpriteOverride_Shutdown(void) {}
 static inline void SpriteOverride_ClearMissFlags(void) {}
 static inline void SpriteOverride_DumpMissing(void) {}
-static inline void* LoadUIPageOverride(unsigned int tex_handle, unsigned int pal_handle) { (void)tex_handle; (void)pal_handle; return 0; }
+static inline void* LoadUIPageOverride(unsigned int tex_handle, unsigned int pal_handle) {
+    (void)tex_handle;
+    (void)pal_handle;
+    return 0;
+}
 
 #endif
-
-
 
 #ifdef __cplusplus
 }

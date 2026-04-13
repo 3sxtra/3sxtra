@@ -162,7 +162,7 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     Setup_Difficult_V();
     Setup_Limit_Time();
     Reset_Bootrom = 1;
-    
+
     cpReadyTask(TASK_RESET, Reset_Task);
 
     Switch_Type = 0;

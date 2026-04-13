@@ -182,6 +182,7 @@ endif()
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/win32/")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/linux/")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/macos/")
+list(FILTER GAME_SRC EXCLUDE REGEX "src/port/ps3/")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/broadcast")
 
 if(NOT ENABLE_NETPLAY)

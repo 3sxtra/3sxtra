@@ -183,17 +183,17 @@ static void sysdir_tick(struct _TASK* task_ptr) {
     if (IO_Result == 0) {
         System_Dir_Move_Sub(1);
     }
-    
+
     /* ── Render NativeUI declaratively to match legacy focus ── */
     if (!use_rmlui || !rmlui_menu_sysdir) {
         const int SYSDIR_GRAPHIC_START_OFFSET = 42; // Base offset to reach string 43 (0x2B "PAGE 1")
-        
+
         NativeUI_SetFocusIndex(Menu_Cursor_Y[0]);
         NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
         NativeUI_SetNextIndex(1); // Item 0 is handled natively by effect_64 combo box!
-        NativeUI_SetGraphicOffset(SYSDIR_GRAPHIC_START_OFFSET); 
+        NativeUI_SetGraphicOffset(SYSDIR_GRAPHIC_START_OFFSET);
         NativeUI_SetMasterPlayer(s_sysdir_from_option ? 2 : 1);
-        
+
         NativeUI_Button("PAGE 1");
         NativeUI_Button("PAGE 2");
         NativeUI_Button("PAGE 3");

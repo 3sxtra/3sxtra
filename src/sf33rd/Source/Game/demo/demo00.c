@@ -12,6 +12,7 @@
 #include "sf33rd/Source/Game/demo/demo00.h"
 #include "sf33rd/Source/Game/demo/demo_states.h"
 #include "common.h"
+#include <stdio.h>
 #include "port/config/config.h"
 #include "port/rendering/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -124,11 +125,15 @@ s32 Warning() {
 /** @brief Capcom logo sequence — load textures, animate, fade in/out. */
 s32 CAPCOM_Logo() {
     if (Config_GetBool(CFG_KEY_SKIP_INTRO)) {
+        printf("[BOOT] CAPCOM_Logo: SKIP_INTRO path\n");
         checkAdxFileLoaded();
+        printf("[BOOT] CAPCOM_Logo: checkAdxFileLoaded done\n");
         checkSelObjFileLoaded();
+        printf("[BOOT] CAPCOM_Logo: checkSelObjFileLoaded done\n");
         Push_LDREQ_Queue_Direct(0x16, 2);
         Push_LDREQ_Queue_Direct(0x17, 2);
         Push_LDREQ_Queue_Direct(0x18, 2);
+        printf("[BOOT] CAPCOM_Logo: SKIP complete, returning 1\n");
         return 1;
     }
 
@@ -207,6 +212,7 @@ s32 CAPCOM_Logo() {
         break;
 
     default:
+        printf("[BOOT] CAPCOM_Logo: COMPLETE, releasing tex 600\n");
         TexRelease(600);
         Next_Demo = 1;
         break;

@@ -1747,6 +1747,7 @@ void Loop_Demo(struct _TASK* unused1) {
         Basic_Sub();
 
         if (CAPCOM_Logo() != 0) {
+            printf("[BOOT] Loop_Demo: CAPCOM_Logo done -> Title (G_No[1]=2)\n");
             Loop_Demo_Sub();
             Insert_Y = 23;
             E_No[1] = 2;

@@ -215,9 +215,18 @@ void checkAdxFileLoaded() {
         fnum = 90;
     }
 
-    do {
-        key = load_it_use_any_key(fnum, 21, 0);
-    } while (key == 0);
+    {
+        int adx_attempts = 0;
+        do {
+            key = load_it_use_any_key(fnum, 21, 0);
+#ifdef PLATFORM_PS3
+            if (++adx_attempts > 100) {
+                printf("[SND] checkAdxFileLoaded: TIMEOUT loading fnum=%d\n", fnum);
+                return;
+            }
+#endif
+        } while (key == 0);
+    }
 
     adr = (u8*)Get_ramcnt_address(key);
     ppgSetupCmpChunk(adr, 0, adx_VS);
@@ -827,10 +836,15 @@ void SsRequestPan(u16 reqNum, s16 start, s16 unused1, s32 unused2, s32 unused3) 
                 return;
             }
         } else {
+#ifdef PLATFORM_PS3
+            printf("[SND] WARNING: MISSING SOUND MAPPING (PAN): 0x%X - skipping\n", reqNum);
+            return;
+#else
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING (PAN): %X", reqNum);
                 njWaitVSync_with_N();
             }
+#endif
         }
     }
 
@@ -870,10 +884,15 @@ void SsRequest(u16 ReqNumber) {
             }
         } else {
             // Hard Fail: ID not found in lookup table
+#ifdef PLATFORM_PS3
+            printf("[SND] WARNING: MISSING SOUND MAPPING: 0x%X - skipping\n", ReqNumber);
+            return;
+#else
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING: %X", ReqNumber);
                 njWaitVSync_with_N();
             }
+#endif
         }
     }
 
@@ -903,10 +922,15 @@ void SsRequest_CC(u16 num) {
             }
         } else {
             // Hard Fail: ID not found in lookup table
+#ifdef PLATFORM_PS3
+            printf("[SND] WARNING: MISSING SOUND MAPPING: 0x%X - skipping\n", num);
+            return;
+#else
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING: %X", num);
                 njWaitVSync_with_N();
             }
+#endif
         }
     }
 
@@ -933,10 +957,15 @@ void Standby_BGM(u16 num) {
             rmcode.code = lookup->engine_code;
         } else {
             // Hard Fail: ID not found in lookup table
+#ifdef PLATFORM_PS3
+            printf("[SND] WARNING: MISSING SOUND MAPPING: 0x%X - skipping\n", num);
+            return;
+#else
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING: %X", num);
                 njWaitVSync_with_N();
             }
+#endif
         }
     }
 
@@ -989,10 +1018,15 @@ void SsBgmFadeIn(u16 ReqNumber, u16 FadeSpeed) {
             rmcode.code = lookup->engine_code;
         } else {
             // Hard Fail: ID not found in lookup table
+#ifdef PLATFORM_PS3
+            printf("[SND] WARNING: MISSING SOUND MAPPING: 0x%X - skipping\n", ReqNumber);
+            return;
+#else
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING: %X", ReqNumber);
                 njWaitVSync_with_N();
             }
+#endif
         }
     }
 

@@ -26,7 +26,6 @@
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "structs.h"
 
-
 int bg_texture_type = 0; // tracks ramcnt type: 0x12=gameplay, 0x18=select, etc
 
 /** @brief Extract per-layer priority bytes from a packed u32 value. */

@@ -43,17 +43,30 @@ bool PingProbe_IsReachable(const char* player_id);
 
 #else
 
-static inline void PingProbe_Init(struct NET_DatagramSocket* socket) { (void)socket; }
+static inline void PingProbe_Init(struct NET_DatagramSocket* socket) {
+    (void)socket;
+}
 static inline void PingProbe_Shutdown(void) {}
-static inline void PingProbe_AddPeer(const char* ip, uint16_t port, const char* player_id) { (void)ip; (void)port; (void)player_id; }
-static inline void PingProbe_RemovePeer(const char* player_id) { (void)player_id; }
+static inline void PingProbe_AddPeer(const char* ip, uint16_t port, const char* player_id) {
+    (void)ip;
+    (void)port;
+    (void)player_id;
+}
+static inline void PingProbe_RemovePeer(const char* player_id) {
+    (void)player_id;
+}
 static inline void PingProbe_ClearPeers(void) {}
 static inline void PingProbe_Update(void) {}
-static inline int PingProbe_GetRTT(const char* player_id) { (void)player_id; return -1; }
-static inline bool PingProbe_IsReachable(const char* player_id) { (void)player_id; return false; }
+static inline int PingProbe_GetRTT(const char* player_id) {
+    (void)player_id;
+    return -1;
+}
+static inline bool PingProbe_IsReachable(const char* player_id) {
+    (void)player_id;
+    return false;
+}
 
 #endif
-
 
 #ifdef __cplusplus
 }
