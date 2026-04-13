@@ -552,12 +552,20 @@ static void chain_load_and_merge(int preset_index, bool prepend) {
         return;
 
     char full_path[1024];
+#ifdef __ANDROID__
+    // On Android, extract shader files from APK assets to filesystem
+    // because GLSLP_Load uses standard file I/O (can't read APK assets).
+    const char* fs_dir = get_shader_fs_dir();
+    extract_shader_preset_tree(available_presets[preset_index], fs_dir);
+    snprintf(full_path, sizeof(full_path), "%s/%s", fs_dir, available_presets[preset_index]);
+#else
     snprintf(full_path,
              sizeof(full_path),
              "%s%s/%s",
              g_base_path,
              "assets/shaders/libretro",
              available_presets[preset_index]);
+#endif
     for (int i = 0; full_path[i]; i++) {
         if (full_path[i] == '\\')
             full_path[i] = '/';
@@ -586,10 +594,14 @@ static void chain_load_and_merge(int preset_index, bool prepend) {
     // (ChainApply is deferred while menu is visible, but params must show now)
     {
         char temp_path[1024];
+#ifdef __ANDROID__
+        snprintf(temp_path, sizeof(temp_path), "%s/_3sx_chain.slangp", get_shader_fs_dir());
+#else
         if (g_base_path)
             snprintf(temp_path, sizeof(temp_path), "%s%s", g_base_path, "assets/shaders/libretro/_3sx_chain.slangp");
         else
             snprintf(temp_path, sizeof(temp_path), "%s", "assets/shaders/libretro/_3sx_chain.slangp");
+#endif
 
         // Write the current chain composition so we can read its params
         if (GLSLP_Write(&s_chain_preset, temp_path)) {
@@ -681,11 +693,15 @@ void SDLAppShader_ChainApply(void) {
 
     // Write the merged chain to a temp file
     char temp_path[1024];
+#ifdef __ANDROID__
+    snprintf(temp_path, sizeof(temp_path), "%s/_3sx_chain.slangp", get_shader_fs_dir());
+#else
     if (g_base_path) {
         snprintf(temp_path, sizeof(temp_path), "%s%s", g_base_path, "assets/shaders/libretro/_3sx_chain.slangp");
     } else {
         snprintf(temp_path, sizeof(temp_path), "%s", "assets/shaders/libretro/_3sx_chain.slangp");
     }
+#endif
 
     if (!GLSLP_Write(&s_chain_preset, temp_path)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ChainApply: Failed to write merged preset");
