@@ -19,6 +19,7 @@
 #include <stdlib.h>
 SYS_PROCESS_PARAM(1001, 0x100000)
 #include <sysutil/sysutil_common.h>
+#include <sysutil/sysutil_msgdialog.h>
 #include <cell/sysmodule.h>
 
 static bool s_is_running = true;
@@ -29,6 +30,7 @@ static CellSpurs g_spurs;
 static bool g_spurs_initialized = false;
 static sys_event_queue_t g_spurs_event_queue = 0;
 static uint8_t g_spurs_port = 0;
+static uint8_t g_spurs_port_trace = 0;
 
 static sys_ppu_thread_t g_spurs_pump_thread;
 static volatile bool g_spurs_pump_running = false;
@@ -47,6 +49,37 @@ static void spurs_pump_thread_entry(uint64_t arg) {
 }
 
 // No global renderer context needed at app level yet
+
+static volatile int s_msg_dialog_closed = 0;
+static void msg_dialog_callback(int button_type, void *userdata) {
+    (void)button_type;
+    (void)userdata;
+    s_msg_dialog_closed = 1;
+}
+
+void PS3App_ShowFatalError(const char* msg) {
+    printf("[FATAL] %s\n", msg);
+    
+    // Attempt to load SYSUTIL module if not already loaded
+    cellSysmoduleLoadModule(CELL_SYSMODULE_SYSUTIL_USERINFO);
+    
+    s_msg_dialog_closed = 0;
+    int ret = cellMsgDialogOpen2(
+        CELL_MSGDIALOG_TYPE_SE_TYPE_ERROR | CELL_MSGDIALOG_TYPE_BUTTON_TYPE_OK | CELL_MSGDIALOG_TYPE_DISABLE_CANCEL_ON,
+        msg,
+        msg_dialog_callback,
+        NULL,
+        NULL);
+        
+    if (ret == CELL_OK) {
+        while (!s_msg_dialog_closed) {
+            cellSysutilCheckCallback();
+            sys_timer_usleep(10000);
+        }
+    }
+    
+    exit(1);
+}
 
 struct CellSpurs* PS3App_GetSpurs(void) {
     return g_spurs_initialized ? &g_spurs : NULL;
@@ -122,8 +155,9 @@ int PS3App_FullInit(void) {
     // S-01 Audit Fix: Only 6 SPUs available to games; was requesting 6+2=8 (fails on real HW)
     int ret = sys_spu_initialize(6, 0);
     if (ret != CELL_OK) {
-        printf("[PS3] FATAL: sys_spu_initialize failed: %x\n", ret);
-        exit(1);
+        char err_msg[128];
+        snprintf(err_msg, sizeof(err_msg), "sys_spu_initialize failed: 0x%x\n", ret);
+        PS3App_ShowFatalError(err_msg);
     } else {
 
         CellSpursAttribute spursAttr;
@@ -144,6 +178,10 @@ int PS3App_FullInit(void) {
                 if (eq_ret == CELL_OK) {
                     eq_ret = cellSpursAttachLv2EventQueue(&g_spurs, g_spurs_event_queue, &g_spurs_port, 0);
                     if (eq_ret == CELL_OK) {
+                        // FIX: Attach the same queue to Port 1 (isys=1) to sink internal SPU printf/trace events
+                        // This prevents edgeZlib SPUs from failing sys_spu_thread_send_event with CELL_ENOTCONN
+                        cellSpursAttachLv2EventQueue(&g_spurs, g_spurs_event_queue, &g_spurs_port_trace, 1);
+
                         printf("[PS3] SPURS Event Queue attached on port: %d\n", g_spurs_port);
 
                         g_spurs_pump_running = true;
@@ -171,21 +209,25 @@ int PS3App_FullInit(void) {
                         /* P1 Audit Fix: Initialize SPU sort after SPURS is ready */
                         SPUSort_Init();
                     } else {
-                        printf("[PS3] FATAL: cellSpursAttachLv2EventQueue failed: %x\n", eq_ret);
-                        exit(1);
+                        char err_msg[128];
+                        snprintf(err_msg, sizeof(err_msg), "cellSpursAttachLv2EventQueue failed: 0x%x\n", eq_ret);
+                        PS3App_ShowFatalError(err_msg);
                     }
                 } else {
-                    printf("[PS3] FATAL: sys_event_queue_create failed: %x\n", eq_ret);
-                    exit(1);
+                    char err_msg[128];
+                    snprintf(err_msg, sizeof(err_msg), "sys_event_queue_create failed: 0x%x\n", eq_ret);
+                    PS3App_ShowFatalError(err_msg);
                 }
 
             } else {
-                printf("[PS3] FATAL: cellSpursInitializeWithAttribute failed: %x\n", ret);
-                exit(1);
+                char err_msg[128];
+                snprintf(err_msg, sizeof(err_msg), "cellSpursInitializeWithAttribute failed: 0x%x\n", ret);
+                PS3App_ShowFatalError(err_msg);
             }
         } else {
-            printf("[PS3] FATAL: cellSpursAttributeInitialize failed: %x\n", ret);
-            exit(1);
+            char err_msg[128];
+            snprintf(err_msg, sizeof(err_msg), "cellSpursAttributeInitialize failed: 0x%x\n", ret);
+            PS3App_ShowFatalError(err_msg);
         }
     }
 
@@ -216,6 +258,7 @@ void PS3App_Quit(void) {
                 sys_ppu_thread_join(g_spurs_pump_thread, &retval);
             }
             cellSpursDetachLv2EventQueue(&g_spurs, g_spurs_port);
+            cellSpursDetachLv2EventQueue(&g_spurs, g_spurs_port_trace);
             sys_event_queue_destroy(g_spurs_event_queue, 0);
         }
         cellSpursFinalize(&g_spurs);

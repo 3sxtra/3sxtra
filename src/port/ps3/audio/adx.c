@@ -280,6 +280,14 @@ static bool adx_initialized = false;
 void ADX_Init(void) {
     if (adx_initialized) return;
     adx_initialized = true;
+    
+    if (master_gain <= 0.01f) {
+        master_gain = 1.0f;
+    }
+    if (master_gain > 1.0f) {
+        master_gain = 1.0f;
+    }
+
     sys_mutex_attribute_t attr;
     memset(&attr, 0, sizeof(attr));
     sys_mutex_attribute_initialize(attr);

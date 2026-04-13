@@ -18,6 +18,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
+
+// Defines the authoritative color format passed down from the engine into the rendering pipeline.
+// The 3SX engine provides ARGB (0xAARRGGBB), but the RSX hardware expects RGBA (0xRRGGBBAA) 
+// for the UB256 vertex attribute.
+#define CPS3_NATIVE_COLOR_FORMAT_ARGB
 
 #include "shaders/vpshader.vpo.h"
 #include "shaders/fpshader.fpo.h"
@@ -443,9 +449,10 @@ static void setup_surface_struct(CellGcmSurface* surf, uint32_t offset) {
 
     // C-11 Audit Fix: Sony RSX driver requires all unused color targets to have a minimum pitch of 64.
     // If these are left as 0, any 2D surface clears (NV3089/M2MF) will crash or NOP.
+    // FIX: Point unused targets to the same offset as target 0 to avoid zero offset/bounds warnings.
     for (int i = 1; i < 4; i++) {
         surf->colorLocation[i] = CELL_GCM_LOCATION_LOCAL;
-        surf->colorOffset[i] = 0;
+        surf->colorOffset[i] = offset;
         surf->colorPitch[i] = 64;
     }
 
@@ -752,7 +759,8 @@ void CRS_Renderer_BeginFrame(void) {
     // Force clear color to opaque black (0xFF000000 = A,R,G,B)
     // to prevent green bleed on transparent 8-bit texture layers
     cellGcmSetClearColor(s_gcm_context, 0xFF000000);
-    cellGcmSetClearSurface(s_gcm_context, CELL_GCM_CLEAR_R | CELL_GCM_CLEAR_G | CELL_GCM_CLEAR_B | CELL_GCM_CLEAR_A);
+    // Explicitly add Z and S clears to ensure depth buffer validity
+    cellGcmSetClearSurface(s_gcm_context, CELL_GCM_CLEAR_R | CELL_GCM_CLEAR_G | CELL_GCM_CLEAR_B | CELL_GCM_CLEAR_A | CELL_GCM_CLEAR_Z | CELL_GCM_CLEAR_S);
 
     // G-10 Audit Fix: Invalidate texture cache once per frame, not per-bind
     cellGcmSetInvalidateTextureCache(s_gcm_context, CELL_GCM_INVALIDATE_TEXTURE);
@@ -775,6 +783,8 @@ void CRS_Renderer_RenderFrame(void) {
     if (!SPUSort_Execute(render_tasks, render_task_count)) {
         stable_sort_render_tasks();
     }
+
+    assert(g_resolution_scale > 0.0f);
 
     cellGcmSetVertexProgram(s_gcm_context, cg_vp, vp_ucode);
     cellGcmSetVertexProgramParameter(s_gcm_context, cg_vp_mvp, mvp);
@@ -1286,11 +1296,15 @@ void CRS_Renderer_SetTexture(unsigned int th) {
 
 // Convert ARGB to RGBA in memory for CELL_GCM_VERTEX_UB256 which maps Byte 0 -> R
 static inline unsigned int swap_color_for_vertex(unsigned int c) {
+#ifdef CPS3_NATIVE_COLOR_FORMAT_ARGB
     unsigned int a = (c >> 24) & 0xFF;
     unsigned int r = (c >> 16) & 0xFF;
     unsigned int g = (c >> 8) & 0xFF;
     unsigned int b_ch = c & 0xFF;
     return (r << 24) | (g << 16) | (b_ch << 8) | a;
+#else
+    return c;
+#endif
 }
 
 static void draw_quad(const GcmVertex* v, bool textured) {

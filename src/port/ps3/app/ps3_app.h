@@ -11,6 +11,7 @@ bool PS3App_PollEvents(void);
 void PS3App_BeginFrame(void);
 void PS3App_EndFrame(void);
 void PS3App_Exit(void);
+void PS3App_ShowFatalError(const char* msg);
 
 bool PS3App_IsFrameRateUncapped(void);
 bool PS3App_IsVSyncEnabled(void);

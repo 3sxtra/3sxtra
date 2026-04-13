@@ -130,6 +130,7 @@ static void audio_thread_entry(uint64_t arg) {
 
         // Send to PS3 audio system (passing exactly CELL_AUDIO_BLOCK_SAMPLES frames)
         int ret;
+        int retry_count = 0;
         do {
             ret = cellAudioAddData(audio_port_num, audio_buffer, CELL_AUDIO_BLOCK_SAMPLES, 1.0f);
             if (ret != CELL_OK) {
@@ -138,9 +139,26 @@ static void audio_thread_entry(uint64_t arg) {
                     // Port error, stopping feeder
                     audio_thread_running = 0;
                     break; /* Port is dead, exit cleanly */
+                } else if (ret == (int)0x80310703 /* CELL_AUDIO_ERROR_BUSY */) {
+                    // Buffer is full, wait a bit
+                    sys_timer_usleep(1000);
+                } else if (ret == (int)0x80310705 /* CELL_AUDIO_ERROR_TRANS */ || ret == (int)0x80310706 /* CELL_AUDIO_ERROR_PORT_FULL */) {
+                    // Starvation / Port State error. The hardware buffer underran or state is invalid.
+                    // We must forcibly restart the port to resume playback without deadlocking.
+                    printf("[PS3 Audio] Starvation detected (0x%X). Restarting port %d.\n", ret, audio_port_num);
+                    cellAudioPortStop(audio_port_num);
+                    cellAudioPortStart(audio_port_num);
+                    sys_timer_usleep(500); // Give it a moment to recover
+                } else {
+                    sys_timer_usleep(500);
                 }
-                /* Transient error (buffer full etc.), yield and retry */
-                sys_timer_usleep(500);
+                
+                retry_count++;
+                if (retry_count > 100) {
+                    printf("[PS3 Audio] Buffer pump failed permanently with error: 0x%X\n", ret);
+                    audio_thread_running = 0;
+                    break;
+                }
             }
         } while (ret != CELL_OK && audio_thread_running);
     }
@@ -162,7 +180,9 @@ void ps3_audio_init(void) {
     ret = cellAudioInit();
     if (ret != CELL_OK && ret != CELL_AUDIO_ERROR_ALREADY_INIT) {
         printf("[PS3] Audio init failed permanently: 0x%X\n", ret);
-        exit(1);
+        char err_msg[128];
+        snprintf(err_msg, sizeof(err_msg), "cellAudioInit failed: 0x%X\nPlease ensure audio output is configured correctly in XMB.", ret);
+        PS3App_ShowFatalError(err_msg);
     }
     printf("[PS3] cellAudio initialized successfully!\n");
 

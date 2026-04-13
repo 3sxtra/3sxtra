@@ -79,6 +79,7 @@ typedef struct {
 #define MLT_HASH_SIZE (1 << MLT_HASH_BITS)
 #define MLT_HASH_MASK (MLT_HASH_SIZE - 1)
 #define MLT_HASH_EMPTY (-1)
+#define MLT_HASH_DELETED (-2)
 
 // ⚡ Opt2P2: Persistent tile cache — boost tile lifetime on cache hit.
 // Tiles survive TILE_CACHE_BOOST × base_lifetime frames of disuse before eviction.
@@ -2236,6 +2237,9 @@ static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
         if (ht[idx].slot == MLT_HASH_EMPTY) {
             break; // Empty slot — not in cache
         }
+        if (ht[idx].slot == MLT_HASH_DELETED) {
+            continue; // Keep probing
+        }
         if (ht[idx].code == code && mt->mltcsh16[ht[idx].slot].state == palt) {
             // ⚡ Opt2P2: Cache hit — boost lifetime so frequently-used tiles persist longer
             mt->mltcsh16[ht[idx].slot].time = mt->mltcshtime16 * TILE_CACHE_BOOST;
@@ -2273,8 +2277,10 @@ static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
                 u32 oi = (oh + p) & MLT_HASH_MASK;
                 if (ht[oi].slot == MLT_HASH_EMPTY)
                     break;
+                if (ht[oi].slot == MLT_HASH_DELETED)
+                    continue;
                 if (ht[oi].code == old_code && ht[oi].slot == b) {
-                    ht[oi].slot = MLT_HASH_EMPTY;
+                    ht[oi].slot = MLT_HASH_DELETED;
                     ht[oi].code = 0;
                     break;
                 }
@@ -2292,7 +2298,7 @@ static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
     u32 ins = mlt_hash(code);
     for (probe = 0; probe < MLT_HASH_SIZE; probe++) {
         u32 idx = (ins + probe) & MLT_HASH_MASK;
-        if (ht[idx].slot == MLT_HASH_EMPTY) {
+        if (ht[idx].slot == MLT_HASH_EMPTY || ht[idx].slot == MLT_HASH_DELETED) {
             ht[idx].code = code;
             ht[idx].slot = b;
             break;
@@ -2315,6 +2321,9 @@ static s32 get_mltbuf32(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
         u32 idx = (h + probe) & MLT_HASH_MASK;
         if (ht[idx].slot == MLT_HASH_EMPTY) {
             break; // Empty slot — not in cache
+        }
+        if (ht[idx].slot == MLT_HASH_DELETED) {
+            continue; // Keep probing
         }
         if (ht[idx].code == code && mt->mltcsh32[ht[idx].slot].state == palt) {
             // ⚡ Opt2P2: Cache hit — boost lifetime so frequently-used tiles persist longer
@@ -2351,8 +2360,10 @@ static s32 get_mltbuf32(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
                 u32 oi = (oh + p) & MLT_HASH_MASK;
                 if (ht[oi].slot == MLT_HASH_EMPTY)
                     break;
+                if (ht[oi].slot == MLT_HASH_DELETED)
+                    continue;
                 if (ht[oi].code == old_code && ht[oi].slot == b) {
-                    ht[oi].slot = MLT_HASH_EMPTY;
+                    ht[oi].slot = MLT_HASH_DELETED;
                     ht[oi].code = 0;
                     break;
                 }
@@ -2370,7 +2381,7 @@ static s32 get_mltbuf32(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
     u32 ins = mlt_hash(code);
     for (probe = 0; probe < MLT_HASH_SIZE; probe++) {
         u32 idx = (ins + probe) & MLT_HASH_MASK;
-        if (ht[idx].slot == MLT_HASH_EMPTY) {
+        if (ht[idx].slot == MLT_HASH_EMPTY || ht[idx].slot == MLT_HASH_DELETED) {
             ht[idx].code = code;
             ht[idx].slot = b;
             break;
@@ -2747,8 +2758,10 @@ void mlt_obj_trans_update(MultiTexture* mt) {
                     u32 idx = (h + p) & MLT_HASH_MASK;
                     if (ht16[idx].slot == MLT_HASH_EMPTY)
                         break;
+                    if (ht16[idx].slot == MLT_HASH_DELETED)
+                        continue;
                     if (ht16[idx].code == evict_code && ht16[idx].slot == i) {
-                        ht16[idx].slot = MLT_HASH_EMPTY;
+                        ht16[idx].slot = MLT_HASH_DELETED;
                         ht16[idx].code = 0;
                         break;
                     }
@@ -2769,8 +2782,10 @@ void mlt_obj_trans_update(MultiTexture* mt) {
                     u32 idx = (h + p) & MLT_HASH_MASK;
                     if (ht32[idx].slot == MLT_HASH_EMPTY)
                         break;
+                    if (ht32[idx].slot == MLT_HASH_DELETED)
+                        continue;
                     if (ht32[idx].code == evict_code && ht32[idx].slot == i) {
-                        ht32[idx].slot = MLT_HASH_EMPTY;
+                        ht32[idx].slot = MLT_HASH_DELETED;
                         ht32[idx].code = 0;
                         break;
                     }
