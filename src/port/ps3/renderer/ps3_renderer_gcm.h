@@ -14,7 +14,7 @@
 typedef struct {
     float x, y, z;
     float u, v;
-    unsigned int color; // RGBA
+    unsigned int color; // ARGB (swapped to RGBA during draw_quad)
 } GcmVertex;
 
 typedef struct {

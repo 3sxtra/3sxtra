@@ -173,6 +173,8 @@ bool SPUSort_Execute(GcmRenderTask* tasks, int task_count) {
         }
     }
 
+    __lwsync();
+
     /* Copy sorted indices back to render_tasks.
      * After sorting, s_items[] is in sorted z-order.
      * We need to reorder render_tasks to match without losing texture_handles. */

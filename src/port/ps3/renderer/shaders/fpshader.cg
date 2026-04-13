@@ -23,7 +23,7 @@ F2FB main(V2F IN,
         float byte_v = floor(tex0.a * 255.0 + 0.5);
         float pixel_x = floor(IN.texcoord.x * tex_dimensions.x);
         float is_odd = fmod(pixel_x, 2.0); // 0.0 for even, 1.0 for odd
-        float final_nibble = lerp(floor(byte_v / 16.0), fmod(byte_v, 16.0), is_odd);
+        float final_nibble = lerp(fmod(byte_v, 16.0), floor(byte_v / 16.0), is_odd);
         final_color = tex2D(palette, float2((final_nibble + 0.5) / 256.0, 0.5)) * IN.color;
     } else if (is_palettized > 0.5f) {
         float byte_v = floor(tex0.a * 255.0 + 0.5);

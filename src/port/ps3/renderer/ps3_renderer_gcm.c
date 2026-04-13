@@ -529,6 +529,7 @@ void CRS_Renderer_UpdateTexture(int textureId, const void* data, int x, int y, i
         return;
     int tex_idx = tex_handle - 1;
 
+    assert(tex_idx < CELL_GCM_MAX_TEXTURES);
     // tex_pool_free acquires tex_pool_mutex internally
     if (system_textures[tex_idx].pixels) {
         tex_pool_free(system_textures[tex_idx].pixels);
@@ -998,7 +999,7 @@ static const uint8_t ps2_clut_shuffle[256] = {
 
 static void read_rgba16_color(const uint8_t* p, uint8_t* out) {
     // 16-bit PSMCT16 from flPS2ConvertContext (LE order):
-    // p[0] is strictly A & B components, p[1] is R & G components
+    // p[0] is strictly R & G components, p[1] is B & A components
     uint16_t pixel = p[0] | (p[1] << 8);   // Read as little-endian
     out[0] = s_5to8[pixel & 0x1F];         // R (bits 0-4)
     out[1] = s_5to8[(pixel >> 5) & 0x1F];  // G (bits 5-9)
@@ -1015,6 +1016,7 @@ void CRS_Renderer_DestroyTexture(unsigned int texture_handle) {
     if (texture_handle < 1 || texture_handle > FL_TEXTURE_MAX)
         return;
     int tex_idx = texture_handle - 1;
+    assert(tex_idx < CELL_GCM_MAX_TEXTURES);
     if (system_textures[tex_idx].pixels) {
         tex_pool_free(system_textures[tex_idx].pixels);
         system_textures[tex_idx].pixels = NULL;
@@ -1069,11 +1071,10 @@ void CRS_Renderer_CreatePalette(unsigned int ph) {
                 read_rgba16_color(&raw[i * 2], out);
                 pal_cache[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
             } else {
-                // 32-bit natively mapped by flPS2ConvertContext into BE ARGB format
-                // So memory bytes sequentially are: A, R, G, B
+                // PS2 GS PSMCT32 bytes in memory: [R, G, B, A]
                 const uint8_t* p = raw + (i * 4);
-                // Treat the bytes in exactly the order they appear to preserve native ARGB sequence
-                pal_cache[i] = build_swizzled_rgba(p[0], p[1], p[2], p[3]); // r=p[0], g=p[1], b=p[2], a=p[3]
+                uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2);
+                pal_cache[i] = (a << 24) | (p[0] << 16) | (p[1] << 8) | p[2]; // ARGB8888 for RSX
             }
         }
         memset(&pal_cache[16], 0, (256 - 16) * 4); // clear to safe black
@@ -1085,9 +1086,10 @@ void CRS_Renderer_CreatePalette(unsigned int ph) {
                 read_rgba16_color(&raw[src_idx * 2], out);
                 pal_cache[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
             } else {
-                // 32-bit natively mapped ARGB -> extract R, G, B, A natively
+                // PS2 GS PSMCT32 bytes in memory: [R, G, B, A]
                 const uint8_t* p = raw + (src_idx * 4);
-                pal_cache[i] = build_swizzled_rgba(p[0], p[1], p[2], p[3]);
+                uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2);
+                pal_cache[i] = (a << 24) | (p[0] << 16) | (p[1] << 8) | p[2]; // ARGB8888 for RSX
             }
         }
     }
@@ -1111,10 +1113,17 @@ void CRS_Renderer_DestroyPalette(unsigned int palette_handle) {
     }
 }
 
-void CRS_Renderer_UnlockTexture(unsigned int th) {}
+void CRS_Renderer_UnlockTexture(unsigned int th) {
+    const int tex_handle = LO_16_BITS(th);
+    if (tex_handle < 1 || tex_handle > FL_TEXTURE_MAX) return;
+    int tex_idx = tex_handle - 1;
+    assert(tex_idx < CELL_GCM_MAX_TEXTURES);
+    system_textures[tex_idx].last_mem_handle = 0; // Force re-upload on next SetTexture
+}
 void CRS_Renderer_UnlockPalette(unsigned int ph) {
     CRS_Renderer_DestroyPalette(ph);
-    CRS_Renderer_CreatePalette(ph << 16);
+    if (ph <= 0xFFFF) ph = ph << 16;
+    CRS_Renderer_CreatePalette(ph);
 }
 
 void CRS_Renderer_SetTexture(unsigned int th) {
@@ -1144,6 +1153,7 @@ void CRS_Renderer_SetTexture(unsigned int th) {
     if (pixels == 0)
         return;
 
+    assert(tex_idx < CELL_GCM_MAX_TEXTURES);
     TextureState* tstate = &system_textures[tex_idx];
 
     // Finding #1: PSMCT32 (0) and PSMCT24 (1) are direct-color formats, same as PSMCT16 (2)
@@ -1202,15 +1212,16 @@ void CRS_Renderer_SetTexture(unsigned int th) {
         tex->depth = 1;
         tex->location = CELL_GCM_LOCATION_LOCAL;
         tex->offset = tstate->offset;
-        tstate->w = fl_texture->width;
-        tstate->h = fl_texture->height;
-        if (fl_texture->format == SCE_GS_PSMT4)
-            tstate->pal_mode = 2.0f;
-        else if (fl_texture->format == SCE_GS_PSMT8)
-            tstate->pal_mode = 1.0f;
-        else
-            tstate->pal_mode = 0.0f;
     }
+    
+    tstate->w = fl_texture->width;
+    tstate->h = fl_texture->height;
+    if (fl_texture->format == SCE_GS_PSMT4)
+        tstate->pal_mode = 2.0f;
+    else if (fl_texture->format == SCE_GS_PSMT8 || fl_texture->format == SCE_GS_PSMCT16)
+        tstate->pal_mode = 1.0f;
+    else
+        tstate->pal_mode = 0.0f;
 
     // Finding #4: Skip re-upload if the underlying system memory buffer hasn't changed.
     if (tstate->last_mem_handle == fl_texture->mem_handle && fl_texture->mem_handle != 0) {
@@ -1250,16 +1261,15 @@ void CRS_Renderer_SetTexture(unsigned int th) {
             break;
         }
         case SCE_GS_PSMCT32: {
-            // Implementation fixed: flPS2ConvertContext maps bytes dynamically into 32-bit UINT.
-            // On Big Endian CPU, ARGB uint32 writes sequentially as [A, R, G, B].
             uint32_t raw_pitch_32 = fl_texture->width * 4;
             uint32_t aligned_pitch = (fl_texture->width * 4 + 63) & ~63;
             for (int y = 0; y < fl_texture->height; y++) {
                 const uint8_t* src_row = raw + (y * raw_pitch_32);
                 uint32_t* dst_row = (uint32_t*)(conv + (y * aligned_pitch));
                 for (int x = 0; x < fl_texture->width; x++) {
-                    const uint8_t* p = &src_row[x * 4]; // [0]=A, [1]=R, [2]=G, [3]=B
-                    dst_row[x] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+                    const uint8_t* p = &src_row[x * 4]; // PS2: [0]=R, [1]=G, [2]=B, [3]=A
+                    uint8_t a = (p[3] >= 128) ? 255 : (p[3] * 2);
+                    dst_row[x] = (a << 24) | (p[0] << 16) | (p[1] << 8) | p[2];
                 }
             }
             break;
