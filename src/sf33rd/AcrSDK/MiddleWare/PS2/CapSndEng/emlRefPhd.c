@@ -17,7 +17,7 @@
 
 // PHD data is embedded as raw PS2 little-endian byte arrays.
 // On big-endian platforms (PS3/PPC), multi-byte fields must be byte-swapped.
-#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
+#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__) || defined(PLATFORM_PS3)
 static inline u32 PHD_LE32(u32 v) {
     return ((v & 0xFF) << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00) | ((v >> 24) & 0xFF);
 }

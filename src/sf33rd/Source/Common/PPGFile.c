@@ -30,17 +30,9 @@
 
 #include <SDL3/SDL.h>
 
-#define MAGIC_TO_INT(str) ((str[0] << 0x18) | (str[1] << 0x10) | (str[2] << 0x8) | (str[3]))
-#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
-#define REVERT_U32(val) (val)
-#define REVERT_U16(val) (val)
-#else
-#define REVERT_U32(val)                                                                                                \
-    (((val & 0xFF) << 0x18) | ((val & 0xFF00) << 8) | ((val >> 8) & 0xFF00) | ((val >> 0x18) & 0xFF))
-#define REVERT_U16(val) (((val >> 8) & 0xFF) | ((val & 0xFF) << 8))
-#endif
-#define REVERT_U8(val) (((val << 4) & 0xF0) | ((val >> 4) & 0xF))
+#include "port/ps3/endian_macros.h"
 
+#define MAGIC_TO_INT(str) ((str[0] << 0x18) | (str[1] << 0x10) | (str[2] << 0x8) | (str[3]))
 #define CODE_0(val) ((val & 0xF0) << 8) + ((val & 0xF) << 4)
 #define CODE_1(val) ((val & 0x38) << 0xA) + ((val & 7) << 5)
 
@@ -610,6 +602,13 @@ s32 ppgSetupPalChunk(Palette* pch, u8* adrs, s32 size, s32 ixNum1st, s32 num, s3
 
     while (1) {
         ppl = (PPLFileHeader*)(adrs + ofs);
+#ifdef PLATFORM_PS3
+        if (ofs < 100) {
+            extern int printf(const char*, ...);
+            printf("[PS3-MAGIC] ofs=%d, magic=%x, REVERT_U32=%x, EXPECT=pEND(%x) pPAL(%x)\n", 
+                   ofs, ppl->magic, REVERT_U32(ppl->magic), MAGIC_TO_INT("pEND"), MAGIC_TO_INT("pPAL"));
+        }
+#endif
 
         if (MAGIC_TO_INT("pEND") == REVERT_U32(ppl->magic)) {
             return -1;
@@ -1152,6 +1151,13 @@ s32 ppgSetupTexChunk_1st(Texture* tch, u8* adrs, ssize_t size, s32 ixNum1st, s32
 
     while (1) {
         ppg = (PPGFileHeader*)(tch->srcAdrs + ofs);
+#ifdef PLATFORM_PS3
+        if (ofs < 200) {
+            extern int printf(const char*, ...);
+            printf("[PS3-MAGIC-TEX] ofs=%d, magic=%x, REVERT_U32=%x, EXPECT=pEND(%x) pTEX(%x)\n", 
+                   ofs, ppg->magic, REVERT_U32(ppg->magic), MAGIC_TO_INT("pEND"), MAGIC_TO_INT("pTEX"));
+        }
+#endif
 
         if (MAGIC_TO_INT("pEND") != REVERT_U32(ppg->magic)) {
             if (MAGIC_TO_INT("pTEX") == REVERT_U32(ppg->magic)) {

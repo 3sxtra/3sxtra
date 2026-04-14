@@ -9,6 +9,7 @@
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/bg_rewrite.h"
 #include <stdio.h> /* DEBUG: for ColorRAM dump */
+#include <stdlib.h>
 #include "common.h"
 #include "port/mods/modded_stage.h"
 #include "port/renderer_plugin.h"
@@ -289,6 +290,8 @@ void Bg_Texture_Load2(u8 type) {
 
 /** @brief Load background textures used during ending sequences. */
 void Bg_Texture_Load_Ending(s16 type) {
+    void** pLoadAdrs = (void**)malloc(0x1000);
+    s16* pKey = (s16*)malloc(0x1000);
     void* loadAdrs;
     u32 loadSize;
     u16 accnum;
@@ -311,7 +314,10 @@ void Bg_Texture_Load_Ending(s16 type) {
         scr_bcm[i] = ending_map_tbl[type][i];
     }
 
-    loadSize = load_it_use_any_key2(bgtex_ending_file[type], &loadAdrs, &key1, 2, 0);
+    loadSize = load_it_use_any_key2(bgtex_ending_file[type], pLoadAdrs, pKey, 2, 0);
+    loadAdrs = *pLoadAdrs;
+    key1 = *pKey;
+    
     bg_extract_priorities(ending_priority[0], 4);
 
     for (accnum = 0, j = 0; j < bg_w.scrno; j++) {
@@ -384,4 +390,7 @@ void Bg_Texture_Load_Ending(s16 type) {
     ppgSourceDataReleased(&ppgBgList[2]);
     ppgSourceDataReleased(&ppgRwBgList);
     ppgSourceDataReleased(&ppgAkeList);
+
+    free(pLoadAdrs);
+    free(pKey);
 }

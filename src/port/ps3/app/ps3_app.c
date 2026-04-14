@@ -277,6 +277,13 @@ bool PS3App_IsSystemDrawing(void) {
 }
 
 void PS3App_BeginFrame(void) {
+    {
+        static int bf_diag = 0;
+        if (bf_diag < 5) {
+            printf("[PS3App] BeginFrame (engine loop starting next frame)\n");
+            bf_diag++;
+        }
+    }
     // NEW-4: Skip framebuffer writes during system overlay drawing
     // We MUST call this every frame to reset the render task counters,
     // even if s_system_drawing is true, otherwise the vertex buffer will overflow
@@ -286,6 +293,13 @@ void PS3App_BeginFrame(void) {
 }
 
 void PS3App_EndFrame(void) {
+    {
+        static int ef_diag = 0;
+        if (ef_diag < 5) {
+            printf("[PS3App] EndFrame START (engine loop yielding)\n");
+            ef_diag++;
+        }
+    }
     // NEW-4: During system overlay, still flip to maintain vsync timing
     // but skip the render pass so the OS overlay isn't overwritten
     if (s_system_drawing) {
@@ -297,6 +311,14 @@ void PS3App_EndFrame(void) {
 #if DEBUG
 #endif
     CRS_Renderer_EndFrame();
+
+    {
+        static int ef_done_diag = 0;
+        if (ef_done_diag < 5) {
+            printf("[PS3App] EndFrame COMPLETE (engine loop unblocked)\n");
+            ef_done_diag++;
+        }
+    }
 }
 
 void PS3App_Exit(void) {

@@ -3,16 +3,6 @@
  * Main Graphics Rendering and Transformation Engine
  */
 
-#ifdef PLATFORM_PS3
-#define REVERT_U16(x) (uint16_t)((((uint16_t)(x) & 0xFF) << 8) | (((uint16_t)(x) & 0xFF00) >> 8))
-#define REVERT_U32(x)                                                                                                  \
-    (uint32_t)((((uint32_t)(x) & 0xFF) << 24) | (((uint32_t)(x) & 0xFF00) << 8) | (((uint32_t)(x) & 0xFF0000) >> 8) |  \
-               (((uint32_t)(x) & 0xFF000000) >> 24))
-#else
-#define REVERT_U16(x) (x)
-#define REVERT_U32(x) (x)
-#endif
-
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "common.h"
 #include "port/rendering/legacy_matrix.h"
@@ -46,6 +36,8 @@
 #include <simde/x86/fma.h>
 #endif
 
+#include "port/ps3/endian_macros.h"
+
 /* Forward declaration — defined later in this file */
 static void appRenewTempPriority(s32 z);
 
@@ -55,6 +47,26 @@ static void appRenewTempPriority(s32 z);
 typedef struct {
     f32 min_x, min_y, max_x, max_y;
 } SpriteBox;
+
+// Debug logging for byte-swapping operations
+#ifdef PLATFORM_PS3
+#include "common.h"  // For FL_LOG
+#define DEBUG_REVERT_U16(val) ({ \
+    uint16_t __val = (val); \
+    uint16_t __result = REVERT_U16(__val); \
+    FL_LOG("REVERT_U16: 0x%04x -> 0x%04x", __val, __result); \
+    __result; \
+})
+#define DEBUG_REVERT_U32(val) ({ \
+    uint32_t __val = (val); \
+    uint32_t __result = REVERT_U32(__val); \
+    FL_LOG("REVERT_U32: 0x%08x -> 0x%08x", __val, __result); \
+    __result; \
+})
+#else
+#define DEBUG_REVERT_U16(val) (val)
+#define DEBUG_REVERT_U32(val) (val)
+#endif
 
 #ifndef PLATFORM_PS3
 #include <simde/x86/sse.h>

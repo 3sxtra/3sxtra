@@ -67,19 +67,19 @@ static void audio_thread_entry(uint64_t arg) {
         return;
     }
 
+    printf("[PS3] Starting CellAudio port now that subsystem is ready...\n");
+    int port_ret = cellAudioPortStart(audio_port_num);
+    if (port_ret != CELL_OK) {
+        printf("[PS3] ERROR: cellAudioPortStart failed with 0x%x\n", port_ret);
+    }
+
     // Thread ready to pump audio
     printf("[PS3] Priming CellAudio buffer...\n");
     float audio_buffer[256 * 2] __attribute__((aligned(16))) = {0}; // PS3 audio expects interleaved (L, R) buffer
     
     // Seed buffer with silence so the port immediately has data to consume, triggering an event
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 4; i++) {
         cellAudioAddData(audio_port_num, audio_buffer, CELL_AUDIO_BLOCK_SAMPLES, 1.0f);
-    }
-
-    printf("[PS3] Starting CellAudio port now that subsystem is ready...\n");
-    int port_ret = cellAudioPortStart(audio_port_num);
-    if (port_ret != CELL_OK) {
-        printf("[PS3] ERROR: cellAudioPortStart failed with 0x%x\n", port_ret);
     }
 
     while (audio_thread_running) {

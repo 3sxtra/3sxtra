@@ -1,5 +1,6 @@
 #include "sf33rd/Source/Game/io/file_loader.h"
 #include "common.h"
+#include <stdlib.h>
 #include "port/io/afs.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -32,13 +33,18 @@ s32 load_it_use_any_key2(u16 fnum, void** adrs, s16* key, u8 kokey, u8 group) {
 
 s16 load_it_use_any_key(u16 fnum, u8 kokey, u8 group) {
     u32 err;
-    void* adrs;
-    s16 key;
+    void** pAdrs = (void**)malloc(0x1000);
+    s16* pKey = (s16*)malloc(0x1000);
+    s16 out_key;
 
-    err = load_it_use_any_key2(fnum, &adrs, &key, kokey, group);
+    err = load_it_use_any_key2(fnum, pAdrs, pKey, kokey, group);
+    out_key = *pKey;
+
+    free(pAdrs);
+    free(pKey);
 
     if (err != 0) {
-        return key;
+        return out_key;
     }
 
     return 0;

@@ -19,6 +19,7 @@
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
+#include "port/ps3/endian_macros.h"
 
 // COL typedef moved to color3rd.h
 
@@ -526,12 +527,12 @@ void palCreateGhost() {
     ppl.free = 0;
     ppl.compress = 0;
     ppl.c_mode = 2;
-#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
+#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__) || defined(PLATFORM_PS3)
     ppl.formARGB = 0x1555;
-    ppl.palettes = 16;
+    ppl.palettes = REVERT_U16(16);
 #else
     ppl.formARGB = 0x5515;
-    ppl.palettes = 0x1000;
+    ppl.palettes = REVERT_U16(16);
 #endif
     size = 0x2000;
     key = Pull_ramcnt_key(size, 2, 0, 1);
@@ -543,10 +544,10 @@ void palCreateGhost() {
     ppgSetupPalChunkDir(&col3rd_w.palDC, &ppl, adrs, 0, 1);
     Push_ramcnt_key(key);
 
-#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
-    ppl.palettes = 512;
+#if defined(__PPU__) || defined(__ppc__) || defined(__PS3__) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__) || defined(PLATFORM_PS3)
+    ppl.palettes = REVERT_U16(512);
 #else
-    ppl.palettes = 2;
+    ppl.palettes = REVERT_U16(512);
 #endif
     size = 0x2000;
     key = Pull_ramcnt_key(size, 2, 0, 1);

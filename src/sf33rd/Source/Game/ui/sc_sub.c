@@ -31,7 +31,7 @@
 #include "port/config/config.h"
 #include "constants.h"
 #include <stdbool.h>
-
+#include <stdlib.h>
 #define TO_UV_256(val) ((val) / 256.0f)
 #define TO_UV_256_NEG(val) (TO_UV_256(val))
 #define TO_UV_128(val) ((val) / 128.0f)
@@ -100,6 +100,8 @@ void HUD_Shift_Init() {
 
 /** @brief Initialize the screen-font rendering system and palette data. */
 void Scrscreen_Init() {
+    void** pLoadAdrs = (void**)malloc(0x1000);
+    s16* pKey = (s16*)malloc(0x1000);
     void* loadAdrs;
     u32 loadSize;
     s16 i;
@@ -111,11 +113,16 @@ void Scrscreen_Init() {
     ppgScrListShot.pal = &ppgScrPalShot;
     ppgScrListOpt.pal = &ppgScrPalOpt;
     ppgSetupCurrentDataList(&ppgScrList);
-    loadSize = load_it_use_any_key2(10, &loadAdrs, &key, 2, 0); // scrscrn.ppg
+    loadSize = load_it_use_any_key2(10, pLoadAdrs, pKey, 2, 0); // scrscrn.ppg
+
+    loadAdrs = *pLoadAdrs;
+    key = *pKey;
 
     if (loadSize == 0) {
         // Could not load texture for score screen.\n
         flLogOut("スコアスクリーン用のテクスチャが読み込めませんでした。\n");
+        free(pLoadAdrs);
+        free(pKey);
         while (1) {
             // Do nothing
         }
@@ -140,6 +147,9 @@ void Scrscreen_Init() {
     Push_ramcnt_key(key);
     ppgSourceDataReleased(NULL);
     Sa_frame_Clear();
+
+    free(pLoadAdrs);
+    free(pKey);
 }
 
 /* ═══════════════════════════════════════════════════════════════ */

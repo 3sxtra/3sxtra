@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "common.h"
 #include <stdio.h>
-
+#include <stdlib.h>
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_copyright.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
@@ -143,6 +143,8 @@ s16 opening_demo() {
 
 /** @brief Load the main title texture and prepare the title screen. */
 void TITLE_Init() {
+    void** pLoadAdrs = (void**)malloc(0x1000);
+    s16* pKey = (s16*)malloc(0x1000);
     void* loadAdrs;
     u32 loadSize;
     s16 key;
@@ -152,11 +154,16 @@ void TITLE_Init() {
     ppgTitleList.tex = &ppgTitleTex;
     ppgTitleList.pal = NULL;
     ppgSetupCurrentDataList(&ppgTitleList);
-    loadSize = load_it_use_any_key2(78, &loadAdrs, &key, 2, 1); // TitleTM.ppg
+    loadSize = load_it_use_any_key2(78, pLoadAdrs, pKey, 2, 1); // TitleTM.ppg
+
+    loadAdrs = *pLoadAdrs;
+    key = *pKey;
 
     if (loadSize == 0) {
         // Main title texture could not be loaded.
         flLogOut("メインタイトルのテクスチャが読み込めませんでした。\n");
+        free(pLoadAdrs);
+        free(pKey);
         return;
     }
 
@@ -175,6 +182,9 @@ void TITLE_Init() {
     if (use_rmlui && rmlui_screen_copyright) {
         rmlui_copyright_show();
     }
+
+    free(pLoadAdrs);
+    free(pKey);
 }
 
 /** @brief Animate and render the title logo with zoom. */

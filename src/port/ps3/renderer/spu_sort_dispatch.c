@@ -31,10 +31,11 @@ extern char _binary_spu_sort_task_spu_elf_end[];
 
 /* ── Shared context (must match SortContext in spu_sort_task.c) ── */
 typedef struct {
-    uint32_t ea_items;    /* EA of SPU_SortItem array */
+    uint64_t ea_items;    /* EA of SPU_SortItem array (64-bit for RPCS3) */
     uint32_t item_count;  /* Number of items to sort */
     uint32_t run_command; /* 0=idle, 1=sort, 2=exit */
     uint32_t status;      /* 0=done, 1=ready */
+    uint32_t pad[2];      /* Match SPU alignment/padding */
 } SortContext __attribute__((aligned(128)));
 
 typedef struct {
@@ -105,13 +106,13 @@ void SPUSort_Init(void) {
     /* Wait until the SPU signals it's ready (status = 1) */
     int timeout = 0;
     while (s_ctx.status != 1 && timeout < 1000) {
+        __lwsync();
         sys_timer_usleep(100);
         timeout++;
     }
 
     if (s_ctx.status != 1) {
-        printf("[SPUSort] WARNING: SPU did not signal ready after 100ms\n");
-        /* Continue anyway — Execute will fall back to PPU */
+        printf("[SPUSort] WARNING: SPU did not signal ready after 100ms (status=%u)\n", s_ctx.status);
     } else {
         printf("[SPUSort] SPU sort thread ready\n");
     }
@@ -156,19 +157,29 @@ bool SPUSort_Execute(GcmRenderTask* tasks, int task_count) {
     }
 
     /* Setup the context and signal the SPU */
-    s_ctx.ea_items = (uint32_t)(uintptr_t)s_items;
+    s_ctx.ea_items = (uint64_t)(uintptr_t)s_items;
     s_ctx.item_count = (uint32_t)task_count;
+    s_ctx.status = 1; /* Reset status for safety */
     __lwsync(); /* Ensure items and context fields are visible */
     s_ctx.run_command = 1;
     __lwsync(); /* Ensure run_command is visible to SPU */
 
-    /* Poll for completion with a bounded timeout (10ms max) */
+    /* Poll for completion with a bounded timeout (20ms max) */
+    /* Use a tighter spin-loop initially, then yield */
     int watchdog = 0;
     while (s_ctx.run_command != 0) {
-        sys_timer_usleep(50);
-        if (++watchdog > 200) {
-            printf("[SPUSort] WARNING: SPU sort timed out after 10ms, falling back to PPU\n");
-            s_ctx.run_command = 0; /* Reset so SPU doesn't stale-process */
+        __lwsync();
+        if (watchdog < 100) {
+            /* Short spin */
+            for (int i = 0; i < 50; i++) __nop();
+        } else {
+            /* Yield to OS */
+            sys_timer_usleep(20);
+        }
+        
+        if (++watchdog > 1000) {
+            printf("[SPUSort] WARNING: SPU sort timed out after ~20ms, falling back to PPU\n");
+            s_ctx.run_command = 0;
             return false;
         }
     }

@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/demo/demo_states.h"
 #include "common.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include "port/config/config.h"
 #include "port/rendering/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -223,6 +224,8 @@ s32 CAPCOM_Logo() {
 
 /** @brief Load the Capcom logo PPG texture and set up palette data. */
 static void CAPLOGO_Init() {
+    void** pLoadAdrs = (void**)malloc(0x1000);
+    s16* pKey = (s16*)malloc(0x1000);
     void* loadAdrs;
     u32 loadSize;
     s16 key;
@@ -231,10 +234,15 @@ static void CAPLOGO_Init() {
     ppgCapLogoList.tex = &ppgCapLogoTex;
     ppgCapLogoList.pal = &ppgCapLogoPal;
     ppgSetupCurrentDataList(&ppgCapLogoList);
-    loadSize = load_it_use_any_key2(75, &loadAdrs, &key, 2, 1); // CapLogo.ppg
+    loadSize = load_it_use_any_key2(75, pLoadAdrs, pKey, 2, 1); // CapLogo.ppg
+
+    loadAdrs = *pLoadAdrs;
+    key = *pKey;
 
     if (loadSize == 0) {
         flLogOut("カプロゴのテクスチャが読み込めませんでした。\n");
+        free(pLoadAdrs);
+        free(pKey);
         return;
     }
 
@@ -244,6 +252,9 @@ static void CAPLOGO_Init() {
     ppgSetupTexChunk_3rd(NULL, 600, 1);
     Push_ramcnt_key(key);
     ppgSourceDataReleased(0);
+
+    free(pLoadAdrs);
+    free(pKey);
 }
 
 /** @brief Animate the Capcom logo — palette cycling (type 0) or static display (type 1). */
@@ -302,6 +313,8 @@ void Put_char(const f32* ptr, u32 indexG, u16 prio, s16 x, s16 y, f32 zx, f32 zy
 
 /** @brief Load warning/ADX PPG textures and set up palette data. */
 void Warning_Init() {
+    void** pLoadAdrs = (void**)malloc(0x1000);
+    s16* pKey = (s16*)malloc(0x1000);
     void* loadAdrs;
     u32 loadSize;
     s16 key;
@@ -313,10 +326,15 @@ void Warning_Init() {
     ppgAdxList.tex = &ppgWarTex;
     ppgAdxList.pal = &ppgAdxPal;
     ppgSetupCurrentDataList(&ppgWarList);
-    loadSize = load_it_use_any_key2(12, &loadAdrs, &key, 2, 1); // Warning.ppg
+    loadSize = load_it_use_any_key2(12, pLoadAdrs, pKey, 2, 1); // Warning.ppg
+
+    loadAdrs = *pLoadAdrs;
+    key = *pKey;
 
     if (loadSize == 0) {
         flLogOut("警告文のテクスチャが読み込めませんでした。\n");
+        free(pLoadAdrs);
+        free(pKey);
         return;
     }
 
@@ -332,6 +350,9 @@ void Warning_Init() {
     Push_ramcnt_key(key);
     ppgSourceDataReleased(0);
     picon_no = 0;
+
+    free(pLoadAdrs);
+    free(pKey);
 }
 
 // Called by Warning() state machine (cases 5-8) during boot sequence

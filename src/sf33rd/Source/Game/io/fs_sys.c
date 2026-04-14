@@ -4,6 +4,10 @@
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 
+#ifdef PLATFORM_PS3
+#include <sysutil/sysutil_common.h>
+#endif
+
 static AFSHandle afs_handle = AFS_NONE;
 
 s32 fsOpen(REQ* req) {
@@ -103,4 +107,7 @@ void waitVsyncDummy() {
     // is blocked on file I/O. Moving this to only the main loop would break sync reads.
     AFS_RunServer();
     mlTsbExecServer();
+#ifdef PLATFORM_PS3
+    cellSysutilCheckCallback();
+#endif
 }
