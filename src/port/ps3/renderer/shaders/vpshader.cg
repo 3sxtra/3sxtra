@@ -1,7 +1,7 @@
 struct V2F {
     float4 position : POSITION;
     float2 texcoord : TEXCOORD0;
-    float4 color : COLOR;
+    float4 color : COLOR0;
 };
 
 // C-02 Audit Fix: Explicit row_major for matrix bound from C array.
@@ -13,6 +13,7 @@ V2F main(float4 position : ATTR0,
          uniform row_major float4x4 mvp) 
 {
     V2F OUT;
+    OUT.color = color;
     OUT.position = mul(mvp, position);
     OUT.texcoord = texcoord;
     // CELL_GCM_VERTEX_UB256 normalizes 0-255 → 0.0-1.0 in hardware; no shader divide needed

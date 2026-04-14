@@ -1,10 +1,10 @@
 struct V2F {
     float2 texcoord : TEXCOORD0;
-    float4 color : COLOR;
+    float4 color : COLOR0;
 };
 
 struct F2FB {
-    float4 color : COLOR;
+    float4 color : COLOR0;
 };
 
 F2FB main(V2F IN, 
@@ -14,6 +14,7 @@ F2FB main(V2F IN,
             uniform float2 tex_dimensions)
 {
     F2FB OUT;
+    OUT.color = IN.color;
     float4 tex0 = tex2D(texture, IN.texcoord);
     float4 final_color = tex0 * IN.color;
     

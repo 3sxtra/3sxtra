@@ -174,7 +174,7 @@ int PS3App_FullInit(void) {
                 memset(&eq_attr, 0, sizeof(sys_event_queue_attribute_t));
                 sys_event_queue_attribute_initialize(eq_attr);
 
-                int eq_ret = sys_event_queue_create(&g_spurs_event_queue, &eq_attr, SYS_EVENT_QUEUE_LOCAL, 32);
+                int eq_ret = sys_event_queue_create(&g_spurs_event_queue, &eq_attr, SYS_EVENT_PORT_LOCAL, 32);
                 if (eq_ret == CELL_OK) {
                     eq_ret = cellSpursAttachLv2EventQueue(&g_spurs, g_spurs_event_queue, &g_spurs_port, 0);
                     if (eq_ret == CELL_OK) {
@@ -269,6 +269,16 @@ void PS3App_Quit(void) {
 
 bool PS3App_PollEvents(void) {
     cellSysutilCheckCallback();
+
+    if (g_spurs_initialized && g_spurs_event_queue) {
+        sys_event_t event;
+        // Drain any pending SPU completion events to prevent event queue overflow
+        // Timeout 0 means we only poll and don't block
+        while (sys_event_queue_receive(g_spurs_event_queue, &event, 0) == CELL_OK) {
+            // Discard event
+        }
+    }
+
     return s_is_running;
 }
 

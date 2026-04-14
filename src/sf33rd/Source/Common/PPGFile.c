@@ -31,6 +31,7 @@
 #include <SDL3/SDL.h>
 
 #include "port/ps3/endian_macros.h"
+#include <stdio.h>
 
 #define MAGIC_TO_INT(str) ((str[0] << 0x18) | (str[1] << 0x10) | (str[2] << 0x8) | (str[3]))
 #define CODE_0(val) ((val & 0xF0) << 8) + ((val & 0xF) << 4)
@@ -826,7 +827,7 @@ static void ppgChangeDataEndian(u8* adrs, s32 size, s32 dendL, s32 col4, s32 dep
 
     if (excdot != 0) {
         for (i = 0; i < size; i++) {
-            adrs[i] = REVERT_U8(adrs[i]);
+            // adrs[i] = REVERT_U8(adrs[i]); // Reverting 8-bit does nothing and REVERT_U8 doesn't exist
         }
     }
 }

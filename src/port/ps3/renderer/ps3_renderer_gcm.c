@@ -756,12 +756,14 @@ void CRS_Renderer_BeginFrame(void) {
     // Reset recurring viewport/blend/mask state
     CRS_Renderer_ResetState();
 
-    // Clear screen — always clear regardless of system draw state
+    // Clear screen — conditionally based on system draw state
     // Force clear color to opaque black (0xFF000000 = A,R,G,B)
     // to prevent green bleed on transparent 8-bit texture layers
     cellGcmSetClearColor(s_gcm_context, 0xFF000000);
     // Explicitly add Z and S clears to ensure depth buffer validity
-    cellGcmSetClearSurface(s_gcm_context, CELL_GCM_CLEAR_R | CELL_GCM_CLEAR_G | CELL_GCM_CLEAR_B | CELL_GCM_CLEAR_A | CELL_GCM_CLEAR_Z | CELL_GCM_CLEAR_S);
+    if (!PS3App_IsSystemDrawing()) {
+        cellGcmSetClearSurface(s_gcm_context, CELL_GCM_CLEAR_R | CELL_GCM_CLEAR_G | CELL_GCM_CLEAR_B | CELL_GCM_CLEAR_A | CELL_GCM_CLEAR_Z | CELL_GCM_CLEAR_S);
+    }
 
     // G-10 Audit Fix: Invalidate texture cache once per frame, not per-bind
     cellGcmSetInvalidateTextureCache(s_gcm_context, CELL_GCM_INVALIDATE_TEXTURE);
