@@ -105,6 +105,12 @@ s32 effect_40_init(s16 id, s16 type, s16 char_ix, s16 sync_bg, s16 master_player
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_40[type][0];
     ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_40[type][1];
+
+    // Display lower when displayed on netplay menu
+    if (id == 2) {
+        ewk->wu.position_y -= 44;
+    }
+
     ewk->wu.position_z = Pos_Data_40[type][2];
 
     if (master_priority < 2) {

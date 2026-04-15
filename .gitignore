@@ -21,3 +21,4 @@ third_party
 states
 rom
 dump
+*.AFS

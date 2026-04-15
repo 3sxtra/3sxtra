@@ -81,22 +81,20 @@ static s32 info_data_check(_save_work* save);
 static s32 yes_no_check(_save_work* save);
 
 static void load_data(s32 fnum, void* adrs) {
-    s32 nsct;
     _save_work* save = &SaveWork;
 
     save->afs_handle = AFS_Open(fnum);
 
     if (save->afs_handle == AFS_NONE) {
-        printf("file open error.(%d)\n", fnum);
+        printf("file open error.(%" PRId32 ")\n", fnum);
 
         while (1) {
             // do nothing
         }
     }
 
-    nsct = AFS_GetSectorCount(save->afs_handle);
-    printf("load_data: fnum=%d adrs=0x%" PRIXPTR " size=0x%X\n", fnum, (uintptr_t)adrs, nsct << 11);
-    AFS_Read(save->afs_handle, nsct, adrs);
+    printf("load_data: fnum=%" PRId32 " adrs=0x%" PRIXPTR "\n", fnum, (uintptr_t)adrs);
+    AFS_Read(save->afs_handle, adrs);
 }
 
 static s32 load_busy_ck() {
@@ -2408,7 +2406,7 @@ static void save_msg_trans(_save_work* save) {
         y = 192;
         KnjLocate(x, y - 44);
         KnjPuts("MESSAGE No = ");
-        sprintf(tmp, "%d", no);
+        sprintf(tmp, "%" PRId32, no);
         KnjSetColor(0x80008080);
         KnjPuts(tmp);
         KnjSetColor(0x80808080);
@@ -2453,7 +2451,7 @@ static void save_msg_trans(_save_work* save) {
             if (MsgLanguage == 0) {
                 McActZenNum(save->avail_size, tmp2, 0, 0);
             } else {
-                sprintf(tmp2, "%d", save->avail_size);
+                sprintf(tmp2, "%" PRId32, save->avail_size);
             }
 
             strcat(buf, tmp2);

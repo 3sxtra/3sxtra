@@ -18,11 +18,14 @@ typedef enum TaskID {
 
 extern MPP mpp_w;
 extern s32 system_init_level;
-extern Configuration configuration;
 
 void cpReadyTask(TaskID num, void* func_adrs);
 void cpExitTask(TaskID num);
 s32 mppGetFavoritePlayerNumber();
 void njUserMain(); // FIXME: This shouldn't be public
+
+void Main_Init();
+void Main_StepFrame();
+void Main_FinishFrame();
 
 #endif

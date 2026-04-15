@@ -1,5 +1,7 @@
+#if NETPLAY_ENABLED
+
 #include "port/sdl/netstats_renderer.h"
-#include "netplay/netplay.h"
+#include "platform/netplay/netplay.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
 #include <SDL3/SDL.h>
@@ -17,3 +19,5 @@ void NetstatsRenderer_Render() {
 
     SSPutStrPro(0, 2, 2, 9, 0xFFFFFFFF, buffer);
 }
+
+#endif // NETPLAY_ENABLED
