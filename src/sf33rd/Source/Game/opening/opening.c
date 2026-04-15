@@ -13,6 +13,7 @@
 
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "common.h"
+#include <stdio.h>
 
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_copyright.h"
@@ -80,10 +81,12 @@ OP_W op_w;
 
 /** @brief Top-level opening demo state machine (BG init → scroll → title). */
 s16 opening_demo() {
-    /* When skip-intro is enabled, bypass the cinematic and the white fade (cases 0-2) and
-       jump straight to the fully visible title logo (case 3). */
+    /* When skip-intro is enabled, bypass the cinematic and zoom sequence,
+       jumping straight to the static title screen. We must set zoom to 1.0 (0x40)
+       so the logo isn't drawn invisibly small. */
     if (Config_GetBool(CFG_KEY_SKIP_INTRO) && D_No[3] < 3) {
         TITLE_Init();
+        Zoom_Value_Set(0x40); // Fixes the invisible logo bug!
         D_No[3] = 3;
         op_timer0 = 300;
     }
@@ -109,7 +112,9 @@ s16 opening_demo() {
     case 2:
         TITLE_Move(0);
 
-        if (FadeIn(0, 4, 8) != 0) {
+        /* Wait for TITLE_Move(0) zoom sequence (op_w.r_no_0 goes from 0 to 3) to complete.
+           This ensures the logo fully lands without relying on the buggy FadeIn() effect. */
+        if (op_w.r_no_0 >= 3) {
             D_No[3] += 1;
             op_timer0 = 300;
         }
@@ -236,6 +241,7 @@ void OPBG_Init() {
     s16 i;
     s16 key;
 
+    printf("[BOOT] OPBG_Init: START\n");
     mmDebWriteTag("\nOPENING\n\n");
     ppgOpnBgList.tex = &ppgOpnBgTex;
     ppgOpnBgList.pal = palGetChunkGhostCP3();
@@ -243,29 +249,37 @@ void OPBG_Init() {
 
     if ((key = Search_ramcnt_type(0x1D)) == 0) {
         // Opening demo texture has not been loaded.
+        printf("[BOOT] OPBG_Init: Search_ramcnt_type(0x1D) FAILED — no opening texture\n");
         flLogOut("オープニングデモテクスチャが読み込まれていません。\n");
         return;
     }
 
     loadSize = Get_size_data_ramcnt_key(key);
     loadAdrs = (void*)Get_ramcnt_address(key);
+    printf("[BOOT] OPBG_Init: key=%d, loadAdrs=%p, loadSize=%u\n", key, loadAdrs, (unsigned)loadSize);
     ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 602, 91, 0, 0);
+    printf("[BOOT] OPBG_Init: ppgSetupTexChunk_1st done, textures=%d\n", ppgOpnBgTex.textures);
 
     for (i = 0; i < ppgOpnBgTex.textures; i++) {
         ppgSetupTexChunk_2nd(NULL, i + 602);
         ppgSetupTexChunk_3rd(NULL, i + 602, 1);
     }
+    printf("[BOOT] OPBG_Init: all tex chunks done\n");
 
     Opening_Now = 1;
+    printf("[BOOT] OPBG_Init: calling make_texcash_work(9)\n");
     make_texcash_work(9);
+    printf("[BOOT] OPBG_Init: calling mlt_obj_melt2\n");
     mlt_obj_melt2(&mts[9], 0x8C40);
+    printf("[BOOT] OPBG_Init: calling sound_trg_init + opening_init\n");
     sound_trg_init();
     opening_init();
     Zoom_Value_Set(0x40);
+    printf("[BOOT] OPBG_Init: COMPLETE\n");
 }
 
 /** @brief Tick the opening BG demo and render the scrolling layers. */
-s16 OPBG_Move(s32 /* unused */) {
+s16 OPBG_Move(s32 unused1) {
     s16 flag = 0;
 
     flag = oh_opening_demo();

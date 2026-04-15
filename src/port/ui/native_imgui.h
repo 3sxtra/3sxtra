@@ -11,10 +11,7 @@ struct _TASK;
 extern "C" {
 #endif
 
-typedef enum NativeUIDir {
-    UI_DIR_VERTICAL,
-    UI_DIR_HORIZONTAL
-} NativeUIDir;
+typedef enum NativeUIDir { UI_DIR_VERTICAL, UI_DIR_HORIZONTAL } NativeUIDir;
 
 /**
  * @brief Initialize a new Native GUI frame.
@@ -38,7 +35,7 @@ void NativeUI_EndScrollList(void);
 
 /**
  * @brief End a Native GUI frame. Any dynamically allocated effects
- *        from the previous frame that weren't drawn this frame 
+ *        from the previous frame that weren't drawn this frame
  *        will be garbage collected and terminated.
  */
 void NativeUI_End(void);
@@ -80,7 +77,7 @@ void NativeUI_SetGraphicOffset(int offset);
 
 /**
  * @brief Specifies the engine Menu_Suicide array index that owns these elements.
- *        Defaults to 0. Important for screens that selectively clear overlays using 
+ *        Defaults to 0. Important for screens that selectively clear overlays using
  *        Menu_Suicide[1]=1 while keeping Menu_Suicide[0]=0.
  */
 void NativeUI_SetMasterPlayer(int master_player_id);

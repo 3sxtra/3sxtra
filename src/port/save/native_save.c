@@ -244,75 +244,75 @@ int NativeSave_LoadOptions(void) {
     make_path(path, sizeof(path), "options.ini");
 
     FILE* f = fopen(path, "r");
-    if (!f) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] No options.ini found — using defaults");
-        return -1;
-    }
-
     struct _SAVE_W* sw = CurrentSave();
 
-    /* Controller */
-    ini_read_bytes(f, "pad_1p_buttons", sw->Pad_Infor[0].Shot, 8);
-    sw->Pad_Infor[0].Vibration = (u8)ini_read_int(f, "pad_1p_vibration", 0);
-    ini_read_bytes(f, "pad_2p_buttons", sw->Pad_Infor[1].Shot, 8);
-    sw->Pad_Infor[1].Vibration = (u8)ini_read_int(f, "pad_2p_vibration", 0);
+    if (!f) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] No options.ini found — using defaults");
+    } else {
 
-    /* Game settings */
-    sw->Difficulty = (u8)ini_read_int(f, "difficulty", sw->Difficulty);
-    sw->Time_Limit = (s8)ini_read_int(f, "time_limit", sw->Time_Limit);
-    sw->Battle_Number[0] = (u8)ini_read_int(f, "battle_number_1", sw->Battle_Number[0]);
-    sw->Battle_Number[1] = (u8)ini_read_int(f, "battle_number_2", sw->Battle_Number[1]);
-    sw->Damage_Level = (u8)ini_read_int(f, "damage_level", sw->Damage_Level);
-    sw->Handicap = (u8)ini_read_int(f, "handicap", sw->Handicap);
-    sw->Partner_Type[0] = (u8)ini_read_int(f, "partner_type_1p", sw->Partner_Type[0]);
-    sw->Partner_Type[1] = (u8)ini_read_int(f, "partner_type_2p", sw->Partner_Type[1]);
+        /* Controller */
+        ini_read_bytes(f, "pad_1p_buttons", sw->Pad_Infor[0].Shot, 8);
+        sw->Pad_Infor[0].Vibration = (u8)ini_read_int(f, "pad_1p_vibration", 0);
+        ini_read_bytes(f, "pad_2p_buttons", sw->Pad_Infor[1].Shot, 8);
+        sw->Pad_Infor[1].Vibration = (u8)ini_read_int(f, "pad_2p_vibration", 0);
 
-    /* Display */
-    sw->Adjust_X = (s8)ini_read_int(f, "adjust_x", sw->Adjust_X);
-    sw->Adjust_Y = (s8)ini_read_int(f, "adjust_y", sw->Adjust_Y);
-    sw->Screen_Size = (u8)ini_read_int(f, "screen_size", sw->Screen_Size);
-    sw->Screen_Mode = (u8)ini_read_int(f, "screen_mode", sw->Screen_Mode);
+        /* Game settings */
+        sw->Difficulty = (u8)ini_read_int(f, "difficulty", sw->Difficulty);
+        sw->Time_Limit = (s8)ini_read_int(f, "time_limit", sw->Time_Limit);
+        sw->Battle_Number[0] = (u8)ini_read_int(f, "battle_number_1", sw->Battle_Number[0]);
+        sw->Battle_Number[1] = (u8)ini_read_int(f, "battle_number_2", sw->Battle_Number[1]);
+        sw->Damage_Level = (u8)ini_read_int(f, "damage_level", sw->Damage_Level);
+        sw->Handicap = (u8)ini_read_int(f, "handicap", sw->Handicap);
+        sw->Partner_Type[0] = (u8)ini_read_int(f, "partner_type_1p", sw->Partner_Type[0]);
+        sw->Partner_Type[1] = (u8)ini_read_int(f, "partner_type_2p", sw->Partner_Type[1]);
 
-    /* Gameplay */
-    sw->GuardCheck = (u8)ini_read_int(f, "guard_check", sw->GuardCheck);
-    sw->Auto_Save = (u8)ini_read_int(f, "auto_save", sw->Auto_Save);
-    sw->AnalogStick = (u8)ini_read_int(f, "analog_stick", sw->AnalogStick);
-    sw->Unlock_All = (u8)ini_read_int(f, "unlock_all", 1);
+        /* Display */
+        sw->Adjust_X = (s8)ini_read_int(f, "adjust_x", sw->Adjust_X);
+        sw->Adjust_Y = (s8)ini_read_int(f, "adjust_y", sw->Adjust_Y);
+        sw->Screen_Size = (u8)ini_read_int(f, "screen_size", sw->Screen_Size);
+        sw->Screen_Mode = (u8)ini_read_int(f, "screen_mode", sw->Screen_Mode);
 
-    /* Sound */
-    sw->BgmType = (u8)ini_read_int(f, "bgm_type", sw->BgmType);
-    sw->SoundMode = (u8)ini_read_int(f, "sound_mode", sw->SoundMode);
-    sw->BGM_Level = (u8)ini_read_int(f, "bgm_level", sw->BGM_Level);
-    sw->SE_Level = (u8)ini_read_int(f, "se_level", sw->SE_Level);
+        /* Gameplay */
+        sw->GuardCheck = (u8)ini_read_int(f, "guard_check", sw->GuardCheck);
+        sw->Auto_Save = (u8)ini_read_int(f, "auto_save", sw->Auto_Save);
+        sw->AnalogStick = (u8)ini_read_int(f, "analog_stick", sw->AnalogStick);
+        sw->Unlock_All = (u8)ini_read_int(f, "unlock_all", 1);
 
-    /* Extra */
-    sw->Extra_Option = (u8)ini_read_int(f, "extra_option", sw->Extra_Option);
+        /* Sound */
+        sw->BgmType = (u8)ini_read_int(f, "bgm_type", sw->BgmType);
+        sw->SoundMode = (u8)ini_read_int(f, "sound_mode", sw->SoundMode);
+        sw->BGM_Level = (u8)ini_read_int(f, "bgm_level", sw->BGM_Level);
+        sw->SE_Level = (u8)ini_read_int(f, "se_level", sw->SE_Level);
 
-    /* Player colors — 2 players × 20 characters */
-    ini_read_bytes(f, "pl_color_1p", sw->PL_Color[0], 20);
-    ini_read_bytes(f, "pl_color_2p", sw->PL_Color[1], 20);
+        /* Extra */
+        sw->Extra_Option = (u8)ini_read_int(f, "extra_option", sw->Extra_Option);
 
-    /* Extra option contents — 4 pages × 8 entries */
-    for (int page = 0; page < 4; page++) {
-        char key[64];
-        snprintf(key, sizeof(key), "extra_option_page_%d", page);
-        ini_read_s8_array(f, key, sw->extra_option.contents[page], 8);
+        /* Player colors — 2 players × 20 characters */
+        ini_read_bytes(f, "pl_color_1p", sw->PL_Color[0], 20);
+        ini_read_bytes(f, "pl_color_2p", sw->PL_Color[1], 20);
+
+        /* Extra option contents — 4 pages × 8 entries */
+        for (int page = 0; page < 4; page++) {
+            char key[64];
+            snprintf(key, sizeof(key), "extra_option_page_%d", page);
+            ini_read_s8_array(f, key, sw->extra_option.contents[page], 8);
+        }
+
+        /* Broadcast config */
+        sw->broadcast_config.enabled = (bool)ini_read_int(f, "broadcast_enabled", 0);
+        sw->broadcast_config.source = (BroadcastSource)ini_read_int(f, "broadcast_source", 0);
+        sw->broadcast_config.show_ui = (bool)ini_read_int(f, "broadcast_show_ui", 0);
+
+        /* Rankings — 20 entries, stored as binary blob (too complex for INI) */
+        /* We read them as comma-separated bytes if they exist */
+        for (int i = 0; i < 20; i++) {
+            char key[64];
+            snprintf(key, sizeof(key), "ranking_%02d", i);
+            ini_read_bytes(f, key, (u8*)&sw->Ranking[i], sizeof(RANK_DATA));
+        }
+
+        fclose(f);
     }
-
-    /* Broadcast config */
-    sw->broadcast_config.enabled = (bool)ini_read_int(f, "broadcast_enabled", 0);
-    sw->broadcast_config.source = (BroadcastSource)ini_read_int(f, "broadcast_source", 0);
-    sw->broadcast_config.show_ui = (bool)ini_read_int(f, "broadcast_show_ui", 0);
-
-    /* Rankings — 20 entries, stored as binary blob (too complex for INI) */
-    /* We read them as comma-separated bytes if they exist */
-    for (int i = 0; i < 20; i++) {
-        char key[64];
-        snprintf(key, sizeof(key), "ranking_%02d", i);
-        ini_read_bytes(f, key, (u8*)&sw->Ranking[i], sizeof(RANK_DATA));
-    }
-
-    fclose(f);
 
     /* Apply loaded settings to game state (mirrors load_data_set_system) */
     memcpy(&save_w[4], sw, sizeof(struct _SAVE_W));
@@ -460,21 +460,20 @@ int NativeSave_LoadDirection(void) {
     make_path(path, sizeof(path), "direction.ini");
 
     FILE* f = fopen(path, "r");
-    if (!f) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] No direction.ini found — using defaults");
-        return -1;
-    }
-
     SystemDir* sd = &system_dir[Present_Mode];
     s32 page;
 
-    for (int p = 0; p < 10; p++) {
-        char key[64];
-        snprintf(key, sizeof(key), "page_%d", p);
-        ini_read_s8_array(f, key, sd->contents[p], 7);
-    }
+    if (!f) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] No direction.ini found — using defaults");
+    } else {
+        for (int p = 0; p < 10; p++) {
+            char key[64];
+            snprintf(key, sizeof(key), "page_%d", p);
+            ini_read_s8_array(f, key, sd->contents[p], 7);
+        }
 
-    fclose(f);
+        fclose(f);
+    }
 
     /* Clamp pages beyond what the current unlock level supports */
     page = Check_SysDir_Page();

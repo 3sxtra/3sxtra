@@ -37,6 +37,7 @@
 #include "port/task_api.h"                         /* Task_IsActive */
 
 /* RmlUi Phase 3 */
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/sdl/rmlui/rmlui_mode_menu.h"      /* rmlui_mode_menu_show/hide */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_mode */
 
@@ -73,7 +74,7 @@ static void mode_select_enter(struct _TASK* task_ptr) {
     s_exiting = false;
     s_exit_target = 0;
     s_wait_done = false;
-    
+
     NativeUI_Clear();
 
     /* ── Replicate Mode_Select case 0 ── */
@@ -184,8 +185,9 @@ static void mode_select_tick(struct _TASK* task_ptr) {
     } else {
         // Bypass legacy input loop for Native IMGUI
         uint16_t pad = Check_Menu_Lever(0, 0);
-        if (pad == 0) pad = Check_Menu_Lever(1, 0);
-        
+        if (pad == 0)
+            pad = Check_Menu_Lever(1, 0);
+
         NativeUI_ProcessInput(pad, pad);
         NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
         NativeUI_Header(MENU_HEADER_MODE_MENU);
@@ -241,7 +243,7 @@ static void mode_select_tick(struct _TASK* task_ptr) {
         }
 
         NativeUI_End();
-        
+
         if (s_exiting || s_exit_target) {
             SE_selected();
         }

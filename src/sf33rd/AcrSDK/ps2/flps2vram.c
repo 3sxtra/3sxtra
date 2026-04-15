@@ -24,14 +24,14 @@
 #include <libgraph.h>
 
 #include <assert.h>
-#include <memory.h>
+#include <string.h>
 
 #define ERR_STOP                                                                                                       \
     while (1) {}
 
 static s32 flPS2ConvertTextureFromContext(plContext* lpcontext, FLTexture* lpflTexture, u32 type);
 static u32 flPS2GetTextureSize(u32 format, s32 dw, s32 dh, s32 bnum);
-s32 flPS2LockTexture(Rect* /* unused */, FLTexture* lpflTexture, plContext* lpcontext, u32 flag, s32 /* unused */);
+s32 flPS2LockTexture(Rect* unused1, FLTexture* lpflTexture, plContext* lpcontext, u32 flag, s32 unused2);
 s32 flPS2UnlockTexture(FLTexture*);
 s32 flReleaseTextureHandle(u32 texture_handle);
 s32 flReleasePaletteHandle(u32 palette_handle);
@@ -395,7 +395,9 @@ s32 flLockPalette(Rect* lprect, u32 th, plContext* lpcontext, u32 flag) {
 }
 
 /** @brief Internal lock — allocate a CPU-side buffer and convert pixel format. */
-s32 flPS2LockTexture(Rect* /* unused */, FLTexture* lpflTexture, plContext* lpcontext, u32 flag, s32 /* unused */) {
+s32 flPS2LockTexture(Rect* unused1, FLTexture* lpflTexture, plContext* lpcontext, u32 flag, s32 unused2) {
+    (void)unused1;
+    (void)unused2;
     u8* buff_ptr;
     u8* buff_ptr1;
     plContext src;

@@ -39,6 +39,8 @@ typedef struct {
     StageLayerConfig layers[MAX_STAGE_LAYERS];
 } StageConfig;
 
+#ifdef ENABLE_MODS
+
 // Global config instance for the current stage
 extern StageConfig g_stage_config;
 
@@ -62,6 +64,21 @@ void StageConfig_Save(int stage_index);
  * @brief Get the default configuration for a specific layer index.
  */
 void StageConfig_SetDefaultLayer(int layer_idx);
+
+#else
+
+static inline void StageConfig_Init(void) {}
+static inline void StageConfig_Load(int stage_index) {
+    (void)stage_index;
+}
+static inline void StageConfig_Save(int stage_index) {
+    (void)stage_index;
+}
+static inline void StageConfig_SetDefaultLayer(int layer_idx) {
+    (void)layer_idx;
+}
+
+#endif
 
 #ifdef __cplusplus
 }

@@ -22,6 +22,8 @@ typedef struct {
     uint32_t last_seen_ticks;
 } NetplayDiscoveredPeer;
 
+#ifdef ENABLE_NETPLAY
+
 void Discovery_Init(bool auto_connect);
 void Discovery_SetReady(bool ready);
 void Discovery_SetChallengeTarget(uint32_t instance_id);
@@ -38,6 +40,39 @@ void Discovery_DismissChallenger(uint32_t instance_id);
 
 /// Returns the local configured netplay port (configuration.netplay.port).
 uint16_t Discovery_GetLocalPort(void);
+
+#else
+
+static inline void Discovery_Init(bool auto_connect) {
+    (void)auto_connect;
+}
+static inline void Discovery_SetReady(bool ready) {
+    (void)ready;
+}
+static inline void Discovery_SetChallengeTarget(uint32_t instance_id) {
+    (void)instance_id;
+}
+static inline uint32_t Discovery_GetChallengeTarget(void) {
+    return 0;
+}
+static inline void Discovery_Update() {}
+static inline void Discovery_Shutdown() {}
+static inline uint32_t Discovery_GetLocalInstanceID(void) {
+    return 0;
+}
+static inline int Discovery_GetPeers(NetplayDiscoveredPeer* out_peers, int max_peers) {
+    (void)out_peers;
+    (void)max_peers;
+    return 0;
+}
+static inline void Discovery_DismissChallenger(uint32_t instance_id) {
+    (void)instance_id;
+}
+static inline uint16_t Discovery_GetLocalPort(void) {
+    return 0;
+}
+
+#endif
 
 #ifdef __cplusplus
 }

@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_MODS
+
 /**
  * @brief Initialize the modded stage system. Call once at app startup.
  */
@@ -108,6 +110,47 @@ int ModdedStage_GetLoadedStageIndex(void);
  * @param bg Pointer to the live bg_w struct (read-only).
  */
 void ModdedStage_Render(const BG* bg);
+
+#else
+
+static inline void ModdedStage_Init(void) {}
+static inline void ModdedStage_Shutdown(void) {}
+static inline void ModdedStage_SetEnabled(bool enabled) {
+    (void)enabled;
+}
+static inline bool ModdedStage_IsEnabled(void) {
+    return false;
+}
+static inline void ModdedStage_SetDisableRendering(bool disabled) {
+    (void)disabled;
+}
+static inline bool ModdedStage_IsRenderingDisabled(void) {
+    return false;
+}
+static inline void ModdedStage_SetAnimationsDisabled(bool disabled) {
+    (void)disabled;
+}
+static inline bool ModdedStage_IsAnimationsDisabled(void) {
+    return false;
+}
+static inline void ModdedStage_LoadForStage(int stage_index) {
+    (void)stage_index;
+}
+static inline void ModdedStage_Unload(void) {}
+static inline bool ModdedStage_IsActiveForCurrentStage(void) {
+    return false;
+}
+static inline int ModdedStage_GetLayerCount(void) {
+    return 0;
+}
+static inline int ModdedStage_GetLoadedStageIndex(void) {
+    return -1;
+}
+static inline void ModdedStage_Render(const BG* bg) {
+    (void)bg;
+}
+
+#endif
 
 #ifdef __cplusplus
 }

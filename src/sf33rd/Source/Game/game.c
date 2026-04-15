@@ -107,8 +107,8 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
-void Wait_Auto_Load(struct _TASK* /* unused */);
-void Loop_Demo(struct _TASK* /* unused */);
+void Wait_Auto_Load(struct _TASK* unused1);
+void Loop_Demo(struct _TASK* unused1);
 void Game(struct _TASK* task_ptr);
 void Game00();
 void Game01();
@@ -1712,7 +1712,7 @@ void Game11() {
  * Cycles through: Capcom logo → title screen → demo fight → ranking →
  * another demo → ranking → back to title. Interrupted by coin/start.
  */
-void Loop_Demo(struct _TASK* /* unused */) {
+void Loop_Demo(struct _TASK* unused1) {
     if (Ck_Coin()) {
         Next_Title_Sub();
         return;
@@ -1747,6 +1747,7 @@ void Loop_Demo(struct _TASK* /* unused */) {
         Basic_Sub();
 
         if (CAPCOM_Logo() != 0) {
+            printf("[BOOT] Loop_Demo: CAPCOM_Logo done -> Title (G_No[1]=2)\n");
             Loop_Demo_Sub();
             Insert_Y = 23;
             E_No[1] = 2;
@@ -2082,7 +2083,7 @@ void Before_Select_Sub() {
 }
 
 /** @brief Idle task while waiting for auto-load to complete — renders background. */
-void Wait_Auto_Load(struct _TASK* /* unused */) {
+void Wait_Auto_Load(struct _TASK* unused1) {
     Basic_Sub();
     BG_Draw_System();
     bg_pos_hosei_sub2(0);

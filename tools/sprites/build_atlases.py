@@ -84,7 +84,9 @@ class TextureAtlasBuilder:
             if y + f.height + self.padding > self.max_height:
                 # Move to next atlas
                 used_h = y + shelf_height + self.padding
-                atlases.append((current_img.crop((0, 0, self.max_width, used_h)), current_meta))
+                atlases.append(
+                    (current_img.crop((0, 0, self.max_width, used_h)), current_meta)
+                )
                 current_img = Image.new(
                     "RGBA", (self.max_width, self.max_height), (0, 0, 0, 0)
                 )
@@ -110,7 +112,9 @@ class TextureAtlasBuilder:
 
         if current_meta:
             used_h = y + shelf_height + self.padding
-            atlases.append((current_img.crop((0, 0, self.max_width, used_h)), current_meta))
+            atlases.append(
+                (current_img.crop((0, 0, self.max_width, used_h)), current_meta)
+            )
 
         return atlases
 
@@ -303,14 +307,18 @@ def process_stage_group(afs_path, entries, grp, output_dir, engine_pal_map, colc
 
     # Explicit AFS Palette Injection
     from extract_sprites import GROUP_PAL_OVERLAY_BASE
+
     if grp.group_idx in GROUP_PAL_OVERLAY_BASE:
         overlay_afs_idx, overlay_base = GROUP_PAL_OVERLAY_BASE[grp.group_idx]
         from sprite_common import decode_palette_banks
+
         overlay_data = read_afs_file(afs_path, entries[overlay_afs_idx])
         banks = decode_palette_banks(overlay_data, apply_clut=False)
         for i, bank in enumerate(banks):
             if overlay_base + i < 512:
-                swapped = [(c[2], c[1], c[0], c[3]) if c[3] > 0 else (0,0,0,0) for c in bank]
+                swapped = [
+                    (c[2], c[1], c[0], c[3]) if c[3] > 0 else (0, 0, 0, 0) for c in bank
+                ]
                 pal_banks[overlay_base + i] = swapped
 
     os.makedirs(output_dir, exist_ok=True)
@@ -463,14 +471,19 @@ def process_per_character_group(
 
         # Explicit AFS Palette Injection
         from extract_sprites import GROUP_PAL_OVERLAY_BASE
+
         if grp.group_idx in GROUP_PAL_OVERLAY_BASE:
             overlay_afs_idx, overlay_base = GROUP_PAL_OVERLAY_BASE[grp.group_idx]
             from sprite_common import decode_palette_banks
+
             overlay_data = read_afs_file(afs_path, entries[overlay_afs_idx])
             banks = decode_palette_banks(overlay_data, apply_clut=False)
             for i, bank in enumerate(banks):
                 if overlay_base + i < 512:
-                    swapped = [(c[2], c[1], c[0], c[3]) if c[3] > 0 else (0,0,0,0) for c in bank]
+                    swapped = [
+                        (c[2], c[1], c[0], c[3]) if c[3] > 0 else (0, 0, 0, 0)
+                        for c in bank
+                    ]
                     pal_banks[overlay_base + i] = swapped
 
         print(

@@ -86,7 +86,8 @@ static void insertion_sort_render_tasks(void) {
 // turbo
 // What: Convert O(N log N) render task merge sort into an O(N) adaptive radix/insertion sort.
 // Target: CPU Algorithmic Complexity / Branch Prediction.
-// Expected Impact: Eliminates the O(N log N) merge sort overhead and associated branch mispredictions. Gameplay typically features near-sorted z-depths where insertion sort achieves O(N).
+// Expected Impact: Eliminates the O(N log N) merge sort overhead and associated branch mispredictions. Gameplay
+// typically features near-sorted z-depths where insertion sort achieves O(N).
 static void stable_sort_render_tasks(void) {
     const int count = gl_state.render_task_count;
     if (count <= 1)
