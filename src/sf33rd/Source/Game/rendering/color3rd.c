@@ -18,6 +18,8 @@
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
 
+#include <SDL3/SDL.h>
+
 typedef struct {
     u16 col[2][28][64];
 } COL;
@@ -58,7 +60,6 @@ PixelFormat palFormSrc;
 s32 palFormConv;
 
 // forward decls
-void palConvRowTim2CI8Clut(u16* src, u16* dst, s32 size);
 const u16 hitmark_color[128];
 const col_file_data color_file[161];
 
@@ -529,7 +530,7 @@ void palUpdateGhostDC() {
             flLockPalette(NULL, col3rd_w.palDC.handle[i], &bits, 2);
             dstAdrs = bits.ptr;
             srcAdrs = &colPalBuffDC[i << 6];
-            palConvRowTim2CI8Clut(srcAdrs, dstAdrs, 0x40);
+            SDL_memcpy(dstAdrs, srcAdrs, 0x80);
             flUnlockPalette(col3rd_w.palDC.handle[i]);
         }
     }
@@ -547,18 +548,8 @@ void palUpdateGhostCP3(s32 pal, s32 nums) {
         flLockPalette(NULL, col3rd_w.palCP3.handle[i], &bits, 2);
         dstAdrs = bits.ptr;
         srcAdrs = (u16*)&ColorRAM[i];
-        palConvRowTim2CI8Clut(srcAdrs, dstAdrs, 0x40);
+        SDL_memcpy(dstAdrs, srcAdrs, 0x80);
         flUnlockPalette(col3rd_w.palCP3.handle[i]);
-    }
-}
-
-void palConvRowTim2CI8Clut(u16* src, u16* dst, s32 size) {
-    s32 i;
-    static u8 clut_tbl[32] = { 0, 1, 2,  3,  4,  5,  6,  7,  16, 17, 18, 19, 20, 21, 22, 23,
-                               8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31 };
-
-    for (i = 0; i < size; i++) {
-        dst[(i & 0xE0) + clut_tbl[i & 0x1F]] = src[i];
     }
 }
 
