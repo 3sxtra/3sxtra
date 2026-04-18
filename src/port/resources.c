@@ -55,7 +55,46 @@ bool Resources_Check() {
     const bool afs_present = file_exists(afs_path);
 
     if (!afs_present) {
+#ifdef __ANDROID__
+        const char* external_path = SDL_GetAndroidExternalStoragePath();
+        if (external_path) {
+            char* external_afs = NULL;
+            SDL_asprintf(&external_afs, "%s/SF33RD.AFS", external_path);
+            
+            if (file_exists(external_afs)) {
+                SDL_Log("Found AFS in external storage. Copying to internal storage...");
+                char* base_path = Resources_GetPath(NULL);
+                SDL_CreateDirectory(base_path);
+                SDL_free(base_path);
+
+                bool copied = SDL_CopyFile(external_afs, afs_path);
+                SDL_free(external_afs);
+                if (!copied) {
+                    return false;
+                }
+                goto checksum_check;
+            }
+            SDL_free(external_afs);
+        }
+
+        const char* download_path = "/sdcard/Download/SF33RD.AFS";
+        if (file_exists(download_path)) {
+            char* base_path = Resources_GetPath(NULL);
+            SDL_CreateDirectory(base_path);
+            SDL_free(base_path);
+
+            bool copied = SDL_CopyFile(download_path, afs_path);
+            if (!copied) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+checksum_check:
+#else
         return false;
+#endif
     }
 
 #if CHECKSUM
@@ -93,7 +132,7 @@ bool Resources_Check() {
 #endif
 }
 
-#if CRS_APP_DRIVER_SDL && !defined(__ANDROID__)
+#if CRS_APP_DRIVER_SDL
 
 #define ERROR_LEN_MAX 512
 
@@ -104,6 +143,7 @@ static SDL_Window* dialog_owner_window = NULL;
 static char error[ERROR_LEN_MAX] = { 0 };
 
 static void create_dialog_parent_window() {
+#ifndef __ANDROID__
     if (dialog_owner_window != NULL) {
         return;
     }
@@ -111,6 +151,7 @@ static void create_dialog_parent_window() {
     dialog_owner_window = SDL_CreateWindow("3SX", 1, 1, SDL_WINDOW_HIDDEN);
     SDL_ShowWindow(dialog_owner_window);
     SDL_RaiseWindow(dialog_owner_window);
+#endif
 }
 
 static void destroy_dialog_owner_window() {
@@ -127,6 +168,70 @@ static void create_resources_directory() {
     SDL_CreateDirectory(path);
     SDL_free(path);
 }
+
+#ifdef __ANDROID__
+static void open_file_dialog_callback(void* userdata, const char* const* filelist, int filter) {
+    if (!filelist || !filelist[0]) {
+        const char* sdl_err = SDL_GetError();
+        if (sdl_err && sdl_err[0] != '\0') {
+            SDL_snprintf(error, ERROR_LEN_MAX, "File dialog failed: %s\n(On Android TV, push SF33RD.AFS to the app's files directory)", sdl_err);
+        } else {
+            SDL_snprintf(error, ERROR_LEN_MAX, "File dialog returned no selection or is unsupported.\n(On Android TV, you may need to push SF33RD.AFS to the app's files directory via adb)");
+        }
+        flow_state = COPY_ERROR;
+        return;
+    }
+
+    const char* src_path = filelist[0];
+    create_resources_directory();
+    const char* dst_path = Resources_GetAFSPath();
+
+    bool success = SDL_CopyFile(src_path, dst_path);
+    if (!success) {
+        SDL_snprintf(error, ERROR_LEN_MAX, "Failed to copy file");
+        flow_state = COPY_ERROR;
+        return;
+    }
+
+#if CHECKSUM
+    sha256 sha;
+    sha256_init(&sha);
+
+    const size_t chunk_size = 10 * 1024;
+    void* buf = SDL_malloc(chunk_size);
+    SDL_IOStream* io = SDL_IOFromFile(dst_path, "rb");
+    if (!io) {
+        SDL_snprintf(error, ERROR_LEN_MAX, "Failed to read copied AFS");
+        flow_state = COPY_ERROR;
+        SDL_free(buf);
+        SDL_RemovePath(dst_path);
+        return;
+    }
+
+    size_t bytes_read = 0;
+    while ((bytes_read = SDL_ReadIO(io, buf, chunk_size)) > 0) {
+        sha256_append(&sha, buf, bytes_read);
+    }
+
+    SDL_free(buf);
+    SDL_CloseIO(io);
+
+    char hex[SHA256_HEX_SIZE];
+    sha256_finalize_hex(&sha, hex);
+
+    if (SDL_strncmp(hex, EXPECTED_AFS_SHA, sizeof(hex)) == 0) {
+        flow_state = COPY_SUCCESS;
+    } else {
+        SDL_snprintf(error, ERROR_LEN_MAX, "Incorrect AFS checksum – expected %s, got %s", EXPECTED_AFS_SHA, hex);
+        flow_state = COPY_ERROR;
+        SDL_RemovePath(dst_path);
+    }
+#else
+    flow_state = COPY_SUCCESS;
+#endif
+}
+
+#else
 
 #define CHUNK_SECTORS 16
 #define BUFFER_SIZE (ISO_BLOCKSIZE * CHUNK_SECTORS)
@@ -203,11 +308,17 @@ static void open_file_dialog_callback(void* userdata, const char* const* filelis
     flow_state = COPY_SUCCESS;
 #endif
 }
+#endif
 
 static void open_dialog() {
     flow_state = DIALOG_OPENED;
+#ifdef __ANDROID__
+    const SDL_DialogFileFilter filter = { .name = "AFS Files", .pattern = "AFS;afs" };
+    SDL_ShowOpenFileDialog(open_file_dialog_callback, NULL, NULL, &filter, 1, NULL, false);
+#else
     const SDL_DialogFileFilter filter = { .name = "Game iso", .pattern = "iso" };
     SDL_ShowOpenFileDialog(open_file_dialog_callback, NULL, dialog_owner_window, &filter, 1, NULL, false);
+#endif
 }
 
 bool Resources_RunResourceCopyingFlow() {
@@ -216,9 +327,14 @@ bool Resources_RunResourceCopyingFlow() {
         create_dialog_parent_window();
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
                                  "Valid resources are missing",
+#ifdef __ANDROID__
+                                 "3SX needs the SF33RD.AFS ROM to run. Please select your SF33RD.AFS file in the next dialog.",
+                                 NULL);
+#else
                                  "3SX needs resources from a copy of \"Street Fighter III: 3rd Strike\" to run. Choose "
                                  "the iso in the next dialog",
                                  dialog_owner_window);
+#endif
         open_dialog();
         break;
 
@@ -247,4 +363,4 @@ bool Resources_RunResourceCopyingFlow() {
     return false;
 }
 
-#endif // CRS_APP_DRIVER_SDL && !__ANDROID__
+#endif // CRS_APP_DRIVER_SDL

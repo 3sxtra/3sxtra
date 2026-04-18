@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 /* On GLES, palettes are stored as Nx1 2D textures instead of 1D textures.
  * texelFetch uses ivec2(index, 0) instead of int(index). */
@@ -24,5 +24,9 @@ uint fetch4bppIndex(vec2 uv) {
 
 void main() {
     uint index = fetch4bppIndex(vTexCoord);
-    FragColor = texelFetch(uPalette, ivec2(int(index), 0), 0);
+    vec4 color = texelFetch(uPalette, ivec2(int(index), 0), 0);
+    FragColor = color;
+    if (FragColor.a == 0.0) {
+        discard;
+    }
 }

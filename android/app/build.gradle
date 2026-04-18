@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.goodport.sxdroid'
+    namespace = 'com.goodport.sxdroid'
     compileSdk = 36
 
     defaultConfig {
@@ -36,7 +36,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
         }
     }
     compileOptions {

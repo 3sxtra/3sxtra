@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 in vec4 vColor;
 in vec2 vTexCoord;
@@ -10,8 +10,17 @@ out vec4 FragColor;
 uniform sampler2D uPalette;
 uniform highp usampler2D uIndexTex;
 
+uniform ivec2 uTextureSize;
+
 void main() {
-    uint index = texture(uIndexTex, vTexCoord).r;
+    ivec2 coord = ivec2(
+        int(vTexCoord.x * float(uTextureSize.x)),
+        int(vTexCoord.y * float(uTextureSize.y))
+    );
+    uint index = texelFetch(uIndexTex, coord, 0).r;
     vec4 color = texelFetch(uPalette, ivec2(int(index), 0), 0);
     FragColor = color * vColor;
+    if (FragColor.a == 0.0) {
+        discard;
+    }
 }

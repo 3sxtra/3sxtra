@@ -295,10 +295,28 @@ void OpenGLRenderer_CreateTexture(unsigned int th) {
         break;
 
     case SCE_GS_PSMCT16:
+#ifdef __ANDROID__
+        internal_format = GL_RGBA8;
+        format = GL_RGBA;
+        type = GL_UNSIGNED_BYTE;
+        palette_type = PALETTE_NONE;
+        Uint32* unpacked = SDL_malloc(fl_texture->width * fl_texture->height * sizeof(Uint32));
+        const Uint16* src = (const Uint16*)pixels;
+        for (int i = 0; i < fl_texture->width * fl_texture->height; i++) {
+            Uint16 c = src[i];
+            Uint32 a = ((c >> 15) & 1) ? 255 : 0;
+            Uint32 b = ((c >> 10) & 0x1F) * 255 / 31;
+            Uint32 g = ((c >> 5) & 0x1F) * 255 / 31;
+            Uint32 r = (c & 0x1F) * 255 / 31;
+            unpacked[i] = (a << 24) | (b << 16) | (g << 8) | r;
+        }
+        pixels = unpacked;
+#else
         internal_format = GL_RGB5_A1;
         format = GL_RGBA;
         type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
         palette_type = PALETTE_NONE;
+#endif
         break;
 
     default:
@@ -313,6 +331,12 @@ void OpenGLRenderer_CreateTexture(unsigned int th) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, buffer_width, fl_texture->height, 0, format, type, pixels);
+
+#ifdef __ANDROID__
+    if (fl_texture->format == SCE_GS_PSMCT16) {
+        SDL_free((void*)pixels);
+    }
+#endif
 
     textures[texture_index] = (GLTexture) {
         .handle = texture,
@@ -347,15 +371,45 @@ void OpenGLRenderer_CreatePalette(unsigned int ph) {
 
     switch (fl_palette->format) {
     case SCE_GS_PSMCT32:
+#ifdef __ANDROID__
+        internal_format = GL_RGBA8;
+        format = GL_RGBA;
+        type = GL_UNSIGNED_BYTE;
+        Uint32* unpacked_32 = SDL_malloc(color_count * sizeof(Uint32));
+        const Uint32* src_32 = (const Uint32*)pixels;
+        for (int i = 0; i < color_count; i++) {
+            Uint32 c = src_32[i];
+            unpacked_32[i] = (c & 0xFF00FF00) | ((c & 0xFF) << 16) | ((c >> 16) & 0xFF);
+        }
+        pixels = unpacked_32;
+#else
         internal_format = GL_RGBA8;
         format = GL_BGRA;
         type = GL_UNSIGNED_BYTE;
+#endif
         break;
 
     case SCE_GS_PSMCT16:
+#ifdef __ANDROID__
+        internal_format = GL_RGBA8;
+        format = GL_RGBA;
+        type = GL_UNSIGNED_BYTE;
+        Uint32* unpacked = SDL_malloc(color_count * sizeof(Uint32));
+        const Uint16* src = (const Uint16*)pixels;
+        for (int i = 0; i < color_count; i++) {
+            Uint16 c = src[i];
+            Uint32 a = ((c >> 15) & 1) ? 255 : 0;
+            Uint32 b = ((c >> 10) & 0x1F) * 255 / 31;
+            Uint32 g = ((c >> 5) & 0x1F) * 255 / 31;
+            Uint32 r = (c & 0x1F) * 255 / 31;
+            unpacked[i] = (a << 24) | (b << 16) | (g << 8) | r;
+        }
+        pixels = unpacked;
+#else
         internal_format = GL_RGB5_A1;
         format = GL_RGBA;
         type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
+#endif
         break;
 
     default:
@@ -370,6 +424,12 @@ void OpenGLRenderer_CreatePalette(unsigned int ph) {
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage1D(GL_TEXTURE_1D, 0, internal_format, color_count, 0, format, type, pixels);
+
+#ifdef __ANDROID__
+    if (fl_palette->format == SCE_GS_PSMCT16 || fl_palette->format == SCE_GS_PSMCT32) {
+        SDL_free((void*)pixels);
+    }
+#endif
 
     palettes[palette_index] = palette;
 }
@@ -633,8 +693,10 @@ void OpenGLRenderer_RenderFrame(SDL_Rect viewport) {
             switch (quad->texture_spec.texture.palette_type) {
             case PALETTE_4:
                 glUseProgram(palette_4_shader);
-                const GLint texture_size_loc = glGetUniformLocation(palette_4_shader, "uTextureSize");
-                glUniform2i(texture_size_loc, quad->texture_spec.texture.width, quad->texture_spec.texture.width);
+                {
+                    const GLint texture_size_loc = glGetUniformLocation(palette_4_shader, "uTextureSize");
+                    glUniform2i(texture_size_loc, quad->texture_spec.texture.width, quad->texture_spec.texture.height);
+                }
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_1D, quad->texture_spec.palette);
                 glActiveTexture(GL_TEXTURE1);
@@ -644,6 +706,10 @@ void OpenGLRenderer_RenderFrame(SDL_Rect viewport) {
             case PALETTE_8:
                 SDL_assert(quad->texture_spec.palette != 0);
                 glUseProgram(palette_8_shader);
+                {
+                    const GLint texture_size_loc = glGetUniformLocation(palette_8_shader, "uTextureSize");
+                    glUniform2i(texture_size_loc, quad->texture_spec.texture.width, quad->texture_spec.texture.height);
+                }
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_1D, quad->texture_spec.palette);
                 glActiveTexture(GL_TEXTURE1);

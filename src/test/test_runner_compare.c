@@ -373,6 +373,7 @@ void compare_values(SDL_IOStream* io, Uint64 frame) {
 
 // Syncing
 
+#if 0
 static void sync_lvr(T_PL_LVR* dst, const T_PL_LVR* src) {
     dst->sw_new = src->sw_new;
     dst->sw_old = src->sw_old;
@@ -415,6 +416,7 @@ static void sync_waza_work(WAZA_WORK* dst, const WAZA_WORK* src, Character chara
         dst->uni0.tame.flag = src->uni0.tame.flag;
     }
 }
+#endif
 
 void sync_values(SDL_IOStream* io) {
     Random_ix16 = read_s16(io, RANDOM_IX_16_OFFSET);

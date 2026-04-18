@@ -493,17 +493,11 @@ static int loop() {
                 full_init();
                 phase = APP_PHASE_INITIALIZED;
             } else {
-#ifdef __ANDROID__
-                SDL_Log("Resources not found. Please copy SF33RD.AFS to the app's files directory.");
-                is_running = false;
-#else
                 phase = APP_PHASE_COPYING_RESOURCES;
-#endif
             }
 
             break;
 
-#ifndef __ANDROID__
         case APP_PHASE_COPYING_RESOURCES:
             is_running = sdl_poll_helper();
 
@@ -521,7 +515,6 @@ static int loop() {
             }
 
             break;
-#endif
 
         case APP_PHASE_INITIALIZED:
             is_running = poll_events();

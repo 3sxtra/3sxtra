@@ -11,7 +11,7 @@ const char* Resources_GetAFSPath();
 bool Resources_Check();
 
 // FIXME: Extract resource copying flow from here
-#if CRS_APP_DRIVER_SDL && !defined(__ANDROID__)
+#if CRS_APP_DRIVER_SDL
 /// @brief Run resource copying flow. Repeated calls of this function progress the flow.
 /// @return `true` if resources have been copied, `false` otherwise.
 bool Resources_RunResourceCopyingFlow();

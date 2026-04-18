@@ -8,9 +8,17 @@ set -euo pipefail
 # No SDL_image, SDL_mixer, Lua, RmlUi, Freetype, librashader, or GLAD.
 # ==============================================================================
 
-ANDROID_NDK_ROOT="C:/Users/dov/AppData/Local/Android/Sdk/ndk/28.2.13676358"
+if [ -z "${ANDROID_NDK_ROOT:-}" ]; then
+    echo "Error: ANDROID_NDK_ROOT environment variable is not set."
+    echo "Please set it to the path of your Android NDK."
+    echo "Example: export ANDROID_NDK_ROOT=~/Android/Sdk/ndk/28.2.13676358"
+    exit 1
+fi
 
-
+if [ ! -d "$ANDROID_NDK_ROOT" ]; then
+    echo "Error: Android NDK not found at $ANDROID_NDK_ROOT"
+    exit 1
+fi
 
 HOST_OS="$(uname -s)"
 if [[ "$HOST_OS" == MINGW* || "$HOST_OS" == MSYS* || "$HOST_OS" == CYGWIN* ]]; then
