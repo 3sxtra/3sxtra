@@ -7,7 +7,11 @@
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 
+#ifdef __ANDROID__
+#include "platform/video/opengl/gl_compat.h"
+#else
 #include "glad.h"
+#endif
 #include "stb/stb_ds.h"
 #include <SDL3/SDL.h>
 
@@ -494,7 +498,11 @@ bool OpenGLRenderer_Init(bool nearest_filter, int scale) {
     glBindTexture(GL_TEXTURE_2D, canvas_depth_tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#ifdef __ANDROID__
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 384, 224, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+#else
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 384, 224, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+#endif
 
     glGenFramebuffers(1, &canvas_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, canvas_fbo);
@@ -505,19 +513,33 @@ bool OpenGLRenderer_Init(bool nearest_filter, int scale) {
 
     // Configure shaders
 
+#ifdef __ANDROID__
+    solid_shader = build_shader_program("shaders/vert.es.glsl", "shaders/frag_solid.es.glsl");
+
+    palette_4_shader = build_shader_program("shaders/vert.es.glsl", "shaders/frag_palette_4.es.glsl");
+#else
     solid_shader = build_shader_program("shaders/vert.glsl", "shaders/frag_solid.glsl");
 
     palette_4_shader = build_shader_program("shaders/vert.glsl", "shaders/frag_palette_4.glsl");
+#endif
     glUseProgram(palette_4_shader);
     glUniform1i(glGetUniformLocation(palette_4_shader, "uPalette"), 0);
     glUniform1i(glGetUniformLocation(palette_4_shader, "uIndexTex"), 1);
 
+#ifdef __ANDROID__
+    palette_8_shader = build_shader_program("shaders/vert.es.glsl", "shaders/frag_palette_8.es.glsl");
+#else
     palette_8_shader = build_shader_program("shaders/vert.glsl", "shaders/frag_palette_8.glsl");
+#endif
     glUseProgram(palette_8_shader);
     glUniform1i(glGetUniformLocation(palette_8_shader, "uPalette"), 0);
     glUniform1i(glGetUniformLocation(palette_8_shader, "uIndexTex"), 1);
 
+#ifdef __ANDROID__
+    direct_shader = build_shader_program("shaders/vert.es.glsl", "shaders/frag_direct.es.glsl");
+#else
     direct_shader = build_shader_program("shaders/vert.glsl", "shaders/frag_direct.glsl");
+#endif
     glUseProgram(direct_shader);
     glUniform1i(glGetUniformLocation(direct_shader, "uTexture"), 0);
 

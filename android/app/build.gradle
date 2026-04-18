@@ -49,6 +49,8 @@ android {
             // SDL3 Java sources — SDLActivity, etc.
             java.srcDirs += '../../third_party_android/sdl3-src/android-project/app/src/main/java'
             jniLibs.srcDirs += 'src/main/jniLibs'
+            // Include OpenGL ES shaders as assets
+            assets.srcDirs += '../../src/platform/video/opengl'
         }
     }
     externalNativeBuild {

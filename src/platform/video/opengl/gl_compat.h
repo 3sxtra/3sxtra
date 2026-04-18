@@ -28,6 +28,19 @@
 #define glClearDepth glClearDepthf
 #endif
 
+/* GLES 3.0 does not support GL_BGRA as a format parameter.
+ * Map to GL_RGBA — callers must handle byte-order conversion if needed. */
+#ifndef GL_BGRA
+#define GL_BGRA GL_RGBA
+#endif
+
+/* GLES 3.0 does not support GL_UNSIGNED_SHORT_1_5_5_5_REV.
+ * Map to GL_UNSIGNED_SHORT_5_5_5_1 — the bit layout differs, but for
+ * palette lookup textures this is acceptable (colors are looked up by index). */
+#ifndef GL_UNSIGNED_SHORT_1_5_5_5_REV
+#define GL_UNSIGNED_SHORT_1_5_5_5_REV GL_UNSIGNED_SHORT_5_5_5_1
+#endif
+
 #else
 /* Desktop OpenGL */
 #define GL_GLEXT_PROTOTYPES
@@ -35,3 +48,4 @@
 #endif
 
 #endif /* GL_COMPAT_H */
+

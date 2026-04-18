@@ -30,6 +30,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 include_directories(
     ${SRC_DIR}
     ${SRC_DIR}/sdk
+    ${SRC_DIR}/platform/video/opengl/glad
     ${SDL3_ROOT}/include
     ${FFMPEG_ROOT}/include
     ${THIRD_PARTY_DIR}/GekkoNet/include
@@ -52,6 +53,9 @@ file(GLOB_RECURSE GAME_SRC CONFIGURE_DEPENDS ${SRC_DIR}/*.c)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/platform/app/psp/")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/platform/video/psp/")
 
+# Exclude glad (Android uses GLES3 natively, no need for glad loader)
+list(FILTER GAME_SRC EXCLUDE REGEX "src/platform/video/opengl/glad/")
+
 # Exclude imgui (debug-only, uses OpenGL3 backend not compatible with GLES without adaptation)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/imgui/")
 
@@ -71,7 +75,7 @@ target_compile_definitions(main PRIVATE
     GEKKONET_NO_ASIO
 
     CRS_APP_DRIVER_SDL
-    CRS_VIDEO_DRIVER_SDL
+    CRS_VIDEO_DRIVER_OPENGL
 
     ARCADE_ROM
     SOUND_ENABLED
