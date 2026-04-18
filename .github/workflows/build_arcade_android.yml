@@ -1,4 +1,4 @@
-name: Build (Android)
+name: Build Arcade (Android)
 
 on:
     workflow_dispatch:
