@@ -175,6 +175,7 @@ build_minizip_ng() {
         -DANDROID_PLATFORM="android-$ANDROID_API_LEVEL" \
         -DFETCHCONTENT_BASE_DIR="$THIRD_PARTY/minizip-ng-src/_deps" \
         -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
+        -DMZ_COMPAT=OFF \
         -DMZ_BZIP2=OFF \
         -DMZ_LZMA=OFF \
         -DMZ_ZSTD=OFF \
