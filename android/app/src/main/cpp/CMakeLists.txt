@@ -106,7 +106,7 @@ add_library(SDL3_net::SDL3_net SHARED IMPORTED)
 set_target_properties(SDL3_net::SDL3_net PROPERTIES IMPORTED_LOCATION "${SDL3_NET_ROOT}/lib/libSDL3_net.so")
 
 add_library(minizip_ng::minizip_ng STATIC IMPORTED)
-set_target_properties(minizip_ng::minizip_ng PROPERTIES IMPORTED_LOCATION "${MINIZIP_NG_ROOT}/lib/libminizip.a")
+set_target_properties(minizip_ng::minizip_ng PROPERTIES IMPORTED_LOCATION "${MINIZIP_NG_ROOT}/lib/libminizip-ng.a")
 
 add_library(ppmd::ppmd STATIC IMPORTED)
 set_target_properties(ppmd::ppmd PROPERTIES IMPORTED_LOCATION "${MINIZIP_NG_ROOT}/lib/libppmd.a")
