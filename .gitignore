@@ -24,3 +24,7 @@ dump
 *.AFS
 /third_party_android
 /android/app/.cxx
+/android/.gradle
+/android/app/build
+/android/app/src/main/jniLibs
+.gradle
