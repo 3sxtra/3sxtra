@@ -9,9 +9,6 @@ concurrency:
     group: build-arcade-linux-arm64-${{ github.ref }}
     cancel-in-progress: true
 
-env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
     build:
         name: Build Arcade (Linux ARM64 cross-compile)
@@ -51,12 +48,12 @@ jobs:
                     libxkbcommon-dev:arm64
 
           - name: Checkout repository
-            uses: actions/checkout@v4
+            uses: actions/checkout@v6
             with:
                 submodules: true
 
           - name: Cache dependencies
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: third_party_arm64
                 key: linux-arm64-deps-v1-${{ hashFiles('build-deps-arm64.sh') }}
@@ -95,14 +92,14 @@ jobs:
                 ls -lh *.tar.gz
 
           - name: Upload release artifact
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
                 name: 3sx-linux-arm64
                 path: build-arm64/*.tar.gz
 
           - name: Upload build log
             if: always()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
                 name: build-log-arm64
                 path: build.log
