@@ -39,7 +39,7 @@ jobs:
                     zlib1g-dev:arm64 \
                     libasound2-dev:arm64 \
                     libdrm-dev:arm64 libgbm-dev:arm64 \
-                    libgles2-mesa-dev:arm64 libegl1-mesa-dev:arm64 \
+                    libgl1-mesa-dev:arm64 libgles2-mesa-dev:arm64 libegl1-mesa-dev:arm64 \
                     libudev-dev:arm64 libdbus-1-dev:arm64 \
                     libx11-dev:arm64 libxext-dev:arm64 \
                     libxrandr-dev:arm64 libxcursor-dev:arm64 \
