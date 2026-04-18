@@ -7,7 +7,7 @@
 #include "utils/sha256.h"
 #endif
 
-#if CRS_APP_DRIVER_SDL
+#if CRS_APP_DRIVER_SDL && !defined(__ANDROID__)
 #include <cdio/iso9660.h>
 #endif
 
@@ -22,7 +22,15 @@ static bool file_exists(const char* path) {
 }
 
 char* Resources_GetPath(const char* file_path) {
+#ifdef __ANDROID__
+    /* On Android, resources are stored in the app's internal storage.
+     * The user copies SF33RD.AFS to the app's files directory, which is
+     * accessible via SDL_GetPrefPath or the Android file system at
+     * /sdcard/Android/data/com.goodport.sxdroid/files/ */
+    const char* base = SDL_GetPrefPath("CrowdedStreet", "3SX");
+#else
     const char* base = Paths_GetPrefPath();
+#endif
     char* full_path = NULL;
 
     if (file_path == NULL) {
@@ -85,7 +93,7 @@ bool Resources_Check() {
 #endif
 }
 
-#if CRS_APP_DRIVER_SDL
+#if CRS_APP_DRIVER_SDL && !defined(__ANDROID__)
 
 #define ERROR_LEN_MAX 512
 
@@ -239,4 +247,4 @@ bool Resources_RunResourceCopyingFlow() {
     return false;
 }
 
-#endif // CRS_APP_DRIVER_SDL
+#endif // CRS_APP_DRIVER_SDL && !__ANDROID__

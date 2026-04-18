@@ -28,6 +28,7 @@
 #include "port/resources.h"
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 #if _WIN32 && DEBUG
 // Including windows.h causes conflicts with the Polygon struct, so I just included the header where
@@ -161,6 +162,9 @@ static int pre_init() {
     SDL_SetAppMetadata(app_name, "0.1", NULL);
     SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, "1");
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+#ifdef __ANDROID__
+    SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+#endif
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
@@ -212,7 +216,7 @@ static int full_init() {
     // Initialize pads
     InputBackend_Init();
 
-#if DEBUG
+#if DEBUG && !defined(__ANDROID__)
     ImGuiW_Init(window, renderer);
 #endif
 
@@ -237,7 +241,7 @@ static void cleanup() {
     SDLGameRenderer_Shutdown();
     ScanlineRenderer_Destroy();
 
-#if DEBUG
+#if DEBUG && !defined(__ANDROID__)
     ImGuiW_Finish();
 #endif
 
@@ -252,7 +256,7 @@ static void cleanup() {
     window = NULL;
 }
 
-#if DEBUG
+#if DEBUG && !defined(__ANDROID__)
 static void toggle_debug_window_visibility(SDL_KeyboardEvent* event) {
     if ((event->key == SDLK_GRAVE) && event->down && !event->repeat) {
         ImGuiW_ToggleVisivility();
@@ -296,7 +300,7 @@ static bool poll_events() {
     bool continue_running = true;
 
     while (SDL_PollEvent(&event)) {
-#if DEBUG
+#if DEBUG && !defined(__ANDROID__)
         ImGuiW_ProcessEvent(&event);
 #endif
 
@@ -308,7 +312,7 @@ static bool poll_events() {
 
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
-#if DEBUG
+#if DEBUG && !defined(__ANDROID__)
             toggle_debug_window_visibility(&event.key);
 #endif
 
@@ -340,7 +344,7 @@ static void begin_frame() {
 
     SDLGameRenderer_BeginFrame();
 
-#if DEBUG
+#if DEBUG && !defined(__ANDROID__)
     ImGuiW_BeginFrame();
 #endif
 
@@ -456,7 +460,9 @@ static void end_frame() {
     // Render debug text
     SDLDebugText_Render();
 
+#ifndef __ANDROID__
     ImGuiW_EndFrame(renderer);
+#endif
 #endif
 
     SDL_RenderPresent(renderer);
@@ -520,11 +526,17 @@ static int loop() {
                 full_init();
                 phase = APP_PHASE_INITIALIZED;
             } else {
+#ifdef __ANDROID__
+                SDL_Log("Resources not found. Please copy SF33RD.AFS to the app's files directory.");
+                is_running = false;
+#else
                 phase = APP_PHASE_COPYING_RESOURCES;
+#endif
             }
 
             break;
 
+#ifndef __ANDROID__
         case APP_PHASE_COPYING_RESOURCES:
             is_running = sdl_poll_helper();
 
@@ -542,6 +554,7 @@ static int loop() {
             }
 
             break;
+#endif
 
         case APP_PHASE_INITIALIZED:
             is_running = poll_events();
@@ -563,7 +576,7 @@ static int loop() {
     return 0;
 }
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
     return loop();
 }
 

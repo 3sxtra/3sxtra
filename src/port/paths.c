@@ -13,5 +13,11 @@ const char* Paths_GetPrefPath() {
 }
 
 const char* Paths_GetBasePath() {
+#ifdef __ANDROID__
+    /* On Android, assets must be accessed via relative paths so that
+     * SDL_IOFromFile routes through the AssetManager. Return empty. */
+    return "";
+#else
     return SDL_GetBasePath();
+#endif
 }

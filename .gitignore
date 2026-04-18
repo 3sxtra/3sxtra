@@ -22,3 +22,5 @@ states
 rom
 dump
 *.AFS
+/third_party_android
+/android/app/.cxx

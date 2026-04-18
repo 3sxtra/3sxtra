@@ -2,6 +2,7 @@
 #include "port/config/keymap.h"
 
 #include <SDL3/SDL.h>
+#include <stdlib.h>
 
 #define INPUT_SOURCES_MAX 2
 
@@ -26,6 +27,11 @@ static SDLPad_InputSource input_sources[INPUT_SOURCES_MAX] = { 0 };
 static int connected_input_sources = 0;
 static int keyboard_index = -1;
 static SDLPad_ButtonState button_state[INPUT_SOURCES_MAX] = { 0 };
+
+/* Cached joystick button indices for L2/R2 triggers per device slot.
+ * -1 = not detected / triggers handled via axis events.
+ * Populated at gamepad connect time by parsing SDL's mapping string. */
+static int trigger_btn_index[INPUT_SOURCES_MAX][2]; /* [0]=L2, [1]=R2 */
 
 static int input_source_index_from_joystick_id(SDL_JoystickID id) {
     for (int i = 0; i < INPUT_SOURCES_MAX; i++) {
@@ -90,6 +96,21 @@ static void handle_gamepad_added_event(SDL_GamepadDeviceEvent* event) {
         return;
     }
 
+    const char* device_name = SDL_GetGamepadNameForID(event->which);
+
+#ifdef __ANDROID__
+    /* On Android, filter out virtual/remote input devices that appear
+     * as gamepads but aren't real controllers. */
+    if (device_name) {
+        if (SDL_strcasestr(device_name, "virtual") || SDL_strcasestr(device_name, "remote") ||
+            SDL_strcasestr(device_name, "ipcontrol")) {
+            return;
+        }
+    }
+#else
+    (void)device_name;
+#endif
+
     const SDL_Gamepad* gamepad = SDL_OpenGamepad(event->which);
 
     for (int i = 0; i < INPUT_SOURCES_MAX; i++) {
@@ -101,6 +122,22 @@ static void handle_gamepad_added_event(SDL_GamepadDeviceEvent* event) {
 
         input_source->type = SDLPAD_INPUT_GAMEPAD;
         input_source->gamepad.gamepad = gamepad;
+
+        /* Discover L2/R2 trigger button indices from the SDL mapping string.
+         * On Android, KEYCODE_BUTTON_L2/R2 may arrive as joystick button
+         * events that SDL doesn't automatically map to trigger axes. */
+        trigger_btn_index[i][0] = -1;
+        trigger_btn_index[i][1] = -1;
+        {
+            char* mapping = SDL_GetGamepadMapping(gamepad);
+            if (mapping) {
+                const char* lt = strstr(mapping, "lefttrigger:b");
+                const char* rt = strstr(mapping, "righttrigger:b");
+                if (lt) trigger_btn_index[i][0] = atoi(lt + 13);
+                if (rt) trigger_btn_index[i][1] = atoi(rt + 13);
+                SDL_free(mapping);
+            }
+        }
         break;
     }
 
@@ -194,6 +231,17 @@ static void get_gamepad_state(int id, SDLPad_ButtonState* state) {
     state->left_stick_y = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY);
     state->right_stick_x = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTX);
     state->right_stick_y = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTY);
+
+    /* Safety net: poll trigger axes directly from SDL for gamepad devices.
+     * Some gamepads (e.g. arcade sticks with digital triggers) may not
+     * generate axis-motion events on all platforms, but SDL_GetGamepadAxis
+     * returns the correct current value when polled. */
+    {
+        Sint16 lt = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
+        Sint16 rt = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
+        if (lt > state->left_trigger)  state->left_trigger = lt;
+        if (rt > state->right_trigger) state->right_trigger = rt;
+    }
 }
 
 void SDLPad_Init() {

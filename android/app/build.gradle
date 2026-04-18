@@ -1,0 +1,128 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.goodport.sxdroid'
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId "com.goodport.sxdroid"
+        minSdk = 24
+        targetSdk = 36
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags ''
+                abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+                targets "main"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+        }
+    }
+
+    buildFeatures {
+        viewBinding = true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main {
+            // SDL3 Java sources — SDLActivity, etc.
+            java.srcDirs += '../../third_party_android/sdl3-src/android-project/app/src/main/java'
+            jniLibs.srcDirs += 'src/main/jniLibs'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path = 'src/main/cpp/CMakeLists.txt'
+            version = '3.22.1'
+        }
+    }
+    aaptOptions {
+        noCompress 'AFS'
+    }
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+    }
+}
+
+// Ensure SDL3 Java sources exist before Kotlin compilation
+tasks.register('ensureSdlSources') {
+    def sdlSrcDir = file("${projectDir}/../../third_party_android/sdl3-src")
+    outputs.dir(sdlSrcDir)
+    doLast {
+        if (!sdlSrcDir.exists()) {
+            exec {
+                commandLine 'git', 'clone', '--depth', '1',
+                    'https://github.com/libsdl-org/SDL.git', sdlSrcDir.absolutePath
+            }
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith('compile') && it.name.endsWith('Kotlin') }.configureEach {
+    dependsOn 'ensureSdlSources'
+}
+
+// Copy prebuilt shared libraries into jniLibs so they're packaged in the APK
+tasks.register('copySharedLibs') {
+    doLast {
+        def abis = ['arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86']
+        def thirdParty = "${projectDir}/../../third_party_android"
+
+        abis.each { abi ->
+            def dstDir = file("src/main/jniLibs/${abi}")
+            dstDir.mkdirs()
+
+            // SDL3
+            copy {
+                from "${thirdParty}/sdl3/build/${abi}/lib/libSDL3.so"
+                into dstDir
+            }
+            // SDL3_net
+            copy {
+                from "${thirdParty}/SDL_net/build/${abi}/lib/libSDL3_net.so"
+                into dstDir
+            }
+            // ffmpeg
+            copy {
+                from fileTree("${thirdParty}/ffmpeg/build/${abi}/lib").matching {
+                    include 'libavcodec.so*'
+                    include 'libavutil.so*'
+                    include 'libswresample.so*'
+                }
+                into dstDir
+            }
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith('merge') && it.name.endsWith('JniLibFolders') }.configureEach {
+    dependsOn 'copySharedLibs'
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.18.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+}

@@ -4,10 +4,10 @@
 #include "arcade/cps3_decrypt.h"
 
 #include <SDL3/SDL.h>
-#include <minizip-ng/mz.h>
-#include <minizip-ng/mz_strm.h>
-#include <minizip-ng/mz_strm_os.h>
-#include <minizip-ng/mz_zip.h>
+#include <minizip/mz.h>
+#include <minizip/mz_strm.h>
+#include <minizip/mz_strm_os.h>
+#include <minizip/mz_zip.h>
 
 #include <stdbool.h>
 

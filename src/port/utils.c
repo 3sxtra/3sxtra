@@ -6,6 +6,8 @@
 
 #include <dbghelp.h>
 #define SYMBOL_NAME_MAX 256
+#elif defined(__ANDROID__)
+#include <signal.h>
 #elif __APPLE__ || linux
 #include <execinfo.h>
 #include <signal.h>
@@ -15,6 +17,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef __ANDROID__
+#include <SDL3/SDL.h>
+#endif
 
 #define BACKTRACE_MAX 100
 
@@ -28,7 +33,22 @@ void fatal_error(const char* fmt, ...) {
 
     va_end(args);
 
-#if __APPLE__ || linux
+#ifdef __ANDROID__
+    /* Route fatal error to SDL_LogError so it's visible in Android logcat */
+    {
+        va_list args2;
+        va_start(args2, fmt);
+        char buf[1024];
+        vsnprintf(buf, sizeof(buf), fmt, args2);
+        va_end(args2);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FATAL: %s", buf);
+    }
+#endif
+
+    fflush(stdout);
+    fflush(stderr);
+
+#if (__APPLE__ || linux) && !defined(__ANDROID__)
     void* buffer[BACKTRACE_MAX];
 
     int nptrs = backtrace(buffer, BACKTRACE_MAX);
@@ -59,6 +79,9 @@ void fatal_error(const char* fmt, ...) {
 
     free(symbol);
     SymCleanup(process);
+    fflush(stderr);
+#elif defined(__ANDROID__)
+    fprintf(stderr, "Stack trace not supported on Android.\n");
 #endif
 
     abort();
@@ -80,14 +103,12 @@ void debug_print(const char* fmt, ...) {
 
 void stop_if(bool condition) {
 #if DEBUG
-    if (!condition) {
-        return;
-    }
-
+    if (condition) {
 #if _WIN32
-    __debugbreak();
-#elif __APPLE__ || linux
-    raise(SIGSTOP);
+        __debugbreak();
+#elif !defined(__ANDROID__)
+        raise(SIGSTOP);
 #endif
+    }
 #endif
 }

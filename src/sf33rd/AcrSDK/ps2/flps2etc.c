@@ -73,7 +73,7 @@ s32 flFileWrite(s8* filename, void* buf, s32 len) {
     SDL_strupr(p);
     strcat(temp, ";1");
 
-    if ((fd = open(temp, O_WRONLY | O_CREAT | O_TRUNC)) < 0) {
+    if ((fd = open(temp, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0) {
         return 0;
     }
 
