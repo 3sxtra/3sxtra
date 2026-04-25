@@ -25,12 +25,65 @@
 RendererCaps g_renderer_caps;
 RenderPassTable g_render_passes;
 
+static TransientTexture s_transient_textures[TRANSIENT_TEXTURE_COUNT];
+
 void RenderGraph_Compile(void) {
+    // 1. Initial pass culling (geometry / force execute check)
     for (int i = 0; i < g_render_passes.count; i++) {
         if (!g_render_passes.passes[i].has_geometry && !g_render_passes.passes[i].force_execute) {
             g_render_passes.passes[i].skip_this_frame = true;
         } else {
             g_render_passes.passes[i].skip_this_frame = false;
+        }
+    }
+
+    // 2. Automated Pass Culling based on Lifespans (Dead-Code Elimination)
+    // Keep track of which transient textures are needed by active subsequent passes
+    bool transient_needed[TRANSIENT_TEXTURE_COUNT] = {false};
+
+    // Iterate backwards to propagate dependencies from end of frame to beginning
+    for (int i = g_render_passes.count - 1; i >= 0; i--) {
+        if (g_render_passes.passes[i].skip_this_frame) {
+            continue; // Skip already culled passes
+        }
+
+        bool is_needed = true; // Assume needed unless proven otherwise
+
+        // If this pass outputs to a transient texture, check if any later pass needs it
+        if (g_render_passes.passes[i].transient_output >= 0 && 
+            g_render_passes.passes[i].transient_output < TRANSIENT_TEXTURE_COUNT) {
+            
+            if (!transient_needed[g_render_passes.passes[i].transient_output]) {
+                // No later pass needs this output! We can cull this pass safely.
+                is_needed = false;
+            }
+        }
+
+        if (is_needed) {
+            // Since this pass is active and needed, mark all of its inputs as "needed"
+            for (int j = 0; j < 4; j++) {
+                int input_id = g_render_passes.passes[i].transient_inputs[j];
+                if (input_id >= 0 && input_id < TRANSIENT_TEXTURE_COUNT) {
+                    transient_needed[input_id] = true;
+                }
+            }
+        } else {
+            // Cull it!
+            g_render_passes.passes[i].skip_this_frame = true;
+        }
+    }
+}
+
+void RenderGraph_Execute(int vp_x, int vp_y, int vp_w, int vp_h) {
+    for (int i = 0; i < g_render_passes.count; i++) {
+        if (g_render_passes.passes[i].skip_this_frame) {
+            continue;
+        }
+
+        if (g_render_passes.passes[i].execute_callback) {
+            g_render_passes.passes[i].execute_callback(i, g_render_passes.passes[i].user_data, vp_x, vp_y, vp_w, vp_h);
+        } else {
+            SDLGameRenderer_ExecutePass(i, vp_x, vp_y, vp_w, vp_h);
         }
     }
 }
@@ -244,14 +297,33 @@ void SDLGameRenderer_Init() {
     RendererCaps_Detect();
     TextureUtilVtable_Init();
     
-    // Initialize RenderGraph passed
-    g_render_passes.count = 3;
+    // Initialize RenderGraph passes
+    g_render_passes.count = 5;
+    for(int i = 0; i < g_render_passes.count; i++) {
+        g_render_passes.passes[i].transient_output = -1;
+        for(int j = 0; j < 4; j++) g_render_passes.passes[i].transient_inputs[j] = -1;
+        g_render_passes.passes[i].execute_callback = NULL;
+        g_render_passes.passes[i].user_data = NULL;
+    }
+
     g_render_passes.passes[0].name = "CPS3 Canvas";
     g_render_passes.passes[0].force_execute = true;
+    
     g_render_passes.passes[1].name = "HD Backgrounds";
     g_render_passes.passes[1].force_execute = false;
+    g_render_passes.passes[1].transient_output = TRANSIENT_TEXTURE_COMPOSITION;
+    
     g_render_passes.passes[2].name = "HD Foregrounds";
     g_render_passes.passes[2].force_execute = false;
+
+    g_render_passes.passes[3].name = "Composition";
+    g_render_passes.passes[3].force_execute = true;
+    g_render_passes.passes[3].transient_inputs[0] = TRANSIENT_TEXTURE_COMPOSITION;
+    g_render_passes.passes[3].transient_output = TRANSIENT_TEXTURE_LIBRASHADER;
+
+    g_render_passes.passes[4].name = "Librashader Post-Processing";
+    g_render_passes.passes[4].force_execute = true;
+    g_render_passes.passes[4].transient_inputs[0] = TRANSIENT_TEXTURE_LIBRASHADER;
 
     g_game_renderer->Init();
 
@@ -270,6 +342,36 @@ void SDLGameRenderer_Shutdown() {
 
 void SDLGameRenderer_BeginFrame() {
     g_game_renderer->BeginFrame();
+}
+
+TransientTexture* SDLGameRenderer_GetTransientTexture(TransientTextureID id, int width, int height) {
+    if (id < 0 || id >= TRANSIENT_TEXTURE_COUNT) return NULL;
+    if (!g_game_renderer || !g_game_renderer->CreateTransientRenderTarget) return NULL;
+
+    TransientTexture* tex = &s_transient_textures[id];
+
+    // If size changed or not created yet
+    if (tex->backend_handle == NULL || tex->width != width || tex->height != height) {
+        if (tex->backend_handle != NULL) {
+            g_game_renderer->DestroyTransientRenderTarget(tex->backend_handle);
+            tex->backend_handle = NULL;
+        }
+        tex->backend_handle = g_game_renderer->CreateTransientRenderTarget(width, height);
+        tex->width = width;
+        tex->height = height;
+    }
+
+    return tex;
+}
+
+void SDLGameRenderer_DestroyTransientTextures(void) {
+    if (!g_game_renderer || !g_game_renderer->DestroyTransientRenderTarget) return;
+    for (int i = 0; i < TRANSIENT_TEXTURE_COUNT; i++) {
+        if (s_transient_textures[i].backend_handle != NULL) {
+            g_game_renderer->DestroyTransientRenderTarget(s_transient_textures[i].backend_handle);
+            s_transient_textures[i].backend_handle = NULL;
+        }
+    }
 }
 
 void SDLGameRenderer_RenderFrame() {

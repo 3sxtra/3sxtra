@@ -1084,6 +1084,18 @@ void SDLGameRendererSDL_ExecutePass(int pass_index, int viewport_x, int viewport
     bool backgrounds_only = (pass_idx == 1);
 
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+
+    if (g_render_passes.passes[pass_idx].framebuffer) {
+        SDL_SetRenderTarget(renderer, (SDL_Texture*)g_render_passes.passes[pass_idx].framebuffer);
+        if (g_render_passes.passes[pass_idx].clear_color) {
+            uint32_t cv = g_render_passes.passes[pass_idx].clear_color_value;
+            SDL_SetRenderDrawColor(renderer, (cv >> 24) & 0xFF, (cv >> 16) & 0xFF, (cv >> 8) & 0xFF, cv & 0xFF);
+            SDL_RenderClear(renderer);
+        }
+    } else {
+        SDL_SetRenderTarget(renderer, NULL);
+    }
+
     float scale_x = (float)viewport_w / (384.0f * g_resolution_scale);
     float scale_y = (float)viewport_h / (224.0f * g_resolution_scale);
     SDL_SetRenderScale(renderer, scale_x, scale_y);
@@ -1983,4 +1995,29 @@ void SDLGameRendererSDL_DrawOverlaySubQuadEx(void* texture, float x, float y, fl
 
 void SDLGameRendererSDL_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z) {
     SDLGameRendererSDL_DrawOverlayQuadEx(texture, x, y, w, h, z, 0, 0);
+}
+
+// ==============================================================================
+// FrameGraph Transient Resource Management (SDL Backend)
+// ==============================================================================
+
+void* SDLGameRendererSDL_CreateTransientRenderTarget(int width, int height) {
+    SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+    if (!renderer) return NULL;
+
+    SDL_Texture* tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
+    if (!tex) {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "SDLGameRendererSDL: Failed to create transient target: %s", SDL_GetError());
+    }
+    return tex;
+}
+
+void SDLGameRendererSDL_DestroyTransientRenderTarget(void* handle) {
+    if (!handle) return;
+    SDL_Texture* tex = (SDL_Texture*)handle;
+    SDL_DestroyTexture(tex);
+}
+
+void SDLGameRendererSDL_BindTransientRenderTarget(void* handle) {
+    // SDL2D backend handles targets inside ExecutePass since the target needs to be set per-pass contextually.
 }

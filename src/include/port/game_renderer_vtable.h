@@ -36,6 +36,11 @@ typedef struct GameRendererVtable {
     void (*UnlockPalette)(unsigned int ph);
     void (*SetTexture)(unsigned int th);
 
+    /* ---- FrameGraph Transient Resources (3) ---- */
+    void* (*CreateTransientRenderTarget)(int width, int height);
+    void (*DestroyTransientRenderTarget)(void* handle);
+    void (*BindTransientRenderTarget)(void* handle);
+
     /* ---- State (1) ---- */
     void (*SetBlendMode)(RendererBlendMode mode);
 

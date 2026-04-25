@@ -22,6 +22,20 @@ extern unsigned int cps3_canvas_texture;
 extern unsigned int cps3_canvas_depth_texture;
 
 void SDLGameRenderer_Init();
+typedef enum {
+    TRANSIENT_TEXTURE_COMPOSITION,
+    TRANSIENT_TEXTURE_LIBRASHADER,
+    TRANSIENT_TEXTURE_COUNT
+} TransientTextureID;
+
+typedef struct TransientTexture {
+    int width, height;
+    void* backend_handle;
+} TransientTexture;
+
+TransientTexture* SDLGameRenderer_GetTransientTexture(TransientTextureID id, int width, int height);
+void SDLGameRenderer_DestroyTransientTextures(void);
+
 void SDLGameRenderer_Shutdown();
 void SDLGameRenderer_BeginFrame();
 void SDLGameRenderer_RenderFrame();

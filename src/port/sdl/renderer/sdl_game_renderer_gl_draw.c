@@ -366,6 +366,19 @@ void SDLGameRendererGL_ExecutePass(int pass_index, int viewport_x, int viewport_
 
     bool backgrounds_only = (pass_index == 1);
 
+    if (g_render_passes.passes[pass_index].framebuffer) {
+        // Assume framebuffer is a GLTransientRenderTarget*
+        struct { GLuint fbo; GLuint tex; }* rt = g_render_passes.passes[pass_index].framebuffer;
+        glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+        if (g_render_passes.passes[pass_index].clear_color) {
+            uint32_t cv = g_render_passes.passes[pass_index].clear_color_value;
+            glClearColor(((cv >> 24) & 0xFF)/255.0f, ((cv >> 16) & 0xFF)/255.0f, ((cv >> 8) & 0xFF)/255.0f, (cv & 0xFF)/255.0f);
+            glClear(GL_COLOR_BUFFER_BIT | (g_render_passes.passes[pass_index].clear_depth ? GL_DEPTH_BUFFER_BIT : 0));
+        }
+    } else {
+        glBindFramebuffer(GL_FRAMEBUFFER, gl_state.cps3_canvas_fbo);
+    }
+
     if (!backgrounds_only) {
         // Bind Native depth map to texture unit 1 to enable fragment exclusion
         glActiveTexture(GL_TEXTURE1);

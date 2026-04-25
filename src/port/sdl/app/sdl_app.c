@@ -76,6 +76,15 @@
 #include "port/sdl/rmlui/rmlui_vs_result.h"
 #include "port/sdl/rmlui/rmlui_vs_screen.h"
 #include "port/sdl/rmlui/rmlui_win_screen.h"
+
+// Phase 2/3 renderer includes
+#include "port/game_renderer_vtable.h"
+#include "port/render_pass.h"
+#include "port/sdl/renderer/sdl_game_renderer.h"
+
+extern bool mods_menu_shader_bypass_enabled;
+
+#include <stdbool.h>
 #include "port/tracy_gpu.h"
 #include "port/tracy_zones.h"
 #include "port/training_menu.h"
@@ -147,6 +156,278 @@ static GLint s_pt_loc_projection = -1;
 static GLint s_pt_loc_source = -1;
 static GLint s_pt_loc_source_size = -1;
 static GLint s_pt_loc_filter_type = -1;
+
+static uint32_t audio_buffer_size = 2048;
+
+// --- FrameGraph Callbacks ---
+
+static void App_RenderCompositionPass_GL(int pass_index, void* user_data, int vp_x, int vp_y, int vp_w, int vp_h) {
+    int tex_w = 384 * g_resolution_scale;
+    int tex_h = 224 * g_resolution_scale;
+    TransientTexture* comp_tex = SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_COMPOSITION, tex_w, tex_h);
+    GLuint comp_fbo = ((struct { GLuint fbo; GLuint texture; }*)comp_tex->backend_handle)->fbo;
+
+    // 1. Bind Composition FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, comp_fbo);
+    glViewport(0, 0, tex_w, tex_h);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // 2. Render HD Background Pipeline
+    g_render_passes.passes[1].framebuffer = comp_tex->backend_handle;
+    SDLGameRenderer_ExecutePass(1, 0, 0, tex_w, tex_h);
+    g_render_passes.passes[1].framebuffer = NULL; // Restore default
+
+    // 3. Render Game Sprites (cps3_canvas_texture) on top
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgram(passthru_shader_program);
+    if (s_pt_loc_projection == -1) {
+        s_pt_loc_projection = glGetUniformLocation(passthru_shader_program, "projection");
+        s_pt_loc_source = glGetUniformLocation(passthru_shader_program, "Source");
+        s_pt_loc_source_size = glGetUniformLocation(passthru_shader_program, "SourceSize");
+        s_pt_loc_filter_type = glGetUniformLocation(passthru_shader_program, "u_filter_type");
+    }
+
+    static const float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                                        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+
+    glUniformMatrix4fv(s_pt_loc_projection, 1, GL_FALSE, (const float*)identity);
+    glUniform4f(s_pt_loc_source_size, (float)tex_w, (float)tex_h, 1.0f / (float)tex_w, 1.0f / (float)tex_h);
+    glUniform1i(s_pt_loc_filter_type, (scale_mode == SCALEMODE_PIXEL_ART) ? 1 : 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, cps3_canvas_texture);
+    glUniform1i(s_pt_loc_source, 0);
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glDisable(GL_BLEND);
+}
+
+static void App_RenderLibrashaderPass_GL(int pass_index, void* user_data, int vp_x, int vp_y, int vp_w, int vp_h) {
+    int tex_w = 384 * g_resolution_scale;
+    int tex_h = 224 * g_resolution_scale;
+    
+    // We bind backbuffer before calling Librashader
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(vp_x, vp_y, vp_w, vp_h);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // If composition ran, we use TRANSIENT_TEXTURE_COMPOSITION, otherwise cps3_canvas_texture directly
+    bool modded_active_lr = ModdedStage_IsActiveForCurrentStage();
+    GLuint source_tex = cps3_canvas_texture;
+    
+    if (modded_active_lr && !mods_menu_shader_bypass_enabled) {
+        TransientTexture* comp_tex = SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_COMPOSITION, tex_w, tex_h);
+        source_tex = ((struct { GLuint fbo; GLuint texture; }*)comp_tex->backend_handle)->texture;
+    }
+
+    if (modded_active_lr && mods_menu_shader_bypass_enabled) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    LibrashaderManager_Render(SDLAppShader_GetManager(),
+                              (void*)(intptr_t)source_tex,
+                              384, // FORCE native resolution width
+                              224, // FORCE native resolution height
+                              vp_x, vp_y, vp_w, vp_h);
+
+    if (modded_active_lr && mods_menu_shader_bypass_enabled) {
+        glDisable(GL_BLEND);
+    }
+}
+
+static void App_RenderBlitPass_GL(int pass_index, void* user_data, int vp_x, int vp_y, int vp_w, int vp_h) {
+    int tex_w = 384 * g_resolution_scale;
+    int tex_h = 224 * g_resolution_scale;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(vp_x, vp_y, vp_w, vp_h);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    bool modded_active = ModdedStage_IsActiveForCurrentStage();
+    if (modded_active) {
+        SDLGameRenderer_ExecutePass(1, vp_x, vp_y, vp_w, vp_h);
+    }
+
+    glUseProgram(passthru_shader_program);
+
+    if (s_pt_loc_projection == -1) {
+        s_pt_loc_projection = glGetUniformLocation(passthru_shader_program, "projection");
+        s_pt_loc_source = glGetUniformLocation(passthru_shader_program, "Source");
+        s_pt_loc_source_size = glGetUniformLocation(passthru_shader_program, "SourceSize");
+        s_pt_loc_filter_type = glGetUniformLocation(passthru_shader_program, "u_filter_type");
+    }
+
+    static const float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                                        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+    glUniformMatrix4fv(s_pt_loc_projection, 1, GL_FALSE, (const float*)identity);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, cps3_canvas_texture);
+    glUniform1i(s_pt_loc_source, 0);
+
+    glUniform4f(s_pt_loc_source_size, (float)tex_w, (float)tex_h, 1.0f / (float)tex_w, 1.0f / (float)tex_h);
+    glUniform1i(s_pt_loc_filter_type, (scale_mode == SCALEMODE_PIXEL_ART) ? 1 : 0);
+
+    static int s_last_filter_scale_mode = -1;
+    if (s_last_filter_scale_mode != scale_mode) {
+        s_last_filter_scale_mode = scale_mode;
+        if (scale_mode == SCALEMODE_NEAREST || scale_mode == SCALEMODE_SQUARE_PIXELS ||
+            scale_mode == SCALEMODE_INTEGER) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        } else {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+    }
+
+    if (modded_active) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    if (modded_active) {
+        glDisable(GL_BLEND);
+    }
+
+    // Render HD Foregrounds
+    SDLGameRenderer_ExecutePass(2, vp_x, vp_y, vp_w, vp_h);
+}
+
+static void App_RenderLibrashaderPass_GPU(int pass_index, void* user_data, int vp_x, int vp_y, int vp_w, int vp_h) {
+    SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
+    SDL_GPUTexture* canvas = SDLGameRendererGPU_GetCanvasTexture();
+    SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
+    
+    // Clear swapchain to black for letterbox bars
+    SDL_GPUColorTargetInfo clear_target;
+    SDL_zero(clear_target);
+    clear_target.texture = swapchain;
+    clear_target.load_op = SDL_GPU_LOADOP_CLEAR;
+    clear_target.store_op = SDL_GPU_STOREOP_STORE;
+    clear_target.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
+    SDL_GPURenderPass* clear_pass = SDL_BeginGPURenderPass(cb, &clear_target, 1, NULL);
+    if (clear_pass) SDL_EndGPURenderPass(clear_pass);
+
+    TransientTexture* lr_tex = SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_LIBRASHADER, vp_w, vp_h);
+    SDL_GPUTexture* lr_gpu_tex = (SDL_GPUTexture*)lr_tex->backend_handle;
+
+    int win_w, win_h;
+    SDL_GetWindowSize(SDLApp_GetWindow(), &win_w, &win_h);
+
+    LibrashaderManager_Render_GPU_Wrapper(SDLAppShader_GetManager(),
+                                          cb,
+                                          canvas,
+                                          lr_gpu_tex,
+                                          swapchain,
+                                          384, // FORCE native resolution width
+                                          224, // FORCE native resolution height
+                                          vp_w, vp_h, win_w, win_h,
+                                          vp_x, vp_y);
+}
+
+static void App_RenderBlitPass_GPU(int pass_index, void* user_data, int vp_x, int vp_y, int vp_w, int vp_h) {
+    SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
+    SDL_GPUTexture* canvas = SDLGameRendererGPU_GetCanvasTexture();
+    SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
+    
+    bool modded_active = ModdedStage_IsActiveForCurrentStage();
+    if (modded_active) {
+        // Clear swapchain to black for letterbox bars
+        SDL_GPUColorTargetInfo clear_target;
+        SDL_zero(clear_target);
+        clear_target.texture = swapchain;
+        clear_target.load_op = SDL_GPU_LOADOP_CLEAR;
+        clear_target.store_op = SDL_GPU_STOREOP_STORE;
+        clear_target.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
+        SDL_GPURenderPass* clear_pass = SDL_BeginGPURenderPass(cb, &clear_target, 1, NULL);
+        if (clear_pass) SDL_EndGPURenderPass(clear_pass);
+
+        SDLGameRenderer_ExecutePass(1, vp_x, vp_y, vp_w, vp_h);
+        SDLGameRenderer_ExecutePass(2, vp_x, vp_y, vp_w, vp_h);
+    } else {
+        SDL_GPUBlitInfo blit_info;
+        SDL_zero(blit_info);
+        blit_info.source.texture = canvas;
+        blit_info.source.w = 384 * g_resolution_scale;
+        blit_info.source.h = 224 * g_resolution_scale;
+        blit_info.destination.texture = swapchain;
+        blit_info.destination.x = vp_x;
+        blit_info.destination.y = vp_y;
+        blit_info.destination.w = vp_w;
+        blit_info.destination.h = vp_h;
+        blit_info.load_op = SDL_GPU_LOADOP_CLEAR;
+        blit_info.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
+        blit_info.filter = (scale_mode == SCALEMODE_NEAREST || scale_mode == SCALEMODE_INTEGER ||
+                            scale_mode == SCALEMODE_SQUARE_PIXELS)
+                               ? SDL_GPU_FILTER_NEAREST
+                               : SDL_GPU_FILTER_LINEAR;
+
+        SDL_BlitGPUTexture(cb, &blit_info);
+    }
+}
+
+static void App_UpdateRenderGraph(RendererBackend backend) {
+    bool modded_active = ModdedStage_IsActiveForCurrentStage();
+    bool lr_active = SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager();
+    const char* skip_env = SDL_getenv("SDL_SKIP_LIBRASHADER");
+    bool skip_librashader = (skip_env != NULL && SDL_strcmp(skip_env, "1") == 0);
+
+    // Reset callbacks and force_execute flags
+    g_render_passes.passes[3].execute_callback = NULL;
+    g_render_passes.passes[3].skip_this_frame = true;
+    g_render_passes.passes[4].execute_callback = NULL;
+    g_render_passes.passes[4].skip_this_frame = true;
+    g_render_passes.passes[1].framebuffer = NULL;
+
+    int tex_w = 384 * g_resolution_scale;
+    int tex_h = 224 * g_resolution_scale;
+
+    if (backend == RENDERER_OPENGL) {
+        if (lr_active && !skip_librashader) {
+            if (modded_active && !mods_menu_shader_bypass_enabled) {
+                // Need composition + librashader
+                TransientTexture* comp_tex = SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_COMPOSITION, tex_w, tex_h);
+                g_render_passes.passes[1].framebuffer = comp_tex->backend_handle;
+                g_render_passes.passes[3].skip_this_frame = false;
+                g_render_passes.passes[3].execute_callback = App_RenderCompositionPass_GL;
+                g_render_passes.passes[4].skip_this_frame = false;
+                g_render_passes.passes[4].execute_callback = App_RenderLibrashaderPass_GL;
+            } else {
+                // Only librashader
+                g_render_passes.passes[4].skip_this_frame = false;
+                g_render_passes.passes[4].execute_callback = App_RenderLibrashaderPass_GL;
+            }
+        } else {
+            // Normal blit
+            g_render_passes.passes[3].skip_this_frame = false;
+            g_render_passes.passes[3].execute_callback = App_RenderBlitPass_GL;
+        }
+    } else if (backend == RENDERER_SDLGPU) {
+        if (modded_active) {
+            // GPU backend doesn't support modded+librashader yet, so just execute passes
+            g_render_passes.passes[3].skip_this_frame = false;
+            g_render_passes.passes[3].execute_callback = App_RenderBlitPass_GPU;
+        } else if (lr_active && !skip_librashader) {
+            g_render_passes.passes[4].skip_this_frame = false;
+            g_render_passes.passes[4].execute_callback = App_RenderLibrashaderPass_GPU;
+        } else {
+            g_render_passes.passes[3].skip_this_frame = false;
+            g_render_passes.passes[3].execute_callback = App_RenderBlitPass_GPU;
+        }
+    }
+}
 
 // ⚡ Track whether letterbox bars are visible — skip redundant backbuffer clears when not.
 static bool last_had_letterbox_bars = true;
@@ -1301,105 +1582,9 @@ void SDLApp_EndFrame() {
                 skip_checked = true;
             }
 
-            bool modded_active = ModdedStage_IsActiveForCurrentStage();
-
-            if (modded_active) {
-                // Clear swapchain to black for letterbox bars
-                {
-                    SDL_GPUColorTargetInfo clear_target;
-                    SDL_zero(clear_target);
-                    clear_target.texture = swapchain;
-                    clear_target.load_op = SDL_GPU_LOADOP_CLEAR;
-                    clear_target.store_op = SDL_GPU_STOREOP_STORE;
-                    clear_target.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
-                    SDL_GPURenderPass* clear_pass = SDL_BeginGPURenderPass(cb, &clear_target, 1, NULL);
-                    if (clear_pass)
-                        SDL_EndGPURenderPass(clear_pass);
-                }
-
-                // Canvas quad was already queued before RenderFrame (z=0.5, foreground pass).
-                // Stage backgrounds were pushed by ModdedStage_Render (z≈0.05, background pass).
-                // Execute passes (Pass 1 and Pass 2)
-                SDLGameRenderer_ExecutePass(1, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
-                SDLGameRenderer_ExecutePass(2, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
-            } else if (SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager() && !skip_librashader) {
-                int vp_w = (int)viewport.w;
-                int vp_h = (int)viewport.h;
-
-                // Clear swapchain to black for letterbox bars
-                {
-                    SDL_GPUColorTargetInfo clear_target;
-                    SDL_zero(clear_target);
-                    clear_target.texture = swapchain;
-                    clear_target.load_op = SDL_GPU_LOADOP_CLEAR;
-                    clear_target.store_op = SDL_GPU_STOREOP_STORE;
-                    clear_target.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
-                    SDL_GPURenderPass* clear_pass = SDL_BeginGPURenderPass(cb, &clear_target, 1, NULL);
-                    if (clear_pass)
-                        SDL_EndGPURenderPass(clear_pass);
-                }
-
-                // Ensure intermediate render target matches viewport size
-                if (!s_librashader_intermediate || s_librashader_intermediate_w != vp_w ||
-                    s_librashader_intermediate_h != vp_h) {
-                    if (s_librashader_intermediate) {
-                        SDL_ReleaseGPUTexture(gpu_device, s_librashader_intermediate);
-                    }
-                    SDL_GPUTextureCreateInfo tex_info;
-                    SDL_zero(tex_info);
-                    tex_info.type = SDL_GPU_TEXTURETYPE_2D;
-                    tex_info.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, window);
-                    tex_info.width = vp_w;
-                    tex_info.height = vp_h;
-                    tex_info.layer_count_or_depth = 1;
-                    tex_info.num_levels = 1;
-                    tex_info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
-                    s_librashader_intermediate = SDL_CreateGPUTexture(gpu_device, &tex_info);
-                    s_librashader_intermediate_w = vp_w;
-                    s_librashader_intermediate_h = vp_h;
-                }
-
-                // Librashader scaling...
-                // (HD Pass skipped inside pure Libretro block)
-
-                // Two-stage render (matches GL backend):
-                // 1. Librashader renders to intermediate at {0,0}
-                // 2. Raw vkCmdBlitImage copies to swapchain at letterbox offset
-                LibrashaderManager_Render_GPU_Wrapper(SDLAppShader_GetManager(),
-                                                      cb,
-                                                      canvas,
-                                                      s_librashader_intermediate,
-                                                      swapchain,
-                                                      384, // FORCE native resolution width
-                                                      224, // FORCE native resolution height
-                                                      vp_w,
-                                                      vp_h,
-                                                      win_w,
-                                                      win_h,
-                                                      (int)viewport.x,
-                                                      (int)viewport.y);
-            } else {
-                // Manual Blit with Scaling
-
-                SDL_GPUBlitInfo blit_info;
-                SDL_zero(blit_info);
-                blit_info.source.texture = canvas;
-                blit_info.source.w = 384 * g_resolution_scale;
-                blit_info.source.h = 224 * g_resolution_scale;
-                blit_info.destination.texture = swapchain;
-                blit_info.destination.x = viewport.x;
-                blit_info.destination.y = viewport.y;
-                blit_info.destination.w = viewport.w;
-                blit_info.destination.h = viewport.h;
-                blit_info.load_op = SDL_GPU_LOADOP_CLEAR;
-                blit_info.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
-                blit_info.filter = (scale_mode == SCALEMODE_NEAREST || scale_mode == SCALEMODE_INTEGER ||
-                                    scale_mode == SCALEMODE_SQUARE_PIXELS)
-                                       ? SDL_GPU_FILTER_NEAREST
-                                       : SDL_GPU_FILTER_LINEAR;
-
-                SDL_BlitGPUTexture(cb, &blit_info);
-            }
+            // FrameGraph logic replaces manual GPU post-processing!
+            App_UpdateRenderGraph(RENDERER_SDLGPU);
+            RenderGraph_Execute((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
         }
 
 #if DEBUG
@@ -1462,201 +1647,12 @@ void SDLApp_EndFrame() {
 
         TRACE_SUB_BEGIN("SceneBlit");
         if (SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager()) {
-            bool modded_active_lr = ModdedStage_IsActiveForCurrentStage();
-            bool bypass_shader = mods_menu_shader_bypass_enabled;
-
-            // Standard Path: Bypass Enabled OR Modded Stage Inactive
-            // Render transparency over HD background (if active)
-            if (bypass_shader || !modded_active_lr) {
-                if (modded_active_lr) {
-                    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                    glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
-                    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                    glClear(GL_COLOR_BUFFER_BIT);
-
-                    SDLGameRenderer_ExecutePass(
-                        1, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
-                } else {
-                    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                    glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
-                    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                    glClear(GL_COLOR_BUFFER_BIT);
-                }
-
-                if (modded_active_lr) {
-                    glEnable(GL_BLEND);
-                    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-                }
-                LibrashaderManager_Render(SDLAppShader_GetManager(),
-                                          (void*)(intptr_t)cps3_canvas_texture,
-                                          384, // FORCE native resolution width
-                                          224, // FORCE native resolution height
-                                          viewport.x,
-                                          viewport.y,
-                                          viewport.w,
-                                          viewport.h);
-
-                if (modded_active_lr) {
-                    glDisable(GL_BLEND);
-                }
-            }
-            // Composition Path: Bypass Disabled AND Modded Stage Active
-            // Render HD Stage + Sprites to FBO, then Shade everything
-            else {
-                // Resize/Create Composition FBO if needed
-                int comp_w = tex_w;
-                int comp_h = tex_h;
-
-                if (comp_w != s_composition_w || comp_h != s_composition_h || s_composition_fbo == 0) {
-                    if (s_composition_texture)
-                        glDeleteTextures(1, &s_composition_texture);
-                    if (s_composition_fbo)
-                        glDeleteFramebuffers(1, &s_composition_fbo);
-
-                    glGenFramebuffers(1, &s_composition_fbo);
-                    glBindFramebuffer(GL_FRAMEBUFFER, s_composition_fbo);
-
-                    glGenTextures(1, &s_composition_texture);
-                    glBindTexture(GL_TEXTURE_2D, s_composition_texture);
-                    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, comp_w, comp_h);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-                    glFramebufferTexture2D(
-                        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, s_composition_texture, 0);
-
-                    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Composition FBO incomplete!");
-                    }
-
-                    s_composition_w = comp_w;
-                    s_composition_h = comp_h;
-                }
-
-                // 1. Bind Composition FBO
-                glBindFramebuffer(GL_FRAMEBUFFER, s_composition_fbo);
-                glViewport(0, 0, comp_w, comp_h);
-                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                glClear(GL_COLOR_BUFFER_BIT);
-
-                // 2. Render HD Background Pipeline
-                SDLGameRenderer_ExecutePass(1, 0, 0, comp_w, comp_h);
-
-                // 3. Render Game Sprites (cps3_canvas_texture) on top
-                // Use Passthru shader to blit transparency
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-                glUseProgram(passthru_shader_program);
-                if (s_pt_loc_projection == -1) {
-                    s_pt_loc_projection = glGetUniformLocation(passthru_shader_program, "projection");
-                    s_pt_loc_source = glGetUniformLocation(passthru_shader_program, "Source");
-                    s_pt_loc_source_size = glGetUniformLocation(passthru_shader_program, "SourceSize");
-                    s_pt_loc_filter_type = glGetUniformLocation(passthru_shader_program, "u_filter_type");
-                }
-
-                static const float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                                                    0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
-
-                glUniformMatrix4fv(s_pt_loc_projection, 1, GL_FALSE, (const float*)identity);
-                glUniform4f(s_pt_loc_source_size, (float)tex_w, (float)tex_h, 1.0f / (float)tex_w, 1.0f / (float)tex_h);
-                glUniform1i(s_pt_loc_filter_type, (scale_mode == SCALEMODE_PIXEL_ART) ? 1 : 0);
-
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, cps3_canvas_texture);
-                glUniform1i(s_pt_loc_source, 0);
-
-                glBindVertexArray(vao);
-                glDrawArrays(GL_TRIANGLES, 0, 6);
-
-                glDisable(GL_BLEND);
-
-                // 4. Feed Composed Texture to Librashader
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
-                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                glClear(GL_COLOR_BUFFER_BIT);
-
-                LibrashaderManager_Render(SDLAppShader_GetManager(),
-                                          (void*)(intptr_t)s_composition_texture,
-                                          384, // FORCE native resolution width for correct CRT math
-                                          224, // FORCE native resolution height for correct CRT math
-                                          viewport.x,
-                                          viewport.y,
-                                          viewport.w,
-                                          viewport.h);
-            }
-        } else {
-            // Standard single-pass rendering (Passthru)
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            // --- HD Modded Stage Background (native resolution) ---
-            // Draw HD parallax layers BEFORE the canvas blit so they appear
-            // behind all game sprites.
-            bool modded_active = ModdedStage_IsActiveForCurrentStage();
-            if (modded_active) {
-                SDLGameRenderer_ExecutePass(1, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
-            }
-
-            GLuint current_shader = passthru_shader_program;
-            glUseProgram(current_shader);
-
-            // ⚡ Bolt: Cache uniform locations — resolve once, reuse every frame.
-            if (s_pt_loc_projection == -1) {
-                s_pt_loc_projection = glGetUniformLocation(current_shader, "projection");
-                s_pt_loc_source = glGetUniformLocation(current_shader, "Source");
-                s_pt_loc_source_size = glGetUniformLocation(current_shader, "SourceSize");
-                s_pt_loc_filter_type = glGetUniformLocation(current_shader, "u_filter_type");
-            }
-
-            glUniformMatrix4fv(s_pt_loc_projection, 1, GL_FALSE, (const float*)identity);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, cps3_canvas_texture);
-            glUniform1i(s_pt_loc_source, 0);
-
-            glUniform4f(s_pt_loc_source_size, (float)tex_w, (float)tex_h, 1.0f / (float)tex_w, 1.0f / (float)tex_h);
-            glUniform1i(s_pt_loc_filter_type, (scale_mode == SCALEMODE_PIXEL_ART) ? 1 : 0);
-
-            // ⚡ Bolt: Only update texture filter params when scale_mode changes.
-            // glTexParameteri triggers internal sampler state revalidation in the
-            // driver; on V3D (RPi4) this adds ~5-15µs per call. Since scale_mode
-            // only changes on F8 key press, we skip 2 GL calls/frame in the
-            // common case (99.9% of frames).
-            static int s_last_filter_scale_mode = -1;
-            if (s_last_filter_scale_mode != scale_mode) {
-                s_last_filter_scale_mode = scale_mode;
-                if (scale_mode == SCALEMODE_NEAREST || scale_mode == SCALEMODE_SQUARE_PIXELS ||
-                    scale_mode == SCALEMODE_INTEGER) {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                } else {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                }
-            }
-
-            // When HD background is active, enable blending so the transparent
-            // canvas pixels let the HD background show through.
-            if (modded_active) {
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-            }
-
-            glBindVertexArray(vao);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
-            if (modded_active) {
-                glDisable(GL_BLEND);
-            }
-
-            // ⚡ Bolt: Execute Deferred HD Foreground Sprite Pass
-            // Rendered directly to the screen viewport ON TOP of the upscaled native canvas.
-            SDLGameRenderer_ExecutePass(2, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
+            // Update passes for Librashader
         }
+        
+        // Execute FrameGraph dynamically!
+        App_UpdateRenderGraph(RENDERER_OPENGL);
+        RenderGraph_Execute((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
         TRACE_SUB_END();
 
         // Bezel Rendering (OpenGL)

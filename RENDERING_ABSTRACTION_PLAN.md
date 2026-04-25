@@ -1,6 +1,6 @@
 # Rendering Abstraction Plan — bgfx-Inspired Improvements
 
-> **Status**: Rounds 1 & 2 Complete — Round 3 Pending  
+> **Status**: Rounds 1, 2, 3, & 4 Complete
 > **Created**: 2026-04-19  
 > **Last Updated**: 2026-04-25  
 > **Inspiration**: [bgfx](https://github.com/bkaradzic/bgfx) architecture patterns  
@@ -423,12 +423,29 @@ Then gradually move pass setup (FBO bind, clear, viewport) into a shared `Render
 - `src/port/sdl/renderer/sdl_game_renderer_classic.c` (Classic render loop)
 - New: `src/include/port/render_pass.h`
 
-### Round 3 Verification
+### Round 3 Verification ✅ COMPLETE
 
-- Document vertex pipeline (no code changes needed for documentation)
-- If removing RendererVertex middleman: verify all callers of `DrawTexturedQuadVtx`, `DrawSpriteVtx`, `DrawSolidQuadVtx` still work
-- If adding pass table: verify per-pass profiling data is correct
-- Build + visual test all 4 backends
+- Pass descriptors added (`RenderPassTable` + `RenderPass`).
+- `RenderGraph_Compile()` implemented for data-driven dependency resolution and culling.
+- Backend FBO bind/clear setup moved to `RenderPass_Begin`/`End` (via `SDLGameRenderer_ExecutePass`).
+
+---
+
+## Round 4: FrameGraph Execution Callbacks ✅ COMPLETE
+
+**Goal**: Abstract backend-specific composition state out of the application loop.
+
+### Problem
+`sdl_app.c` manually executed hundreds of lines of OpenGL/Vulkan/SDL2D state management to weave together Librashader, game canvas, and HD overlays.
+
+### Solution
+- Extracted logic into `App_RenderCompositionPass`, `App_RenderLibrashaderPass`, and `App_RenderBlitPass` callbacks.
+- Extended `RenderPass` to hold `execute_callback` and `user_data`.
+- Replaced `sdl_app.c` logic with:
+  ```c
+  App_UpdateRenderGraph(RENDERER_OPENGL);
+  RenderGraph_Execute((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
+  ```
 
 ---
 

@@ -911,7 +911,6 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
                     conv_buf[i] = (c.a << 24) | (c.b << 16) | (c.g << 8) | c.r;
                 }
             }
-
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, conv_buf);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1144,7 +1143,56 @@ void SDLGameRendererGL_DumpPaletteStats(void) {
         if (surf)
             SDL_Log("[PaletteStats]   tex[%4d]: %d palettes (%dx%d)", best_ti, best_n, surf->w, surf->h);
         else
-            SDL_Log("[PaletteStats]   tex[%4d]: %d palettes (no surface)", best_ti, best_n);
-        pal_count[best_ti] = 0; // remove from future ranking
+            SDL_Log("[PaletteStats]   tex[%4d]: %d palettes (<unloaded>)", best_ti, best_n);
+        pal_count[best_ti] = 0; // Clear so we don't pick it again
+    }
+}
+
+// ==============================================================================
+// FrameGraph Transient Resource Management (GL Backend)
+// ==============================================================================
+
+typedef struct GLTransientRenderTarget {
+    GLuint fbo;
+    GLuint texture;
+} GLTransientRenderTarget;
+
+void* SDLGameRendererGL_CreateTransientRenderTarget(int width, int height) {
+    GLTransientRenderTarget* rt = SDL_malloc(sizeof(GLTransientRenderTarget));
+    if (!rt) return NULL;
+
+    glGenFramebuffers(1, &rt->fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+
+    glGenTextures(1, &rt->texture);
+    glBindTexture(GL_TEXTURE_2D, rt->texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->texture, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "GLTransientRenderTarget FBO incomplete!");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return rt;
+}
+
+void SDLGameRendererGL_DestroyTransientRenderTarget(void* handle) {
+    if (!handle) return;
+    GLTransientRenderTarget* rt = (GLTransientRenderTarget*)handle;
+    if (rt->texture) glDeleteTextures(1, &rt->texture);
+    if (rt->fbo) glDeleteFramebuffers(1, &rt->fbo);
+    SDL_free(rt);
+}
+
+void SDLGameRendererGL_BindTransientRenderTarget(void* handle) {
+    if (!handle) {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    } else {
+        GLTransientRenderTarget* rt = (GLTransientRenderTarget*)handle;
+        glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
     }
 }

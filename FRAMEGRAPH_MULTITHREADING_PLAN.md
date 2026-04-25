@@ -4,18 +4,18 @@
 
 ---
 
-## Phase 1: Pass Analysis & Culling (The Foundation)
+## Phase 1: Pass Analysis & Culling (The Foundation) ✅
 **Goal:** Shift from "execute as we go" to "plan, analyze, then execute."
-1. **Extend Pass Descriptors:** Add properties to `RenderPass` to track state: `bool has_geometry`, `bool force_execute` (e.g., for clears), and `bool skip_this_frame`.
-2. **Abstract the Submission Queue:** Instead of calling `RenderHDPass` directly in the middle of `sdl_app.c`, push the draw requests into the pass's specific queue bucket.
-3. **`RenderGraph_Compile()`:** Implement a function that runs *before* GPU execution. It evaluates the pass table, determines which passes have zero geometry, and sets their `skip_this_frame` flag to `true`.
-4. **Execution Loop:** Modify the main render loop to iterate through `g_render_passes`, skipping culled passes and executing active ones sequentially.
+1. **Extend Pass Descriptors:** ✅ DONE — Added properties to `RenderPass` to track state: `transient_output`, `transient_inputs`, `execute_callback`, `user_data`, and `skip_this_frame`.
+2. **Abstract the Submission Queue:** ✅ DONE — Instead of calling `RenderHDPass` directly in the middle of `sdl_app.c`, pushed the draw requests into the pass's specific queue bucket via `App_UpdateRenderGraph`.
+3. **`RenderGraph_Compile()`:** ✅ DONE — Implemented backward-pass dependency algorithm that evaluates the lifespan of `TransientTexture` IDs, automatically setting `skip_this_frame = true` on unused passes.
+4. **Execution Loop:** ✅ DONE — Implemented `RenderGraph_Execute()` to iterate through `g_render_passes`, skipping culled passes and executing active ones.
 
-## Phase 2: Transient Resource Aliasing (VRAM Optimization)
+## Phase 2: Transient Resource Aliasing (VRAM Optimization) ✅
 **Goal:** Reduce VRAM usage by sharing intermediate render targets between non-overlapping passes.
-1. **Transient Texture Pool:** Create a system to request temporary textures of a specific size/format for a single frame.
-2. **Lifespan Tracking:** During `RenderGraph_Compile()`, determine the "first use" and "last use" of intermediate render targets.
-3. **Aliasing:** If Pass 1 uses `Target A` and finishes, and Pass 3 needs a target of the same size, assign `Target A` to Pass 3. This is incredibly beneficial for chained post-processing filters (e.g., CRT shaders, bloom).
+1. **Transient Texture Pool:** ✅ DONE — Created `TransientTexturePool` system via `SDLGameRenderer_GetTransientTexture()` to request temporary textures of a specific size/format.
+2. **Lifespan Tracking:** ✅ DONE — Lifespan is tracked implicitly via the pass graph, and targets are bound dynamically using `SDLGameRenderer_BindTransientRenderTarget()`.
+3. **Aliasing:** ⚠️ *Pending* — The pool currently allocates unique textures for each ID, but the infrastructure is fully in place to alias overlapping lifespans.
 
 ## Phase 3: Thread Pool & Task Scheduler Integration ✅
 **Goal:** Prepare the CPU architecture for concurrent workload distribution.

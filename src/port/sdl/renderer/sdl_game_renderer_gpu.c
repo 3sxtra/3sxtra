@@ -569,8 +569,18 @@ void SDLGameRendererGPU_ExecutePass(int pass_index, int viewport_x, int viewport
 
     SDL_GPUColorTargetInfo color_target;
     SDL_zero(color_target);
-    color_target.texture = s_swapchain_texture;
-    color_target.load_op = SDL_GPU_LOADOP_LOAD;
+    if (g_render_passes.passes[p].framebuffer) {
+        color_target.texture = (SDL_GPUTexture*)g_render_passes.passes[p].framebuffer;
+        // Optional: clear to black if it's the composition pass, but the pass properties should control this
+        color_target.load_op = g_render_passes.passes[p].clear_color ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD;
+        uint32_t cv = g_render_passes.passes[p].clear_color_value;
+        color_target.clear_color = (SDL_FColor){ 
+            ((cv >> 24) & 0xFF)/255.0f, ((cv >> 16) & 0xFF)/255.0f, ((cv >> 8) & 0xFF)/255.0f, (cv & 0xFF)/255.0f 
+        };
+    } else {
+        color_target.texture = s_swapchain_texture;
+        color_target.load_op = SDL_GPU_LOADOP_LOAD;
+    }
     color_target.store_op = SDL_GPU_STOREOP_STORE;
 
     SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(current_cmd_buf, &color_target, 1, NULL);
@@ -1244,3 +1254,34 @@ void SDLGameRendererGPU_DrawOverlaySubQuadEx(void* texture, float x, float y, fl
     }
 }
 
+// ==============================================================================
+// FrameGraph Transient Resource Management (GPU Backend)
+// ==============================================================================
+
+void* SDLGameRendererGPU_CreateTransientRenderTarget(int width, int height) {
+    if (!device || !gpu_window) return NULL;
+
+    SDL_GPUTextureCreateInfo tex_info;
+    SDL_zero(tex_info);
+    tex_info.type = SDL_GPU_TEXTURETYPE_2D;
+    tex_info.format = SDL_GetGPUSwapchainTextureFormat(device, gpu_window);
+    tex_info.width = width;
+    tex_info.height = height;
+    tex_info.layer_count_or_depth = 1;
+    tex_info.num_levels = 1;
+    tex_info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    
+    SDL_GPUTexture* tex = SDL_CreateGPUTexture(device, &tex_info);
+    return tex;
+}
+
+void SDLGameRendererGPU_DestroyTransientRenderTarget(void* handle) {
+    if (!handle || !device) return;
+    SDL_GPUTexture* tex = (SDL_GPUTexture*)handle;
+    SDL_ReleaseGPUTexture(device, tex);
+}
+
+void SDLGameRendererGPU_BindTransientRenderTarget(void* handle) {
+    // GPU backend doesn't have a global bound FBO.
+    // The texture pointer is expected to be read from g_render_passes.passes[p].framebuffer
+}
