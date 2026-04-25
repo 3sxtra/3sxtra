@@ -9,6 +9,11 @@ extern "C" {
 #endif
 
 /**
+ * @brief Opaque handle for textures managed by TextureUtil.
+ */
+typedef void* OverlayTexture;
+
+/**
  * @brief Load an image file into a GPU/GL texture.
  * @param filename Path to the image file (PNG, etc.)
  * @return Opaque texture handle, or NULL on failure.

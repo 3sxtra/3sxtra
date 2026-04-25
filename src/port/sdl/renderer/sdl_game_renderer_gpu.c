@@ -11,6 +11,8 @@
 #include "port/mods/modded_stage.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
+#include "port/sdl/renderer/sdl_gpu_metadata.h"
+#include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/tracy_zones.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
@@ -1190,3 +1192,41 @@ void SDLGameRendererGPU_QueueDeferredSubBlit(SDL_GPUTexture* texture, int tex_w,
         return;
     push_overlay_subquad(-2, x, y, w, h, u0, v0, u1, v1, z, texture);
 }
+
+void SDLGameRendererGPU_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z) {
+    GPUTextureMetadataC meta;
+    if (!TextureUtil_GetGPUMetadata(texture, &meta))
+        return;
+    if (meta.w > 512 || meta.h > 512) {
+        SDLGameRendererGPU_QueueDeferredBlit((SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, z, 0, 0);
+    } else {
+        SDLGameRendererGPU_DrawOverlaySprite(meta.pixels, meta.w, meta.h, x, y, w, h, z);
+    }
+}
+
+void SDLGameRendererGPU_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                          int flip_y) {
+    GPUTextureMetadataC meta;
+    if (!TextureUtil_GetGPUMetadata(texture, &meta))
+        return;
+    if (meta.w > 512 || meta.h > 512) {
+        SDLGameRendererGPU_QueueDeferredBlit((SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, z, flip_x,
+                                             flip_y);
+    } else {
+        SDLGameRendererGPU_DrawOverlaySpriteEx(meta.pixels, meta.w, meta.h, x, y, w, h, z, flip_x, flip_y);
+    }
+}
+
+void SDLGameRendererGPU_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,
+                                             float u1, float v1, float z) {
+    GPUTextureMetadataC meta;
+    if (!TextureUtil_GetGPUMetadata(texture, &meta))
+        return;
+    if (meta.w > 512 || meta.h > 512) {
+        SDLGameRendererGPU_QueueDeferredSubBlit((SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, u0, v0, u1,
+                                                v1, z);
+    } else {
+        SDLGameRendererGPU_DrawOverlaySubSprite(meta.pixels, meta.w, meta.h, x, y, w, h, u0, v0, u1, v1, z);
+    }
+}
+

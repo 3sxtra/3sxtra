@@ -121,6 +121,10 @@ void Renderer_SetTexture(int textureId) {
     SDLGameRenderer_SetTexture(texCode);
 }
 
+void PortRenderer_DrawTexturedQuad(const Sprite* sprite, unsigned int color) {
+    SDLGameRenderer_DrawTexturedQuad(sprite, color);
+}
+
 void Renderer_DrawTexturedQuadVtx(const RendererVertex* vertices, int count) {
     if (count != 4)
         return;
@@ -133,40 +137,61 @@ void Renderer_DrawTexturedQuadVtx(const RendererVertex* vertices, int count) {
         sprite.t[i].s = vertices[i].u;
         sprite.t[i].t = vertices[i].v;
     }
-
-    SDLGameRenderer_DrawTexturedQuad(&sprite, vertices[0].color);
+    PortRenderer_DrawTexturedQuad(&sprite, vertices[0].color);
 }
 
 // Weak declaration for builds that don't link PPGFile.c (like test targets)
 extern s32 ppgWriteQuadWithST_B2(Vertex* pos, u32 col, PPGDataList* tb, s32 tix, s32 cix) __attribute__((weak));
 
-void Renderer_DrawSpriteVtx(const RendererVertex* vertices, int count) {
-    if (count != 4)
-        return;
-
+void PortRenderer_DrawSprite(const Sprite* sprite, unsigned int color) {
     // For PPG texture indices (small values 0-100), use ppgWriteQuadWithST_B2
     // which does proper texture handle lookup from the current data list
     if (s_CurrentTextureId >= 0 && s_CurrentTextureId < 100 && ppgWriteQuadWithST_B2 != NULL) {
-        // Convert RendererVertex to Vertex for ppgWriteQuadWithST_B2
-        // RendererVertex: {x,y,z,u,v,color} -> Vertex: {x,y,z,s,t}
         Vertex vtx[4];
-        vtx[0].x = vertices[0].x;
-        vtx[0].y = vertices[0].y;
-        vtx[0].z = vertices[0].z;
-        vtx[0].s = vertices[0].u;
-        vtx[0].t = vertices[0].v;
-        vtx[3].x = vertices[3].x;
-        vtx[3].y = vertices[3].y;
-        vtx[3].z = vertices[3].z;
-        vtx[3].s = vertices[3].u;
-        vtx[3].t = vertices[3].v;
+        vtx[0].x = sprite->v[0].x;
+        vtx[0].y = sprite->v[0].y;
+        vtx[0].z = sprite->v[0].z;
+        vtx[0].s = sprite->t[0].s;
+        vtx[0].t = sprite->t[0].t;
+        vtx[3].x = sprite->v[3].x;
+        vtx[3].y = sprite->v[3].y;
+        vtx[3].z = sprite->v[3].z;
+        vtx[3].s = sprite->t[3].s;
+        vtx[3].t = sprite->t[3].t;
 
         // Call PPG draw with texture index and palette index -1 (use current)
-        ppgWriteQuadWithST_B2(vtx, vertices[0].color, NULL, s_CurrentTextureId, -1);
+        ppgWriteQuadWithST_B2(vtx, color, NULL, s_CurrentTextureId, -1);
         return;
     }
 
     // For pre-combined handles (>= 0x10000) or direct handles, use SDL renderer
+    SDLGameRenderer_DrawSprite(sprite, color);
+}
+
+void PortRenderer_DrawSprite2(const Sprite2* sprite2) {
+    if (s_CurrentTextureId >= 0 && s_CurrentTextureId < 100 && ppgWriteQuadWithST_B2 != NULL) {
+        Vertex vtx[4];
+        vtx[0].x = sprite2->v[0].x;
+        vtx[0].y = sprite2->v[0].y;
+        vtx[0].z = sprite2->v[0].z;
+        vtx[0].s = sprite2->t[0].s;
+        vtx[0].t = sprite2->t[0].t;
+        vtx[3].x = sprite2->v[1].x;
+        vtx[3].y = sprite2->v[1].y;
+        vtx[3].z = sprite2->v[1].z;
+        vtx[3].s = sprite2->t[1].s;
+        vtx[3].t = sprite2->t[1].t;
+
+        ppgWriteQuadWithST_B2(vtx, sprite2->vertex_color, NULL, s_CurrentTextureId, -1);
+        return;
+    }
+    SDLGameRenderer_DrawSprite2(sprite2);
+}
+
+void Renderer_DrawSpriteVtx(const RendererVertex* vertices, int count) {
+    if (count != 4)
+        return;
+
     Sprite sprite;
     for (int i = 0; i < 4; i++) {
         sprite.v[i].x = vertices[i].x;
@@ -175,7 +200,11 @@ void Renderer_DrawSpriteVtx(const RendererVertex* vertices, int count) {
         sprite.t[i].s = vertices[i].u;
         sprite.t[i].t = vertices[i].v;
     }
-    SDLGameRenderer_DrawSprite(&sprite, vertices[0].color);
+    PortRenderer_DrawSprite(&sprite, vertices[0].color);
+}
+
+void PortRenderer_DrawSolidQuad(const Quad* quad, unsigned int color) {
+    SDLGameRenderer_DrawSolidQuad(quad, color);
 }
 
 void Renderer_DrawSolidQuadVtx(const RendererVertex* vertices, int count) {
@@ -188,8 +217,7 @@ void Renderer_DrawSolidQuadVtx(const RendererVertex* vertices, int count) {
         quad.v[i].y = vertices[i].y;
         quad.v[i].z = vertices[i].z;
     }
-
-    SDLGameRenderer_DrawSolidQuad(&quad, vertices[0].color);
+    PortRenderer_DrawSolidQuad(&quad, vertices[0].color);
 }
 
 void Renderer_Queue2DPrimitive(const f32* pos, f32 priority, uintptr_t data, int type) {

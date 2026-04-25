@@ -1079,6 +1079,9 @@ void SDLGameRendererGL_DumpTextures(void) {
         }
     }
     SDL_Log("[TextureDump] Wrote %d page(s) to output/ui_pages/", page_count);
+
+    /* Also dump palette stats alongside texture dump */
+    SDLGameRendererGL_DumpPaletteStats();
 }
 
 /**

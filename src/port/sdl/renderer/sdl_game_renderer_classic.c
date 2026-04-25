@@ -940,9 +940,10 @@ void SDLGameRendererClassic_DumpTextures(void) {
 
 /* ─── Overlay Sprite Enqueue (Classic) ──────────────────────────────── */
 
-void SDLGameRendererClassic_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float y, float w, float h, float z,
-                                                int flip_x, int flip_y) {
-    if (cl_render_task_count >= RENDER_TASK_MAX || texture == NULL)
+void SDLGameRendererClassic_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z,
+                                              int flip_x, int flip_y) {
+    SDL_Texture* sdl_tex = (SDL_Texture*)texture;
+    if (cl_render_task_count >= RENDER_TASK_MAX || sdl_tex == NULL)
         return;
 
     const float s = (float)g_resolution_scale;
@@ -960,15 +961,16 @@ void SDLGameRendererClassic_DrawOverlaySpriteEx(SDL_Texture* texture, float x, f
     verts[2] = (SDL_Vertex) { { sx, sy + sh }, white, { u0, v1 } };
     verts[3] = (SDL_Vertex) { { sx + sw, sy + sh }, white, { u1, v1 } };
 
-    cl_draw_quad(verts, texture, z);
+    cl_draw_quad(verts, sdl_tex, z);
     /* Adjust z: cl_draw_quad calls flPS2ConvScreenFZ internally, but we
      * already have a converted z from TextureUtil_DrawQuad. Override. */
     cl_render_tasks[cl_render_task_count - 1].z = z;
 }
 
-void SDLGameRendererClassic_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, float u0,
+void SDLGameRendererClassic_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0,
                                                  float v0, float u1, float v1, float z) {
-    if (cl_render_task_count >= RENDER_TASK_MAX || texture == NULL)
+    SDL_Texture* sdl_tex = (SDL_Texture*)texture;
+    if (cl_render_task_count >= RENDER_TASK_MAX || sdl_tex == NULL)
         return;
 
     const float s = (float)g_resolution_scale;
@@ -982,10 +984,11 @@ void SDLGameRendererClassic_DrawOverlaySubSprite(SDL_Texture* texture, float x, 
     verts[2] = (SDL_Vertex) { { sx, sy + sh }, white, { u0, v1 } };
     verts[3] = (SDL_Vertex) { { sx + sw, sy + sh }, white, { u1, v1 } };
 
-    cl_draw_quad(verts, texture, z);
+    cl_draw_quad(verts, sdl_tex, z);
     cl_render_tasks[cl_render_task_count - 1].z = z;
 }
 
-void SDLGameRendererClassic_DrawOverlaySprite(SDL_Texture* texture, float x, float y, float w, float h, float z) {
-    SDLGameRendererClassic_DrawOverlaySpriteEx(texture, x, y, w, h, z, 0, 0);
+void SDLGameRendererClassic_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z) {
+    SDLGameRendererClassic_DrawOverlayQuadEx(texture, x, y, w, h, z, 0, 0);
 }
+

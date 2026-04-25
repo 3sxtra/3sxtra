@@ -771,7 +771,8 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
  * @param w, h           Width and height in CPS3 canvas pixels.
  * @param z              Z-depth from flPS2ConvScreenFZ() or equivalent.
  */
-void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id, float x, float y, float w, float h, float z) {
+void SDLGameRendererGL_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z) {
+    const GLuint gl_texture_id = (GLuint)(uintptr_t)texture;
     const Uint32 white = 0xFFFFFFFF;
     SDL_Vertex sdl_vertices[4];
     const float s = (float)g_resolution_scale;
@@ -806,11 +807,12 @@ void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id, float x, fl
     memcpy(&sdl_vertices[3].color, &white, sizeof(Uint32));
 
     /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
-    push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
+    push_render_task(gl_texture_id, sdl_vertices, z, -1, 0);
 }
 
-void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, float y, float w, float h, float z,
-                                           int flip_x, int flip_y) {
+void SDLGameRendererGL_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                         int flip_y) {
+    const GLuint gl_texture_id = (GLuint)(uintptr_t)texture;
     const Uint32 white = 0xFFFFFFFF;
     SDL_Vertex sdl_vertices[4];
     const float s = (float)g_resolution_scale;
@@ -850,11 +852,12 @@ void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, 
     memcpy(&sdl_vertices[3].color, &white, sizeof(Uint32));
 
     /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
-    push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
+    push_render_task(gl_texture_id, sdl_vertices, z, -1, 0);
 }
 
-void SDLGameRendererGL_DrawOverlaySubSprite(unsigned int gl_texture_id, float x, float y, float w, float h, float u0,
-                                            float v0, float u1, float v1, float z) {
+void SDLGameRendererGL_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,
+                                            float u1, float v1, float z) {
+    const GLuint gl_texture_id = (GLuint)(uintptr_t)texture;
     const Uint32 white = 0xFFFFFFFF;
     SDL_Vertex sdl_vertices[4];
     const float s = (float)g_resolution_scale;
@@ -889,5 +892,6 @@ void SDLGameRendererGL_DrawOverlaySubSprite(unsigned int gl_texture_id, float x,
     memcpy(&sdl_vertices[3].color, &white, sizeof(Uint32));
 
     /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
-    push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
+    push_render_task(gl_texture_id, sdl_vertices, z, -1, 0);
 }
+

@@ -1,105 +1,113 @@
 /**
  * @file sdl_text_renderer.c
- * @brief Text renderer dispatch layer.
+ * @brief Text renderer backend dispatch via vtable.
  *
- * Routes text rendering calls to the active backend (GL, SDL_GPU, or SDL2D)
- * based on the current renderer selection. Also handles PS2 debug text
- * buffer rendering for the DEBUG build.
+ * Each SDLTextRenderer_*() function is now a one-liner that
+ * forwards to g_text_renderer->Xxx().  The if/else chain has been
+ * replaced by three static const vtable instances (GL, GPU, SDL2D).
  */
 #include "port/sdl/renderer/sdl_text_renderer.h"
+#include "port/text_renderer_vtable.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_text_renderer_internal.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "types.h"
 
-void SDLTextRenderer_Init(const char* base_path, const char* font_path) {
+/* ================================================================
+ *  Static const vtable instances — one per backend group
+ * ================================================================ */
+
+static const TextRendererVtable s_vtable_gl = {
+    .Init                = SDLTextRendererGL_Init,
+    .Shutdown            = SDLTextRendererGL_Shutdown,
+    .DrawText            = SDLTextRendererGL_DrawText,
+    .Flush               = SDLTextRendererGL_Flush,
+    .SetYOffset          = SDLTextRendererGL_SetYOffset,
+    .SetBackgroundEnabled = SDLTextRendererGL_SetBackgroundEnabled,
+    .SetBackgroundColor  = SDLTextRendererGL_SetBackgroundColor,
+    .SetBackgroundPadding = SDLTextRendererGL_SetBackgroundPadding,
+    .DrawDebugChars      = SDLTextRendererGL_DrawDebugChars,
+};
+
+static const TextRendererVtable s_vtable_gpu = {
+    .Init                = SDLTextRendererGPU_Init,
+    .Shutdown            = SDLTextRendererGPU_Shutdown,
+    .DrawText            = SDLTextRendererGPU_DrawText,
+    .Flush               = SDLTextRendererGPU_Flush,
+    .SetYOffset          = SDLTextRendererGPU_SetYOffset,
+    .SetBackgroundEnabled = SDLTextRendererGPU_SetBackgroundEnabled,
+    .SetBackgroundColor  = SDLTextRendererGPU_SetBackgroundColor,
+    .SetBackgroundPadding = SDLTextRendererGPU_SetBackgroundPadding,
+    .DrawDebugChars      = NULL,
+};
+
+/* SDL2D and SDL2D Classic share the same text renderer */
+static const TextRendererVtable s_vtable_sdl = {
+    .Init                = SDLTextRendererSDL_Init,
+    .Shutdown            = SDLTextRendererSDL_Shutdown,
+    .DrawText            = SDLTextRendererSDL_DrawText,
+    .Flush               = SDLTextRendererSDL_Flush,
+    .SetYOffset          = SDLTextRendererSDL_SetYOffset,
+    .SetBackgroundEnabled = SDLTextRendererSDL_SetBackgroundEnabled,
+    .SetBackgroundColor  = SDLTextRendererSDL_SetBackgroundColor,
+    .SetBackgroundPadding = SDLTextRendererSDL_SetBackgroundPadding,
+    .DrawDebugChars      = NULL,
+};
+
+/* ================================================================
+ *  Global vtable pointer
+ * ================================================================ */
+
+const TextRendererVtable* g_text_renderer = NULL;
+
+void TextRendererVtable_Init(void) {
     RendererBackend r = SDLApp_GetRenderer();
-    if (r == RENDERER_SDLGPU) {
-        SDLTextRendererGPU_Init(base_path, font_path);
-    } else if (is_sdl2d_backend(r)) {
-        SDLTextRendererSDL_Init(base_path, font_path);
-    } else {
-        SDLTextRendererGL_Init(base_path, font_path);
+    switch (r) {
+    case RENDERER_SDLGPU:        g_text_renderer = &s_vtable_gpu; break;
+    case RENDERER_SDL2D:         /* FALLTHROUGH */
+    case RENDERER_SDL2D_CLASSIC: g_text_renderer = &s_vtable_sdl; break;
+    case RENDERER_OPENGL:        /* FALLTHROUGH */
+    default:                     g_text_renderer = &s_vtable_gl;  break;
     }
 }
 
+/* ================================================================
+ *  Public API — thin one-liner dispatch
+ * ================================================================ */
+
+void SDLTextRenderer_Init(const char* base_path, const char* font_path) {
+    TextRendererVtable_Init();
+    g_text_renderer->Init(base_path, font_path);
+}
+
 void SDLTextRenderer_Shutdown(void) {
-    RendererBackend r = SDLApp_GetRenderer();
-    if (r == RENDERER_SDLGPU) {
-        SDLTextRendererGPU_Shutdown();
-    } else if (is_sdl2d_backend(r)) {
-        SDLTextRendererSDL_Shutdown();
-    } else {
-        SDLTextRendererGL_Shutdown();
-    }
+    g_text_renderer->Shutdown();
 }
 
 void SDLTextRenderer_DrawText(const char* text, float x, float y, float scale, float r, float g, float b,
                               float target_width, float target_height) {
-    RendererBackend rend = SDLApp_GetRenderer();
-    if (rend == RENDERER_SDLGPU) {
-        SDLTextRendererGPU_DrawText(text, x, y, scale, r, g, b, target_width, target_height);
-    } else if (is_sdl2d_backend(rend)) {
-        SDLTextRendererSDL_DrawText(text, x, y, scale, r, g, b, target_width, target_height);
-    } else {
-        SDLTextRendererGL_DrawText(text, x, y, scale, r, g, b, target_width, target_height);
-    }
+    g_text_renderer->DrawText(text, x, y, scale, r, g, b, target_width, target_height);
 }
 
 void SDLTextRenderer_Flush(void) {
-    RendererBackend r = SDLApp_GetRenderer();
-    if (r == RENDERER_SDLGPU) {
-        SDLTextRendererGPU_Flush();
-    } else if (is_sdl2d_backend(r)) {
-        SDLTextRendererSDL_Flush();
-    } else {
-        SDLTextRendererGL_Flush();
-    }
+    g_text_renderer->Flush();
 }
 
 void SDLTextRenderer_SetYOffset(float y_offset) {
-    RendererBackend r = SDLApp_GetRenderer();
-    if (r == RENDERER_SDLGPU) {
-        SDLTextRendererGPU_SetYOffset(y_offset);
-    } else if (is_sdl2d_backend(r)) {
-        SDLTextRendererSDL_SetYOffset(y_offset);
-    } else {
-        SDLTextRendererGL_SetYOffset(y_offset);
-    }
+    g_text_renderer->SetYOffset(y_offset);
 }
 
 void SDLTextRenderer_SetBackgroundEnabled(int enabled) {
-    RendererBackend r = SDLApp_GetRenderer();
-    if (r == RENDERER_SDLGPU) {
-        SDLTextRendererGPU_SetBackgroundEnabled(enabled);
-    } else if (is_sdl2d_backend(r)) {
-        SDLTextRendererSDL_SetBackgroundEnabled(enabled);
-    } else {
-        SDLTextRendererGL_SetBackgroundEnabled(enabled);
-    }
+    g_text_renderer->SetBackgroundEnabled(enabled);
 }
 
 void SDLTextRenderer_SetBackgroundColor(float r, float g, float b, float a) {
-    RendererBackend rend = SDLApp_GetRenderer();
-    if (rend == RENDERER_SDLGPU) {
-        SDLTextRendererGPU_SetBackgroundColor(r, g, b, a);
-    } else if (is_sdl2d_backend(rend)) {
-        SDLTextRendererSDL_SetBackgroundColor(r, g, b, a);
-    } else {
-        SDLTextRendererGL_SetBackgroundColor(r, g, b, a);
-    }
+    g_text_renderer->SetBackgroundColor(r, g, b, a);
 }
 
 void SDLTextRenderer_SetBackgroundPadding(float px) {
-    RendererBackend r = SDLApp_GetRenderer();
-    if (r == RENDERER_SDLGPU) {
-        SDLTextRendererGPU_SetBackgroundPadding(px);
-    } else if (is_sdl2d_backend(r)) {
-        SDLTextRendererSDL_SetBackgroundPadding(px);
-    } else {
-        SDLTextRendererGL_SetBackgroundPadding(px);
-    }
+    g_text_renderer->SetBackgroundPadding(px);
 }
 
 void SDLTextRenderer_DrawDebugBuffer(float target_width, float target_height) {
@@ -114,18 +122,16 @@ void SDLTextRenderer_DrawDebugBuffer(float target_width, float target_height) {
         return;
     }
 
-    RendererBackend r = SDLApp_GetRenderer();
-
-    // ⚡ Pi4: GL backend uses batched draw (2 glDrawArrays calls total).
-    // Other backends still use the per-character approach.
-    if (!is_sdl2d_backend(r) && r != RENDERER_SDLGPU) {
+    /* ⚡ GL backend uses batched draw (2 glDrawArrays calls total).
+     * Other backends still use the per-character approach. */
+    if (g_text_renderer->DrawDebugChars) {
         float scale = target_height / 480.0f;
-        SDLTextRendererGL_DrawDebugChars(buff_ptr, (int)flDebugStrCtr, scale, target_width, target_height);
+        g_text_renderer->DrawDebugChars(buff_ptr, (int)flDebugStrCtr, scale, target_width, target_height);
         flDebugStrCtr = 0;
         return;
     }
 
-    // Fallback for GPU/SDL2D: per-character rendering
+    /* Fallback for GPU/SDL2D: per-character rendering */
     typedef struct {
         u16 x;
         u16 y;

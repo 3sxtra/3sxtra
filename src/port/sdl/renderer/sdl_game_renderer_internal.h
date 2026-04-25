@@ -35,11 +35,11 @@ unsigned int SDLGameRendererGL_GetCachedGLTexture(unsigned int texture_handle, u
 void SDLGameRendererGL_DumpTextures(void);
 void SDLGameRendererGL_DumpPaletteStats(void);
 void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
-void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id, float x, float y, float w, float h, float z);
-void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, float y, float w, float h, float z,
-                                           int flip_x, int flip_y);
-void SDLGameRendererGL_DrawOverlaySubSprite(unsigned int gl_texture_id, float x, float y, float w, float h, float u0,
-                                            float v0, float u1, float v1, float z);
+void SDLGameRendererGL_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z);
+void SDLGameRendererGL_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                         int flip_y);
+void SDLGameRendererGL_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,
+                                            float u1, float v1, float z);
 
 // GPU Backend
 void SDLGameRendererGPU_Init(void);
@@ -67,12 +67,11 @@ void SDLGameRendererGPU_DrawSprite2(const Sprite2* sprite2);
 unsigned int SDLGameRendererGPU_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
 void SDLGameRendererGPU_DumpTextures(void);
 void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
-void SDLGameRendererGPU_DrawOverlaySprite(const uint32_t* pixels, int tex_w, int tex_h, float x, float y, float w,
-                                          float h, float z);
-void SDLGameRendererGPU_DrawOverlaySpriteEx(const uint32_t* pixels, int tex_w, int tex_h, float x, float y, float w,
-                                            float h, float z, int flip_x, int flip_y);
-void SDLGameRendererGPU_DrawOverlaySubSprite(const uint32_t* pixels, int tex_w, int tex_h, float x, float y, float w,
-                                             float h, float u0, float v0, float u1, float v1, float z);
+void SDLGameRendererGPU_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z);
+void SDLGameRendererGPU_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                          int flip_y);
+void SDLGameRendererGPU_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,
+                                             float u1, float v1, float z);
 void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, int tex_h, float x, float y, float w,
                                           float h, float z, int flip_x, int flip_y);
 void SDLGameRendererGPU_QueueDeferredSubBlit(SDL_GPUTexture* texture, int tex_w, int tex_h, float x, float y, float w,
@@ -106,11 +105,11 @@ unsigned int SDLGameRendererSDL_GetCachedGLTexture(unsigned int texture_handle, 
 void SDLGameRendererSDL_DumpTextures(void);
 void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
 SDL_Texture* SDLGameRendererSDL_GetCanvas(void);
-void SDLGameRendererSDL_DrawOverlaySprite(SDL_Texture* texture, float x, float y, float w, float h, float z);
-void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float y, float w, float h, float z,
-                                            int flip_x, int flip_y);
-void SDLGameRendererSDL_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, float u0,
-                                             float v0, float u1, float v1, float z);
+void SDLGameRendererSDL_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z);
+void SDLGameRendererSDL_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                          int flip_y);
+void SDLGameRendererSDL_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,
+                                             float u1, float v1, float z);
 
 // SDL2D Classic Backend (simple reference renderer for benchmarking)
 void SDLGameRendererClassic_Init(void);
@@ -134,10 +133,10 @@ unsigned int SDLGameRendererClassic_GetCachedGLTexture(unsigned int texture_hand
 void SDLGameRendererClassic_DumpTextures(void);
 void SDLGameRendererClassic_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
 SDL_Texture* SDLGameRendererClassic_GetCanvas(void);
-void SDLGameRendererClassic_DrawOverlaySprite(SDL_Texture* texture, float x, float y, float w, float h, float z);
-void SDLGameRendererClassic_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float y, float w, float h, float z,
-                                                int flip_x, int flip_y);
-void SDLGameRendererClassic_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, float u0,
+void SDLGameRendererClassic_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z);
+void SDLGameRendererClassic_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                              int flip_y);
+void SDLGameRendererClassic_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0,
                                                  float v0, float u1, float v1, float z);
 
 #ifdef __cplusplus

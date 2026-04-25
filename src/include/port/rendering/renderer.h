@@ -3,6 +3,7 @@
 
 #include "structs.h"
 #include "types.h"
+#include "rendering/primitives.h"
 
 // Basic types for the renderer
 // RendererVertex is defined in structs.h
@@ -32,18 +33,22 @@ int Renderer_GetCurrentPPGPageIndex(void);
  * Corresponds to legacy ppgWriteQuadWithST_B / njDrawTexture
  */
 void Renderer_DrawTexturedQuadVtx(const RendererVertex* vertices, int count);
+void PortRenderer_DrawTexturedQuad(const Sprite* sprite, unsigned int color);
 
 /**
  * @brief Draws a sprite (2D textured quad).
  * Corresponds to legacy ppgWriteQuadWithST_B2 / njDrawSprite
  */
 void Renderer_DrawSpriteVtx(const RendererVertex* vertices, int count);
+void PortRenderer_DrawSprite(const Sprite* sprite, unsigned int color);
+void PortRenderer_DrawSprite2(const Sprite2* sprite2);
 
 /**
  * @brief Draws a solid colored quad (no texture).
  * Corresponds to legacy SDLGameRenderer_DrawSolidQuad
  */
 void Renderer_DrawSolidQuadVtx(const RendererVertex* vertices, int count);
+void PortRenderer_DrawSolidQuad(const Quad* quad, unsigned int color);
 
 /**
  * @brief Queues a 2D primitive with depth sorting.

@@ -1851,14 +1851,15 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
  * in normal z-sorted rendering.  Uses sentinel task_th = 0xFFFFFFFF to prevent
  * the deferred texture resolution in RenderFrame from overwriting the pointer.
  */
-void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float y, float w, float h, float z,
-                                            int flip_x, int flip_y) {
-    if (render_task_count >= RENDER_TASK_MAX || texture == NULL)
+void SDLGameRendererSDL_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z,
+                                          int flip_x, int flip_y) {
+    SDL_Texture* sdl_tex = (SDL_Texture*)texture;
+    if (render_task_count >= RENDER_TASK_MAX || sdl_tex == NULL)
         return;
 
     const int idx = render_task_count;
 
-    task_texture[idx] = texture;
+    task_texture[idx] = sdl_tex;
     task_th[idx] = 0xFFFFFFFF;
     task_blend[idx] = current_blend_mode; /* sentinel — prevents deferred resolution override */
     task_z[idx] = z;
@@ -1907,7 +1908,7 @@ void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float
 
     /* Software-frame data */
     float tex_w = 1.0f, tex_h = 1.0f;
-    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    SDL_GetTextureSize(sdl_tex, &tex_w, &tex_h);
     task_src_rect[idx] = (SDL_FRect) { 0.0f, 0.0f, tex_w, tex_h };
     task_dst_rect[idx] = (SDL_FRect) { sx, sy, sw, sh };
     task_flip[idx] = (SDL_FlipMode)((flip_x ? SDL_FLIP_HORIZONTAL : 0) | (flip_y ? SDL_FLIP_VERTICAL : 0));
@@ -1916,14 +1917,15 @@ void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float
     render_task_count++;
 }
 
-void SDLGameRendererSDL_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, float u0,
+void SDLGameRendererSDL_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0,
                                              float v0, float u1, float v1, float z) {
-    if (render_task_count >= RENDER_TASK_MAX || texture == NULL)
+    SDL_Texture* sdl_tex = (SDL_Texture*)texture;
+    if (render_task_count >= RENDER_TASK_MAX || sdl_tex == NULL)
         return;
 
     const int idx = render_task_count;
 
-    task_texture[idx] = texture;
+    task_texture[idx] = sdl_tex;
     task_th[idx] = 0xFFFFFFFF;
     task_blend[idx] = current_blend_mode;
     task_z[idx] = z;
@@ -1964,7 +1966,7 @@ void SDLGameRendererSDL_DrawOverlaySubSprite(SDL_Texture* texture, float x, floa
     task_is_rect[idx] = true;
 
     float tex_w = 1.0f, tex_h = 1.0f;
-    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    SDL_GetTextureSize(sdl_tex, &tex_w, &tex_h);
     task_src_rect[idx] = (SDL_FRect) { u0 * tex_w, v0 * tex_h, (u1 - u0) * tex_w, (v1 - v0) * tex_h };
     task_dst_rect[idx] = (SDL_FRect) { sx, sy, sw, sh };
     task_flip[idx] = SDL_FLIP_NONE;
@@ -1973,6 +1975,6 @@ void SDLGameRendererSDL_DrawOverlaySubSprite(SDL_Texture* texture, float x, floa
     render_task_count++;
 }
 
-void SDLGameRendererSDL_DrawOverlaySprite(SDL_Texture* texture, float x, float y, float w, float h, float z) {
-    SDLGameRendererSDL_DrawOverlaySpriteEx(texture, x, y, w, h, z, 0, 0);
+void SDLGameRendererSDL_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z) {
+    SDLGameRendererSDL_DrawOverlayQuadEx(texture, x, y, w, h, z, 0, 0);
 }

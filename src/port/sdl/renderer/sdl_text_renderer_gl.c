@@ -13,13 +13,10 @@
 
 #include "types.h"
 #include <SDL3/SDL.h>
-#ifdef __ANDROID__
 #include "port/sdl/renderer/gl_compat.h"
-#else
-#include "port/sdl/renderer/gl_compat.h"
-#endif
 
 #include "port/imgui_font_8x8.h"
+#include "port/renderer_caps.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/config/paths.h"
 
@@ -49,17 +46,17 @@ void SDLTextRendererGL_Init(const char* base_path, const char* font_path) {
     (void)font_path; // Unused, we use internal 8x8 font
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Initializing OpenGL text renderer...");
 
-#ifdef __ANDROID__
-    s_text_shader = create_shader_program(
-        base_path, Paths_ResolveAsset("shaders/text.vert.es"), Paths_ResolveAsset("shaders/text.frag.es"));
-    s_rect_shader = create_shader_program(
-        base_path, Paths_ResolveAsset("shaders/rect.vert.es"), Paths_ResolveAsset("shaders/rect.frag.es"));
-#else
-    s_text_shader = create_shader_program(
-        base_path, Paths_ResolveAsset("shaders/text.vert"), Paths_ResolveAsset("shaders/text.frag"));
-    s_rect_shader = create_shader_program(
-        base_path, Paths_ResolveAsset("shaders/rect.vert"), Paths_ResolveAsset("shaders/rect.frag"));
-#endif
+    if (g_renderer_caps.is_gles) {
+        s_text_shader = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/text.vert.es"), Paths_ResolveAsset("shaders/text.frag.es"));
+        s_rect_shader = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/rect.vert.es"), Paths_ResolveAsset("shaders/rect.frag.es"));
+    } else {
+        s_text_shader = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/text.vert"), Paths_ResolveAsset("shaders/text.frag"));
+        s_rect_shader = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/rect.vert"), Paths_ResolveAsset("shaders/rect.frag"));
+    }
 
     s_text_loc_projection = glGetUniformLocation(s_text_shader, "projection");
     s_text_loc_textColor = glGetUniformLocation(s_text_shader, "textColor");
