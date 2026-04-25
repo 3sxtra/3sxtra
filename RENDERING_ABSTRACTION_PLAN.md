@@ -483,11 +483,13 @@ Round 3A and 3B are independent of each other and can be done in any order after
 
 | File | Count | Classification |
 |------|-------|---------------|
-| `sdl_texture_util.cpp` | **9** | ⚠️ Runtime dispatch — Load/Free/GetSize/Shutdown |
 | `sdl_game_renderer.c` | 3 | ✅ 1 vtable init + 2 LZ77 standalone |
+| `sdl_texture_util.cpp` | 1 | ✅ vtable init only (was 9 — solved by `TextureUtilVtable`) |
 | `sdl_text_renderer.c` | 1 | ✅ vtable init only |
 | `sdl_app_shader_config.c` | 3 | ✅ shader pipeline config (app layer) |
+| `sdl_bezel.c` | 2 | ⚠️ `SetTextureNearest()` — per-backend texture filtering |
+| `librashader_manager.c` | 1 | ✅ one-time init |
 | `sdl_app_input.c` | 1 | ✅ feature guard |
-| `rmlui_wrapper.cpp` | 2 | ✅ one-time init |
+| `rmlui_wrapper.cpp` | 1 | ✅ one-time init |
 
-**Next candidate**: `sdl_texture_util.cpp` TextureUtil backend vtable (9 calls across 5 functions).
+**Next candidate**: `sdl_bezel.c` — 2 calls in `SetTextureNearest()` for per-backend filtering. Low priority (runs once per bezel load, not per-frame). Could add `SetFilterMode` to `TextureUtilVtable`.

@@ -419,14 +419,8 @@ void SDLGameRendererGPU_Init(void) {
 
 /** @brief Shutdown the SDL_GPU renderer and release all resources. */
 void SDLGameRendererGPU_Shutdown(void) {
-    // ⚡ Opt9: Release any outstanding fences before tearing down resources
-    for (int i = 0; i < GPU_FENCE_RING_SIZE; i++) {
-        if (s_frame_fences[i]) {
-            SDL_WaitForGPUFences(device, true, &s_frame_fences[i], 1);
-            SDL_ReleaseGPUFence(device, s_frame_fences[i]);
-            s_frame_fences[i] = NULL;
-        }
-    }
+    // ⚡ Opt11: No fence ring — just wait for all GPU work to complete before releasing resources.
+    SDL_WaitForGPUIdle(device);
     for (int i = 0; i < 3; i++) {
         if (pipelines[i])
             SDL_ReleaseGPUGraphicsPipeline(device, pipelines[i]);

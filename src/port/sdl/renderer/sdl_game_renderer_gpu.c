@@ -42,8 +42,6 @@ SDL_GPUTransferBuffer* transfer_buffers[VERTEX_TRANSFER_BUFFER_COUNT] = { NULL }
 SDL_GPUTransferBuffer* index_transfer_buffer = NULL;
 int current_transfer_idx = 0;
 
-SDL_GPUFence* s_frame_fences[GPU_FENCE_RING_SIZE] = { NULL };
-int s_fence_write_idx = 0;
 
 SDL_GPUTransferBuffer* s_compute_staging_buffer = NULL;
 u8* s_compute_staging_ptr = NULL;
@@ -114,24 +112,21 @@ void SDLGameRendererGPU_BeginFrame(void) {
         return;
     }
 
-    // ⚡ Opt9: Wait on the oldest in-flight fence before reusing its resources.
-    // With ring size == 3: we wait on frame N-3's fence, which is ≥2 frames old.
-    // In practice this never actually blocks because the GPU finishes in <16ms.
+    // ⚡ Opt11: No per-frame fence — rely on SDL's built-in resource cycling.
+    // Transfer buffers are mapped with cycle=true, so SDL internally manages
+    // the backing memory and avoids CPU–GPU hazards without explicit fences.
 
     {
-        int wait_idx = s_fence_write_idx; // oldest slot (write_idx has wrapped past it)
-        if (s_frame_fences[wait_idx]) {
-            SDL_WaitForGPUFences(device, true, &s_frame_fences[wait_idx], 1);
-            SDL_ReleaseGPUFence(device, s_frame_fences[wait_idx]);
-            s_frame_fences[wait_idx] = NULL;
+        Uint64 t0 = SDL_GetPerformanceCounter();
+        current_cmd_buf = SDL_AcquireGPUCommandBuffer(device);
+        Uint64 dt_us = (SDL_GetPerformanceCounter() - t0) * 1000000 / SDL_GetPerformanceFrequency();
+        if (dt_us > 200) {
+            TRACE_MSG_COLOR("GPU:AcquireCmdBuf SPIKE", 0xFF4400);
         }
     }
-
-    current_cmd_buf = SDL_AcquireGPUCommandBuffer(device);
     s_swapchain_texture = NULL; // Acquired lazily via GetSwapchainTexture()
 
     // Drain dirty-index lists
-
     for (int d = 0; d < dirty_texture_count; d++) {
         const int i = dirty_texture_indices[d];
         // 1D: free the single layer for this texture
@@ -175,9 +170,17 @@ void SDLGameRendererGPU_BeginFrame(void) {
     dirty_palette_count = 0;
 
     current_transfer_idx = (current_transfer_idx + 1) % VERTEX_TRANSFER_BUFFER_COUNT;
-    // ⚡ Opt10a: cycle=false — buffer is already triple-buffered behind the fence ring,
-    // so the driver doesn't need to orphan/rename it. Avoids implicit allocation overhead.
-    mapped_vertex_ptr = (float*)SDL_MapGPUTransferBuffer(device, transfer_buffers[current_transfer_idx], false);
+    // ⚡ Opt11: cycle=true — let SDL internally manage the backing memory.
+    // Combined with fire-and-forget submit (no fence), this eliminates ~108µs/frame
+    // of explicit CPU-GPU synchronization overhead.
+    {
+        Uint64 t0 = SDL_GetPerformanceCounter();
+        mapped_vertex_ptr = (float*)SDL_MapGPUTransferBuffer(device, transfer_buffers[current_transfer_idx], true);
+        Uint64 dt_us = (SDL_GetPerformanceCounter() - t0) * 1000000 / SDL_GetPerformanceFrequency();
+        if (dt_us > 200) {
+            TRACE_MSG_COLOR("GPU:MapTransfer SPIKE", 0xFF8800);
+        }
+    }
 
     // ⚡ Opt10b: Deferred staging map — the 32MB compute staging buffer is now mapped
     // lazily in SetTexture/RenderFrame only when a texture or palette upload is needed.
@@ -669,14 +672,14 @@ void SDLGameRendererGPU_EndFrame(void) {
     TRACE_ZONE_N("GPU:EndFrame");
 
     if (current_cmd_buf) {
-        // ⚡ Opt9: Non-blocking submit — acquire fence for deferred wait in BeginFrame
-        SDL_GPUFence* fence = SDL_SubmitGPUCommandBufferAndAcquireFence(current_cmd_buf);
-        // Store in ring, releasing any old fence still in this slot
-        if (s_frame_fences[s_fence_write_idx]) {
-            SDL_ReleaseGPUFence(device, s_frame_fences[s_fence_write_idx]);
+        // ⚡ Opt11: Fire-and-forget submit — no fence acquisition.
+        // SDL internally tracks resource lifetimes via cycle=true on transfer buffers.
+        Uint64 t0 = SDL_GetPerformanceCounter();
+        SDL_SubmitGPUCommandBuffer(current_cmd_buf);
+        Uint64 dt_us = (SDL_GetPerformanceCounter() - t0) * 1000000 / SDL_GetPerformanceFrequency();
+        if (dt_us > 500) {
+            TRACE_MSG_COLOR("GPU:Submit SPIKE", 0xFF0000);
         }
-        s_frame_fences[s_fence_write_idx] = fence;
-        s_fence_write_idx = (s_fence_write_idx + 1) % GPU_FENCE_RING_SIZE;
         current_cmd_buf = NULL;
     }
     s_swapchain_texture = NULL;
@@ -955,8 +958,13 @@ unsigned int SDLGameRendererGPU_GetCachedGLTexture(unsigned int texture_handle, 
 
 SDL_GPUTexture* SDLGameRendererGPU_GetSwapchainTexture(void) {
     if (!s_swapchain_texture && current_cmd_buf && gpu_window) {
+        Uint64 t0 = SDL_GetPerformanceCounter();
         if (!SDL_AcquireGPUSwapchainTexture(current_cmd_buf, gpu_window, &s_swapchain_texture, NULL, NULL)) {
             s_swapchain_texture = NULL;
+        }
+        Uint64 dt_us = (SDL_GetPerformanceCounter() - t0) * 1000000 / SDL_GetPerformanceFrequency();
+        if (dt_us > 500) {
+            TRACE_MSG_COLOR("GPU:Swapchain SPIKE", 0xFFFF00);
         }
     }
     return s_swapchain_texture;

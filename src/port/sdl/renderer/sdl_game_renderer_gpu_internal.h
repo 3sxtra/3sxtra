@@ -27,7 +27,6 @@ extern "C" {
 /* ─── Constants / Macros ──────────────────────────────────────────────── */
 
 #define VERTEX_TRANSFER_BUFFER_COUNT 4
-#define GPU_FENCE_RING_SIZE VERTEX_TRANSFER_BUFFER_COUNT
 #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024) /* 32 MB — RGBA8 texture uploads */
 #define TEX_ARRAY_SIZE 512
 #define TEX_ARRAY_MAX_LAYERS 256
@@ -91,9 +90,6 @@ extern SDL_GPUTransferBuffer* transfer_buffers[VERTEX_TRANSFER_BUFFER_COUNT];
 extern SDL_GPUTransferBuffer* index_transfer_buffer;
 extern int current_transfer_idx;
 
-/* Fence ring */
-extern SDL_GPUFence* s_frame_fences[GPU_FENCE_RING_SIZE];
-extern int s_fence_write_idx;
 
 /* Compute / texture staging */
 extern SDL_GPUTransferBuffer* s_compute_staging_buffer;
