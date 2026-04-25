@@ -24,7 +24,7 @@ typedef struct GameRendererVtable {
     void (*Shutdown)(void);
     void (*BeginFrame)(void);
     void (*RenderFrame)(void);
-    void (*RenderHDPass)(int vp_x, int vp_y, int vp_w, int vp_h, bool bg_only);
+    void (*ExecutePass)(int pass_index, int vp_x, int vp_y, int vp_w, int vp_h);
     void (*EndFrame)(void);
 
     /* ---- Texture management (7) ---- */

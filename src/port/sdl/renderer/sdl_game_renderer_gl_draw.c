@@ -12,6 +12,7 @@
 #include "port/sdl/renderer/sdl_game_renderer_gl_internal.h"
 #include "port/tracy_gpu.h"
 #include "port/tracy_zones.h"
+#include "port/render_pass.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include <stddef.h>
@@ -340,12 +341,14 @@ void SDLGameRendererGL_RenderFrame(void) {
     TRACE_ZONE_END();
 }
 
-void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
-                                    bool backgrounds_only) {
+void SDLGameRendererGL_ExecutePass(int pass_index, int viewport_x, int viewport_y, int viewport_w, int viewport_h) {
     if (gl_state.render_task_count == 0)
         return;
 
-    TRACE_ZONE_N("RenderHDPass");
+    if (pass_index < 0 || pass_index >= g_render_passes.count || g_render_passes.passes[pass_index].skip_this_frame)
+        return;
+
+    TRACE_ZONE_N("GL:ExecutePass");
 
     const float sw = 384.0f * g_resolution_scale;
     const float sh = 224.0f * g_resolution_scale;
@@ -360,6 +363,8 @@ void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport
     glEnable(GL_BLEND);
 
     GLuint hd_shader;
+
+    bool backgrounds_only = (pass_index == 1);
 
     if (!backgrounds_only) {
         // Bind Native depth map to texture unit 1 to enable fragment exclusion

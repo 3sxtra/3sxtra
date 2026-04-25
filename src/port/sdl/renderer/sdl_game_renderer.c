@@ -14,6 +14,8 @@
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sprite_override.h"
 #include "port/sdl/renderer/gl_compat.h"
+#include "port/render_pass.h"
+#include "port/render_job.h"
 #include <string.h>
 
 /* ================================================================
@@ -21,6 +23,17 @@
  * ================================================================ */
 
 RendererCaps g_renderer_caps;
+RenderPassTable g_render_passes;
+
+void RenderGraph_Compile(void) {
+    for (int i = 0; i < g_render_passes.count; i++) {
+        if (!g_render_passes.passes[i].has_geometry && !g_render_passes.passes[i].force_execute) {
+            g_render_passes.passes[i].skip_this_frame = true;
+        } else {
+            g_render_passes.passes[i].skip_this_frame = false;
+        }
+    }
+}
 
 void RendererCaps_Detect(void) {
     memset(&g_renderer_caps, 0, sizeof(g_renderer_caps));
@@ -101,7 +114,7 @@ static const GameRendererVtable s_vtable_gl = {
     .Shutdown        = SDLGameRendererGL_Shutdown,
     .BeginFrame      = SDLGameRendererGL_BeginFrame,
     .RenderFrame     = SDLGameRendererGL_RenderFrame,
-    .RenderHDPass    = SDLGameRendererGL_RenderHDPass,
+    .ExecutePass     = SDLGameRendererGL_ExecutePass,
     .EndFrame        = SDLGameRendererGL_EndFrame,
     .CreateTexture   = SDLGameRendererGL_CreateTexture,
     .DestroyTexture  = SDLGameRendererGL_DestroyTexture,
@@ -128,7 +141,7 @@ static const GameRendererVtable s_vtable_gpu = {
     .Shutdown        = SDLGameRendererGPU_Shutdown,
     .BeginFrame      = SDLGameRendererGPU_BeginFrame,
     .RenderFrame     = SDLGameRendererGPU_RenderFrame,
-    .RenderHDPass    = SDLGameRendererGPU_RenderHDPass,
+    .ExecutePass     = SDLGameRendererGPU_ExecutePass,
     .EndFrame        = SDLGameRendererGPU_EndFrame,
     .CreateTexture   = SDLGameRendererGPU_CreateTexture,
     .DestroyTexture  = SDLGameRendererGPU_DestroyTexture,
@@ -155,7 +168,7 @@ static const GameRendererVtable s_vtable_sdl = {
     .Shutdown        = SDLGameRendererSDL_Shutdown,
     .BeginFrame      = SDLGameRendererSDL_BeginFrame,
     .RenderFrame     = SDLGameRendererSDL_RenderFrame,
-    .RenderHDPass    = SDLGameRendererSDL_RenderHDPass,
+    .ExecutePass     = SDLGameRendererSDL_ExecutePass,
     .EndFrame        = SDLGameRendererSDL_EndFrame,
     .CreateTexture   = SDLGameRendererSDL_CreateTexture,
     .DestroyTexture  = SDLGameRendererSDL_DestroyTexture,
@@ -177,19 +190,13 @@ static const GameRendererVtable s_vtable_sdl = {
     .DrawOverlaySubQuadEx = SDLGameRendererSDL_DrawOverlaySubQuadEx,
 };
 
-/* Classic has no RenderHDPass — use a no-op stub */
-static void SDLGameRendererClassic_RenderHDPass_Noop(int vp_x, int vp_y,
-                                                      int vp_w, int vp_h,
-                                                      bool bg_only) {
-    (void)vp_x; (void)vp_y; (void)vp_w; (void)vp_h; (void)bg_only;
-}
 
 static const GameRendererVtable s_vtable_classic = {
     .Init            = SDLGameRendererClassic_Init,
     .Shutdown        = SDLGameRendererClassic_Shutdown,
     .BeginFrame      = SDLGameRendererClassic_BeginFrame,
     .RenderFrame     = SDLGameRendererClassic_RenderFrame,
-    .RenderHDPass    = SDLGameRendererClassic_RenderHDPass_Noop,
+    .ExecutePass     = NULL,
     .EndFrame        = SDLGameRendererClassic_EndFrame,
     .CreateTexture   = SDLGameRendererClassic_CreateTexture,
     .DestroyTexture  = SDLGameRendererClassic_DestroyTexture,
@@ -236,10 +243,27 @@ void SDLGameRenderer_Init() {
     GameRendererVtable_Init();
     RendererCaps_Detect();
     TextureUtilVtable_Init();
+    
+    // Initialize RenderGraph passed
+    g_render_passes.count = 3;
+    g_render_passes.passes[0].name = "CPS3 Canvas";
+    g_render_passes.passes[0].force_execute = true;
+    g_render_passes.passes[1].name = "HD Backgrounds";
+    g_render_passes.passes[1].force_execute = false;
+    g_render_passes.passes[2].name = "HD Foregrounds";
+    g_render_passes.passes[2].force_execute = false;
+
     g_game_renderer->Init();
+
+    // Initialize render job queue (Phase 3: threading infrastructure)
+    // GPU backend: 2 workers for concurrent pass recording
+    // GL/SDL2D: 0 workers (synchronous — GL requires context exclusivity)
+    int worker_count = (SDLApp_GetRenderer() == RENDERER_SDLGPU) ? 2 : 0;
+    RenderJobQueue_Init(worker_count);
 }
 
 void SDLGameRenderer_Shutdown() {
+    RenderJobQueue_Shutdown();
     SpriteOverride_Shutdown();
     g_game_renderer->Shutdown();
 }
@@ -249,12 +273,22 @@ void SDLGameRenderer_BeginFrame() {
 }
 
 void SDLGameRenderer_RenderFrame() {
+    /* GPU backend populates has_geometry per-pass internally before calling
+     * RenderGraph_Compile(). For GL/SDL2D/Classic, conservatively mark all
+     * passes as having geometry — their own early-returns handle culling. */
+    if (SDLApp_GetRenderer() != RENDERER_SDLGPU) {
+        for (int i = 0; i < g_render_passes.count; i++) {
+            g_render_passes.passes[i].has_geometry = true;
+        }
+        RenderGraph_Compile();
+    }
     g_game_renderer->RenderFrame();
 }
 
-void SDLGameRenderer_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
-                                  bool backgrounds_only) {
-    g_game_renderer->RenderHDPass(viewport_x, viewport_y, viewport_w, viewport_h, backgrounds_only);
+void SDLGameRenderer_ExecutePass(int pass_index, int viewport_x, int viewport_y, int viewport_w, int viewport_h) {
+    if (g_game_renderer->ExecutePass) {
+        g_game_renderer->ExecutePass(pass_index, viewport_x, viewport_y, viewport_w, viewport_h);
+    }
 }
 
 void SDLGameRenderer_EndFrame() {

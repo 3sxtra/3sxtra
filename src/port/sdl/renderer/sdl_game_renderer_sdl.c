@@ -15,6 +15,7 @@
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_game_renderer_sdl_sw.h"
 #include "port/tracy_zones.h"
+#include "port/render_pass.h"
 #include "port/mods/modded_stage.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
@@ -1071,60 +1072,65 @@ void SDLGameRendererSDL_RenderFrame(void) {
     TRACE_ZONE_END();
 }
 
-void SDLGameRendererSDL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
-                                     bool backgrounds_only) {
+void SDLGameRendererSDL_ExecutePass(int pass_index, int viewport_x, int viewport_y, int viewport_w, int viewport_h) {
     if (render_task_count == 0)
         return;
-    TRACE_ZONE_N("SDL2D:RenderHDPass");
+
+    int pass_idx = pass_index;
+    if (pass_idx < 0 || pass_idx >= g_render_passes.count || g_render_passes.passes[pass_idx].skip_this_frame)
+        return;
+
+    TRACE_ZONE_N("SDL2D:ExecutePass");
+    bool backgrounds_only = (pass_idx == 1);
 
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
     float scale_x = (float)viewport_w / (384.0f * g_resolution_scale);
     float scale_y = (float)viewport_h / (224.0f * g_resolution_scale);
     SDL_SetRenderScale(renderer, scale_x, scale_y);
 
-    for (int i = 0; i < render_task_count; i++) {
-        const int idx = render_task_order[i];
-        if (task_th[idx] != 0xFFFFFFFF)
-            continue;
+        for (int i = 0; i < render_task_count; i++) {
+            const int idx = render_task_order[i];
+            if (task_th[idx] != 0xFFFFFFFF)
+                continue;
 
-        if (backgrounds_only && task_z[idx] >= 0.1f)
-            continue;
-        if (!backgrounds_only && task_z[idx] < 0.1f)
-            continue;
+            if (backgrounds_only && task_z[idx] >= 0.1f)
+                continue;
+            if (!backgrounds_only && task_z[idx] < 0.1f)
+                continue;
 
-        SDL_Texture* draw_texture = task_texture[idx];
-        if (!draw_texture)
-            continue;
+            SDL_Texture* draw_texture = task_texture[idx];
+            if (!draw_texture)
+                continue;
 
-        SDL_BlendMode sdl_blend;
-        if (task_blend[idx] == RENDERER_BLEND_ADD)
-            sdl_blend = SDL_BLENDMODE_ADD;
-        else if (task_blend[idx] == RENDERER_BLEND_MULTIPLY)
-            sdl_blend = SDL_BLENDMODE_MUL;
-        else
-            sdl_blend = SDL_BLENDMODE_BLEND;
+            SDL_BlendMode sdl_blend;
+            if (task_blend[idx] == RENDERER_BLEND_ADD)
+                sdl_blend = SDL_BLENDMODE_ADD;
+            else if (task_blend[idx] == RENDERER_BLEND_MULTIPLY)
+                sdl_blend = SDL_BLENDMODE_MUL;
+            else
+                sdl_blend = SDL_BLENDMODE_BLEND;
 
-        SDL_SetTextureBlendMode(draw_texture, sdl_blend);
+            SDL_SetTextureBlendMode(draw_texture, sdl_blend);
 
-        if (task_is_rect[idx]) {
-            SDL_SetTextureColorModFloat(
-                draw_texture, task_verts[idx][0].color.r, task_verts[idx][0].color.g, task_verts[idx][0].color.b);
-            SDL_SetTextureAlphaModFloat(draw_texture, task_verts[idx][0].color.a);
+            if (task_is_rect[idx]) {
+                SDL_SetTextureColorModFloat(
+                    draw_texture, task_verts[idx][0].color.r, task_verts[idx][0].color.g, task_verts[idx][0].color.b);
+                SDL_SetTextureAlphaModFloat(draw_texture, task_verts[idx][0].color.a);
 
-            if (task_flip[idx] != SDL_FLIP_NONE) {
-                SDL_RenderTextureRotated(
-                    renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx], 0.0, NULL, task_flip[idx]);
+                if (task_flip[idx] != SDL_FLIP_NONE) {
+                    SDL_RenderTextureRotated(
+                        renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx], 0.0, NULL, task_flip[idx]);
+                } else {
+                    SDL_RenderTexture(renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx]);
+                }
+
+                SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
+                SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
             } else {
-                SDL_RenderTexture(renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx]);
+                int indices[6] = { 0, 1, 2, 1, 3, 2 };
+                SDL_RenderGeometry(renderer, draw_texture, task_verts[idx], 4, indices, 6);
             }
-
-            SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
-            SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
-        } else {
-            int indices[6] = { 0, 1, 2, 1, 3, 2 };
-            SDL_RenderGeometry(renderer, draw_texture, task_verts[idx], 4, indices, 6);
         }
-    }
 
     SDL_SetRenderScale(renderer, 1.0f, 1.0f);
     TRACE_ZONE_END();

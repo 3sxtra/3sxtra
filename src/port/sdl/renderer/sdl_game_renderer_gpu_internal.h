@@ -56,7 +56,8 @@ typedef struct {
 /** @brief Z-depth key for stable quad sorting. */
 typedef struct {
     float z;
-    int original_index; /* quad index in submission order */
+    int original_index; /* quad index in per-pass submission order */
+    int global_quad_index; /* global vertex array index (vertex_count / 4) */
     RendererBlendMode blend_mode;
 } QuadSortKey;
 
@@ -68,6 +69,36 @@ typedef struct GPUVertex {
     float layer;
     float paletteIdx; /* palette row in atlas, or -1.0 for direct RGBA */
 } GPUVertex;
+
+/**
+ * @brief Per-pass recording state for FrameGraph Phase 3 data isolation.
+ *
+ * Encapsulates all mutable state that a render pass touches during the
+ * geometry recording phase (DrawSprite, DrawQuad, SetTexture, SetBlend).
+ * Once isolated, each pass can be recorded on a separate thread (Phase 4).
+ */
+typedef struct PassRecordingState {
+    /* Geometry tracking */
+    unsigned int quad_count;            /* quads submitted to this pass */
+
+    /* Sort keys — per-pass arrays (owned, not aliased) */
+    QuadSortKey  sort_keys[MAX_QUADS];
+    SDL_GPUTexture* overlay_tex[MAX_QUADS]; /* per-quad overlay texture */
+
+    /* Render state snapshot at recording time */
+    RendererBlendMode blend_mode;
+
+    /* Texture binding cache (current active texture for this pass) */
+    int    tex_layer;
+    float  tex_uv_sx;
+    float  tex_uv_sy;
+    float  tex_palette_idx;
+    unsigned int last_set_texture_handle;
+
+    /* Z-ordering diagnostics */
+    int   sort_inversions;
+    float last_submitted_z;
+} PassRecordingState;
 
 /* ─── Shared Global Variables (defined in sdl_game_renderer_gpu.c) ──── */
 
@@ -150,10 +181,8 @@ extern int s_tex_upload_count;
 extern PaletteUploadJob s_pal_upload_jobs[MAX_COMPUTE_JOBS];
 extern int s_pal_upload_count;
 
-/* Z-depth sorting */
-extern QuadSortKey quad_sort_keys[MAX_QUADS];
-extern unsigned int quad_count;
-extern QuadSortKey quad_sort_temp[MAX_QUADS];
+/* Per-pass recording state (Phase 3 data isolation) */
+extern PassRecordingState pass_state[8];
 
 /* ─── Inline Helpers ──────────────────────────────────────────────────── */
 

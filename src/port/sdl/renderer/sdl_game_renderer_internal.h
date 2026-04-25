@@ -16,8 +16,7 @@ void SDLGameRendererGL_Init(void);
 void SDLGameRendererGL_Shutdown(void);
 void SDLGameRendererGL_BeginFrame(void);
 void SDLGameRendererGL_RenderFrame(void);
-void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
-                                    bool backgrounds_only);
+void SDLGameRendererGL_ExecutePass(int pass_index, int viewport_x, int viewport_y, int viewport_w, int viewport_h);
 void SDLGameRendererGL_EndFrame(void);
 void SDLGameRendererGL_CreateTexture(unsigned int th);
 void SDLGameRendererGL_DestroyTexture(unsigned int texture_handle);
@@ -46,8 +45,7 @@ void SDLGameRendererGPU_Init(void);
 void SDLGameRendererGPU_Shutdown(void);
 void SDLGameRendererGPU_BeginFrame(void);
 void SDLGameRendererGPU_RenderFrame(void);
-void SDLGameRendererGPU_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
-                                     bool backgrounds_only);
+void SDLGameRendererGPU_ExecutePass(int pass_index, int viewport_x, int viewport_y, int viewport_w, int viewport_h);
 void SDLGameRendererGPU_EndFrame(void);
 SDL_GPUCommandBuffer* SDLGameRendererGPU_GetCommandBuffer(void);
 SDL_GPUTexture* SDLGameRendererGPU_GetSwapchainTexture(void);
@@ -86,8 +84,7 @@ void SDLGameRendererSDL_Init(void);
 void SDLGameRendererSDL_Shutdown(void);
 void SDLGameRendererSDL_BeginFrame(void);
 void SDLGameRendererSDL_RenderFrame(void);
-void SDLGameRendererSDL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
-                                     bool backgrounds_only);
+void SDLGameRendererSDL_ExecutePass(int pass_index, int viewport_x, int viewport_y, int viewport_w, int viewport_h);
 void SDLGameRendererSDL_EndFrame(void);
 void SDLGameRendererSDL_CreateTexture(unsigned int th);
 void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle);

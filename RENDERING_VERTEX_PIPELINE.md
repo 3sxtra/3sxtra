@@ -145,7 +145,23 @@ typedef struct GPUVertex {
 
 **Why interleaved?** The GPU backend uses SDL_GPU which prefers a single vertex buffer with a declared vertex layout. All per-vertex data is packed together. The shader reads palette and layer inline.
 
-**Batching**: Up to `MAX_VERTICES` (65536) vertices = 16384 quads. Z-sorting uses separate `QuadSortKey` array.
+**Batching**: Up to `MAX_VERTICES` (65536) vertices = 16384 quads. Z-sorting uses separate `QuadSortKey` array per pass.
+
+**Per-Pass Queue Buckets (FrameGraph Phase 1):** Quads are routed into 3 pass buckets:
+- Pass 0: CPS3 Canvas (game sprites)
+- Pass 1: HD Backgrounds (overlays with z ≥ 0.1)
+- Pass 2: HD Foregrounds (overlays with z < 0.1)
+
+Each pass has its own `pass_sort_keys[p][MAX_QUADS]` and `pass_quad_count[p]` arrays. The `QuadSortKey` struct contains:
+```c
+typedef struct {
+    float z;                // Z-depth for sorting
+    int original_index;     // quad index in per-pass submission order
+    int global_quad_index;  // global vertex array index (vertex_count / 4)
+    RendererBlendMode blend_mode;
+} QuadSortKey;
+```
+`global_quad_index` maps each per-pass sort key back to the unified vertex buffer.
 
 ### SDL2D: SDL_Vertex (Per-Quad Draw)
 
@@ -229,8 +245,8 @@ For each `DrawSprite(sprite, color)`:
    - Position, color, texcoords packed inline
    - `layer` = texture array layer
    - `paletteIdx` = palette atlas row
-2. Create `QuadSortKey` for Z-sorting
-3. At frame end: sort keys, reorder vertices, upload, `SDL_DrawGPUIndexedPrimitives()`
+2. Create `QuadSortKey` for Z-sorting (routed to pass bucket 0 for canvas sprites)
+3. At frame end: sort keys per pass, build index buffer using `global_quad_index`, upload, `SDL_DrawGPUIndexedPrimitives()`
 
 ### SDL2D Backend
 

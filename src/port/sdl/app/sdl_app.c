@@ -1125,7 +1125,7 @@ void SDLApp_EndFrame() {
             // RenderFrame uploads all vertex/index data to the GPU. Any quads pushed after
             // that upload will have no vertex data on the GPU. By queuing here, the canvas
             // quad is included in the sort + upload, and RenderFrame skips it (overlay!=NULL).
-            // RenderHDPass(false) will then draw it to the swapchain in the foreground pass.
+            // ExecutePass(2) will then draw it to the swapchain in the foreground pass.
             if (g_renderer_backend == RENDERER_SDLGPU) {
                 extern void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture * texture,
                                                                  int tex_w,
@@ -1204,9 +1204,9 @@ void SDLApp_EndFrame() {
         last_had_letterbox_bars =
             (dst_rect.x > 0.5f || dst_rect.y > 0.5f || dst_rect.w < (win_w - 0.5f) || dst_rect.h < (win_h - 0.5f));
 
-        // ⚡ Bolt: Execute Deferred HD Background Pass (Draw behind canvas)
+        // ⚡ Bolt: Execute Deferred HD Passes
         if (g_renderer_backend == RENDERER_SDL2D) {
-            SDLGameRenderer_RenderHDPass(dst_rect.x, dst_rect.y, (int)dst_rect.w, (int)dst_rect.h, true);
+            SDLGameRenderer_ExecutePass(1, dst_rect.x, dst_rect.y, (int)dst_rect.w, (int)dst_rect.h);
         }
 
         // Blit game canvas to window with letterboxing
@@ -1216,7 +1216,7 @@ void SDLApp_EndFrame() {
 
         // ⚡ Bolt: Execute Deferred HD Foreground Sprite Pass (Draw over canvas)
         if (g_renderer_backend == RENDERER_SDL2D) {
-            SDLGameRenderer_RenderHDPass(dst_rect.x, dst_rect.y, (int)dst_rect.w, (int)dst_rect.h, false);
+            SDLGameRenderer_ExecutePass(2, dst_rect.x, dst_rect.y, (int)dst_rect.w, (int)dst_rect.h);
         }
 
         // Bezel rendering (SDL2D)
@@ -1319,11 +1319,9 @@ void SDLApp_EndFrame() {
 
                 // Canvas quad was already queued before RenderFrame (z=0.5, foreground pass).
                 // Stage backgrounds were pushed by ModdedStage_Render (z≈0.05, background pass).
-                // Pass 1: HD Background layers (z < 0.1)
-                SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
-
-                // Pass 2: Canvas + foreground overlays (z >= 0.1)
-                SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, false);
+                // Execute passes (Pass 1 and Pass 2)
+                SDLGameRenderer_ExecutePass(1, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
+                SDLGameRenderer_ExecutePass(2, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
             } else if (SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager() && !skip_librashader) {
                 int vp_w = (int)viewport.w;
                 int vp_h = (int)viewport.h;
@@ -1476,8 +1474,8 @@ void SDLApp_EndFrame() {
                     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                     glClear(GL_COLOR_BUFFER_BIT);
 
-                    SDLGameRenderer_RenderHDPass(
-                        (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
+                    SDLGameRenderer_ExecutePass(
+                        1, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
                 } else {
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
@@ -1542,7 +1540,7 @@ void SDLApp_EndFrame() {
                 glClear(GL_COLOR_BUFFER_BIT);
 
                 // 2. Render HD Background Pipeline
-                SDLGameRenderer_RenderHDPass(0, 0, comp_w, comp_h, true);
+                SDLGameRenderer_ExecutePass(1, 0, 0, comp_w, comp_h);
 
                 // 3. Render Game Sprites (cps3_canvas_texture) on top
                 // Use Passthru shader to blit transparency
@@ -1600,7 +1598,7 @@ void SDLApp_EndFrame() {
             // behind all game sprites.
             bool modded_active = ModdedStage_IsActiveForCurrentStage();
             if (modded_active) {
-                SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
+                SDLGameRenderer_ExecutePass(1, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
             }
 
             GLuint current_shader = passthru_shader_program;
@@ -1657,7 +1655,7 @@ void SDLApp_EndFrame() {
 
             // ⚡ Bolt: Execute Deferred HD Foreground Sprite Pass
             // Rendered directly to the screen viewport ON TOP of the upscaled native canvas.
-            SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, false);
+            SDLGameRenderer_ExecutePass(2, (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);
         }
         TRACE_SUB_END();
 

@@ -25,8 +25,7 @@ void SDLGameRenderer_Init();
 void SDLGameRenderer_Shutdown();
 void SDLGameRenderer_BeginFrame();
 void SDLGameRenderer_RenderFrame();
-void SDLGameRenderer_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
-                                  bool backgrounds_only);
+void SDLGameRenderer_ExecutePass(int pass_index, int viewport_x, int viewport_y, int viewport_w, int viewport_h);
 void SDLGameRenderer_EndFrame();
 
 void SDLGameRenderer_CreateTexture(unsigned int th);
