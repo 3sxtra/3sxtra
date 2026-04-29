@@ -1,0 +1,53 @@
+# Omni-FX-SABR Hybrid Prototype - Default CPS-3 Profile
+#
+# Core design: Respect CPS-3's richer shading and blended edges while protecting
+# HUD geometry. Fits the platform's 384x224 base output.
+#
+# Profile: Default CPS-3
+# Keeps SABR at medium strength for most 3rd Strike/JoJo use.
+
+shaders = 4
+
+# Pass 0: OmniMask
+# Classify pixels into UI, thin-line detail, diagonal contour, and interior gradient zones.
+shader0 = ../custom/omni-fx-sabr/shaders/omni-mask.slang
+alias0 = OmniMask
+filter_linear0 = false
+
+# Pass 1: ScaleFXGuard
+# Detect 1-pixel-ish lines and fragile sprite details (ropes, fingers, eyes).
+shader1 = ../custom/omni-fx-sabr/shaders/scalefx-guard.slang
+alias1 = ScaleFXGuard
+filter_linear1 = false
+
+# Pass 2: SABRContour
+# Apply contour smoothing only to approved outer curves and diagonals.
+shader2 = ../custom/omni-fx-sabr/shaders/sabr-contour.slang
+alias2 = SABRContour
+filter_linear2 = false
+scale_type2 = viewport
+
+# Pass 3: FinalComposite
+# Merge protected UI, guarded topology, and softened contours.
+shader3 = ../custom/omni-fx-sabr/shaders/final-composite.slang
+alias3 = FinalComposite
+filter_linear3 = false
+scale_type3 = viewport
+
+parameters = "RIGIDUI_THRESH;RIGIDUI_CORNER;RIGIDUI_EXCLUDE;OMNI_EDGE_SENS;OMNI_GRAD_PRES;OMNI_UI_WEIGHT;GUARD_THINLINE;GUARD_JUNCTION;GUARD_RADIUS;SABR_STRENGTH;SABR_DIAG_BIAS;SABR_INT_SMOOTH;FINAL_UI_PRIORITY;FINAL_GRAD_CLAMP"
+
+# --- Recommended Parameters (Default CPS-3) ---
+RIGIDUI_THRESH = 0.78
+RIGIDUI_CORNER = 0.85
+RIGIDUI_EXCLUDE = 1.0
+OMNI_EDGE_SENS = 0.62
+OMNI_GRAD_PRES = 0.72
+OMNI_UI_WEIGHT = 1.0
+GUARD_THINLINE = 0.82
+GUARD_JUNCTION = 0.76
+GUARD_RADIUS = 1.0
+SABR_STRENGTH = 1.0
+SABR_DIAG_BIAS = 0.58
+SABR_INT_SMOOTH = 0.18
+FINAL_UI_PRIORITY = 1.0
+FINAL_GRAD_CLAMP = 0.70

@@ -600,6 +600,8 @@ int SDLApp_Init() {
         scale_mode = config_string_to_scale_mode(cfg_scale);
     }
 
+    scale_stretch_enabled = Config_GetBool(CFG_KEY_SCALE_STRETCH);
+
     if (!g_cli_renderer_set) {
         const char* cfg_renderer = Config_GetString(CFG_KEY_RENDERER);
 #ifdef __ANDROID__
