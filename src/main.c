@@ -473,10 +473,7 @@ static void game_step_0() {
     if (current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) {
         njUserMain();
 
-        seqsBeforeProcess();
-
         Renderer_Flush2DPrimitives();
-        seqsAfterProcess();
     }
 
     disp_effect_work();

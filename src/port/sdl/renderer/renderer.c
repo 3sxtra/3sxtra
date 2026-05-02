@@ -12,6 +12,7 @@
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
+#include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "structs.h"
 #include <stddef.h>
 #include <string.h>
@@ -297,7 +298,9 @@ void Renderer_Flush2DPrimitives(void) {
             break;
 
         case 1:
+            seqsBeforeProcess();
             shadow_drawing(s_Render2DQueue.prim[i].attr.work, (s16)s_Render2DQueue.prim[i].v[0].y);
+            seqsAfterProcess();
             break;
         }
     }

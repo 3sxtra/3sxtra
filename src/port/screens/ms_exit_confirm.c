@@ -229,11 +229,13 @@ static void exit_confirm_tick(struct _TASK* task_ptr) {
     case EC_PHASE_EXIT_SOUND:
         Exit_sound_system();
         s_phase = EC_PHASE_EXIT_APP;
+        FadeOut(1, 0xFF, 8);
         break;
 
     /* ── EXIT_APP: terminate application ── */
     case EC_PHASE_EXIT_APP:
         SDLApp_Exit();
+        FadeOut(1, 0xFF, 8);
         break;
 
     default:

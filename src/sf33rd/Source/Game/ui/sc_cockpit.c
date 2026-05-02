@@ -246,7 +246,7 @@ void stun_base_put(u8 Pl_Num, s16 len) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[TopHUDFacePriority], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[TopHUDFacePriority + 1], (uintptr_t)col.color, 0);
 }
 
 /* ── Stun marks & MAX indicator ────────────────────────────────── */

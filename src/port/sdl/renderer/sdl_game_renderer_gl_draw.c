@@ -237,7 +237,7 @@ void SDLGameRendererGL_RenderFrame(void) {
 
     // ⚡ Bolt: Enable depth testing for HD composition pass occlusion
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_ALWAYS); // Painter's algorithm guarantees last-drawn is front-most
+    glDepthFunc(GL_LEQUAL); // Painter's algorithm guarantees last-drawn is front-most
 
     RendererBlendMode current_applied_blend_mode = -1;
 

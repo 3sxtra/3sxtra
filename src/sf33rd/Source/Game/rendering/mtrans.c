@@ -2102,9 +2102,6 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
     s32 u;
     s32 v;
 
-    const f32 dx = 0;
-    const f32 dy = 0;
-
     chip = &seqs_w.chip[seqs_w.sprTotal];
 
     // ⚡ Opt5: SIMD affine transform — process both points in parallel.
@@ -2160,20 +2157,27 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
     njTranslateZ(1.0f / 65536.0f);
     s_mtx_tz += s_mtx_z_step;
 
+    const f32 screen_w = fabsf(chip->v[1].x - chip->v[0].x);
+    const f32 screen_h = fabsf(chip->v[0].y - chip->v[1].y);
+    const bool scaled = fabsf(screen_w - (f32)w) > 0.001f || fabsf(screen_h - (f32)h) > 0.001f;
+
+    const f32 uv_dx = scaled ? 0.5f : 0.0f;
+    const f32 uv_dy = scaled ? 0.5f : 0.0f;
+
     if (attr & 0x8000) {
-        chip->t[1].s = (u - dx) / 256.0f;
-        chip->t[0].s = (u + w - dx) / 256.0f;
+        chip->t[1].s = (u + uv_dx) / 256.0f;
+        chip->t[0].s = (u + w - uv_dx) / 256.0f;
     } else {
-        chip->t[0].s = (u + dx) / 256.0f;
-        chip->t[1].s = (u + w + dx) / 256.0f;
+        chip->t[0].s = (u + uv_dx) / 256.0f;
+        chip->t[1].s = (u + w - uv_dx) / 256.0f;
     }
 
     if (attr & 0x4000) {
-        chip->t[1].t = (v - dy) / 256.0f;
-        chip->t[0].t = (v + h - dy) / 256.0f;
+        chip->t[1].t = (v + uv_dy) / 256.0f;
+        chip->t[0].t = (v + h - uv_dy) / 256.0f;
     } else {
-        chip->t[0].t = (v + dy) / 256.0f;
-        chip->t[1].t = (v + h + dy) / 256.0f;
+        chip->t[0].t = (v + uv_dy) / 256.0f;
+        chip->t[1].t = (v + h - uv_dy) / 256.0f;
     }
 
     chip->tex_code |= ppgGetUsingPaletteHandle(NULL, attr & 0x1FF) << 16;

@@ -555,9 +555,7 @@ static void step_game(bool render) {
     No_Trans = !render;
 
     njUserMain();
-    seqsBeforeProcess();
     Renderer_Flush2DPrimitives();
-    seqsAfterProcess();
 }
 
 /**
