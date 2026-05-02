@@ -335,7 +335,6 @@ static std::string get_device_icon_path(const std::string& device_type) {
 // Default CPS3 arcade-style mappings using only digital buttons.
 // Avoids analog triggers (R2/L2) which fail on some Android gamepads
 // that don't report trigger axis events to SDL.
-#ifdef __ANDROID__
 static const struct {
     const char* action;
     InputID input_id;
@@ -353,55 +352,61 @@ static const struct {
     { "Start",         INPUT_ID_START },
     { "Select",        INPUT_ID_BACK },
 };
-#endif // __ANDROID__
 
-// On Android, automatically assign the first available gamepad to P1
+// Automatically assign available gamepads to P1 and P2
 // with sane default mappings when no controller setup has been done.
 // This avoids the legacy PS2 pipeline which has trigger compatibility issues.
 static void try_auto_assign_defaults() {
-#ifdef __ANDROID__
-    // Only auto-assign if P1 has no device
-    if (p1Device) {
+    if (p1Device && p2Device) {
         return;
     }
 
-    // Check for available non-keyboard gamepads
     refresh_devices();
     if (availableDevices.empty()) {
         return;
     }
 
-    // Find first non-keyboard device
-    int device_index = -1;
-    for (const auto& dev : availableDevices) {
-        if (!SDLPad_IsKeyboard(dev.id)) {
-            device_index = dev.id;
-            break;
+    bool mapped_anything = false;
+
+    // Try to auto-assign P1
+    if (!p1Device) {
+        for (auto it = availableDevices.begin(); it != availableDevices.end(); ++it) {
+            if (!SDLPad_IsKeyboard(it->id)) {
+                p1Device = std::make_unique<Device>(*it);
+                p1MappingState = MappingState::Idle;
+                player_mappings[1].clear();
+                for (const auto& def : default_gamepad_mappings) {
+                    player_mappings[1].push_back({ def.action, def.input_id });
+                }
+                SDL_Log("Auto-assigned gamepad '%s' to P1 with default mappings", p1Device->name.c_str());
+                availableDevices.erase(it);
+                mapped_anything = true;
+                break;
+            }
         }
     }
-    if (device_index < 0) {
-        return;
-    }
 
-    // Claim the device for P1
-    for (auto it = availableDevices.begin(); it != availableDevices.end(); ++it) {
-        if (it->id == device_index) {
-            p1Device = std::make_unique<Device>(*it);
-            p1MappingState = MappingState::Idle;
-            availableDevices.erase(it);
-            break;
+    // Try to auto-assign P2
+    if (!p2Device) {
+        for (auto it = availableDevices.begin(); it != availableDevices.end(); ++it) {
+            if (!SDLPad_IsKeyboard(it->id)) {
+                p2Device = std::make_unique<Device>(*it);
+                p2MappingState = MappingState::Idle;
+                player_mappings[2].clear();
+                for (const auto& def : default_gamepad_mappings) {
+                    player_mappings[2].push_back({ def.action, def.input_id });
+                }
+                SDL_Log("Auto-assigned gamepad '%s' to P2 with default mappings", p2Device->name.c_str());
+                availableDevices.erase(it);
+                mapped_anything = true;
+                break;
+            }
         }
     }
 
-    // Create default mappings
-    player_mappings[1].clear();
-    for (const auto& def : default_gamepad_mappings) {
-        player_mappings[1].push_back({ def.action, def.input_id });
+    if (mapped_anything) {
+        save_mappings();
     }
-
-    save_mappings();
-    SDL_Log("Auto-assigned gamepad '%s' to P1 with default mappings", p1Device->name.c_str());
-#endif
 }
 
 extern "C" void control_mapping_init() {
