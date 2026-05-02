@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effd0.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -23,7 +24,7 @@ const s32 effd0_data_tbl[9][4] = { { 0x4000, -0x800, -0x6000, -0x400 }, { -0x400
 const s16 effd0_conter[9] = { 32, 40, 30, 48, 64, 16, 32, 36, 72 };
 
 void effect_D0_move(WORK_Other* ewk) {
-    if (Exec_Wipe) {
+    if (g_state.Exec_Wipe) {
         ewk->wu.no_death_attack = 1;
     }
 
@@ -36,7 +37,7 @@ void effect_D0_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.no_death_attack && !Exec_Wipe) {
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 99;
             break;
         }
@@ -60,7 +61,7 @@ void effect_D0_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (ewk->wu.no_death_attack && !Exec_Wipe) {
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 99;
             break;
         }
@@ -84,7 +85,7 @@ void effect_D0_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (ewk->wu.no_death_attack && !Exec_Wipe) {
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 99;
             break;
         }
@@ -99,7 +100,7 @@ void effect_D0_move(WORK_Other* ewk) {
         break;
 
     case 4:
-        if (ewk->wu.no_death_attack && !Exec_Wipe) {
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 99;
             break;
         }

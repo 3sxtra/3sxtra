@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_continue.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 

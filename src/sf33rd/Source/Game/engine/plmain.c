@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plmain.h"
+#include "game_state.h"
 #include "common.h"
 #include "constants.h"
 #include "sf33rd/Source/Game/animation/appear.h"
@@ -59,8 +60,8 @@ void Player_move(PLW* wk, u16 lv_data) {
     }
 #else
     if (g_lua_dummy_active && wk->wu.id == g_lua_dummy_player_id) {
-        // Lua dummy: use Lever_Buff written by joypad.set() in emu.registerbefore()
-        wk->cp->sw_lvbt = processed_lvbt(Lever_Buff[wk->wu.id]);
+        // Lua dummy: use g_state.Lever_Buff written by joypad.set() in emu.registerbefore()
+        wk->cp->sw_lvbt = processed_lvbt(g_state.Lever_Buff[wk->wu.id]);
     } else if (wk->wu.pl_operator) {
         wk->cp->sw_lvbt = lv_data;
     } else {
@@ -205,7 +206,7 @@ static void player_mv_0000(PLW* wk) {
         break;
 
     case DIP2_SA_GAUGE_ROUND_RESET_DISABLED:
-        if (Round_num != 0) {
+        if (g_state.Round_num != 0) {
             break;
         }
 
@@ -223,18 +224,18 @@ static void player_mv_0000(PLW* wk) {
 
 /** @brief Player move phase 1 — appearance / entrance animation. */
 static void player_mv_1000(PLW* wk) {
-    switch (appear_type) {
+    switch (g_state.appear_type) {
     case APPEAR_TYPE_NON_ANIMATED:
         plmv_1010(wk);
 
-        if (Combo_Demo_Flag == 0) {
+        if (g_state.Combo_Demo_Flag == 0) {
             plmv_1020(wk, 88);
         } else {
             set_super_arts_status(wk->wu.id);
             demo_set_sa_full(wk->sa);
         }
 
-        Appear_end++;
+        g_state.Appear_end++;
         break;
 
     case APPEAR_TYPE_VICTORY:
@@ -249,7 +250,7 @@ static void player_mv_1000(PLW* wk) {
         wk->wu.routine_no[2] = 0;
         wk->wu.routine_no[3] = 0;
 
-        if (Combo_Demo_Flag == 0) {
+        if (g_state.Combo_Demo_Flag == 0) {
             wk->wu.disp_flag = 1;
         }
 
@@ -271,7 +272,7 @@ static void plmv_1010(PLW* wk) {
     wk->wu.routine_no[2] = 1;
     wk->wu.routine_no[3] = 0;
 
-    if (Combo_Demo_Flag == 0) {
+    if (g_state.Combo_Demo_Flag == 0) {
         wk->wu.disp_flag = 1;
     }
 }
@@ -298,7 +299,7 @@ static void player_mv_2000(PLW* wk) {
     if (wk->wu.routine_no[2] == 1) {
         wk->wu.routine_no[0] = 3;
 
-        if (Combo_Demo_Flag == 0) {
+        if (g_state.Combo_Demo_Flag == 0) {
             wk->wu.disp_flag = 1;
         }
 
@@ -314,7 +315,7 @@ static void player_mv_2000(PLW* wk) {
 
 /** @brief Player move phase 3 — idle/standby before fight start. */
 static void player_mv_3000(PLW* wk) {
-    if (gouki_app) {
+    if (g_state.gouki_app) {
         gouki_appear(wk);
     } else {
         Player_normal(wk);
@@ -341,7 +342,7 @@ static void player_mv_4000(PLW* wk) {
     if (!check_hit_stop(wk)) {
         plmain_lv_02[wk->wu.routine_no[1]](wk);
 
-        if (Timer_Freeze == 0 && wk->wu.hit_stop == 0 && wk->zuru_timer > 0) {
+        if (g_state.Timer_Freeze == 0 && wk->wu.hit_stop == 0 && wk->zuru_timer > 0) {
             wk->zuru_timer -= 2;
         }
 
@@ -356,7 +357,7 @@ static void player_mv_4000(PLW* wk) {
 #endif
     }
 
-    if (Timer_Freeze == 0) {
+    if (g_state.Timer_Freeze == 0) {
         look_after_timers(wk);
     }
 
@@ -388,7 +389,7 @@ s16 check_hit_stop(PLW* wk) {
             wk->wu.hit_stop--;
 
             if (wk->sa_stop_flag == 2) {
-                if (wk->just_sa_stop_timer == Game_timer) {
+                if (wk->just_sa_stop_timer == g_state.Game_timer) {
                     wk->wu.hit_stop++;
                 }
 
@@ -413,7 +414,7 @@ s16 check_hit_stop(PLW* wk) {
     }
 
     if (wk->sa_stop_flag) {
-        Timer_Freeze = 1;
+        g_state.Timer_Freeze = 1;
     }
 
     return num;
@@ -529,7 +530,7 @@ static void mpg_union(PLW* wk) {
     case 2:
         switch (wk->sa->saeff_mp) {
         case -1:
-            if (!pcon_dp_flag) {
+            if (!g_state.pcon_dp_flag) {
                 wk->sa->store = 0;
                 wk->sa->gauge.i = 0;
             }
@@ -543,7 +544,7 @@ static void mpg_union(PLW* wk) {
             wk->sa->mp = 0;
 
 #if !CPS3
-            sag_inc_timer[(wk->wu.id)] = 20;
+            g_state.sag_inc_timer[(wk->wu.id)] = 20;
 #endif
             break;
 
@@ -609,13 +610,13 @@ static void eag_union(PLW* wk) {
 
         if (wk->sa->ex == -1) {
             wk->sa->ex_rno = 2;
-            sa_gauge_flash[wk->wu.id] |= 2;
+            g_state.sa_gauge_flash[wk->wu.id] |= 2;
         }
 
         break;
 
     case 2:
-        if (!pcon_dp_flag) {
+        if (!g_state.pcon_dp_flag) {
             if (wk->sa->gauge_type == 1 && wk->sa->store == wk->sa->store_max) {
                 wk->sa->gauge.i = 0;
             }
@@ -631,7 +632,7 @@ static void eag_union(PLW* wk) {
         sag_bug_fix(wk->wu.id);
         wk->sa->ex_rno = 0;
         wk->sa->ex = 0;
-        sag_inc_timer[wk->wu.id] = 20;
+        g_state.sag_inc_timer[wk->wu.id] = 20;
         break;
 
     default:
@@ -643,9 +644,9 @@ static void eag_union(PLW* wk) {
     }
 }
 
-/** @brief Decrement SA store, respecting pcon_dp_flag and ex4th_exec. */
+/** @brief Decrement SA store, respecting g_state.pcon_dp_flag and ex4th_exec. */
 static void sag_decrement_store(PLW* wk) {
-    if (!pcon_dp_flag) {
+    if (!g_state.pcon_dp_flag) {
         if (wk->sa->ex4th_exec) {
             wk->sa->store = 0;
         } else {
@@ -681,7 +682,7 @@ void sag_union_0(PLW* wk) {
 
     case 2:
         if (wk->sa->saeff_ok == -1) {
-            if (!pcon_dp_flag) {
+            if (!g_state.pcon_dp_flag) {
                 wk->sa->store -= 1;
             }
 
@@ -730,7 +731,7 @@ void sag_union_1(PLW* wk) {
 
     case 2:
         if (wk->sa->saeff_ok == -1) {
-            if (!pcon_dp_flag) {
+            if (!g_state.pcon_dp_flag) {
                 wk->sa->store -= -1;
             }
 
@@ -748,7 +749,7 @@ void sag_union_1(PLW* wk) {
         break;
 
     case 3:
-        if (Timer_Freeze) {
+        if (g_state.Timer_Freeze) {
             break;
         }
 
@@ -766,27 +767,27 @@ void sag_union_1(PLW* wk) {
             wk->sa->sa_rno = 0;
             wk->sa->dtm_mul = 1;
         } else {
-            if (My_char[wk->wu.id] == CHAR_YUN) {
+            if (g_state.My_char[wk->wu.id] == CHAR_YUN) {
                 wk->wu.kind_of_waza |= 0x20;
                 wk->wu.at_koa = 0x80;
             }
 
-            if (My_char[wk->wu.id] == CHAR_YANG) {
+            if (g_state.My_char[wk->wu.id] == CHAR_YANG) {
                 wk->wu.kind_of_waza |= 0x20;
                 wk->wu.at_koa = 0x80;
             }
 
-            if (My_char[wk->wu.id] == CHAR_MAKOTO) {
+            if (g_state.My_char[wk->wu.id] == CHAR_MAKOTO) {
                 wk->wu.kind_of_waza |= 0x20;
                 wk->wu.at_koa = 0x80;
             }
 
-            if (My_char[wk->wu.id] == CHAR_TWELVE) {
+            if (g_state.My_char[wk->wu.id] == CHAR_TWELVE) {
                 wk->wu.kind_of_waza |= 0x20;
                 wk->wu.at_koa = 0x80;
             }
 
-            if ((My_char[wk->wu.id] == CHAR_ORO) && (wk->sa->kind_of_arts == 2)) {
+            if ((g_state.My_char[wk->wu.id] == CHAR_ORO) && (wk->sa->kind_of_arts == 2)) {
                 wk->wu.att.dipsw |= 0x10;
             }
         }
@@ -894,7 +895,7 @@ void sag_union_ps2(PLW* wk) {
                 wk->sa->saeff_ok = 0;
                 wk->sa->sa_rno = 0;
                 wk->sa->ok = 0;
-                sag_inc_timer[wk->wu.id] = 20;
+                g_state.sag_inc_timer[wk->wu.id] = 20;
                 break;
 
             case 1:
@@ -941,7 +942,7 @@ void sag_union_ps2(PLW* wk) {
                 break;
 
             case 1:
-                if (Timer_Freeze != 0) {
+                if (g_state.Timer_Freeze != 0) {
                     break;
                 }
 
@@ -953,26 +954,26 @@ void sag_union_ps2(PLW* wk) {
                     wk->sa->gauge.i -= wk->sa->dtm * wk->sa->dtm_mul;
                 }
 
-                if (wk->sa->gauge.s.h <= 0 || Suicide[6] != 0) {
+                if (wk->sa->gauge.s.h <= 0 || g_state.Suicide[6] != 0) {
                     wk->sa->gauge.i = 0;
                     wk->sa->ok = 0;
                     wk->sa->sa_rno = 0;
                     wk->sa->dtm_mul = 1;
                     wk->sa->gauge.s.h = wk->sa->bacckup_g_h;
-                    sag_inc_timer[wk->wu.id] = 20;
+                    g_state.sag_inc_timer[wk->wu.id] = 20;
                     break;
                 }
 
-                if (My_char[wk->wu.id] == 3) {
+                if (g_state.My_char[wk->wu.id] == 3) {
                     addSAAttribute(&wk->wu.kind_of_waza, &wk->wu.at_koa);
                 }
 
-                if (My_char[wk->wu.id] == 10 || My_char[wk->wu.id] == 16 || My_char[wk->wu.id] == 18) {
+                if (g_state.My_char[wk->wu.id] == 10 || g_state.My_char[wk->wu.id] == 16 || g_state.My_char[wk->wu.id] == 18) {
                     wk->wu.kind_of_waza |= 32;
                     wk->wu.at_koa = 128;
                 }
 
-                if ((My_char[wk->wu.id] == 9) && (wk->sa->kind_of_arts == 2)) {
+                if ((g_state.My_char[wk->wu.id] == 9) && (wk->sa->kind_of_arts == 2)) {
                     wk->wu.att.dipsw |= 0x10;
                 }
 
@@ -1124,7 +1125,7 @@ const u8 plpxx_kind[5] = { 0, 1, 0, 1, 0 };
 
 /** @brief Applies operator-mode vitality adjustments based on settings. */
 static void check_omop_vital(PLW* wk) {
-    if (pcon_dp_flag) {
+    if (g_state.pcon_dp_flag) {
         return;
     }
 
@@ -1143,7 +1144,7 @@ static void check_omop_vital(PLW* wk) {
 
     switch (omop_vital_ix[wk->wu.id]) {
     case 0:
-        if (vital_dec_timer) {
+        if (g_state.vital_dec_timer) {
             break;
         }
 
@@ -1187,7 +1188,7 @@ static void check_omop_vital(PLW* wk) {
         break;
 
     case 2:
-        if (vital_inc_timer) {
+        if (g_state.vital_inc_timer) {
             break;
         }
 

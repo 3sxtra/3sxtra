@@ -6,6 +6,7 @@
  * and timed toast messages using ImGui during netplay sessions.
  */
 #include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "game_state.h"
 #include "netplay/netplay.h"
 #include <SDL3/SDL.h>
 #include <float.h>
@@ -175,7 +176,7 @@ static void AsyncReportMatch(const char* my_id, const char* opponent_id, const c
         hdr.data_size = (uint32_t)sizeof(_REPLAY_W);
         hdr.player1_char = (uint8_t)my_char;
         hdr.player2_char = (uint8_t)opp_char;
-        hdr.winner = (Winner_id == 0) ? 0 : ((Winner_id == 1) ? 1 : 2);
+        hdr.winner = (g_state.Winner_id == 0) ? 0 : ((g_state.Winner_id == 1) ? 1 : 2);
         hdr.stage = Replay_w.game_infor.stage;
         hdr.date_timestamp = (uint32_t)time(NULL);
         memcpy(snapshot, &hdr, sizeof(hdr));
@@ -345,7 +346,7 @@ static uint32_t stun_fail_time = 0;
 // Pending internet invite state (for native lobby indication)
 static bool lobby_has_pending_invite = false;
 static char lobby_pending_invite_name[32] = { 0 };
-static char lobby_pending_invite_player_id[64] = { 0 }; // Inviting player's ID (for reliable decline)
+static char lobby_pending_invite_player_id[64] = { 0 }; // Inviting player's g_state.ID (for reliable decline)
 static char lobby_pending_invite_ip[64] = { 0 };
 static uint16_t lobby_pending_invite_port = 0;
 static char lobby_pending_invite_room[64] = { 0 };
@@ -1013,22 +1014,22 @@ void SDLNetplayUI_Update(void) {
         // Auto-save replay for netplay matches (including direct P2P),
         // but only if at least one round was played (avoid corrupted replays
         // from early disconnects before the first match begins)
-        if (PL_Wins[0] + PL_Wins[1] > 0) {
+        if (g_state.PL_Wins[0] + g_state.PL_Wins[1] > 0) {
             NativeSave_AutoSaveReplay(1); /* 1 = netplay */
         }
 
         // A netplay match just ended — report the result if we are in a lobby context
-        // Winner_id: 0 = P1 won, 1 = P2 won (from game engine)
-        // My_char[0/1]: character indices
-        // PL_Wins[0/1]: round wins per player
+        // g_state.Winner_id: 0 = P1 won, 1 = P2 won (from game engine)
+        // g_state.My_char[0/1]: character indices
+        // g_state.PL_Wins[0/1]: round wins per player
         int my_player = Netplay_GetPlayerNumber();
-        int total_rounds = PL_Wins[0] + PL_Wins[1];
+        int total_rounds = g_state.PL_Wins[0] + g_state.PL_Wins[1];
 
         // Only report to server if both players have verified lobby identities
         if (lobby_my_player_id[0] && current_opponent_id[0]) {
-            if (Winner_id >= 0 && total_rounds > 0) {
+            if (g_state.Winner_id >= 0 && total_rounds > 0) {
                 // Determine winner's player_id
-                const char* winner_pid = (Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
+                const char* winner_pid = (g_state.Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
 
                 const char* room_code = rmlui_casual_lobby_get_room_code();
                 const char* match_source = (room_code && room_code[0]) ? "casual" : "ranked";
@@ -1039,8 +1040,8 @@ void SDLNetplayUI_Update(void) {
                 AsyncReportMatch(lobby_my_player_id,
                                  current_opponent_id,
                                  winner_pid,
-                                 My_char[my_player],
-                                 My_char[1 - my_player],
+                                 g_state.My_char[my_player],
+                                 g_state.My_char[1 - my_player],
                                  total_rounds,
                                  match_source,
                                  match_ft);
@@ -1661,7 +1662,7 @@ bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const c
 
 void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name,
                                         const char* opponent_player_id, bool we_are_p1) {
-    // Track opponent explicit ID so we can report match results to the lobby server correctly
+    // Track opponent explicit g_state.ID so we can report match results to the lobby server correctly
     if (opponent_player_id && opponent_player_id[0]) {
         snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", opponent_player_id);
     } else {
@@ -1749,7 +1750,7 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
 }
 
 void SDLNetplayUI_ReportNaturalMatchEnd(void) {
-    // Called from VS_Result auto-skip while game state (Winner_id, PL_Wins, My_char)
+    // Called from VS_Result auto-skip while game state (g_state.Winner_id, g_state.PL_Wins, g_state.My_char)
     // is still valid. For natural match completion, the session stays RUNNING and
     // cycles back to character select — so the RUNNING→EXITING detection in
     // SDLNetplayUI_Update never fires.
@@ -1758,13 +1759,13 @@ void SDLNetplayUI_ReportNaturalMatchEnd(void) {
         return;
 
     int my_player = Netplay_GetPlayerNumber();
-    int total_rounds = PL_Wins[0] + PL_Wins[1];
+    int total_rounds = g_state.PL_Wins[0] + g_state.PL_Wins[1];
 
     if (lobby_my_player_id[0] && current_opponent_id[0]) {
-        if (Winner_id >= 0 && total_rounds > 0) {
+        if (g_state.Winner_id >= 0 && total_rounds > 0) {
             // Auto-save replay locally (only when a match was actually played)
             NativeSave_AutoSaveReplay(1); /* 1 = netplay */
-            const char* winner_pid = (Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
+            const char* winner_pid = (g_state.Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
 
             const char* room_code = rmlui_casual_lobby_get_room_code();
             const char* match_source = (room_code && room_code[0]) ? "casual" : "ranked";
@@ -1775,8 +1776,8 @@ void SDLNetplayUI_ReportNaturalMatchEnd(void) {
             AsyncReportMatch(lobby_my_player_id,
                              current_opponent_id,
                              winner_pid,
-                             My_char[my_player],
-                             My_char[1 - my_player],
+                             g_state.My_char[my_player],
+                             g_state.My_char[1 - my_player],
                              total_rounds,
                              match_source,
                              match_ft);

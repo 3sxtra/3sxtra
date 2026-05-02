@@ -7,6 +7,7 @@
  */
 
 #include "sf33rd/Source/Game/ui/sc_names.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
 #include "common.h"
 
@@ -21,6 +22,8 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 #include <stdbool.h>
+
+static PAL_CURSOR_COL hud_cursor_color;
 
 #define TO_UV_256(val) ((val) / 256.0f)
 #define TO_UV_256_NEG(val) (TO_UV_256(val))
@@ -43,8 +46,8 @@ void player_name() {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    pl1 = My_char[0];
-    pl2 = My_char[1];
+    pl1 = g_state.My_char[0];
+    pl2 = g_state.My_char[1];
     pl1 += chkNameAkuma(pl1, 6);
     pl2 += chkNameAkuma(pl2, 6);
     scfont_sqput(6, 3, 1, 1, Player_Name_Pos_TBL[pl1][0], Player_Name_Pos_TBL[pl1][1], 5, 1, 2);
@@ -103,15 +106,14 @@ void scfont_sqput_face(u16 x, u16 y, u16 atr, u8 page, u8 cx1, u8 cy1, u8 cx2, u
 static void face_base_put() {
     PAL_CURSOR vtx;
     PAL_CURSOR_P pos[4];
-    PAL_CURSOR_COL col;
 
-    if (No_Trans || SA_shadow_on) {
+    if (No_Trans || g_state.SA_shadow_on) {
         return;
     }
 
     vtx.p = pos;
-    vtx.col = &col;
-    col.color = 0x50000000;
+    vtx.col = &hud_cursor_color;
+    hud_cursor_color.color = 0x50000000;
     pos[0].x = 5.6f;
     pos[3].x = 34.4f;
     pos[0].y = 25.0f;
@@ -120,12 +122,12 @@ static void face_base_put() {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[TopHUDFacePriority], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[TopHUDFacePriority], (uintptr_t)hud_cursor_color.color, 0);
     pos[0].x = 348.8f;
     pos[3].x = 377.6f;
     pos[1].x = pos[3].x;
     pos[2].x = pos[0].x;
-    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[TopHUDFacePriority], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[TopHUDFacePriority], (uintptr_t)hud_cursor_color.color, 0);
 }
 
 /** @brief Draw player face portraits on the HUD. */
@@ -144,18 +146,18 @@ void player_face() {
     ppgSetupCurrentDataList(&ppgScrListFace);
     scfont_sqput_face(0,
                       3,
-                      Player_Color[0] + (My_char[0] * 13),
+                      g_state.Player_Color[0] + (g_state.My_char[0] * 13),
                       0,
-                      Face_Pos_TBL[My_char[0]][0],
-                      Face_Pos_TBL[My_char[0]][1],
+                      Face_Pos_TBL[g_state.My_char[0]][0],
+                      Face_Pos_TBL[g_state.My_char[0]][1],
                       5,
                       3,
                       2);
 
-    if (My_char[1] == 0) {
+    if (g_state.My_char[1] == 0) {
         scfont_sqput_face(0x2B,
                           3,
-                          (Player_Color[1] + (My_char[1] * 13)) | 0x8000,
+                          (g_state.Player_Color[1] + (g_state.My_char[1] * 13)) | 0x8000,
                           0,
                           Face_Pos_TBL[20][0],
                           Face_Pos_TBL[20][1],
@@ -165,10 +167,10 @@ void player_face() {
     } else {
         scfont_sqput_face(0x2B,
                           3,
-                          (Player_Color[1] + (My_char[1] * 13)) | 0x8000,
+                          (g_state.Player_Color[1] + (g_state.My_char[1] * 13)) | 0x8000,
                           0,
-                          Face_Pos_TBL[My_char[1]][0],
-                          Face_Pos_TBL[My_char[1]][1],
+                          Face_Pos_TBL[g_state.My_char[1]][0],
+                          Face_Pos_TBL[g_state.My_char[1]][1],
                           5,
                           3,
                           2);
@@ -180,24 +182,24 @@ void player_face() {
     scfont_put(42, 3, 129, 0, 0, 19, 2);
     scfont_put(42, 4, 129, 0, 0, 20, 2);
 
-    if (Play_Type == 0) {
+    if (g_state.Play_Type == 0) {
         return;
     }
 
-    if (Keep_Grade[Champion] == 0) {
+    if (g_state.Keep_Grade[g_state.Champion] == 0) {
         return;
     }
 
-    grade_tmp = Keep_Grade[Champion] - 1;
+    grade_tmp = g_state.Keep_Grade[g_state.Champion] - 1;
 
     if (grade_tmp >= GRADE_POS_COUNT) {
         return;
     }
 
     if (grade_tmp < GRADE_GOLD_THRESHOLD) {
-        scfont_sqput((Champion * 41) + 1, 1, 27, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
+        scfont_sqput((g_state.Champion * 41) + 1, 1, 27, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
     } else {
-        scfont_sqput((Champion * 41) + 1, 1, 28, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
+        scfont_sqput((g_state.Champion * 41) + 1, 1, 28, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
     }
 }
 

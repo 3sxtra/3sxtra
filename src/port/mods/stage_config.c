@@ -7,6 +7,7 @@
  * resources directory. Part of the stage modding system.
  */
 #include "port/mods/stage_config.h"
+#include "game_state.h"
 #include "port/config/paths.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include <ctype.h>
@@ -25,7 +26,7 @@
 
 StageConfig g_stage_config;
 
-// Default parallax multiplier applied ON TOP of bg_prm (which already contains
+// Default parallax multiplier applied ON TOP of g_state.bg_prm (which already contains
 // engine parallax from the msp speed table). 1.0 = pass-through / no extra scaling.
 static const float DEFAULT_PARALLAX[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 

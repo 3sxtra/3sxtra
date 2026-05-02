@@ -4,47 +4,45 @@
  */
 
 #include "sf33rd/Source/Game/engine/slowf.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
-s16 EXE_flag;
-s16 SLOW_flag;
-s16 SLOW_timer;
 
 const s8 slow_timer_to_flag[32] = { 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
                                     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 };
 
 /** @brief Initializes slow-motion state to off. */
 void init_slow_flag() {
-    EXE_flag = 0;
-    SLOW_flag = 0;
-    SLOW_timer = 0;
+    g_state.EXE_flag = 0;
+    g_state.SLOW_flag = 0;
+    g_state.SLOW_timer = 0;
 }
 
 /** @brief Triggers the conclusion slow-motion effect. */
 void set_conclusion_slow() {
-    SLOW_timer = 95;
+    g_state.SLOW_timer = 95;
 }
 
 /** @brief Per-frame update of the execution freeze flag based on slow-motion timer. */
 void set_EXE_flag() {
     s16 tmw;
 
-    if (!Game_pause) {
-        if (SLOW_timer) {
-            if (--SLOW_timer) {
-                tmw = SLOW_timer / 8;
+    if (!g_state.Game_pause) {
+        if (g_state.SLOW_timer) {
+            if (--g_state.SLOW_timer) {
+                tmw = g_state.SLOW_timer / 8;
 
                 if (tmw > 31) {
                     tmw = 31;
                 }
 
-                SLOW_flag = slow_timer_to_flag[tmw];
+                g_state.SLOW_flag = slow_timer_to_flag[tmw];
             } else {
-                SLOW_flag = 0;
+                g_state.SLOW_flag = 0;
             }
         }
 
-        EXE_flag = Game_timer % (SLOW_flag + 1);
+        g_state.EXE_flag = g_state.Game_timer % (g_state.SLOW_flag + 1);
     }
 }

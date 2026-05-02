@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff08.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -37,15 +38,15 @@ const u8 Rewrite_Color_Data_08[2][13][2] = { { { 30, 2 },
                                                { 0, 0 } } };
 
 void effect_08_move(WORK_Other* ewk) {
-    if (Suicide[5] & 0x80) {
+    if (g_state.Suicide[5] & 0x80) {
         push_effect_work(&ewk->wu);
         return;
     }
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (Suicide[5] & 1) {
-            if (PB_Status & 3) {
+        if (g_state.Suicide[5] & 1) {
+            if (g_state.PB_Status & 3) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.dir_timer = 1;
                 ewk->wu.dir_step = 0;

@@ -19,6 +19,7 @@
  */
 
 #include "port/sdl/lagtest_renderer.h"
+#include "game_state.h"
 #include "port/linux/gpio_lag_test.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "sf33rd/Source/Game/engine/workuser_system.h"
@@ -59,7 +60,7 @@ static void draw_centered(float y, uint8_t atr, uint32_t color, const char* text
 void LagtestRenderer_Render(void) {
     /* Prevent rendering outside of an active match to avoid trying to draw
        before engine/font textures are fully loaded in memory. */
-    if (Play_Game != 1) {
+    if (g_state.Play_Game != 1) {
         return;
     }
 

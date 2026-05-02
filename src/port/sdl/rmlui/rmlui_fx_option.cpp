@@ -5,13 +5,14 @@
  * Controller-friendly, paged display/shader/visual settings menu.
  * Follows the extra_option.rml layout pattern (data-model cursor + paging)
  * but manages its own cursor and values entirely in C++ — does NOT use
- * the CPS3 Convert_Buff or Menu_Cursor_Y globals.
+ * the CPS3 g_state.Convert_Buff or g_state.Menu_Cursor_Y globals.
  *
  * Delegates to the same config/shader/mods APIs used by the F2 and F3
  * overlay menus.
  */
 
 #include "port/sdl/rmlui/rmlui_fx_option.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>

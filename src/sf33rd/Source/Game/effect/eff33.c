@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff33.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -34,7 +35,7 @@ void effect_33_move(WORK_Other* ewk) {
         suzi_sync_pos_set(ewk);
         sort_push_request(&ewk->wu);
 
-        if (EXE_flag || Game_pause || pcon_rno[2] != 1 || Event_Judge_Gals != -1 || !Complete_Judgement) {
+        if (g_state.EXE_flag || g_state.Game_pause || g_state.pcon_rno[2] != 1 || g_state.Event_Judge_Gals != -1 || !g_state.Complete_Judgement) {
             break;
         }
 
@@ -42,9 +43,9 @@ void effect_33_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.routine_no[0]++;
-            ewk->wu.char_index = WinLoseID[ewk->master_id][Winner_id] + 10;
+            ewk->wu.char_index = WinLoseID[ewk->master_id][g_state.Winner_id] + 10;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         }
 
@@ -53,8 +54,8 @@ void effect_33_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (!EXE_flag && !Game_pause) {
-            if (ewk->wu.dead_f == 1 || Suicide[0] != 0) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
+            if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
                 ewk->wu.disp_flag = 0;
                 ewk->wu.routine_no[0]++;
                 break;

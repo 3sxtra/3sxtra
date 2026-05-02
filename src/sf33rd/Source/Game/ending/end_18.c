@@ -29,25 +29,25 @@ const s16 end_18_pos[11][2] = { { 768, 768 }, { 256, 768 }, { 256, 768 }, { 256,
 
 /** @brief Q's ending entry point — initialize and run all ending scenes. */
 void end_18000(s16 pl_num) {
-    switch (end_w.r_no_1) {
+    switch (g_state.end_w.r_no_1) {
     case 0:
-        end_w.r_no_1++;
-        end_w.r_no_2 = 0;
+        g_state.end_w.r_no_1++;
+        g_state.end_w.r_no_2 = 0;
         common_end_init00(pl_num);
         common_end_init01();
         BGM_Request(0x32);
-        end_w.timer = timer_18_tbl[end_w.r_no_2];
+        g_state.end_w.timer = timer_18_tbl[g_state.end_w.r_no_2];
         break;
 
     case 1:
-        end_w.timer--;
+        g_state.end_w.timer--;
 
-        if (end_w.timer < 0) {
-            end_w.r_no_2++;
+        if (g_state.end_w.timer < 0) {
+            g_state.end_w.r_no_2++;
 
-            if (end_w.r_no_2 >= 11) {
-                end_w.r_no_1++;
-                end_w.end_flag = 1;
+            if (g_state.end_w.r_no_2 >= 11) {
+                g_state.end_w.r_no_1++;
+                g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
                 end_bg_pos_hosei2();
@@ -55,10 +55,10 @@ void end_18000(s16 pl_num) {
                 break;
             }
 
-            end_w.timer = timer_18_tbl[end_w.r_no_2];
-            bg_w.bgw[0].r_no_1 = 0;
-            bg_w.bgw[1].r_no_1 = 0;
-            bg_w.bgw[2].r_no_1 = 0;
+            g_state.end_w.timer = timer_18_tbl[g_state.end_w.r_no_2];
+            g_state.bg_w.bgw[0].r_no_1 = 0;
+            g_state.bg_w.bgw[1].r_no_1 = 0;
+            g_state.bg_w.bgw[2].r_no_1 = 0;
         }
 
         end_1800_move();
@@ -77,10 +77,10 @@ static void end_1800_move() {
     void (*end_1800_move_jp[11])() = { end_1800_0005, end_1800_0001, end_1800_0001, end_1800_0001,
                                        end_1800_0001, end_1800_0005, end_1800_0006, end_1800_0001,
                                        end_1800_0008, end_1800_0009, end_1800_0010 };
-    bgw_ptr = &bg_w.bgw[0];
-    if (end_w.r_no_2 >= 11)
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    if (g_state.end_w.r_no_2 >= 11)
         return;
-    end_1800_move_jp[end_w.r_no_2]();
+    end_1800_move_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Scene handler — per-scene background setup with per-scene effects. */
@@ -88,10 +88,10 @@ static void end_1800_0001() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_18_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_18_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_18_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_18_pos[g_state.end_w.r_no_2][1];
 
-        switch (end_w.r_no_2) {
+        switch (g_state.end_w.r_no_2) {
         case 1:
             Bg_On_W(1);
             effect_E6_init(0x6F);
@@ -142,12 +142,12 @@ static void end_1800_0005() {
     case 0:
         bgw_ptr->r_no_1++;
         Bg_On_W(1);
-        bgw_ptr->xy[0].disp.pos = end_18_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_18_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_18_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_18_pos[g_state.end_w.r_no_2][1];
         effect_E6_init(0x73);
         effect_E6_init(0x75);
 
-        if (end_w.r_no_2) {
+        if (g_state.end_w.r_no_2) {
             Rewrite_End_Message(3);
         } else {
             Rewrite_End_Message(1);
@@ -174,8 +174,8 @@ static void end_1800_0006() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_18_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_18_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_18_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_18_pos[g_state.end_w.r_no_2][1];
         effect_E6_init(0x76);
         Rewrite_End_Message(6);
         break;
@@ -197,8 +197,8 @@ static void end_1800_0008() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_18_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_18_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_18_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_18_pos[g_state.end_w.r_no_2][1];
         effect_E6_init(0x78);
         Rewrite_End_Message(5);
         break;
@@ -220,8 +220,8 @@ static void end_1800_0009() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_18_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_18_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_18_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_18_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->free = 0;
         Rewrite_End_Message(0);
         break;
@@ -231,11 +231,11 @@ static void end_1800_0009() {
         bgw_ptr->free &= 1;
 
         if (bgw_ptr->free) {
-            bgw_ptr->xy[0].disp.pos = end_18_pos[end_w.r_no_2][0];
+            bgw_ptr->xy[0].disp.pos = end_18_pos[g_state.end_w.r_no_2][0];
             break;
         }
 
-        bgw_ptr->xy[0].disp.pos = end_18_pos[end_w.r_no_2][0] + 512;
+        bgw_ptr->xy[0].disp.pos = end_18_pos[g_state.end_w.r_no_2][0] + 512;
         break;
     }
 }
@@ -245,14 +245,14 @@ static void end_1800_0010() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_18_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_18_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_18_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_18_pos[g_state.end_w.r_no_2][1];
         effect_E6_init(0x79);
         effect_E6_init(0xA2);
         bgw_ptr->free = 1;
         bgw_ptr->l_limit = 0;
         end_fade_flag = 1;
-        end_fade_timer = timer_18_tbl[end_w.r_no_2] - 120;
+        end_fade_timer = timer_18_tbl[g_state.end_w.r_no_2] - 120;
         break;
 
     case 1:

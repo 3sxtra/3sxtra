@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/stage/bg000.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
@@ -21,9 +22,9 @@
 
 /** @brief Main handler for Gill's Stage stage. */
 void BG000() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg0001();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg0000();
     zoom_ud_check();
     bg_pos_hosei2();
@@ -44,9 +45,9 @@ void bg0001_init00() {
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x1D0;
     bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
     bgw_ptr->zuubun = 0;
-    Gill_Appear_Flag = gill_appear_check();
+    g_state.Gill_Appear_Flag = gill_appear_check();
 
-    if (Gill_Appear_Flag == 0) {
+    if (g_state.Gill_Appear_Flag == 0) {
         make_texcash_work(0x10);
         setup_GILL_Opening_Ceremony();
     }
@@ -55,15 +56,15 @@ void bg0001_init00() {
     effect_44_init(7);
     effect_60_init(2);
 
-    if (bg_w.area) {
+    if (g_state.bg_w.area) {
         bgw_ptr->r_no_0 = 2;
         return;
-    } else if (Gill_Appear_Flag) {
+    } else if (g_state.Gill_Appear_Flag) {
         bgw_ptr->r_no_0 = 2;
         return;
     }
 
-    if (plw->player_number == 0) {
+    if (g_state.plw->player_number == 0) {
         bgw_ptr->u_line = 0;
         bgw_ptr->xy[0].cal += bgw_ptr->speed_x * 0xE0;
         bgw_ptr->old_pos_x = bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
@@ -90,15 +91,15 @@ void bg0000_init00() {
     bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
     bgw_ptr->zuubun = 0;
 
-    if (Gill_Appear_Flag) {
+    if (g_state.Gill_Appear_Flag) {
         bgw_ptr->r_no_0 = 2;
-        bg_app = 0;
+        g_state.bg_app = 0;
         return;
     }
 
-    bg_app = 1;
+    g_state.bg_app = 1;
 
-    if (plw->player_number == 0) {
+    if (g_state.plw->player_number == 0) {
         bgw_ptr->u_line = 0;
         bgw_ptr->xy[0].cal += bgw_ptr->speed_x * 0xE0;
         bgw_ptr->old_pos_x = bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
@@ -154,7 +155,7 @@ void bg0000_demo() {
         break;
 
     case 3:
-        bg_app = 0;
+        g_state.bg_app = 0;
         bgw_ptr->r_no_0 = 2;
         break;
     }

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff01.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
@@ -43,7 +44,7 @@ void effect_01_move(WORK_Other* ewk) {
             return;
         }
 
-        if (!Game_pause && !EXE_flag) {
+        if (!g_state.Game_pause && !g_state.EXE_flag) {
             if (ewk->wu.cg_olc.olc_ix[ewk->wu.type] != mwk->cg_olc.olc_ix[ewk->wu.type]) {
                 ewk->wu.cg_olc.olc_ix[ewk->wu.type] = ewk->wu.cg_ix = mwk->cg_olc.olc_ix[ewk->wu.type];
                 ewk->wu.now_koc = ewk->wu.cg_ix;

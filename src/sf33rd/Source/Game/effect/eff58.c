@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff58.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -33,21 +34,21 @@ void effect_58_move(WORK_Other* ewk) {
     case 1:
         switch (ewk->wu.routine_no[1]) {
         case 0:
-            bg_w.bgw[ewk->wu.direction].wxy[0].cal += bg_w.bgw[ewk->wu.direction].speed_x;
+            g_state.bg_w.bgw[ewk->wu.direction].wxy[0].cal += g_state.bg_w.bgw[ewk->wu.direction].speed_x;
 
-            if (0 < bg_w.bgw[ewk->wu.direction].speed_x) {
-                if (Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction] <=
-                    bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
-                    Next_Step |= 1;
-                    bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
-                        Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction];
+            if (0 < g_state.bg_w.bgw[ewk->wu.direction].speed_x) {
+                if (g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction] <=
+                    g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
+                    g_state.Next_Step |= 1;
+                    g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
+                        g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction];
                     ewk->wu.routine_no[0]++;
                 }
-            } else if (Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction] >=
-                       bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
-                Next_Step |= 1;
-                bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
-                    Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction];
+            } else if (g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction] >=
+                       g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
+                g_state.Next_Step |= 1;
+                g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
+                    g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction];
                 ewk->wu.routine_no[0]++;
             }
             break;
@@ -61,7 +62,7 @@ void effect_58_move(WORK_Other* ewk) {
             break;
 
         case 6:
-            if (Demo_Flag != 0) {
+            if (g_state.Demo_Flag != 0) {
                 SsRequest(ewk->wu.direction);
             }
 
@@ -69,12 +70,12 @@ void effect_58_move(WORK_Other* ewk) {
             break;
 
         case 7:
-            Next_Step = 1;
+            g_state.Next_Step = 1;
             ewk->wu.routine_no[0]++;
             break;
 
         case 8:
-            if (Demo_Flag != 0 && PB_Music_Off == 0) {
+            if (g_state.Demo_Flag != 0 && g_state.PB_Music_Off == 0) {
                 BGM_Request(ewk->wu.direction);
             }
 
@@ -82,7 +83,7 @@ void effect_58_move(WORK_Other* ewk) {
             break;
 
         case 9:
-            if (Demo_Flag != 0 && PB_Music_Off == 0) {
+            if (g_state.Demo_Flag != 0 && g_state.PB_Music_Off == 0) {
                 SsBgmFadeIn(ewk->wu.direction, 0x222);
             }
 
@@ -94,101 +95,101 @@ void effect_58_move(WORK_Other* ewk) {
             break;
 
         case 12:
-            if (Cut_Scroll == 0) {
+            if (g_state.Cut_Scroll == 0) {
                 xx = 3;
             } else {
                 xx = Cut_Cut_Sub(3);
             }
 
-            bg_w.bgw[ewk->wu.direction].wxy[0].cal += bg_mvxy.a[0].sp * xx;
-            bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
+            g_state.bg_w.bgw[ewk->wu.direction].wxy[0].cal += g_state.bg_mvxy.a[0].sp * xx;
+            g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
 
-            if (0 < bg_mvxy.a[0].sp) {
-                if (Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction] <=
-                    bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
-                    Next_Step |= 1;
-                    bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
-                        Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction];
+            if (0 < g_state.bg_mvxy.a[0].sp) {
+                if (g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction] <=
+                    g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
+                    g_state.Next_Step |= 1;
+                    g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
+                        g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction];
                     ewk->wu.routine_no[0]++;
                 }
-            } else if (Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction] >=
-                       bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
-                Next_Step |= 1;
-                bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
-                    Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction];
+            } else if (g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction] >=
+                       g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
+                g_state.Next_Step |= 1;
+                g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
+                    g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction];
                 ewk->wu.routine_no[0]++;
             }
 
             break;
 
         case 13:
-            if (Cut_Scroll == 0) {
+            if (g_state.Cut_Scroll == 0) {
                 xx = 5;
             } else {
                 xx = Cut_Cut_Sub(5);
             }
 
-            bg_w.bgw[ewk->wu.direction].wxy[0].cal += bg_mvxy.a[0].sp * xx;
-            bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
+            g_state.bg_w.bgw[ewk->wu.direction].wxy[0].cal += g_state.bg_mvxy.a[0].sp * xx;
+            g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
 
-            if (0 < bg_mvxy.a[0].sp) {
-                if (Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction] <=
-                    bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
-                    Next_Step |= 1;
-                    bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
-                        Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction];
+            if (0 < g_state.bg_mvxy.a[0].sp) {
+                if (g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction] <=
+                    g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
+                    g_state.Next_Step |= 1;
+                    g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
+                        g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction];
                     ewk->wu.routine_no[0]++;
                 }
-            } else if (Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction] >=
-                       bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
-                Next_Step |= 1;
-                bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
-                    Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction];
+            } else if (g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction] >=
+                       g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
+                g_state.Next_Step |= 1;
+                g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
+                    g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction];
                 ewk->wu.routine_no[0]++;
             }
 
             break;
 
         case 14:
-            bg_w.bgw[ewk->wu.direction].wxy[0].cal += bg_mvxy.a[0].sp;
-            bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
+            g_state.bg_w.bgw[ewk->wu.direction].wxy[0].cal += g_state.bg_mvxy.a[0].sp;
+            g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
 
-            if (0 < bg_mvxy.a[0].sp) {
-                if (Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction] <=
-                    bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
-                    Next_Step |= 1;
-                    bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
-                        Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction];
+            if (0 < g_state.bg_mvxy.a[0].sp) {
+                if (g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction] <=
+                    g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
+                    g_state.Next_Step |= 1;
+                    g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
+                        g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction];
                     ewk->wu.routine_no[0]++;
                 }
-            } else if (Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction] >=
-                       bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
-                Next_Step |= 1;
-                bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
-                    Target_BG_X[ewk->wu.direction] + Offset_BG_X[ewk->wu.direction];
+            } else if (g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction] >=
+                       g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos) {
+                g_state.Next_Step |= 1;
+                g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos =
+                    g_state.Target_BG_X[ewk->wu.direction] + g_state.Offset_BG_X[ewk->wu.direction];
                 ewk->wu.routine_no[0]++;
             }
 
             break;
 
         case 15:
-            Suicide[ewk->wu.direction] = 1;
+            g_state.Suicide[ewk->wu.direction] = 1;
             ewk->wu.routine_no[0]++;
             break;
 
         case 16:
-            bg_w.bgw[ewk->wu.direction].wxy[1].disp.pos += 256;
+            g_state.bg_w.bgw[ewk->wu.direction].wxy[1].disp.pos += 256;
             Setup_BG(ewk->wu.direction,
-                     bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos,
-                     bg_w.bgw[ewk->wu.direction].wxy[1].disp.pos);
+                     g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos,
+                     g_state.bg_w.bgw[ewk->wu.direction].wxy[1].disp.pos);
             ewk->wu.routine_no[0]++;
             break;
 
         case 17:
-            bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos += 512;
+            g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos += 512;
             Setup_BG(ewk->wu.direction,
-                     bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos,
-                     bg_w.bgw[ewk->wu.direction].wxy[1].disp.pos);
+                     g_state.bg_w.bgw[ewk->wu.direction].wxy[0].disp.pos,
+                     g_state.bg_w.bgw[ewk->wu.direction].wxy[1].disp.pos);
             ewk->wu.routine_no[0]++;
             break;
 
@@ -230,7 +231,7 @@ static s32 SF33rd_Logo(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2]++;
         ewk->wu.dir_timer = 1;
-        Disappear_LOGO = 0;
+        g_state.Disappear_LOGO = 0;
         /* fallthrough */
 
     case 1:
@@ -249,7 +250,7 @@ static s32 SF33rd_Logo(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (Disappear_LOGO) {
+        if (g_state.Disappear_LOGO) {
             ewk->wu.routine_no[2]++;
             ewk->wu.dir_timer = 1;
         }
@@ -280,7 +281,7 @@ static void EFF58_Type_01(WORK_Other* ewk) {
     case 0:
         Switch_Screen(1);
 
-        if (!--Cover_Timer) {
+        if (!--g_state.Cover_Timer) {
             ewk->wu.routine_no[2]++;
             Switch_Screen_Init(1);
         }

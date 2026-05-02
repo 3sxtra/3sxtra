@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effl0.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
@@ -19,8 +20,8 @@ void effect_L0_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 0 && Suicide[0] == 0) {
-            if (Game_pause || EXE_flag) {
+        if (ewk->wu.dead_f == 0 && g_state.Suicide[0] == 0) {
+            if (g_state.Game_pause || g_state.EXE_flag) {
                 break;
             }
 

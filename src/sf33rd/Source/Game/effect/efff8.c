@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/efff8.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -43,13 +44,13 @@ void effect_F8_move(WORK_Other* ewk) {
         return;
 
     case 1:
-        if ((ewk->wu.dead_f == 1) || (Suicide[0] != 0)) {
+        if ((ewk->wu.dead_f == 1) || (g_state.Suicide[0] != 0)) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] += 1;
             return;
         }
 
-        if ((EXE_flag == 0) && (Game_pause == 0)) {
+        if ((g_state.EXE_flag == 0) && (g_state.Game_pause == 0)) {
             char_move(&ewk->wu);
             if (ewk->wu.cg_type == 0xFF) {
                 ewk->wu.disp_flag = 0;

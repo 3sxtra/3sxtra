@@ -7,7 +7,7 @@
  * an RmlUi overlay showing lobby items, peer lists, and popup modals.
  *
  * Key APIs:
- *   Menu_Cursor_Y[0] — cursor position (9 items: 0-8)
+ *   g_state.Menu_Cursor_Y[0] — cursor position (9 items: 0-8)
  *   Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT) — LAN auto-connect
  *   Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT) — NET auto-accept
  *   Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH) — NET auto-search
@@ -20,6 +20,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
@@ -418,7 +419,7 @@ static void do_init(void) {
     ctor.Bind("room_list", &s_room_list);
 
     // ── Scalar bindings ──────────────────────────────────────────
-    ctor.BindFunc("cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("cursor", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
 
     ctor.BindFunc("lan_auto", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT); });
     ctor.BindFunc("net_auto", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT); });
@@ -802,7 +803,7 @@ extern "C" void rmlui_network_lobby_update(void) {
         }
     }
 
-    DIRTY_INT(cursor, (int)Menu_Cursor_Y[0]);
+    DIRTY_INT(cursor, (int)g_state.Menu_Cursor_Y[0]);
     DIRTY_BOOL(lan_auto, Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT));
     DIRTY_BOOL(net_auto, Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
     DIRTY_BOOL(net_search_toggle, Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH));
@@ -852,7 +853,7 @@ extern "C" void rmlui_network_lobby_update(void) {
             NetPeerItem item;
             item.name = Rml::String(SDLNetplayUI_GetOnlinePlayerName(i));
 
-            // Country code + flag icon path
+            // g_state.Country code + flag icon path
             const char* cc = SDLNetplayUI_GetOnlinePlayerCountry(i);
             item.country = Rml::String(cc ? cc : "");
             if (cc && cc[0] && cc[1]) {

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effk2.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff13.h"
@@ -269,13 +270,13 @@ void effect_K2_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[0] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             effK2_main_process[ewk->wu.routine_no[1]](ewk, hahen);
         }
 

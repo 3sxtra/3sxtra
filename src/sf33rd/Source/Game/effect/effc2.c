@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effc2.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff00.h"
 #include "sf33rd/Source/Game/effect/effc3.h"
@@ -85,7 +86,7 @@ void effect_C2_move(WORK_Other* ewk) {
         ewk->wu.routine_no[0]++;
         ewk->wu.routine_no[2] = 0;
         ewk->wu.routine_no[3] = 2;
-        Bonus_Game_result = 0;
+        g_state.Bonus_Game_result = 0;
         ewk->wu.charset_id = 17;
         set_char_base_data(&ewk->wu);
         ewk->wu.vital_new = ewk->master_id == 0;
@@ -131,7 +132,7 @@ void effect_C2_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             switch (ewk->wu.routine_no[1]) {
             case 0:
                 if (--ewk->wu.hit_stop > 0) {
@@ -140,7 +141,7 @@ void effect_C2_move(WORK_Other* ewk) {
 
                 ewk->wu.routine_no[1] = 9;
                 ewk->wu.routine_no[2] = 0;
-                Bonus_Game_result |= 2;
+                g_state.Bonus_Game_result |= 2;
                 ewk->wu.xyz[1].disp.pos = 80;
                 ewk->wu.next_y = 64;
                 ewk->wu.position_z = 25;
@@ -218,7 +219,7 @@ void effect_C2_move(WORK_Other* ewk) {
 }
 
 static void effC2_main_process_first(WORK_Other* ewk, PLW* twk) {
-    if (EXE_flag == 0 && Game_pause == 0) {
+    if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
         switch (ewk->wu.direction + (twk->bs2_on_car * 2)) {
         case 0:
             if (ewk->wu.routine_no[1] != 1 && ewk->wu.routine_no[2] != 0) {
@@ -439,7 +440,7 @@ jump:
 }
 
 static void effC2_main_process_second(WORK_Other* ewk, PLW* twk) {
-    if (EXE_flag == 0 && Game_pause == 0) {
+    if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
         switch (ewk->wu.routine_no[1]) {
         case 0:
             switch (ewk->wu.routine_no[2]) {
@@ -452,7 +453,7 @@ static void effC2_main_process_second(WORK_Other* ewk, PLW* twk) {
                 }
 
                 if (--ewk->wu.hit_stop < 0) {
-                    Time_Stop = 1;
+                    g_state.Time_Stop = 1;
                     setup_demojump(twk, 0);
                     ewk->wu.routine_no[2]++;
                     ewk->wu.mvxy.a[1].sp = 0x20000;
@@ -503,7 +504,7 @@ static void effC2_main_process_second(WORK_Other* ewk, PLW* twk) {
                     ewk->wu.routine_no[2] = 0;
                     ewk->wu.original_vitality = ewk->wu.shell_ix[0] = 0x640;
                     ewk->wu.vital_old = 0;
-                    Time_Stop = 0;
+                    g_state.Time_Stop = 0;
                 }
 
                 break;
@@ -514,7 +515,7 @@ static void effC2_main_process_second(WORK_Other* ewk, PLW* twk) {
         case 1:
             switch (ewk->wu.routine_no[2]) {
             case 0:
-                if (Time_Over) {
+                if (g_state.Time_Over) {
                     ewk->wu.dm_vital = 0;
                 }
 
@@ -543,7 +544,7 @@ static void effC2_main_process_second(WORK_Other* ewk, PLW* twk) {
                     ewk->wu.routine_no[1] = 0;
                     ewk->wu.routine_no[2] = 0;
                     ewk->wu.cg_type = 0;
-                    Time_Stop = 1;
+                    g_state.Time_Stop = 1;
                 }
 
                 break;
@@ -750,7 +751,7 @@ void c3_new_damage(WORK* wk) {
     s16 ix;
     s16 brlv;
 
-    if (Time_Over) {
+    if (g_state.Time_Over) {
         wk->dm_vital = 0;
     }
 
@@ -780,7 +781,7 @@ void c3_new_damage(WORK* wk) {
     }
 
     wk->dm_vital = 0;
-    bs2_current_damage = wk->type;
+    g_state.bs2_current_damage = wk->type;
 }
 
 s16 c3_hit_disp_check(u8 ix) {
@@ -864,7 +865,7 @@ static void set_1st_Bonus_Game_result(WORK* wk) {
     }
 
     if (num == 49) {
-        Bonus_Game_result = 1;
+        g_state.Bonus_Game_result = 1;
     }
 }
 
@@ -873,13 +874,13 @@ static void set_bs2_floor(WORK_Other* wk) {
 
     player_hosei_data(wk, wk->wu.dir_timer, 1);
     dad = wk->wu.hosei_adrs[wk->wu.cg_ja.hoix].hos_box;
-    bs2_floor[0] = wk->wu.xyz[0].disp.pos + dad[0];
-    bs2_floor[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
-    bs2_floor[2] = dad[2] + dad[3];
+    g_state.bs2_floor[0] = wk->wu.xyz[0].disp.pos + dad[0];
+    g_state.bs2_floor[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
+    g_state.bs2_floor[2] = dad[2] + dad[3];
     dad = wk->wu.hosei_adrs[wk->wu.cg_ja.hoix + 1].hos_box;
-    bs2_hosei[0] = wk->wu.xyz[0].disp.pos + dad[0];
-    bs2_hosei[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
-    bs2_hosei[2] = dad[2] + dad[3];
+    g_state.bs2_hosei[0] = wk->wu.xyz[0].disp.pos + dad[0];
+    g_state.bs2_hosei[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
+    g_state.bs2_hosei[2] = dad[2] + dad[3];
 }
 
 void get_shizumi_guai(WORK* wk) {

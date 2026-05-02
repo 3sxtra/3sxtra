@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effg5.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -48,11 +49,11 @@ void effect_G5_move(WORK_Other* ewk) {
             break;
         }
 
-        if (Pause_Hit_Marks) {
+        if (g_state.Pause_Hit_Marks) {
             break;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             ewk->wu.dir_old += ewk->wu.dir_step;
 
             if (ewk->wu.dir_old < 0) {

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effc4.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -16,12 +17,12 @@
 static void Setup_Letter_C4(WORK_Other_CONN* ewk);
 
 void effect_C4_move(WORK_Other_CONN* ewk) {
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
-    if (Menu_Cursor_Y[0] == ewk->wu.type) {
+    if (g_state.Menu_Cursor_Y[0] == ewk->wu.type) {
         ewk->wu.my_clear_level = 0;
     } else {
         ewk->wu.my_clear_level = 128;
@@ -64,8 +65,8 @@ s32 effect_C4_init(s16 id, s16 letter_type, s16 cursor_index, s16 master_player)
         x = 72;
     }
 
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + x;
-    ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 172 - (ewk->wu.type * 13);
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + x;
+    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 172 - (ewk->wu.type * 13);
     ewk->wu.position_z = 68;
     return 0;
 }
@@ -76,10 +77,10 @@ static void Setup_Letter_C4(WORK_Other_CONN* ewk) {
     u8* ptr;
 
     if (ewk->master_id) {
-        ptr = (u8*)Ex_Letter_Data[Menu_Page_Buff][ewk->wu.char_index]
-                                 [save_w[1].extra_option.contents[Menu_Page_Buff][ewk->wu.type]];
+        ptr = (u8*)Ex_Letter_Data[g_state.Menu_Page_Buff][ewk->wu.char_index]
+                                 [save_w[1].extra_option.contents[g_state.Menu_Page_Buff][ewk->wu.type]];
     } else {
-        ptr = (u8*)Ex_Title_Data[Menu_Page_Buff][ewk->wu.char_index];
+        ptr = (u8*)Ex_Title_Data[g_state.Menu_Page_Buff][ewk->wu.char_index];
     }
 
     ix = 0;
@@ -99,8 +100,8 @@ static void Setup_Letter_C4(WORK_Other_CONN* ewk) {
         }
 
         if (ewk->master_id) {
-            if (save_w[1].extra_option.contents[Menu_Page_Buff][ewk->wu.type] !=
-                save_w[0].extra_option.contents[Menu_Page_Buff][ewk->wu.type]) {
+            if (save_w[1].extra_option.contents[g_state.Menu_Page_Buff][ewk->wu.type] !=
+                save_w[0].extra_option.contents[g_state.Menu_Page_Buff][ewk->wu.type]) {
                 ewk->conn[ix].col = 0x18;
             } else {
                 ewk->conn[ix].col = 0;

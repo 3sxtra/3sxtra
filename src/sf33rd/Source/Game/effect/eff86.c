@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff86.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -24,7 +25,7 @@ void effect_86_move(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             eff86_jp_tbl[ewk->wu.routine_no[1]](ewk);
         }
 
@@ -44,10 +45,10 @@ void eff86_0000(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2]++;
         ewk->wu.disp_flag = 1;
-        work = plw[0].wu.position_x + plw[1].wu.position_x;
+        work = g_state.plw[0].wu.position_x + g_state.plw[1].wu.position_x;
         work >>= 1;
         ewk->wu.xyz[0].disp.pos = work;
-        work = plw[1].wu.position_y + plw[1].wu.position_y;
+        work = g_state.plw[1].wu.position_y + g_state.plw[1].wu.position_y;
         work >>= 1;
         ewk->wu.xyz[1].disp.pos = work + 92;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);

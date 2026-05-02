@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effj8.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -36,7 +37,7 @@ void effect_J8_move(WORK_Other* ewk) {
             break;
         }
 
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             dragonfly_move(ewk);
         }
 
@@ -61,7 +62,7 @@ void dragonfly_l_move_0(WORK_Other* ewk) {
     s16 work;
 
     ewk->wu.rl_flag = 1;
-    ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].r_limit2 + bg_w.pos_offset + 32;
+    ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].r_limit2 + g_state.bg_w.pos_offset + 32;
     work = random_16();
     work &= 7;
     ewk->wu.xyz[1].disp.pos = effj8_y_tbl[work];
@@ -78,7 +79,7 @@ s16 dragonfly_l_move_2(WORK_Other* ewk) {
     add_x_sub(&ewk->wu);
     add_y_sub(&ewk->wu);
 
-    if (ewk->wu.xyz[0].disp.pos <= bg_w.bgw[1].l_limit2 - bg_w.pos_offset - 24) {
+    if (ewk->wu.xyz[0].disp.pos <= g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset - 24) {
         dragonfly_stop_timer(ewk);
         return 99;
     }
@@ -94,7 +95,7 @@ s16 dragonfly_l_move_3(WORK_Other* ewk) {
     add_x_sub(&ewk->wu);
     add_y_sub(&ewk->wu);
 
-    if (ewk->wu.xyz[0].disp.pos <= bg_w.bgw[1].l_limit2 - bg_w.pos_offset - 24) {
+    if (ewk->wu.xyz[0].disp.pos <= g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset - 24) {
         dragonfly_stop_timer(ewk);
         set_char_move_init(&ewk->wu, 0, 6);
         return 99;
@@ -167,7 +168,7 @@ void dragonfly_r_move_0(WORK_Other* ewk) {
     s16 work;
 
     ewk->wu.rl_flag = 0;
-    ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].l_limit2 - bg_w.pos_offset - 32;
+    ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset - 32;
     work = random_16();
     work &= 7;
     ewk->wu.xyz[1].disp.pos = effj8_y_tbl[work];
@@ -184,7 +185,7 @@ s16 dragonfly_r_move_2(WORK_Other* ewk) {
     add_x_sub(&ewk->wu);
     add_y_sub(&ewk->wu);
 
-    if (ewk->wu.xyz[0].disp.pos > bg_w.bgw[1].r_limit2 + bg_w.pos_offset + 24) {
+    if (ewk->wu.xyz[0].disp.pos > g_state.bg_w.bgw[1].r_limit2 + g_state.bg_w.pos_offset + 24) {
         dragonfly_stop_timer(ewk);
         return 99;
     }
@@ -200,7 +201,7 @@ s16 dragonfly_r_move_3(WORK_Other* ewk) {
     add_x_sub(&ewk->wu);
     add_y_sub(&ewk->wu);
 
-    if (ewk->wu.xyz[0].disp.pos >= bg_w.bgw[1].r_limit2 + bg_w.pos_offset + 24) {
+    if (ewk->wu.xyz[0].disp.pos >= g_state.bg_w.bgw[1].r_limit2 + g_state.bg_w.pos_offset + 24) {
         dragonfly_stop_timer(ewk);
         set_char_move_init(&ewk->wu, 0, 6);
         return 99;
@@ -275,7 +276,7 @@ void dragonfly_move_0000(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2]++;
         ewk->wu.rl_flag = 1;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].r_limit2 + bg_w.pos_offset + 32;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].r_limit2 + g_state.bg_w.pos_offset + 32;
         ewk->wu.xyz[0].disp.low = 0;
         ewk->wu.xyz[1].disp.pos = 107;
         ewk->wu.xyz[1].disp.low = 0;
@@ -547,7 +548,7 @@ s32 effect_J8_init() {
         ewk->wu.my_priority = ewk->wu.position_z = 83;
         ewk->wu.char_index = 4;
         ewk->wu.sync_suzi = 0;
-        ewk->wu.char_table[0] = char_add[bg_w.bg_index];
+        ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
         suzi_offset_set(ewk);
     }
 

@@ -7,6 +7,7 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff58.h"
 #include "sf33rd/Source/Game/effect/eff76.h"
@@ -38,21 +39,21 @@ static void ms_win_enter(struct _TASK* tp) {
     s16 ix;
 
     Switch_Screen(0);
-    Play_Mode = 1;
-    Replay_Status[0] = 0;
-    Replay_Status[1] = 0;
+    g_state.Play_Mode = 1;
+    g_state.Replay_Status[0] = 0;
+    g_state.Replay_Status[1] = 0;
 
-    tp->free[0] = 1; /* Match M_No[0] phases 1 to 5 */
-    tp->free[1] = 0; /* Matches M_No[1] */
+    tp->free[0] = 1; /* Match g_state.M_No[0] phases 1 to 5 */
+    tp->free[1] = 0; /* Matches g_state.M_No[1] */
 
-    Game_pause = 0;
+    g_state.Game_pause = 0;
     BGM_Request(55);
-    Cover_Timer = 23;
+    g_state.Cover_Timer = 23;
     All_Clear_Suicide();
-    base_y_pos = 40;
+    g_state.base_y_pos = 40;
 
     for (ix = 0; ix < 4; ix++) {
-        Unsubstantial_BG[ix] = 0;
+        g_state.Unsubstantial_BG[ix] = 0;
     }
 
     System_all_clear_Level_B();
@@ -60,13 +61,13 @@ static void ms_win_enter(struct _TASK* tp) {
     Make_texcash_of_list(4);
     load_any_texture_patnum(0x7F30, 0xC, 0);
     Setup_BG(0, 0x200, 0);
-    bg_etc_write(PL_Color_Data[My_char[Winner_id]]);
+    bg_etc_write(PL_Color_Data[g_state.My_char[g_state.Winner_id]]);
     Setup_BG(2, 0x300, 0);
     Setup_BG(1, 0x200, 0);
     Setup_BG(3, 0x2C0, 0);
 
-    if (Play_Type == 0) {
-        Last_Selected_EM[Winner_id] = 1;
+    if (g_state.Play_Type == 0) {
+        g_state.Last_Selected_EM[g_state.Winner_id] = 1;
     }
 
     pulpul_stop();
@@ -78,9 +79,9 @@ static void ms_win_tick(struct _TASK* tp) {
         Switch_Screen(0);
         tp->free[0] += 1;
 
-        /* Score/win globals — always compute, even in RmlUi mode */
-        WGJ_Score = Continue_Coin[Winner_id] + Score[Winner_id][Play_Type];
-        WGJ_Win = Win_Record[Winner_id];
+        /* g_state.Score/win globals — always compute, even in RmlUi mode */
+        g_state.WGJ_Score = g_state.Continue_Coin[g_state.Winner_id] + g_state.Score[g_state.Winner_id][g_state.Play_Type];
+        g_state.WGJ_Win = g_state.Win_Record[g_state.Winner_id];
 
         if (use_rmlui && rmlui_screen_winner) {
             rmlui_win_screen_show();
@@ -92,7 +93,7 @@ static void ms_win_tick(struct _TASK* tp) {
             spawn_effect_76(0x3A, 3, 1);
             spawn_effect_76(0x2C, 3, 1);
 
-            Order_Dir[0x2D] = 4;
+            g_state.Order_Dir[0x2D] = 4;
             spawn_effect_76(0x2D, 1, 0x1E);
 
             spawn_effect_76(0x38, 6, 1);
@@ -109,7 +110,7 @@ static void ms_win_tick(struct _TASK* tp) {
         if (!use_rmlui || !rmlui_screen_winner) {
             Setup_Wins_OBJ();
         }
-        effect_B8_init(WINNER, 0x3C);
+        effect_B8_init(g_state.WINNER, 0x3C);
         break;
 
     case 2:
@@ -125,25 +126,25 @@ static void ms_win_tick(struct _TASK* tp) {
             if (Switch_Screen_Revival(1) != 0) {
                 tp->free[0] += 1;
                 tp->timer = 90;
-                Forbid_Break = -1;
-                Ignore_Entry[LOSER] = 0;
-                Target_BG_X[2] = bg_w.bgw[2].wxy[0].disp.pos - 384;
-                Offset_BG_X[2] = 0;
-                Next_Step = 0;
-                bg_mvxy.a[0].sp = -0x100000;
-                bg_mvxy.d[0].sp = 0x800;
+                g_state.Forbid_Break = -1;
+                g_state.Ignore_Entry[g_state.LOSER] = 0;
+                g_state.Target_BG_X[2] = g_state.bg_w.bgw[2].wxy[0].disp.pos - 384;
+                g_state.Offset_BG_X[2] = 0;
+                g_state.Next_Step = 0;
+                g_state.bg_mvxy.a[0].sp = -0x100000;
+                g_state.bg_mvxy.d[0].sp = 0x800;
 
                 effect_58_init(0xE, 0x14, 2);
 
                 if (Debug_w[DEBUG_MY_CHAR_PL1]) {
-                    My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
+                    g_state.My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
                 }
                 if (Debug_w[DEBUG_MY_CHAR_PL2]) {
-                    My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
+                    g_state.My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
                 }
 
-                if (Mode_Type == MODE_ARCADE) {
-                    Push_LDREQ_Queue_Player(Winner_id, My_char[Winner_id]);
+                if (g_state.Mode_Type == MODE_ARCADE) {
+                    Push_LDREQ_Queue_Player(g_state.Winner_id, g_state.My_char[g_state.Winner_id]);
                 }
             }
             break;
@@ -155,14 +156,14 @@ static void ms_win_tick(struct _TASK* tp) {
             tp->free[0] += 1;
             tp->free[1] = 0;
             tp->timer = 0xAA;
-            Forbid_Break = 0;
+            g_state.Forbid_Break = 0;
         }
         break;
 
     case 4:
         switch (tp->free[1]) {
         case 0:
-            if (Scene_Cut) {
+            if (g_state.Scene_Cut) {
                 tp->timer = 9;
             }
 
@@ -170,7 +171,7 @@ static void ms_win_tick(struct _TASK* tp) {
                 tp->timer = 9;
                 tp->free[1] += 1;
 
-                if (Mode_Type == MODE_ARCADE) {
+                if (g_state.Mode_Type == MODE_ARCADE) {
                     SsBgmFadeOut(0x1000);
                 }
             }
@@ -192,21 +193,21 @@ static void ms_loser_enter(struct _TASK* tp) {
     s16 ix;
 
     Switch_Screen(0);
-    Play_Mode = 1;
-    Replay_Status[0] = 0;
-    Replay_Status[1] = 0;
+    g_state.Play_Mode = 1;
+    g_state.Replay_Status[0] = 0;
+    g_state.Replay_Status[1] = 0;
 
-    tp->free[0] = 1; /* Match M_No[0] */
-    tp->free[1] = 0; /* Match M_No[1] */
+    tp->free[0] = 1; /* Match g_state.M_No[0] */
+    tp->free[1] = 0; /* Match g_state.M_No[1] */
 
-    Game_pause = 0;
+    g_state.Game_pause = 0;
     BGM_Request(55);
-    Cover_Timer = 23;
+    g_state.Cover_Timer = 23;
     All_Clear_Suicide();
-    base_y_pos = 40;
+    g_state.base_y_pos = 40;
 
     for (ix = 0; ix < 4; ix++) {
-        Unsubstantial_BG[ix] = 0;
+        g_state.Unsubstantial_BG[ix] = 0;
     }
 
     System_all_clear_Level_B();
@@ -214,13 +215,13 @@ static void ms_loser_enter(struct _TASK* tp) {
     Make_texcash_of_list(4);
     load_any_texture_patnum(0x7F30, 0xC, 0);
     Setup_BG(0, 0x200, 0);
-    bg_etc_write(PL_Color_Data[My_char[Winner_id]]);
+    bg_etc_write(PL_Color_Data[g_state.My_char[g_state.Winner_id]]);
     Setup_BG(2, 0x300, 0);
     Setup_BG(1, 0x200, 0);
     Setup_BG(3, 0x2C0, 0);
 
-    if (Play_Type == 0) {
-        Last_Selected_EM[Winner_id] = 1;
+    if (g_state.Play_Type == 0) {
+        g_state.Last_Selected_EM[g_state.Winner_id] = 1;
     }
 
     pulpul_stop();
@@ -240,11 +241,11 @@ static void ms_loser_tick(struct _TASK* tp) {
             spawn_effect_76(0x36, 3, 1);
             spawn_effect_76(0x39, 3, 1);
 
-            Order_Dir[0x2D] = 4;
+            g_state.Order_Dir[0x2D] = 4;
             spawn_effect_76(0x2D, 1, 30);
         }
 
-        effect_B8_init(WINNER, 0x3C);
+        effect_B8_init(g_state.WINNER, 0x3C);
         break;
 
     case 2:
@@ -260,8 +261,8 @@ static void ms_loser_tick(struct _TASK* tp) {
             if (Switch_Screen_Revival(1) != 0) {
                 tp->free[0] += 1;
                 tp->timer = 90;
-                Forbid_Break = -1;
-                Ignore_Entry[LOSER] = 0;
+                g_state.Forbid_Break = -1;
+                g_state.Ignore_Entry[g_state.LOSER] = 0;
             }
             break;
         }
@@ -272,14 +273,14 @@ static void ms_loser_tick(struct _TASK* tp) {
             tp->free[0] += 1;
             tp->free[1] = 0;
             tp->timer = 0xAA;
-            Forbid_Break = 0;
+            g_state.Forbid_Break = 0;
         }
         break;
 
     case 4:
         switch (tp->free[1]) {
         case 0:
-            if (Scene_Cut) {
+            if (g_state.Scene_Cut) {
                 tp->timer = 9;
             }
 
@@ -287,7 +288,7 @@ static void ms_loser_tick(struct _TASK* tp) {
                 tp->timer = 9;
                 tp->free[1] += 1;
 
-                if (Mode_Type == MODE_ARCADE) {
+                if (g_state.Mode_Type == MODE_ARCADE) {
                     SsBgmFadeOut(0x1000);
                 }
             }

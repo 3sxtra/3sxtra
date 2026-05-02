@@ -24,11 +24,12 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff66.h"    /* effect_66_init */
 #include "sf33rd/Source/Game/effect/eff91.h"    /* effect_91_init */
 #include "sf33rd/Source/Game/effect/effa0.h"    /* effect_A0_init */
-#include "sf33rd/Source/Game/engine/workuser.h" /* plsw, Menu_Cursor_*, Order/Timer, VS_Win_Record, Sel_PL_Complete, Sel_Arts_Complete, Suicide, Cursor_Y_Pos, Mode_Type etc. */
+#include "sf33rd/Source/Game/engine/workuser.h" /* plsw, Menu_Cursor_*, g_state.Order/Timer, g_state.VS_Win_Record, g_state.Sel_PL_Complete, g_state.Sel_Arts_Complete, g_state.Suicide, g_state.Cursor_Y_Pos, g_state.Mode_Type etc. */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init, Menu_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub, VS_Result_Select_Sub, Setup_VS_Mode, Setup_Win_Lose_OBJ */
 #include "sf33rd/Source/Game/sound/se.h"       /* BGM_Request_Code_Check, BGM_Stop */
@@ -85,10 +86,10 @@ static void vs_result_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[1] = 16;
     task_ptr->r_no[2] = 1; /* for Menu_Sub_case1 compat */
     task_ptr->r_no[3] = 0;
-    Sel_PL_Complete[0] = 0;
-    Sel_Arts_Complete[0] = 0;
-    Sel_PL_Complete[1] = 0;
-    Sel_Arts_Complete[1] = 0;
+    g_state.Sel_PL_Complete[0] = 0;
+    g_state.Sel_Arts_Complete[0] = 0;
+    g_state.Sel_PL_Complete[1] = 0;
+    g_state.Sel_Arts_Complete[1] = 0;
     Clear_Flash_Init(4);
 
     /* Advance to SETUP phase — next on_tick will process it */
@@ -117,49 +118,49 @@ static void vs_result_tick(struct _TASK* task_ptr) {
         task_ptr->r_no[2] = 2; /* for legacy compat (Menu_Sub_case1) */
         task_ptr->timer = 5;
         Menu_Common_Init();
-        Menu_Cursor_Y[0] = Cursor_Y_Pos[0][0];
-        Menu_Cursor_Y[1] = Cursor_Y_Pos[1][0];
-        Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1;
-        Menu_Cursor_X[0] = 0;
-        Menu_Cursor_X[1] = 0;
-        Order[78] = 2;
-        Order_Dir[78] = 0;
-        Order_Timer[78] = 1;
+        g_state.Menu_Cursor_Y[0] = g_state.Cursor_Y_Pos[0][0];
+        g_state.Menu_Cursor_Y[1] = g_state.Cursor_Y_Pos[1][0];
+        g_state.Menu_Suicide[0] = 0;
+        g_state.Menu_Suicide[1] = 1;
+        g_state.Menu_Cursor_X[0] = 0;
+        g_state.Menu_Cursor_X[1] = 0;
+        g_state.Order[78] = 2;
+        g_state.Order_Dir[78] = 0;
+        g_state.Order_Timer[78] = 1;
 
         /* Compute win percentages */
-        total_battle = VS_Win_Record[0] + VS_Win_Record[1];
+        total_battle = g_state.VS_Win_Record[0] + g_state.VS_Win_Record[1];
         if (total_battle == 0) {
             total_battle = 1;
         }
-        if (VS_Win_Record[0] >= VS_Win_Record[1]) {
-            ave[1] = (VS_Win_Record[1] * 100) / total_battle;
-            if (ave[1] == 0 && VS_Win_Record[1] > 0) {
+        if (g_state.VS_Win_Record[0] >= g_state.VS_Win_Record[1]) {
+            ave[1] = (g_state.VS_Win_Record[1] * 100) / total_battle;
+            if (ave[1] == 0 && g_state.VS_Win_Record[1] > 0) {
                 ave[1] = 1;
             }
             ave[0] = 100 - ave[1];
         } else {
-            ave[0] = (VS_Win_Record[0] * 100) / total_battle;
-            if (ave[0] == 0 && VS_Win_Record[0] > 0) {
+            ave[0] = (g_state.VS_Win_Record[0] * 100) / total_battle;
+            if (ave[0] == 0 && g_state.VS_Win_Record[0] > 0) {
                 ave[0] = 1;
             }
             ave[1] = 100 - ave[0];
         }
 
         if (use_rmlui && rmlui_screen_vs_result) {
-            rmlui_vs_result_show(VS_Win_Record[0], VS_Win_Record[1], ave[0], ave[1]);
+            rmlui_vs_result_show(g_state.VS_Win_Record[0], g_state.VS_Win_Record[1], ave[0], ave[1]);
         } else {
             effect_66_init(91, 12, 0, 0, 71, 9, 0);
-            Order[91] = 3;
-            Order_Timer[91] = 1;
+            g_state.Order[91] = 3;
+            g_state.Order_Timer[91] = 1;
             effect_66_init(138, 24, 0, 0, -1, -1, -0x7FF9);
-            Order[138] = 3;
-            Order_Timer[138] = 1;
+            g_state.Order[138] = 3;
+            g_state.Order_Timer[138] = 1;
             effect_66_init(139, 25, 0, 0, -1, -1, -0x7FF9);
-            Order[139] = 3;
-            Order_Timer[139] = 1;
-            effect_A0_init(0, VS_Win_Record[0], 0, 3, 0, 0, 0);
-            effect_A0_init(0, VS_Win_Record[1], 1, 3, 0, 0, 0);
+            g_state.Order[139] = 3;
+            g_state.Order_Timer[139] = 1;
+            effect_A0_init(0, g_state.VS_Win_Record[0], 0, 3, 0, 0, 0);
+            effect_A0_init(0, g_state.VS_Win_Record[1], 1, 3, 0, 0, 0);
             effect_A0_init(0, ave[0], 2, 3, 0, 0, 0);
             effect_A0_init(0, ave[1], 3, 3, 0, 0, 0);
 
@@ -170,7 +171,7 @@ static void vs_result_tick(struct _TASK* task_ptr) {
 
             Setup_Win_Lose_OBJ();
         }
-        Menu_Cursor_Move = 0;
+        g_state.Menu_Cursor_Move = 0;
         s_phase = VR_PHASE_WAIT_TIMER;
         break;
 
@@ -196,7 +197,7 @@ static void vs_result_tick(struct _TASK* task_ptr) {
     case VR_PHASE_FADE_IN:
         if (FadeIn(1, 25, 8)) {
             s_phase = VR_PHASE_ACTIVE;
-            Suicide[3] = 0;
+            g_state.Suicide[3] = 0;
         }
         break;
 
@@ -262,9 +263,9 @@ static void vs_result_tick(struct _TASK* task_ptr) {
         if (--task_ptr->timer <= 0) {
             /* Timeout — server didn't respond. Continue playing VS. */
             Setup_VS_Mode(task_ptr);
-            G_No[1] = 12;
-            G_No[2] = 1;
-            Mode_Type = MODE_VERSUS;
+            g_state.G_No[1] = 12;
+            g_state.G_No[2] = 1;
+            g_state.Mode_Type = MODE_VERSUS;
             MenuScreen_ExitToLegacy(task_ptr);
             break;
         }
@@ -347,6 +348,6 @@ void ms_vs_result_register(void) {
         .rmlui_show = vs_result_rmlui_show,
         .rmlui_hide = vs_result_rmlui_hide,
         .header_type = MENU_HEADER_MODE_MENU, /* no dedicated header */
-        .effect_slot = 78,                    /* BG Order slot used during setup */
+        .effect_slot = 78,                    /* BG g_state.Order slot used during setup */
     };
 }

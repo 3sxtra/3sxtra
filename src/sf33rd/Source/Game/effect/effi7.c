@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effi7.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -53,7 +54,7 @@ void effect_I7_move(WORK_Other* ewk) {
             break;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             if (ewk->wu.hit_stop) {
                 ewk->wu.hit_stop--;
             } else {
@@ -101,7 +102,7 @@ s32 effect_I7_init(PLW* wk, u8 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if (test_flag) {
+    if (g_state.test_flag) {
         return 0;
     }
 

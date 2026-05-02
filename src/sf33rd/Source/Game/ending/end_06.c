@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -41,25 +42,25 @@ const s16 end_600_2000_tbl[12][2] = { { 3, -2 }, { 1, 3 }, { 2, -1 }, { 3, -2 },
 
 /** @brief Hugo's ending entry point — initialize and run all ending scenes. */
 void end_06000(s16 pl_num) {
-    switch (end_w.r_no_1) {
+    switch (g_state.end_w.r_no_1) {
     case 0:
-        end_w.r_no_1++;
-        end_w.r_no_2 = 0;
+        g_state.end_w.r_no_1++;
+        g_state.end_w.r_no_2 = 0;
         common_end_init00(pl_num);
-        end_w.timer = timer_6_tbl[end_w.r_no_2];
+        g_state.end_w.timer = timer_6_tbl[g_state.end_w.r_no_2];
         common_end_init01();
         BGM_Request(0x32);
         break;
 
     case 1:
-        end_w.timer--;
+        g_state.end_w.timer--;
 
-        if (end_w.timer < 0) {
-            end_w.r_no_2++;
+        if (g_state.end_w.timer < 0) {
+            g_state.end_w.r_no_2++;
 
-            if (end_w.r_no_2 >= 6) {
-                end_w.r_no_1++;
-                end_w.end_flag = 1;
+            if (g_state.end_w.r_no_2 >= 6) {
+                g_state.end_w.r_no_1++;
+                g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
                 end_bg_pos_hosei2();
@@ -67,9 +68,9 @@ void end_06000(s16 pl_num) {
                 break;
             }
 
-            end_w.timer = timer_6_tbl[end_w.r_no_2];
-            bg_w.bgw[0].r_no_1 = 0;
-            bg_w.bgw[1].r_no_1 = 0;
+            g_state.end_w.timer = timer_6_tbl[g_state.end_w.r_no_2];
+            g_state.bg_w.bgw[0].r_no_1 = 0;
+            g_state.bg_w.bgw[1].r_no_1 = 0;
         }
 
         end_600_move();
@@ -87,10 +88,10 @@ void end_06000(s16 pl_num) {
 /** @brief Dispatch to the current scene handler for background layer 0. */
 static void end_600_move() {
     void (*end_600_jp[6])() = { end_600_0000, end_600_1000, end_600_2000, end_600_3000, end_600_4000, end_600_5000 };
-    bgw_ptr = &bg_w.bgw[0];
-    if (end_w.r_no_2 >= 6)
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    if (g_state.end_w.r_no_2 >= 6)
         return;
-    end_600_jp[end_w.r_no_2]();
+    end_600_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Scene 0 — initial background setup with message. */
@@ -99,8 +100,8 @@ static void end_600_0000() {
     case 0:
         bgw_ptr->r_no_1++;
         Bg_On_W(1 << bgw_ptr->fam_no);
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
         Rewrite_End_Message(1);
@@ -117,8 +118,8 @@ static void end_600_1000() {
     case 0:
         bgw_ptr->r_no_1++;
         Bg_On_W(1 << (bgw_ptr->fam_no));
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
         bgw_ptr->free = 0;
@@ -158,8 +159,8 @@ static void end_600_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][1] + 16;
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1] + 16;
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][1] + 16;
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1] + 16;
         bgw_ptr->abs_x = 0x210;
         bgw_ptr->abs_y = 16;
         bgw_ptr->free = 0;
@@ -176,8 +177,8 @@ static void end_600_2000() {
             bgw_ptr->old_pos_x = end_600_2000_tbl[bgw_ptr->free][0];
             bgw_ptr->free++;
             bgw_ptr->free &= 7;
-            bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0] + end_600_2000_tbl[bgw_ptr->free][0];
-            bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1] + end_600_2000_tbl[bgw_ptr->free][1];
+            bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0] + end_600_2000_tbl[bgw_ptr->free][0];
+            bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1] + end_600_2000_tbl[bgw_ptr->free][1];
 
             bgw_ptr->abs_x = end_600_2000_tbl[bgw_ptr->free][0] + 0x200;
             bgw_ptr->abs_y = end_600_2000_tbl[bgw_ptr->free][1];
@@ -192,8 +193,8 @@ static void end_600_2000() {
             bgw_ptr->old_pos_x = end_600_2000_tbl[bgw_ptr->free][0];
             bgw_ptr->free++;
             bgw_ptr->free &= 7;
-            bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0] + end_600_2000_tbl[bgw_ptr->free][0];
-            bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1] + end_600_2000_tbl[bgw_ptr->free][1];
+            bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0] + end_600_2000_tbl[bgw_ptr->free][0];
+            bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1] + end_600_2000_tbl[bgw_ptr->free][1];
 
             bgw_ptr->abs_x = end_600_2000_tbl[bgw_ptr->free][0] + 0x200;
             bgw_ptr->abs_y = end_600_2000_tbl[bgw_ptr->free][1];
@@ -208,8 +209,8 @@ static void end_600_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = 0;
         Rewrite_End_Message(3);
@@ -241,8 +242,8 @@ static void end_600_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = 0;
         Rewrite_End_Message(4);
@@ -258,14 +259,14 @@ static void end_600_5000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = 0;
         Rewrite_End_Message(5);
         bgw_ptr->free = 0x1E;
         end_fade_flag = 1;
-        end_fade_timer = timer_6_tbl[end_w.r_no_2] - 120;
+        end_fade_timer = timer_6_tbl[g_state.end_w.r_no_2] - 120;
         break;
 
     case 1:
@@ -298,10 +299,10 @@ static void end_600_5000() {
 /** @brief Dispatch to the current scene handler for background layer 1. */
 static void end_601_move() {
     void (*end_601_jp[6])() = { end_601_0000, end_601_1000, end_601_2000, end_601_3000, end_X_com01, end_X_com01 };
-    bgw_ptr = &bg_w.bgw[1];
-    if (end_w.r_no_2 >= 6)
+    bgw_ptr = &g_state.bg_w.bgw[1];
+    if (g_state.end_w.r_no_2 >= 6)
         return;
-    end_601_jp[end_w.r_no_2]();
+    end_601_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Layer 1 scene 0 — horizontal pan setup. */
@@ -310,8 +311,8 @@ static void end_601_0000() {
     case 0:
         bgw_ptr->r_no_1++;
         Bg_On_W(1 << bgw_ptr->fam_no);
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = 0;
         break;
@@ -327,8 +328,8 @@ static void end_601_1000() {
     case 0:
         bgw_ptr->r_no_1++;
         Bg_On_W(1 << bgw_ptr->fam_no);
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = 0;
         break;
@@ -336,7 +337,7 @@ static void end_601_1000() {
     case 1:
         bgw_ptr->xy[1].cal -= 0x2000;
 
-        if (bg_w.bgw[0].r_no_1 >= 2) {
+        if (g_state.bg_w.bgw[0].r_no_1 >= 2) {
             bgw_ptr->r_no_1++;
         }
 
@@ -354,14 +355,14 @@ static void end_601_2000() {
     case 0:
         bgw_ptr->r_no_1++;
         Bg_Off_W(1 << (bgw_ptr->fam_no));
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][1] - 16;
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1] - 16;
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][1] - 16;
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1] - 16;
         bgw_ptr->abs_x = 0x1F0;
         bgw_ptr->abs_y = -16;
         bgw_ptr->free = 0;
         bgw_ptr->old_pos_x = 16;
 
-        if (Country == COUNTRY_JAPAN || Country == COUNTRY_KOREA) {
+        if (g_state.Country == COUNTRY_JAPAN || g_state.Country == COUNTRY_KOREA) {
             effect_E6_init(0x2C);
             break;
         }
@@ -376,8 +377,8 @@ static void end_601_2000() {
             bgw_ptr->old_pos_x = end_600_2000_tbl[bgw_ptr->free][0];
             bgw_ptr->free++;
             bgw_ptr->free &= 7;
-            bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0] - end_600_2000_tbl[bgw_ptr->free][0];
-            bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1] - end_600_2000_tbl[bgw_ptr->free][1];
+            bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0] - end_600_2000_tbl[bgw_ptr->free][0];
+            bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1] - end_600_2000_tbl[bgw_ptr->free][1];
 
             bgw_ptr->abs_x = 0x200 - end_600_2000_tbl[bgw_ptr->free][0];
             bgw_ptr->abs_y = -end_600_2000_tbl[bgw_ptr->free][1];
@@ -396,8 +397,8 @@ static void end_601_3000() {
     case 0:
         bgw_ptr->r_no_1++;
         Bg_On_W(1 << bgw_ptr->fam_no);
-        bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_6_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_6_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = 0;
         break;

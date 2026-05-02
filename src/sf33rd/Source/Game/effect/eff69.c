@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff69.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -35,21 +36,21 @@ void effect_69_move(WORK_Other* ewk) {
 }
 
 static void EFF69_WAIT(WORK_Other* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
 static void EFF69_SLIDE_IN(WORK_Other* ewk) {
-    if (Order[ewk->wu.dir_old] != 1) {
-        ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
+    if (g_state.Order[ewk->wu.dir_old] != 1) {
+        ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
         return;
     }
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
@@ -57,7 +58,7 @@ static void EFF69_SLIDE_IN(WORK_Other* ewk) {
         ewk->wu.disp_flag = 1;
         Setup_Clear_OBJ(ewk);
 
-        if (Order_Dir[ewk->wu.dir_old] == 4) {
+        if (g_state.Order_Dir[ewk->wu.dir_old] == 4) {
             ewk->wu.mvxy.a[0].sp = -0x100000;
             ewk->wu.mvxy.d[0].sp = 0;
         } else {
@@ -74,16 +75,16 @@ static void EFF69_SLIDE_IN(WORK_Other* ewk) {
 
         if (0 < ewk->wu.mvxy.a[0].sp) {
             if (ewk->wu.hit_quake <= ewk->wu.xyz[0].disp.pos) {
-                if (Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
-                    Order[ewk->wu.dir_old] = 0;
+                if (g_state.Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
+                    g_state.Order[ewk->wu.dir_old] = 0;
                 }
 
                 ewk->wu.routine_no[0] = 0;
                 ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
             }
         } else if (ewk->wu.hit_quake >= ewk->wu.xyz[0].disp.pos) {
-            if (Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
-                Order[ewk->wu.dir_old] = 0;
+            if (g_state.Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
+                g_state.Order[ewk->wu.dir_old] = 0;
             }
 
             ewk->wu.routine_no[0] = 0;
@@ -100,13 +101,13 @@ static void EFF69_SLIDE_OUT(WORK_Other* ewk) {
         if (ewk->wu.disp_flag == 0) {
             ewk->wu.routine_no[1] = 99;
         } else {
-            if (--Order_Timer[ewk->wu.dir_old]) {
+            if (--g_state.Order_Timer[ewk->wu.dir_old]) {
                 break;
             }
             ewk->wu.routine_no[1]++;
         }
 
-        if (Order_Dir[ewk->wu.dir_old] == 4) {
+        if (g_state.Order_Dir[ewk->wu.dir_old] == 4) {
             ewk->wu.mvxy.a[0].sp = -0x100000;
             ewk->wu.mvxy.d[0].sp = -0x8000;
         } else {
@@ -136,7 +137,7 @@ static void EFF69_SLIDE_OUT(WORK_Other* ewk) {
 static void EFF69_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
@@ -149,7 +150,7 @@ static void EFF69_SUDDENLY(WORK_Other* ewk) {
 
     default:
         ewk->wu.routine_no[0] = 0;
-        Order[ewk->wu.dir_old] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
         break;
     }
 }
@@ -158,7 +159,7 @@ s32 effect_69_init(s16 dir_old) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((dir_old == 3 || dir_old == 4) && (Present_Mode == 4 || Present_Mode == 5)) {
+    if ((dir_old == 3 || dir_old == 4) && (g_state.Present_Mode == 4 || g_state.Present_Mode == 5)) {
         return 0;
     }
 

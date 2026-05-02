@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff78.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -26,7 +27,7 @@ void effect_78_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll && crow_fuss_check(ewk)) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll && crow_fuss_check(ewk)) {
             char_move(&ewk->wu);
         }
 
@@ -34,7 +35,7 @@ void effect_78_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             crow_fuss_move(ewk);
         }
 
@@ -51,12 +52,12 @@ void effect_78_move(WORK_Other* ewk) {
 s32 crow_fuss_check(WORK_Other* ewk) {
     s16 work;
 
-    if (bg_w.quake_y_index > 3) {
+    if (g_state.bg_w.quake_y_index > 3) {
         ewk->wu.routine_no[0]++;
         ewk->wu.routine_no[1] = 0;
         ewk->wu.direction = 0;
 
-        work = plw[0].wu.xyz[0].disp.pos + plw[1].wu.xyz[0].disp.pos;
+        work = g_state.plw[0].wu.xyz[0].disp.pos + g_state.plw[1].wu.xyz[0].disp.pos;
         work >>= 1;
         work = ewk->wu.xyz[0].disp.pos - work;
 

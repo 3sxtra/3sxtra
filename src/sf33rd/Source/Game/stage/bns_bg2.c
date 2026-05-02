@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/stage/bns_bg2.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff12.h"
@@ -17,11 +18,11 @@
 
 /** @brief Main handler for Bonus Stage 2. */
 void Bonus_bg2() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bns11();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bns12();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bns13();
     bg_pos_hosei_sub3(2);
     Bg_Family_Set_appoint(2);
@@ -41,7 +42,7 @@ void bns11() {
 void bns11_init00() {
     bgw_ptr->r_no_0++;
 
-    if (Player_id == 0) {
+    if (g_state.Player_id == 0) {
         bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = 0x223;
     } else {
         bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = 0x1EB;
@@ -50,11 +51,11 @@ void bns11_init00() {
     bgw_ptr->pos_x_work = 0x200;
     bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
     bgw_ptr->zuubun = 0;
-    bg_app = 0;
+    g_state.bg_app = 0;
     effect_05_init();
     effect_12_init(4);
 
-    if (!plw->wu.pl_operator) {
+    if (!g_state.plw->wu.pl_operator) {
         effect_35_init(2, 1);
     } else {
         effect_35_init(2, 0);
@@ -83,7 +84,7 @@ void bns12() {
 void bns12_init00() {
     bgw_ptr->r_no_0++;
 
-    if (Player_id == 0) {
+    if (g_state.Player_id == 0) {
         bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = 0x211;
     } else {
         bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = 0x1F5;

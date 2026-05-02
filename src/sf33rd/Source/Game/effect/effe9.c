@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effe9.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/rendering/renderer.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -71,17 +72,17 @@ void effect_E9_move(WORK_Other* ewk) {
             break;
         }
 
-        if (End_PL == 14 && ewk->wu.type < 2) {
+        if (g_state.End_PL == 14 && ewk->wu.type < 2) {
             if (ewk->wu.type) {
                 ita_p[0].y = ita_p[3].y = 0.0f;
-                ita_p[1].y = ita_p[2].y = (33.0f - ((33.0f * scr_sc) - 33.0f));
+                ita_p[1].y = ita_p[2].y = (33.0f - ((33.0f * g_state.scr_sc) - 33.0f));
             } else {
-                ita_p[0].y = ita_p[3].y = (224.0f - (1.0f + (48.0f - ((48.0f * scr_sc) - 48.0f))));
+                ita_p[0].y = ita_p[3].y = (224.0f - (1.0f + (48.0f - ((48.0f * g_state.scr_sc) - 48.0f))));
                 ita_p[1].y = ita_p[2].y = 224.0f;
             }
         }
 
-        if (end_w.r_no_0 >= 6) {
+        if (g_state.end_w.r_no_0 >= 6) {
             ewk->wu.routine_no[0]++;
         }
 

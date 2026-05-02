@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effb0.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -21,7 +22,7 @@ const s16 effb0_data_tbl[8][2] = { { 656, 112 }, { 328, 96 },  { 352, 224 }, { 6
 void effect_B0_move(WORK_Other* ewk) {
     s16 work;
 
-    if (ewk->wu.old_rno[6] < end_w.r_no_2) {
+    if (ewk->wu.old_rno[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[0] = 99;
     }
 
@@ -80,13 +81,13 @@ s32 effect_B0_init() {
         ewk->wu.type = i;
         ewk->wu.work_id = 16;
         ewk->wu.cgromtype = 1;
-        ewk->wu.old_rno[0] = end_w.r_no_2;
+        ewk->wu.old_rno[0] = g_state.end_w.r_no_2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.char_table[0] = (u32*)_end_char_table;
         ewk->wu.my_col_code = 300;
         ewk->wu.my_family = 1;
         ewk->wu.old_rno[6] = 0;
-        ewk->wu.old_rno[6] += end_w.r_no_2;
+        ewk->wu.old_rno[6] += g_state.end_w.r_no_2;
         ewk->wu.xyz[0].disp.pos = effb0_data_tbl[i][0];
         ewk->wu.xyz[1].disp.pos = effb0_data_tbl[i][1];
         ewk->wu.my_priority = ewk->wu.position_z = 80;

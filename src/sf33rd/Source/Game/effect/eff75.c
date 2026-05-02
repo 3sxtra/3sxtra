@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff75.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -30,7 +31,7 @@ void effect_75_move(WORK_Other* ewk) {
 }
 
 static void EFF75_WAIT(WORK_Other* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
@@ -38,35 +39,35 @@ static void EFF75_WAIT(WORK_Other* ewk) {
 void EFF75_SLIDE_IN(WORK_Other* /* unused */) {}
 
 static void EFF75_CHAR_CHANGE(WORK_Other* ewk) {
-    if (--Order_Timer[ewk->wu.dir_old] != 0) {
+    if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
 
     ewk->wu.routine_no[0] = 0;
-    Order[ewk->wu.dir_old] = 0;
-    ewk->wu.dir_step = Order_Dir[ewk->wu.dir_old];
+    g_state.Order[ewk->wu.dir_old] = 0;
+    ewk->wu.dir_step = g_state.Order_Dir[ewk->wu.dir_old];
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
 }
 
 static void EFF75_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 1;
-        ewk->wu.xyz[1].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 1;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 1;
+        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 1;
         ewk->wu.position_z = 76;
-        ewk->wu.dir_step = Order_Dir[ewk->wu.dir_old];
+        ewk->wu.dir_step = g_state.Order_Dir[ewk->wu.dir_old];
         set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
         break;
 
     default:
         ewk->wu.routine_no[0] = 0;
-        Order[ewk->wu.dir_old] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
         break;
     }
 }

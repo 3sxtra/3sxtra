@@ -11,6 +11,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_vs_result.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -21,7 +22,7 @@ extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
 } // extern "C"
 
-// ─── Character name table (SF3:3S roster, index matches My_char) ───
+// ─── Character name table (SF3:3S roster, index matches g_state.My_char) ───
 static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
                                               "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
                                               "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
@@ -79,8 +80,8 @@ extern "C" void rmlui_vs_result_init(void) {
     ctor.BindFunc("p2_wins", [](Rml::Variant& v) { v = s_cache.p2_wins; });
     ctor.BindFunc("p1_pct", [](Rml::Variant& v) { v = s_cache.p1_pct; });
     ctor.BindFunc("p2_pct", [](Rml::Variant& v) { v = s_cache.p2_pct; });
-    ctor.BindFunc("p1_char", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[0])); });
-    ctor.BindFunc("p2_char", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[1])); });
+    ctor.BindFunc("p1_char", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[0])); });
+    ctor.BindFunc("p2_char", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[1])); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -96,10 +97,10 @@ extern "C" void rmlui_vs_result_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("vs_result"))
         return;
 
-    DIRTY_INT(p1_wins, (int)VS_Win_Record[0]);
-    DIRTY_INT(p2_wins, (int)VS_Win_Record[1]);
-    DIRTY_STR(p1_char, Rml::String(char_name(My_char[0])));
-    DIRTY_STR(p2_char, Rml::String(char_name(My_char[1])));
+    DIRTY_INT(p1_wins, (int)g_state.VS_Win_Record[0]);
+    DIRTY_INT(p2_wins, (int)g_state.VS_Win_Record[1]);
+    DIRTY_STR(p1_char, Rml::String(char_name(g_state.My_char[0])));
+    DIRTY_STR(p2_char, Rml::String(char_name(g_state.My_char[1])));
 }
 
 // ─── Show / Hide ─────────────────────────────────────────────────

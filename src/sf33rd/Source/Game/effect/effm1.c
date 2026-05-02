@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effm1.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -33,7 +34,7 @@ void effect_M1_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             effm1_move(ewk);
         }
 
@@ -125,9 +126,9 @@ s32 effect_M1_init(WORK* wk) {
     ewk->wu.sync_suzi = 0;
 
     if (wk->rl_flag) {
-        ewk->wu.old_rno[1] = bg_w.bgw[1].wxy[0].disp.pos - (bg_w.pos_offset + 32);
+        ewk->wu.old_rno[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos - (g_state.bg_w.pos_offset + 32);
     } else {
-        ewk->wu.old_rno[1] = bg_w.bgw[1].wxy[0].disp.pos + (bg_w.pos_offset + 32);
+        ewk->wu.old_rno[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos + (g_state.bg_w.pos_offset + 32);
     }
 
     suzi_offset_set(ewk);

@@ -1,9 +1,10 @@
 /**
  * @file eff14.c
- * Effect: Score / Bonus Display Effect (16x24 Digits)
+ * Effect: g_state.Score / Bonus Display Effect (16x24 Digits)
  */
 
 #include "sf33rd/Source/Game/effect/eff14.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff08.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -12,15 +13,15 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
 void effect_14_move(WORK_Other* ewk) {
-    if (Suicide[5] & 0x80) {
+    if (g_state.Suicide[5] & 0x80) {
         push_effect_work(&ewk->wu);
         return;
     }
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (Suicide[5] & 1) {
-            if (PB_Status & 3) {
+        if (g_state.Suicide[5] & 1) {
+            if (g_state.PB_Status & 3) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.dir_timer = 1;
                 ewk->wu.dir_step = 0;
@@ -46,7 +47,7 @@ void effect_14_move(WORK_Other* ewk) {
         break;
     }
 
-    Disp_Digit16x24(Disp_Score_Buff[ewk->wu.type], ewk->wu.position_x, ewk->wu.position_y, ewk->wu.my_col_code);
+    Disp_Digit16x24(g_state.Disp_Score_Buff[ewk->wu.type], ewk->wu.position_x, ewk->wu.position_y, ewk->wu.my_col_code);
 }
 
 s32 effect_14_init(s16 id, s16 x, s16 y, s16 atr) {

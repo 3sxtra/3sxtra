@@ -7,6 +7,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_button_config.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -34,7 +35,7 @@ extern "C" void rmlui_button_config_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("bc_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("bc_cursor", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
 
     // Button names for the 9 action rows
     static const char* btn_names[] = { "LP", "MP", "HP", "LK", "MK", "HK", "LP+LK", "MP+MK", "DEFAULT" };
@@ -56,7 +57,7 @@ extern "C" void rmlui_button_config_update(void) {
     // ⚡ Skip when document is hidden
     if (!rmlui_wrapper_is_game_document_visible("button_config"))
         return;
-    int cur = (int)Menu_Cursor_Y[0];
+    int cur = (int)g_state.Menu_Cursor_Y[0];
     if (cur != s_cache.cursor) {
         s_cache.cursor = cur;
         s_model_handle.DirtyVariable("bc_cursor");

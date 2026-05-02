@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff26.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff25.h"
@@ -43,7 +44,7 @@ void effect_26_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             eff26_jp_tbl[ewk->wu.old_rno[2] / 2](ewk);
         }
 
@@ -75,7 +76,7 @@ static void eff26_00(WORK_Other* ewk) {
         return;
     }
 
-    if (ewk->wu.hit_stop && !EXE_obroll) {
+    if (ewk->wu.hit_stop && !g_state.EXE_obroll) {
         char_move(&ewk->wu);
     }
 }
@@ -87,7 +88,7 @@ static void eff26_01(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
 
-        if (eff_hit_flag[oya->wu.type]) {
+        if (g_state.eff_hit_flag[oya->wu.type]) {
             ewk->wu.routine_no[0] = 99;
             break;
         }
@@ -95,7 +96,7 @@ static void eff26_01(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.hit_stop && !EXE_obroll) {
+        if (ewk->wu.hit_stop && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -108,7 +109,7 @@ static void eff26_01(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -127,7 +128,7 @@ static void eff26_02(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
 
-        if (eff_hit_flag[oya->wu.type]) {
+        if (g_state.eff_hit_flag[oya->wu.type]) {
             ewk->wu.routine_no[1] = 3;
             ewk->wu.disp_flag = 1;
             set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[7]);
@@ -137,7 +138,7 @@ static void eff26_02(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.hit_stop && !EXE_obroll) {
+        if (ewk->wu.hit_stop && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -150,7 +151,7 @@ static void eff26_02(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -161,7 +162,7 @@ static void eff26_02(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -176,14 +177,14 @@ static void eff26_03(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
 
-        if (eff_hit_flag[oya->wu.type]) {
+        if (g_state.eff_hit_flag[oya->wu.type]) {
             ewk->wu.routine_no[1] = 3;
             set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[1]);
             goto case_3;
         }
 
     case 1:
-        if (ewk->wu.hit_stop && !EXE_obroll) {
+        if (ewk->wu.hit_stop && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -196,7 +197,7 @@ static void eff26_03(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -210,7 +211,7 @@ static void eff26_03(WORK_Other* ewk) {
     case_3:
         ewk->wu.routine_no[1]++;
 
-        if (eff_hit_flag[ewk->wu.type]) {
+        if (g_state.eff_hit_flag[ewk->wu.type]) {
             ewk->wu.routine_no[0] = 99;
             break;
         }
@@ -235,12 +236,12 @@ static void eff26_04(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (eff_hit_flag[oya->wu.type]) {
+        if (g_state.eff_hit_flag[oya->wu.type]) {
             ewk->wu.routine_no[1] = 2;
             goto case_2;
         }
 
-        if (ewk->wu.hit_stop && !EXE_obroll) {
+        if (ewk->wu.hit_stop && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -253,7 +254,7 @@ static void eff26_04(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -267,7 +268,7 @@ static void eff26_04(WORK_Other* ewk) {
     case_2:
         ewk->wu.routine_no[1]++;
 
-        if (eff_hit_flag[ewk->wu.type]) {
+        if (g_state.eff_hit_flag[ewk->wu.type]) {
             ewk->wu.routine_no[0] = 99;
             break;
         }
@@ -288,7 +289,7 @@ static void eff26_04(WORK_Other* ewk) {
         /* fallthrough */
 
     case 4:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -307,7 +308,7 @@ static void eff26_05(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
 
-        if (eff_hit_flag[oya->wu.type]) {
+        if (g_state.eff_hit_flag[oya->wu.type]) {
             ewk->wu.routine_no[2] = 3;
             set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[1]);
             goto case_3;
@@ -316,7 +317,7 @@ static void eff26_05(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.hit_stop && !EXE_obroll) {
+        if (ewk->wu.hit_stop && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -329,7 +330,7 @@ static void eff26_05(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -344,7 +345,7 @@ static void eff26_05(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
 
-        if (eff_hit_flag[ewk->wu.type]) {
+        if (g_state.eff_hit_flag[ewk->wu.type]) {
             ewk->wu.routine_no[1] = 7;
             set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[7]);
             break;
@@ -367,7 +368,7 @@ static void eff26_05(WORK_Other* ewk) {
         break;
 
     case 5:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -378,7 +379,7 @@ static void eff26_05(WORK_Other* ewk) {
         break;
 
     case 7:
-        if (!EXE_obroll) {
+        if (!g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -431,7 +432,7 @@ s32 effect_26_init(WORK_Other* oya, s16 type26) {
         ewk->wu.old_rno[7] = *data_ptr++;
         ewk->wu.old_rno[4] = *data_ptr++;
         ewk->wu.old_rno[5] = *data_ptr++;
-        ewk->wu.char_table[0] = char_add[bg_w.bg_index];
+        ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
         suzi_offset_set(ewk);
     }
 

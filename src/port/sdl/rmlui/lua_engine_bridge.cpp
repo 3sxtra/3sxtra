@@ -14,7 +14,7 @@
  *   engine.get_frame_number()           -> integer
  *   engine.is_in_match()                -> boolean
  *   engine.get_input(id)                -> integer (raw p1sw_0 / p2sw_0)
- *   engine.set_lever_buff(id, v)        -> nil (writes Lever_Buff[id])
+ *   engine.set_lever_buff(id, v)        -> nil (writes g_state.Lever_Buff[id])
  *   engine.set_lua_dummy_active(active) -> nil (gates C dummy override)
  *   engine.get_dummy_settings()         -> table {block_type, parry_type, stun_mash,
  *                                          wakeup_mash, wakeup_reversal, guard_low_default,
@@ -22,6 +22,7 @@
  */
 
 #include "lua_engine_bridge.h"
+#include "game_state.h"
 
 #include <RmlUi/Lua/Interpreter.h>
 #include <SDL3/SDL.h>
@@ -74,7 +75,7 @@ static int l_read_player(lua_State* L) {
         return 1;
     }
 
-    PLW* wk = &plw[id - 1];
+    PLW* wk = &g_state.plw[id - 1];
     WORK* wu = &wk->wu;
 
     lua_createtable(L, 0, 80); // pre-allocate hash part
@@ -108,7 +109,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "flip_x", wu->direction);
     PUSH_INT(L, t, "direction", wu->direction);
 
-    // --- Character ID (offset 0x3C0) ---
+    // --- Character g_state.ID (offset 0x3C0) ---
     PUSH_INT(L, t, "char_id", wu->cg_number);
 
     // --- Vitality (offset 0x9F via base) ---
@@ -144,7 +145,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "char_index", wu->char_index);
     PUSH_INT(L, t, "cg_number", wu->cg_number);
 
-    // Animation ID: compute from char_table byte offset
+    // Animation g_state.ID: compute from char_table byte offset
     // In CPS3, action_address = char_table_base + char_table[koc][index]
     // The low 16 bits of action_address = framedata key.
     // On host, byte_offset = (u8*)set_char_ad - (u8*)char_table[now_koc]
@@ -433,18 +434,18 @@ static int l_read_player(lua_State* L) {
     // --- Parry validity/cooldown (from command processing system) ---
     // waza_flag[N] = parry validity timer (counts down from reset[N])
     //   N=3: forward parry, N=4: down parry, N=5: air parry, N=6: antiair parry
-    // waza_work[id][N].free3 = cooldown timer (counts down from reset[N]+10)
+    // g_state.waza_work[id][N].free3 = cooldown timer (counts down from reset[N]+10)
     // See check_10() and check_12() in cmd_main.c for the parry input detection.
     {
-        int pid = id - 1; // 0-indexed player id for wcp[] and waza_work[]
-        PUSH_INT(L, t, "parry_forward_validity_time", wcp[pid].waza_flag[3]);
-        PUSH_INT(L, t, "parry_forward_cooldown_time", waza_work[pid][3].free3);
-        PUSH_INT(L, t, "parry_down_validity_time", wcp[pid].waza_flag[4]);
-        PUSH_INT(L, t, "parry_down_cooldown_time", waza_work[pid][4].free3);
-        PUSH_INT(L, t, "parry_air_validity_time", wcp[pid].waza_flag[5]);
-        PUSH_INT(L, t, "parry_air_cooldown_time", waza_work[pid][5].free3);
-        PUSH_INT(L, t, "parry_antiair_validity_time", wcp[pid].waza_flag[6]);
-        PUSH_INT(L, t, "parry_antiair_cooldown_time", waza_work[pid][6].free3);
+        int pid = id - 1; // 0-indexed player id for g_state.wcp[] and g_state.waza_work[]
+        PUSH_INT(L, t, "parry_forward_validity_time", g_state.wcp[pid].waza_flag[3]);
+        PUSH_INT(L, t, "parry_forward_cooldown_time", g_state.waza_work[pid][3].free3);
+        PUSH_INT(L, t, "parry_down_validity_time", g_state.wcp[pid].waza_flag[4]);
+        PUSH_INT(L, t, "parry_down_cooldown_time", g_state.waza_work[pid][4].free3);
+        PUSH_INT(L, t, "parry_air_validity_time", g_state.wcp[pid].waza_flag[5]);
+        PUSH_INT(L, t, "parry_air_cooldown_time", g_state.waza_work[pid][5].free3);
+        PUSH_INT(L, t, "parry_antiair_validity_time", g_state.wcp[pid].waza_flag[6]);
+        PUSH_INT(L, t, "parry_antiair_cooldown_time", g_state.waza_work[pid][6].free3);
     }
 
     return 1;
@@ -460,21 +461,17 @@ static int l_read_globals(lua_State* L) {
     PUSH_BOOL(L, t, "is_in_match", g_training_state.is_in_match);
 
     // Stage
-    extern s8 VS_Stage;
-    PUSH_INT(L, t, "stage", VS_Stage);
+    PUSH_INT(L, t, "stage", g_state.VS_Stage);
 
     // Screen scroll position (BG layer 0 target)
-    extern s16 Target_BG_X[6];
-    PUSH_INT(L, t, "screen_x", Target_BG_X[0]);
+    PUSH_INT(L, t, "screen_x", g_state.Target_BG_X[0]);
 
     // Player operator status (1 = human, 0 = CPU/empty)
-    extern s8 Operator_Status[2];
-    PUSH_INT(L, t, "operator_p1", Operator_Status[0]);
-    PUSH_INT(L, t, "operator_p2", Operator_Status[1]);
+    PUSH_INT(L, t, "operator_p1", g_state.Operator_Status[0]);
+    PUSH_INT(L, t, "operator_p2", g_state.Operator_Status[1]);
 
-    // Training_ID: which side selected training (0=P1, 1=P2)
-    extern u8 Training_ID;
-    PUSH_INT(L, t, "training_id", Training_ID);
+    // g_state.Training_ID: which side selected training (0=P1, 1=P2)
+    PUSH_INT(L, t, "training_id", g_state.Training_ID);
 
     return 1;
 }
@@ -545,7 +542,7 @@ static int l_set_lever_buff(lua_State* L) {
     int id = (int)luaL_checkinteger(L, 1);
     int val = (int)luaL_checkinteger(L, 2);
     if (id >= 0 && id < 2) {
-        Lever_Buff[id] = (u16)val;
+        g_state.Lever_Buff[id] = (u16)val;
     }
     return 0;
 }
@@ -559,7 +556,7 @@ static int l_write_field(lua_State* L) {
     if (id < 1 || id > 2)
         return 0;
 
-    PLW* wk = &plw[id - 1];
+    PLW* wk = &g_state.plw[id - 1];
 
     if (strcmp(field, "life") == 0 || strcmp(field, "vitality") == 0) {
         wk->wu.vitality = (s16)val;

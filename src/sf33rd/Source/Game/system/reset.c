@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/system/reset.h"
+#include "game_state.h"
 #include "netplay/netplay.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -121,7 +122,7 @@ static void Reset_Wait(struct _TASK* task_ptr) {
 static void Reset_Sleep(struct _TASK* task_ptr) {
     ToneDown(0xFF, 0);
 
-    if (Pause_ID == 0) {
+    if (g_state.Pause_ID == 0) {
         if (!(p1sw_0 & 0x4000)) {
             task_ptr->r_no[0] = RESET_INIT;
         }
@@ -135,9 +136,9 @@ static void Reset_Sleep(struct _TASK* task_ptr) {
     }
 }
 
-/** @brief Evaluate soft-reset conditions across both players (respects Forbid_Reset). */
+/** @brief Evaluate soft-reset conditions across both players (respects g_state.Forbid_Reset). */
 static void Check_Reset() {
-    if (Forbid_Reset) {
+    if (g_state.Forbid_Reset) {
         RESET_X = 0;
         return;
     }
@@ -147,7 +148,7 @@ static void Check_Reset() {
         return;
     }
 
-    Switch_Type = 1;
+    g_state.Switch_Type = 1;
 
     if (Check_SoftReset(0) == 0) {
         Check_SoftReset(1);
@@ -157,8 +158,8 @@ static void Check_Reset() {
 /** @brief Check whether the given player has entered the soft-reset button sequence. */
 static u8 Check_SoftReset(s16 PL_id) {
     if (Reset_Status[PL_id] == RESET_STATUS_TRIGGERED) {
-        Game_pause = 0x81;
-        Pause_ID = PL_id;
+        g_state.Game_pause = 0x81;
+        g_state.Pause_ID = PL_id;
         return RESET_X = 1;
     }
 
@@ -167,11 +168,11 @@ static u8 Check_SoftReset(s16 PL_id) {
 
 /** @brief Determine the next disposal type after a reset (bootrom return vs. normal restart). */
 static s32 Setup_Next_Disposal() {
-    if (Reset_Bootrom) {
+    if (g_state.Reset_Bootrom) {
         return 1;
     }
 
-    if ((G_No[0] == 1) || ((G_No[0] == 2) && (G_No[1] == 0))) {
+    if ((g_state.G_No[0] == 1) || ((g_state.G_No[0] == 2) && (g_state.G_No[1] == 0))) {
         return 1;
     }
 
@@ -183,14 +184,14 @@ static void Check_Reset_IO(struct _TASK* /* unused */, s16 PL_id) {
     u16 sw;
     u16 plsw;
 
-    if (Switch_Type == 0) {
+    if (g_state.Switch_Type == 0) {
         if (PL_id) {
             plsw = p2sw_0;
         } else {
             plsw = p1sw_0;
         }
     } else {
-        plsw = PLsw[PL_id][0];
+        plsw = g_state.PLsw[PL_id][0];
     }
 
     sw = plsw & (SWK_START | SWK_BACK);

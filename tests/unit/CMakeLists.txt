@@ -316,6 +316,17 @@ add_unit_test(test_game_state_roundtrip
 target_include_directories(test_game_state_roundtrip PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include ${SDL3_NET_DIR}/include)
 target_compile_definitions(test_game_state_roundtrip PRIVATE MOCK_SUPPRESS_CONFLICTS)
 target_link_sdl3(test_game_state_roundtrip)
+
+add_unit_test(test_state_snapshot
+    test_state_snapshot.c
+    ${GAME_GLOBALS_SOURCES}
+    ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/state_snapshot.c
+    mocks_globals.c
+)
+target_include_directories(test_state_snapshot PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/netplay ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include ${SDL3_NET_DIR}/include)
+target_compile_definitions(test_state_snapshot PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_link_sdl3(test_state_snapshot)
 endif() # ENABLE_NETPLAY
 
 if(ENABLE_BROADCAST)

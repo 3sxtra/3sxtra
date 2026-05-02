@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff47.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -31,7 +32,7 @@ void effect_47_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] < 0) {

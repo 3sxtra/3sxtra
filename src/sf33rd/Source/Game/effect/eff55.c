@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff55.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -28,7 +29,7 @@ void effect_55_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.xyz[1].cal += 0x3000;
 
             if (ewk->wu.xyz[1].disp.pos >= 128) {
@@ -41,7 +42,7 @@ void effect_55_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] < 0) {
@@ -53,7 +54,7 @@ void effect_55_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.xyz[1].cal -= 0x4000;
 
             if (ewk->wu.xyz[1].disp.pos < 97) {
@@ -66,7 +67,7 @@ void effect_55_move(WORK_Other* ewk) {
         break;
 
     case 4:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] < 0) {

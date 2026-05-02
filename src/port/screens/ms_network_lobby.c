@@ -22,8 +22,9 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Order, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, g_state.Order, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Network_Lobby, Menu_Sub_case1 */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */

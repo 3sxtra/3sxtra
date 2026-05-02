@@ -14,6 +14,7 @@
  */
 
 #include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/io/file_loader.h"
 #include "common.h"
 
@@ -64,9 +65,6 @@ SAFrame sa_frame[SA_FRAME_ROWS][SA_FRAME_COLS];
 
 // sbss
 RendererVertex scrscrntex[4];
-u8 WipeLimit;
-u8 FadeLimit;
-s16 Hnc_Num;
 FadeData fd_dat;
 
 int TopHUDPriority;
@@ -666,7 +664,7 @@ void sc_clear(u16 sposx, u16 sposy, u16 eposx, u16 eposy) {
 
 /** @brief Initialize the screen wipe effect state. */
 void WipeInit() {
-    WipeLimit = 0;
+    g_state.WipeLimit = 0;
 }
 
 /** @brief Execute a screen wipe-out transition (screen goes black). */
@@ -677,20 +675,20 @@ s32 WipeOut(u8 type) {
     s32 i;
     s32 dmylim;
 
-    if (WipeLimit > 7) {
+    if (g_state.WipeLimit > 7) {
         overwrite_panel(0xFF000000, 0);
     }
 
-    if (WipeLimit == 9) {
+    if (g_state.WipeLimit == 9) {
         overwrite_panel(0xFF000000, 0);
         return 1;
     }
 
     if (!No_Trans) {
-        if (WipeLimit > 7) {
+        if (g_state.WipeLimit > 7) {
             dmylim = 7;
         } else {
-            dmylim = WipeLimit;
+            dmylim = g_state.WipeLimit;
         }
 
         wipe_pc.p = wipe_p;
@@ -708,7 +706,7 @@ s32 WipeOut(u8 type) {
                 wipe_p[2].y = wipe_p[3].y = (i - (dmylim + 1));
                 Renderer_Queue2DPrimitive((f32*)wipe_p, PrioBase[0], (uintptr_t)wipe_col[0].color, 0);
             }
-        } else if (WipeLimit != 8) {
+        } else if (g_state.WipeLimit != 8) {
             wipe_p[0].y = wipe_p[1].y = 0.0f;
             wipe_p[2].y = wipe_p[3].y = 224.0f;
 
@@ -722,7 +720,7 @@ s32 WipeOut(u8 type) {
         }
     }
 
-    WipeLimit += 1;
+    g_state.WipeLimit += 1;
     return 0;
 }
 
@@ -733,11 +731,11 @@ s32 WipeIn(u8 type) {
     PAL_CURSOR_COL wipe_col[4];
     s32 i;
 
-    if (WipeLimit == 9) {
+    if (g_state.WipeLimit == 9) {
         return 1;
     }
 
-    if ((WipeLimit != 8) && (!No_Trans)) {
+    if ((g_state.WipeLimit != 8) && (!No_Trans)) {
         wipe_pc.p = &wipe_p[0];
         wipe_pc.col = &wipe_col[0];
         wipe_pc.tex = 0;
@@ -750,7 +748,7 @@ s32 WipeIn(u8 type) {
 
             for (i = 0; i < 224; i += 8) {
                 wipe_p[0].y = wipe_p[1].y = i;
-                wipe_p[2].y = wipe_p[3].y = ((i + 8) - (WipeLimit + 1));
+                wipe_p[2].y = wipe_p[3].y = ((i + 8) - (g_state.WipeLimit + 1));
                 Renderer_Queue2DPrimitive((f32*)wipe_p, PrioBase[0], (uintptr_t)wipe_col[0].color, 0);
             }
         } else {
@@ -759,7 +757,7 @@ s32 WipeIn(u8 type) {
 
             for (i = -224; i < 384; i += 8) {
                 wipe_p[0].x = i;
-                wipe_p[1].x = ((i + 8) - (WipeLimit + 1));
+                wipe_p[1].x = ((i + 8) - (g_state.WipeLimit + 1));
                 wipe_p[2].x = 224.0f + wipe_p[0].x;
                 wipe_p[3].x = 224.0f + wipe_p[1].x;
                 Renderer_Queue2DPrimitive((f32*)wipe_p, PrioBase[0], (uintptr_t)wipe_col[0].color, 0);
@@ -767,13 +765,13 @@ s32 WipeIn(u8 type) {
         }
     }
 
-    WipeLimit += 1;
+    g_state.WipeLimit += 1;
     return 0;
 }
 
 /** @brief Initialize the screen fade effect state. */
 void FadeInit() {
-    FadeLimit = 1;
+    g_state.FadeLimit = 1;
 }
 
 /** @brief Execute a screen fade-out transition. */
@@ -796,8 +794,8 @@ s32 FadeOut(u8 type, u8 step, u8 priority) {
     fade_pc.col = fade_col;
     fade_pc.num = 4;
 
-    if ((FadeLimit * step) < FADE_ALPHA_MAX) {
-        Alpha = (FadeLimit * step) << 24;
+    if ((g_state.FadeLimit * step) < FADE_ALPHA_MAX) {
+        Alpha = (g_state.FadeLimit * step) << 24;
     } else {
         flag = 1;
     }
@@ -818,7 +816,7 @@ s32 FadeOut(u8 type, u8 step, u8 priority) {
         return 1;
     }
 
-    FadeLimit += 1;
+    g_state.FadeLimit += 1;
     return 0;
 }
 
@@ -842,8 +840,8 @@ s32 FadeIn(u8 type, u8 step, u8 priority) {
     fade_pc.col = fade_col;
     fade_pc.num = 4;
 
-    if (FadeLimit * step < FADE_ALPHA_MAX) {
-        Alpha = (FADE_ALPHA_MAX - FadeLimit * step) << 24;
+    if (g_state.FadeLimit * step < FADE_ALPHA_MAX) {
+        Alpha = (FADE_ALPHA_MAX - g_state.FadeLimit * step) << 24;
     } else {
         flag = 1;
     }
@@ -864,7 +862,7 @@ s32 FadeIn(u8 type, u8 step, u8 priority) {
         return 1;
     }
 
-    FadeLimit += 1;
+    g_state.FadeLimit += 1;
     return 0;
 }
 
@@ -926,13 +924,13 @@ void overwrite_panel(u32 color, u8 priority) {
 void fade_cont_init() {
     FadeInit();
 
-    if (Fade_Number < 0 || Fade_Number >= FADE_DATA_COUNT) {
+    if (g_state.Fade_Number < 0 || g_state.Fade_Number >= FADE_DATA_COUNT) {
         return;
     }
 
-    fd_dat.fade_kind = fade_data_tbl[Fade_Number][0];
-    fd_dat.fade = fade_data_tbl[Fade_Number][1];
-    fd_dat.fade_prio = fade_data_tbl[Fade_Number][2];
+    fd_dat.fade_kind = fade_data_tbl[g_state.Fade_Number][0];
+    fd_dat.fade = fade_data_tbl[g_state.Fade_Number][1];
+    fd_dat.fade_prio = fade_data_tbl[g_state.Fade_Number][2];
 }
 
 /** @brief Per-frame automatic fade-transition state machine. */
@@ -958,6 +956,6 @@ void fade_cont_main() {
     }
 
     if (flag == 1) {
-        Fade_Flag = 0;
+        g_state.Fade_Flag = 0;
     }
 }

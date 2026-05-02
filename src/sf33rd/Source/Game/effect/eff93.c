@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff93.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/caldir.h"
@@ -29,34 +30,34 @@ static void Eff93_SLIDE_L(WORK_Other* ewk) {
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[1] += 1;
             ewk->wu.hit_quake = 0x25C;
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos;
-            ewk->wu.xyz[1].disp.pos = bg_w.bgw[1].xy[1].disp.pos = bg_w.bgw[1].wxy[1].disp.pos;
-            ewk->wu.direction = bg_w.bgw[1].xy[1].disp.pos + 16;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos;
+            ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[1].xy[1].disp.pos = g_state.bg_w.bgw[1].wxy[1].disp.pos;
+            ewk->wu.direction = g_state.bg_w.bgw[1].xy[1].disp.pos + 16;
             ewk->wu.mvxy.a[0].sp = 0x90000;
             ewk->wu.mvxy.a[1].sp = 0;
             cal_delta_speed(&ewk->wu, 10, ewk->wu.hit_quake, ewk->wu.direction, 1, 1);
-            bg_mvxy.a[0].sp = ewk->wu.mvxy.a[0].sp;
-            bg_mvxy.a[1].sp = ewk->wu.mvxy.a[1].sp;
-            bg_mvxy.d[0].sp = ewk->wu.mvxy.d[0].sp;
-            bg_mvxy.d[1].sp = ewk->wu.mvxy.d[1].sp;
+            g_state.bg_mvxy.a[0].sp = ewk->wu.mvxy.a[0].sp;
+            g_state.bg_mvxy.a[1].sp = ewk->wu.mvxy.a[1].sp;
+            g_state.bg_mvxy.d[0].sp = ewk->wu.mvxy.d[0].sp;
+            g_state.bg_mvxy.d[1].sp = ewk->wu.mvxy.d[1].sp;
             ewk->wu.dir_timer = 10;
         }
 
         break;
 
     default:
-        bg_w.bgw[1].wxy[0].cal = bg_w.bgw[1].wxy[0].cal + bg_mvxy.a[0].sp;
-        bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
-        bg_w.bgw[1].wxy[1].cal = bg_w.bgw[1].wxy[1].cal + bg_mvxy.a[1].sp;
-        bg_mvxy.a[1].sp += bg_mvxy.d[1].sp;
-        bg_w.bgw[1].xy[1].disp.pos = bg_w.bgw[1].wxy[1].disp.pos;
+        g_state.bg_w.bgw[1].wxy[0].cal = g_state.bg_w.bgw[1].wxy[0].cal + g_state.bg_mvxy.a[0].sp;
+        g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
+        g_state.bg_w.bgw[1].wxy[1].cal = g_state.bg_w.bgw[1].wxy[1].cal + g_state.bg_mvxy.a[1].sp;
+        g_state.bg_mvxy.a[1].sp += g_state.bg_mvxy.d[1].sp;
+        g_state.bg_w.bgw[1].xy[1].disp.pos = g_state.bg_w.bgw[1].wxy[1].disp.pos;
 
         if (--ewk->wu.dir_timer == 0) {
-            bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
-            bg_w.bgw[1].xy[0].disp.pos = ewk->wu.hit_quake;
-            bg_w.bgw[1].wxy[1].disp.pos = ewk->wu.direction;
-            bg_w.bgw[1].xy[1].disp.pos = ewk->wu.direction;
-            Face_Move = 0;
+            g_state.bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
+            g_state.bg_w.bgw[1].xy[0].disp.pos = ewk->wu.hit_quake;
+            g_state.bg_w.bgw[1].wxy[1].disp.pos = ewk->wu.direction;
+            g_state.bg_w.bgw[1].xy[1].disp.pos = ewk->wu.direction;
+            g_state.Face_Move = 0;
             push_effect_work(&ewk->wu);
         }
 
@@ -72,13 +73,13 @@ static void Eff93_SLIDE_R(WORK_Other* ewk) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[1] += 1;
-            bg_mvxy.a[0].sp = -0x90000;
-            bg_mvxy.d[0].sp = -0x8000;
+            g_state.bg_mvxy.a[0].sp = -0x90000;
+            g_state.bg_mvxy.d[0].sp = -0x8000;
             ewk->wu.hit_quake = 0x25C;
-            bg_mvxy.a[1].sp = -0x10000;
-            bg_mvxy.d[1].sp = 0;
-            bg_w.bgw[1].xy[1].disp.pos = bg_w.bgw[1].wxy[1].disp.pos;
-            ewk->wu.direction = bg_w.bgw[1].xy[1].disp.pos - 8;
+            g_state.bg_mvxy.a[1].sp = -0x10000;
+            g_state.bg_mvxy.d[1].sp = 0;
+            g_state.bg_w.bgw[1].xy[1].disp.pos = g_state.bg_w.bgw[1].wxy[1].disp.pos;
+            ewk->wu.direction = g_state.bg_w.bgw[1].xy[1].disp.pos - 8;
         }
 
         break;
@@ -86,27 +87,27 @@ static void Eff93_SLIDE_R(WORK_Other* ewk) {
     default:
         arrived_x = 0;
         arrived_y = 0;
-        bg_w.bgw[1].wxy[0].cal = bg_w.bgw[1].wxy[0].cal + bg_mvxy.a[0].sp;
-        bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
+        g_state.bg_w.bgw[1].wxy[0].cal = g_state.bg_w.bgw[1].wxy[0].cal + g_state.bg_mvxy.a[0].sp;
+        g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
 
-        if (ewk->wu.hit_quake >= bg_w.bgw[1].wxy[0].disp.pos) {
-            bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
-            bg_w.bgw[1].xy[0].disp.pos = ewk->wu.hit_quake;
+        if (ewk->wu.hit_quake >= g_state.bg_w.bgw[1].wxy[0].disp.pos) {
+            g_state.bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
+            g_state.bg_w.bgw[1].xy[0].disp.pos = ewk->wu.hit_quake;
             arrived_x = 1;
         }
 
-        bg_w.bgw[1].wxy[1].cal = bg_w.bgw[1].wxy[1].cal + bg_mvxy.a[1].sp;
-        bg_mvxy.a[1].sp += bg_mvxy.d[1].sp;
-        bg_w.bgw[1].xy[1].disp.pos = bg_w.bgw[1].wxy[1].disp.pos;
+        g_state.bg_w.bgw[1].wxy[1].cal = g_state.bg_w.bgw[1].wxy[1].cal + g_state.bg_mvxy.a[1].sp;
+        g_state.bg_mvxy.a[1].sp += g_state.bg_mvxy.d[1].sp;
+        g_state.bg_w.bgw[1].xy[1].disp.pos = g_state.bg_w.bgw[1].wxy[1].disp.pos;
 
-        if (ewk->wu.direction >= bg_w.bgw[1].wxy[1].disp.pos) {
-            bg_w.bgw[1].wxy[1].disp.pos = ewk->wu.direction;
-            bg_w.bgw[1].xy[1].disp.pos = ewk->wu.direction;
+        if (ewk->wu.direction >= g_state.bg_w.bgw[1].wxy[1].disp.pos) {
+            g_state.bg_w.bgw[1].wxy[1].disp.pos = ewk->wu.direction;
+            g_state.bg_w.bgw[1].xy[1].disp.pos = ewk->wu.direction;
             arrived_y = 1;
         }
 
         if ((arrived_x != 0) && (arrived_y != 0)) {
-            Face_Move = 0;
+            g_state.Face_Move = 0;
             push_effect_work(&ewk->wu);
         }
 
@@ -119,20 +120,20 @@ static void Eff93_SLIDE_L_OUT(WORK_Other* ewk) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[1] += 1;
-            bg_mvxy.a[0].sp = 0x80000;
-            bg_mvxy.d[0].sp = 0x28000;
-            ewk->wu.hit_quake = bg_w.bgw[1].wxy[0].disp.pos + 208;
+            g_state.bg_mvxy.a[0].sp = 0x80000;
+            g_state.bg_mvxy.d[0].sp = 0x28000;
+            ewk->wu.hit_quake = g_state.bg_w.bgw[1].wxy[0].disp.pos + 208;
         }
 
         break;
 
     default:
-        bg_w.bgw[1].wxy[0].cal = bg_w.bgw[1].wxy[0].cal + bg_mvxy.a[0].sp;
-        bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
+        g_state.bg_w.bgw[1].wxy[0].cal = g_state.bg_w.bgw[1].wxy[0].cal + g_state.bg_mvxy.a[0].sp;
+        g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
 
-        if (ewk->wu.hit_quake <= bg_w.bgw[1].wxy[0].disp.pos) {
-            bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
-            Face_Move = 0;
+        if (ewk->wu.hit_quake <= g_state.bg_w.bgw[1].wxy[0].disp.pos) {
+            g_state.bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
+            g_state.Face_Move = 0;
             push_effect_work(&ewk->wu);
         }
 
@@ -145,21 +146,21 @@ static void Eff93_SLIDE_R_OUT(WORK_Other* ewk) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[1] += 1;
-            bg_mvxy.a[0].sp = -0x80000;
-            bg_mvxy.d[0].sp = -0x28000;
-            ewk->wu.hit_quake = bg_w.bgw[1].wxy[0].disp.pos - 0xD0;
+            g_state.bg_mvxy.a[0].sp = -0x80000;
+            g_state.bg_mvxy.d[0].sp = -0x28000;
+            ewk->wu.hit_quake = g_state.bg_w.bgw[1].wxy[0].disp.pos - 0xD0;
             ewk->wu.hit_quake = 0x130;
         }
 
         break;
 
     default:
-        bg_w.bgw[1].wxy[0].cal = bg_w.bgw[1].wxy[0].cal + bg_mvxy.a[0].sp;
-        bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
+        g_state.bg_w.bgw[1].wxy[0].cal = g_state.bg_w.bgw[1].wxy[0].cal + g_state.bg_mvxy.a[0].sp;
+        g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
 
-        if (ewk->wu.hit_quake >= bg_w.bgw[1].wxy[0].disp.pos) {
-            bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
-            Face_Move = 0;
+        if (ewk->wu.hit_quake >= g_state.bg_w.bgw[1].wxy[0].disp.pos) {
+            g_state.bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
+            g_state.Face_Move = 0;
             push_effect_work(&ewk->wu);
         }
 
@@ -171,10 +172,10 @@ void Bg_Family_Set_Ex(s16 xx) {
     s16 pos_work_x;
     s16 pos_work_y;
 
-    bg_w.bgw[xx].position_x = bg_w.bgw[xx].xy[0].disp.pos & 0xFFFF;
-    pos_work_x = bg_w.bgw[xx].position_x;
-    bg_w.bgw[xx].position_y = bg_w.bgw[xx].xy[1].disp.pos & 0xFFFF;
-    pos_work_y = bg_w.bgw[xx].position_y;
+    g_state.bg_w.bgw[xx].position_x = g_state.bg_w.bgw[xx].xy[0].disp.pos & 0xFFFF;
+    pos_work_x = g_state.bg_w.bgw[xx].position_x;
+    g_state.bg_w.bgw[xx].position_y = g_state.bg_w.bgw[xx].xy[1].disp.pos & 0xFFFF;
+    pos_work_y = g_state.bg_w.bgw[xx].position_y;
     Scrn_Move_Set(xx, pos_work_x, pos_work_y);
     pos_work_x = -pos_work_x & 0xFFFF;
     pos_work_y = (0x300 - (pos_work_y & 0xFFFF)) & 0xFFFF;

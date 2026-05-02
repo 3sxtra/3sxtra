@@ -7,6 +7,7 @@
  * async I/O with a persistent file handle.
  */
 #include "port/io/afs.h"
+#include "game_state.h"
 #include "common.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>

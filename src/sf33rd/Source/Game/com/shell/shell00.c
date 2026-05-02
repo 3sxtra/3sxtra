@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/com/shell/shell00.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/com/com_sub.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -12,18 +13,18 @@ static void (*const Shell00_Tbl[11])(PLW*);
 
 /** @brief Gill shell (projectile response) AI entry point. */
 void Shell00(PLW* wk) {
-    Shell00_Tbl[(s16)Pattern_Index[wk->wu.id]](wk);
+    Shell00_Tbl[(s16)g_state.Pattern_Index[wk->wu.id]](wk);
 }
 
 static void Shell00_0000(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     default:
         End_Pattern(wk);
     }
 }
 
 static void Shell00_0001(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 1, 2, 1, -1, -1);
         break;
@@ -39,7 +40,7 @@ static void Shell00_0001(PLW* wk) {
 }
 
 static void Shell00_0002(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
         break;
@@ -55,7 +56,7 @@ static void Shell00_0002(PLW* wk) {
 }
 
 static void Shell00_0003(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x1D, 8, -1);
         break;
@@ -67,7 +68,7 @@ static void Shell00_0003(PLW* wk) {
 }
 
 static void Shell00_0004(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
         break;
@@ -87,7 +88,7 @@ static void Shell00_0004(PLW* wk) {
 }
 
 static void Shell00_0005(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
         break;
@@ -107,7 +108,7 @@ static void Shell00_0005(PLW* wk) {
 }
 
 static void Shell00_0006(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 1, 2, 1, -1, -1);
         break;
@@ -123,7 +124,7 @@ static void Shell00_0006(PLW* wk) {
 }
 
 static void Shell00_0007(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1E, 8, -1);
         break;
@@ -135,7 +136,7 @@ static void Shell00_0007(PLW* wk) {
 }
 
 static void Shell00_0008(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
         break;
@@ -155,7 +156,7 @@ static void Shell00_0008(PLW* wk) {
 }
 
 static void Shell00_0009(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         Lever_Off(wk);
         break;
@@ -175,7 +176,7 @@ static void Shell00_0009(PLW* wk) {
 }
 
 static void Shell00_0010(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     default:
         End_Pattern(wk);
     }

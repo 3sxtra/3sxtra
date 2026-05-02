@@ -7,6 +7,7 @@
  * control-mapping overlay using ImGui.
  */
 #include "port/sdl/input/control_mapping.h"
+#include "game_state.h"
 #include "control_mapping_bindings.h"
 #include "port/config/paths.h"
 #include "port/input_definition.h"
@@ -216,7 +217,7 @@ static void load_mappings() {
         if (!p1Device && p1_device_id == i && p1_device_name == connected_name) {
             p1Device = std::make_unique<Device>(Device { i, connected_name, guid });
             claimed_indices.insert(i);
-            SDL_Log("P1 claimed device %d (%s) - Legacy ID+Name match", i, connected_name);
+            SDL_Log("P1 claimed device %d (%s) - Legacy g_state.ID+Name match", i, connected_name);
         }
 
         if (claimed_indices.count(i))
@@ -225,7 +226,7 @@ static void load_mappings() {
         if (!p2Device && p2_device_id == i && p2_device_name == connected_name) {
             p2Device = std::make_unique<Device>(Device { i, connected_name, guid });
             claimed_indices.insert(i);
-            SDL_Log("P2 claimed device %d (%s) - Legacy ID+Name match", i, connected_name);
+            SDL_Log("P2 claimed device %d (%s) - Legacy g_state.ID+Name match", i, connected_name);
         }
     }
 

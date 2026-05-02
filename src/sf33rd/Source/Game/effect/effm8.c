@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effm8.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -27,7 +28,7 @@ const s16 effm8_timer_tbl[4] = { 24, 56, 72, 112 };
 void effect_M8_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             if (ewk->wu.type) {
                 effm8_move_win(ewk);
             } else {
@@ -142,11 +143,11 @@ s32 effect_M8_init(WORK* oya, u8 data) {
         ewk->wu.rl_flag = oya->rl_flag;
 
         if (oya->rl_flag) {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].position_x - 48;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].position_x - 48;
             ewk->wu.mvxy.a[0].sp = 0x48000;
             ewk->wu.mvxy.d[0].sp = 0;
         } else {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + bg_w.pos_offset + 48;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset + 48;
             ewk->wu.mvxy.a[0].sp = -0x48000;
             ewk->wu.mvxy.d[0].sp = 0;
         }
@@ -187,11 +188,11 @@ s32 effect_M8_init(WORK* oya, u8 data) {
             ewk->wu.rl_flag = oya->rl_flag;
 
             if (oya->rl_flag) {
-                ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].position_x - 48;
+                ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].position_x - 48;
                 ewk->wu.mvxy.a[0].sp = 0x48000;
                 ewk->wu.mvxy.d[0].sp = 0;
             } else {
-                ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + bg_w.pos_offset + 48;
+                ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset + 48;
                 ewk->wu.mvxy.a[0].sp = -0x48000;
                 ewk->wu.mvxy.d[0].sp = 0;
             }

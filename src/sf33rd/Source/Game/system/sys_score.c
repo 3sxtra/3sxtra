@@ -1,6 +1,6 @@
 /**
  * @file sys_score.c
- * @brief Score display, win records, digit rendering, and copyright.
+ * @brief g_state.Score display, win records, digit rendering, and copyright.
  *
  * Handles calculating and displaying score digits on the HUD,
  * rendering win-record counts, 16x24 digit rendering, and
@@ -10,6 +10,7 @@
  */
 
 #include "sf33rd/Source/Game/system/sys_score.h"
+#include "game_state.h"
 #include "common.h"
 #include "main.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -35,7 +36,7 @@ void Score_Sub() {
     s32 assign2;
     s8 assign3;
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
         return;
     }
 
@@ -44,16 +45,16 @@ void Score_Sub() {
     }
 
     for (PL_id = 0; PL_id < 2; PL_id++) {
-        if ((Mode_Type != MODE_VERSUS && Mode_Type != MODE_REPLAY) && plw[PL_id].wu.pl_operator == 0) {
+        if ((g_state.Mode_Type != MODE_VERSUS && g_state.Mode_Type != MODE_REPLAY) && g_state.plw[PL_id].wu.pl_operator == 0) {
             continue;
         }
 
-        if (Stop_Update_Score) {
-            Score_Buff = Keep_Score[PL_id];
+        if (g_state.Stop_Update_Score) {
+            Score_Buff = g_state.Keep_Score[PL_id];
         } else {
-            Score_Buff = Score[PL_id][Play_Type];
-            Score_Buff += Continue_Coin[PL_id];
-            Keep_Score[PL_id] = Score_Buff;
+            Score_Buff = g_state.Score[PL_id][g_state.Play_Type];
+            Score_Buff += g_state.Continue_Coin[PL_id];
+            g_state.Keep_Score[PL_id] = Score_Buff;
         }
 
         for (i = 7, xx = 10000000, assign1 = First_Digit = -1; i > 0; i--, assign2 = xx /= 10) {
@@ -86,11 +87,11 @@ void Disp_Win_Record() {
         return;
     }
 
-    switch (Mode_Type) {
+    switch (g_state.Mode_Type) {
     case MODE_ARCADE:
-        if (Play_Type == 1) {
-            if (Win_Record[0] != 0 || Win_Record[1] != 0) {
-                if (Win_Record[0]) {
+        if (g_state.Play_Type == 1) {
+            if (g_state.Win_Record[0] != 0 || g_state.Win_Record[1] != 0) {
+                if (g_state.Win_Record[0]) {
                     PL_id = 0;
                     zz = 5;
                 } else {
@@ -100,29 +101,29 @@ void Disp_Win_Record() {
             } else {
                 break;
             }
-        } else if (Win_Record[Player_id] == 0) {
+        } else if (g_state.Win_Record[g_state.Player_id] == 0) {
             break;
         } else {
-            PL_id = Player_id;
+            PL_id = g_state.Player_id;
 
-            if (Player_id == 0) {
+            if (g_state.Player_id == 0) {
                 zz = 5;
             } else {
                 zz = 43;
             }
         }
 
-        Disp_Win_Record_Sub(Win_Record[PL_id], zz);
+        Disp_Win_Record_Sub(g_state.Win_Record[PL_id], zz);
         break;
 
     case MODE_VERSUS:
     case MODE_NETWORK:
-        if (VS_Win_Record[0] > 0) {
-            Disp_Win_Record_Sub(VS_Win_Record[0], 5);
+        if (g_state.VS_Win_Record[0] > 0) {
+            Disp_Win_Record_Sub(g_state.VS_Win_Record[0], 5);
         }
 
-        if (VS_Win_Record[1] > 0) {
-            Disp_Win_Record_Sub(VS_Win_Record[1], 43);
+        if (g_state.VS_Win_Record[1] > 0) {
+            Disp_Win_Record_Sub(g_state.VS_Win_Record[1], 43);
         }
 
         break;
@@ -203,13 +204,13 @@ void Disp_Digit16x24(u32 Score_Buff, s16 Disp_X, s16 Disp_Y, s16 Color) {
     }
 }
 
-/** @brief Display the appropriate Capcom copyright text based on the Country setting. */
+/** @brief Display the appropriate Capcom copyright text based on the g_state.Country setting. */
 void Disp_Copyright() {
     if (use_rmlui && rmlui_screen_copyright)
         return;
     s32 xres;
 
-    switch (Country) {
+    switch (g_state.Country) {
     case 1:
     case 2:
     case 3:

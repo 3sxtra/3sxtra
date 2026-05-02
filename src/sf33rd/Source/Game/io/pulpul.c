@@ -9,6 +9,7 @@
  */
 
 #include "sf33rd/Source/Game/io/pulpul.h"
+#include "game_state.h"
 #include "common.h"
 #include "sdk/libvib.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
@@ -266,7 +267,7 @@ void pulpul_request(s16 id, s16 ix) {
         return;
     }
 
-    if (test_flag) {
+    if (g_state.test_flag) {
         adr = &ot_pulreq[ix];
         adr->adrs = ot_pulreq_xx;
     } else {
@@ -365,7 +366,7 @@ void move_pulpul(PPWORK* wk) {
                     if (index == -3) {
                         wk->p[i].rno[0] = 0;
 
-                        if (test_flag) {
+                        if (g_state.test_flag) {
                             *ot_mot_of = data;
                             ot_make_curr_vib_data();
                         }
@@ -432,12 +433,12 @@ s32 pulpul_pdVibMxStart(PPWORK* wk, s32 arg1, s32 arg2, PULPARA* param) {
 
     adrs = *param;
 
-    if ((Check_Menu_Task() == 0) && (test_flag == 0)) {
+    if ((Check_Menu_Task() == 0) && (g_state.test_flag == 0)) {
         if (CurrentSave()->Pad_Infor[wk->id].Vibration == 0) {
             return 1;
         }
 
-        if ((wk->opck) && (plw[wk->id].wu.pl_operator == 0)) {
+        if ((wk->opck) && (g_state.plw[wk->id].wu.pl_operator == 0)) {
             return 1;
         }
 

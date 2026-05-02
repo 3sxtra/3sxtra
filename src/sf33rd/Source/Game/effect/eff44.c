@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff44.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -68,7 +69,7 @@ void effect_44_move(WORK_Other* ewk) {
             break;
         }
 
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
@@ -121,7 +122,7 @@ s32 effect_44_init(s16 type) {
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
         ewk->wu.sync_suzi = *data_ptr++;
-        ewk->wu.char_table[0] = char_add[bg_w.bg_index];
+        ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
         suzi_offset_set(ewk);
         ewk->wu.my_mts = 7;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

@@ -9,9 +9,9 @@
  * Legacy location: menu.c lines 2084–2190 (AT_Jmp_Tbl index 4).
  *
  * The screen has 4 items:
- *   0 = Normal Training  (MODE_NORMAL_TRAINING, Present_Mode=4)
- *   1 = Parry Training   (MODE_PARRY_TRAINING, Present_Mode=5)
- *   2 = Trials           (MODE_TRIALS, Present_Mode=4)
+ *   0 = Normal Training  (MODE_NORMAL_TRAINING, g_state.Present_Mode=4)
+ *   1 = Parry Training   (MODE_PARRY_TRAINING, g_state.Present_Mode=5)
+ *   2 = Trials           (MODE_TRIALS, g_state.Present_Mode=4)
  *   3 = Exit             (returns to Mode_Select)
  *
  * Selecting items 0–2 sets up mode globals and calls Setup_VS_Mode() to
@@ -22,16 +22,17 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
 #include "sf33rd/Source/Game/engine/grade.h"       /* grade_check_work_1st_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Mode_Type, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, g_state.Mode_Type, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
 #include "sf33rd/Source/Game/system/sysdir.h"      /* Setup_Training_Difficulty */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* cpExitTask, system_dir */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
@@ -72,20 +73,20 @@ static void training_mode_enter(struct _TASK* task_ptr) {
     if (use_rmlui)
         rmlui_wrapper_hide_all_game_documents();
 
-    Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
-    Menu_Suicide[0] = 1;
-    Menu_Suicide[1] = 0;
-    Order[0x64] = 4;
-    Order_Timer[0x64] = 1;
+    g_state.Menu_Cursor_Y[0] = g_state.Cursor_Y_Pos[0][1];
+    g_state.Menu_Suicide[0] = 1;
+    g_state.Menu_Suicide[1] = 0;
+    g_state.Order[0x64] = 4;
+    g_state.Order_Timer[0x64] = 1;
 
     /* ── Training_Mode case 0 specific setup ── */
     mpp_w.initTrainingData = true;
 
     if (!use_rmlui || !rmlui_menu_training) {
         effect_57_init(0x6F, MENU_HEADER_TRAINING, 0, 0x3F, 2);
-        Order[0x6F] = 1;
-        Order_Dir[0x6F] = 8;
-        Order_Timer[0x6F] = 1;
+        g_state.Order[0x6F] = 1;
+        g_state.Order_Dir[0x6F] = 8;
+        g_state.Order_Timer[0x6F] = 1;
     }
 
     if (use_rmlui && rmlui_menu_training) {
@@ -96,11 +97,11 @@ static void training_mode_enter(struct _TASK* task_ptr) {
         static const s16 menu_strings[] = { 0x35, 0x36, 66, 0x37 };
         for (ix = 0; ix < 4; ix++) {
             effect_61_init(0, ix + 0x50, 0, 1, menu_strings[ix], ix, 0x7047);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
+            g_state.Order[ix + 0x50] = 1;
+            g_state.Order_Dir[ix + 0x50] = 4;
+            g_state.Order_Timer[ix + 0x50] = ix + 0x14;
         }
-        Menu_Cursor_Move = 4;
+        g_state.Menu_Cursor_Move = 4;
     }
 
     /* Copy system_dir difficulty parameters for training modes */
@@ -115,7 +116,7 @@ static void training_mode_enter(struct _TASK* task_ptr) {
  *    - P1 and P2 cursor movement with MC_Move_Sub + Check_Menu_Lever.
  *    - Only respond to Confirm (0x100) or Cancel (0x200) — ignore other input.
  *    - Cancel or Exit item (cursor=3): return to Mode_Select.
- *    - Items 0–2: set Mode_Type/Present_Mode, call Setup_VS_Mode, then exit.
+ *    - Items 0–2: set g_state.Mode_Type/g_state.Present_Mode, call Setup_VS_Mode, then exit.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void training_mode_tick(struct _TASK* task_ptr) {
@@ -124,7 +125,7 @@ static void training_mode_tick(struct _TASK* task_ptr) {
     /* ── One-time post-wait-phase setup ── */
     if (!s_wait_done) {
         s_wait_done = true;
-        Suicide[3] = 0;
+        g_state.Suicide[3] = 0;
     }
 
     /* ── Cursor movement ── */
@@ -136,7 +137,7 @@ static void training_mode_tick(struct _TASK* task_ptr) {
     }
 
     /* ── Only respond to Confirm/Cancel ── */
-    switch (IO_Result) {
+    switch (g_state.IO_Result) {
     case 0x100:
     case 0x200:
         break;
@@ -148,15 +149,15 @@ static void training_mode_tick(struct _TASK* task_ptr) {
     SE_selected();
 
     /* ── Exit / Cancel path ── */
-    if (Menu_Cursor_Y[0] == 3 || IO_Result == 0x200) {
-        Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1;
+    if (g_state.Menu_Cursor_Y[0] == 3 || g_state.IO_Result == 0x200) {
+        g_state.Menu_Suicide[0] = 0;
+        g_state.Menu_Suicide[1] = 1;
         task_ptr->r_no[1] = 1; /* Mode_Select AT index */
         task_ptr->r_no[2] = 0;
         task_ptr->r_no[3] = 0;
         task_ptr->free[0] = 0;
-        Order[0x6F] = 4;
-        Order_Timer[0x6F] = 4;
+        g_state.Order[0x6F] = 4;
+        g_state.Order_Timer[0x6F] = 4;
         if (use_rmlui && rmlui_menu_training)
             rmlui_training_mode_hide();
         /* Exit to legacy so the integration hook picks up r_no[1]=1 (Mode_Select) */
@@ -165,31 +166,31 @@ static void training_mode_tick(struct _TASK* task_ptr) {
     }
 
     /* ── Training mode selection (items 0–2) ── */
-    Decide_ID = PL_id;
+    g_state.Decide_ID = PL_id;
 
     /* Hide the training-mode overlay before going to char select */
     if (use_rmlui && rmlui_menu_training)
         rmlui_training_mode_hide();
 
-    if (Menu_Cursor_Y[0] == 0) {
-        Mode_Type = MODE_NORMAL_TRAINING;
-        Present_Mode = 4;
-    } else if (Menu_Cursor_Y[0] == 1) {
-        Mode_Type = MODE_PARRY_TRAINING;
-        Present_Mode = 5;
+    if (g_state.Menu_Cursor_Y[0] == 0) {
+        g_state.Mode_Type = MODE_NORMAL_TRAINING;
+        g_state.Present_Mode = 4;
+    } else if (g_state.Menu_Cursor_Y[0] == 1) {
+        g_state.Mode_Type = MODE_PARRY_TRAINING;
+        g_state.Present_Mode = 5;
     } else {
-        Mode_Type = MODE_TRIALS;
-        Present_Mode = 4; /* Reuse normal training data */
+        g_state.Mode_Type = MODE_TRIALS;
+        g_state.Present_Mode = 4; /* Reuse normal training data */
     }
 
     Setup_VS_Mode(task_ptr);
-    G_No[2] += 1;
+    g_state.G_No[2] += 1;
     task_ptr->r_no[0] = 5;
     cpExitTask(TASK_SAVER);
-    Champion = PL_id;
-    Pause_ID = PL_id;
-    Training_ID = PL_id;
-    New_Challenger = PL_id ^ 1;
+    g_state.Champion = PL_id;
+    g_state.Pause_ID = PL_id;
+    g_state.Training_ID = PL_id;
+    g_state.New_Challenger = PL_id ^ 1;
     cpExitTask(TASK_ENTRY);
 
     /* Exit to legacy — game takes over for char select */

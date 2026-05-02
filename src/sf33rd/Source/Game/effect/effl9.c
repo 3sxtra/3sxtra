@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effl9.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -72,12 +73,12 @@ s32 effect_L9_init(WORK_Other* oya, u8 ten_type) {
     ewk->wu.my_col_code = 56;
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-    ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos;
+    ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos;
 
     if (ewk->wu.type) {
         ewk->wu.char_index = 53;
 
-        if (plw[Winner_id].wu.rl_flag) {
+        if (g_state.plw[g_state.Winner_id].wu.rl_flag) {
             ewk->wu.xyz[0].disp.pos = 191;
         } else {
             ewk->wu.xyz[0].disp.pos = 192;

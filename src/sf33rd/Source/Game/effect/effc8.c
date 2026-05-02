@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effc8.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -77,7 +78,7 @@ void effect_C8_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
             char_move(&ewk->wu);

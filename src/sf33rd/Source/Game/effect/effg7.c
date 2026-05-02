@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effg7.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -14,7 +15,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
 void effect_G7_move(WORK_Other* ewk) {
-    if (ewk->wu.old_rno[0] < end_w.r_no_2) {
+    if (ewk->wu.old_rno[0] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[0] = 99;
     }
 
@@ -56,7 +57,7 @@ s32 effect_G7_init(s32 /* unused */, s32 /* unused */) {
     ewk->wu.be_flag = 1;
     ewk->wu.work_id = 16;
     ewk->wu.cgromtype = 1;
-    ewk->wu.old_rno[0] = end_w.r_no_2;
+    ewk->wu.old_rno[0] = g_state.end_w.r_no_2;
     ewk->wu.my_col_mode = 0x4200;
     *ewk->wu.char_table = _end_char_table;
     ewk->wu.my_family = 3;

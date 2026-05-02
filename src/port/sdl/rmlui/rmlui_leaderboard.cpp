@@ -5,10 +5,11 @@
  * Displays a paginated leaderboard fetched from the lobby server.
  * Data is fetched asynchronously via SDL threads.
  *
- * Columns: Rank | Flag | Player | Char | W/M | Win% | Grade | Rating | DC%
+ * Columns: g_state.Rank | Flag | Player | Char | W/M | Win% | Grade | Rating | DC%
  */
 
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -205,7 +206,7 @@ extern "C" void rmlui_leaderboard_update(void) {
                 item.rank = e->rank;
                 item.is_top3 = (e->rank >= 1 && e->rank <= 3);
 
-                // Rank display for top 3 with simple markers, numeric otherwise
+                // g_state.Rank display for top 3 with simple markers, numeric otherwise
                 if (e->rank == 1)
                     item.rank_str = Rml::String("#1");
                 else if (e->rank == 2)
@@ -220,7 +221,7 @@ extern "C" void rmlui_leaderboard_update(void) {
 
                 item.name = Rml::String(e->display_name[0] ? e->display_name : e->player_id);
 
-                // Country flag icon
+                // g_state.Country flag icon
                 if (e->country[0] && e->country[1]) {
                     char lower[3] = { (char)tolower((unsigned char)e->country[0]),
                                       (char)tolower((unsigned char)e->country[1]),

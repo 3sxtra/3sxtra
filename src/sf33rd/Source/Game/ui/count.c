@@ -9,6 +9,7 @@
  */
 
 #include "sf33rd/Source/Game/ui/count.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/pls01.h"
@@ -34,28 +35,28 @@
 
 /** @brief Initialize the round timer from Time_Limit (or set infinite mode). */
 void count_cont_init(u8 type) {
-    if (Mode_Type == MODE_NETWORK) {
-        Counter_hi = 99; // Netplay: use consistent value regardless of local DIP switch settings
+    if (g_state.Mode_Type == MODE_NETWORK) {
+        g_state.Counter_hi = 99; // Netplay: use consistent value regardless of local DIP switch settings
     } else {
-        Counter_hi = Time_Limit;
+        g_state.Counter_hi = Time_Limit;
     }
 
-    if (Counter_hi == -1) {
-        mugen_flag = true;
-        round_timer = 1;
+    if (g_state.Counter_hi == -1) {
+        g_state.mugen_flag = true;
+        g_state.round_timer = 1;
 
         if (type == 0) {
             if (!use_rmlui || !rmlui_hud_timer)
                 counter_write(4);
         }
     } else {
-        mugen_flag = false;
-        hoji_counter = HOJI_COUNTER_MAX;
-        Counter_low = hoji_counter;
-        round_timer = Counter_hi;
-        math_counter_hi = Counter_hi;
-        math_counter_hi /= 10;
-        math_counter_low = Counter_hi - (math_counter_hi * 10);
+        g_state.mugen_flag = false;
+        g_state.hoji_counter = HOJI_COUNTER_MAX;
+        g_state.Counter_low = g_state.hoji_counter;
+        g_state.round_timer = g_state.Counter_hi;
+        g_state.math_counter_hi = g_state.Counter_hi;
+        g_state.math_counter_hi /= 10;
+        g_state.math_counter_low = g_state.Counter_hi - (g_state.math_counter_hi * 10);
 
         if (type == 0) {
             if (!use_rmlui || !rmlui_hud_timer)
@@ -63,18 +64,18 @@ void count_cont_init(u8 type) {
         }
     }
 
-    flash_r_num = 0;
-    flash_col = 0;
-    counter_color = 4;
+    g_state.flash_r_num = 0;
+    g_state.flash_col = 0;
+    g_state.counter_color = 4;
 }
 
 /** @brief Per-frame round timer update — check guards then tick down. */
 void count_cont_main() {
-    if (Bonus_Game_Flag) {
+    if (g_state.Bonus_Game_Flag) {
         return;
     }
 
-    if (count_end) {
+    if (g_state.count_end) {
         if (!use_rmlui || !rmlui_hud_timer)
             counter_write(4);
         return;
@@ -82,94 +83,94 @@ void count_cont_main() {
 
     if (Debug_w[DEBUG_TIME_STOP]) {
         if (!use_rmlui || !rmlui_hud_timer)
-            counter_write(counter_color);
+            counter_write(g_state.counter_color);
         return;
     }
 
-    if (Allow_a_battle_f == 0 || Demo_Time_Stop != 0) {
+    if (g_state.Allow_a_battle_f == 0 || g_state.Demo_Time_Stop != 0) {
         if (!use_rmlui || !rmlui_hud_timer)
-            counter_write(counter_color);
+            counter_write(g_state.counter_color);
         return;
     }
 
-    if (Break_Into) {
+    if (g_state.Break_Into) {
         if (!use_rmlui || !rmlui_hud_timer)
-            counter_write(counter_color);
+            counter_write(g_state.counter_color);
         return;
     }
 
     if (sa_stop_check() != 0) {
         if (!use_rmlui || !rmlui_hud_timer)
-            counter_write(counter_color);
+            counter_write(g_state.counter_color);
         return;
     }
 
-    if (mugen_flag) {
+    if (g_state.mugen_flag) {
         if (!use_rmlui || !rmlui_hud_timer)
             counter_write(4);
         return;
     }
 
-    if (!EXE_flag && !Game_pause) {
+    if (!g_state.EXE_flag && !g_state.Game_pause) {
         counter_control();
         return;
     }
 
     if (!use_rmlui || !rmlui_hud_timer)
-        counter_write(counter_color);
+        counter_write(g_state.counter_color);
 }
 
 /** @brief Core countdown logic — decrement timer and trigger flash effects. */
 void counter_control() {
-    if (Counter_hi == 0) {
+    if (g_state.Counter_hi == 0) {
         if (No_Trans == 0) {
             if (!use_rmlui || !rmlui_hud_timer)
-                counter_write(counter_color);
+                counter_write(g_state.counter_color);
         }
         return;
     }
 
-    if (flash_r_num) {
-        if (Counter_hi == 10 && Counter_low == hoji_counter) {
-            flash_timer = 0;
+    if (g_state.flash_r_num) {
+        if (g_state.Counter_hi == 10 && g_state.Counter_low == g_state.hoji_counter) {
+            g_state.flash_timer = 0;
             counter_flash(1);
-        } else if (Counter_hi < 11) {
+        } else if (g_state.Counter_hi < 11) {
             counter_flash(1);
         } else {
             counter_flash(0);
         }
-    } else if (Counter_hi == 30 && Counter_low == hoji_counter) {
-        flash_r_num = 1;
-        flash_timer = 0;
+    } else if (g_state.Counter_hi == 30 && g_state.Counter_low == g_state.hoji_counter) {
+        g_state.flash_r_num = 1;
+        g_state.flash_timer = 0;
         counter_flash(0);
     }
 
-    if (Counter_low != 0) {
-        Counter_low -= 1;
+    if (g_state.Counter_low != 0) {
+        g_state.Counter_low -= 1;
 
         if (No_Trans == 0) {
             if (!use_rmlui || !rmlui_hud_timer)
-                counter_write(counter_color);
+                counter_write(g_state.counter_color);
         }
 
         return;
     }
 
-    Counter_low = hoji_counter;
-    Counter_hi -= 1;
+    g_state.Counter_low = g_state.hoji_counter;
+    g_state.Counter_hi -= 1;
 
-    if (Counter_hi == 0) {
-        counter_color = 4;
+    if (g_state.Counter_hi == 0) {
+        g_state.counter_color = 4;
     }
 
-    round_timer = Counter_hi;
-    math_counter_hi = Counter_hi;
-    math_counter_hi /= 10;
-    math_counter_low = Counter_hi - (math_counter_hi * 10);
+    g_state.round_timer = g_state.Counter_hi;
+    g_state.math_counter_hi = g_state.Counter_hi;
+    g_state.math_counter_hi /= 10;
+    g_state.math_counter_low = g_state.Counter_hi - (g_state.math_counter_hi * 10);
 
     if (No_Trans == 0) {
         if (!use_rmlui || !rmlui_hud_timer)
-            counter_write(counter_color);
+            counter_write(g_state.counter_color);
     }
 }
 
@@ -182,9 +183,9 @@ void counter_write(u8 atr) {
             for (i = 0; i < 4; i++) {
                 scfont_sqput(i + 22, 1, 9, 2, 31, 2, 1, 3, 2);
             }
-        } else if (!mugen_flag) {
-            scfont_sqput(22, 0, atr, 2, math_counter_hi << 1, 2, 2, 4, 2);
-            scfont_sqput(24, 0, atr, 2, math_counter_low << 1, 2, 2, 4, 2);
+        } else if (!g_state.mugen_flag) {
+            scfont_sqput(22, 0, atr, 2, g_state.math_counter_hi << 1, 2, 2, 4, 2);
+            scfont_sqput(24, 0, atr, 2, g_state.math_counter_low << 1, 2, 2, 4, 2);
         } else {
             scfont_sqput(22, 0, 4, 2, 28, 28, 4, 4, 2);
         }
@@ -199,8 +200,8 @@ void counter_write(u8 atr) {
 void bcounter_write() {
     if (!No_Trans) {
         scfont_put(21, 4, 0x8F, 2, 20, 6, 2);
-        scfont_sqput(22, 2, 15, 2, math_counter_hi << 1, 6, 2, 3, 2);
-        scfont_sqput(24, 2, 15, 2, math_counter_low << 1, 6, 2, 3, 2);
+        scfont_sqput(22, 2, 15, 2, g_state.math_counter_hi << 1, 6, 2, 3, 2);
+        scfont_sqput(24, 2, 15, 2, g_state.math_counter_low << 1, 6, 2, 3, 2);
         scfont_put(26, 4, 15, 2, 20, 6, 2);
     }
 }
@@ -214,92 +215,92 @@ void counter_flash(s8 Flash_Num) {
         return;
     }
 
-    flash_timer--;
+    g_state.flash_timer--;
 
-    if (flash_timer < 0) {
-        flash_timer = flash_timer_tbl[Flash_Num];
+    if (g_state.flash_timer < 0) {
+        g_state.flash_timer = flash_timer_tbl[Flash_Num];
 
-        if (flash_col >= 0 && flash_col < FLASH_COLOR_COUNT) {
-            counter_color = flash_color_tbl[flash_col];
+        if (g_state.flash_col >= 0 && g_state.flash_col < FLASH_COLOR_COUNT) {
+            g_state.counter_color = flash_color_tbl[g_state.flash_col];
         }
 
-        flash_col++;
+        g_state.flash_col++;
 
-        if (flash_col == FLASH_COLOR_COUNT) {
-            flash_col = 0;
+        if (g_state.flash_col == FLASH_COLOR_COUNT) {
+            g_state.flash_col = 0;
         }
     }
 }
 
 /** @brief Initialize the bonus-game countdown (50 seconds). */
 void bcount_cont_init() {
-    Counter_hi = 50;
-    hoji_counter = HOJI_COUNTER_MAX;
-    Counter_low = hoji_counter;
-    round_timer = Counter_hi;
-    math_counter_hi = 5;
-    math_counter_low = 0;
+    g_state.Counter_hi = 50;
+    g_state.hoji_counter = HOJI_COUNTER_MAX;
+    g_state.Counter_low = g_state.hoji_counter;
+    g_state.round_timer = g_state.Counter_hi;
+    g_state.math_counter_hi = 5;
+    g_state.math_counter_low = 0;
     bcounter_write();
-    Time_Stop = 0;
+    g_state.Time_Stop = 0;
 }
 
 /** @brief Per-frame bonus timer update — check guards then tick down. */
 void bcount_cont_main() {
-    if (Break_Into != 0 || sa_stop_check() || Time_Stop != 0 || Allow_a_battle_f == 0) {
+    if (g_state.Break_Into != 0 || sa_stop_check() || g_state.Time_Stop != 0 || g_state.Allow_a_battle_f == 0) {
         return;
     }
 
-    if (!Debug_w[DEBUG_TIME_STOP] && !EXE_flag && !Game_pause) {
+    if (!Debug_w[DEBUG_TIME_STOP] && !g_state.EXE_flag && !g_state.Game_pause) {
         bcounter_control();
     }
 }
 
 /** @brief Core bonus countdown — decrement and trigger time-over. */
 void bcounter_control() {
-    if (Counter_hi == 0) {
+    if (g_state.Counter_hi == 0) {
         return;
     }
 
-    if (Counter_low != 0) {
-        Counter_low -= 1;
+    if (g_state.Counter_low != 0) {
+        g_state.Counter_low -= 1;
         return;
     }
 
-    hoji_counter = HOJI_COUNTER_MAX;
-    Counter_low = hoji_counter;
-    Counter_hi -= 1;
-    round_timer = Counter_hi;
-    math_counter_hi = Counter_hi;
-    math_counter_hi /= 10;
-    math_counter_low = Counter_hi - (math_counter_hi * 10);
+    g_state.hoji_counter = HOJI_COUNTER_MAX;
+    g_state.Counter_low = g_state.hoji_counter;
+    g_state.Counter_hi -= 1;
+    g_state.round_timer = g_state.Counter_hi;
+    g_state.math_counter_hi = g_state.Counter_hi;
+    g_state.math_counter_hi /= 10;
+    g_state.math_counter_low = g_state.Counter_hi - (g_state.math_counter_hi * 10);
 
-    if (Counter_hi == 0) {
-        math_counter_hi = math_counter_low = 0;
-        Allow_a_battle_f = 0;
-        Time_Over = true;
+    if (g_state.Counter_hi == 0) {
+        g_state.math_counter_hi = g_state.math_counter_low = 0;
+        g_state.Allow_a_battle_f = 0;
+        g_state.Time_Over = true;
     }
 }
 
 /** @brief Decrement bonus timer by 1 (or force to 0 if kind != 0). */
 s16 bcounter_down(u8 kind) {
-    if (Counter_hi == 0) {
-        math_counter_hi = math_counter_low = 0;
+    if (g_state.Counter_hi == 0) {
+        g_state.math_counter_hi = g_state.math_counter_low = 0;
         return 0;
     }
 
-    Counter_hi -= 1;
+    g_state.Counter_hi -= 1;
 
     if (kind) {
-        Counter_hi = 0;
+        g_state.Counter_hi = 0;
     }
 
-    math_counter_hi = Counter_hi;
-    math_counter_hi /= 10;
-    math_counter_low = Counter_hi - (math_counter_hi * 10);
+    g_state.math_counter_hi = g_state.Counter_hi;
+    g_state.math_counter_hi /= 10;
+    g_state.math_counter_low = g_state.Counter_hi - (g_state.math_counter_hi * 10);
 
-    if (Counter_hi == 0) {
-        math_counter_hi = math_counter_low = 0;
+    if (g_state.Counter_hi == 0) {
+        g_state.math_counter_hi = g_state.math_counter_low = 0;
     }
 
-    return Counter_hi;
+    return g_state.Counter_hi;
 }

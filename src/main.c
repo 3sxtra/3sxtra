@@ -12,6 +12,7 @@
  */
 
 #include "main.h"
+#include "game_state.h"
 #include "port/menu_task.h"
 #include "common.h"
 #include "netplay/netplay.h"
@@ -376,7 +377,7 @@ static void game_step_0() {
     }
 
 #if DEBUG
-    if (!test_flag) {
+    if (!g_state.test_flag) {
         if (mpp_w.sysStop) {
             sysSLOW = 1;
 
@@ -425,7 +426,7 @@ static void game_step_0() {
     }
 #endif
 
-    if ((Play_Mode != 3 && Play_Mode != 1) || (Game_pause != 0x81)) {
+    if ((g_state.Play_Mode != 3 && g_state.Play_Mode != 1) || (g_state.Game_pause != 0x81)) {
         p1sw_1 = p1sw_0;
         p2sw_1 = p2sw_0;
         p3sw_1 = p3sw_0;
@@ -435,7 +436,7 @@ static void game_step_0() {
         p3sw_0 = p3sw_buff;
         p4sw_0 = p4sw_buff;
 
-        if (MenuTask_IsActive() && (Mode_Type == MODE_PARRY_TRAINING) && (Play_Mode == 1)) {
+        if (MenuTask_IsActive() && (g_state.Mode_Type == MODE_PARRY_TRAINING) && (g_state.Play_Mode == 1)) {
             const u16 sw_buff = p2sw_0;
             p2sw_0 = p1sw_0;
             p1sw_0 = sw_buff;
@@ -551,12 +552,12 @@ s32 mppGetFavoritePlayerNumber() {
     return num;
 }
 
-/** @brief Copy per-player raw pad input into the PLsw double-buffer. */
+/** @brief Copy per-player raw pad input into the g_state.PLsw double-buffer. */
 void appCopyKeyData() {
-    PLsw[0][1] = PLsw[0][0];
-    PLsw[1][1] = PLsw[1][0];
-    PLsw[0][0] = p1sw_buff;
-    PLsw[1][0] = p2sw_buff;
+    g_state.PLsw[0][1] = g_state.PLsw[0][0];
+    g_state.PLsw[1][1] = g_state.PLsw[1][0];
+    g_state.PLsw[0][0] = p1sw_buff;
+    g_state.PLsw[1][0] = p2sw_buff;
 }
 
 /** @brief Allocate memory from the legacy foundation library heap. */
@@ -594,9 +595,9 @@ void njUserInit() {
     Interrupt_Timer = 0;
     Disp_Size_H = 100;
     Disp_Size_V = 100;
-    Country = 4;
+    g_state.Country = 4;
 
-    if (Country == 0) {
+    if (g_state.Country == 0) {
         while (1) {}
     }
 
@@ -614,18 +615,18 @@ void njUserInit() {
  * runs the task scheduler, and handles replay/fake-recording logic.
  */
 void njUserMain() {
-    CPU_Time_Lag[0] = 0;
-    CPU_Time_Lag[1] = 0;
-    CPU_Rec[0] = 0;
-    CPU_Rec[1] = 0;
+    g_state.CPU_Time_Lag[0] = 0;
+    g_state.CPU_Time_Lag[1] = 0;
+    g_state.CPU_Rec[0] = 0;
+    g_state.CPU_Rec[1] = 0;
 
-    Check_Replay_Status(0, Replay_Status[0]);
-    Check_Replay_Status(1, Replay_Status[1]);
+    Check_Replay_Status(0, g_state.Replay_Status[0]);
+    Check_Replay_Status(1, g_state.Replay_Status[1]);
 
     cpLoopTask();
 
-    if ((Game_pause != 0x81) && (Mode_Type == MODE_VERSUS) && (Play_Mode == 1)) {
-        if ((plw[0].wu.pl_operator == 0) && (CPU_Rec[0] == 0) && (Replay_Status[0] == 1)) {
+    if ((g_state.Game_pause != 0x81) && (g_state.Mode_Type == MODE_VERSUS) && (g_state.Play_Mode == 1)) {
+        if ((g_state.plw[0].wu.pl_operator == 0) && (g_state.CPU_Rec[0] == 0) && (g_state.Replay_Status[0] == 1)) {
             p1sw_0 = 0;
 
             Check_Replay_Status(0, 1);
@@ -636,7 +637,7 @@ void njUserMain() {
             }
         }
 
-        if ((plw[1].wu.pl_operator == 0) && (CPU_Rec[1] == 0) && (Replay_Status[1] == 1)) {
+        if ((g_state.plw[1].wu.pl_operator == 0) && (g_state.CPU_Rec[1] == 0) && (g_state.Replay_Status[1] == 1)) {
             p2sw_0 = 0;
 
             Check_Replay_Status(1, 1);
@@ -666,7 +667,7 @@ static const struct {
     { "Task:Entry", 10 },  // 1 - TASK_ENTRY
     { "Task:Reset", 10 },  // 2 - TASK_RESET
     { "Task:Menu", 9 },    // 3 - TASK_MENU
-    { "Task:Pause", 10 },  // 4 - TASK_PAUSE
+    { "Task:g_state.Pause", 10 },  // 4 - TASK_PAUSE
     { "Task:Game", 9 },    // 5 - TASK_GAME
     { "Task:Saver", 10 },  // 6 - TASK_SAVER
     { "Task:Slot7", 10 },  // 7 - unused
@@ -682,9 +683,9 @@ void cpLoopTask() {
     if (sysSLOW) {
         if (--Slow_Timer == 0) {
             sysSLOW = 0;
-            Game_pause &= 0x7F;
+            g_state.Game_pause &= 0x7F;
         } else {
-            Game_pause |= 0x80;
+            g_state.Game_pause |= 0x80;
         }
     }
 #endif

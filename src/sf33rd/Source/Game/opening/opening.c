@@ -12,6 +12,7 @@
  */
 
 #include "sf33rd/Source/Game/opening/opening.h"
+#include "game_state.h"
 #include "common.h"
 #include <stdio.h>
 
@@ -84,22 +85,22 @@ s16 opening_demo() {
     /* When skip-intro is enabled, bypass the cinematic and zoom sequence,
        jumping straight to the static title screen. We must set zoom to 1.0 (0x40)
        so the logo isn't drawn invisibly small. */
-    if (Config_GetBool(CFG_KEY_SKIP_INTRO) && D_No[3] < 3) {
+    if (Config_GetBool(CFG_KEY_SKIP_INTRO) && g_state.D_No[3] < 3) {
         TITLE_Init();
         Zoom_Value_Set(0x40); // Fixes the invisible logo bug!
-        D_No[3] = 3;
+        g_state.D_No[3] = 3;
         op_timer0 = 300;
     }
 
-    switch (D_No[3]) {
+    switch (g_state.D_No[3]) {
     case 0:
-        D_No[3] += 1;
+        g_state.D_No[3] += 1;
         OPBG_Init();
         break;
 
     case 1:
         if (OPBG_Move(0)) {
-            D_No[3] += 1;
+            g_state.D_No[3] += 1;
             reset_dma_group(0x8C40);
             purge_texcash_work(9);
             TexRelease_OP();
@@ -115,16 +116,16 @@ s16 opening_demo() {
         /* Wait for TITLE_Move(0) zoom sequence (op_w.r_no_0 goes from 0 to 3) to complete.
            This ensures the logo fully lands without relying on the buggy FadeIn() effect. */
         if (op_w.r_no_0 >= 3) {
-            D_No[3] += 1;
+            g_state.D_No[3] += 1;
             op_timer0 = 300;
         }
 
         break;
 
     case 3:
-        if (!Game_pause) {
+        if (!g_state.Game_pause) {
             if (--op_timer0 == 0) {
-                D_No[3] = 99;
+                g_state.D_No[3] = 99;
             }
         }
 
@@ -148,7 +149,7 @@ void TITLE_Init() {
     s16 key;
 
     mmDebWriteTag("\nMAIN TITLE\n\n");
-    Opening_Now = 0;
+    g_state.Opening_Now = 0;
     ppgTitleList.tex = &ppgTitleTex;
     ppgTitleList.pal = NULL;
     ppgSetupCurrentDataList(&ppgTitleList);
@@ -207,7 +208,7 @@ s16 TITLE_Move(u16 type) {
             break;
 
         case 2:
-            if (!Game_pause) {
+            if (!g_state.Game_pause) {
                 if (op_timer0-- >= 0) {
                     Frame_Down(0xC0, 0x70, 1);
                 } else {
@@ -222,7 +223,7 @@ s16 TITLE_Move(u16 type) {
             break;
         }
 
-        Put_char(title[type], 601, 9, 192, 96, scr_sc, scr_sc);
+        Put_char(title[type], 601, 9, 192, 96, g_state.scr_sc, g_state.scr_sc);
         return 0;
 
     case 1:
@@ -266,7 +267,7 @@ void OPBG_Init() {
     }
     printf("[BOOT] OPBG_Init: all tex chunks done\n");
 
-    Opening_Now = 1;
+    g_state.Opening_Now = 1;
     printf("[BOOT] OPBG_Init: calling make_texcash_work(9)\n");
     make_texcash_work(9);
     printf("[BOOT] OPBG_Init: calling mlt_obj_melt2\n");
@@ -355,16 +356,16 @@ void OPBG_Trans() {
     scr_calc(1);
     scr_calc(2);
 
-    if (Screen_Switch & 1) {
-        opbg_trans(&op_w.bgw[0], bg_prm[0].bg_h_shift, bg_prm[0].bg_v_shift);
+    if (g_state.Screen_Switch & 1) {
+        opbg_trans(&op_w.bgw[0], g_state.bg_prm[0].bg_h_shift, g_state.bg_prm[0].bg_v_shift);
     }
 
-    if (Screen_Switch & 2) {
-        opbg_trans(&op_w.bgw[1], bg_prm[1].bg_h_shift, bg_prm[1].bg_v_shift);
+    if (g_state.Screen_Switch & 2) {
+        opbg_trans(&op_w.bgw[1], g_state.bg_prm[1].bg_h_shift, g_state.bg_prm[1].bg_v_shift);
     }
 
-    if (Screen_Switch & 4) {
-        opbg_trans(&op_w.bgw[2], bg_prm[2].bg_h_shift, bg_prm[2].bg_v_shift);
+    if (g_state.Screen_Switch & 4) {
+        opbg_trans(&op_w.bgw[2], g_state.bg_prm[2].bg_h_shift, g_state.bg_prm[2].bg_v_shift);
     }
 
     if (Debug_w[DEBUG_OPENING_TEST] & 1) {
@@ -375,7 +376,7 @@ void OPBG_Trans() {
                 }
             }
 
-            flPrintL(46, k * 5 + 20, "%04x , %04x", bg_w.bgw[k].wxy[0].disp.pos, bg_w.bgw[k].xy[1].disp.pos);
+            flPrintL(46, k * 5 + 20, "%04x , %04x", g_state.bg_w.bgw[k].wxy[0].disp.pos, g_state.bg_w.bgw[k].xy[1].disp.pos);
         }
     }
 }
@@ -484,7 +485,7 @@ void op_work_clear() {
 s16 oh_opening_demo() {
     void (*opening_demo_jp[OPENING_DEMO_PHASE_COUNT])() = { opening_init2, opening_move, opening_title };
 
-    Game_timer += 1;
+    g_state.Game_timer += 1;
 
     if (op_w.r_no_0 < 0 || op_w.r_no_0 >= OPENING_DEMO_PHASE_COUNT) {
         return op_end_flag;
@@ -497,7 +498,7 @@ s16 oh_opening_demo() {
 
 /** @brief Second-stage init — dispatch 3-part initialization sequence. */
 void opening_init2() {
-    Game_timer = 0;
+    g_state.Game_timer = 0;
 
     switch (op_w.r_no_1) {
     case 0:
@@ -524,26 +525,26 @@ void opning_init_00000() {
     Scrn_Pos_Init();
     Zoomf_Init();
     Zoom_Value_Set(64);
-    bg_w.scno = 3;
-    bg_w.pos_offset = 192;
+    g_state.bg_w.scno = 3;
+    g_state.bg_w.pos_offset = 192;
 
     for (i = 0; i < 6; i++) {
-        bg_w.bgw[i].pos_x_work = bg_w.bgw[i].pos_y_work = 0;
-        bg_w.bgw[i].rewrite_flag = 0;
-        bg_w.bgw[i].fam_no = 0;
-        bg_w.bgw[i].zuubun = 0;
-        bg_w.bgw[i].wxy[0].cal = 0x02000000; // Isn't this supposed to set xy?
-        bg_w.bgw[i].xy[1].cal = 0;
-        bg_w.bgw[i].wxy[0].cal = 0x02000000;
-        bg_w.bgw[i].wxy[1].cal = 0;
-        bg_w.bgw[i].hos_xy[0].cal = 0x02000000;
-        bg_w.bgw[i].hos_xy[1].cal = 0;
-        bg_w.bgw[i].position_x = 512 - bg_w.pos_offset;
-        bg_w.bgw[i].position_y = 0;
+        g_state.bg_w.bgw[i].pos_x_work = g_state.bg_w.bgw[i].pos_y_work = 0;
+        g_state.bg_w.bgw[i].rewrite_flag = 0;
+        g_state.bg_w.bgw[i].fam_no = 0;
+        g_state.bg_w.bgw[i].zuubun = 0;
+        g_state.bg_w.bgw[i].wxy[0].cal = 0x02000000; // Isn't this supposed to set xy?
+        g_state.bg_w.bgw[i].xy[1].cal = 0;
+        g_state.bg_w.bgw[i].wxy[0].cal = 0x02000000;
+        g_state.bg_w.bgw[i].wxy[1].cal = 0;
+        g_state.bg_w.bgw[i].hos_xy[0].cal = 0x02000000;
+        g_state.bg_w.bgw[i].hos_xy[1].cal = 0;
+        g_state.bg_w.bgw[i].position_x = 512 - g_state.bg_w.pos_offset;
+        g_state.bg_w.bgw[i].position_y = 0;
     }
 
     for (i = 0; i < 3; i++) {
-        bg_w.bgw[i].fam_no = i;
+        g_state.bg_w.bgw[i].fam_no = i;
         op_w.bgw[i].r_no_0 = 0;
         op_w.bgw[i].r_no_1 = 0;
         op_w.bgw[i].bg_no = i;
@@ -551,13 +552,13 @@ void opning_init_00000() {
 
     op_w.r_no_2 = 0;
     op_end_flag = 0;
-    bg_stop = 0;
-    akebono_flag = 0;
-    aku_flag = 0;
-    sa_pa_flag = 0;
-    bg_app = 0;
-    bg_app_stop = 0;
-    bg_w.chase_flag = 0;
+    g_state.bg_stop = 0;
+    g_state.akebono_flag = 0;
+    g_state.aku_flag = 0;
+    g_state.sa_pa_flag = 0;
+    g_state.bg_app = 0;
+    g_state.bg_app_stop = 0;
+    g_state.bg_w.chase_flag = 0;
 }
 
 /** @brief Phase 1 init — turn off BG layers and set initial scroll position. */
@@ -566,8 +567,8 @@ void opning_init_01000() {
     Bg_Off_R(0xF);
     Bg_Off_W(0xF);
     op_w.free_work = 8;
-    Scrn_Move_Set(0, 512 - bg_w.pos_offset, 512);
-    base_y_pos = 40;
+    Scrn_Move_Set(0, 512 - g_state.bg_w.pos_offset, 512);
+    g_state.base_y_pos = 40;
 }
 
 /** @brief Phase 2 init — countdown then advance to the main animation loop. */
@@ -580,7 +581,7 @@ void opning_init_02000() {
         op_w.r_no_2 = 0;
     }
 
-    Scrn_Move_Set(0, 512 - bg_w.pos_offset, 512);
+    Scrn_Move_Set(0, 512 - g_state.bg_w.pos_offset, 512);
     op_demo_index = 0;
     gSeqStatus[0] = 0;
     op_w.index = 0;

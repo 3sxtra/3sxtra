@@ -21,10 +21,11 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff45.h"       /* effect_45_init, Message_Data */
 #include "sf33rd/Source/Game/effect/eff66.h"       /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* plsw_00, plsw_01, Forbid_Reset, Menu_Suicide, Order/Timer */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.plsw_00, g_state.plsw_01, g_state.Forbid_Reset, g_state.Menu_Suicide, g_state.Order/Timer */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_in_Sub, Menu_Sub_case1 */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Setup_BG */
@@ -78,8 +79,8 @@ extern void imgSelectGameButton(void);
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter — extracted from toSelectGame case 0
  *
- *  Sets up Forbid_Reset, controller overlay, BG, effect_66 (select game
- *  buttons), Order/Timer, and RmlUi exit confirm document.
+ *  Sets up g_state.Forbid_Reset, controller overlay, BG, effect_66 (select game
+ *  buttons), g_state.Order/Timer, and RmlUi exit confirm document.
  *
  *  NOTE: We do NOT use the dispatcher's automatic ENTER→WAIT→FADE_IN
  *  pipeline for this screen, because toSelectGame has its OWN custom
@@ -93,7 +94,7 @@ static void exit_confirm_enter(struct _TASK* task_ptr) {
     s_exit_to_desktop = false;
 
     /* ── Replicate toSelectGame case 0 ── */
-    Forbid_Reset = 1;
+    g_state.Forbid_Reset = 1;
 
     /* Menu_in_Sub: FadeOut, advance r_no[2], timer=5, Menu_Common_Init,
      * restore cursor, kill parent items, activate sub items */
@@ -101,11 +102,11 @@ static void exit_confirm_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[2] = 1; /* so Menu_Sub_case1 works in wait phase */
     task_ptr->timer = 0;   /* bypass dispatcher wait */
     Menu_Common_Init();
-    Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
-    Menu_Suicide[0] = 1;
-    Menu_Suicide[1] = 0;
-    Order[0x64] = 4;
-    Order_Timer[0x64] = 1;
+    g_state.Menu_Cursor_Y[0] = g_state.Cursor_Y_Pos[0][1];
+    g_state.Menu_Suicide[0] = 1;
+    g_state.Menu_Suicide[1] = 0;
+    g_state.Order[0x64] = 4;
+    g_state.Order_Timer[0x64] = 1;
 
     ControllerImageOverlay_Init();
     Setup_BG(1, 0x200, 0);
@@ -114,8 +115,8 @@ static void exit_confirm_enter(struct _TASK* task_ptr) {
     if (!use_rmlui || !rmlui_screen_exit_confirm)
         effect_66_init(0x8A, 8, 1, 0, -1, -1, -0x7FF2);
 
-    Order[0x8A] = 3;
-    Order_Timer[0x8A] = 1;
+    g_state.Order[0x8A] = 3;
+    g_state.Order_Timer[0x8A] = 1;
 
     if (use_rmlui && rmlui_screen_exit_confirm)
         rmlui_exit_confirm_show();
@@ -175,7 +176,7 @@ static void exit_confirm_tick(struct _TASK* task_ptr) {
             imgSelectGameButton();
 
         /* Read edge-triggered input from both players */
-        sw = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
+        sw = (~g_state.plsw_01[0] & g_state.plsw_00[0]) | (~g_state.plsw_01[1] & g_state.plsw_00[1]);
         sw &= (SWK_SOUTH | SWK_EAST);
 
         if (sw != 0) {
@@ -211,8 +212,8 @@ static void exit_confirm_tick(struct _TASK* task_ptr) {
     /* ── RETURN: go back to Mode Select ── */
     case EC_PHASE_RETURN:
         ControllerImageOverlay_Shutdown();
-        Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1;
+        g_state.Menu_Suicide[0] = 0;
+        g_state.Menu_Suicide[1] = 1;
         task_ptr->r_no[1] = 1; /* Mode_Select */
         task_ptr->r_no[2] = 0;
         task_ptr->r_no[3] = 0;
@@ -220,7 +221,7 @@ static void exit_confirm_tick(struct _TASK* task_ptr) {
         if (use_rmlui && rmlui_screen_exit_confirm)
             rmlui_exit_confirm_hide();
         FadeOut(1, 0xFF, 8);
-        Forbid_Reset = 0;
+        g_state.Forbid_Reset = 0;
         /* Exit to legacy so Mode_Select (or migrated Mode_Select) picks up */
         MenuScreen_ExitToLegacy(task_ptr);
         break;

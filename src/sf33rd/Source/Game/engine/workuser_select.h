@@ -69,7 +69,6 @@ extern s8 Menu_Cursor_X[2];
 extern s8 Menu_Cursor_Y[2];
 extern s8 Menu_Cursor_Move;
 extern ModeType Mode_Type;
-extern u8 Present_Mode;
 extern u8 Play_Mode;
 extern s8 Cursor_Limit[2];
 extern u8 Synchro_No;

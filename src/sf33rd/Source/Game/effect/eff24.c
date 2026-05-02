@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff24.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -50,7 +51,7 @@ void effect_24_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             eff24_quake_sub(ewk);
         }
 
@@ -71,7 +72,7 @@ void effect_24_move(WORK_Other* ewk) {
 void eff24_quake_sub(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (bg_w.quake_y_index > 0) {
+        if (g_state.bg_w.quake_y_index > 0) {
             ewk->wu.routine_no[1]++;
             eff24_sp_data_set(ewk);
         }
@@ -193,7 +194,7 @@ void eff24_sp_data_set(WORK_Other* ewk) {
 
         cal_initial_speed(&ewk->wu, ewk->wu.old_rno[5], ewk->wu.old_rno[4], ewk->wu.old_rno[2]);
     } else {
-        ewk->wu.old_rno[1] = eff24_quake_index_tbl[bg_w.quake_y_index];
+        ewk->wu.old_rno[1] = eff24_quake_index_tbl[g_state.bg_w.quake_y_index];
         ewk->wu.mvxy.a[0].sp = eff24_quake_speed_x_tbl[ewk->wu.old_rno[3]][ewk->wu.old_rno[1]];
         ewk->wu.mvxy.d[0].sp = 0;
         work = random_16();

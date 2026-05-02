@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effg6.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effg9.h"
@@ -168,7 +169,7 @@ void effect_G6_move(WORK_Other* ewk) {
             return;
         }
 
-        if ((EXE_flag != 0) || (Game_pause != 0)) {
+        if ((g_state.EXE_flag != 0) || (g_state.Game_pause != 0)) {
             break;
         }
 
@@ -178,7 +179,7 @@ void effect_G6_move(WORK_Other* ewk) {
             }
         }
 
-        if (ewk->wu.now_koc & (players_timer + ewk->wu.blink_timing)) {
+        if (ewk->wu.now_koc & (g_state.players_timer + ewk->wu.blink_timing)) {
             break;
         }
 

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effd7.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff03.h"
@@ -51,7 +52,7 @@ void effect_D7_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[0] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -63,7 +64,7 @@ void effect_D7_move(WORK_Other* ewk) {
                 ewk->wu.hit_stop = -ewk->wu.hit_stop;
             }
 
-            if (EXE_flag == 0 && Game_pause == 0) {
+            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
                 effD7_main_process(ewk);
             }
 

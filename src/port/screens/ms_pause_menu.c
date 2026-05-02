@@ -1,11 +1,11 @@
 /**
  * @file ms_pause_menu.c
- * @brief Migrated Pause Menu (Menu_Select) screen — Task 20.
+ * @brief Migrated g_state.Pause Menu (Menu_Select) screen — Task 20.
  *
  * Thin wrapper around the legacy Menu_Select() function from menu_input.c.
  * Menu_Select is the in-game pause menu (r_no[0]=1, r_no[1]=1) with items:
  *   - Return to Game
- *   - Exit / Character Change / Replay End (depending on Mode_Type)
+ *   - Exit / Character Change / Replay End (depending on g_state.Mode_Type)
  *   - Button Config
  *
  * The legacy function manages its own r_no[2] phases (init, menu, input,
@@ -17,6 +17,7 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Select, IN_GAME_JMP_COUNT */
 #include "structs.h"
@@ -25,7 +26,7 @@
  *  on_enter — sets up r_no for legacy Menu_Select dispatch
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-/** @brief on_enter for Pause Menu — initializes r_no state. */
+/** @brief on_enter for g_state.Pause Menu — initializes r_no state. */
 static void pause_menu_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[1] = 1;
     task_ptr->r_no[2] = 0;
@@ -38,7 +39,7 @@ static void pause_menu_enter(struct _TASK* task_ptr) {
  *  on_tick — delegates to legacy Menu_Select() body
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-/** @brief on_tick for Pause Menu — delegates to legacy function. */
+/** @brief on_tick for g_state.Pause Menu — delegates to legacy function. */
 static void pause_menu_tick(struct _TASK* task_ptr) {
     Menu_Select(task_ptr);
 
@@ -57,7 +58,7 @@ static void pause_menu_tick(struct _TASK* task_ptr) {
  *  on_exit — cleanup
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-/** @brief on_exit for Pause Menu — no special cleanup needed. */
+/** @brief on_exit for g_state.Pause Menu — no special cleanup needed. */
 static void pause_menu_exit(struct _TASK* task_ptr) {
     (void)task_ptr;
 }

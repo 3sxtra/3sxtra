@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff70.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -17,7 +18,7 @@
 static void Setup_Eff70(WORK_Other* ewk);
 
 void effect_70_move(WORK_Other* ewk) {
-    if (Suicide[0] == 1) {
+    if (g_state.Suicide[0] == 1) {
         ewk->wu.routine_no[0] = 99;
         ewk->wu.disp_flag = 0;
         return;
@@ -40,7 +41,7 @@ void effect_70_move(WORK_Other* ewk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type) {
-            Complete_Face--;
+            g_state.Complete_Face--;
             ewk->wu.routine_no[0]++;
             ewk->wu.char_index = 0;
             set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
@@ -50,7 +51,7 @@ void effect_70_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 2:
-        if (Play_Type == 1 && Sel_PL_Complete[0] & 0x8000 && Sel_PL_Complete[1] & 0x8000) {
+        if (g_state.Play_Type == 1 && g_state.Sel_PL_Complete[0] & 0x8000 && g_state.Sel_PL_Complete[1] & 0x8000) {
             ewk->wu.routine_no[0]++;
             ewk->wu.dir_timer = 30;
         }
@@ -114,7 +115,7 @@ s32 effect_70_init(s16 id) {
     // permission_player is menu/UI state (character unlock flags), not gameplay state.
     // It's initialized at startup and set before gameplay begins, so both netplay
     // clients will have identical values. No GameState serialization needed.
-    if (permission_player[Present_Mode].ok[id] == 0) {
+    if (permission_player[g_state.Present_Mode].ok[id] == 0) {
         ewk->wu.my_bright_type = 1;
         ewk->wu.my_bright_level = 7;
         ewk->wu.my_clear_level = 80;

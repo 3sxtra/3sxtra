@@ -19,11 +19,11 @@
 
 /** @brief Main handler for Home Sweet Home, Germany stage. */
 void BG060() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg0602();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg0601();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bg0603();
     zoom_ud_check();
     bg_pos_hosei2();
@@ -45,7 +45,7 @@ void bg0601_init00() {
     bgw_ptr->zuubun = 0;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
     bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
-    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos - bg_w.pos_offset;
+    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos - g_state.bg_w.pos_offset;
     bgw_ptr->hos_xy[0].disp.low = 0;
     bgw_ptr->wxy[1].cal = 0;
     bgw_ptr->xy[1].cal = 0;
@@ -66,7 +66,7 @@ void bg0602_init00() {
     bgw_ptr->zuubun = 0;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
     bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
-    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos - bg_w.pos_offset;
+    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos - g_state.bg_w.pos_offset;
     bgw_ptr->hos_xy[0].disp.low = 0;
     bgw_ptr->wxy[1].cal = 0;
     bgw_ptr->xy[1].cal = 0;

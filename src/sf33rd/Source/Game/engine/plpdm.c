@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plpdm.h"
+#include "game_state.h"
 #include "arcade/arcade_balance.h"
 #include "bin2obj/buttobi.h"
 #include "bin2obj/etc.h"
@@ -916,7 +917,7 @@ static void Damage_25000(PLW* wk) {
         break;
 
     case 1:
-        if ((pcon_dp_flag != 0) && (wk->py->time > 48)) {
+        if ((g_state.pcon_dp_flag != 0) && (wk->py->time > 48)) {
             wk->py->time = 48;
         }
 
@@ -1150,8 +1151,8 @@ static void Damage_30000(PLW* wk) {
 
         wk->wu.hit_stop = 3;
         wk->wu.hit_quake = 0;
-        bg_w.quake_x_index = 6;
-        pp_screen_quake(bg_w.quake_x_index);
+        g_state.bg_w.quake_x_index = 6;
+        pp_screen_quake(g_state.bg_w.quake_x_index);
         effect_I3_init(&wk->wu, 1);
         subtract_cu_vital(wk);
         break;
@@ -1303,7 +1304,7 @@ static void buttobi_chakuchi_cg_type_check(PLW* wk) {
 
     case 5:
         if (!(wk->spmv_ng_flag2 & DIP2_QUICK_STAND_DISABLED) && wk->ukemi_success && (wk->dead_flag == 0) &&
-            (wk->py->flag == 0) && (wk->wu.vital_new > 0) && (pcon_dp_flag == 0)) {
+            (wk->py->flag == 0) && (wk->wu.vital_new > 0) && (g_state.pcon_dp_flag == 0)) {
             wk->wu.routine_no[2] = oki_select_table2[wk->wu.rl_waza + (wk->wu.rl_flag * 2)];
             wk->wu.routine_no[3] = 0;
             add_sp_arts_gauge_ukemi(wk);
@@ -1519,15 +1520,15 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
     if (wk->wu.vital_new < 0) {
         wk->wu.vital_new = -1;
         wk->dead_flag = 1;
-        dead_voice_flag = true;
+        g_state.dead_voice_flag = true;
 
         if (wk->wu.dm_guard_success != -1) {
             wk->kezurijini_flag = 1;
         }
 
-        if (!round_slow_flag) {
+        if (!g_state.round_slow_flag) {
             set_conclusion_slow();
-            round_slow_flag = true;
+            g_state.round_slow_flag = true;
         }
     } else if (wk->py->flag == 0) {
         wk->py->now.quantity.h += wk->wu.dm_piyo;
@@ -1560,7 +1561,7 @@ void subtract_dm_vital(PLW* wk) {
         }
     }
 
-    if (Mode_Type == MODE_NORMAL_TRAINING && (Training_ID != wk->wu.id)) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
         Training_Damage_Set(wk->wu.dm_vital, wk->wu.dm_piyo, wk->wu.kezurare_flag);
     }
 
@@ -1574,7 +1575,7 @@ void subtract_dm_vital_aiuchi(PLW* wk) {
 
     pp_pulpara_remake_dm_all(&wk->wu);
 
-    if (Mode_Type == MODE_NORMAL_TRAINING && (Training_ID != wk->wu.id)) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
         Training_Damage_Set(wk->wu.dm_vital, wk->wu.dm_piyo, wk->wu.kezurare_flag);
     }
 
@@ -1654,7 +1655,7 @@ s32 setup_kuzureochi(PLW* wk) {
         return 0;
     }
 
-    if (pcon_dp_flag && Conclusion_Type != 1 && wk->wu.id == Winner_id) {
+    if (g_state.pcon_dp_flag && g_state.Conclusion_Type != 1 && wk->wu.id == g_state.Winner_id) {
         wk->wu.vital_new = 0;
         return 0;
     }

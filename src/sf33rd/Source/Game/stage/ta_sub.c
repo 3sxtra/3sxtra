@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/stage/ta_sub.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/mods/modded_stage.h"
 #include "sf33rd/Source/Game/animation/lose_pl.h"
@@ -21,7 +22,6 @@
 s16 eff_hit_data[4][4] = { { -67, 59, 13, 29 }, { 31, 95, 24, 15 }, { 4, 123, 28, 15 }, { 20, 15, 67, 37 } };
 
 // sbss
-s16 eff_hit_flag[11];
 
 static s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl);
 static s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type);
@@ -34,39 +34,39 @@ void sync_fam_set3(s16 my_fam) {
     s16 pos_x_w;
     s16 pos_y_w;
 
-    if (bg_w.chase_flag & 0xF) {
-        pos_x_w = bg_w.bgw[my_fam].chase_xy[0].disp.pos;
+    if (g_state.bg_w.chase_flag & 0xF) {
+        pos_x_w = g_state.bg_w.bgw[my_fam].chase_xy[0].disp.pos;
     } else {
-        pos_x_w = bg_w.bgw[my_fam].wxy[0].disp.pos;
+        pos_x_w = g_state.bg_w.bgw[my_fam].wxy[0].disp.pos;
     }
 
-    if (bg_w.chase_flag & 0xF0) {
-        pos_y_w = bg_w.bgw[my_fam].chase_xy[1].disp.pos;
+    if (g_state.bg_w.chase_flag & 0xF0) {
+        pos_y_w = g_state.bg_w.bgw[my_fam].chase_xy[1].disp.pos;
     } else {
-        pos_y_w = bg_w.bgw[my_fam].xy[1].disp.pos;
+        pos_y_w = g_state.bg_w.bgw[my_fam].xy[1].disp.pos;
     }
 
     pos_work_x = pos_x_w & 0xFFFF;
-    pos_work_x -= bg_w.pos_offset;
-    pos_x_w -= bg_w.pos_offset;
+    pos_work_x -= g_state.bg_w.pos_offset;
+    pos_x_w -= g_state.bg_w.pos_offset;
 
-    if ((bg_w.quake_x_index) > 0) {
-        if (bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
-            bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
-        pos_work_x += quake_x_tbl[bg_w.quake_x_index];
-        pos_x_w += quake_x_tbl[bg_w.quake_x_index];
+    if ((g_state.bg_w.quake_x_index) > 0) {
+        if (g_state.bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
+            g_state.bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
+        pos_work_x += quake_x_tbl[g_state.bg_w.quake_x_index];
+        pos_x_w += quake_x_tbl[g_state.bg_w.quake_x_index];
     }
 
-    bg_w.bgw[my_fam].position_x = pos_work_x & 0xFFFF;
-    bg_w.bgw[my_fam].abs_x = pos_x_w;
+    g_state.bg_w.bgw[my_fam].position_x = pos_work_x & 0xFFFF;
+    g_state.bg_w.bgw[my_fam].abs_x = pos_x_w;
     pos_work_y = pos_y_w & 0xFFFF;
-    if (bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
-        bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
-    pos_work_y += quake_y_tbl[bg_w.quake_y_index];
-    pos_y_w += quake_y_tbl[bg_w.quake_y_index];
-    bg_w.bgw[my_fam].position_y = pos_work_y & 0xFFFF;
-    bg_w.bgw[my_fam].abs_y = pos_y_w;
-    Scrn_Move_Set(my_fam, bg_w.bgw[my_fam].position_x, bg_w.bgw[my_fam].position_y);
+    if (g_state.bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
+        g_state.bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
+    pos_work_y += quake_y_tbl[g_state.bg_w.quake_y_index];
+    pos_y_w += quake_y_tbl[g_state.bg_w.quake_y_index];
+    g_state.bg_w.bgw[my_fam].position_y = pos_work_y & 0xFFFF;
+    g_state.bg_w.bgw[my_fam].abs_y = pos_y_w;
+    Scrn_Move_Set(my_fam, g_state.bg_w.bgw[my_fam].position_x, g_state.bg_w.bgw[my_fam].position_y);
     pos_work_x = -pos_work_x & 0xFFFF;
     pos_work_x &= 0xFFFF;
     pos_work_y = (768 - (pos_work_y & 0xFFFF)) & 0xFFFF;
@@ -79,10 +79,10 @@ s32 range_x_check(WORK_Other* ewk) {
     s16 work2;
     s16 work3;
 
-    if (bg_w.chase_flag & 0xF) {
-        pos_x_work = bg_w.bgw[ewk->wu.my_family - 1].chase_xy[0].disp.pos;
+    if (g_state.bg_w.chase_flag & 0xF) {
+        pos_x_work = g_state.bg_w.bgw[ewk->wu.my_family - 1].chase_xy[0].disp.pos;
     } else {
-        pos_x_work = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
+        pos_x_work = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
     }
 
     if (ewk->wu.hit_stop == -77) {
@@ -108,10 +108,10 @@ s32 range_x_check3(WORK_Other* ewk, s16 optional_range) {
     s16 work2;
     s16 work3;
 
-    if (bg_w.chase_flag & 0xF) {
-        pos_x_work = bg_w.bgw[ewk->wu.my_family - 1].chase_xy[0].disp.pos;
+    if (g_state.bg_w.chase_flag & 0xF) {
+        pos_x_work = g_state.bg_w.bgw[ewk->wu.my_family - 1].chase_xy[0].disp.pos;
     } else {
-        pos_x_work = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
+        pos_x_work = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
     }
 
     work2 = pos_x_work - 192 - optional_range;
@@ -132,10 +132,10 @@ static s32 range_y_check(WORK_Other* ewk) {
     s16 work2;
     s16 work3;
 
-    if (bg_w.chase_flag & 0xF) {
-        pos_y_work = bg_w.bgw[ewk->wu.my_family - 1].chase_xy[1].disp.pos;
+    if (g_state.bg_w.chase_flag & 0xF) {
+        pos_y_work = g_state.bg_w.bgw[ewk->wu.my_family - 1].chase_xy[1].disp.pos;
     } else {
-        pos_y_work = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos;
+        pos_y_work = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos;
     }
 
     work2 = pos_y_work + 256;
@@ -176,7 +176,7 @@ void add_y_sub2(WORK* wk) {
 
 /** @brief Check whether the current round needs no-display mode. */
 s32 obr_no_disp_check() {
-    if (aku_flag | akebono_flag | sa_pa_flag | seraph_flag | ModdedStage_IsAnimationsDisabled()) {
+    if (g_state.aku_flag | g_state.akebono_flag | g_state.sa_pa_flag | g_state.seraph_flag | ModdedStage_IsAnimationsDisabled()) {
         return 1;
     }
 
@@ -252,19 +252,19 @@ void pl_eff_trans_entry(WORK_Other* ewk) {
 
 /** @brief Check whether a background effect collides with a player. */
 s16 eff_hit_check(WORK_Other* ewk, s16 type) {
-    if (!EXE_obroll) {
+    if (!g_state.EXE_obroll) {
         if (type) {
-            if (pcon_dp_flag) {
-                eff_hit_flag[ewk->wu.type] += eff_hit_check_sub(ewk, &plw[0]);
-                eff_hit_flag[ewk->wu.type] += eff_hit_check_sub(ewk, &plw[1]);
+            if (g_state.pcon_dp_flag) {
+                g_state.eff_hit_flag[ewk->wu.type] += eff_hit_check_sub(ewk, &g_state.plw[0]);
+                g_state.eff_hit_flag[ewk->wu.type] += eff_hit_check_sub(ewk, &g_state.plw[1]);
             }
         } else {
-            eff_hit_flag[ewk->wu.type] += eff_hit_check_sub(ewk, &plw[0]);
-            eff_hit_flag[ewk->wu.type] += eff_hit_check_sub(ewk, &plw[1]);
+            g_state.eff_hit_flag[ewk->wu.type] += eff_hit_check_sub(ewk, &g_state.plw[0]);
+            g_state.eff_hit_flag[ewk->wu.type] += eff_hit_check_sub(ewk, &g_state.plw[1]);
         }
     }
 
-    return eff_hit_flag[ewk->wu.type];
+    return g_state.eff_hit_flag[ewk->wu.type];
 }
 
 const s16 pl_hit_eff[25][4] = { { -11, 56, 33, 38 }, { -11, 56, 35, 53 }, { -13, 47, 50, 38 }, { -18, 42, 36, 32 },
@@ -293,19 +293,19 @@ static s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl) {
 
 /** @brief Check effect collision against a specific hit zone. */
 s16 eff_hit_check2(WORK_Other* ewk, s16 type, s16 where_type) {
-    if (!EXE_obroll) {
+    if (!g_state.EXE_obroll) {
         if (type) {
-            if (pcon_dp_flag) {
-                eff_hit_flag[ewk->wu.type] += eff_hit_check_sub2(ewk, &plw[0], where_type);
-                eff_hit_flag[ewk->wu.type] += eff_hit_check_sub2(ewk, &plw[1], where_type);
+            if (g_state.pcon_dp_flag) {
+                g_state.eff_hit_flag[ewk->wu.type] += eff_hit_check_sub2(ewk, &g_state.plw[0], where_type);
+                g_state.eff_hit_flag[ewk->wu.type] += eff_hit_check_sub2(ewk, &g_state.plw[1], where_type);
             }
         } else {
-            eff_hit_flag[ewk->wu.type] += eff_hit_check_sub2(ewk, &plw[0], where_type);
-            eff_hit_flag[ewk->wu.type] += eff_hit_check_sub2(ewk, &plw[1], where_type);
+            g_state.eff_hit_flag[ewk->wu.type] += eff_hit_check_sub2(ewk, &g_state.plw[0], where_type);
+            g_state.eff_hit_flag[ewk->wu.type] += eff_hit_check_sub2(ewk, &g_state.plw[1], where_type);
         }
     }
 
-    return eff_hit_flag[ewk->wu.type];
+    return g_state.eff_hit_flag[ewk->wu.type];
 }
 
 /** @brief Sub-routine for effect collision with zone type. */
@@ -368,7 +368,7 @@ void eff_hit_flag_clear() {
     s16 i;
     s16* ptr;
 
-    ptr = &eff_hit_flag[0];
+    ptr = &g_state.eff_hit_flag[0];
 
     for (i = 0; i < 0xB; i++) {
         *ptr++ = 0;
@@ -379,7 +379,7 @@ void eff_hit_flag_clear() {
 s32 compel_dead_check(WORK_Other* ewk) {
     s32 var_s0 = 0;
 
-    if (bg_w.compel_flag) {
+    if (g_state.bg_w.compel_flag) {
         if (ewk->wu.dead_f) {
             var_s0 = 1;
         }
@@ -392,12 +392,12 @@ s32 compel_dead_check(WORK_Other* ewk) {
 void win_lose_work_clear() {
     a_rno = 0;
     lose_rno[2] = 0;
-    win_rno[0] = 0;
-    win_free[0] = 0;
+    g_state.win_rno[0] = 0;
+    g_state.win_free[0] = 0;
     lose_rno[0] = 0;
     lose_free[0] = 0;
-    win_rno[1] = 0;
-    win_free[1] = 0;
+    g_state.win_rno[1] = 0;
+    g_state.win_free[1] = 0;
     lose_rno[1] = 0;
     lose_free[1] = 0;
 }
@@ -406,10 +406,10 @@ void win_lose_work_clear() {
 void cal_bg_speed_data_x(s16 bg_num, s16 tm, s16 unk) {
     MotionState ms;
 
-    bg_w.bgw[bg_num].chase_xy[0].disp.low = 0;
+    g_state.bg_w.bgw[bg_num].chase_xy[0].disp.low = 0;
     ms.timer = tm;
     ms.timer2 = ((ms.timer * (ms.timer - 1)) / 2) + ms.timer;
-    ms.x.ps.h = chase_x - bg_w.bgw[bg_num].chase_xy[0].disp.pos;
+    ms.x.ps.h = g_state.chase_x - g_state.bg_w.bgw[bg_num].chase_xy[0].disp.pos;
     ms.x.ps.l = 0;
 
     if (!ms.timer) {
@@ -421,20 +421,20 @@ void cal_bg_speed_data_x(s16 bg_num, s16 tm, s16 unk) {
         ms.spx = ms.dlx = ms.x.pl / ms.timer2;
     }
 
-    bg_mvxy.a[0].sp = ms.spx;
-    bg_mvxy.d[0].sp = ms.dlx;
-    bg_w.bgw[bg_num].chase_xy[0].cal += ms.amx;
-    bg_mvxy.kop[0] = 0;
+    g_state.bg_mvxy.a[0].sp = ms.spx;
+    g_state.bg_mvxy.d[0].sp = ms.dlx;
+    g_state.bg_w.bgw[bg_num].chase_xy[0].cal += ms.amx;
+    g_state.bg_mvxy.kop[0] = 0;
 }
 
 /** @brief Calculate vertical interpolation speed data. */
 void cal_bg_speed_data_y(s16 bg_num, s16 tm, s16 unk) {
     MotionState ms;
 
-    bg_w.bgw[bg_num].chase_xy[1].disp.low = 0;
+    g_state.bg_w.bgw[bg_num].chase_xy[1].disp.low = 0;
     ms.timer = tm;
     ms.timer2 = ((ms.timer * (ms.timer - 1)) / 2) + ms.timer;
-    ms.y.ps.h = chase_y - bg_w.bgw[bg_num].chase_xy[1].disp.pos;
+    ms.y.ps.h = g_state.chase_y - g_state.bg_w.bgw[bg_num].chase_xy[1].disp.pos;
     ms.y.ps.l = 0;
 
     if (!ms.timer) {
@@ -446,8 +446,8 @@ void cal_bg_speed_data_y(s16 bg_num, s16 tm, s16 unk) {
         ms.spy = ms.dly = ms.y.pl / ms.timer2;
     }
 
-    bg_mvxy.a[1].sp = ms.spy;
-    bg_mvxy.d[1].sp = ms.dly;
-    bg_w.bgw[bg_num].chase_xy[1].cal += ms.amy;
-    bg_mvxy.kop[1] = 0;
+    g_state.bg_mvxy.a[1].sp = ms.spy;
+    g_state.bg_mvxy.d[1].sp = ms.dly;
+    g_state.bg_w.bgw[bg_num].chase_xy[1].cal += ms.amy;
+    g_state.bg_mvxy.kop[1] = 0;
 }

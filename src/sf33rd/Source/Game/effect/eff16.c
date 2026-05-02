@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff16.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -58,7 +59,7 @@ void effect_16_move(WORK_Other* ewk) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 1;
             ewk->wu.old_cgnum = 0;
-            ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk, Continue_Coin[ewk->wu.type] + Score[ewk->wu.type][0]);
+            ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk, g_state.Continue_Coin[ewk->wu.type] + g_state.Score[ewk->wu.type][0]);
             ewk->wu.direction = ewk->free;
             ewk->free = 0;
             ewk->wu.dir_timer = 0;
@@ -97,7 +98,7 @@ void effect_16_move(WORK_Other* ewk) {
             break;
         }
 
-        ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk, Continue_Coin[ewk->wu.type] + Score[ewk->wu.type][0]);
+        ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk, g_state.Continue_Coin[ewk->wu.type] + g_state.Score[ewk->wu.type][0]);
         eff16_trans(&ewk->wu);
         break;
 
@@ -112,8 +113,8 @@ void effect_16_move(WORK_Other* ewk) {
 }
 
 static void eff16_trans(WORK* ewk) {
-    ewk->position_x = bg_w.bgw[2].wxy[0].disp.pos;
-    ewk->position_y = bg_w.bgw[2].wxy[1].disp.pos;
+    ewk->position_x = g_state.bg_w.bgw[2].wxy[0].disp.pos;
+    ewk->position_y = g_state.bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);
 }
 

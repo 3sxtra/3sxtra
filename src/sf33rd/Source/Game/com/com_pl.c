@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/com/com_pl.h"
+#include "game_state.h"
 #include "common.h"
 
 #define COM_STATE_COUNT 16
@@ -155,19 +156,19 @@ const u16 Correct_Lv_Data[16] = { 0, 1, 2, 2, 4, 5, 6, 5, 8, 9, 10, 9, 8, 5, 10,
 u16 cpu_algorithm(PLW* wk) {
     u16 sw = CPU_Sub(wk);
 
-    if (Play_Mode == 1 && Replay_Status[wk->wu.id] != 99) {
+    if (g_state.Play_Mode == 1 && g_state.Replay_Status[wk->wu.id] != 99) {
         if (wk->wu.id) {
             p2sw_0 = sw;
         } else {
             p1sw_0 = sw;
         }
 
-        if (CPU_Time_Lag[wk->wu.id]) {
-            CPU_Rec[wk->wu.id] = 1;
+        if (g_state.CPU_Time_Lag[wk->wu.id]) {
+            g_state.CPU_Rec[wk->wu.id] = 1;
             return sw;
         }
 
-        CPU_Rec[wk->wu.id] = 1;
+        g_state.CPU_Rec[wk->wu.id] = 1;
 
         if (Debug_w[DEBUG_DISP_REC_STATUS]) {
             flPrintColor(0xFFFFFFFF);
@@ -184,33 +185,33 @@ u16 cpu_algorithm(PLW* wk) {
 static u16 CPU_Sub(PLW* wk) {
     WORK* em = (WORK*)wk->wu.target_adrs;
 
-    if (Allow_a_battle_f == 0 || pcon_dp_flag) {
+    if (g_state.Allow_a_battle_f == 0 || g_state.pcon_dp_flag) {
         return 0;
     }
 
     // When Lua drives the dummy, skip the COM AI entirely.
-    // Lua has already written Lever_Buff[id] via joypad.set()
+    // Lua has already written g_state.Lever_Buff[id] via joypad.set()
     // in emu.registerbefore() (fired from update_training_state).
     if (g_lua_dummy_active) {
-        Lever_Buff[wk->wu.id] = check_illegal_lever_data(Lever_Buff[wk->wu.id]);
+        g_state.Lever_Buff[wk->wu.id] = check_illegal_lever_data(g_state.Lever_Buff[wk->wu.id]);
         Check_Store_Lv(wk);
         Shift_Resume_Lv(wk);
-        Disp_Lever(&Lever_Buff[wk->wu.id], wk->wu.id, 1);
+        Disp_Lever(&g_state.Lever_Buff[wk->wu.id], wk->wu.id, 1);
         Disp_Mode(wk);
-        return Lever_Buff[wk->wu.id];
+        return g_state.Lever_Buff[wk->wu.id];
     }
 
-    Lever_Buff[wk->wu.id] = 0;
+    g_state.Lever_Buff[wk->wu.id] = 0;
 
     if (em->pat_status == 0x26) {
-        Lie_Flag[wk->wu.id] = 1;
+        g_state.Lie_Flag[wk->wu.id] = 1;
     } else {
-        Lie_Flag[wk->wu.id] = 0;
+        g_state.Lie_Flag[wk->wu.id] = 0;
     }
 
-    Last_Pattern_Index[wk->wu.id] = Pattern_Index[wk->wu.id];
+    g_state.Last_Pattern_Index[wk->wu.id] = g_state.Pattern_Index[wk->wu.id];
     Main_Program(wk);
-    Lever_Buff[wk->wu.id] = check_illegal_lever_data(Lever_Buff[wk->wu.id]);
+    g_state.Lever_Buff[wk->wu.id] = check_illegal_lever_data(g_state.Lever_Buff[wk->wu.id]);
 
     // TRAINING MODE OVERRIDE (C dummy — only when Lua is not active)
     if (g_training_state.is_in_match) {
@@ -219,12 +220,12 @@ static u16 CPU_Sub(PLW* wk) {
 
     Check_Store_Lv(wk);
     Shift_Resume_Lv(wk);
-    Disp_Lever(&Lever_Buff[wk->wu.id], wk->wu.id, 1);
+    Disp_Lever(&g_state.Lever_Buff[wk->wu.id], wk->wu.id, 1);
     Disp_Mode(wk);
-    return Lever_Buff[wk->wu.id];
+    return g_state.Lever_Buff[wk->wu.id];
 }
 
-/** @brief AI state machine dispatcher — calls the handler for the current CP_No state. */
+/** @brief AI state machine dispatcher — calls the handler for the current g_state.CP_No state. */
 void Main_Program(PLW* wk) {
     void (*Com_Jmp_Tbl[COM_STATE_COUNT])(PLW*) = { Com_Initialize, Com_Free,           Com_Active,   Com_Before_Follow,
                                                    Com_Follow,     Com_Before_Passive, Com_Passive,  Com_Guard,
@@ -232,20 +233,20 @@ void Main_Program(PLW* wk) {
                                                    Com_Flip,       Com_Caught,         Com_Wait_Lie, Com_Catch };
 
     Ck_Distance(wk);
-    Area_Number[wk->wu.id] = Ck_Area(wk);
-    Attack_Flag[wk->wu.id] = plw[wk->wu.id ^ 1].caution_flag;
+    g_state.Area_Number[wk->wu.id] = Ck_Area(wk);
+    g_state.Attack_Flag[wk->wu.id] = g_state.plw[wk->wu.id ^ 1].caution_flag;
     Check_At_Count(wk);
-    Disposal_Again[wk->wu.id] = 0;
+    g_state.Disposal_Again[wk->wu.id] = 0;
 
-    if ((u32)CP_No[wk->wu.id][0] >= COM_STATE_COUNT) {
+    if ((u32)g_state.CP_No[wk->wu.id][0] >= COM_STATE_COUNT) {
         return;
     }
 
-    Com_Jmp_Tbl[CP_No[wk->wu.id][0]](wk);
+    Com_Jmp_Tbl[g_state.CP_No[wk->wu.id][0]](wk);
 
-    if (Disposal_Again[wk->wu.id]) {
-        if ((u32)CP_No[wk->wu.id][0] < COM_STATE_COUNT) {
-            Com_Jmp_Tbl[CP_No[wk->wu.id][0]](wk);
+    if (g_state.Disposal_Again[wk->wu.id]) {
+        if ((u32)g_state.CP_No[wk->wu.id][0] < COM_STATE_COUNT) {
+            Com_Jmp_Tbl[g_state.CP_No[wk->wu.id][0]](wk);
         }
     }
 }
@@ -261,44 +262,44 @@ void Com_Initialize(PLW* wk) {
         time_check[i] = -1;
     }
 
-    CP_No[wk->wu.id][0] = 1;
-    CP_No[wk->wu.id][1] = 0;
-    CP_No[wk->wu.id][2] = 0;
-    CP_No[wk->wu.id][3] = 0;
-    Lever_Squat[wk->wu.id] = 0;
-    Lever_Store[wk->wu.id][0] = 0;
-    Lever_Store[wk->wu.id][1] = 0;
-    Lever_Store[wk->wu.id][2] = 0;
-    Attack_Counter[wk->wu.id] = 0;
-    Bullet_No[wk->wu.id] = 0;
-    Last_Attack_Counter[wk->wu.id] = -1;
-    Guard_Counter[wk->wu.id] = -1;
-    Turn_Over_Timer[wk->wu.id] = 1;
-    Attack_Count_Index[wk->wu.id] = 0;
-    Flip_Counter[wk->wu.id] = 0;
-    Lever_LR[0] = 0;
-    Lever_LR[1] = 0;
+    g_state.CP_No[wk->wu.id][0] = 1;
+    g_state.CP_No[wk->wu.id][1] = 0;
+    g_state.CP_No[wk->wu.id][2] = 0;
+    g_state.CP_No[wk->wu.id][3] = 0;
+    g_state.Lever_Squat[wk->wu.id] = 0;
+    g_state.Lever_Store[wk->wu.id][0] = 0;
+    g_state.Lever_Store[wk->wu.id][1] = 0;
+    g_state.Lever_Store[wk->wu.id][2] = 0;
+    g_state.Attack_Counter[wk->wu.id] = 0;
+    g_state.Bullet_No[wk->wu.id] = 0;
+    g_state.Last_Attack_Counter[wk->wu.id] = -1;
+    g_state.Guard_Counter[wk->wu.id] = -1;
+    g_state.Turn_Over_Timer[wk->wu.id] = 1;
+    g_state.Attack_Count_Index[wk->wu.id] = 0;
+    g_state.Flip_Counter[wk->wu.id] = 0;
+    g_state.Lever_LR[0] = 0;
+    g_state.Lever_LR[1] = 0;
     xx = Area_Unit_Data[wk->player_number];
-    Separate_Area[wk->wu.id][0] = xx[0];
-    Separate_Area[wk->wu.id][1] = xx[1];
-    Separate_Area[wk->wu.id][2] = xx[2];
+    g_state.Separate_Area[wk->wu.id][0] = xx[0];
+    g_state.Separate_Area[wk->wu.id][1] = xx[1];
+    g_state.Separate_Area[wk->wu.id][2] = xx[2];
     xx = Shell_Area_Unit_Data[wk->player_number];
-    Shell_Separate_Area[wk->wu.id][0] = xx[0];
-    Shell_Separate_Area[wk->wu.id][1] = xx[1];
-    Shell_Separate_Area[wk->wu.id][2] = xx[2];
-    Com_Width_Data[wk->wu.id] = PL_Body_Width_Data[wk->player_number];
+    g_state.Shell_Separate_Area[wk->wu.id][0] = xx[0];
+    g_state.Shell_Separate_Area[wk->wu.id][1] = xx[1];
+    g_state.Shell_Separate_Area[wk->wu.id][2] = xx[2];
+    g_state.Com_Width_Data[wk->wu.id] = PL_Body_Width_Data[wk->player_number];
     Clear_Com_Flag(wk);
-    Standing_Master_Timer[wk->wu.id] = Setup_Next_Stand_Timer(wk);
-    Squat_Master_Timer[wk->wu.id] = Setup_Next_Squat_Timer(wk);
-    Squat_Master_Timer[wk->wu.id] = 0;
+    g_state.Standing_Master_Timer[wk->wu.id] = Setup_Next_Stand_Timer(wk);
+    g_state.Squat_Master_Timer[wk->wu.id] = Setup_Next_Squat_Timer(wk);
+    g_state.Squat_Master_Timer[wk->wu.id] = 0;
     Setup_Bullet_Counter(wk);
 
     for (i = 0; i < 20; i++) {
-        Resume_Lever[wk->wu.id][i] = 0;
+        g_state.Resume_Lever[wk->wu.id][i] = 0;
     }
 
     for (i = 0; i < 3; i++) {
-        Attack_Count_Buff[wk->wu.id][i] = -1;
+        g_state.Attack_Count_Buff[wk->wu.id][i] = -1;
     }
 }
 
@@ -306,7 +307,7 @@ void Com_Initialize(PLW* wk) {
 void Com_Free(PLW* wk) {
     s16 xx;
 
-    Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
+    g_state.Lever_Buff[wk->wu.id] = g_state.Lever_LR[wk->wu.id];
 
     if (Check_Damage(wk)) {
         return;
@@ -316,22 +317,22 @@ void Com_Free(PLW* wk) {
         return;
     }
 
-    CP_No[wk->wu.id][0] = 2;
-    CP_No[wk->wu.id][1] = 0;
-    CP_No[wk->wu.id][2] = 0;
-    CP_No[wk->wu.id][3] = 0;
+    g_state.CP_No[wk->wu.id][0] = 2;
+    g_state.CP_No[wk->wu.id][1] = 0;
+    g_state.CP_No[wk->wu.id][2] = 0;
+    g_state.CP_No[wk->wu.id][3] = 0;
 
-    if (Before_Look[wk->wu.id]) {
-        xx = Standing_Timer[wk->wu.id];
+    if (g_state.Before_Look[wk->wu.id]) {
+        xx = g_state.Standing_Timer[wk->wu.id];
     } else {
         xx = 0;
     }
 
     Clear_Com_Flag(wk);
-    Standing_Timer[wk->wu.id] = xx;
+    g_state.Standing_Timer[wk->wu.id] = xx;
 
     for (xx = 0; xx <= 7; xx++) {
-        CP_Index[wk->wu.id][xx] = 0;
+        g_state.CP_Index[wk->wu.id][xx] = 0;
     }
 
     Select_Active(wk);
@@ -339,7 +340,7 @@ void Com_Free(PLW* wk) {
 
 /** @brief AI state 3: Wait before transitioning to follow-up combo execution. */
 void Com_Before_Follow(PLW* wk) {
-    Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
+    g_state.Lever_Buff[wk->wu.id] = g_state.Lever_LR[wk->wu.id];
 
     if (Check_Damage(wk)) {
         return;
@@ -357,25 +358,25 @@ void Com_Before_Follow(PLW* wk) {
         return;
     }
 
-    if (--Timer_00[wk->wu.id] != 0) {
+    if (--g_state.Timer_00[wk->wu.id] != 0) {
         return;
     }
 
     Decide_Follow_Menu(wk);
-    CP_No[wk->wu.id][0] = 4;
-    CP_No[wk->wu.id][1] = 0;
-    CP_No[wk->wu.id][2] = 0;
-    CP_No[wk->wu.id][3] = 0;
-    CP_Index[wk->wu.id][0] = 0;
-    CP_Index[wk->wu.id][1] = 0;
-    CP_Index[wk->wu.id][2] = 0;
-    CP_Index[wk->wu.id][3] = 0;
+    g_state.CP_No[wk->wu.id][0] = 4;
+    g_state.CP_No[wk->wu.id][1] = 0;
+    g_state.CP_No[wk->wu.id][2] = 0;
+    g_state.CP_No[wk->wu.id][3] = 0;
+    g_state.CP_Index[wk->wu.id][0] = 0;
+    g_state.CP_Index[wk->wu.id][1] = 0;
+    g_state.CP_Index[wk->wu.id][2] = 0;
+    g_state.CP_Index[wk->wu.id][3] = 0;
     Clear_Com_Flag(wk);
 }
 
 /** @brief AI state 5: Wait before transitioning to passive reaction execution. */
 void Com_Before_Passive(PLW* wk) {
-    Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
+    g_state.Lever_Buff[wk->wu.id] = g_state.Lever_LR[wk->wu.id];
 
     if (Check_Damage(wk)) {
         return;
@@ -389,24 +390,24 @@ void Com_Before_Passive(PLW* wk) {
         return;
     }
 
-    if (!Limited_Flag[wk->wu.id] && !Counter_Attack[wk->wu.id]) {
+    if (!g_state.Limited_Flag[wk->wu.id] && !g_state.Counter_Attack[wk->wu.id]) {
         if (Check_Guard(wk)) {
             return;
         }
     }
 
-    if (--Timer_00[wk->wu.id] != 0) {
+    if (--g_state.Timer_00[wk->wu.id] != 0) {
         return;
     }
 
-    CP_No[wk->wu.id][0] = 6;
-    CP_No[wk->wu.id][1] = 0;
-    CP_No[wk->wu.id][2] = 0;
-    CP_No[wk->wu.id][3] = 0;
-    CP_Index[wk->wu.id][0] = 0;
-    CP_Index[wk->wu.id][1] = 0;
-    CP_Index[wk->wu.id][2] = 0;
-    CP_Index[wk->wu.id][3] = 0;
+    g_state.CP_No[wk->wu.id][0] = 6;
+    g_state.CP_No[wk->wu.id][1] = 0;
+    g_state.CP_No[wk->wu.id][2] = 0;
+    g_state.CP_No[wk->wu.id][3] = 0;
+    g_state.CP_Index[wk->wu.id][0] = 0;
+    g_state.CP_Index[wk->wu.id][1] = 0;
+    g_state.CP_Index[wk->wu.id][2] = 0;
+    g_state.CP_Index[wk->wu.id][3] = 0;
 }
 
 /** @brief AI state 7: Guard state — decide whether to continue blocking or counter-attack. */
@@ -437,12 +438,12 @@ void Com_Guard(PLW* wk) {
         return;
     }
 
-    Passive_Flag[wk->wu.id] = 0;
-    Passive_Mode = 4;
+    g_state.Passive_Flag[wk->wu.id] = 0;
+    g_state.Passive_Mode = 4;
 
     if (Ck_Passive_Term(wk)) {
         Select_Passive(wk);
-        Counter_Attack[wk->wu.id] |= 2;
+        g_state.Counter_Attack[wk->wu.id] |= 2;
         return;
     }
 
@@ -460,29 +461,29 @@ void Com_Guard(PLW* wk) {
 static s32 Check_Counter_Attack(PLW* wk) {
     s16 xx;
 
-    if (Area_Number[wk->wu.id] >= 3) {
+    if (g_state.Area_Number[wk->wu.id] >= 3) {
         return 0;
     }
 
-    xx = Type_of_Attack[wk->wu.id] & 0xF8;
+    xx = g_state.Type_of_Attack[wk->wu.id] & 0xF8;
 
     if (xx == 8) {
-        VS_Tech[wk->wu.id] = 28;
+        g_state.VS_Tech[wk->wu.id] = 28;
         return 1;
     }
 
     if (xx == 24) {
-        VS_Tech[wk->wu.id] = 14;
+        g_state.VS_Tech[wk->wu.id] = 14;
         return 1;
     }
 
     if (xx == 32) {
-        VS_Tech[wk->wu.id] = 14;
+        g_state.VS_Tech[wk->wu.id] = 14;
         return 1;
     }
 
     if (xx == 48) {
-        VS_Tech[wk->wu.id] = 14;
+        g_state.VS_Tech[wk->wu.id] = 14;
         return 1;
     }
 
@@ -496,11 +497,11 @@ static s16 Check_Hamari(PLW* wk) {
     s16 limit;
     s16 xx;
 
-    if (Area_Number[wk->wu.id] >= 2) {
+    if (g_state.Area_Number[wk->wu.id] >= 2) {
         return 0;
     }
 
-    tech = Attack_Count_Buff[wk->wu.id][0];
+    tech = g_state.Attack_Count_Buff[wk->wu.id][0];
     Rnd = random_32_com() & 1;
     limit = Rnd + 3;
 
@@ -511,12 +512,12 @@ static s16 Check_Hamari(PLW* wk) {
     }
 
     for (xx = 1; xx < limit; xx++) {
-        if (tech != Attack_Count_Buff[wk->wu.id][xx]) {
+        if (tech != g_state.Attack_Count_Buff[wk->wu.id][xx]) {
             return 0;
         }
     }
 
-    return VS_Tech[wk->wu.id] = 32;
+    return g_state.VS_Tech[wk->wu.id] = 32;
 }
 
 /** @brief AI state 9: Guard against incoming projectiles (shells). */
@@ -535,7 +536,7 @@ void Com_Guard_VS_Shell(PLW* wk) {
 
     Check_Guard_Type(wk, &tmw->wu);
 
-    if (Timer_00[wk->wu.id] == 0) {
+    if (g_state.Timer_00[wk->wu.id] == 0) {
         if (wk->player_number != 18) {
             if (wk->wu.routine_no[1] != 1) {
                 Exit_Damage_Sub(wk);
@@ -552,11 +553,11 @@ void Com_Guard_VS_Shell(PLW* wk) {
             Exit_Damage_Sub(wk);
         }
 
-        Timer_00[wk->wu.id] = 1;
+        g_state.Timer_00[wk->wu.id] = 1;
         return;
     }
 
-    Timer_00[wk->wu.id]--;
+    g_state.Timer_00[wk->wu.id]--;
 }
 
 /** @brief Check if Twelve (NO12) should continue guarding against a projectile by position. */
@@ -582,9 +583,9 @@ static s32 Check_No12_Shell_Guard(PLW* wk, WORK_Other* tmw) {
 
 /** @brief Set the guard lever input based on the current guard type (stand/crouch/auto). */
 void Check_Guard_Type(PLW* wk, WORK* em) {
-    Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
+    g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
 
-    switch (Guard_Type[wk->wu.id]) {
+    switch (g_state.Guard_Type[wk->wu.id]) {
     case 0:
         if (em->pat_status >= 0xE && em->pat_status <= 0x1E) {
             break;
@@ -594,14 +595,14 @@ void Check_Guard_Type(PLW* wk, WORK* em) {
             break;
         }
 
-        Lever_Buff[wk->wu.id] |= 2;
+        g_state.Lever_Buff[wk->wu.id] |= 2;
         break;
 
     case 1:
         break;
 
     case 2:
-        Lever_Buff[wk->wu.id] |= 2;
+        g_state.Lever_Buff[wk->wu.id] |= 2;
         break;
     }
 }
@@ -610,35 +611,35 @@ void Check_Guard_Type(PLW* wk, WORK* em) {
 static s32 Ck_Exit_Guard(PLW* wk, WORK* em) {
     s16 Lv;
 
-    if (--Timer_00[wk->wu.id]) {
+    if (--g_state.Timer_00[wk->wu.id]) {
         return 1;
     }
 
-    Timer_00[wk->wu.id] = 1;
+    g_state.Timer_00[wk->wu.id] = 1;
 
     if (Ck_Exit_Guard_Sub(wk, em)) {
-        if (Guard_Counter[wk->wu.id] == Attack_Counter[wk->wu.id]) {
+        if (g_state.Guard_Counter[wk->wu.id] == g_state.Attack_Counter[wk->wu.id]) {
             return 1;
         }
 
-        Guard_Counter[wk->wu.id] = Attack_Counter[wk->wu.id];
+        g_state.Guard_Counter[wk->wu.id] = g_state.Attack_Counter[wk->wu.id];
         Lv = Setup_Lv10(0);
 
-        if (Break_Into_CPU == 2) {
+        if (g_state.Break_Into_CPU == 2) {
             Lv = 10;
         }
 
-        if (Demo_Flag == 0 && Weak_PL == wk->wu.id) {
+        if (g_state.Demo_Flag == 0 && g_state.Weak_PL == wk->wu.id) {
             Lv = 2;
         }
 
-        Lv += CC_Value[0];
+        Lv += g_state.CC_Value[0];
         Lv = emLevelRemake(Lv, 11, 1);
 
-        if (EM_Rank != 0) {
-            Guard_Type[wk->wu.id] = Guard_Data[17][Lv][random_16_com()];
+        if (g_state.EM_Rank != 0) {
+            g_state.Guard_Type[wk->wu.id] = Guard_Data[17][Lv][random_16_com()];
         } else {
-            Guard_Type[wk->wu.id] = Guard_Data[wk->player_number][Lv][random_16_com()];
+            g_state.Guard_Type[wk->wu.id] = Guard_Data[wk->player_number][Lv][random_16_com()];
         }
 
         return 1;
@@ -649,7 +650,7 @@ static s32 Ck_Exit_Guard(PLW* wk, WORK* em) {
 
 /** @brief Sub-check for guard exit — tests whether the opponent is still attacking. */
 static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
-    if (Attack_Flag[wk->wu.id] == 0) {
+    if (g_state.Attack_Flag[wk->wu.id] == 0) {
         return 0;
     }
 
@@ -659,7 +660,7 @@ static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
         }
 
         if (wk->wu.routine_no[2] >= 4 && wk->wu.routine_no[2] < 8 && wk->wu.cmwk[0xE] == 0 &&
-            Attack_Flag[wk->wu.id] == 0) {
+            g_state.Attack_Flag[wk->wu.id] == 0) {
             return 0;
         }
 
@@ -670,7 +671,7 @@ static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
         return 0;
     }
 
-    if (Attack_Flag[wk->wu.id] == 0) {
+    if (g_state.Attack_Flag[wk->wu.id] == 0) {
         return 0;
     }
 
@@ -764,11 +765,11 @@ void Com_Damage(PLW* wk) {
         return;
     }
 
-    if ((u32)CP_No[wk->wu.id][1] >= DAMAGE_STATE_COUNT) {
+    if ((u32)g_state.CP_No[wk->wu.id][1] >= DAMAGE_STATE_COUNT) {
         return;
     }
 
-    Damage_Jmp_Tbl[CP_No[wk->wu.id][1]](wk);
+    Damage_Jmp_Tbl[g_state.CP_No[wk->wu.id][1]](wk);
 }
 
 /** @brief Damage sub-state 0: Initial damage reaction — decide blocking and get-up action. */
@@ -778,29 +779,29 @@ void Damage_1st(PLW* wk) {
     u8 xx;
     WORK* em;
 
-    Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
-    Lever_Buff[wk->wu.id] |= 2;
+    g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
+    g_state.Lever_Buff[wk->wu.id] |= 2;
 
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
         if (wk->py->flag) {
-            CP_No[wk->wu.id][1] = 9;
+            g_state.CP_No[wk->wu.id][1] = 9;
             break;
         }
 
         if (PL_Blow_Off_Data[wk->wu.routine_no[2]] == 0) {
-            CP_No[wk->wu.id][1] = 1;
+            g_state.CP_No[wk->wu.id][1] = 1;
             break;
         }
 
-        CP_No[wk->wu.id][2]++;
+        g_state.CP_No[wk->wu.id][2]++;
         Lv = Setup_Lv08(0);
 
-        if (Break_Into_CPU == 2) {
+        if (g_state.Break_Into_CPU == 2) {
             Lv = 7;
         }
 
-        if (Demo_Flag == 0 && Weak_PL == wk->wu.id) {
+        if (g_state.Demo_Flag == 0 && g_state.Weak_PL == wk->wu.id) {
             Lv = 0;
         }
 
@@ -808,7 +809,7 @@ void Damage_1st(PLW* wk) {
         xx = Setup_EM_Rank_Index(wk);
 
         if (Receive_Data[xx][emLevelRemake(Lv, 8, 0)] > Rnd) {
-            Receive_Flag[wk->wu.id] = 1;
+            g_state.Receive_Flag[wk->wu.id] = 1;
             break;
         }
 
@@ -816,51 +817,51 @@ void Damage_1st(PLW* wk) {
 
     case 1:
         if (wk->wu.routine_no[3] == 0) {
-            CP_No[wk->wu.id][2] = 0;
+            g_state.CP_No[wk->wu.id][2] = 0;
             break;
         }
 
         Lv = Setup_Lv04(0);
 
-        if (Break_Into_CPU == 2) {
+        if (g_state.Break_Into_CPU == 2) {
             Lv = 3;
         }
 
-        if (Demo_Flag == 0 && Weak_PL == wk->wu.id) {
+        if (g_state.Demo_Flag == 0 && g_state.Weak_PL == wk->wu.id) {
             Lv = 0;
         }
 
         Rnd = random_32_com();
-        CP_No[wk->wu.id][1] = Get_Up_Data[wk->player_number][emLevelRemake(Lv, 4, 0)][Rnd] + 1;
-        CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][1] = Get_Up_Data[wk->player_number][emLevelRemake(Lv, 4, 0)][Rnd] + 1;
+        g_state.CP_No[wk->wu.id][2] = 0;
 
-        if (Get_Up_Action_Check_Data[wk->player_number][CP_No[wk->wu.id][1] - 1][Area_Number[wk->wu.id]] == -1) {
-            CP_No[wk->wu.id][1] = Get_Up_Action_Check_Data[wk->player_number][CP_No[wk->wu.id][1]][4];
+        if (Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1] - 1][g_state.Area_Number[wk->wu.id]] == -1) {
+            g_state.CP_No[wk->wu.id][1] = Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1]][4];
         }
 
-        if (CP_No[wk->wu.id][1] != 0) {
+        if (g_state.CP_No[wk->wu.id][1] != 0) {
             break;
         }
 
         Lv = Setup_Lv10(0);
 
-        if (Break_Into_CPU == 2) {
+        if (g_state.Break_Into_CPU == 2) {
             Lv = 10;
         }
 
-        if (Demo_Flag == 0 && Weak_PL == wk->wu.id) {
+        if (g_state.Demo_Flag == 0 && g_state.Weak_PL == wk->wu.id) {
             Lv = 0;
         }
 
         Rnd = random_16_com();
-        Lv += CC_Value[0];
+        Lv += g_state.CC_Value[0];
         Lv = emLevelRemake(Lv, 11, 1);
         em = (WORK*)wk->wu.target_adrs;
 
-        if (EM_Rank != 0) {
-            Guard_Type[wk->wu.id] = Guard_Data[17][Lv][Rnd];
+        if (g_state.EM_Rank != 0) {
+            g_state.Guard_Type[wk->wu.id] = Guard_Data[17][Lv][Rnd];
         } else {
-            Guard_Type[wk->wu.id] = Guard_Data[wk->player_number][Lv][Rnd];
+            g_state.Guard_Type[wk->wu.id] = Guard_Data[wk->player_number][Lv][Rnd];
         }
 
         Check_Guard_Type(wk, em);
@@ -875,13 +876,13 @@ void Damage_2nd(PLW* wk) {
     Check_Guard_Type(wk, em);
 
     if (wk->wu.routine_no[2] == 0x19) {
-        CP_No[wk->wu.id][1] = 9;
-        CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][1] = 9;
+        g_state.CP_No[wk->wu.id][2] = 0;
         return;
     }
 
-    if (Receive_Flag[wk->wu.id] != 0 && plw[wk->wu.id].uot_cd_ok_flag != 0) {
-        Lever_Buff[wk->wu.id] = 2;
+    if (g_state.Receive_Flag[wk->wu.id] != 0 && g_state.plw[wk->wu.id].uot_cd_ok_flag != 0) {
+        g_state.Lever_Buff[wk->wu.id] = 2;
     }
 
     if (wk->wu.routine_no[1] != 1) {
@@ -898,12 +899,12 @@ void Damage_4th(PLW* /* unused */) {}
 /** @brief Damage sub-state 4: Super art reversal during get-up. */
 void Damage_5th(PLW* wk) {
     if (wk->wu.routine_no[3] == 0) {
-        CP_No[wk->wu.id][1] = 0;
-        CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][1] = 0;
+        g_state.CP_No[wk->wu.id][2] = 0;
         return;
     }
 
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
         if (wk->wu.routine_no[1] != 1) {
             Exit_Damage_Sub(wk);
@@ -911,15 +912,15 @@ void Damage_5th(PLW* wk) {
         }
 
         if (wk->wu.cg_type == 9) {
-            CP_No[wk->wu.id][2]++;
-            CP_Index[wk->wu.id][1] = 0;
+            g_state.CP_No[wk->wu.id][2]++;
+            g_state.CP_Index[wk->wu.id][1] = 0;
         }
 
         break;
 
     case 1:
         if (Command_Attack_SP(wk, wk->player_number, 46, 8)) {
-            CP_No[wk->wu.id][2]++;
+            g_state.CP_No[wk->wu.id][2]++;
         }
 
         break;
@@ -939,21 +940,21 @@ void Damage_6th(PLW* wk) {
     u8 Rnd;
 
     if (wk->wu.routine_no[3] == 0) {
-        CP_No[wk->wu.id][1] = 0;
-        CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][1] = 0;
+        g_state.CP_No[wk->wu.id][2] = 0;
         return;
     }
 
     if (wk->wu.routine_no[2] == 0x19) {
-        CP_No[wk->wu.id][1] = 9;
-        CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][1] = 9;
+        g_state.CP_No[wk->wu.id][2] = 0;
         return;
     }
 
-    Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
-    Lever_Buff[wk->wu.id] |= 2;
+    g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
+    g_state.Lever_Buff[wk->wu.id] |= 2;
 
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
         if (wk->wu.routine_no[1] != 1) {
             Exit_Damage_Sub(wk);
@@ -961,19 +962,19 @@ void Damage_6th(PLW* wk) {
         }
 
         if (wk->wu.cg_type == 12) {
-            if (Get_Up_Action_Check_Data[wk->player_number][CP_No[wk->wu.id][1] - 1][Area_Number[wk->wu.id]] == -1) {
-                CP_No[wk->wu.id][1] = Get_Up_Action_Check_Data[wk->player_number][CP_No[wk->wu.id][1]][4];
+            if (Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1] - 1][g_state.Area_Number[wk->wu.id]] == -1) {
+                g_state.CP_No[wk->wu.id][1] = Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1]][4];
             }
 
-            CP_No[wk->wu.id][2]++;
-            CP_Index[wk->wu.id][1] = 0;
+            g_state.CP_No[wk->wu.id][2]++;
+            g_state.CP_Index[wk->wu.id][1] = 0;
             Lv = Setup_Lv04(0);
 
-            if (Break_Into_CPU == 2) {
+            if (g_state.Break_Into_CPU == 2) {
                 Lv = 3;
             }
 
-            if (Demo_Flag == 0 && Weak_PL == wk->wu.id) {
+            if (g_state.Demo_Flag == 0 && g_state.Weak_PL == wk->wu.id) {
                 Lv = 0;
             }
 
@@ -981,16 +982,16 @@ void Damage_6th(PLW* wk) {
             Rnd = random_32_com() & 3;
             Rnd *= 2;
 
-            CP_Index[wk->wu.id][0] = Get_Up_Action_Tech_Data[wk->player_number][Lv][Rnd];
-            CP_Index[wk->wu.id][7] = Get_Up_Action_Tech_Data[wk->player_number][Lv][Rnd + 1];
+            g_state.CP_Index[wk->wu.id][0] = Get_Up_Action_Tech_Data[wk->player_number][Lv][Rnd];
+            g_state.CP_Index[wk->wu.id][7] = Get_Up_Action_Tech_Data[wk->player_number][Lv][Rnd + 1];
 
-            if (CP_Index[wk->wu.id][0] == 0xFF) {
-                CP_Index[wk->wu.id][0] = Get_Up_Action_Tech_Data[wk->player_number][Lv][0];
-                CP_Index[wk->wu.id][7] = 8;
+            if (g_state.CP_Index[wk->wu.id][0] == 0xFF) {
+                g_state.CP_Index[wk->wu.id][0] = Get_Up_Action_Tech_Data[wk->player_number][Lv][0];
+                g_state.CP_Index[wk->wu.id][7] = 8;
 
-                if (plw[wk->wu.id].sa->ok &&
-                    Arts_Super_Name_Data[wk->player_number][plw[wk->wu.id].sa->kind_of_arts] != -1) {
-                    CP_Index[wk->wu.id][0] = Arts_Super_Name_Data[wk->player_number][plw[wk->wu.id].sa->kind_of_arts];
+                if (g_state.plw[wk->wu.id].sa->ok &&
+                    Arts_Super_Name_Data[wk->player_number][g_state.plw[wk->wu.id].sa->kind_of_arts] != -1) {
+                    g_state.CP_Index[wk->wu.id][0] = Arts_Super_Name_Data[wk->player_number][g_state.plw[wk->wu.id].sa->kind_of_arts];
                 }
             }
         }
@@ -998,14 +999,14 @@ void Damage_6th(PLW* wk) {
         break;
 
     case 1:
-        if (Command_Attack_SP(wk, wk->player_number, CP_Index[wk->wu.id][0], CP_Index[wk->wu.id][7])) {
-            CP_No[wk->wu.id][2]++;
+        if (Command_Attack_SP(wk, wk->player_number, g_state.CP_Index[wk->wu.id][0], g_state.CP_Index[wk->wu.id][7])) {
+            g_state.CP_No[wk->wu.id][2]++;
         }
 
         break;
 
     default:
-        if (Command_Attack_SP(wk, wk->player_number, CP_Index[wk->wu.id][0], CP_Index[wk->wu.id][7])) {
+        if (Command_Attack_SP(wk, wk->player_number, g_state.CP_Index[wk->wu.id][0], g_state.CP_Index[wk->wu.id][7])) {
             Exit_Damage_Sub(wk);
         }
 
@@ -1017,26 +1018,26 @@ void Damage_6th(PLW* wk) {
 void Damage_7th(PLW* wk) {
     WORK* em;
 
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
         if (wk->wu.routine_no[1] != 1) {
             Exit_Damage_Sub(wk);
             break;
         }
 
-        CP_No[wk->wu.id][2]++;
+        g_state.CP_No[wk->wu.id][2]++;
 
-        switch (CP_No[wk->wu.id][1]) {
+        switch (g_state.CP_No[wk->wu.id][1]) {
         case 6:
-            Guard_Type[wk->wu.id] = 0;
+            g_state.Guard_Type[wk->wu.id] = 0;
             break;
 
         case 7:
-            Guard_Type[wk->wu.id] = 1;
+            g_state.Guard_Type[wk->wu.id] = 1;
             break;
 
         default:
-            Guard_Type[wk->wu.id] = 2;
+            g_state.Guard_Type[wk->wu.id] = 2;
             break;
         }
 
@@ -1050,11 +1051,11 @@ void Damage_7th(PLW* wk) {
             break;
         }
 
-        if (Attack_Flag[wk->wu.id] != 0) {
+        if (g_state.Attack_Flag[wk->wu.id] != 0) {
             break;
         }
 
-        if (Attack_Flag[wk->wu.id] == 0) {
+        if (g_state.Attack_Flag[wk->wu.id] == 0) {
             Exit_Damage_Sub(wk);
             break;
         }
@@ -1077,28 +1078,28 @@ void Damage_8th(PLW* wk) {
         return;
     }
 
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
         if (wk->wu.routine_no[2] == 0x19 && wk->wu.routine_no[3] != 0) {
-            CP_No[wk->wu.id][2] += 1;
-            Timer_00[wk->wu.id] = 1;
+            g_state.CP_No[wk->wu.id][2] += 1;
+            g_state.Timer_00[wk->wu.id] = 1;
             Lv = Setup_Lv08(0);
 
-            if (Break_Into_CPU == 2) {
+            if (g_state.Break_Into_CPU == 2) {
                 Lv = 7;
             }
 
-            if (Demo_Flag == 0 && Weak_PL == wk->wu.id) {
+            if (g_state.Demo_Flag == 0 && g_state.Weak_PL == wk->wu.id) {
                 Lv = 0;
             }
 
-            Timer_01[wk->wu.id] = Faint_Rapid_Data[emLevelRemake(Lv, 8, 0)][(Rnd = random_16_com() & 7)];
+            g_state.Timer_01[wk->wu.id] = Faint_Rapid_Data[emLevelRemake(Lv, 8, 0)][(Rnd = random_16_com() & 7)];
         }
 
         break;
 
     case 1:
-        Lever_Buff[wk->wu.id] = Com_Rapid_Sub(wk, 0, &CP_No[wk->wu.id][3]);
+        g_state.Lever_Buff[wk->wu.id] = Com_Rapid_Sub(wk, 0, &g_state.CP_No[wk->wu.id][3]);
         break;
     }
 }
@@ -1116,18 +1117,18 @@ void Exit_Damage_Sub(PLW* wk) {
 
 /** @brief Check if the CPU player is currently being hit and should enter damage state. */
 static s32 Check_Damage(PLW* wk) {
-    if (Counter_Attack[wk->wu.id] & 2) {
+    if (g_state.Counter_Attack[wk->wu.id] & 2) {
         return 0;
     }
 
-    if (wk->wu.routine_no[1] == 1 && CP_No[wk->wu.id][0] != 7 && CP_No[wk->wu.id][0] != 9 &&
-        Guard_Flag[wk->wu.id] == 0) {
-        CP_No[wk->wu.id][0] = 10;
-        CP_No[wk->wu.id][1] = 0;
-        CP_No[wk->wu.id][2] = 0;
-        CP_No[wk->wu.id][3] = 0;
-        Receive_Flag[wk->wu.id] = 0;
-        Lever_Buff[wk->wu.id] = 2;
+    if (wk->wu.routine_no[1] == 1 && g_state.CP_No[wk->wu.id][0] != 7 && g_state.CP_No[wk->wu.id][0] != 9 &&
+        g_state.Guard_Flag[wk->wu.id] == 0) {
+        g_state.CP_No[wk->wu.id][0] = 10;
+        g_state.CP_No[wk->wu.id][1] = 0;
+        g_state.CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][3] = 0;
+        g_state.Receive_Flag[wk->wu.id] = 0;
+        g_state.Lever_Buff[wk->wu.id] = 2;
         Clear_Com_Flag(wk);
         return 1;
     }
@@ -1147,19 +1148,19 @@ void Com_Float(PLW* wk) {
         return;
     }
 
-    if ((u32)CP_No[wk->wu.id][1] >= FLOAT_STATE_COUNT) {
+    if ((u32)g_state.CP_No[wk->wu.id][1] >= FLOAT_STATE_COUNT) {
         return;
     }
 
-    Float_Jmp_Tbl[CP_No[wk->wu.id][1]](wk);
+    Float_Jmp_Tbl[g_state.CP_No[wk->wu.id][1]](wk);
 }
 
 /** @brief Float sub-state 1: Air recovery — input neutral then check for landing. */
 void Float_2nd(PLW* wk) {
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
-        CP_No[wk->wu.id][2]++;
-        Lever_Buff[wk->wu.id] = 16;
+        g_state.CP_No[wk->wu.id][2]++;
+        g_state.Lever_Buff[wk->wu.id] = 16;
         break;
 
     default:
@@ -1179,21 +1180,21 @@ void Float_3rd(PLW* wk) {
         Next_Be_Free(wk);
     }
 
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
-        CP_No[wk->wu.id][2]++;
-        Timer_00[wk->wu.id] = 4;
-        Lever_Pool[wk->wu.id] = Setup_Guard_Lever(wk, 0);
-        Lever_Buff[wk->wu.id] = Lever_Pool[wk->wu.id];
+        g_state.CP_No[wk->wu.id][2]++;
+        g_state.Timer_00[wk->wu.id] = 4;
+        g_state.Lever_Pool[wk->wu.id] = Setup_Guard_Lever(wk, 0);
+        g_state.Lever_Buff[wk->wu.id] = g_state.Lever_Pool[wk->wu.id];
         break;
 
     default:
-        if (--Timer_00[wk->wu.id] != 0) {
+        if (--g_state.Timer_00[wk->wu.id] != 0) {
             break;
         }
 
-        Timer_00[wk->wu.id] = 3;
-        Lever_Buff[wk->wu.id] = Lever_Pool[wk->wu.id];
+        g_state.Timer_00[wk->wu.id] = 3;
+        g_state.Lever_Buff[wk->wu.id] = g_state.Lever_Pool[wk->wu.id];
         break;
     }
 }
@@ -1204,21 +1205,21 @@ void Float_4th(PLW* wk) {
         Next_Be_Free(wk);
     }
 
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
-        CP_No[wk->wu.id][2]++;
-        Timer_00[wk->wu.id] = 4;
-        Lever_Pool[wk->wu.id] = Setup_Guard_Lever(wk, 1);
-        Lever_Buff[wk->wu.id] = Lever_Pool[wk->wu.id];
+        g_state.CP_No[wk->wu.id][2]++;
+        g_state.Timer_00[wk->wu.id] = 4;
+        g_state.Lever_Pool[wk->wu.id] = Setup_Guard_Lever(wk, 1);
+        g_state.Lever_Buff[wk->wu.id] = g_state.Lever_Pool[wk->wu.id];
         break;
 
     default:
-        if (--Timer_00[wk->wu.id] != 0) {
+        if (--g_state.Timer_00[wk->wu.id] != 0) {
             break;
         }
 
-        Timer_00[wk->wu.id] = 3;
-        Lever_Buff[wk->wu.id] = Lever_Pool[wk->wu.id];
+        g_state.Timer_00[wk->wu.id] = 3;
+        g_state.Lever_Buff[wk->wu.id] = g_state.Lever_Pool[wk->wu.id];
         break;
     }
 }
@@ -1235,18 +1236,18 @@ void Com_Flip(PLW* wk) {
         return;
     }
 
-    if ((u32)CP_No[wk->wu.id][1] >= FLIP_STATE_COUNT) {
+    if ((u32)g_state.CP_No[wk->wu.id][1] >= FLIP_STATE_COUNT) {
         return;
     }
 
-    Flip_Jmp_Tbl[CP_No[wk->wu.id][1]](wk);
+    Flip_Jmp_Tbl[g_state.CP_No[wk->wu.id][1]](wk);
 }
 
 /** @brief Flip sub-state 0: Ground parry — wait for attack hit, then guard. */
 void Flip_Zero(PLW* wk) {
     WORK* em = (WORK*)wk->wu.target_adrs;
 
-    switch (CP_No[wk->wu.id][2]) {
+    switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
         if (em->routine_no[1] != 4) {
             Exit_Damage_Sub(wk);
@@ -1257,8 +1258,8 @@ void Flip_Zero(PLW* wk) {
             break;
         }
 
-        CP_No[wk->wu.id][2]++;
-        Timer_00[wk->wu.id] = 9;
+        g_state.CP_No[wk->wu.id][2]++;
+        g_state.Timer_00[wk->wu.id] = 9;
         break;
 
     case 1:
@@ -1266,7 +1267,7 @@ void Flip_Zero(PLW* wk) {
             break;
         }
 
-        if (--Timer_00[wk->wu.id] != 0) {
+        if (--g_state.Timer_00[wk->wu.id] != 0) {
             break;
         }
 
@@ -1281,18 +1282,18 @@ s32 Check_Flip_GO(PLW* wk, s16 xx) {
 
     if (em->att_hit_ok || xx) {
         if (em->pat_status == 0x21 || em->pat_status == 0x20) {
-            Lever_Buff[wk->wu.id] = 2;
+            g_state.Lever_Buff[wk->wu.id] = 2;
         } else {
-            Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 0);
+            g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 0);
         }
 
-        if (xx == 0 && Resume_Lever[wk->wu.id][0] == Lever_Buff[wk->wu.id]) {
+        if (xx == 0 && g_state.Resume_Lever[wk->wu.id][0] == g_state.Lever_Buff[wk->wu.id]) {
             Next_Be_Guard(wk, em, 0);
-            Flip_Counter[wk->wu.id] = 255;
+            g_state.Flip_Counter[wk->wu.id] = 255;
             return 0;
         }
 
-        Flip_Counter[wk->wu.id]++;
+        g_state.Flip_Counter[wk->wu.id]++;
         return 1;
     }
 
@@ -1333,36 +1334,36 @@ void Flip_3rd(PLW* wk) {
 
     switch (next_disposal) {
     case 0:
-        CP_No[wk->wu.id][1] = 2;
+        g_state.CP_No[wk->wu.id][1] = 2;
         return;
 
     case 1:
-        Timer_00[wk->wu.id] = 15;
+        g_state.Timer_00[wk->wu.id] = 15;
         /* fallthrough */
 
     case 3:
-        CP_No[wk->wu.id][1] = 4;
+        g_state.CP_No[wk->wu.id][1] = 4;
         return;
 
     case 2:
-        CP_No[wk->wu.id][0] = 9;
-        CP_No[wk->wu.id][1] = 0;
-        CP_No[wk->wu.id][2] = 0;
-        CP_No[wk->wu.id][3] = 0;
-        Timer_00[wk->wu.id] = 10;
-        Flip_Counter[wk->wu.id] = 255;
+        g_state.CP_No[wk->wu.id][0] = 9;
+        g_state.CP_No[wk->wu.id][1] = 0;
+        g_state.CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][3] = 0;
+        g_state.Timer_00[wk->wu.id] = 10;
+        g_state.Flip_Counter[wk->wu.id] = 255;
         dash_flag_clear(wk->wu.id);
-        Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
+        g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
 
         if (((WORK*)wk->wu.dmg_adrs)->att.guard & 0x10) {
             break;
         }
 
-        Lever_Buff[wk->wu.id] |= 2;
+        g_state.Lever_Buff[wk->wu.id] |= 2;
         break;
 
     default:
-        Flip_Counter[wk->wu.id] = 255;
+        g_state.Flip_Counter[wk->wu.id] = 255;
         Next_Be_Free(wk);
         break;
     }
@@ -1370,26 +1371,26 @@ void Flip_3rd(PLW* wk) {
 
 /** @brief Flip sub-state 4: Wait timer then attempt another shell parry or exit. */
 void Flip_4th(PLW* wk) {
-    if (--Timer_00[wk->wu.id] != 0) {
+    if (--g_state.Timer_00[wk->wu.id] != 0) {
         return;
     }
 
     if (SetShellFlipLever(wk) == 0) {
-        Flip_Counter[wk->wu.id] = 255;
+        g_state.Flip_Counter[wk->wu.id] = 255;
         Next_Be_Free(wk);
         return;
     }
 
-    CP_No[wk->wu.id][1] = 0;
-    CP_No[wk->wu.id][2] = 1;
-    Timer_00[wk->wu.id] = 9;
+    g_state.CP_No[wk->wu.id][1] = 0;
+    g_state.CP_No[wk->wu.id][2] = 1;
+    g_state.Timer_00[wk->wu.id] = 9;
 }
 
 /** @brief Set the guard lever for parrying an incoming projectile. Returns 0 if no shell. */
 s32 SetShellFlipLever(PLW* wk) {
     WORK* tmw;
 
-    Lever_Buff[wk->wu.id] = 0;
+    g_state.Lever_Buff[wk->wu.id] = 0;
     tmw = (WORK*)Shell_Address[wk->wu.id];
 
     if (tmw == NULL) {
@@ -1404,10 +1405,10 @@ s32 SetShellFlipLever(PLW* wk) {
         return 0;
     }
 
-    Lever_Buff[wk->wu.id] = 2;
+    g_state.Lever_Buff[wk->wu.id] = 2;
 
     if (tmw->att.guard & 2) {
-        Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 0);
+        g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 0);
     }
 
     return 1;
@@ -1422,9 +1423,9 @@ static s32 Check_Shell_Flip(PLW* wk) {
     s32 res;
 
     res = 0;
-    Flip_Counter[wk->wu.id]++;
+    g_state.Flip_Counter[wk->wu.id]++;
 
-    if (Timer_01[wk->wu.id] != 8) {
+    if (g_state.Timer_01[wk->wu.id] != 8) {
         return 0;
     }
 
@@ -1464,7 +1465,7 @@ static s32 Check_Shell_Flip(PLW* wk) {
         return 2;
     }
 
-    if (Flip_Counter[wk->wu.id] < emGetMaxBlocking()) {
+    if (g_state.Flip_Counter[wk->wu.id] < emGetMaxBlocking()) {
         if (res == 0) {
             return 1;
         }
@@ -1472,7 +1473,7 @@ static s32 Check_Shell_Flip(PLW* wk) {
         xx -= 8;
 
         if (xx > 0) {
-            Timer_00[wk->wu.id] = xx;
+            g_state.Timer_00[wk->wu.id] = xx;
             return 3;
         }
     }
@@ -1482,7 +1483,7 @@ static s32 Check_Shell_Flip(PLW* wk) {
 
 /** @brief Check if the CPU player has been parried and should enter flip state. */
 s32 Check_Flip(PLW* wk) {
-    if (Flip_Flag[wk->wu.id]) {
+    if (g_state.Flip_Flag[wk->wu.id]) {
         return 0;
     }
 
@@ -1494,23 +1495,23 @@ s32 Check_Flip(PLW* wk) {
         return 0;
     }
 
-    if (Flip_Counter[wk->wu.id] == 0xFF) {
+    if (g_state.Flip_Counter[wk->wu.id] == 0xFF) {
         return 0;
     }
 
-    CP_No[wk->wu.id][0] = 12;
-    CP_No[wk->wu.id][2] = 0;
-    CP_No[wk->wu.id][3] = 0;
-    Timer_00[wk->wu.id] = 15;
+    g_state.CP_No[wk->wu.id][0] = 12;
+    g_state.CP_No[wk->wu.id][2] = 0;
+    g_state.CP_No[wk->wu.id][3] = 0;
+    g_state.Timer_00[wk->wu.id] = 15;
 
-    if (Timer_01[wk->wu.id] == 8) {
-        CP_No[wk->wu.id][1] = 3;
+    if (g_state.Timer_01[wk->wu.id] == 8) {
+        g_state.CP_No[wk->wu.id][1] = 3;
     } else {
-        CP_No[wk->wu.id][1] = 2;
+        g_state.CP_No[wk->wu.id][1] = 2;
     }
 
     if (wk->wu.xyz[1].disp.pos > 0) {
-        CP_No[wk->wu.id][1] = 1;
+        g_state.CP_No[wk->wu.id][1] = 1;
     }
 
     return 1;
@@ -1522,11 +1523,11 @@ static s32 Check_Flip_Attack(PLW* wk) {
     s16 Rnd;
     s16 xx;
 
-    if (Break_Into_CPU == 2) {
+    if (g_state.Break_Into_CPU == 2) {
         Lv = 7;
     }
 
-    if (Demo_Flag == 0 && Weak_PL == wk->wu.id) {
+    if (g_state.Demo_Flag == 0 && g_state.Weak_PL == wk->wu.id) {
         Lv = 0;
     }
 
@@ -1538,9 +1539,9 @@ static s32 Check_Flip_Attack(PLW* wk) {
         return 0;
     }
 
-    Flip_Flag[wk->wu.id] = 0;
-    VS_Tech[wk->wu.id] = 13;
-    Counter_Attack[wk->wu.id] = 1;
+    g_state.Flip_Flag[wk->wu.id] = 0;
+    g_state.VS_Tech[wk->wu.id] = 13;
+    g_state.Counter_Attack[wk->wu.id] = 1;
     return 1;
 }
 
@@ -1550,29 +1551,29 @@ void Com_Caught(PLW* wk) {
     s16 Lv;
     WORK* em = (WORK*)wk->wu.target_adrs;
 
-    switch (CP_No[wk->wu.id][1]) {
+    switch (g_state.CP_No[wk->wu.id][1]) {
     case 0:
-        CP_No[wk->wu.id][1]++;
-        CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][1]++;
+        g_state.CP_No[wk->wu.id][2] = 0;
 
         if (em->sp_tech_id == 1) {
-            Timer_00[wk->wu.id] = 12;
+            g_state.Timer_00[wk->wu.id] = 12;
             Lv = Setup_Lv08(0);
 
-            if (Break_Into_CPU == 2) {
+            if (g_state.Break_Into_CPU == 2) {
                 Lv = 7;
             }
 
-            if (Demo_Flag == 0 && Weak_PL == wk->wu.id) {
+            if (g_state.Demo_Flag == 0 && g_state.Weak_PL == wk->wu.id) {
                 Lv = 0;
             }
 
-            Timer_01[wk->wu.id] = Rapid_Exit_Data[emLevelRemake(Lv, 8, 0)][(Rnd = random_16_com() & 7)];
+            g_state.Timer_01[wk->wu.id] = Rapid_Exit_Data[emLevelRemake(Lv, 8, 0)][(Rnd = random_16_com() & 7)];
             break;
         }
 
-        Timer_00[wk->wu.id] = Decide_Exit_Catch(wk);
-        Timer_01[wk->wu.id] = 1;
+        g_state.Timer_00[wk->wu.id] = Decide_Exit_Catch(wk);
+        g_state.Timer_01[wk->wu.id] = 1;
         break;
 
     case 1:
@@ -1586,7 +1587,7 @@ void Com_Caught(PLW* wk) {
             break;
         }
 
-        Lever_Buff[wk->wu.id] = Com_Rapid_Sub(wk, 0xFF0, &CP_No[wk->wu.id][2]);
+        g_state.Lever_Buff[wk->wu.id] = Com_Rapid_Sub(wk, 0xFF0, &g_state.CP_No[wk->wu.id][2]);
         break;
     }
 }
@@ -1597,9 +1598,9 @@ static s16 Decide_Exit_Catch(PLW* wk) {
     s16 xx;
     s16 Lv = Setup_Lv18(CurrentSave()->Difficulty + 0);
 
-    Lv += CC_Value[0];
+    Lv += g_state.CC_Value[0];
 
-    if (Break_Into_CPU == 2) {
+    if (g_state.Break_Into_CPU == 2) {
         Lv = 17;
     }
 
@@ -1619,8 +1620,8 @@ const u8 Rapid_Lever_Data[2] = { 8, 4 };
 s32 Com_Rapid_Sub(PLW* wk, s16 Shot, u8* dir_step) {
     u16 xx;
 
-    if (--Timer_00[wk->wu.id] == 0) {
-        Timer_00[wk->wu.id] = Timer_01[wk->wu.id];
+    if (--g_state.Timer_00[wk->wu.id] == 0) {
+        g_state.Timer_00[wk->wu.id] = g_state.Timer_01[wk->wu.id];
         xx = Rapid_Lever_Data[dir_step[0]];
         xx |= Shot;
         dir_step[0]++;
@@ -1634,10 +1635,10 @@ s32 Com_Rapid_Sub(PLW* wk, s16 Shot, u8* dir_step) {
 /** @brief Check if the CPU player has been grabbed and should enter caught state. */
 static s32 Check_Caught(PLW* wk) {
     if (wk->wu.routine_no[1] == 3) {
-        CP_No[wk->wu.id][0] = 13;
-        CP_No[wk->wu.id][1] = 0;
-        CP_No[wk->wu.id][2] = 0;
-        CP_No[wk->wu.id][3] = 0;
+        g_state.CP_No[wk->wu.id][0] = 13;
+        g_state.CP_No[wk->wu.id][1] = 0;
+        g_state.CP_No[wk->wu.id][2] = 0;
+        g_state.CP_No[wk->wu.id][3] = 0;
         Clear_Com_Flag(wk);
         return 1;
     }
@@ -1651,18 +1652,18 @@ void Com_Catch(PLW* wk) {
     s16 Rnd;
     s16 Lv;
 
-    switch (CP_No[wk->wu.id][1]) {
+    switch (g_state.CP_No[wk->wu.id][1]) {
     case 0:
-        CP_No[wk->wu.id][1]++;
-        CP_No[wk->wu.id][2] = 0;
-        Timer_00[wk->wu.id] = 1;
+        g_state.CP_No[wk->wu.id][1]++;
+        g_state.CP_No[wk->wu.id][2] = 0;
+        g_state.Timer_00[wk->wu.id] = 1;
         Lv = Setup_Lv04(0);
 
-        if (Break_Into_CPU == 2) {
+        if (g_state.Break_Into_CPU == 2) {
             Lv = 3;
         }
 
-        Timer_01[wk->wu.id] = Rapid_Hit_Data[emLevelRemake(Lv, 4, 0)][(Rnd = random_16_com() & 7)];
+        g_state.Timer_01[wk->wu.id] = Rapid_Hit_Data[emLevelRemake(Lv, 4, 0)][(Rnd = random_16_com() & 7)];
         break;
 
     case 1:
@@ -1673,17 +1674,17 @@ void Com_Catch(PLW* wk) {
             break;
         }
 
-        Lever_Buff[wk->wu.id] = Com_Rapid_Sub(wk, 0xFF0, &CP_No[wk->wu.id][2]);
+        g_state.Lever_Buff[wk->wu.id] = Com_Rapid_Sub(wk, 0xFF0, &g_state.CP_No[wk->wu.id][2]);
         break;
     }
 }
 
 /** @brief Transition into the catch (throwing opponent) state. */
 void Be_Catch(PLW* wk) {
-    CP_No[wk->wu.id][0] = 15;
-    CP_No[wk->wu.id][1] = 0;
-    CP_No[wk->wu.id][2] = 0;
-    CP_No[wk->wu.id][3] = 0;
+    g_state.CP_No[wk->wu.id][0] = 15;
+    g_state.CP_No[wk->wu.id][1] = 0;
+    g_state.CP_No[wk->wu.id][2] = 0;
+    g_state.CP_No[wk->wu.id][3] = 0;
     Clear_Com_Flag(wk);
 }
 
@@ -1700,37 +1701,37 @@ void Com_Wait_Lie(PLW* wk) {
 
 /** @brief Execute a command attack (special/super) by feeding the input sequence frame-by-frame. */
 s32 Command_Attack_SP(PLW* wk, s8 Pl_Number, s16 Tech_Number, s16 Power_Level) {
-    switch (CP_Index[wk->wu.id][1]) {
+    switch (g_state.CP_Index[wk->wu.id][1]) {
     case 0:
-        CP_Index[wk->wu.id][1]++;
+        g_state.CP_Index[wk->wu.id][1]++;
         dash_flag_clear(wk->wu.id);
         Tech_Address[wk->wu.id] = player_cmd[Pl_Number][Tech_Number & 0xFF];
-        Tech_Index[wk->wu.id] = 0xC;
+        g_state.Tech_Index[wk->wu.id] = 0xC;
         Check_Rapid(wk, Tech_Number);
-        Rapid_Index[wk->wu.id] = 0x110;
-        Lever_Pool[wk->wu.id] = 0x110;
+        g_state.Rapid_Index[wk->wu.id] = 0x110;
+        g_state.Lever_Pool[wk->wu.id] = 0x110;
         break;
 
     case 1:
-        switch (Tech_Address[wk->wu.id][Tech_Index[wk->wu.id]]) {
+        switch (Tech_Address[wk->wu.id][g_state.Tech_Index[wk->wu.id]]) {
         default:
         case 1:
         case 10:
             if (Command_Type_00(wk, Power_Level & 0xF, Tech_Number, -1) == -1) {
-                CP_Index[wk->wu.id][1] = 99;
+                g_state.CP_Index[wk->wu.id][1] = 99;
             }
 
             break;
 
         case 2:
             if (Command_Type_01(wk, Power_Level & 0xF, -1)) {
-                CP_Index[wk->wu.id][1]++;
+                g_state.CP_Index[wk->wu.id][1]++;
             }
 
             break;
         }
 
-        if (CP_Index[wk->wu.id][1] == 2) {
+        if (g_state.CP_Index[wk->wu.id][1] == 2) {
             return 1;
         }
 
@@ -1738,8 +1739,8 @@ s32 Command_Attack_SP(PLW* wk, s8 Pl_Number, s16 Tech_Number, s16 Power_Level) {
 
     case 2:
         if (wk->wu.cg_type == 64) {
-            Lever_Buff[wk->wu.id] = Lever_Pool[wk->wu.id];
-            CP_Index[wk->wu.id][1]++;
+            g_state.Lever_Buff[wk->wu.id] = g_state.Lever_Pool[wk->wu.id];
+            g_state.CP_Index[wk->wu.id][1]++;
         }
 
         /* fallthrough */
@@ -1747,7 +1748,7 @@ s32 Command_Attack_SP(PLW* wk, s8 Pl_Number, s16 Tech_Number, s16 Power_Level) {
     default:
         Rapid_Sub(wk);
 
-        if (wk->wu.routine_no[1] == 0 && plw[wk->wu.id].caution_flag == 0) {
+        if (wk->wu.routine_no[1] == 0 && g_state.plw[wk->wu.id].caution_flag == 0) {
             return 1;
         }
     }
@@ -1757,11 +1758,11 @@ s32 Command_Attack_SP(PLW* wk, s8 Pl_Number, s16 Tech_Number, s16 Power_Level) {
 
 /** @brief Transition the AI back to the Free (idle) state. */
 void Next_Be_Free(PLW* wk) {
-    CP_No[wk->wu.id][0] = 1;
-    CP_No[wk->wu.id][1] = 0;
-    CP_No[wk->wu.id][2] = 0;
-    CP_No[wk->wu.id][3] = 0;
-    Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
+    g_state.CP_No[wk->wu.id][0] = 1;
+    g_state.CP_No[wk->wu.id][1] = 0;
+    g_state.CP_No[wk->wu.id][2] = 0;
+    g_state.CP_No[wk->wu.id][3] = 0;
+    g_state.Lever_Buff[wk->wu.id] = g_state.Lever_LR[wk->wu.id];
 }
 
 /** @brief Transition the AI into the Float (juggle recovery) state. */
@@ -1769,35 +1770,35 @@ void Next_Be_Float(PLW* wk) {
     s16 Rnd;
     s16 Lv;
 
-    CP_No[wk->wu.id][0] = 11;
-    CP_No[wk->wu.id][2] = 0;
-    CP_No[wk->wu.id][3] = 0;
+    g_state.CP_No[wk->wu.id][0] = 11;
+    g_state.CP_No[wk->wu.id][2] = 0;
+    g_state.CP_No[wk->wu.id][3] = 0;
     Clear_Com_Flag(wk);
     Lv = Setup_Lv04(0);
     Rnd = random_16_com();
-    CP_No[wk->wu.id][1] = Float_Attack_Data[emLevelRemake(Lv, 4, 0)][Rnd];
+    g_state.CP_No[wk->wu.id][1] = Float_Attack_Data[emLevelRemake(Lv, 4, 0)][Rnd];
 }
 
 /** @brief Reset all per-frame AI control flags to their defaults. */
 void Clear_Com_Flag(PLW* wk) {
-    Passive_Flag[wk->wu.id] = 0;
-    Flip_Flag[wk->wu.id] = 0;
-    Counter_Attack[wk->wu.id] = 0;
-    Limited_Flag[wk->wu.id] = 0;
-    Guard_Flag[wk->wu.id] = 0;
-    Before_Jump[wk->wu.id] = 0;
-    Shell_Ignore_Timer[wk->wu.id] = 0;
-    Pierce_Menu[wk->wu.id] = 0;
-    Continue_Menu[wk->wu.id] = 0;
-    Standing_Timer[wk->wu.id] = 0;
-    Before_Look[wk->wu.id] = 0;
-    Attack_Count_No0[wk->wu.id] = 0;
-    Turn_Over[wk->wu.id] = 0;
-    Jump_Pass_Timer[wk->wu.id][0] = 0;
-    Jump_Pass_Timer[wk->wu.id][1] = 0;
-    Jump_Pass_Timer[wk->wu.id][2] = 0;
-    Jump_Pass_Timer[wk->wu.id][3] = 0;
-    Last_Eftype[wk->wu.id] = 0;
+    g_state.Passive_Flag[wk->wu.id] = 0;
+    g_state.Flip_Flag[wk->wu.id] = 0;
+    g_state.Counter_Attack[wk->wu.id] = 0;
+    g_state.Limited_Flag[wk->wu.id] = 0;
+    g_state.Guard_Flag[wk->wu.id] = 0;
+    g_state.Before_Jump[wk->wu.id] = 0;
+    g_state.Shell_Ignore_Timer[wk->wu.id] = 0;
+    g_state.Pierce_Menu[wk->wu.id] = 0;
+    g_state.Continue_Menu[wk->wu.id] = 0;
+    g_state.Standing_Timer[wk->wu.id] = 0;
+    g_state.Before_Look[wk->wu.id] = 0;
+    g_state.Attack_Count_No0[wk->wu.id] = 0;
+    g_state.Turn_Over[wk->wu.id] = 0;
+    g_state.Jump_Pass_Timer[wk->wu.id][0] = 0;
+    g_state.Jump_Pass_Timer[wk->wu.id][1] = 0;
+    g_state.Jump_Pass_Timer[wk->wu.id][2] = 0;
+    g_state.Jump_Pass_Timer[wk->wu.id][3] = 0;
+    g_state.Last_Eftype[wk->wu.id] = 0;
 }
 
 /** @brief Track the opponent's attack frequency and type for counter-attack decisions. */
@@ -1805,27 +1806,27 @@ void Check_At_Count(PLW* wk) {
     WORK* em = (WORK*)wk->wu.target_adrs;
     s16 ix;
 
-    if (Attack_Count_No0[wk->wu.id] == 0) {
-        if (Attack_Flag[wk->wu.id]) {
-            Attack_Counter[wk->wu.id]++;
-            Attack_Count_No0[wk->wu.id] = 1;
-            Type_of_Attack[wk->wu.id] = em->kind_of_waza;
-            Attack_Count_Buff[wk->wu.id][Attack_Count_Index[wk->wu.id]] = em->kind_of_waza;
-            Attack_Count_Index[wk->wu.id]++;
-            Attack_Count_Index[wk->wu.id] &= 3;
+    if (g_state.Attack_Count_No0[wk->wu.id] == 0) {
+        if (g_state.Attack_Flag[wk->wu.id]) {
+            g_state.Attack_Counter[wk->wu.id]++;
+            g_state.Attack_Count_No0[wk->wu.id] = 1;
+            g_state.Type_of_Attack[wk->wu.id] = em->kind_of_waza;
+            g_state.Attack_Count_Buff[wk->wu.id][g_state.Attack_Count_Index[wk->wu.id]] = em->kind_of_waza;
+            g_state.Attack_Count_Index[wk->wu.id]++;
+            g_state.Attack_Count_Index[wk->wu.id] &= 3;
         }
-    } else if (Attack_Flag[wk->wu.id] == 0) {
-        Attack_Count_No0[wk->wu.id] = 0;
+    } else if (g_state.Attack_Flag[wk->wu.id] == 0) {
+        g_state.Attack_Count_No0[wk->wu.id] = 0;
     }
 
-    if (Attack_Flag[wk->wu.id]) {
-        Reset_Timer[wk->wu.id] = 120;
+    if (g_state.Attack_Flag[wk->wu.id]) {
+        g_state.Reset_Timer[wk->wu.id] = 120;
         return;
     }
 
-    if (--Reset_Timer[wk->wu.id] == 0) {
+    if (--g_state.Reset_Timer[wk->wu.id] == 0) {
         for (ix = 0; ix < 4; ix++) {
-            Attack_Count_Buff[wk->wu.id][ix] = ix;
+            g_state.Attack_Count_Buff[wk->wu.id][ix] = ix;
         }
     }
 }
@@ -1835,25 +1836,25 @@ void Shift_Resume_Lv(PLW* wk) {
     s16 xx;
 
     for (xx = 18; xx >= 0; xx--) {
-        Resume_Lever[wk->wu.id][xx + 1] = Resume_Lever[wk->wu.id][xx];
+        g_state.Resume_Lever[wk->wu.id][xx + 1] = g_state.Resume_Lever[wk->wu.id][xx];
     }
 
-    Resume_Lever[wk->wu.id][0] = Lever_Buff[wk->wu.id];
+    g_state.Resume_Lever[wk->wu.id][0] = g_state.Lever_Buff[wk->wu.id];
 }
 
 /** @brief Track consecutive directional inputs for dash/charge detection. */
 void Check_Store_Lv(PLW* wk) {
-    s16 xx = Lever_Buff[wk->wu.id] & 0xF;
+    s16 xx = g_state.Lever_Buff[wk->wu.id] & 0xF;
 
     switch (xx) {
     case 2:
-        Lever_Store[wk->wu.id][0]++;
+        g_state.Lever_Store[wk->wu.id][0]++;
         break;
 
     case 6:
     case 10:
         Store_LR_Sub(wk);
-        Lever_Store[wk->wu.id][0]++;
+        g_state.Lever_Store[wk->wu.id][0]++;
         break;
 
     case 4:
@@ -1862,9 +1863,9 @@ void Check_Store_Lv(PLW* wk) {
         break;
 
     default:
-        Lever_Store[wk->wu.id][0] = 0;
-        Lever_Store[wk->wu.id][1] = 0;
-        Lever_Store[wk->wu.id][2] = 0;
+        g_state.Lever_Store[wk->wu.id][0] = 0;
+        g_state.Lever_Store[wk->wu.id][1] = 0;
+        g_state.Lever_Store[wk->wu.id][2] = 0;
         break;
     }
 }
@@ -1872,32 +1873,32 @@ void Check_Store_Lv(PLW* wk) {
 /** @brief Sub-routine for Store_LR — count left/right directional holds with facing correction. */
 void Store_LR_Sub(PLW* wk) {
     if (wk->wu.rl_waza) {
-        if (Lever_Buff[wk->wu.id] & 8) {
-            Lever_Store[wk->wu.id][1]++;
-            Lever_Store[wk->wu.id][2] = 0;
+        if (g_state.Lever_Buff[wk->wu.id] & 8) {
+            g_state.Lever_Store[wk->wu.id][1]++;
+            g_state.Lever_Store[wk->wu.id][2] = 0;
         }
 
-        if (Lever_Buff[wk->wu.id] & 4) {
-            Lever_Store[wk->wu.id][1] = 0;
-            Lever_Store[wk->wu.id][2]++;
+        if (g_state.Lever_Buff[wk->wu.id] & 4) {
+            g_state.Lever_Store[wk->wu.id][1] = 0;
+            g_state.Lever_Store[wk->wu.id][2]++;
         }
     } else {
-        if (Lever_Buff[wk->wu.id] & 4) {
-            Lever_Store[wk->wu.id][1]++;
-            Lever_Store[wk->wu.id][2] = 0;
+        if (g_state.Lever_Buff[wk->wu.id] & 4) {
+            g_state.Lever_Store[wk->wu.id][1]++;
+            g_state.Lever_Store[wk->wu.id][2] = 0;
         }
 
-        if (Lever_Buff[wk->wu.id] & 8) {
-            Lever_Store[wk->wu.id][1] = 0;
-            Lever_Store[wk->wu.id][2]++;
+        if (g_state.Lever_Buff[wk->wu.id] & 8) {
+            g_state.Lever_Store[wk->wu.id][1] = 0;
+            g_state.Lever_Store[wk->wu.id][2]++;
         }
     }
 }
 
 /** @brief Initialize the bullet counter (limits projectile spam). */
 void Setup_Bullet_Counter(PLW* wk) {
-    Bullet_Counter[wk->wu.id] = 3;
-    Bullet_Counter[wk->wu.id] += random_32_com() & 1;
+    g_state.Bullet_Counter[wk->wu.id] = 3;
+    g_state.Bullet_Counter[wk->wu.id] += random_32_com() & 1;
 }
 
 const u8 Pattern_Insurance_Data[20][4] = {
@@ -1909,7 +1910,7 @@ const u8 Pattern_Insurance_Data[20][4] = {
 
 /** @brief Safety check: reset pattern index if it exceeds the valid range for this character. */
 void Pattern_Insurance(PLW* wk, s16 Kind_Of_Insurance, s16 Forced_Number) {
-    if (Pattern_Insurance_Data[wk->player_number][Kind_Of_Insurance] < Pattern_Index[wk->wu.id]) {
-        Pattern_Index[wk->wu.id] = Forced_Number;
+    if (Pattern_Insurance_Data[wk->player_number][Kind_Of_Insurance] < g_state.Pattern_Index[wk->wu.id]) {
+        g_state.Pattern_Index[wk->wu.id] = Forced_Number;
     }
 }

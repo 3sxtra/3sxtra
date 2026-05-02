@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff39.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -46,30 +47,30 @@ void effect_39_move(WORK_Other* ewk) {
 }
 
 static void EFF39_WAIT(WORK_Other* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
     }
 }
 
 static void EFF39_SUDDENLY(WORK_Other* ewk) {
-    if (--Order_Timer[ewk->wu.dir_old] != 0) {
+    if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
 
     ewk->wu.disp_flag = 1;
-    Order[ewk->wu.dir_old] = 0;
+    g_state.Order[ewk->wu.dir_old] = 0;
     ewk->wu.routine_no[0] = 0;
     ewk->wu.routine_no[6] = 0;
     ewk->wu.xyz[0].disp.pos =
-        bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Name_Pos_Data[ewk->master_id][1][ewk->wu.dir_step][0];
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Name_Pos_Data[ewk->master_id][1][ewk->wu.dir_step][0];
     ewk->wu.xyz[1].disp.pos =
-        bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Name_Pos_Data[ewk->master_id][1][ewk->wu.dir_step][1];
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Name_Pos_Data[ewk->master_id][1][ewk->wu.dir_step][1];
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
 }
 
 static void EFF39_SLIDE_IN(WORK_Other* ewk) {
-    if (Order[ewk->wu.dir_old] == 5) {
+    if (g_state.Order[ewk->wu.dir_old] == 5) {
         ewk->wu.routine_no[0] = 5;
         ewk->wu.routine_no[1] = 0;
         return;
@@ -77,7 +78,7 @@ static void EFF39_SLIDE_IN(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[6]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] != 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
             break;
         }
 
@@ -87,18 +88,18 @@ static void EFF39_SLIDE_IN(WORK_Other* ewk) {
         if (ewk->master_id) {
             ewk->wu.mvxy.a[0].sp = -0xF0000;
             ewk->wu.mvxy.d[0].sp = 0;
-            ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 0);
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 0);
             ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake + 256;
             ewk->wu.xyz[1].disp.pos =
-                bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 1);
+                g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 1);
         } else {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 272;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 272;
             ewk->wu.mvxy.a[0].sp = 0xF0000;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.hit_quake = Get_Pos39(ewk, ewk->wu.dir_step, 0) + 512;
             ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake - 256;
             ewk->wu.xyz[1].disp.pos =
-                bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 1);
+                g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 1);
         }
 
         set_char_move_init2(&ewk->wu, 0, (s16)(ewk->wu.char_index), (ewk->wu.dir_step) + 1, 0);
@@ -111,12 +112,12 @@ static void EFF39_SLIDE_IN(WORK_Other* ewk) {
         if (0 < ewk->wu.mvxy.a[0].sp) {
             if (ewk->wu.hit_quake <= ewk->wu.xyz[0].disp.pos) {
                 ewk->wu.routine_no[0] = 4;
-                Order[ewk->wu.dir_old] = 4;
+                g_state.Order[ewk->wu.dir_old] = 4;
                 ewk->wu.routine_no[6] = 0;
                 ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
 
-                if (--Select_Start[ewk->master_id] < 0) {
-                    Select_Start[ewk->master_id] = 0;
+                if (--g_state.Select_Start[ewk->master_id] < 0) {
+                    g_state.Select_Start[ewk->master_id] = 0;
                 }
             }
 
@@ -125,12 +126,12 @@ static void EFF39_SLIDE_IN(WORK_Other* ewk) {
 
         if (ewk->wu.hit_quake >= ewk->wu.xyz[0].disp.pos) {
             ewk->wu.routine_no[0] = 4;
-            Order[ewk->wu.dir_old] = 4;
+            g_state.Order[ewk->wu.dir_old] = 4;
             ewk->wu.routine_no[6] = 0;
             ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
 
-            if (--Select_Start[ewk->master_id] < 0) {
-                Select_Start[ewk->master_id] = 0;
+            if (--g_state.Select_Start[ewk->master_id] < 0) {
+                g_state.Select_Start[ewk->master_id] = 0;
             }
         }
 
@@ -144,14 +145,14 @@ static void EFF39_SLIDE_OUT(WORK_Other* ewk) {
         if (ewk->wu.disp_flag == 0) {
             ewk->wu.routine_no[1] = 99;
         } else {
-            if (--Order_Timer[ewk->wu.dir_old]) {
+            if (--g_state.Order_Timer[ewk->wu.dir_old]) {
                 break;
             }
 
             ewk->wu.routine_no[6]++;
         }
 
-        if (Order_Dir[ewk->wu.dir_old] == 4) {
+        if (g_state.Order_Dir[ewk->wu.dir_old] == 4) {
             ewk->wu.mvxy.a[0].sp = -0xF0000;
             ewk->wu.mvxy.d[0].sp = 0;
         } else {
@@ -181,7 +182,7 @@ static void EFF39_SLIDE_OUT(WORK_Other* ewk) {
 static void EFF39_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] == 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 0;
         }
@@ -195,8 +196,8 @@ static void EFF39_KILL(WORK_Other* ewk) {
 }
 
 static void EFF39_MOVE(WORK_Other* ewk) {
-    if (Order[ewk->wu.dir_old] != 4) {
-        ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
+    if (g_state.Order[ewk->wu.dir_old] != 4) {
+        ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
         return;
@@ -204,7 +205,7 @@ static void EFF39_MOVE(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (Sel_PL_Complete[ewk->master_id] || plw[ewk->master_id].wu.pl_operator == 0) {
+        if (g_state.Sel_PL_Complete[ewk->master_id] || g_state.plw[ewk->master_id].wu.pl_operator == 0) {
             ewk->wu.routine_no[1] = 2;
         } else {
             ewk->wu.routine_no[1]++;
@@ -213,17 +214,17 @@ static void EFF39_MOVE(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dir_step != ID_of_Face[Cursor_Y[ewk->master_id]][Cursor_X[ewk->master_id]]) {
-            ewk->wu.dir_step = ID_of_Face[Cursor_Y[ewk->master_id]][Cursor_X[ewk->master_id]];
+        if (ewk->wu.dir_step != g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
+            ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
             ewk->wu.dir_step += chkNameAkuma(ewk->wu.dir_step, 9);
             ewk->wu.xyz[0].disp.pos =
-                bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 0);
+                g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 0);
             ewk->wu.xyz[1].disp.pos =
-                bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 1);
+                g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 1);
             set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
         }
 
-        if (Sel_PL_Complete[ewk->master_id]) {
+        if (g_state.Sel_PL_Complete[ewk->master_id]) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -257,7 +258,7 @@ s32 effect_39_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Target_BG, s16 Opt
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
 
     if (Your_Char == 0x7F) {
-        ewk->wu.dir_step = ID_of_Face[Cursor_Y[ewk->master_id]][Cursor_X[ewk->master_id]];
+        ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
     } else {
         ewk->wu.dir_step = Your_Char;
     }
@@ -273,5 +274,5 @@ s32 effect_39_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Target_BG, s16 Opt
 }
 
 static s32 Get_Pos39(WORK_Other* ewk, s16 Who, s16 Get_Type) {
-    return Name_Pos_Data[ewk->master_id][Play_Type][Who][Get_Type];
+    return Name_Pos_Data[ewk->master_id][g_state.Play_Type][Who][Get_Type];
 }

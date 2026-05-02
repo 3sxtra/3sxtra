@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effj7.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
@@ -411,7 +412,7 @@ void effect_J7_move(WORK_Other* ewk) {
         } else if (mwk->wu.vital_new < 0) {
             ewk->wu.routine_no[0] = 2;
             ewk->wu.routine_no[1] = 0;
-        } else if (EXE_flag == 0 && Game_pause == 0) {
+        } else if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             check_new_color_data(&ewk->wu);
         }
 
@@ -482,7 +483,6 @@ static void check_new_color_data(WORK* wk) {
 static void get_new_color_data(WORK* wk, ColorCode* trom, s16* tram) {
     const s16* data;
     s16 i;
-    u16 col;
 
     wk->dir_timer = trom[wk->dir_step].timer;
     wk->dir_old = trom[wk->dir_step].endcode;
@@ -502,7 +502,7 @@ s32 effect_J7_init(PLW* wk) {
         return 0;
     }
 
-    if (My_char[wk->wu.id] != 0) {
+    if (g_state.My_char[wk->wu.id] != 0) {
         return 0;
     }
 
@@ -514,7 +514,7 @@ s32 effect_J7_init(PLW* wk) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 197;
     ewk->wu.work_id = 16;
-    ewk->wu.type = Player_Color[wk->wu.id];
+    ewk->wu.type = g_state.Player_Color[wk->wu.id];
     ewk->my_master = wk;
     ewk->master_id = wk->wu.id;
     ewk->master_work_id = wk->wu.work_id;

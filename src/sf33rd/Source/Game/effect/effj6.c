@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effj6.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff27.h"
@@ -31,7 +32,7 @@ void effect_J6_move(WORK_Other* ewk) {
         ewk->wu.routine_no[0]++;
         ewk->wu.disp_flag = 1;
 
-        if (eff_hit_flag[ewk->wu.type]) {
+        if (g_state.eff_hit_flag[ewk->wu.type]) {
             ewk->wu.routine_no[0] = 4;
             set_char_move_init(&ewk->wu, 0, 3);
         } else {
@@ -49,7 +50,7 @@ void effect_J6_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             effect_j6_hit_sub(ewk);
         }
 

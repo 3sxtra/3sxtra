@@ -7,6 +7,7 @@
  */
 
 #include "sf33rd/Source/Game/ui/sc_cockpit.h"
+#include "game_state.h"
 #include "common.h"
 
 #include "port/rendering/renderer.h"
@@ -21,6 +22,8 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 #include <stdbool.h>
+
+static PAL_CURSOR_COL hud_cursor_color;
 
 #define TO_UV_256(val) ((val) / 256.0f)
 
@@ -107,15 +110,14 @@ void silver_vital_put(u8 Pl_Num) {
 void vital_base_put(u8 Pl_Num) {
     PAL_CURSOR vtx;
     PAL_CURSOR_P pos[4];
-    PAL_CURSOR_COL col;
 
-    if (No_Trans || SA_shadow_on) {
+    if (No_Trans || g_state.SA_shadow_on) {
         return;
     }
 
     vtx.p = pos;
-    vtx.col = &col;
-    col.color = 0x40000000;
+    vtx.col = &hud_cursor_color;
+    hud_cursor_color.color = 0x40000000;
 
     if (Pl_Num == 0) {
         pos[0].x = 8.0f;
@@ -131,7 +133,7 @@ void vital_base_put(u8 Pl_Num) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[TopHUDFacePriority], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[TopHUDFacePriority], (uintptr_t)hud_cursor_color.color, 0);
 }
 
 /* ── Super-art gauge ───────────────────────────────────────────── */
@@ -140,7 +142,6 @@ void vital_base_put(u8 Pl_Num) {
 void spgauge_base_put(u8 Pl_Num, s16 len) {
     PAL_CURSOR vtx;
     PAL_CURSOR_P pos[4];
-    PAL_CURSOR_COL col;
 
     if (omop_cockpit == 0) {
         return;
@@ -150,13 +151,13 @@ void spgauge_base_put(u8 Pl_Num, s16 len) {
         return;
     }
 
-    if (No_Trans || SA_shadow_on) {
+    if (No_Trans || g_state.SA_shadow_on) {
         return;
     }
 
     vtx.p = pos;
-    vtx.col = &col;
-    col.color = 0x80000000;
+    vtx.col = &hud_cursor_color;
+    hud_cursor_color.color = 0x80000000;
 
     if (Pl_Num == 0) {
         pos[0].x = 48.0f;
@@ -172,7 +173,7 @@ void spgauge_base_put(u8 Pl_Num, s16 len) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[4], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[4], (uintptr_t)hud_cursor_color.color, 0);
 }
 
 /* ── Stun gauge ────────────────────────────────────────────────── */
@@ -220,17 +221,16 @@ void stun_put(u8 Pl_Num, u8 stun) {
 void stun_base_put(u8 Pl_Num, s16 len) {
     PAL_CURSOR vtx;
     PAL_CURSOR_P pos[4];
-    PAL_CURSOR_COL col;
 
-    if (No_Trans || SA_shadow_on) {
+    if (No_Trans || g_state.SA_shadow_on) {
         return;
     }
     if (use_rmlui && rmlui_hud_stun)
         return;
 
     vtx.p = pos;
-    vtx.col = &col;
-    col.color = 0x90000000;
+    vtx.col = &hud_cursor_color;
+    hud_cursor_color.color = 0x90000000;
 
     if (Pl_Num == 0) {
         pos[0].x = (168 - (len * 8));
@@ -246,7 +246,7 @@ void stun_base_put(u8 Pl_Num, s16 len) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[TopHUDFacePriority + 1], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[TopHUDFacePriority + 1], (uintptr_t)hud_cursor_color.color, 0);
 }
 
 /* ── Stun marks & MAX indicator ────────────────────────────────── */
@@ -376,15 +376,15 @@ void sa_fullstock_trans(s16 St_Num, s16 Spg_Col, s8 Stpl_Num) {
 /** @brief Write the super-art stock number display. */
 void sa_number_write(s8 Stpl_Num, u16 x) {
     if (Stpl_Num == 0) {
-        if (My_char[0] == 0) {
+        if (g_state.My_char[0] == 0) {
             scfont_sqput2(x, 26, 14, 0, 2, 27, 2, 2, 2);
         } else {
-            scfont_sqput2(x, 26, 14, 0, 2, (Super_Arts[0] * 2) + 21, 2, 2, 2);
+            scfont_sqput2(x, 26, 14, 0, 2, (g_state.Super_Arts[0] * 2) + 21, 2, 2, 2);
         }
-    } else if (My_char[1] == 0) {
+    } else if (g_state.My_char[1] == 0) {
         scfont_sqput2(x, 26, 142, 1, 2, 27, 2, 2, 2);
     } else {
-        scfont_sqput2(x, 26, 142, 1, 2, (Super_Arts[1] * 2) + 21, 2, 2, 2);
+        scfont_sqput2(x, 26, 142, 1, 2, (g_state.Super_Arts[1] * 2) + 21, 2, 2, 2);
     }
 }
 

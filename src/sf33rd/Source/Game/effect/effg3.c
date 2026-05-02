@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effg3.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -30,7 +31,7 @@ void effect_G3_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f || Suicide[6] != 0) {
+        if (ewk->wu.dead_f || g_state.Suicide[6] != 0) {
             ewk->wu.routine_no[0] = 3;
             ewk->wu.disp_flag = 0;
             break;
@@ -55,7 +56,7 @@ void effect_G3_move(WORK_Other* ewk) {
             break;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             if (!ewk->wu.routine_no[1]) {
                 adjust = 80;
 

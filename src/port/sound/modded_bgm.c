@@ -10,6 +10,7 @@
  * - Track counting for UI display
  */
 #include "port/sound/modded_bgm.h"
+#include "game_state.h"
 #include "port/config/config.h"
 #include "port/config/paths.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/cse.h"
@@ -27,9 +28,6 @@
 #include "stb/stb_ds.h"
 
 extern MenuScreen g_screens[];
-extern u8 Exit_No;
-extern s8 VS_Stage;
-extern struct _TASK task[];
 
 const char* ModdedBGM_GetGameStateString(void) {
     if (task[TASK_INIT].r_no[0] == ITP_BOOT) {
@@ -39,7 +37,7 @@ const char* ModdedBGM_GetGameStateString(void) {
     MenuScreenId screen_id = MenuScreen_GetCurrent();
     if (screen_id != MENU_SCREEN_NONE) {
         if (screen_id == MENU_SCREEN_CHAR_SELECT) {
-            if (Exit_No >= 4) {
+            if (g_state.Exit_No >= 4) {
                 return "Versus Screen";
             } else {
                 return "Character Select";
@@ -52,7 +50,7 @@ const char* ModdedBGM_GetGameStateString(void) {
 
     if (task[TASK_INIT].r_no[0] == ITP_RUNNING && task[TASK_MENU].r_no[0] == MTP_IN_GAME) {
         static char buf[64];
-        SDL_snprintf(buf, sizeof(buf), "In-Game (Stage %d)", VS_Stage + 1);
+        SDL_snprintf(buf, sizeof(buf), "In-Game (Stage %d)", g_state.VS_Stage + 1);
         return buf;
     }
 
@@ -584,7 +582,7 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
     const char* bank_dir = NULL;
 
     // Determine bank folder from the RUNTIME character loaded in this bank slot.
-    // ptix is a bank SLOT index (always 1 for character sounds), not the character ID.
+    // ptix is a bank SLOT index (always 1 for character sounds), not the character g_state.ID.
     // The actual character is tracked in g_cseSysWork.SpuBankId[slot].
     if (ptix == 0x7F) {
         /* BGM requests are modded via bgm_mod/, not voice_mod/ — log clearly */

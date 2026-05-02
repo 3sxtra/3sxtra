@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff04.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -25,7 +26,7 @@ const s16 EFF04_Cursor_Data[8][8][2] = {
 };
 
 void effect_04_move(WORK_Other* ewk) {
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
@@ -40,8 +41,8 @@ void effect_04_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        ewk->wu.position_x = EFF04_Cursor_Data[ewk->wu.type][Menu_Cursor_Y[0]][0] + ewk->wu.dmcal_m;
-        ewk->wu.position_y = EFF04_Cursor_Data[ewk->wu.type][Menu_Cursor_Y[0]][1] + 0;
+        ewk->wu.position_x = EFF04_Cursor_Data[ewk->wu.type][g_state.Menu_Cursor_Y[0]][0] + ewk->wu.dmcal_m;
+        ewk->wu.position_y = EFF04_Cursor_Data[ewk->wu.type][g_state.Menu_Cursor_Y[0]][1] + 0;
         char_move(&ewk->wu);
         sort_push_request4(&ewk->wu);
         break;
@@ -70,7 +71,7 @@ s32 effect_04_init(s16 Death_Type, s16 cg_type, s16 sync_bg, s16 priority) {
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.char_table[0] = _sel_pl_char_table;
-    ewk->wu.dmcal_m = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
+    ewk->wu.dmcal_m = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
     set_char_move_init(&ewk->wu, 0, 62);
     return 0;
 }

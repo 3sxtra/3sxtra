@@ -24,25 +24,25 @@ const s16 end_9_pos[6][2] = { { 256, 512 }, { 256, 768 }, { 256, 336 }, { 256, 0
 
 /** @brief Oro's ending entry point — initialize and run all ending scenes. */
 void end_09000(s16 pl_num) {
-    switch (end_w.r_no_1) {
+    switch (g_state.end_w.r_no_1) {
     case 0:
-        end_w.r_no_1++;
-        end_w.r_no_2 = 0;
+        g_state.end_w.r_no_1++;
+        g_state.end_w.r_no_2 = 0;
         common_end_init00(pl_num);
         common_end_init01();
-        end_w.timer = timer_9_tbl[end_w.r_no_2];
+        g_state.end_w.timer = timer_9_tbl[g_state.end_w.r_no_2];
         BGM_Request(0x32);
         break;
 
     case 1:
-        end_w.timer--;
+        g_state.end_w.timer--;
 
-        if (end_w.timer < 0) {
-            end_w.r_no_2++;
+        if (g_state.end_w.timer < 0) {
+            g_state.end_w.r_no_2++;
 
-            if (end_w.r_no_2 == 6) {
-                end_w.r_no_1++;
-                end_w.end_flag = 1;
+            if (g_state.end_w.r_no_2 == 6) {
+                g_state.end_w.r_no_1++;
+                g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
                 end_bg_pos_hosei2();
@@ -50,9 +50,9 @@ void end_09000(s16 pl_num) {
                 break;
             }
 
-            end_w.timer = timer_9_tbl[end_w.r_no_2];
-            bg_w.bgw[0].r_no_1 = 0;
-            bg_w.bgw[1].r_no_1 = 0;
+            g_state.end_w.timer = timer_9_tbl[g_state.end_w.r_no_2];
+            g_state.bg_w.bgw[0].r_no_1 = 0;
+            g_state.bg_w.bgw[1].r_no_1 = 0;
         }
 
         end_900_move();
@@ -69,10 +69,10 @@ void end_09000(s16 pl_num) {
 /** @brief Dispatch to the current scene handler for background layer 0. */
 static void end_900_move() {
     void (*end_900_jp[6])() = { end_900_0000, end_900_0000, end_900_0000, end_900_0000, end_900_0000, end_900_5000 };
-    bgw_ptr = &bg_w.bgw[0];
-    if (end_w.r_no_2 >= 6)
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    if (g_state.end_w.r_no_2 >= 6)
         return;
-    end_900_jp[end_w.r_no_2]();
+    end_900_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Scene handler — per-scene background setup with effects and messages. */
@@ -80,10 +80,10 @@ static void end_900_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_9_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_9_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_9_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_9_pos[g_state.end_w.r_no_2][1];
 
-        switch (end_w.r_no_2) {
+        switch (g_state.end_w.r_no_2) {
         case 0:
             Bg_On_W(1);
             bgw_ptr->abs_x = 512;
@@ -129,13 +129,13 @@ static void end_900_5000() {
         bgw_ptr->r_no_1++;
         effect_E6_init(0x2A);
         bgw_ptr->free = 0x1E;
-        bgw_ptr->xy[0].disp.pos = end_9_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_9_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_9_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_9_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
         Rewrite_End_Message(6);
         end_fade_flag = 1;
-        end_fade_timer = timer_9_tbl[end_w.r_no_2] - 120;
+        end_fade_timer = timer_9_tbl[g_state.end_w.r_no_2] - 120;
         break;
 
     case 1:

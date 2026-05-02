@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_gameover.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
@@ -42,7 +43,7 @@ s16 Game_Over() {
         tp->r_no[1] = MENU_SCREEN_GAMEOVER;
     }
 
-    Scene_Cut = Cut_Cut_Loser();
+    g_state.Scene_Cut = Cut_Cut_Loser();
     MenuScreen_Tick(tp);
 
     if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
@@ -54,7 +55,7 @@ s16 Game_Over() {
         GAME_OVER_X = 0;
     }
 
-    if (Break_Into) {
+    if (g_state.Break_Into) {
         return 0;
     }
 

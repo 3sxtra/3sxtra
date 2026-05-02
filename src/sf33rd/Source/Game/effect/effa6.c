@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effa6.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effb6.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -68,7 +69,7 @@ static void wwwk_set(WORK_Other_CONN* ewk);
 static s32 check2_A6_shortcut() {
     u16 sw_w;
 
-    if (Player_id) {
+    if (g_state.Player_id) {
         sw_w = p2sw_0;
     } else {
         sw_w = p1sw_0;
@@ -87,7 +88,7 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (check2_A6_shortcut() != 0) {
-            Next_Step |= ~0x7F;
+            g_state.Next_Step |= ~0x7F;
         }
 
         if (Auto_Cut_Sub() != 0) {
@@ -111,7 +112,7 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
 
             if (ewk->wu.routine_no[6] < 0) {
                 ewk->wu.routine_no[6] = -1;
-                Next_Step |= ~0x7F;
+                g_state.Next_Step |= ~0x7F;
             } else {
                 if (!(mmes_already = effA6_pl2_data_tbl[ewk->master_player][ewk->wu.routine_no[5]])) {
                     ewk->wu.disp_flag = 0;
@@ -126,7 +127,7 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
             }
         }
 
-        if (Suicide[3]) {
+        if (g_state.Suicide[3]) {
             ewk->wu.routine_no[0] = 1;
             break;
         }
@@ -141,13 +142,13 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
 
             switch (ewk->wu.dir_old) {
             case 0x43:
-                ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 384;
-                ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = bg_w.bgw[0].xy[1].disp.pos + 186;
+                ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 384;
+                ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[0].xy[1].disp.pos + 186;
                 break;
 
             default:
-                ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 72;
-                ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = bg_w.bgw[0].xy[1].disp.pos + 26;
+                ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 72;
+                ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[0].xy[1].disp.pos + 26;
                 break;
             }
 
@@ -158,10 +159,10 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
             case 0x43:
                 ewk->wu.position_x += 10;
 
-                if (ewk->wu.position_x >= bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 192) {
+                if (ewk->wu.position_x >= g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 192) {
                     ewk->wu.routine_no[1]++;
                     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos =
-                        bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 192;
+                        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 192;
                 }
 
                 break;
@@ -169,10 +170,10 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
             default:
                 ewk->wu.position_x -= 10;
 
-                if (ewk->wu.position_x <= bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 120) {
+                if (ewk->wu.position_x <= g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 120) {
                     ewk->wu.routine_no[1]++;
                     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos =
-                        bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 120;
+                        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 120;
                 }
 
                 break;
@@ -232,29 +233,29 @@ s32 effect_A6_init(WORK_Other* mwk) {
     wwwk_set(ewk);
     ewk->wu.dir_old = mwk->wu.dir_old;
     ewk->wu.routine_no[6] = 60;
-    ewk->master_player = My_char[Player_id];
+    ewk->master_player = g_state.My_char[g_state.Player_id];
     ewk->my_master = mwk;
 
     switch (ewk->wu.dir_old) {
     case 0x43:
-        if (!Player_id) {
+        if (!g_state.Player_id) {
             ewk->wu.routine_no[5] = 0;
         } else {
             ewk->wu.routine_no[5] = 32;
         }
 
-        ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 64;
+        ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 64;
         break;
 
     default:
 
-        if (Player_id) {
+        if (g_state.Player_id) {
             ewk->wu.routine_no[5] = 0;
         } else {
             ewk->wu.routine_no[5] = 32;
         }
 
-        ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 64;
+        ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 64;
         break;
     }
 

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff42.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -28,7 +29,7 @@ void (*const EFF42_Jmp_Tbl[5])();
 /* eff42 draws the timer/counter display on the char select screen.
  * Suppress rendering when the RmlUI overlay provides the same UI. */
 void effect_42_move(WORK_Other* ewk) {
-    EFF42_Jmp_Tbl[Order[ewk->wu.dir_old]](ewk);
+    EFF42_Jmp_Tbl[g_state.Order[ewk->wu.dir_old]](ewk);
 
     if (ewk->wu.be_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
@@ -41,17 +42,17 @@ void effect_42_move(WORK_Other* ewk) {
 static void EFF42_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] != 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
             break;
         }
 
         if (ewk->wu.my_family == 4) {
             ewk->wu.routine_no[6]++;
-            ewk->wu.xyz[0].disp.pos = Target_BG_X[3] + Offset_BG_X[3] + Pos_Data_69[ewk->wu.dir_old][0];
-            ewk->wu.xyz[1].disp.pos = bg_w.bgw[3].wxy[1].disp.pos + Pos_Data_69[ewk->wu.dir_old][1];
+            ewk->wu.xyz[0].disp.pos = g_state.Target_BG_X[3] + g_state.Offset_BG_X[3] + Pos_Data_69[ewk->wu.dir_old][0];
+            ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[3].wxy[1].disp.pos + Pos_Data_69[ewk->wu.dir_old][1];
         } else {
             ewk->wu.disp_flag = 1;
-            Order[ewk->wu.dir_old] = 3;
+            g_state.Order[ewk->wu.dir_old] = 3;
             ewk->wu.routine_no[6] = 0;
             ewk->wu.xyz[0].disp.pos = Pos_Data_69[ewk->wu.dir_old][0] + 512;
             ewk->wu.xyz[1].disp.pos = Pos_Data_69[ewk->wu.dir_old][1] + 0;
@@ -64,7 +65,7 @@ static void EFF42_SUDDENLY(WORK_Other* ewk) {
         if (!Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, 32)) {
             ewk->wu.disp_flag = 1;
             ewk->wu.routine_no[6] = 0;
-            Order[ewk->wu.dir_old] = 3;
+            g_state.Order[ewk->wu.dir_old] = 3;
         }
 
         break;
@@ -72,15 +73,15 @@ static void EFF42_SUDDENLY(WORK_Other* ewk) {
 }
 
 static void EFF42_SLIDE_IN(WORK_Other* ewk) {
-    if (Order[ewk->wu.dir_old] != 1) {
-        ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
+    if (g_state.Order[ewk->wu.dir_old] != 1) {
+        ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
         return;
     }
 
     switch (ewk->wu.routine_no[6]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] != 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
             break;
         }
 
@@ -89,7 +90,7 @@ static void EFF42_SLIDE_IN(WORK_Other* ewk) {
         ewk->wu.hit_quake = Pos_Data_69[ewk->wu.dir_old][0] + 512;
         ewk->wu.xyz[1].disp.pos = Pos_Data_69[ewk->wu.dir_old][1] + 0;
 
-        if (Order_Dir[ewk->wu.dir_old] == 4) {
+        if (g_state.Order_Dir[ewk->wu.dir_old] == 4) {
             ewk->wu.xyz[0].disp.pos = 800;
             ewk->wu.mvxy.a[0].sp = -0x100000;
             ewk->wu.mvxy.d[0].sp = 0;
@@ -108,12 +109,12 @@ static void EFF42_SLIDE_IN(WORK_Other* ewk) {
 
         if (0 < ewk->wu.mvxy.a[0].sp) {
             if (ewk->wu.hit_quake <= ewk->wu.xyz[0].disp.pos) {
-                Order[ewk->wu.dir_old] = 3;
+                g_state.Order[ewk->wu.dir_old] = 3;
                 ewk->wu.routine_no[6] = 0;
                 ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
             }
         } else if (ewk->wu.hit_quake >= ewk->wu.xyz[0].disp.pos) {
-            Order[ewk->wu.dir_old] = 3;
+            g_state.Order[ewk->wu.dir_old] = 3;
             ewk->wu.routine_no[6] = 0;
             ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
         }
@@ -125,13 +126,13 @@ static void EFF42_SLIDE_IN(WORK_Other* ewk) {
 static void EFF42_SLIDE_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] != 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
             break;
         }
 
         ewk->wu.routine_no[6]++;
 
-        if (Order_Dir[ewk->wu.dir_old] == 4) {
+        if (g_state.Order_Dir[ewk->wu.dir_old] == 4) {
             ewk->wu.mvxy.a[0].sp = -0x100000;
             ewk->wu.mvxy.d[0].sp = -0x8000;
         } else {
@@ -161,7 +162,7 @@ static void EFF42_SLIDE_OUT(WORK_Other* ewk) {
 static void EFF42_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] == 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
             ewk->wu.routine_no[1] += 1;
             ewk->wu.disp_flag = 0;
         }
@@ -180,14 +181,14 @@ static void EFF42_MOVE(WORK_Other* ewk) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[0]++;
-            Time_Stop = 0;
+            g_state.Time_Stop = 0;
         }
 
         break;
 
     case 1:
-        if (ewk->wu.rl_waza != Select_Timer) {
-            ewk->wu.rl_waza = Select_Timer;
+        if (ewk->wu.rl_waza != g_state.Select_Timer) {
+            ewk->wu.rl_waza = g_state.Select_Timer;
             Setup_Char_Index(ewk);
             set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
         }
@@ -197,7 +198,7 @@ static void EFF42_MOVE(WORK_Other* ewk) {
 }
 
 static void Setup_Char_Index(WORK_Other* ewk) {
-    s16 xx = Select_Timer & (s8)ewk->wu.routine_no[7];
+    s16 xx = g_state.Select_Timer & (s8)ewk->wu.routine_no[7];
 
     xx &= 0xFF;
 
@@ -216,7 +217,7 @@ s32 effect_42_init(s16 type) {
     WORK_Other* ewk;
     s16 ix;
 
-    if (Present_Mode == 4 || Present_Mode == 5) {
+    if (g_state.Present_Mode == 4 || g_state.Present_Mode == 5) {
         return 0;
     }
 
@@ -231,7 +232,7 @@ s32 effect_42_init(s16 type) {
     ewk->wu.my_col_code = 0x2090;
     ewk->wu.my_family = 3;
     ewk->wu.dir_timer = 10;
-    ewk->wu.rl_waza = Select_Timer;
+    ewk->wu.rl_waza = g_state.Select_Timer;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.dir_old = type;
     ewk->wu.my_mts = 13;
@@ -249,7 +250,7 @@ s32 effect_42_init(s16 type) {
     switch (type) {
     case 5:
         ewk->wu.routine_no[7] = 240;
-        ix = Select_Timer & 0xF0;
+        ix = g_state.Select_Timer & 0xF0;
         ix >>= 4;
         ewk->wu.dir_step = ix;
         break;
@@ -261,7 +262,7 @@ s32 effect_42_init(s16 type) {
 
     case 7:
         ewk->wu.routine_no[7] = 240;
-        ix = Select_Timer & 0xF0;
+        ix = g_state.Select_Timer & 0xF0;
         ix >>= 4;
         ewk->wu.dir_step = ix + 10;
         break;
@@ -273,7 +274,7 @@ s32 effect_42_init(s16 type) {
 
     case 9:
         ewk->wu.routine_no[7] = 240;
-        ix = Select_Timer & 0xF0;
+        ix = g_state.Select_Timer & 0xF0;
         ix >>= 4;
         ewk->wu.dir_step = ix + 10;
         ewk->wu.my_family = 4;

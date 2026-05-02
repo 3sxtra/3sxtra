@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effa7.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff02.h"
@@ -30,14 +31,14 @@ void effect_A7_move(WORK_Other* ewk) {
         if (tad->hits == 0) {
             if (tad->se) {
                 Se_Dispatch(tad->se, tad->se, ewk);
-                Last_Called_SE = tad->se;
+                g_state.Last_Called_SE = tad->se;
             } else {
-                Last_Called_SE = 0;
+                g_state.Last_Called_SE = 0;
             }
 
             if (tad->quake != 0) {
-                bg_w.quake_y_index = gqdt[tad->quake][1];
-                pp_screen_quake(bg_w.quake_y_index);
+                g_state.bg_w.quake_y_index = gqdt[tad->quake][1];
+                pp_screen_quake(g_state.bg_w.quake_y_index);
             }
 
             push_effect_work(&ewk->wu);
@@ -66,9 +67,9 @@ void effect_A7_move(WORK_Other* ewk) {
 
         if (tad->se) {
             Se_Dispatch(tad->se, tad->se, ewk);
-            Last_Called_SE = tad->se;
+            g_state.Last_Called_SE = tad->se;
         } else {
-            Last_Called_SE = 0;
+            g_state.Last_Called_SE = 0;
         }
 
         if (tad->status & 0x10) {
@@ -122,24 +123,24 @@ void effect_A7_move(WORK_Other* ewk) {
             ewk->wu.my_col_code |= (ewk->master_id == 1) * 16;
         }
 
-        if (!Pause_Hit_Marks) {
+        if (!g_state.Pause_Hit_Marks) {
             sort_push_request8(&ewk->wu);
         }
 
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[6] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[6] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if (Pause_Hit_Marks) {
+        if (g_state.Pause_Hit_Marks) {
             break;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
@@ -149,8 +150,8 @@ void effect_A7_move(WORK_Other* ewk) {
             }
 
             if (ewk->wu.scr_mv_x && --ewk->wu.scr_mv_x == 0) {
-                bg_w.quake_y_index = ewk->wu.scr_mv_y;
-                pp_screen_quake(bg_w.quake_y_index);
+                g_state.bg_w.quake_y_index = ewk->wu.scr_mv_y;
+                pp_screen_quake(g_state.bg_w.quake_y_index);
             }
         }
 

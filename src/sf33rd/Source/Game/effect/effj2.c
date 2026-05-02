@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effj2.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -35,11 +36,11 @@ void effect_J2_move(WORK_Other_CONN* ewk) {
         ewk->wu.old_cgnum = 0;
         ewk->wu.dir_timer = 60;
         ewk->wu.position_z = ewk->wu.my_priority = 27;
-        ewk->conn[0].chr += Bonus_Stage_Level % 10;
+        ewk->conn[0].chr += g_state.Bonus_Stage_Level % 10;
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Break_Into || --ewk->wu.dir_timer <= 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Break_Into || --ewk->wu.dir_timer <= 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
         } else {
@@ -59,8 +60,8 @@ void effect_J2_move(WORK_Other_CONN* ewk) {
 }
 
 static void effJ2_trans(WORK* ewk) {
-    ewk->position_x = bg_w.bgw[1].wxy[0].disp.pos;
-    ewk->position_y = bg_w.bgw[1].wxy[1].disp.pos;
+    ewk->position_x = g_state.bg_w.bgw[1].wxy[0].disp.pos;
+    ewk->position_y = g_state.bg_w.bgw[1].wxy[1].disp.pos;
     sort_push_request3(ewk);
 }
 

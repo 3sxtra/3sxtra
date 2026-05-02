@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff80.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -48,7 +49,7 @@ void effect_80_move(WORK_Other* ewk) {
         return;
     }
 
-    ewk->wu.disp_flag = Disp_Command_Name[ewk->master_id][ewk->master_player];
+    ewk->wu.disp_flag = g_state.Disp_Command_Name[ewk->master_id][ewk->master_player];
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = mwk->wu.position_x;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = mwk->wu.position_y;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos = mwk->wu.position_z - 1;
@@ -77,6 +78,6 @@ s32 effect_80_init(WORK_Other* mwk, s16 PL_id, s16 Plate_id, s16 Target_BG) {
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.char_index = 7;
-    ewk->wu.dir_step = Plate_id + (My_char[PL_id] * 3) + (PL_id * 60);
+    ewk->wu.dir_step = Plate_id + (g_state.My_char[PL_id] * 3) + (PL_id * 60);
     return 0;
 }

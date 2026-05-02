@@ -7,6 +7,7 @@
  * application via librashader. Part of the GL rendering backend.
  */
 #include "port/mods/modded_stage.h"
+#include "game_state.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer_gl_internal.h"
@@ -784,7 +785,7 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
  * The texture participates in the normal z-sorted batch render (array_layer=-1
  * legacy path) so it integrates correctly with CPS3 sprites.
  *
- * @param gl_texture_id  Raw GL texture ID (from glGenTextures / TextureUtil).
+ * @param gl_texture_id  Raw GL texture g_state.ID (from glGenTextures / TextureUtil).
  * @param x, y           Top-left position in CPS3 canvas pixels (384×224).
  * @param w, h           Width and height in CPS3 canvas pixels.
  * @param z              Z-depth from flPS2ConvScreenFZ() or equivalent.

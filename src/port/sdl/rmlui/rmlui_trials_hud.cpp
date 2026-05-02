@@ -6,10 +6,11 @@
  * document showing the step list with color-coded progress, "COMPLETE!"
  * flash, and "MAX GAUGE" alert.
  *
- * Key globals: g_trials_state, Mode_Type
+ * Key globals: g_trials_state, g_state.Mode_Type
  */
 
 #include "port/sdl/rmlui/rmlui_trials_hud.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -56,7 +57,7 @@ extern "C" void rmlui_trials_hud_init(void) {
         return;
 
     ctor.BindFunc("trial_active",
-                  [](Rml::Variant& v) { v = (bool)(Mode_Type == MODE_TRIALS && g_trials_state.is_active); });
+                  [](Rml::Variant& v) { v = (bool)(g_state.Mode_Type == MODE_TRIALS && g_trials_state.is_active); });
     ctor.BindFunc("trial_header", [](Rml::Variant& v) {
         // Simplified: "TRIAL: <charname> N/M (L/R skip)"
         // We build this from the global state
@@ -103,7 +104,7 @@ extern "C" void rmlui_trials_hud_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
 
-    bool active = (Mode_Type == MODE_TRIALS && g_trials_state.is_active);
+    bool active = (g_state.Mode_Type == MODE_TRIALS && g_trials_state.is_active);
     bool just_activated = false;
     if (active != s_cache.is_active) {
         s_cache.is_active = active;

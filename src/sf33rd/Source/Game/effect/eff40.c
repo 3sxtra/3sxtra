@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff40.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -26,15 +27,15 @@ const s16 Pos_Data_40[4][3] = { { 0, 77, 70 }, { 0, 77, 72 }, { 0, 77, 68 }, { 0
 void effect_40_move(WORK_Other* ewk) {
     Check_Pos_OBJ2(ewk);
 
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
     if (ewk->master_id) {
-        ewk->wu.rl_waza = save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Max];
+        ewk->wu.rl_waza = save_w[1].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Max];
     } else {
-        ewk->wu.rl_waza = system_dir[1].contents[Menu_Page_Buff][Menu_Max];
+        ewk->wu.rl_waza = system_dir[1].contents[g_state.Menu_Page_Buff][g_state.Menu_Max];
     }
 
     EFF40_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
@@ -42,7 +43,7 @@ void effect_40_move(WORK_Other* ewk) {
 }
 
 static void EFF40_EXIT(WORK_Other* ewk) {
-    if (Menu_Cursor_Y[0] == Menu_Max && ewk->wu.rl_waza == ewk->master_priority) {
+    if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max && ewk->wu.rl_waza == ewk->master_priority) {
         ewk->wu.my_clear_level = 0;
     } else {
         ewk->wu.my_clear_level = 128;
@@ -52,7 +53,7 @@ static void EFF40_EXIT(WORK_Other* ewk) {
 static void EFF40_BACK(WORK_Other* ewk) {
     s16 ix;
 
-    if (Menu_Cursor_Y[0] == Menu_Max && ewk->wu.rl_waza == ewk->master_priority) {
+    if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max && ewk->wu.rl_waza == ewk->master_priority) {
         ix = 1;
     } else {
         ix = 0;
@@ -62,7 +63,7 @@ static void EFF40_BACK(WORK_Other* ewk) {
 }
 
 static void EFF40_ARROW(WORK_Other* ewk) {
-    if (Menu_Cursor_Y[0] != Menu_Max) {
+    if (g_state.Menu_Cursor_Y[0] != g_state.Menu_Max) {
         set_char_move_init2(&ewk->wu, 0, 76, (ewk->master_priority / 2) + 1, 0);
         ewk->wu.routine_no[1] = 0;
     } else if (ewk->wu.rl_waza == ewk->master_priority) {
@@ -103,8 +104,8 @@ s32 effect_40_init(s16 id, s16 type, s16 char_ix, s16 sync_bg, s16 master_player
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_40[type][0];
-    ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_40[type][1];
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_40[type][0];
+    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_40[type][1];
     ewk->wu.position_z = Pos_Data_40[type][2];
 
     if (master_priority < 2) {

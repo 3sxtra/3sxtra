@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/com/follow/follow02.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/com/com_sub.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -12,11 +13,11 @@ static void (*const Follow02_Tbl[4])(PLW*);
 
 /** @brief Follow-up combo AI pattern entry point. */
 void Follow02(PLW* wk) {
-    Follow02_Tbl[(s16)Pattern_Index[wk->wu.id]](wk);
+    Follow02_Tbl[(s16)g_state.Pattern_Index[wk->wu.id]](wk);
 }
 
 static void Follow02_0000(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x10);
         break;
@@ -36,7 +37,7 @@ static void Follow02_0000(PLW* wk) {
 }
 
 static void Follow02_0001(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x20);
         break;
@@ -52,7 +53,7 @@ static void Follow02_0001(PLW* wk) {
 }
 
 static void Follow02_0002(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x10);
         break;
@@ -72,7 +73,7 @@ static void Follow02_0002(PLW* wk) {
 }
 
 static void Follow02_0003(PLW* wk) {
-    switch (CP_Index[wk->wu.id][0]) {
+    switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x20);
         break;

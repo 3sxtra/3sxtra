@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effd3.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff20.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -48,7 +49,7 @@ void akebono_finish(WORK_Other* ewk) {
         ewk->wu.old_rno[1] = 0;
         ewk->wu.dir_timer = ake_timer_tbl[0];
         ewk->wu.disp_flag = 0;
-        bg = ake_bg_off[bg_w.stage];
+        bg = ake_bg_off[g_state.bg_w.stage];
         mask = 1 & 0xFFFF;
 
         for (i = 0; i < 4; i++, assign1 = mask *= 2) {
@@ -58,11 +59,11 @@ void akebono_finish(WORK_Other* ewk) {
         }
 
         Bg_On_R(8);
-        akebono_flag = 1;
+        g_state.akebono_flag = 1;
         Sound_SE(117);
-        Scrn_Move_Set(3, 192 - bg_w.pos_offset, 16);
-        bg_w.bgw[3].position_x = 192 - bg_w.pos_offset;
-        bg_w.bgw[3].position_y = 16;
+        Scrn_Move_Set(3, 192 - g_state.bg_w.pos_offset, 16);
+        g_state.bg_w.bgw[3].position_x = 192 - g_state.bg_w.pos_offset;
+        g_state.bg_w.bgw[3].position_y = 16;
         overwrite_panel(ake_color[ewk->wu.old_rno[1]], 69);
         break;
 
@@ -70,7 +71,7 @@ void akebono_finish(WORK_Other* ewk) {
         ewk->wu.dir_timer -= 1;
 
         if ((ewk->wu.dir_timer) < 0) {
-            akebono_flag = 1;
+            g_state.akebono_flag = 1;
             ewk->wu.old_rno[1] += 1;
 
             if (ewk->wu.old_rno[1] < 4) {
@@ -106,7 +107,7 @@ void akebono_finish(WORK_Other* ewk) {
         ewk->wu.dir_timer -= 1;
 
         if (ewk->wu.dir_timer == 0) {
-            bg = ake_bg_off[bg_w.stage];
+            bg = ake_bg_off[g_state.bg_w.stage];
             mask = 1;
 
             for (i = 0; i < 4; i++, assign2 = mask *= 2) {
@@ -118,7 +119,7 @@ void akebono_finish(WORK_Other* ewk) {
 
         if (ewk->wu.dir_timer < 0) {
             ewk->wu.routine_no[0] += 1;
-            akebono_flag = 0;
+            g_state.akebono_flag = 0;
             break;
         }
 
@@ -142,13 +143,13 @@ void syungoku_finish(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0] += 1;
-        akebono_flag = 1;
-        Extra_Break = 1;
+        g_state.akebono_flag = 1;
+        g_state.Extra_Break = 1;
         Sound_SE(126);
-        plw[0].wu.disp_flag = 0;
-        plw[1].wu.disp_flag = 0;
-        Pause_Hit_Marks = 1;
-        bg = ake_bg_off[bg_w.stage];
+        g_state.plw[0].wu.disp_flag = 0;
+        g_state.plw[1].wu.disp_flag = 0;
+        g_state.Pause_Hit_Marks = 1;
+        bg = ake_bg_off[g_state.bg_w.stage];
         mask = 1 & 0xFFFF;
 
         for (i = 0; i < 4; i++, assign1 = mask *= 2) {
@@ -158,8 +159,8 @@ void syungoku_finish(WORK_Other* ewk) {
         }
 
         overwrite_panel(0xFF000000, 70);
-        bg_w.bgw[3].position_x = 256 - bg_w.pos_offset;
-        bg_w.bgw[3].position_y = 0;
+        g_state.bg_w.bgw[3].position_x = 256 - g_state.bg_w.pos_offset;
+        g_state.bg_w.bgw[3].position_y = 0;
         ewk->wu.dir_timer = 2;
         Bg_Family_Set_appoint(3);
         break;
@@ -176,19 +177,19 @@ void syungoku_finish(WORK_Other* ewk) {
         }
 
         overwrite_panel(0xFF000000, 70);
-        bg_w.bgw[3].position_x = 768 - bg_w.pos_offset;
-        bg_w.bgw[3].position_y = 0;
+        g_state.bg_w.bgw[3].position_x = 768 - g_state.bg_w.pos_offset;
+        g_state.bg_w.bgw[3].position_y = 0;
         Bg_Family_Set_appoint(3);
         break;
 
     case 2:
         if (ewk->wu.old_rno[0]) {
             ewk->wu.routine_no[0] += 1;
-            akebono_flag = 0;
-            plw[0].wu.disp_flag = 1;
-            plw[1].wu.disp_flag = 1;
-            Pause_Hit_Marks = 0;
-            bg = ake_bg_off[bg_w.stage];
+            g_state.akebono_flag = 0;
+            g_state.plw[0].wu.disp_flag = 1;
+            g_state.plw[1].wu.disp_flag = 1;
+            g_state.Pause_Hit_Marks = 0;
+            bg = ake_bg_off[g_state.bg_w.stage];
             mask = 1 & 0xFFFF;
 
             for (i = 0; i < 4; i++, assign2 = mask *= 2) {
@@ -199,23 +200,23 @@ void syungoku_finish(WORK_Other* ewk) {
         }
 
         overwrite_panel(0xFF000000, 70);
-        bg_w.bgw[3].position_x = 768 - bg_w.pos_offset;
-        bg_w.bgw[3].position_y = 0;
+        g_state.bg_w.bgw[3].position_x = 768 - g_state.bg_w.pos_offset;
+        g_state.bg_w.bgw[3].position_y = 0;
         Bg_Family_Set_appoint(3);
         break;
 
     case 3:
         ewk->wu.routine_no[0] += 1;
-        Conclusion_Flag = 1;
-        Conclusion_Type = 0;
+        g_state.Conclusion_Flag = 1;
+        g_state.Conclusion_Type = 0;
         request_center_message(0);
-        bg_w.bgw[3].position_x = 256 - bg_w.pos_offset;
-        bg_w.bgw[3].position_y = 0;
+        g_state.bg_w.bgw[3].position_x = 256 - g_state.bg_w.pos_offset;
+        g_state.bg_w.bgw[3].position_y = 0;
         Bg_Family_Set_appoint(3);
         break;
 
     default:
-        akebono_flag = 0;
+        g_state.akebono_flag = 0;
         all_cgps_put_back(&ewk->wu);
         push_effect_work(&ewk->wu);
         break;

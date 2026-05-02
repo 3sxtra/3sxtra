@@ -7,6 +7,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_game_hud.h"
 #include "port/sdl/rmlui/rmlui_ingame_chat.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
@@ -716,7 +717,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
         // Allow gamepad cancel/back button to close chat popup
         u16 chat_trigger = 0;
         for (int i = 0; i < 2; i++) {
-            chat_trigger |= (~PLsw[i][1] & PLsw[i][0]);
+            chat_trigger |= (~g_state.PLsw[i][1] & g_state.PLsw[i][0]);
         }
         if (chat_trigger & 0x0200) { // Cancel/Back
             s_chat_open = false;
@@ -764,7 +765,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
         // Proposal input handling (overrides normal lobby navigation)
         u16 trigger = 0;
         for (int i = 0; i < 2; i++) {
-            trigger |= (~PLsw[i][1] & PLsw[i][0]);
+            trigger |= (~g_state.PLsw[i][1] & g_state.PLsw[i][0]);
         }
 
         // Left/Right to switch between Accept and Decline
@@ -823,7 +824,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
 
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {
-        trigger |= (~PLsw[i][1] & PLsw[i][0]);
+        trigger |= (~g_state.PLsw[i][1] & g_state.PLsw[i][0]);
     }
 
     int prev_x = s_cursor_x;

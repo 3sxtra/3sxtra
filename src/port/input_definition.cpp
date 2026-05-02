@@ -1,12 +1,13 @@
 /**
  * @file input_definition.cpp
- * @brief Centralized input ID ↔ string name mapping.
+ * @brief Centralized input g_state.ID ↔ string name mapping.
  *
  * Provides bidirectional conversion between `InputID` enum values and
  * human-readable string names, used for config serialization and UI display.
  * Handles keyboard scancodes, joystick buttons/axes, and gamepad buttons.
  */
 #include "port/input_definition.h"
+#include "game_state.h"
 #include <SDL3/SDL.h>
 #include <map>
 #include <string>
@@ -39,11 +40,11 @@ static const std::map<InputID, std::string> id_to_name_map = { { INPUT_ID_DPAD_U
                                                                { INPUT_ID_RIGHT_STICK_Y_PLUS, "Right Stick Y+" },
                                                                { INPUT_ID_RIGHT_STICK_Y_MINUS, "Right Stick Y-" } };
 
-// Reverse map for efficient name-to-ID lookups.
+// Reverse map for efficient name-to-g_state.ID lookups.
 static std::map<std::string, InputID> name_to_id_map;
 
 // Ensures the reverse map is populated before it's ever used.
-/** @brief Lazily populate the reverse (name→ID) lookup map on first access. */
+/** @brief Lazily populate the reverse (name→g_state.ID) lookup map on first access. */
 static bool ensure_reverse_map() {
     if (name_to_id_map.empty()) {
         for (const auto& pair : id_to_name_map) {
@@ -136,12 +137,12 @@ InputID get_input_id(const std::string& name) {
     return INPUT_ID_UNKNOWN;
 }
 
-/** @brief Return true if the ID falls in the keyboard scancode range. */
+/** @brief Return true if the g_state.ID falls in the keyboard scancode range. */
 extern "C" bool is_keyboard_input(InputID id) {
     return (int)id >= INPUT_ID_KEY_BASE && (int)id < INPUT_ID_JOY_BASE;
 }
 
-/** @brief Return true if the ID falls in the joystick range (buttons/axes/hats). */
+/** @brief Return true if the g_state.ID falls in the joystick range (buttons/axes/hats). */
 extern "C" bool is_joystick_input(InputID id) {
     return (int)id >= INPUT_ID_JOY_BASE;
 }

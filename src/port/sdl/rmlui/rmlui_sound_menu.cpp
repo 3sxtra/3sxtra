@@ -7,11 +7,12 @@
  * and sound test controls.
  *
  * Key globals (from workuser.h):
- *   Convert_Buff[3][1][0..7], bgm_level, se_level, sys_w.bgm_type,
- *   Menu_Cursor_Y[]
+ *   g_state.Convert_Buff[3][1][0..7], bgm_level, se_level, sys_w.bgm_type,
+ *   g_state.Menu_Cursor_Y[]
  */
 
 #include "port/sdl/rmlui/rmlui_sound_menu.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -67,12 +68,12 @@ extern "C" void rmlui_sound_menu_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("sound_mode", [](Rml::Variant& v) { v = (int)Convert_Buff[3][1][0]; });
+    ctor.BindFunc("sound_mode", [](Rml::Variant& v) { v = (int)g_state.Convert_Buff[3][1][0]; });
     ctor.BindFunc("bgm_level", [](Rml::Variant& v) { v = (int)bgm_level; });
     ctor.BindFunc("se_level", [](Rml::Variant& v) { v = (int)se_level; });
     ctor.BindFunc("bgm_type", [](Rml::Variant& v) { v = (int)sys_w.bgm_type; });
-    ctor.BindFunc("bgm_test_track", [](Rml::Variant& v) { v = (int)Convert_Buff[3][1][5]; });
-    ctor.BindFunc("cursor_y", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("bgm_test_track", [](Rml::Variant& v) { v = (int)g_state.Convert_Buff[3][1][5]; });
+    ctor.BindFunc("cursor_y", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
     ctor.BindFunc("bgm_level_pct", [](Rml::Variant& v) { v = level_to_pct((int)bgm_level); });
     ctor.BindFunc("se_level_pct", [](Rml::Variant& v) { v = level_to_pct((int)se_level); });
 
@@ -94,12 +95,12 @@ extern "C" void rmlui_sound_menu_update(void) {
     int old_bgm = s_cache.bgm_level;
     int old_se = s_cache.se_level;
 
-    DIRTY_INT(sound_mode, (int)Convert_Buff[3][1][0]);
+    DIRTY_INT(sound_mode, (int)g_state.Convert_Buff[3][1][0]);
     DIRTY_INT(bgm_level, (int)bgm_level);
     DIRTY_INT(se_level, (int)se_level);
     DIRTY_INT(bgm_type, (int)sys_w.bgm_type);
-    DIRTY_INT(bgm_test_track, (int)Convert_Buff[3][1][5]);
-    DIRTY_INT(cursor_y, (int)Menu_Cursor_Y[0]);
+    DIRTY_INT(bgm_test_track, (int)g_state.Convert_Buff[3][1][5]);
+    DIRTY_INT(cursor_y, (int)g_state.Menu_Cursor_Y[0]);
 
     /* Derived percentage strings must be dirtied when the source level changes. */
     if (old_bgm != s_cache.bgm_level)

@@ -9,6 +9,7 @@
  */
 
 #include "lua_trials_loader.h"
+#include "game_state.h"
 
 #include <RmlUi/Lua/Interpreter.h>
 #include <SDL3/SDL.h>
@@ -33,7 +34,7 @@ extern "C" __declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(void
                                                                             unsigned long nSize);
 #endif
 
-// Character IDs mapping Lua index (1-19) -> engine My_char value
+// Character IDs mapping Lua index (1-19) -> engine g_state.My_char value
 // Must match lua_trial_parser.py CHARA_IDS
 static const s16 CHARA_IDS[] = {
     -1, // 0 unused
@@ -84,7 +85,7 @@ static std::vector<const TrialDef*> s_flat_def_ptrs;
 static std::vector<TrialCharacterDef> s_char_defs;
 static bool s_loaded = false;
 
-// ---- Waza ID parser (mirrors lua_trial_parser.py parse_waza_id) ----
+// ---- Waza g_state.ID parser (mirrors lua_trial_parser.py parse_waza_id) ----
 
 static void parse_waza_values(const char* s, s16* out, int max_out, int* count) {
     *count = 0;
@@ -187,7 +188,7 @@ static bool read_combo_tests(lua_State* L) {
                 }
                 lua_pop(L, 1);
 
-                // Fields 3+: waza ID strings like "A00460034"
+                // Fields 3+: waza g_state.ID strings like "A00460034"
                 int waza_count = 0;
                 int field_count = (int)luaL_len(L, -1);
                 for (int fi = 3; fi <= field_count && waza_count < MAX_WAZA_ALTERNATIVES; fi++) {

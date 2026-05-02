@@ -7,11 +7,12 @@
  * playback.  Follows the patterns in rmlui_replay_picker.cpp and
  * rmlui_leaderboard.cpp.
  *
- * Input is read via PLsw (legacy pad state) — same method as the
+ * Input is read via g_state.PLsw (legacy pad state) — same method as the
  * local replay picker.
  */
 
 #include "port/sdl/rmlui/rmlui_network_replay_picker.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -26,9 +27,7 @@ extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-/* PLsw: legacy pad state for input polling */
-extern u16 plsw_00[2];
-extern u16 plsw_01[2];
+/* g_state.PLsw: legacy pad state for input polling */
 }
 
 /* ─── Constants ──────────────────────────────────────────────── */
@@ -456,7 +455,7 @@ extern "C" int rmlui_network_replay_picker_poll(void) {
     /* Read input from both players */
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {
-        trigger |= (~plsw_01[i] & plsw_00[i]);
+        trigger |= (~g_state.plsw_01[i] & g_state.plsw_00[i]);
     }
 
     int slot_count = (int)s_slots.size();

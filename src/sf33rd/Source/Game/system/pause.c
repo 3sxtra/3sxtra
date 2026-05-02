@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/system/pause.h"
+#include "game_state.h"
 #include "port/menu_task.h"
 #include "port/task_api.h"
 #include "common.h"
@@ -32,7 +33,7 @@
 /** @brief Top-level pause task states (replaces Main_Jmp_Tbl indices). */
 typedef enum {
     PAUSE_CHECK = 0, /**< Polling both players for pause/disconnect input */
-    PAUSE_MOVE = 1,  /**< Pause active â€ waiting for menu to signal exit  */
+    PAUSE_MOVE = 1,  /**< g_state.Pause active â€ waiting for menu to signal exit  */
     PAUSE_SLEEP = 2, /**< Sleeping (no-op)                                */
     PAUSE_DIE = 3,   /**< Dead (no-op)                                    */
     PAUSE_STATE_COUNT
@@ -76,8 +77,8 @@ static s32 Check_Play_Status(s16 PL_id);
 
 /** @brief Main pause task entry point â€ dispatches sub-states and flash effects. */
 void Pause_Task(struct _TASK* task_ptr) {
-    if (!nowSoftReset() && Mode_Type != MODE_NETWORK && Mode_Type != MODE_NORMAL_TRAINING &&
-        Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS) {
+    if (!nowSoftReset() && g_state.Mode_Type != MODE_NETWORK && g_state.Mode_Type != MODE_NORMAL_TRAINING &&
+        g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS) {
         switch ((PauseState)task_ptr->r_no[0]) {
         case PAUSE_CHECK:
             Pause_Check(task_ptr);
@@ -102,8 +103,8 @@ void Pause_Task(struct _TASK* task_ptr) {
 static void Pause_Check(struct _TASK* task_ptr) {
     PAUSE_X = 0;
 
-    if (Check_Pause_Term(PLsw[0][0], 0) == 0) {
-        Check_Pause_Term(PLsw[1][0], 1);
+    if (Check_Pause_Term(g_state.PLsw[0][0], 0) == 0) {
+        Check_Pause_Term(g_state.PLsw[1][0], 1);
     }
 
     switch (PAUSE_X) {
@@ -117,22 +118,22 @@ static void Pause_Check(struct _TASK* task_ptr) {
     }
 }
 
-/** @brief Pause active state â€ wait for the menu system to signal exit. */
+/** @brief g_state.Pause active state â€ wait for the menu system to signal exit. */
 static void Pause_Move(struct _TASK* task_ptr) {
-    if (Exit_Menu) {
+    if (g_state.Exit_Menu) {
         Exit_Pause(task_ptr);
     }
 }
 
-/** @brief Pause sleep state (no-op). */
+/** @brief g_state.Pause sleep state (no-op). */
 static void Pause_Sleep(struct _TASK* unused1) {};
 
-/** @brief Pause die state (no-op). */
+/** @brief g_state.Pause die state (no-op). */
 static void Pause_Die(struct _TASK* unused1) {};
 
 /** @brief Dispatch the flash-pause sub-state for displaying pause overlay messages. */
 static void Flash_Pause(struct _TASK* task_ptr) {
-    if (Pause_Down != 0) {
+    if (g_state.Pause_Down != 0) {
         switch ((FlashPauseState)task_ptr->r_no[2]) {
         case FLASH_SLEEP:
             Flash_Pause_Sleep(task_ptr);
@@ -170,7 +171,7 @@ static void Flash_Pause_1st(struct _TASK* task_ptr) {
 static void Flash_Pause_2nd(struct _TASK* task_ptr) {
     if (--task_ptr->free[0]) {
         if (!use_rmlui || !rmlui_screen_pause) {
-            if (Pause_ID == 0) {
+            if (g_state.Pause_ID == 0) {
                 SSPutStr2(20, 9, 9, "1P PAUSE");
             } else {
                 SSPutStr2(20, 9, 9, "2P PAUSE");
@@ -188,12 +189,12 @@ static void Flash_Pause_3rd(struct _TASK* unused1) {}
 
 /** @brief Flash pause 4th phase â€ handle controller-disconnected state. */
 static void Flash_Pause_4th(struct _TASK* task_ptr) {
-    if (Interface_Type[Pause_ID] == 0) {
+    if (Interface_Type[g_state.Pause_ID] == 0) {
         dispControllerWasRemovedMessage(0x84, 0x52, 0x10);
         return;
     }
 
-    Pause_Type = 1;
+    g_state.Pause_Type = 1;
     Setup_Pause(task_ptr);
 }
 
@@ -204,7 +205,7 @@ void dispControllerWasRemovedMessage(s32 x, s32 y, s32 step) {
     SSPutStrPro(0, x, y, 9, -1, "Please reconnect");
     SSPutStrPro(0, x, (y + step), 9, -1, "the controller to");
 
-    if (Pause_ID) {
+    if (g_state.Pause_ID) {
         SSPutStrPro(0, x, (y + (step * 2)), 9, -1, "controller port 2.");
         return;
     }
@@ -214,23 +215,23 @@ void dispControllerWasRemovedMessage(s32 x, s32 y, s32 step) {
 
 /** @brief Evaluate whether pause conditions are met for the given player/input; sets PAUSE_X on match. */
 static s32 Check_Pause_Term(u16 sw, u8 PL_id) {
-    if (Demo_Flag == 0) {
+    if (g_state.Demo_Flag == 0) {
         return 0;
     }
 
-    if (Allow_a_battle_f == 0 || Extra_Break != 0) {
+    if (g_state.Allow_a_battle_f == 0 || g_state.Extra_Break != 0) {
         return 0;
     }
 
-    if (vm_w.Access != 0 || vm_w.Request != 0) {
+    if (g_state.vm_w.Access != 0 || g_state.vm_w.Request != 0) {
         return PAUSE_X = 0;
     }
 
-    if (Exec_Wipe) {
+    if (g_state.Exec_Wipe) {
         return 0;
     }
 
-    Pause_ID = PL_id;
+    g_state.Pause_ID = PL_id;
 
     if (Check_Play_Status(PL_id) == 0) {
         return 0;
@@ -239,7 +240,7 @@ static s32 Check_Pause_Term(u16 sw, u8 PL_id) {
     if (sw & SWK_START) {
         if (++start_hold_frames[PL_id] >= PAUSE_HOLD_FRAMES) {
             start_hold_frames[PL_id] = 0;
-            Pause_Type = 1;
+            g_state.Pause_Type = 1;
             return PAUSE_X = 1;
         }
         return 0;
@@ -252,14 +253,14 @@ static s32 Check_Pause_Term(u16 sw, u8 PL_id) {
         return 0;
     }
 
-    if (Present_Mode == 3) {
-        if (Interface_Type[Decide_ID] == 0) {
-            Pause_ID = Decide_ID;
-            Pause_Type = 2;
+    if (g_state.Present_Mode == 3) {
+        if (Interface_Type[g_state.Decide_ID] == 0) {
+            g_state.Pause_ID = g_state.Decide_ID;
+            g_state.Pause_Type = 2;
             return PAUSE_X = 2;
         }
-    } else if (Interface_Type[PL_id] == 0 && plw[PL_id].wu.pl_operator) {
-        Pause_Type = 2;
+    } else if (Interface_Type[PL_id] == 0 && g_state.plw[PL_id].wu.pl_operator) {
+        g_state.Pause_Type = 2;
         return PAUSE_X = 2;
     }
 
@@ -270,15 +271,15 @@ static s32 Check_Pause_Term(u16 sw, u8 PL_id) {
 static void Exit_Pause(struct _TASK* task_ptr) {
     u8 ix;
 
-    if (Present_Mode != 3 && Check_Pause_Term(0, Pause_ID ^ 1)) {
-        Exit_Menu = 0;
+    if (g_state.Present_Mode != 3 && Check_Pause_Term(0, g_state.Pause_ID ^ 1)) {
+        g_state.Exit_Menu = 0;
         return;
     }
 
     SE_selected();
-    Game_pause = 0;
-    Pause = 0;
-    Pause_Down = 0;
+    g_state.Game_pause = 0;
+    g_state.Pause = 0;
+    g_state.Pause_Down = 0;
     start_hold_frames[0] = 0;
     start_hold_frames[1] = 0;
 
@@ -287,10 +288,10 @@ static void Exit_Pause(struct _TASK* task_ptr) {
         task_ptr->free[ix] = 0;
     }
 
-    Menu_Suicide[0] = 1;
-    Menu_Suicide[1] = 1;
-    Menu_Suicide[2] = 1;
-    Menu_Suicide[3] = 1;
+    g_state.Menu_Suicide[0] = 1;
+    g_state.Menu_Suicide[1] = 1;
+    g_state.Menu_Suicide[2] = 1;
+    g_state.Menu_Suicide[3] = 1;
     pulpul_request_again();
     cpExitTask(TASK_SAVER);
     cpExitTask(TASK_MENU);
@@ -307,8 +308,8 @@ static void setup_pause_common(struct _TASK* task_ptr, FlashPauseState flash_pha
     s16 ix;
 
     SE_selected();
-    Pause_Down = 1;
-    Game_pause = 0x81;
+    g_state.Pause_Down = 1;
+    g_state.Game_pause = 0x81;
     task_ptr->r_no[0] = PAUSE_MOVE;
     task_ptr->r_no[2] = (u8)flash_phase;
     task_ptr->free[0] = 1;
@@ -317,14 +318,14 @@ static void setup_pause_common(struct _TASK* task_ptr, FlashPauseState flash_pha
      * Note: value 1 is also used internally by After_Title() as a jump-table
      * index, but when written from here it means "resume from pause exit." */
     MenuTask_SetPhase(MTP_IDLE);
-    Exit_Menu = 0;
+    g_state.Exit_Menu = 0;
 
     for (ix = 0; ix < 4; ix++) {
-        Menu_Suicide[ix] = 0;
+        g_state.Menu_Suicide[ix] = 0;
     }
 
-    Order[0x8A] = 3;
-    Order_Timer[0x8A] = 1;
+    g_state.Order[0x8A] = 3;
+    g_state.Order_Timer[0x8A] = 1;
     effect_66_init(0x8A, 9, 2, 7, -1, -1, -0x3FFC);
     SsBgmHalfVolume(1);
     spu_all_off();
@@ -362,8 +363,8 @@ void Pause_KillFlash(void) {
 
 /** @brief Check whether the player is active in the current round (always 1 in VS mode). */
 static s32 Check_Play_Status(s16 PL_id) {
-    if (Mode_Type != MODE_VERSUS) {
-        return Round_Operator[PL_id];
+    if (g_state.Mode_Type != MODE_VERSUS) {
+        return g_state.Round_Operator[PL_id];
     }
 
     return 1;

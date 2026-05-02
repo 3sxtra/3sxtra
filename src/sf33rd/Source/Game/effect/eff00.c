@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff00.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -20,7 +21,7 @@ static void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk);
 static void renewal_table_data(WORK_Other_JUDGE* ewk);
 
 static bool Is_Training_Hitbox_Display_Active() {
-    return Mode_Type == MODE_NORMAL_TRAINING && Is_Training_Hitbox_Display_Enabled();
+    return g_state.Mode_Type == MODE_NORMAL_TRAINING && Is_Training_Hitbox_Display_Enabled();
 }
 
 void effect_00_move(WORK_Other_JUDGE* ewk) {

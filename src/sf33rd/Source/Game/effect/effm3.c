@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effm3.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
@@ -32,7 +33,7 @@ void effect_M3_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[2] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[2] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -41,7 +42,7 @@ void effect_M3_move(WORK_Other* ewk) {
 
         switch (ewk->wu.routine_no[1]) {
         case 0:
-            if (!(Next_Step & 1)) {
+            if (!(g_state.Next_Step & 1)) {
                 break;
             }
 
@@ -71,7 +72,7 @@ void effect_M3_move(WORK_Other* ewk) {
                 ewk->wu.routine_no[1]++;
 
                 if (ewk->wu.type == 0) {
-                    Next_Step = 0;
+                    g_state.Next_Step = 0;
                 }
             }
 
@@ -99,8 +100,8 @@ void effect_M3_move(WORK_Other* ewk) {
 }
 
 static void effM3_trans(WORK* ewk) {
-    ewk->position_x = bg_w.bgw[ewk->my_family - 1].wxy[0].disp.pos;
-    ewk->position_y = bg_w.bgw[ewk->my_family - 1].wxy[1].disp.pos;
+    ewk->position_x = g_state.bg_w.bgw[ewk->my_family - 1].wxy[0].disp.pos;
+    ewk->position_y = g_state.bg_w.bgw[ewk->my_family - 1].wxy[1].disp.pos;
     ewk->position_x += ewk->xyz[0].disp.pos;
     ewk->position_y += ewk->xyz[1].disp.pos;
     sort_push_request4(ewk);

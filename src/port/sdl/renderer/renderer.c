@@ -1,4 +1,5 @@
 #include "port/rendering/renderer.h"
+#include "game_state.h"
 /**
  * @file renderer.c
  * @brief Legacy Ninja SDK renderer shim — 2D primitive queue.
@@ -142,12 +143,11 @@ void Renderer_DrawTexturedQuadVtx(const RendererVertex* vertices, int count) {
 }
 
 // Weak declaration for builds that don't link PPGFile.c (like test targets)
-extern s32 ppgWriteQuadWithST_B2(Vertex* pos, u32 col, PPGDataList* tb, s32 tix, s32 cix) __attribute__((weak));
 
 void PortRenderer_DrawSprite(const Sprite* sprite, unsigned int color) {
     // For PPG texture indices (small values 0-100), use ppgWriteQuadWithST_B2
     // which does proper texture handle lookup from the current data list
-    if (s_CurrentTextureId >= 0 && s_CurrentTextureId < 100 && ppgWriteQuadWithST_B2 != NULL) {
+    if (s_CurrentTextureId >= 0 && s_CurrentTextureId < 100 && 1) {
         Vertex vtx[4];
         vtx[0].x = sprite->v[0].x;
         vtx[0].y = sprite->v[0].y;
@@ -170,7 +170,7 @@ void PortRenderer_DrawSprite(const Sprite* sprite, unsigned int color) {
 }
 
 void PortRenderer_DrawSprite2(const Sprite2* sprite2) {
-    if (s_CurrentTextureId >= 0 && s_CurrentTextureId < 100 && ppgWriteQuadWithST_B2 != NULL) {
+    if (s_CurrentTextureId >= 0 && s_CurrentTextureId < 100 && 1) {
         Vertex vtx[4];
         vtx[0].x = sprite2->v[0].x;
         vtx[0].y = sprite2->v[0].y;

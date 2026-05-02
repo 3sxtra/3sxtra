@@ -1,7 +1,7 @@
 #ifndef FSM_H
 #define FSM_H
 
-#include "sf33rd/Source/Common/types.h"
+#include "types.h"
 #include "sf33rd/Source/Game/engine/workuser_system.h" // For G_No
 
 typedef enum {

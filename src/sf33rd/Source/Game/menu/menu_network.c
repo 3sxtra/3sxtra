@@ -1,4 +1,5 @@
 #include "sf33rd/Source/Game/fsm.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/menu/menu_network.h"
 #include "sf33rd/Source/Game/menu/menu_network_constants.h"
 #include "sf33rd/Source/Game/menu/menu_input_constants.h"
@@ -289,27 +290,27 @@ void Network_Lobby(struct _TASK* task_ptr) {
         /* Blue background banner — same effect used by lobby (case 11)
          * and leaderboard (case 5).  Without this, the gateway shows the
          * fire/lava BG inherited from Mode_Select. */
-        Order[EFF_SLOT_HEADER] = 5;
-        Order_Timer[EFF_SLOT_HEADER] = 1;
-        Order_Dir[EFF_SLOT_HEADER] = 1;
+        g_state.Order[EFF_SLOT_HEADER] = 5;
+        g_state.Order_Timer[EFF_SLOT_HEADER] = 1;
+        g_state.Order_Dir[EFF_SLOT_HEADER] = 1;
         effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
 
         /* Red "NETWORK" header */
         effect_57_init(EFF_SLOT_NET_HDR, MENU_HEADER_NETWORK, 0, EFF_Z_NETWORK_HDR, 2);
-        Order[EFF_SLOT_NET_HDR] = 1;
-        Order_Dir[EFF_SLOT_NET_HDR] = 8;
-        Order_Timer[EFF_SLOT_NET_HDR] = 1;
+        g_state.Order[EFF_SLOT_NET_HDR] = 1;
+        g_state.Order_Dir[EFF_SLOT_NET_HDR] = 8;
+        g_state.Order_Timer[EFF_SLOT_NET_HDR] = 1;
         effect_04_init(1, NET_CURSOR_TYPE_GATEWAY, 0, NET_CURSOR_SLOT_GATEWAY); /* cursor type 7 = 6-item gateway */
         {
             static const s16 gateway_strings[] = { 74, 83, 75, 76, 77, 78, 79 };
             for (ix = 0; ix < 7; ix++) {
                 effect_61_init(0, ix + 0x50, 0, 1, gateway_strings[ix], ix, EFF_FONT_CG_LARGE);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
+                g_state.Order[ix + 0x50] = 1;
+                g_state.Order_Dir[ix + 0x50] = 4;
+                g_state.Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
             }
         }
-        Menu_Cursor_Move = 7;
+        g_state.Menu_Cursor_Move = 7;
         break;
 
     case 1:
@@ -329,39 +330,39 @@ void Network_Lobby(struct _TASK* task_ptr) {
             MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 6, FADE_OPAQUE);
         }
 
-        if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
+        if (g_state.IO_Result == SWK_SOUTH || g_state.IO_Result == SWK_EAST) {
             SE_selected();
 
-            if (Menu_Cursor_Y[0] == 6 || IO_Result == SWK_EAST) {
+            if (g_state.Menu_Cursor_Y[0] == 6 || g_state.IO_Result == SWK_EAST) {
                 /* EXIT — back to Mode_Select */
-                Menu_Suicide[0] = 0;
-                Menu_Suicide[1] = 1;
+                g_state.Menu_Suicide[0] = 0;
+                g_state.Menu_Suicide[1] = 1;
                 task_ptr->r_no[1] = 1; /* Mode_Select */
                 task_ptr->r_no[2] = 0;
                 task_ptr->r_no[3] = 0;
                 task_ptr->free[0] = 0;
-                Order[EFF_SLOT_NET_HDR] = 4;
-                Order_Timer[EFF_SLOT_NET_HDR] = 4;
+                g_state.Order[EFF_SLOT_NET_HDR] = 4;
+                g_state.Order_Timer[EFF_SLOT_NET_HDR] = 4;
                 break;
             }
 
-            if (Menu_Cursor_Y[0] == 5) {
+            if (g_state.Menu_Cursor_Y[0] == 5) {
                 /* PROFILE — show RmlUi player profile */
                 MenuScreen_Goto(MENU_SCREEN_PLAYER_PROFILE);
                 MenuScreen_Tick(task_ptr);
                 return;
-            } else if (Menu_Cursor_Y[0] == 4) {
+            } else if (g_state.Menu_Cursor_Y[0] == 4) {
                 /* REPLAYS — jump to network replays phase */
                 task_ptr->r_no[2] = 30;
-            } else if (Menu_Cursor_Y[0] == 3) {
+            } else if (g_state.Menu_Cursor_Y[0] == 3) {
                 /* LEADERBOARD — show RmlUI leaderboard overlay */
                 rmlui_leaderboard_show();
                 task_ptr->r_no[2] = 4; /* jump to leaderboard phase */
-            } else if (Menu_Cursor_Y[0] == 2) {
+            } else if (g_state.Menu_Cursor_Y[0] == 2) {
                 /* LOCAL NETWORK — jump to LAN-only lobby phase */
                 task_ptr->free[2] = NET_MODE_LAN; /* 2=lan-only */
                 task_ptr->r_no[2] = 20;           /* jump to LAN-only lobby phase */
-            } else if (Menu_Cursor_Y[0] == 1) {
+            } else if (g_state.Menu_Cursor_Y[0] == 1) {
                 /* RANKED MATCHMAKING */
                 MenuScreen_Goto(MENU_SCREEN_RANKED_MATCHMAKING);
                 MenuScreen_Tick(task_ptr);
@@ -383,8 +384,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
-        Menu_Suicide[1] = 0;
+        g_state.Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
+        g_state.Menu_Suicide[1] = 0;
         Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
@@ -395,11 +396,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         effect_work_init();
         Menu_Common_Init();
-        Menu_Cursor_Y[0] = 0;
-        Menu_Cursor_Y[1] = 0;
-        Order[EFF_SLOT_HEADER] = 5;
-        Order_Timer[EFF_SLOT_HEADER] = 1;
-        Order_Dir[EFF_SLOT_HEADER] = 1;
+        g_state.Menu_Cursor_Y[0] = 0;
+        g_state.Menu_Cursor_Y[1] = 0;
+        g_state.Order[EFF_SLOT_HEADER] = 5;
+        g_state.Order_Timer[EFF_SLOT_HEADER] = 1;
+        g_state.Order_Dir[EFF_SLOT_HEADER] = 1;
 
         /* Blue background banner */
         effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
@@ -431,7 +432,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
         {
             u16 trigger = 0;
             for (int i = 0; i < 2; i++) {
-                trigger |= (~plsw_01[i] & plsw_00[i]);
+                trigger |= (~g_state.plsw_01[i] & g_state.plsw_00[i]);
             }
 
             /* Left D-pad: previous page */
@@ -449,8 +450,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
             if (trigger & SWK_EAST) { /* Cancel / B */
                 SE_selected();
                 rmlui_leaderboard_hide();
-                Menu_Suicide[0] = 0;
-                Menu_Suicide[1] = 1; /* kill blue BG items */
+                g_state.Menu_Suicide[0] = 0;
+                g_state.Menu_Suicide[1] = 1; /* kill blue BG items */
                 task_ptr->r_no[2] = 0;
                 task_ptr->r_no[3] = 0;
                 task_ptr->free[0] = 0;
@@ -467,8 +468,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
-        Menu_Suicide[1] = 0;
+        g_state.Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
+        g_state.Menu_Suicide[1] = 0;
         Message_Data->kind_req = NET_BG_MODE_BLUE;
         break;
 
@@ -479,11 +480,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         effect_work_init();
         Menu_Common_Init();
-        Menu_Cursor_Y[0] = 0;
-        Menu_Cursor_Y[1] = 0;
-        Order[EFF_SLOT_HEADER] = 5;
-        Order_Timer[EFF_SLOT_HEADER] = 1;
-        Order_Dir[EFF_SLOT_HEADER] = 1;
+        g_state.Menu_Cursor_Y[0] = 0;
+        g_state.Menu_Cursor_Y[1] = 0;
+        g_state.Order[EFF_SLOT_HEADER] = 5;
+        g_state.Order_Timer[EFF_SLOT_HEADER] = 1;
+        g_state.Order_Dir[EFF_SLOT_HEADER] = 1;
 
         /* Blue background banner */
         effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
@@ -520,8 +521,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 /* Cancel — back to gateway */
                 SE_selected();
                 rmlui_network_replay_picker_hide();
-                Menu_Suicide[0] = 0;
-                Menu_Suicide[1] = 1;
+                g_state.Menu_Suicide[0] = 0;
+                g_state.Menu_Suicide[1] = 1;
                 task_ptr->r_no[2] = 0;
                 task_ptr->r_no[3] = 0;
                 task_ptr->free[0] = 0;
@@ -530,12 +531,12 @@ void Network_Lobby(struct _TASK* task_ptr) {
                  * Replay_w has been populated by the async download thread.
                  * We start the game transition natively here. */
                 rmlui_network_replay_picker_hide();
-                Menu_Suicide[0] = 0;
-                Menu_Suicide[1] = 1;
+                g_state.Menu_Suicide[0] = 0;
+                g_state.Menu_Suicide[1] = 1;
 
-                Decide_ID = 0;
+                g_state.Decide_ID = 0;
                 if (Interface_Type[0] == 0) {
-                    Decide_ID = 1;
+                    g_state.Decide_ID = 1;
                 }
 
                 task_ptr->r_no[2] = 35; /* Jump to Load_Replay_Sub transition phase */
@@ -561,8 +562,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        Menu_Suicide[0] = 1;                       /* kill gateway items (master_player=0) */
-        Menu_Suicide[1] = 0;                       /* enable lobby items (master_player=1) */
+        g_state.Menu_Suicide[0] = 1;                       /* kill gateway items (master_player=0) */
+        g_state.Menu_Suicide[1] = 0;                       /* enable lobby items (master_player=1) */
         Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
@@ -575,16 +576,16 @@ void Network_Lobby(struct _TASK* task_ptr) {
         Menu_Common_Init();
         s_slide_offset = 384;
         if (task_ptr->free[2] == NET_MODE_RMLUI) {
-            Menu_Cursor_Y[0] = 0;
+            g_state.Menu_Cursor_Y[0] = 0;
         } else {
-            Menu_Cursor_Y[0] = 2;
+            g_state.Menu_Cursor_Y[0] = 2;
         }
-        Menu_Cursor_Y[1] = 0;
-        Order[0x4E] = 5;
-        Order_Timer[0x4E] = 1;
+        g_state.Menu_Cursor_Y[1] = 0;
+        g_state.Order[0x4E] = 5;
+        g_state.Order_Timer[0x4E] = 1;
 
         /* Red slide-in header bar */
-        Order_Dir[0x4E] = 1;
+        g_state.Order_Dir[0x4E] = 1;
 
         if (task_ptr->free[2] == NET_MODE_RMLUI) {
             /* RMLUI lobby */
@@ -593,28 +594,28 @@ void Network_Lobby(struct _TASK* task_ptr) {
             /* NATIVE lobby */
             /* Right-side grey overlay boxes (LAN and Internet peer areas) */
             effect_66_init(EFF_SLOT_CURSOR_BG, EFF_SPRITE_LOBBY_BOX, 1, 0, -1, -1, EFF66_ZORDER_LOBBY_LAN);
-            Order[EFF_SLOT_CURSOR_BG] = 3;
-            Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+            g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
+            g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
             effect_66_init(EFF_SLOT_LOBBY_BOX2, EFF_SPRITE_LOBBY_BOX, 1, 0, -1, -1, EFF66_ZORDER_LOBBY_NET);
-            Order[EFF_SLOT_LOBBY_BOX2] = 3;
-            Order_Timer[EFF_SLOT_LOBBY_BOX2] = 1;
+            g_state.Order[EFF_SLOT_LOBBY_BOX2] = 3;
+            g_state.Order_Timer[EFF_SLOT_LOBBY_BOX2] = 1;
 
             /* Menu items: 6 items, EFF_FONT_COMPACT = compact 8px font, master_player=1 */
             {
                 static const s16 lobby_strings[] = { 68, 69, 70, 71, 72, 73 };
                 for (ix = 0; ix < 6; ix++) {
                     effect_61_init(0, ix + 0x50, 0, 1, lobby_strings[ix], ix, EFF_FONT_COMPACT);
-                    Order[ix + 0x50] = 1;
-                    Order_Dir[ix + 0x50] = 4;
-                    Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
+                    g_state.Order[ix + 0x50] = 1;
+                    g_state.Order_Dir[ix + 0x50] = 4;
+                    g_state.Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
                 }
             }
 
             /* Title: "NETWORK LOBBY" in big CG font (EFF_FONT_CG_LARGE), string index NET_STR_LOBBY_TITLE */
             effect_61_init(0, EFF_SLOT_NET_TITLE, 0, 1, NET_STR_LOBBY_TITLE, -1, EFF_FONT_CG_LARGE);
-            Order[EFF_SLOT_NET_TITLE] = 1;
-            Order_Dir[EFF_SLOT_NET_TITLE] = 4;
-            Order_Timer[EFF_SLOT_NET_TITLE] = NET_ORDER_TIMER_TITLE;
+            g_state.Order[EFF_SLOT_NET_TITLE] = 1;
+            g_state.Order_Dir[EFF_SLOT_NET_TITLE] = 4;
+            g_state.Order_Timer[EFF_SLOT_NET_TITLE] = NET_ORDER_TIMER_TITLE;
 
             /* Message system for description text */
             Message_Data->pos_x = 0;
@@ -625,7 +626,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
             Message_Data->timer = 1;
             effect_45_init(0, 0, 1);
 
-            Menu_Cursor_Move = 6;
+            g_state.Menu_Cursor_Move = 6;
         }
 
         /* Blue background banner — always init (palette 0x45). */
@@ -664,7 +665,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         /* === Password popup input intercept === */
         if (rmlui_network_lobby_is_password_popup_visible()) {
-            u16 click = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
+            u16 click = (~g_state.plsw_01[0] & g_state.plsw_00[0]) | (~g_state.plsw_01[1] & g_state.plsw_00[1]);
             if (click & 1) /* UP */
                 rmlui_network_lobby_password_input(1);
             if (click & 2) /* DOWN */
@@ -741,38 +742,36 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         /* Handle cursor movement */
         {
-            s16 prev_cursor = Menu_Cursor_Y[0];
+            s16 prev_cursor = g_state.Menu_Cursor_Y[0];
             if (task_ptr->free[2] == NET_MODE_RMLUI) {
                 if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 11, FADE_OPAQUE) == 0) {
                     MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 11, FADE_OPAQUE);
                 }
                 if (popup_active) {
-                    Menu_Cursor_Y[0] = prev_cursor;
+                    g_state.Menu_Cursor_Y[0] = prev_cursor;
                 } else {
                     /* Skip FORMAT row (3) when room type is not tournament */
-                    if (Menu_Cursor_Y[0] == 3 && rmlui_network_lobby_get_create_room_type() != 2) {
-                        if (Menu_Cursor_Y[0] > prev_cursor)
-                            Menu_Cursor_Y[0] = 4; /* moving down → skip to REGION LOCK */
+                    if (g_state.Menu_Cursor_Y[0] == 3 && rmlui_network_lobby_get_create_room_type() != 2) {
+                        if (g_state.Menu_Cursor_Y[0] > prev_cursor)
+                            g_state.Menu_Cursor_Y[0] = 4; /* moving down → skip to REGION LOCK */
                         else
-                            Menu_Cursor_Y[0] = 2; /* moving up → skip to PASSWORD */
+                            g_state.Menu_Cursor_Y[0] = 2; /* moving up → skip to PASSWORD */
                     }
                 }
             } else {
                 if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 16, FADE_OPAQUE) == 0) {
                     MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 16, FADE_OPAQUE);
                 }
-                if (Menu_Cursor_Y[0] < 2) {
+                if (g_state.Menu_Cursor_Y[0] < 2) {
                     if (prev_cursor == 2)
-                        Menu_Cursor_Y[0] = 16;
-                    else
-                        Menu_Cursor_Y[0] = 2;
+                        g_state.Menu_Cursor_Y[0] = 16;
                 }
                 if (popup_active) {
-                    Menu_Cursor_Y[0] = prev_cursor;
+                    g_state.Menu_Cursor_Y[0] = prev_cursor;
                 }
-                if (prev_cursor != Menu_Cursor_Y[0]) {
+                if (prev_cursor != g_state.Menu_Cursor_Y[0]) {
                     Message_Data->order = 1;
-                    Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
+                    Message_Data->request = NET_MSG_REQ_BASE + g_state.Menu_Cursor_Y[0];
                     Message_Data->timer = 2;
                     Message_Data->pos_y = NET_MSG_POS_Y;
                 }
@@ -781,11 +780,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         /* === Left/right toggle handling for toggle items === */
         if (!popup_active) {
-            u16 click = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
+            u16 click = (~g_state.plsw_01[0] & g_state.plsw_00[0]) | (~g_state.plsw_01[1] & g_state.plsw_00[1]);
 
             if (click & 12) {
                 if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                    switch (Menu_Cursor_Y[0]) {
+                    switch (g_state.Menu_Cursor_Y[0]) {
                     case 0: /* ROOM TYPE */
                         rmlui_network_lobby_cycle_room_type((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
@@ -861,7 +860,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     }
                 } else {
                     /* NATIVE MODE KEEP-ALIVE */
-                    switch (Menu_Cursor_Y[0]) {
+                    switch (g_state.Menu_Cursor_Y[0]) {
                     case 2: {
                         bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
                         Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
@@ -1063,7 +1062,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                                            SDLNetplayUI_GetPendingInviteRegion(),
                                            SDLNetplayUI_GetPendingInvitePing());
 
-            switch (IO_Result) {
+            switch (g_state.IO_Result) {
             case SWK_SOUTH:
                 Netplay_SetNegotiatedFT(SDLNetplayUI_GetPendingInviteFT());
                 SDLNetplayUI_AcceptPendingInvite();
@@ -1081,7 +1080,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 NetLobby_DrawOutgoingPopup(SDLNetplayUI_GetOutgoingChallengeName(),
                                            SDLNetplayUI_GetOutgoingChallengePing());
 
-            if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
+            if (g_state.IO_Result == SWK_SOUTH || g_state.IO_Result == SWK_EAST) {
                 SDLNetplayUI_CancelOutgoingChallenge();
                 Discovery_SetChallengeTarget(0);
                 SE_selected();
@@ -1104,7 +1103,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     NetLobby_DrawOutgoingPopup(tgt_name, tgt_ping);
             }
 
-            if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
+            if (g_state.IO_Result == SWK_SOUTH || g_state.IO_Result == SWK_EAST) {
                 Discovery_SetChallengeTarget(0);
                 SE_selected();
             }
@@ -1128,7 +1127,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         ip_peers[lan_challenger].player_id[0] ? PingProbe_GetRTT(ip_peers[lan_challenger].player_id)
                                                               : -1);
 
-                switch (IO_Result) {
+                switch (g_state.IO_Result) {
                 case SWK_SOUTH:
                     Netplay_SetNegotiatedFT(ip_peers[lan_challenger].ft_value);
                     Discovery_SetChallengeTarget(ip_peers[lan_challenger].instance_id);
@@ -1143,10 +1142,10 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 }
             } else {
                 /* === Handle confirm/cancel (normal lobby input) === */
-                switch (IO_Result) {
+                switch (g_state.IO_Result) {
                 case SWK_SOUTH: /* Confirm */
                     if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                        switch (Menu_Cursor_Y[0]) {
+                        switch (g_state.Menu_Cursor_Y[0]) {
                         case 0:
                             rmlui_network_lobby_cycle_room_type(1);
                             SE_selected();
@@ -1224,7 +1223,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         }
                     } else {
                         /* Native Mode Keep-Alive */
-                        switch (Menu_Cursor_Y[0]) {
+                        switch (g_state.Menu_Cursor_Y[0]) {
                         case 2: {
                             bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
                             Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
@@ -1282,8 +1281,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     if (task_ptr->free[2] == NET_MODE_RMLUI)
                         rmlui_network_lobby_hide();
                     Netplay_HandleMenuExit();
-                    Menu_Suicide[0] = 0;
-                    Menu_Suicide[1] = 1; /* kill our items + blue BG */
+                    g_state.Menu_Suicide[0] = 0;
+                    g_state.Menu_Suicide[1] = 1; /* kill our items + blue BG */
 
                     /* Return to gateway: r_no[2]=0 causes Network_Lobby to re-init */
                     task_ptr->r_no[2] = 0;
@@ -1309,8 +1308,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        Menu_Suicide[0] = 1;                       /* kill gateway items (master_player=0) */
-        Menu_Suicide[1] = 0;                       /* enable lobby items (master_player=1) */
+        g_state.Menu_Suicide[0] = 1;                       /* kill gateway items (master_player=0) */
+        g_state.Menu_Suicide[1] = 0;                       /* enable lobby items (master_player=1) */
         Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
@@ -1322,35 +1321,35 @@ void Network_Lobby(struct _TASK* task_ptr) {
         effect_work_init();
         Menu_Common_Init();
         s_slide_offset = 384;
-        Menu_Cursor_Y[0] = 0;
-        Menu_Cursor_Y[1] = 0;
-        Order[EFF_SLOT_HEADER] = 5;
-        Order_Timer[EFF_SLOT_HEADER] = 1;
+        g_state.Menu_Cursor_Y[0] = 0;
+        g_state.Menu_Cursor_Y[1] = 0;
+        g_state.Order[EFF_SLOT_HEADER] = 5;
+        g_state.Order_Timer[EFF_SLOT_HEADER] = 1;
 
         /* Red slide-in header bar */
-        Order_Dir[EFF_SLOT_HEADER] = 1;
+        g_state.Order_Dir[EFF_SLOT_HEADER] = 1;
 
         /* Right-side grey overlay box (LAN peer area) */
         effect_66_init(EFF_SLOT_CURSOR_BG, EFF_SPRITE_LOBBY_BOX, 1, 0, -1, -1, EFF66_ZORDER_LOBBY_LAN);
-        Order[EFF_SLOT_CURSOR_BG] = 3;
-        Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+        g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
+        g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
 
         /* Menu items: 3 items (AUTO-CONN, CONNECT, EXIT), EFF_FONT_COMPACT = compact 8px font, master_player=1 */
         {
             static const s16 lan_lobby_strings[] = { 80, 81, 82 };
             for (ix = 0; ix < 3; ix++) {
                 effect_61_init(0, ix + 0x50, 0, 1, lan_lobby_strings[ix], ix, EFF_FONT_COMPACT);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
+                g_state.Order[ix + 0x50] = 1;
+                g_state.Order_Dir[ix + 0x50] = 4;
+                g_state.Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
             }
         }
 
         /* Red "NETWORK" header */
         effect_57_init(EFF_SLOT_NET_HDR, MENU_HEADER_NETWORK, 0, EFF_Z_NETWORK_HDR, 2);
-        Order[EFF_SLOT_NET_HDR] = 1;
-        Order_Dir[EFF_SLOT_NET_HDR] = 8;
-        Order_Timer[EFF_SLOT_NET_HDR] = 1;
+        g_state.Order[EFF_SLOT_NET_HDR] = 1;
+        g_state.Order_Dir[EFF_SLOT_NET_HDR] = 8;
+        g_state.Order_Timer[EFF_SLOT_NET_HDR] = 1;
 
         /* Message system for description text */
         Message_Data->pos_x = 0;
@@ -1361,7 +1360,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
         Message_Data->timer = 1;
         effect_45_init(0, 0, 1);
 
-        Menu_Cursor_Move = 3;
+        g_state.Menu_Cursor_Move = 3;
 
         /* Blue background banner — always init (palette 0x45). */
         effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
@@ -1424,18 +1423,18 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         /* Handle cursor movement (3 items: 0..2) */
         {
-            s16 prev_cursor = Menu_Cursor_Y[0];
+            s16 prev_cursor = g_state.Menu_Cursor_Y[0];
             if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 2, FADE_OPAQUE) == 0) {
                 MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 2, FADE_OPAQUE);
             }
             if (popup_active) {
-                Menu_Cursor_Y[0] = prev_cursor;
-            } else if (prev_cursor != Menu_Cursor_Y[0]) {
+                g_state.Menu_Cursor_Y[0] = prev_cursor;
+            } else if (prev_cursor != g_state.Menu_Cursor_Y[0]) {
                 Message_Data->order = 1;
-                if (Menu_Cursor_Y[0] == 2) {
+                if (g_state.Menu_Cursor_Y[0] == 2) {
                     Message_Data->request = NET_MSG_REQ_BASE + 5; /* Use EXIT message */
                 } else {
-                    Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
+                    Message_Data->request = NET_MSG_REQ_BASE + g_state.Menu_Cursor_Y[0];
                 }
                 Message_Data->timer = 2;
                 Message_Data->pos_y = NET_MSG_POS_Y;
@@ -1444,10 +1443,10 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         /* === Left/right toggle handling === */
         if (!popup_active) {
-            u16 click = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
+            u16 click = (~g_state.plsw_01[0] & g_state.plsw_00[0]) | (~g_state.plsw_01[1] & g_state.plsw_00[1]);
 
             if (click & 12) {
-                switch (Menu_Cursor_Y[0]) {
+                switch (g_state.Menu_Cursor_Y[0]) {
                 case 0: { /* AUTO-CONN */
                     bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
                     Config_SetBool(CFG_KEY_NETPLAY_AUTO_CONNECT, !v);
@@ -1595,7 +1594,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 NetLobby_DrawOutgoingPopup(tgt_name, tgt_ping);
             }
 
-            if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
+            if (g_state.IO_Result == SWK_SOUTH || g_state.IO_Result == SWK_EAST) {
                 Discovery_SetChallengeTarget(0);
                 SE_selected();
             }
@@ -1617,7 +1616,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     "",
                     ip_peers[lan_challenger].player_id[0] ? PingProbe_GetRTT(ip_peers[lan_challenger].player_id) : -1);
 
-                switch (IO_Result) {
+                switch (g_state.IO_Result) {
                 case SWK_SOUTH:
                     Netplay_SetNegotiatedFT(ip_peers[lan_challenger].ft_value);
                     Discovery_SetChallengeTarget(ip_peers[lan_challenger].instance_id);
@@ -1632,9 +1631,9 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 }
             } else {
                 /* === Handle confirm/cancel (normal LAN-only lobby input) === */
-                switch (IO_Result) {
+                switch (g_state.IO_Result) {
                 case SWK_SOUTH: /* Confirm */
-                    switch (Menu_Cursor_Y[0]) {
+                    switch (g_state.Menu_Cursor_Y[0]) {
                     case 0: { /* AUTO-CONN toggle */
                         bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
                         Config_SetBool(CFG_KEY_NETPLAY_AUTO_CONNECT, !v);
@@ -1670,8 +1669,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     SE_selected();
                     SDLNetplayUI_SetNativeLobbyActive(false);
                     Netplay_HandleMenuExit();
-                    Menu_Suicide[0] = 0;
-                    Menu_Suicide[1] = 1; /* kill our items + blue BG */
+                    g_state.Menu_Suicide[0] = 0;
+                    g_state.Menu_Suicide[1] = 1; /* kill our items + blue BG */
 
                     /* Return to gateway: r_no[2]=0 causes Network_Lobby to re-init */
                     task_ptr->r_no[2] = 0;
@@ -1693,30 +1692,30 @@ void Menu_ReenterNetworkLobby(void) {
     s16 ix;
     InitTask_ClearAllRNo();
     for (ix = 0; ix < 4; ix++) {
-        G_No[ix] = 0;
-        E_No[ix] = 0;
-        D_No[ix] = 0;
+        g_state.G_No[ix] = 0;
+        g_state.E_No[ix] = 0;
+        g_state.D_No[ix] = 0;
     }
 
     FSM_SetMainState(GAME_STATE_MENU);
-    G_No[1] = GAME_MODE_MENU_IDLE; // Menu Idle State
-    E_No[0] = 1;
-    E_No[1] = 2;
-    E_No[2] = 2;
-    Break_Into = 0;
+    g_state.G_No[1] = GAME_MODE_MENU_IDLE; // Menu Idle State
+    g_state.E_No[0] = 1;
+    g_state.E_No[1] = 2;
+    g_state.E_No[2] = 2;
+    g_state.Break_Into = 0;
 
-    Demo_Flag = 1;
-    Game_pause = 0;
-    judge_flag = 0;
-    Pause_Down = 0;
-    Disp_Attack_Data = 0;
-    seraph_flag = 0;
-    End_Training = 0;
-    Forbid_Reset = 0;
-    Exec_Wipe = 0;
-    Present_Mode = MODE_NETWORK;
-    Mode_Type = MODE_NETWORK;
-    Insert_Y = 23;
+    g_state.Demo_Flag = 1;
+    g_state.Game_pause = 0;
+    g_state.judge_flag = 0;
+    g_state.Pause_Down = 0;
+    g_state.Disp_Attack_Data = 0;
+    g_state.seraph_flag = 0;
+    g_state.End_Training = 0;
+    g_state.Forbid_Reset = 0;
+    g_state.Exec_Wipe = 0;
+    g_state.Present_Mode = MODE_NETWORK;
+    g_state.Mode_Type = MODE_NETWORK;
+    g_state.Insert_Y = 23;
 
     // Re-create MTS slots purged by Soft_Reset_Sub() → Purge_mmtm_area(6).
     // mto_list[6] is all-zeros so nothing is recreated automatically.
@@ -1730,24 +1729,24 @@ void Menu_ReenterNetworkLobby(void) {
     // the saver task.  Since we jump straight to Network_Lobby (r_no[1]=21),
     // Menu_Init is never called.
     for (ix = 0; ix < 4; ix++) {
-        Menu_Suicide[ix] = 0;
-        Unsubstantial_BG[ix] = 0;
-        Cursor_Y_Pos[0][ix] = 0;
+        g_state.Menu_Suicide[ix] = 0;
+        g_state.Unsubstantial_BG[ix] = 0;
+        g_state.Cursor_Y_Pos[0][ix] = 0;
     }
-    Menu_Cursor_Y[0] = 0;
-    Menu_Cursor_Y[1] = 0;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Cursor_Y[1] = 0;
     All_Clear_Suicide();
     pulpul_stop();
     bg_etc_write_ex(2);
     Setup_Virtual_BG(0, 0x200, 0);
     Setup_BG(1, 0x200, 0);
     Setup_BG(2, 0x200, 0);
-    base_y_pos = 0;
+    g_state.base_y_pos = 0;
     cpReadyTask(TASK_SAVER, Saver_Task);
 
     // TASK_INIT must be DEACTIVATED here.  Its r_no[0] is zeroed above,
     // and Init_Task dispatches r_no[0]==0 → Init_Task_1st() which performs
-    // a full cold-boot init (clears G_No[], resets textures, creates
+    // a full cold-boot init (clears g_state.G_No[], resets textures, creates
     // TASK_RESET).  Leaving condition=1 causes the entire game state to be
     // clobbered on the next frame, freezing the lobby.
     InitTask_Deactivate();

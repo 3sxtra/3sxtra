@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/animation/lose_pl.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"
@@ -735,7 +736,7 @@ static void Normal_39000(PLW* wk) {
 static void Normal_40000(PLW* wk) {
     wk->wu.next_z = 38;
 
-    if ((Mode_Type == MODE_NORMAL_TRAINING) || (Mode_Type == MODE_PARRY_TRAINING)) {
+    if ((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING)) {
         switch (wk->wu.routine_no[3]) {
         case 0:
             if (wk->wu.now_koc != 0 || (wk->wu.char_index != 0)) {
@@ -757,7 +758,7 @@ static void Normal_40000(PLW* wk) {
 static void Normal_41000(PLW* wk) {
     wk->wu.next_z = 34;
 
-    if ((Mode_Type == MODE_NORMAL_TRAINING) || (Mode_Type == MODE_PARRY_TRAINING)) {
+    if ((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING)) {
         switch (wk->wu.routine_no[3]) {
         case 0:
             if (wk->wu.vital_new >= 0 && (wk->wu.now_koc != 0 || wk->wu.char_index != 0)) {
@@ -798,7 +799,7 @@ static void Normal_42000(PLW* wk) {
 
         set_char_move_init(&wk->wu, 0, dadr[0]);
         setup_mvxy_data(&wk->wu, dadr[1]);
-        Flash_MT[(wk->wu.id)] = 2;
+        g_state.Flash_MT[(wk->wu.id)] = 2;
         add_sp_arts_gauge_paring(wk);
         set_hit_stop_hit_quake(&wk->wu);
 

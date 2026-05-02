@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/opening/opening.h"
+#include "game_state.h"
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
@@ -99,7 +100,7 @@ void op_bg0_move(s16 r_index) {
                  op_bg0_0011, op_bg0_0012, op_bg0_0013, op_bg0_0014, op_bg0_0002, op_bg0_0016 };
 
     opw_ptr = &op_w.bgw[0];
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
 
     if (r_index < 0 || r_index >= OP_BG0_DISPATCH_COUNT) {
         return;
@@ -843,7 +844,7 @@ static void op_bg0_0016(s16 r_index) {
 /** @brief Dispatch background layer 1 sub-routine by op_w state. */
 void op_bg1_move(s16 r_index) {
     opw_ptr = &op_w.bgw[1];
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
 
     switch (r_index) {
     case 55:
@@ -1001,7 +1002,7 @@ static void op_bg1_0003(s16 r_index) {
 /** @brief Dispatch background layer 2 sub-routine by op_w state. */
 void op_bg2_move(s16 r_index) {
     opw_ptr = &op_w.bgw[2];
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
 
     switch (r_index) {
     case 0:
@@ -1095,9 +1096,9 @@ static void op_bg2_0003(s16 r_index) {
 
 /** @brief Set screen scroll position for a given BG layer. */
 void op_scrn_pos_set2(s16 bg_no) {
-    s16 pos_x = bg_w.bgw[bg_no].wxy[0].disp.pos;
-    s16 pos_y = bg_w.bgw[bg_no].xy[1].disp.pos;
-    Scrn_Move_Set(bg_no, pos_x - bg_w.pos_offset, pos_y);
+    s16 pos_x = g_state.bg_w.bgw[bg_no].wxy[0].disp.pos;
+    s16 pos_y = g_state.bg_w.bgw[bg_no].xy[1].disp.pos;
+    Scrn_Move_Set(bg_no, pos_x - g_state.bg_w.pos_offset, pos_y);
 }
 
 /** @brief Configure BG family parameters for the opening cinematics. */
@@ -1107,19 +1108,19 @@ void Bg_Family_Set_op() {
     s16 i;
 
     for (i = 0; i < 4; i++) {
-        bg_w.bgw[i].xy[0].cal = bg_w.bgw[i].wxy[0].cal;
-        bg_w.bgw[i].position_y = bg_w.bgw[i].xy[1].disp.pos;
-        bg_w.bgw[i].position_x = bg_w.bgw[i].wxy[0].disp.pos - bg_w.pos_offset;
-        pos_work_x = -bg_w.bgw[i].position_x;
-        pos_work_y = bg_w.bgw[i].position_y;
+        g_state.bg_w.bgw[i].xy[0].cal = g_state.bg_w.bgw[i].wxy[0].cal;
+        g_state.bg_w.bgw[i].position_y = g_state.bg_w.bgw[i].xy[1].disp.pos;
+        g_state.bg_w.bgw[i].position_x = g_state.bg_w.bgw[i].wxy[0].disp.pos - g_state.bg_w.pos_offset;
+        pos_work_x = -g_state.bg_w.bgw[i].position_x;
+        pos_work_y = g_state.bg_w.bgw[i].position_y;
         pos_work_y = 768 - (pos_work_y & 0x3FF);
         Family_Set_W(i + 1, pos_work_x, pos_work_y);
     }
 
-    bg_w.bgw[5].position_y = bg_w.bgw[5].xy[1].disp.pos;
-    bg_w.bgw[5].position_x = bg_w.bgw[5].wxy[0].disp.pos - bg_w.pos_offset;
-    pos_work_x = -bg_w.bgw[5].position_x;
-    pos_work_y = bg_w.bgw[5].position_y;
+    g_state.bg_w.bgw[5].position_y = g_state.bg_w.bgw[5].xy[1].disp.pos;
+    g_state.bg_w.bgw[5].position_x = g_state.bg_w.bgw[5].wxy[0].disp.pos - g_state.bg_w.pos_offset;
+    pos_work_x = -g_state.bg_w.bgw[5].position_x;
+    pos_work_y = g_state.bg_w.bgw[5].position_y;
     pos_work_y = 768 - (pos_work_y & 0x3FF);
     Family_Set_W(6, pos_work_x, pos_work_y);
 }

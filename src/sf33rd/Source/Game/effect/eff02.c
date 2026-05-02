@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff02.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -153,12 +154,12 @@ void effect_02_move(WORK_Other* ewk) {
             if (tad->se) {
                 urian_guard_se_check(ewk, (PLW*)ewk->wu.target_adrs, tad->se);
             } else {
-                Last_Called_SE = 0;
+                g_state.Last_Called_SE = 0;
             }
 
             if (tad->quake != 0) {
-                bg_w.quake_y_index = gqdt[tad->quake][1];
-                pp_screen_quake(bg_w.quake_y_index);
+                g_state.bg_w.quake_y_index = gqdt[tad->quake][1];
+                pp_screen_quake(g_state.bg_w.quake_y_index);
             }
 
             push_effect_work(&ewk->wu);
@@ -188,7 +189,7 @@ void effect_02_move(WORK_Other* ewk) {
         if (tad->se) {
             urian_guard_se_check(ewk, (PLW*)ewk->wu.target_adrs, tad->se);
         } else {
-            Last_Called_SE = 0;
+            g_state.Last_Called_SE = 0;
         }
 
         if (tad->status & 4) {
@@ -253,24 +254,24 @@ void effect_02_move(WORK_Other* ewk) {
             ewk->wu.my_col_code |= (ewk->master_id == 1) * 16;
         }
 
-        if (!Pause_Hit_Marks) {
+        if (!g_state.Pause_Hit_Marks) {
             sort_push_request8(&ewk->wu);
         }
 
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[6] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[6] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if (Pause_Hit_Marks) {
+        if (g_state.Pause_Hit_Marks) {
             break;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
@@ -280,8 +281,8 @@ void effect_02_move(WORK_Other* ewk) {
             }
 
             if (ewk->wu.scr_mv_x && --ewk->wu.scr_mv_x == 0) {
-                bg_w.quake_y_index = ewk->wu.scr_mv_y;
-                pp_screen_quake(bg_w.quake_y_index);
+                g_state.bg_w.quake_y_index = ewk->wu.scr_mv_y;
+                pp_screen_quake(g_state.bg_w.quake_y_index);
             }
         }
 
@@ -302,12 +303,12 @@ void effect_02_move(WORK_Other* ewk) {
 static void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto) {
     if (twk->player_number == 13 && (oto == 266 || oto == 267)) {
         Se_Dispatch(280, 280, ewk);
-        Last_Called_SE = 280;
+        g_state.Last_Called_SE = 280;
         return;
     }
 
     Se_Dispatch(oto, oto, ewk);
-    Last_Called_SE = oto;
+    g_state.Last_Called_SE = oto;
 }
 
 s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl) {
@@ -315,7 +316,7 @@ s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl) {
     WORK_Other* dwk;
     s16 ix;
 
-    if (Combo_Demo_Flag & 0x80) {
+    if (g_state.Combo_Demo_Flag & 0x80) {
         return 0;
     }
 

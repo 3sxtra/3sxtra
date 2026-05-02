@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff92.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -23,7 +24,7 @@ void effect_92_move(WORK_Other* ewk) {
         }
 
         if (ewk->wu.type == 0xFF) {
-            ewk->wu.type = win_type[ewk->master_id][ewk->wu.dir_step];
+            ewk->wu.type = g_state.win_type[ewk->master_id][ewk->wu.dir_step];
             scfont_sqput(vmark_tbl[ewk->wu.dir_step + (ewk->master_id << 2)], 4, 7, 0, ewk->wu.type << 1, 26, 2, 1, 2);
         }
 
@@ -34,7 +35,7 @@ void effect_92_move(WORK_Other* ewk) {
         break;
 
     default:
-        flash_win_type[ewk->master_id][ewk->wu.dir_step] = win_type[ewk->master_id][ewk->wu.dir_step];
+        g_state.flash_win_type[ewk->master_id][ewk->wu.dir_step] = g_state.win_type[ewk->master_id][ewk->wu.dir_step];
         push_effect_work(&ewk->wu);
         break;
     }
@@ -55,6 +56,6 @@ s32 effect_92_init(s16 PL_id, s16 win_number) {
     ewk->wu.dir_step = win_number;
     ewk->wu.dir_timer = 1;
     ewk->wu.dmcal_m = 0;
-    sync_win_type[ewk->master_id][ewk->wu.dir_step] = win_type[ewk->master_id][ewk->wu.dir_step];
+    g_state.sync_win_type[ewk->master_id][ewk->wu.dir_step] = g_state.win_type[ewk->master_id][ewk->wu.dir_step];
     return 0;
 }

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effl3.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -43,7 +44,7 @@ void effect_L3_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             effl3_jp[ewk->wu.routine_no[1]](ewk);
         }
 
@@ -101,7 +102,7 @@ static void effl3_0000(WORK_Other* ewk) {
 
         break;
     case 3:
-        if (Appear_Q) {
+        if (g_state.Appear_Q) {
             ewk->wu.routine_no[1] = 2;
         }
 
@@ -148,7 +149,7 @@ static void effl3_0001(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (Appear_Q) {
+        if (g_state.Appear_Q) {
             ewk->wu.routine_no[1] = 2;
         }
 
@@ -273,7 +274,7 @@ s32 effect_L3_init(PLW* oya) {
     s16 id_w;
     const s16* data_ptr;
 
-    if (!Perfect_Flag) {
+    if (!g_state.Perfect_Flag) {
         return 0;
     }
 
@@ -296,16 +297,16 @@ s32 effect_L3_init(PLW* oya) {
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = oya->wu.id ? 8 : 0;
         ewk->wu.type = i;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos;
         ewk->wu.xyz[0].disp.pos += *(s16*)data_ptr++;
-        ewk->wu.xyz[1].disp.pos = plw[id_w].wu.xyz[1].disp.pos;
+        ewk->wu.xyz[1].disp.pos = g_state.plw[id_w].wu.xyz[1].disp.pos;
         ewk->wu.xyz[1].disp.pos += *(s16*)data_ptr++;
-        ewk->wu.position_z = plw[id_w].wu.position_z;
+        ewk->wu.position_z = g_state.plw[id_w].wu.position_z;
         ewk->wu.position_z += *(s16*)data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z;
         ewk->wu.rl_flag = *data_ptr++;
         ewk->wu.kage_char = *data_ptr++;
-        ewk->wu.old_rno[0] = plw[id_w].wu.xyz[0].disp.pos;
+        ewk->wu.old_rno[0] = g_state.plw[id_w].wu.xyz[0].disp.pos;
         ewk->wu.old_rno[0] += *(s16*)data_ptr++;
         ewk->wu.old_rno[1] = *data_ptr++;
         ewk->wu.routine_no[1] = *data_ptr++;

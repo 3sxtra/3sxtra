@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/screen/staff.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/screen/staff_constants.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/common/pad.h"
@@ -279,7 +280,7 @@ static s32 check_shortcut() {
     u16 sw_w;
 
     if (!end_no_cut) {
-        if (WINNER) {
+        if (g_state.WINNER) {
             sw_w = p2sw_0;
         } else {
             sw_w = p1sw_0;
@@ -311,8 +312,8 @@ static void set_credit_string(s32 t, s32 x, s32 y, s32 a, s8* s) {
     mojisuu = strlen(su);
     xu = STAFF_CENTER_X - ((mojisuu * 9) / 2);
 
-    xu += (bg_w.bgw[STAFF_BGW_LAYER].xy[0].disp.pos) - STAFF_CENTER_X;
-    yu += bg_w.bgw[STAFF_BGW_LAYER].position_y;
+    xu += (g_state.bg_w.bgw[STAFF_BGW_LAYER].xy[0].disp.pos) - STAFF_CENTER_X;
+    yu += g_state.bg_w.bgw[STAFF_BGW_LAYER].position_y;
 
     effect_H6_init(t, su, xu, yu, a, -1);
 }
@@ -329,12 +330,12 @@ s32 staff_credits(u32 /* unused */) {
         staff_r_no++;
         staffroll_end = 0;
         BGM_Request(SND_BGM_CREDITS_ARCADE);
-        bg_w.bgw[STAFF_BGW_LAYER].wxy[0].cal = bg_w.bgw[STAFF_BGW_LAYER].xy[0].cal = STAFF_CAL_ENABLE;
-        bg_w.bgw[STAFF_BGW_LAYER].xy[1].cal = 0;
-        bg_w.bgw[STAFF_BGW_LAYER].position_x = STAFF_POS_X_BASE - bg_w.pos_offset;
-        bg_w.bgw[STAFF_BGW_LAYER].position_y = 0;
-        x = bg_w.bgw[STAFF_BGW_LAYER].position_x;
-        y = bg_w.bgw[STAFF_BGW_LAYER].position_y;
+        g_state.bg_w.bgw[STAFF_BGW_LAYER].wxy[0].cal = g_state.bg_w.bgw[STAFF_BGW_LAYER].xy[0].cal = STAFF_CAL_ENABLE;
+        g_state.bg_w.bgw[STAFF_BGW_LAYER].xy[1].cal = 0;
+        g_state.bg_w.bgw[STAFF_BGW_LAYER].position_x = STAFF_POS_X_BASE - g_state.bg_w.pos_offset;
+        g_state.bg_w.bgw[STAFF_BGW_LAYER].position_y = 0;
+        x = g_state.bg_w.bgw[STAFF_BGW_LAYER].position_x;
+        y = g_state.bg_w.bgw[STAFF_BGW_LAYER].position_y;
         Scrn_Move_Set(STAFF_BGW_LAYER, x, y);
         x = -x & STAFF_MASK_16;
         y = STAFF_FAMILY_Y - (y & STAFF_MASK_16) & STAFF_MASK_16;
@@ -342,24 +343,24 @@ s32 staff_credits(u32 /* unused */) {
         roll_rate2 = 1;
         roll_stop = 0;
         name_ptr = 0;
-        end_w.timer = 0;
+        g_state.end_w.timer = 0;
         name_timer = 0;
         break;
 
     case 1:
         if (check_shortcut() != 0) {
             staff_r_no = 4;
-            end_w.timer = 0;
+            g_state.end_w.timer = 0;
         } else {
             roll_rate_t2 = 1;
         }
 
-        if (end_w.timer >= 0) {
-            end_w.timer = end_w.timer - roll_rate_t2;
+        if (g_state.end_w.timer >= 0) {
+            g_state.end_w.timer = g_state.end_w.timer - roll_rate_t2;
         } else {
             if (sf3_staff[name_ptr].name == NULL) {
                 staff_r_no = 3;
-                end_w.timer = sf3_staff[name_ptr].next;
+                g_state.end_w.timer = sf3_staff[name_ptr].next;
                 SsBgmFadeOut(STAFF_BGM_FADE_END);
                 break;
             }
@@ -378,25 +379,25 @@ s32 staff_credits(u32 /* unused */) {
             y = sf3_staff[name_ptr].y;
             a = sf3_staff[name_ptr].atr;
             set_credit_string(t, x, y, a, sf3_staff[name_ptr].name);
-            end_w.timer = sf3_staff[name_ptr].next;
+            g_state.end_w.timer = sf3_staff[name_ptr].next;
             name_ptr++;
 
-            if (0 >= end_w.timer) {
+            if (0 >= g_state.end_w.timer) {
                 t = STAFF_NAME_LIFETIME;
                 x = sf3_staff[name_ptr].x;
                 y = sf3_staff[name_ptr].y;
                 a = sf3_staff[name_ptr].atr;
                 set_credit_string(t, x, y, a, sf3_staff[name_ptr].name);
-                end_w.timer = sf3_staff[name_ptr].next;
+                g_state.end_w.timer = sf3_staff[name_ptr].next;
                 name_ptr++;
 
-                if (0 >= end_w.timer) {
+                if (0 >= g_state.end_w.timer) {
                     t = STAFF_NAME_LIFETIME;
                     x = sf3_staff[name_ptr].x;
                     y = sf3_staff[name_ptr].y;
                     a = sf3_staff[name_ptr].atr;
                     set_credit_string(t, x, y, a, sf3_staff[name_ptr].name);
-                    end_w.timer = STAFF_TIMER_TRIPLE;
+                    g_state.end_w.timer = STAFF_TIMER_TRIPLE;
                     name_ptr++;
                 }
             }
@@ -485,15 +486,15 @@ s32 staff_credits(u32 /* unused */) {
 
     case 2:
     case 3:
-        if (end_w.timer >= 0) {
-            end_w.timer = end_w.timer - roll_rate_t2;
+        if (g_state.end_w.timer >= 0) {
+            g_state.end_w.timer = g_state.end_w.timer - roll_rate_t2;
         } else {
             staff_r_no++;
         }
 
         if (check_shortcut() != 0) {
             staff_r_no = 4;
-            end_w.timer = 0;
+            g_state.end_w.timer = 0;
         }
 
         break;

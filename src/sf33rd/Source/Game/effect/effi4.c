@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effi4.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -27,7 +28,7 @@ void effect_I4_move(WORK_Other* ewk) {
         ewk->wu.disp_flag = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
 
-        if (eff_hit_flag[1]) {
+        if (g_state.eff_hit_flag[1]) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
@@ -35,7 +36,7 @@ void effect_I4_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             effect_i4_hit_sub(ewk);
         }
 
@@ -100,7 +101,7 @@ void effi4_down_to_up(WORK_Other* ewk) {
         }
 
         if (ewk->wu.cg_type == 0xFF) {
-            eff_hit_flag[1] = 0;
+            g_state.eff_hit_flag[1] = 0;
             ewk->wu.routine_no[1] = 0;
             ewk->wu.type = 1;
         }

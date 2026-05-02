@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effh9.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
@@ -36,7 +37,7 @@ void effect_H9_move(WORK_Other_CONN* ewk) {
             break;
 
         case 1:
-            if (Game_pause || EXE_flag) {
+            if (g_state.Game_pause || g_state.EXE_flag) {
                 break;
             }
 
@@ -48,7 +49,7 @@ void effect_H9_move(WORK_Other_CONN* ewk) {
             ewk->wu.direction++;
             nokori_ball_effH9(ewk, ewk->wu.direction);
 
-            if (ewk->wu.direction >= Bonus_Game_Work) {
+            if (ewk->wu.direction >= g_state.Bonus_Game_Work) {
                 ewk->wu.routine_no[0] = 1;
                 ewk->wu.routine_no[1] = 0;
             }
@@ -67,7 +68,7 @@ void effect_H9_move(WORK_Other_CONN* ewk) {
             break;
         }
 
-        nokori_ball_effH9(ewk, Bonus_Game_Work);
+        nokori_ball_effH9(ewk, g_state.Bonus_Game_Work);
         effH9_trans(&ewk->wu);
         break;
 
@@ -82,8 +83,8 @@ void effect_H9_move(WORK_Other_CONN* ewk) {
 }
 
 static void effH9_trans(WORK* ewk) {
-    ewk->position_x = bg_w.bgw[2].wxy[0].disp.pos;
-    ewk->position_y = bg_w.bgw[2].wxy[1].disp.pos;
+    ewk->position_x = g_state.bg_w.bgw[2].wxy[0].disp.pos;
+    ewk->position_y = g_state.bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);
 }
 

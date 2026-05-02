@@ -1,4 +1,5 @@
 #include "port/sdl/rmlui/rmlui_ranked_matchmaking.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #ifdef ENABLE_RMLUI
@@ -15,7 +16,6 @@ extern "C" {
 #include "netplay/ping_probe.h"
 
 extern int g_net_peer_idx;
-extern s8 Menu_Cursor_Y[2];
 }
 
 #include <vector>
@@ -129,7 +129,7 @@ namespace {
             }
         });
         ctor.BindFunc("net_peer_idx", [](Rml::Variant& v) { v = g_net_peer_idx; });
-        ctor.BindFunc("cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+        ctor.BindFunc("cursor", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
 
         ctor.BindFunc("status_text", [](Rml::Variant& v) {
             const char* msg = SDLNetplayUI_GetStatusMsg();
@@ -259,7 +259,7 @@ extern "C" void rmlui_ranked_matchmaking_update(void) {
 
     DIRTY_INT(net_peer_count, SDLNetplayUI_GetOnlinePlayerCount());
     DIRTY_INT(net_peer_idx, g_net_peer_idx);
-    DIRTY_INT(cursor, (int)Menu_Cursor_Y[0]);
+    DIRTY_INT(cursor, (int)g_state.Menu_Cursor_Y[0]);
 
     s_model_handle.DirtyVariable("status_text");
     {
@@ -310,8 +310,8 @@ extern "C" void rmlui_ranked_matchmaking_update(void) {
     }
 
     static int s_last_cursor = -1;
-    if (Menu_Cursor_Y[0] != s_last_cursor) {
-        s_last_cursor = Menu_Cursor_Y[0];
+    if (g_state.Menu_Cursor_Y[0] != s_last_cursor) {
+        s_last_cursor = g_state.Menu_Cursor_Y[0];
         s_model_handle.DirtyVariable("cursor");
     }
 

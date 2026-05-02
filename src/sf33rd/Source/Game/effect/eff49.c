@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff49.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -26,13 +27,13 @@ void effect_49_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dmcal_m == Continue_Count[LOSER]) {
+        if (ewk->wu.dmcal_m == g_state.Continue_Count[g_state.LOSER]) {
             break;
         }
 
-        ewk->wu.dmcal_m = Continue_Count[LOSER];
+        ewk->wu.dmcal_m = g_state.Continue_Count[g_state.LOSER];
 
-        if (Continue_Count[LOSER] < 0) {
+        if (g_state.Continue_Count[g_state.LOSER] < 0) {
             ewk->wu.routine_no[0]++;
         } else {
             SsRequest(0xA7);
@@ -79,21 +80,21 @@ s32 effect_49_init(s16 vital_new) {
     ewk->wu.vital_new = vital_new;
     ewk->wu.my_family = 2;
     ewk->wu.char_index = 84;
-    ewk->wu.dmcal_m = Continue_Count[LOSER];
+    ewk->wu.dmcal_m = g_state.Continue_Count[g_state.LOSER];
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.xyz[1].disp.pos = bg_w.bgw[1].wxy[1].disp.pos + 8;
+    ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[1].wxy[1].disp.pos + 8;
     ewk->wu.position_z = 15;
 
     if (vital_new == 4) {
-        ix = Continue_Count[LOSER] & 0xF0;
+        ix = g_state.Continue_Count[g_state.LOSER] & 0xF0;
         ix >>= 4;
         ewk->wu.dir_step = ix;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + 450;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + 450;
     } else {
-        ix = Continue_Count[LOSER] & 0xF;
+        ix = g_state.Continue_Count[g_state.LOSER] & 0xF;
         ewk->wu.dir_step = ix;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + 594;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + 594;
     }
 
     return 0;
@@ -103,9 +104,9 @@ static u8 Setup_Char_49(WORK_Other* ewk) {
     s16 xx;
 
     if (ewk->wu.vital_new == 4) {
-        xx = Continue_Count[LOSER] & 0xF0;
+        xx = g_state.Continue_Count[g_state.LOSER] & 0xF0;
         return (xx >>= 4);
     }
 
-    return Continue_Count[LOSER] & 0xF;
+    return g_state.Continue_Count[g_state.LOSER] & 0xF;
 }

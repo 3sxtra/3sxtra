@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effe8.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effe5.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -41,7 +42,7 @@ void effect_E8_move(WORK_Other* ewk) {
             break;
         }
 
-        if (Game_pause == 0x81) {
+        if (g_state.Game_pause == 0x81) {
             effE8_trans(ewk, mwk);
             break;
         }
@@ -73,7 +74,7 @@ void effect_E8_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (pcon_rno[0] != 2) {
+        if (g_state.pcon_rno[0] != 2) {
             mtwk = (WORK*)mwk->wu.target_adrs;
 
             if (mtwk->routine_no[0] == 4 && mtwk->routine_no[1] == 1 && mtwk->routine_no[3] < 2) {
@@ -96,12 +97,12 @@ static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
             ewk->wu.position_x = mwk->wu.position_x;
             ewk->wu.position_y = mwk->wu.position_y;
         } else {
-            ewk->wu.position_x = zanzou_table[ewk->master_id][ewk->wu.type - 1].pos_x;
-            ewk->wu.position_y = zanzou_table[ewk->master_id][ewk->wu.type - 1].pos_y;
+            ewk->wu.position_x = g_state.zanzou_table[ewk->master_id][ewk->wu.type - 1].pos_x;
+            ewk->wu.position_y = g_state.zanzou_table[ewk->master_id][ewk->wu.type - 1].pos_y;
         }
     } else {
-        ewk->wu.position_x = zanzou_table[ewk->master_id][ewk->wu.type].pos_x;
-        ewk->wu.position_y = zanzou_table[ewk->master_id][ewk->wu.type].pos_y;
+        ewk->wu.position_x = g_state.zanzou_table[ewk->master_id][ewk->wu.type].pos_x;
+        ewk->wu.position_y = g_state.zanzou_table[ewk->master_id][ewk->wu.type].pos_y;
     }
 
     ewk->wu.position_z = mwk->wu.position_z;
@@ -111,9 +112,9 @@ static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
         ewk->wu.rl_flag = mwk->wu.rl_flag;
         ewk->wu.cg_flip = mwk->wu.cg_flip;
     } else {
-        ewk->wu.cg_number = zanzou_table[ewk->master_id][ewk->wu.type].cg_num;
-        ewk->wu.rl_flag = zanzou_table[ewk->master_id][ewk->wu.type].flip;
-        ewk->wu.cg_flip = zanzou_table[ewk->master_id][ewk->wu.type].cg_flp;
+        ewk->wu.cg_number = g_state.zanzou_table[ewk->master_id][ewk->wu.type].cg_num;
+        ewk->wu.rl_flag = g_state.zanzou_table[ewk->master_id][ewk->wu.type].flip;
+        ewk->wu.cg_flip = g_state.zanzou_table[ewk->master_id][ewk->wu.type].cg_flp;
     }
 
     if (ewk->wu.old_rno[0]) {

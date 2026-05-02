@@ -19,9 +19,9 @@
 
 /** @brief Main handler for Shopping District, Hong Kong stage. */
 void BG030() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg0301();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg0300();
     zoom_ud_check();
     bg_pos_hosei2();

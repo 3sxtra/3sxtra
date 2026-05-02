@@ -4,39 +4,14 @@
  */
 
 #include "sf33rd/Source/Game/stage/bg_data.h"
+#include "game_state.h"
 #include "common.h"
 #include "structs.h"
 
 // sbss
 
-s16 base_y_pos;
-s16 bg_stop;
-s8 bg_app_stop;
 BGW* bgw_ptr;
-Ideal_W ideal_w;
-s8 demo_car_flag[2];
-s16 chase_x;
-s16 chase_y;
-s16 chase_time_x;
-s16 chase_time_y;
-MVXY bg_mvxy;
-s8 akebono_flag;
-s8 seraph_flag;
-s8 aku_flag;
-s8 sa_pa_flag;
-s8 bg_app;
-s16 ls_cnt1;
-u16 zoom_add;
-s16 scrn_adgjust_x;
-s16 scrn_adgjust_y;
 const u16* scr_bcm[4];
-u8 nosekae;
-u8 g_kakikae[2];
-u8 g_number[2];
-u8 c_kakikae;
-u8 c_number;
-u8 y_sitei_flag;
-s16 y_sitei_pos;
 
 // rodata
 
@@ -594,7 +569,6 @@ const u16* bg_map_tbl[22][3] = { { stage000_map, stage001_map, NULL },
 // sdata
 const u16* bg_map_tbl2[7] = { win_lose_map, rank_map, select_map, win_lose_map, win_lose_map, win_lose_map, rank_map };
 
-s32 etcBgPalCnvTable[7] = { 0, 43, 0, 33, -13, 37, 44 };
 
 u8 etcBgGixCnvTable[7][16] = { { 16, 17, 18, 19, 8, 9, 10, 11, 20, 21, 22, 23, 12, 13, 14, 15 },
                                { 0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0 },

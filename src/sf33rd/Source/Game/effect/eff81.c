@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff81.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -26,9 +27,9 @@ void effect_81_move(WORK_Other* ewk) {
         ewk->wu.disp_flag = 1;
         ewk->wu.mvxy.a[0].sp = 0xE0000;
         ewk->wu.mvxy.d[0].sp = 0x10000;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].xy[0].disp.pos - 416;
-        ewk->wu.xyz[1].disp.pos = bg_w.bgw[1].xy[1].disp.pos - 24;
-        ewk->wu.hit_quake = bg_w.bgw[1].xy[0].disp.pos - 16;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].xy[0].disp.pos - 416;
+        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[1].xy[1].disp.pos - 24;
+        ewk->wu.hit_quake = g_state.bg_w.bgw[1].xy[0].disp.pos - 16;
         set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
         break;
 
@@ -69,7 +70,7 @@ void effect_81_move(WORK_Other* ewk) {
     }
 
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
-    ewk->wu.position_y = ewk->wu.xyz[1].disp.pos + base_y_pos + 0xFFFF;
+    ewk->wu.position_y = ewk->wu.xyz[1].disp.pos + g_state.base_y_pos + 0xFFFF;
     sort_push_request4(&ewk->wu);
 }
 
@@ -92,7 +93,7 @@ s32 effect_81_init(s16 Time) {
     ewk->wu.char_table[0] = (u32*)_sel_pl_char_table;
     ewk->wu.dir_timer = Time;
     ewk->wu.position_z = 8;
-    Appear_Q = 1;
+    g_state.Appear_Q = 1;
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.my_mr_flag = 1;

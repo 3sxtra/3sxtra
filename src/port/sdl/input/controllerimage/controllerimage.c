@@ -7,6 +7,7 @@
  */
 
 #include "controllerimage.h"
+#include "game_state.h"
 
 // nanosvg uses a bunch of C runtime stuff we can push through SDL to
 // avoid the C runtime dependency...
@@ -269,7 +270,7 @@ int ControllerImage_AddData(const void* buf, size_t buflen) {
                    (!readui16(&ptr, &buflen, &num_guids))) { // GUIDs didn't land until version 2 of the file format.
             goto failed;
         } else if (*(strings[devid]) == '\0') {
-            goto bogus_data; // can't have an empty string for the device ID.
+            goto bogus_data; // can't have an empty string for the device g_state.ID.
         } else if (inherits && (*(strings[inherits]) == '\0')) {
             goto bogus_data; // can't have an empty string for inherits.
         }
@@ -403,7 +404,7 @@ static void CollectGamepadImages(ControllerImage_GamepadDeviceInfo* info, Contro
 
         if (SDL_strlen(split) <= 1) {
             // bad data
-            SDL_SetError("svg file name has no variant ID");
+            SDL_SetError("svg file name has no variant g_state.ID");
             continue;
         }
 
@@ -427,7 +428,7 @@ static void CollectGamepadImages(ControllerImage_GamepadDeviceInfo* info, Contro
 
         if ((variantID < 0) || (variantID >= CONTROLLERIMAGE_MAX_GAMEPAD_VARIANTS)) {
             // bad data
-            SDL_SetError("svg file name invalid variant ID");
+            SDL_SetError("svg file name invalid variant g_state.ID");
             continue;
         }
 
@@ -537,7 +538,7 @@ static void CollectKeyboardImages(ControllerImage_GamepadDeviceInfo* info, Contr
 
         if (SDL_strlen(split) <= 1) {
             // bad data
-            SDL_SetError("svg file name has no variant ID");
+            SDL_SetError("svg file name has no variant g_state.ID");
             continue;
         }
 
@@ -567,7 +568,7 @@ static void CollectKeyboardImages(ControllerImage_GamepadDeviceInfo* info, Contr
 
         if ((variantID < 0) || (variantID >= CONTROLLERIMAGE_MAX_KEYBOARD_VARIANTS)) {
             // bad data
-            SDL_SetError("svg file name invalid keyboard variant ID");
+            SDL_SetError("svg file name invalid keyboard variant g_state.ID");
             continue;
         }
 
@@ -665,7 +666,7 @@ static void CollectMouseImages(ControllerImage_GamepadDeviceInfo* info, Controll
 
         if (SDL_strlen(split) <= 1) {
             // bad data
-            SDL_SetError("svg file name has no variant ID");
+            SDL_SetError("svg file name has no variant g_state.ID");
             continue;
         }
 
@@ -689,7 +690,7 @@ static void CollectMouseImages(ControllerImage_GamepadDeviceInfo* info, Controll
 
         if ((variantID < 0) || (variantID >= CONTROLLERIMAGE_MAX_KEYBOARD_VARIANTS)) {
             // bad data
-            SDL_SetError("svg file name invalid keyboard variant ID");
+            SDL_SetError("svg file name invalid keyboard variant g_state.ID");
             continue;
         }
 

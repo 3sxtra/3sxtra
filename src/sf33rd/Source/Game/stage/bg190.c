@@ -20,11 +20,11 @@
 
 /** @brief Main handler for Village in Mongolia stage. */
 void BG190() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg1902();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg1901();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     sync_bg14_common();
     zoom_ud_check();
     bg_pos_hosei2();

@@ -94,7 +94,7 @@ static void hukuromoji_move(WORK_Other* ewk) {
 
         if (ewk->wu.hit_stop <= 0) {
             ewk->wu.routine_no[1] += 1;
-            rf_b2_flag = 1;
+            g_state.rf_b2_flag = 1;
         }
 
         break;
@@ -123,7 +123,7 @@ s32 effect_L5_init(WORK_Other* oya) {
     ewk->wu.my_col_code = 0x52;
     ewk->wu.my_priority = ewk->wu.position_z = 9;
     *ewk->wu.char_table = _etc_char_table;
-    ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].position_x + bg_w.pos_offset;
+    ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
     ewk->wu.xyz[1].disp.pos = 0x90;
     return 0;
 }

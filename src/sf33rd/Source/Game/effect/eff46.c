@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff46.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -30,7 +31,7 @@ void effect_46_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             eff46_move(ewk);
         }
 
@@ -142,13 +143,13 @@ s32 effect_46_init(WORK* wk, s32 /* unused */) {
     ewk->wu.rl_flag = wk->rl_flag;
 
     if (wk->id) {
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + 112;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + 112;
         ewk->wu.mvxy.a[0].sp = 0x50000;
         ewk->wu.mvxy.d[0].sp = 0x8000;
         ewk->wu.mvxy.a[1].sp = 0x30000;
         ewk->wu.mvxy.d[1].sp = -0x6000;
     } else {
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos - 112;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - 112;
         ewk->wu.mvxy.a[0].sp = -0x50000;
         ewk->wu.mvxy.d[0].sp = -0x8000;
         ewk->wu.mvxy.a[1].sp = 0x30000;

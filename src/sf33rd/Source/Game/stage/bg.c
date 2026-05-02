@@ -6,6 +6,7 @@
  */
 
 #include "sf33rd/Source/Game/stage/bg.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/stage/bg_load.h"
 #include "sf33rd/Source/Game/stage/bg_rewrite.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
@@ -32,26 +33,8 @@
 Vertex scrDrawPos[4];
 RendererVertex bgpoly[4];
 u8 bg_priority[4];
-u16 Screen_Switch;
-u16 Screen_Switch_Buffer;
-u8 rw_num;
-u8 rw_bg_flag[4];
-u8 tokusyu_stage;
-s32 rw_gbix[13];
-s8 stage_flash;
-s8 stage_ftimer;
-s32 yang_ix_plus;
-s8 yang_ix;
-s8 yang_timer;
-u8 ending_flag;
-BackgroundParameters end_prm[8];
-u8 gouki_end_gbix[16];
-const u32* rw3col_ptr;
-u8 bg_disp_off;
-s32 bgPalCodeOffset[8];
 
 // bss
-RW_DATA rw_dat[20];
 
 /** @brief Number of 64-entry palette slots the Shin Gouki XOR diff covers. */
 #define GOUKI_XOR_PAL_SLOTS 17
@@ -91,10 +74,10 @@ void scr_trans(u8 bgnm) {
     njUnitMatrix(0);
     njScale(0, 1.0f, -1.0f, 1.0f);
     njTranslate(0, 0.0f, -1024.0f, 0.0f);
-    njTranslate(0, (s16)bg_prm[bgnm].bg_h_shift, (s16)bg_prm[bgnm].bg_v_shift, 0.0f);
+    njTranslate(0, (s16)g_state.bg_prm[bgnm].bg_h_shift, (s16)g_state.bg_prm[bgnm].bg_v_shift, 0.0f);
     njScale(0, 1.0f, -1.0f, 1.0f);
     njTranslate(0, 0.0f, -224.0f, 0.0f);
-    njScale(0, 1.0f / scr_sc, 1.0f / scr_sc, 1.0f);
+    njScale(0, 1.0f / g_state.scr_sc, 1.0f / g_state.scr_sc, 1.0f);
     point[0].x = 0.0f;
     point[0].y = 0.0f;
     point[0].z = 00.f;
@@ -126,10 +109,10 @@ void scr_trans(u8 bgnm) {
     }
 
     njUnitMatrix(0);
-    njScale(0, scr_sc, scr_sc, 1.0);
+    njScale(0, g_state.scr_sc, g_state.scr_sc, 1.0);
     njTranslate(0, 0, 224.0, 0);
     njScale(0, 1.0, -1.0, 1.0);
-    njTranslate(0, (s16)-bg_prm[bgnm].bg_h_shift, (s16)-bg_prm[bgnm].bg_v_shift, 0);
+    njTranslate(0, (s16)-g_state.bg_prm[bgnm].bg_h_shift, (s16)-g_state.bg_prm[bgnm].bg_v_shift, 0);
     njGetMatrix(&BgMATRIX[bgnm + 1]);
     njTranslate(0, 0, 1024.0, PrioBase[bg_priority[bgnm]]);
     njScale(0, 1.0, -1.0, 1.0);
@@ -138,9 +121,9 @@ void scr_trans(u8 bgnm) {
         return;
     }
 
-    palOffset = bgPalCodeOffset[bgnm];
+    palOffset = g_state.bgPalCodeOffset[bgnm];
 
-    if (ending_flag == 0) {
+    if (g_state.ending_flag == 0) {
         if (bgnm == 3) {
             ppgSetupCurrentDataList(&ppgAkeList);
             bgAkebonoDraw();
@@ -156,7 +139,7 @@ void scr_trans(u8 bgnm) {
         curDataList = &ppgBgList[bgnm];
     }
 
-    switch (tokusyu_stage) {
+    switch (g_state.tokusyu_stage) {
     case 1:
         for (y = yy[0]; y < yy[1]; y += 128) {
             for (x = xx[0]; x < xx[1]; x += 128) {
@@ -165,8 +148,8 @@ void scr_trans(u8 bgnm) {
 
                 if (bgnm == 0) {
                     for (i = 0; i < 4; i++) {
-                        if (global_index_real == rw_dat[i + 1].rwgbix) {
-                            global_index_real = rw_dat[i + 1].gbix;
+                        if (global_index_real == g_state.rw_dat[i + 1].rwgbix) {
+                            global_index_real = g_state.rw_dat[i + 1].gbix;
                             if (ppgCheckTextureNumber(0, global_index_real) == 0) {
                                 ppgSetupCurrentDataList(&ppgRwBgList);
                             }
@@ -175,9 +158,9 @@ void scr_trans(u8 bgnm) {
                     }
                 } else {
                     for (i = 0; i < 13; i++) {
-                        if (global_index_real == rw_gbix[i]) {
-                            global_index_real = *(rw_dat[0].rwd_ptr + i + 1);
-                            vtxColor = *rw3col_ptr;
+                        if (global_index_real == g_state.rw_gbix[i]) {
+                            global_index_real = *(g_state.rw_dat[0].rwd_ptr + i + 1);
+                            vtxColor = *g_state.rw3col_ptr;
 
                             if (ppgCheckTextureNumber(0, global_index_real) == 0) {
                                 ppgSetupCurrentDataList(&ppgRwBgList);
@@ -192,22 +175,22 @@ void scr_trans(u8 bgnm) {
             }
         }
 
-        if (EXE_flag != 0 || Game_pause != 0) {
+        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
             return;
         }
 
         if (bgnm == 0) {
             for (i = 0; i < 4; i = i + 1) {
-                rw_dat[i + 1].rw_cnt--;
+                g_state.rw_dat[i + 1].rw_cnt--;
 
-                if (rw_dat[i + 1].rw_cnt == 0) {
-                    if (rw_dat[i + 1].rwd_ptr[0] == -1) {
-                        rw_dat[i + 1].rwd_ptr = rw_dat[i + 1].brw_ptr;
-                        rw_dat[i + 1].rw_cnt = *rw_dat[i + 1].rwd_ptr++;
-                        rw_dat[i + 1].gbix = *rw_dat[i + 1].rwd_ptr++;
+                if (g_state.rw_dat[i + 1].rw_cnt == 0) {
+                    if (g_state.rw_dat[i + 1].rwd_ptr[0] == -1) {
+                        g_state.rw_dat[i + 1].rwd_ptr = g_state.rw_dat[i + 1].brw_ptr;
+                        g_state.rw_dat[i + 1].rw_cnt = *g_state.rw_dat[i + 1].rwd_ptr++;
+                        g_state.rw_dat[i + 1].gbix = *g_state.rw_dat[i + 1].rwd_ptr++;
                     } else {
-                        rw_dat[i + 1].rw_cnt = *rw_dat[i + 1].rwd_ptr++;
-                        rw_dat[i + 1].gbix = *rw_dat[i + 1].rwd_ptr++;
+                        g_state.rw_dat[i + 1].rw_cnt = *g_state.rw_dat[i + 1].rwd_ptr++;
+                        g_state.rw_dat[i + 1].gbix = *g_state.rw_dat[i + 1].rwd_ptr++;
                     }
                 }
             }
@@ -215,63 +198,63 @@ void scr_trans(u8 bgnm) {
             break;
         }
 
-        rw_dat[0].rw_cnt--;
+        g_state.rw_dat[0].rw_cnt--;
 
-        if (rw_dat[0].rw_cnt != 0) {
+        if (g_state.rw_dat[0].rw_cnt != 0) {
             break;
         }
 
-        if (stage_flash == 0) {
-            rw_dat[0].rwd_ptr += 14;
-            rw3col_ptr++;
-            rw_dat[0].rw_cnt = rw_dat[0].rwd_ptr[0];
+        if (g_state.stage_flash == 0) {
+            g_state.rw_dat[0].rwd_ptr += 14;
+            g_state.rw3col_ptr++;
+            g_state.rw_dat[0].rw_cnt = g_state.rw_dat[0].rwd_ptr[0];
 
-            if (rw_dat[0].rw_cnt != -1) {
+            if (g_state.rw_dat[0].rw_cnt != -1) {
                 break;
             }
 
-            stage_flash = random_16_bg();
-            stage_flash = stage03_flash_tbl[stage_flash];
+            g_state.stage_flash = random_16_bg();
+            g_state.stage_flash = stage03_flash_tbl[g_state.stage_flash];
 
-            if (stage_flash == 0) {
-                rw_dat[0].rwd_ptr = rw_dat[0].brw_ptr;
-                rw_dat[0].rw_cnt = rw_dat[0].rwd_ptr[0];
-                rw3col_ptr = &rw30col[0];
+            if (g_state.stage_flash == 0) {
+                g_state.rw_dat[0].rwd_ptr = g_state.rw_dat[0].brw_ptr;
+                g_state.rw_dat[0].rw_cnt = g_state.rw_dat[0].rwd_ptr[0];
+                g_state.rw3col_ptr = &rw30col[0];
             } else {
-                rw_dat[0].rwd_ptr = &rw31[0];
-                rw_dat[0].rw_cnt = 2;
-                stage_ftimer = stage_flash;
-                rw3col_ptr = rw31col;
+                g_state.rw_dat[0].rwd_ptr = &rw31[0];
+                g_state.rw_dat[0].rw_cnt = 2;
+                g_state.stage_ftimer = g_state.stage_flash;
+                g_state.rw3col_ptr = rw31col;
             }
 
             break;
         }
 
-        rw_dat[0].rwd_ptr += 14;
-        rw3col_ptr++;
-        rw_dat[0].rw_cnt = rw_dat[0].rwd_ptr[0];
+        g_state.rw_dat[0].rwd_ptr += 14;
+        g_state.rw3col_ptr++;
+        g_state.rw_dat[0].rw_cnt = g_state.rw_dat[0].rwd_ptr[0];
 
-        if (rw_dat[0].rw_cnt != -1) {
+        if (g_state.rw_dat[0].rw_cnt != -1) {
             break;
         }
 
-        stage_ftimer--;
+        g_state.stage_ftimer--;
 
-        if (stage_ftimer < 1) {
-            stage_flash = 0;
-            rw_dat[0].rwd_ptr = rw_dat[0].brw_ptr;
-            rw_dat[0].rw_cnt = 2;
-            rw3col_ptr = rw30col;
+        if (g_state.stage_ftimer < 1) {
+            g_state.stage_flash = 0;
+            g_state.rw_dat[0].rwd_ptr = g_state.rw_dat[0].brw_ptr;
+            g_state.rw_dat[0].rw_cnt = 2;
+            g_state.rw3col_ptr = rw30col;
         } else {
-            rw_dat[0].rwd_ptr = rw31;
-            rw_dat[0].rw_cnt = 2;
-            rw3col_ptr = rw31col;
+            g_state.rw_dat[0].rwd_ptr = rw31;
+            g_state.rw_dat[0].rw_cnt = 2;
+            g_state.rw3col_ptr = rw31col;
         }
 
         break;
 
     case 2:
-        if (judge_flag == 1 && bgnm == 1) {
+        if (g_state.judge_flag == 1 && bgnm == 1) {
             vtxColor = 0xFFA0A0A0;
         } else {
             vtxColor = 0xFFFFFFFF;
@@ -282,7 +265,7 @@ void scr_trans(u8 bgnm) {
                 global_index_real = global_index + (((y >> 7) << 3) + (x >> 7));
 
                 if (bgnm == 1) {
-                    global_index_real += yang_ix_plus;
+                    global_index_real += g_state.yang_ix_plus;
                 }
 
                 if (ppgCheckTextureNumber(0, global_index_real) == 0) {
@@ -293,7 +276,7 @@ void scr_trans(u8 bgnm) {
             }
         }
 
-        if (EXE_flag != 0 || Game_pause != 0) {
+        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
             return;
         }
 
@@ -301,20 +284,20 @@ void scr_trans(u8 bgnm) {
             break;
         }
 
-        yang_timer--;
+        g_state.yang_timer--;
 
-        if (yang_timer != 0) {
+        if (g_state.yang_timer != 0) {
             break;
         }
 
-        yang_timer = 4;
-        yang_ix++;
+        g_state.yang_timer = 4;
+        g_state.yang_ix++;
 
-        if (yang_ix == 4) {
-            yang_ix = 0;
+        if (g_state.yang_ix == 4) {
+            g_state.yang_ix = 0;
         }
 
-        yang_ix_plus = yang_ix << 5;
+        g_state.yang_ix_plus = g_state.yang_ix << 5;
         break;
 
     case 3:
@@ -323,16 +306,16 @@ void scr_trans(u8 bgnm) {
                 global_index_real = global_index + (((y >> 7) << 3) + (x >> 7));
 
                 if (bgnm == 1) {
-                    if (rw_dat[1].rwgbix == global_index_real) {
-                        global_index_real = rw_dat[1].gbix;
+                    if (g_state.rw_dat[1].rwgbix == global_index_real) {
+                        global_index_real = g_state.rw_dat[1].gbix;
 
                         if (!ppgCheckTextureNumber(0, global_index_real)) {
                             ppgSetupCurrentDataList(&ppgRwBgList);
                         }
                     } else {
                         for (i = 0; i < 4; i++) {
-                            if (global_index_real == rw_gbix[i]) {
-                                global_index_real = *(rw_dat[0].rwd_ptr + i + 1);
+                            if (global_index_real == g_state.rw_gbix[i]) {
+                                global_index_real = *(g_state.rw_dat[0].rwd_ptr + i + 1);
 
                                 if (!ppgCheckTextureNumber(0, global_index_real)) {
                                     ppgSetupCurrentDataList(&ppgRwBgList);
@@ -349,7 +332,7 @@ void scr_trans(u8 bgnm) {
             }
         }
 
-        if (EXE_flag != 0 || Game_pause != 0) {
+        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
             return;
         }
 
@@ -357,60 +340,60 @@ void scr_trans(u8 bgnm) {
             break;
         }
 
-        rw_dat[0].rw_cnt--;
+        g_state.rw_dat[0].rw_cnt--;
 
-        if (rw_dat[0].rw_cnt == 0) {
-            rw_dat[0].rwd_ptr += 5;
-            rw_dat[0].rw_cnt = rw_dat[0].rwd_ptr[0];
+        if (g_state.rw_dat[0].rw_cnt == 0) {
+            g_state.rw_dat[0].rwd_ptr += 5;
+            g_state.rw_dat[0].rw_cnt = g_state.rw_dat[0].rwd_ptr[0];
 
-            if (rw_dat[0].rw_cnt == -1) {
-                stage_ftimer--;
+            if (g_state.rw_dat[0].rw_cnt == -1) {
+                g_state.stage_ftimer--;
 
-                if (stage_ftimer == 0) {
-                    stage_flash = random_16_bg();
-                    stage_ftimer = random_16_bg();
+                if (g_state.stage_ftimer == 0) {
+                    g_state.stage_flash = random_16_bg();
+                    g_state.stage_ftimer = random_16_bg();
 
-                    switch (stage_flash) {
+                    switch (g_state.stage_flash) {
                     case 0:
                     case 1:
-                        rw_dat[0].rwd_ptr = rw_dat[0].brw_ptr = rw191;
-                        rw_dat[0].rw_cnt = 1;
-                        stage_ftimer = stage19_loop_tbl2[stage_ftimer];
+                        g_state.rw_dat[0].rwd_ptr = g_state.rw_dat[0].brw_ptr = rw191;
+                        g_state.rw_dat[0].rw_cnt = 1;
+                        g_state.stage_ftimer = stage19_loop_tbl2[g_state.stage_ftimer];
                         break;
 
                     case 2:
                     case 3:
-                        rw_dat[0].rwd_ptr = rw_dat[0].brw_ptr = rw192;
-                        rw_dat[0].rw_cnt = 1;
-                        stage_ftimer = stage19_loop_tbl2[stage_ftimer];
+                        g_state.rw_dat[0].rwd_ptr = g_state.rw_dat[0].brw_ptr = rw192;
+                        g_state.rw_dat[0].rw_cnt = 1;
+                        g_state.stage_ftimer = stage19_loop_tbl2[g_state.stage_ftimer];
                         break;
 
                     default:
-                        rw_dat[0].rwd_ptr = rw_dat[0].brw_ptr = rw190;
-                        rw_dat[0].rw_cnt = 2;
-                        stage_ftimer = stage19_loop_tbl1[stage_ftimer];
+                        g_state.rw_dat[0].rwd_ptr = g_state.rw_dat[0].brw_ptr = rw190;
+                        g_state.rw_dat[0].rw_cnt = 2;
+                        g_state.stage_ftimer = stage19_loop_tbl1[g_state.stage_ftimer];
                         break;
                     }
                 } else {
-                    rw_dat[0].rwd_ptr = rw_dat[0].brw_ptr;
-                    rw_dat[0].rw_cnt = rw_dat[0].rwd_ptr[0];
+                    g_state.rw_dat[0].rwd_ptr = g_state.rw_dat[0].brw_ptr;
+                    g_state.rw_dat[0].rw_cnt = g_state.rw_dat[0].rwd_ptr[0];
                 }
             }
         }
 
-        rw_dat[1].rw_cnt--;
+        g_state.rw_dat[1].rw_cnt--;
 
-        if (rw_dat[1].rw_cnt != 0) {
+        if (g_state.rw_dat[1].rw_cnt != 0) {
             break;
         }
 
-        if (rw_dat[1].rwd_ptr[0] == -1) {
-            rw_dat[1].rwd_ptr = rw_dat[1].brw_ptr;
-            rw_dat[1].rw_cnt = *rw_dat[1].rwd_ptr++;
-            rw_dat[1].gbix = *rw_dat[1].rwd_ptr++;
+        if (g_state.rw_dat[1].rwd_ptr[0] == -1) {
+            g_state.rw_dat[1].rwd_ptr = g_state.rw_dat[1].brw_ptr;
+            g_state.rw_dat[1].rw_cnt = *g_state.rw_dat[1].rwd_ptr++;
+            g_state.rw_dat[1].gbix = *g_state.rw_dat[1].rwd_ptr++;
         } else {
-            rw_dat[1].rw_cnt = *rw_dat[1].rwd_ptr++;
-            rw_dat[1].gbix = *rw_dat[1].rwd_ptr++;
+            g_state.rw_dat[1].rw_cnt = *g_state.rw_dat[1].rwd_ptr++;
+            g_state.rw_dat[1].gbix = *g_state.rw_dat[1].rwd_ptr++;
         }
 
         break;
@@ -420,10 +403,10 @@ void scr_trans(u8 bgnm) {
             for (x = xx[0]; x < xx[1]; x += 128) {
                 global_index_real = global_index + (((y >> 7) << 3) + (x >> 7));
 
-                if (nosekae != 0) {
+                if (g_state.nosekae != 0) {
                     for (i = 0; i < 16; i++) {
-                        if (gouki_end_gbix[i] == global_index_real) {
-                            global_index_real = gouki_end_nosekae[nosekae - 1][i];
+                        if (g_state.gouki_end_gbix[i] == global_index_real) {
+                            global_index_real = gouki_end_nosekae[g_state.nosekae - 1][i];
 
                             if (ppgCheckTextureNumber(0, global_index_real) == 0) {
                                 if (ppgCheckTextureNumber(&ppgRwBgTex, global_index_real)) {
@@ -439,10 +422,10 @@ void scr_trans(u8 bgnm) {
                 }
 
                 if (bgnm == 0) {
-                    if (g_kakikae[0]) {
+                    if (g_state.g_kakikae[0]) {
                         for (i = 0; i < 12; i++) {
-                            if (global_index_real == rw_dat[i].rwgbix) {
-                                global_index_real = rw_dat[i].rwd_ptr[g_number[0]];
+                            if (global_index_real == g_state.rw_dat[i].rwgbix) {
+                                global_index_real = g_state.rw_dat[i].rwd_ptr[g_state.g_number[0]];
 
                                 if (ppgCheckTextureNumber(0, global_index_real) == 0) {
                                     if (ppgCheckTextureNumber(&ppgRwBgTex, global_index_real)) {
@@ -457,10 +440,10 @@ void scr_trans(u8 bgnm) {
                         }
                     }
 
-                    if (g_kakikae[1]) {
+                    if (g_state.g_kakikae[1]) {
                         for (i = 12; i < 20; i++) {
-                            if (global_index_real == rw_dat[i].rwgbix) {
-                                global_index_real = rw_dat[i].rwd_ptr[g_number[1]];
+                            if (global_index_real == g_state.rw_dat[i].rwgbix) {
+                                global_index_real = g_state.rw_dat[i].rwd_ptr[g_state.g_number[1]];
 
                                 if (!ppgCheckTextureNumber(0, global_index_real)) {
                                     if (ppgCheckTextureNumber(&ppgRwBgTex, global_index_real)) {
@@ -490,11 +473,11 @@ void scr_trans(u8 bgnm) {
                 global_index_real = global_index + (((y >> 7) << 3) + (x >> 7));
 
                 if (bgnm == 0) {
-                    switch (c_kakikae) {
+                    switch (g_state.c_kakikae) {
                     case 1:
                         for (i = 0; i < 8; i++) {
-                            if (global_index_real == rw_dat[i].rwgbix) {
-                                global_index_real = rw_dat[i].rwd_ptr[c_number];
+                            if (global_index_real == g_state.rw_dat[i].rwgbix) {
+                                global_index_real = g_state.rw_dat[i].rwd_ptr[g_state.c_number];
 
                                 if (!ppgCheckTextureNumber(0, global_index_real)) {
                                     ppgSetupCurrentDataList(&ppgRwBgList);
@@ -508,8 +491,8 @@ void scr_trans(u8 bgnm) {
 
                     case 2:
                         for (i = 8; i < 16; i++) {
-                            if (global_index_real == rw_dat[i].rwgbix) {
-                                global_index_real = rw_dat[i].rwd_ptr[c_number];
+                            if (global_index_real == g_state.rw_dat[i].rwgbix) {
+                                global_index_real = g_state.rw_dat[i].rwd_ptr[g_state.c_number];
 
                                 if (!ppgCheckTextureNumber(0, global_index_real)) {
                                     ppgSetupCurrentDataList(&ppgRwBgList);
@@ -532,15 +515,15 @@ void scr_trans(u8 bgnm) {
     case 7:
         bgDrawOneScreen(bgnm, global_index, &xx[0], &yy[0], -1, palOffset, curDataList);
 
-        if (EXE_flag != 0) {
+        if (g_state.EXE_flag != 0) {
             break;
         }
 
-        if (Game_pause != 0) {
+        if (g_state.Game_pause != 0) {
             break;
         }
 
-        if (rw_bg_flag[bgnm] && rw_num) {
+        if (g_state.rw_bg_flag[bgnm] && g_state.rw_num) {
             bgRWWorkUpdate();
         }
 
@@ -549,7 +532,7 @@ void scr_trans(u8 bgnm) {
 
     case 4:
         if (bgnm == 2) {
-            suzi_pos = bg_pos[2].scr_x_buff.word_pos.h - 320;
+            suzi_pos = g_state.bg_pos[2].scr_x_buff.word_pos.h - 320;
             suzi_pos = suzi_pos * -0.5f;
             ppgSetupCurrentDataList(&ppgAkaneList);
 
@@ -572,7 +555,7 @@ void scr_trans(u8 bgnm) {
     default:
         bgDrawOneScreen(bgnm, global_index, &xx[0], &yy[0], -1, palOffset, curDataList);
 
-        if (EXE_flag == 0 && Game_pause == 0 && rw_bg_flag[bgnm] && rw_num) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0 && g_state.rw_bg_flag[bgnm] && g_state.rw_num) {
             bgRWWorkUpdate();
         }
 
@@ -584,17 +567,17 @@ void scr_trans(u8 bgnm) {
 void bgRWWorkUpdate() {
     s32 i;
 
-    for (i = 0; i < rw_num; i++) {
-        rw_dat[i].rw_cnt--;
+    for (i = 0; i < g_state.rw_num; i++) {
+        g_state.rw_dat[i].rw_cnt--;
 
-        if (rw_dat[i].rw_cnt == 0) {
-            if (*rw_dat[i].rwd_ptr == -1) {
-                rw_dat[i].rwd_ptr = rw_dat[i].brw_ptr;
-                rw_dat[i].rw_cnt = *rw_dat[i].rwd_ptr++;
-                rw_dat[i].gbix = *rw_dat[i].rwd_ptr++;
+        if (g_state.rw_dat[i].rw_cnt == 0) {
+            if (*g_state.rw_dat[i].rwd_ptr == -1) {
+                g_state.rw_dat[i].rwd_ptr = g_state.rw_dat[i].brw_ptr;
+                g_state.rw_dat[i].rw_cnt = *g_state.rw_dat[i].rwd_ptr++;
+                g_state.rw_dat[i].gbix = *g_state.rw_dat[i].rwd_ptr++;
             } else {
-                rw_dat[i].rw_cnt = *rw_dat[i].rwd_ptr++;
-                rw_dat[i].gbix = *rw_dat[i].rwd_ptr++;
+                g_state.rw_dat[i].rw_cnt = *g_state.rw_dat[i].rwd_ptr++;
+                g_state.rw_dat[i].gbix = *g_state.rw_dat[i].rwd_ptr++;
             }
         }
     }
@@ -608,10 +591,10 @@ void bgDrawOneScreen(s32 bgnum, s32 gixbase, s32* xx, s32* yy, s32 /* unused */,
         for (x = xx[0]; x < xx[1]; x += 128) {
             gbix = ((y >> 7) << 3) + (x >> 7) + gixbase;
 
-            if (rw_bg_flag[bgnum] && rw_num) {
-                for (i = 0; i < rw_num; i++) {
-                    if (bgnum == rw_dat[i].bg_num && gbix == rw_dat[i].rwgbix) {
-                        gbix = rw_dat[i].gbix;
+            if (g_state.rw_bg_flag[bgnum] && g_state.rw_num) {
+                for (i = 0; i < g_state.rw_num; i++) {
+                    if (bgnum == g_state.rw_dat[i].bg_num && gbix == g_state.rw_dat[i].rwgbix) {
+                        gbix = g_state.rw_dat[i].gbix;
                         if (!(ppgCheckTextureNumber(0, gbix))) {
                             ppgSetupCurrentDataList(&ppgRwBgList);
                         }
@@ -637,7 +620,7 @@ void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPa
         }
 
         if (RENDERER_HAS_PLUGIN()) {
-            void* hd_tex_plugin = g_renderer_plugin->LoadBGTileOverride(bg_texture_type, bg_w.stage, gbix);
+            void* hd_tex_plugin = g_renderer_plugin->LoadBGTileOverride(bg_texture_type, g_state.bg_w.stage, gbix);
             if (hd_tex_plugin != NULL) {
                 float dx = scrDrawPos[0].x;
                 float dy = scrDrawPos[0].y;
@@ -742,20 +725,20 @@ void scr_trans_sub2(s32 x, s32 y, s32 suzi) {
 /** @brief Calculate scroll offset for a background layer (horizontal). */
 void scr_calc(u8 bgnm) {
     njUnitMatrix(NULL);
-    njScale(NULL, scr_sc, scr_sc, 1.0f);
+    njScale(NULL, g_state.scr_sc, g_state.scr_sc, 1.0f);
     njTranslate(NULL, 0.0f, 224.0f, 0.0f);
     njScale(NULL, 1.0f, -1.0f, 1.0f);
-    njTranslate(NULL, (s16)-bg_prm[bgnm].bg_h_shift, (s16)-bg_prm[bgnm].bg_v_shift, 0.0f);
+    njTranslate(NULL, (s16)-g_state.bg_prm[bgnm].bg_h_shift, (s16)-g_state.bg_prm[bgnm].bg_v_shift, 0.0f);
     njGetMatrix(&BgMATRIX[bgnm + 1]);
 }
 
 /** @brief Calculate scroll offset for a background layer (vertical). */
 void scr_calc2(u8 bgnm) {
     njUnitMatrix(NULL);
-    njScale(NULL, scr_sc, scr_sc, 1.0f);
+    njScale(NULL, g_state.scr_sc, g_state.scr_sc, 1.0f);
     njTranslate(NULL, 0.0f, 224.0f, 0.0f);
     njScale(NULL, 1.0f, -1.0f, 1.0f);
-    njTranslate(NULL, (s16)-end_prm[bgnm + 1].bg_h_shift, (s16)-end_prm[bgnm + 1].bg_v_shift, 0.0f);
+    njTranslate(NULL, (s16)-g_state.end_prm[bgnm + 1].bg_h_shift, (s16)-g_state.end_prm[bgnm + 1].bg_v_shift, 0.0f);
     njGetMatrix(&BgMATRIX[bgnm + 1]);
 }
 
@@ -769,10 +752,10 @@ void Pause_Family_On() {
 
 /** @brief Initialize the zoom frame system. */
 void Zoomf_Init() {
-    zoom_add = 64;
-    scr_sc = 1.0f;
-    scrn_adgjust_x = 0;
-    scrn_adgjust_y = 0;
+    g_state.zoom_add = 64;
+    g_state.scr_sc = 1.0f;
+    g_state.scrn_adgjust_x = 0;
+    g_state.scrn_adgjust_y = 0;
 }
 
 /** @brief Set the zoom value for the stage frame. */
@@ -781,12 +764,12 @@ void Zoom_Value_Set(u16 zadd) {
     u16 add;
 
     if (zadd < 0x40) {
-        scr_sc = 64.0f / zadd;
+        g_state.scr_sc = 64.0f / zadd;
         return;
     }
 
     if (zadd == 0x40) {
-        scr_sc = 1.0f;
+        g_state.scr_sc = 1.0f;
         return;
     }
 
@@ -794,30 +777,30 @@ void Zoom_Value_Set(u16 zadd) {
     work = 1.0f / (64.0f / add);
     add = zadd & 0xFFC0;
     add >>= 6;
-    scr_sc = 1.0f / (add + work);
+    g_state.scr_sc = 1.0f / (add + work);
 }
 
 /** @brief Expand the visible stage frame outward. */
 void Frame_Up(u16 x, u16 y, u16 add) {
-    if (zoom_add < 2) {
-        scr_sc = 64.0f;
+    if (g_state.zoom_add < 2) {
+        g_state.scr_sc = 64.0f;
         return;
     }
 
-    zoom_add -= add;
-    Zoom_Value_Set(zoom_add);
+    g_state.zoom_add -= add;
+    Zoom_Value_Set(g_state.zoom_add);
     Frame_Adgjust(x, y);
 }
 
 /** @brief Shrink the visible stage frame inward. */
 void Frame_Down(u16 x, u16 y, u16 add) {
-    if (zoom_add >= 0xFFC0) {
-        scr_sc = 0.0009775171f;
+    if (g_state.zoom_add >= 0xFFC0) {
+        g_state.scr_sc = 0.0009775171f;
         return;
     }
 
-    zoom_add += add;
-    Zoom_Value_Set(zoom_add);
+    g_state.zoom_add += add;
+    Zoom_Value_Set(g_state.zoom_add);
     Frame_Adgjust(x, y);
 }
 
@@ -825,43 +808,43 @@ void Frame_Down(u16 x, u16 y, u16 add) {
 void Frame_Adgjust(u16 pos_x, u16 pos_y) {
     u16 buff;
 
-    if (zoom_add >= 0x40) {
-        buff = zoom_add;
+    if (g_state.zoom_add >= 0x40) {
+        buff = g_state.zoom_add;
         buff -= 0x40;
         buff *= pos_x;
         buff >>= 6;
         buff &= 0x1FF;
-        scrn_adgjust_x = -buff;
+        g_state.scrn_adgjust_x = -buff;
     } else {
         buff = 0x40;
-        buff -= zoom_add;
+        buff -= g_state.zoom_add;
         buff *= pos_x;
         buff >>= 6;
         buff &= 0x1FF;
-        scrn_adgjust_x = buff;
+        g_state.scrn_adgjust_x = buff;
     }
 
-    if (zoom_add >= 0x40) {
-        buff = zoom_add;
+    if (g_state.zoom_add >= 0x40) {
+        buff = g_state.zoom_add;
         buff -= 0x40;
         buff *= pos_y + 0x15;
         buff >>= 6;
         buff &= 0x1FF;
-        scrn_adgjust_y = -buff;
+        g_state.scrn_adgjust_y = -buff;
 
-        if (scrn_adgjust_y == -0x14) {
-            scrn_adgjust_y += 1;
+        if (g_state.scrn_adgjust_y == -0x14) {
+            g_state.scrn_adgjust_y += 1;
         }
     } else {
         buff = 0x40;
-        buff -= zoom_add;
+        buff -= g_state.zoom_add;
         buff *= pos_y + 0x15;
         buff >>= 6;
         buff &= 0x1FF;
-        scrn_adgjust_y = buff;
+        g_state.scrn_adgjust_y = buff;
 
-        if (scrn_adgjust_y == -0x14) {
-            scrn_adgjust_y += 1;
+        if (g_state.scrn_adgjust_y == -0x14) {
+            g_state.scrn_adgjust_y += 1;
         }
     }
 }
@@ -871,21 +854,21 @@ void Scrn_Pos_Init() {
     u8 i;
 
     for (i = 0; i < 8; i++) {
-        bg_pos[i].scr_x.long_pos = 0;
-        bg_pos[i].scr_x_buff.long_pos = 0;
-        bg_pos[i].scr_y.long_pos = 0;
-        bg_pos[i].scr_y_buff.long_pos = 0;
-        bg_prm[i].bg_h_shift = 0;
-        bg_prm[i].bg_v_shift = 0;
-        end_prm[i].bg_h_shift = 0;
-        end_prm[i].bg_v_shift = 0;
+        g_state.bg_pos[i].scr_x.long_pos = 0;
+        g_state.bg_pos[i].scr_x_buff.long_pos = 0;
+        g_state.bg_pos[i].scr_y.long_pos = 0;
+        g_state.bg_pos[i].scr_y_buff.long_pos = 0;
+        g_state.bg_prm[i].bg_h_shift = 0;
+        g_state.bg_prm[i].bg_v_shift = 0;
+        g_state.end_prm[i].bg_h_shift = 0;
+        g_state.end_prm[i].bg_v_shift = 0;
     }
 }
 
 /** @brief Set scroll delta for a background layer. */
 void Scrn_Move_Set(s8 bgnm, s16 x, s16 y) {
-    bg_pos[bgnm].scr_x.word_pos.h = x;
-    bg_pos[bgnm].scr_y.word_pos.h = y + 16;
+    g_state.bg_pos[bgnm].scr_x.word_pos.h = x;
+    g_state.bg_pos[bgnm].scr_y.word_pos.h = y + 16;
 }
 
 /** @brief Initialize parallax family speed tables. */
@@ -893,58 +876,58 @@ void Family_Init() {
     u8 i;
 
     for (i = 0; i < 8; i++) {
-        fm_pos[i].family_x.long_pos = 0;
-        fm_pos[i].family_y.long_pos = 0;
-        fm_pos[i].family_x_buff.long_pos = 0;
-        fm_pos[i].family_y_buff.long_pos = 0;
+        g_state.fm_pos[i].family_x.long_pos = 0;
+        g_state.fm_pos[i].family_y.long_pos = 0;
+        g_state.fm_pos[i].family_x_buff.long_pos = 0;
+        g_state.fm_pos[i].family_y_buff.long_pos = 0;
     }
 }
 
 /** @brief Set parallax read position for a family layer. */
 void Family_Set_R(s8 fmnm, s16 x, s16 y) {
-    fm_pos[fmnm].family_x.word_pos.h = x;
-    fm_pos[fmnm].family_y.word_pos.h = y;
-    fm_pos[fmnm].family_x_buff.word_pos.h = x;
-    fm_pos[fmnm].family_y_buff.word_pos.h = y;
+    g_state.fm_pos[fmnm].family_x.word_pos.h = x;
+    g_state.fm_pos[fmnm].family_y.word_pos.h = y;
+    g_state.fm_pos[fmnm].family_x_buff.word_pos.h = x;
+    g_state.fm_pos[fmnm].family_y_buff.word_pos.h = y;
 }
 
 /** @brief Set parallax write position for a family layer. */
 void Family_Set_W(s8 fmnm, s16 x, s16 y) {
-    fm_pos[fmnm].family_x.word_pos.h = x;
-    fm_pos[fmnm].family_y.word_pos.h = y;
-    fm_pos[fmnm].family_x_buff.word_pos.h = x;
-    fm_pos[fmnm].family_y_buff.word_pos.h = y;
+    g_state.fm_pos[fmnm].family_x.word_pos.h = x;
+    g_state.fm_pos[fmnm].family_y.word_pos.h = y;
+    g_state.fm_pos[fmnm].family_x_buff.word_pos.h = x;
+    g_state.fm_pos[fmnm].family_y_buff.word_pos.h = y;
 }
 
 /** @brief Enable a background layer for reading. */
 void Bg_On_R(u16 s_prm) {
-    Screen_Switch |= s_prm;
-    Screen_Switch_Buffer = Screen_Switch;
+    g_state.Screen_Switch |= s_prm;
+    g_state.Screen_Switch_Buffer = g_state.Screen_Switch;
 }
 
 /** @brief Enable a background layer for writing. */
 void Bg_On_W(u16 s_prm) {
-    Screen_Switch |= s_prm;
-    Screen_Switch_Buffer = Screen_Switch;
+    g_state.Screen_Switch |= s_prm;
+    g_state.Screen_Switch_Buffer = g_state.Screen_Switch;
 }
 
 /** @brief Disable a background layer for reading. */
 void Bg_Off_R(u16 s_prm) {
     s_prm = ~s_prm;
-    Screen_Switch &= s_prm;
-    Screen_Switch_Buffer = Screen_Switch;
+    g_state.Screen_Switch &= s_prm;
+    g_state.Screen_Switch_Buffer = g_state.Screen_Switch;
 }
 
 /** @brief Disable a background layer for writing. */
 void Bg_Off_W(u16 s_prm) {
     s_prm = ~s_prm;
-    Screen_Switch &= s_prm;
-    Screen_Switch_Buffer = Screen_Switch;
+    g_state.Screen_Switch &= s_prm;
+    g_state.Screen_Switch_Buffer = g_state.Screen_Switch;
 }
 
 /** @brief Commit pending scroll positions for all layers. */
 void Scrn_Renew() {
-    Screen_Switch_Buffer = Screen_Switch;
+    g_state.Screen_Switch_Buffer = g_state.Screen_Switch;
 }
 
 /** @brief Apply parallax family offsets to all layers. */
@@ -952,10 +935,10 @@ void Irl_Family() {
     u8 i;
 
     for (i = 0; i < 8; i++) {
-        fm_pos[i].family_x_buff.long_pos = fm_pos[i].family_x.long_pos;
-        fm_pos[i].family_y_buff.long_pos = fm_pos[i].family_y.long_pos;
-        bg_pos[i].scr_x_buff.long_pos = bg_pos[i].scr_x.long_pos;
-        bg_pos[i].scr_y_buff.long_pos = bg_pos[i].scr_y.long_pos;
+        g_state.fm_pos[i].family_x_buff.long_pos = g_state.fm_pos[i].family_x.long_pos;
+        g_state.fm_pos[i].family_y_buff.long_pos = g_state.fm_pos[i].family_y.long_pos;
+        g_state.bg_pos[i].scr_x_buff.long_pos = g_state.bg_pos[i].scr_x.long_pos;
+        g_state.bg_pos[i].scr_y_buff.long_pos = g_state.bg_pos[i].scr_y.long_pos;
     }
 }
 
@@ -964,10 +947,10 @@ void Irl_Scrn() {
     s8 i;
 
     for (i = 0; i < 8; i++) {
-        bg_prm[i].bg_h_shift = scrn_adgjust_x + bg_pos[i].scr_x_buff.word_pos.h;
-        end_prm[i].bg_h_shift = scrn_adgjust_x + fm_pos[i].family_x_buff.word_pos.h;
-        bg_prm[i].bg_v_shift = bg_pos[i].scr_y_buff.word_pos.h - scrn_adgjust_y;
-        end_prm[i].bg_v_shift = fm_pos[i].family_y_buff.word_pos.h - scrn_adgjust_y;
+        g_state.bg_prm[i].bg_h_shift = g_state.scrn_adgjust_x + g_state.bg_pos[i].scr_x_buff.word_pos.h;
+        g_state.end_prm[i].bg_h_shift = g_state.scrn_adgjust_x + g_state.fm_pos[i].family_x_buff.word_pos.h;
+        g_state.bg_prm[i].bg_v_shift = g_state.bg_pos[i].scr_y_buff.word_pos.h - g_state.scrn_adgjust_y;
+        g_state.end_prm[i].bg_v_shift = g_state.fm_pos[i].family_y_buff.word_pos.h - g_state.scrn_adgjust_y;
     }
 }
 
@@ -978,7 +961,7 @@ void Family_Move() {
     u8 i;
     u8 mask;
 
-    fam_ix = use_family[bg_w.stage];
+    fam_ix = use_family[g_state.bg_w.stage];
     mask = 0x80;
 
     for (i = 0; i < 8; i++, assign = mask >>= 1) {
@@ -994,7 +977,7 @@ void Family_Move() {
 
 /** @brief Update parallax family positions for ending sequences. */
 void Ending_Family_Move() {
-    u8 mask_val = ending_use_family[end_w.type];
+    u8 mask_val = ending_use_family[g_state.end_w.type];
     u8 assign;
     u8 i;
     u8 mask = 0x80;
@@ -1011,7 +994,7 @@ void Ending_Family_Move() {
 
 /** @brief Toggle background display on or off. */
 void Bg_Disp_Switch(u8 on_off) {
-    bg_disp_off = on_off;
+    g_state.bg_disp_off = on_off;
 }
 
 /** @brief Toggle the Shin Gouki palette on stage 14 by XORing the diff against ColorRAM.

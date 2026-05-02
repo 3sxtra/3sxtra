@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effe4.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
@@ -20,7 +21,7 @@ void effect_E4_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (mwk->wu.E4_work_index != ewk->wu.myself || ewk->wu.dead_f != 0 ||
-            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS)) {
+            (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
@@ -31,11 +32,11 @@ void effect_E4_move(WORK_Other* ewk) {
 
         mwk->init_E4_flag = 0;
 
-        if (Mode_Type != MODE_PARRY_TRAINING) {
+        if (g_state.Mode_Type != MODE_PARRY_TRAINING) {
             break;
         }
 
-        if (Training->contents[1][1][3] == 0 || mwk->wu.id == New_Challenger) {
+        if (Training->contents[1][1][3] == 0 || mwk->wu.id == g_state.New_Challenger) {
             vib_sel[mwk->wu.id] = 0;
         }
 
@@ -43,7 +44,7 @@ void effect_E4_move(WORK_Other* ewk) {
         mwk->spmv_ng_flag &= 0xFFFEFFFF;
         num = 0;
 
-        if (New_Challenger == mwk->wu.id) {
+        if (g_state.New_Challenger == mwk->wu.id) {
             num = Training->contents[1][0][1];
         } else {
             num = Training->contents[1][0][3];
@@ -78,7 +79,7 @@ void effect_E4_move(WORK_Other* ewk) {
             break;
         }
 
-        if (mwk->wu.id == New_Challenger || Training->contents[1][0][2] == 0) {
+        if (mwk->wu.id == g_state.New_Challenger || Training->contents[1][0][2] == 0) {
             mwk->spmv_ng_flag |= 0x80;
         } else {
             mwk->spmv_ng_flag &= ~0x80;

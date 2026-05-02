@@ -8,6 +8,7 @@
  * SDL2D) are handled here so sdl_app.c only calls high-level entry points.
  */
 #include "port/sdl/app/sdl_app_bezel.h"
+#include "game_state.h"
 
 #include "port/rendering/sdl_bezel.h"
 #include "port/sdl/app/sdl_app.h"
@@ -154,11 +155,11 @@ static SDL_GPUShader* CreateBezelGPUShader(SDL_GPUDevice* dev, const char* filen
 
 /** @brief Update character tracking and mark dirty if changed. */
 static void update_character_tracking(void) {
-    int p1 = My_char[0];
-    int p2 = My_char[1];
+    int p1 = g_state.My_char[0];
+    int p2 = g_state.My_char[1];
 
     /* Only show character-specific bezels during actual gameplay states.
-     * G_No[0]==2 = active game.  G_No[1] state map:
+     * g_state.G_No[0]==2 = active game.  g_state.G_No[1] state map:
      *   0  = title screen         — common bezels
      *   1  = character select     — common bezels
      *   2  = pre-round setup      — character bezels ✓
@@ -168,12 +169,12 @@ static void update_character_tracking(void) {
      *   6  = game over            — character bezels ✓
      *   7  = continue scene       — character bezels ✓
      *   8  = ending sequence      — character bezels ✓
-     *   9  = bonus stage          — skip (My_char overwritten)
+     *   9  = bonus stage          — skip (g_state.My_char overwritten)
      *   10 = post-bonus           — character bezels ✓
      *   11 = next Q select        — character bezels ✓
      *   12 = menu idle            — common bezels
      */
-    bool in_gameplay = (G_No[0] == 2 && G_No[1] >= 2 && G_No[1] <= 11 && G_No[1] != 9);
+    bool in_gameplay = (g_state.G_No[0] == 2 && g_state.G_No[1] >= 2 && g_state.G_No[1] <= 11 && g_state.G_No[1] != 9);
 
     if (!in_gameplay) {
         p1 = -1;

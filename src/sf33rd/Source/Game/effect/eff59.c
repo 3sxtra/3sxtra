@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff59.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -73,8 +74,8 @@ void effect_59_move(WORK_Other* ewk) {
         return;
 
     case 4:
-        ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
-        ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos - 16;
+        ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
+        ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos - 16;
         EFF59_Trans(ewk);
         return;
 
@@ -180,7 +181,7 @@ static s32 Check_Break_Into_59(WORK_Other* ewk) {
         return 0;
     }
 
-    if (Break_Into) {
+    if (g_state.Break_Into) {
         ewk->wu.routine_no[0] = 4;
         ewk->wu.my_family = 1;
         ewk->wu.position_z = 8;

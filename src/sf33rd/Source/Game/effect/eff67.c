@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff67.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"

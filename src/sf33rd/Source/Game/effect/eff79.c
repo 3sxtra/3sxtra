@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff79.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -65,8 +66,8 @@ void effect_79_move(WORK_Other* ewk) {
     case 2:
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[0] = 5;
-            Move_Super_Arts[ewk->master_id]--;
-            Select_Arts[ewk->master_id]--;
+            g_state.Move_Super_Arts[ewk->master_id]--;
+            g_state.Select_Arts[ewk->master_id]--;
             effect_80_init(ewk, ewk->master_id, ewk->master_player, ewk->wu.my_family - 1);
         }
 
@@ -106,8 +107,8 @@ void effect_79_move(WORK_Other* ewk) {
     case 4:
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[0]++;
-            Move_Super_Arts[ewk->master_id]--;
-            Select_Arts[ewk->master_id]--;
+            g_state.Move_Super_Arts[ewk->master_id]--;
+            g_state.Select_Arts[ewk->master_id]--;
             effect_80_init(ewk, ewk->master_id, ewk->master_player, ewk->wu.my_family - 1);
         }
 
@@ -116,13 +117,13 @@ void effect_79_move(WORK_Other* ewk) {
     case 5:
         switch (ewk->wu.routine_no[1]) {
         case 0:
-            Plate_Disposal_No[ewk->master_id][ewk->master_player] = 0;
+            g_state.Plate_Disposal_No[ewk->master_id][ewk->master_player] = 0;
 
             if (Check_Play_Status_79(ewk)) {
                 break;
             }
 
-            switch (Moving_Plate[ewk->master_id]) {
+            switch (g_state.Moving_Plate[ewk->master_id]) {
             case 1:
                 switch (ewk->wu.hit_quake) {
                 case 0:
@@ -197,8 +198,8 @@ void effect_79_move(WORK_Other* ewk) {
             ewk->wu.routine_no[1]++;
             ewk->wu.routine_no[5] = 0;
             ewk->wu.routine_no[6] = 1;
-            ewk->wu.vital_new = Plate_X[ewk->master_id][0];
-            ewk->wu.direction = Plate_Y[ewk->master_id][0];
+            ewk->wu.vital_new = g_state.Plate_X[ewk->master_id][0];
+            ewk->wu.direction = g_state.Plate_Y[ewk->master_id][0];
             ewk->wu.mvxy.a[1].sp = 0x20000;
             ewk->wu.mvxy.d[1].sp = 0x2000;
 
@@ -246,10 +247,10 @@ void effect_79_move(WORK_Other* ewk) {
 
             if (ewk->wu.cg_type == 2) {
                 ewk->wu.routine_no[1]++;
-                Sel_Arts_Complete[ewk->master_id] |= 0x8000;
+                g_state.Sel_Arts_Complete[ewk->master_id] |= 0x8000;
 
                 if (ewk->wu.xyz[0].disp.pos ==
-                    bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][0]) {
+                    g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][0]) {
                     ewk->wu.routine_no[0] = 8;
                 }
             }
@@ -265,7 +266,7 @@ void effect_79_move(WORK_Other* ewk) {
             ewk->wu.routine_no[5] = 0;
             ewk->wu.routine_no[6] = 1;
 
-            if (VS_Index[ewk->master_id] < 9) {
+            if (g_state.VS_Index[ewk->master_id] < 9) {
                 xx = 0;
             } else {
                 xx = 2;
@@ -303,7 +304,7 @@ void effect_79_move(WORK_Other* ewk) {
         break;
 
     case 9:
-        if (!Suicide[0]) {
+        if (!g_state.Suicide[0]) {
             break;
         }
 
@@ -325,36 +326,36 @@ void effect_79_move(WORK_Other* ewk) {
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos;
-    PP_Priority[ewk->master_id][ewk->master_player] = ewk->wu.dmcal_m;
+    g_state.PP_Priority[ewk->master_id][ewk->master_player] = ewk->wu.dmcal_m;
     if (!rmlui_char_select_visible)
         sort_push_request4(&ewk->wu);
 }
 
 static s32 Check_Play_Status_79(WORK_Other* ewk) {
-    if (ewk->wu.dir_old == 0 && Play_Type == 1) {
+    if (ewk->wu.dir_old == 0 && g_state.Play_Type == 1) {
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
         ewk->wu.routine_no[5] = 0;
         ewk->wu.routine_no[6] = 1;
         ewk->wu.routine_no[7] = 0;
-        Plate_Disposal_No[ewk->master_id][ewk->master_player] = 1;
+        g_state.Plate_Disposal_No[ewk->master_id][ewk->master_player] = 1;
         ewk->wu.dir_timer = 1;
-        ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
-                            Plate_Pos_Data_79[Play_Type][ewk->master_id][ewk->wu.dmcal_m][0];
-        ewk->wu.direction = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
-                            Plate_Pos_Data_79[Play_Type][ewk->master_id][ewk->wu.dmcal_m][1];
-        OK_Moving_SA_Plate[ewk->master_id] = 3;
+        ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                            Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.dmcal_m][0];
+        ewk->wu.direction = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                            Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.dmcal_m][1];
+        g_state.OK_Moving_SA_Plate[ewk->master_id] = 3;
         ewk->wu.mvxy.a[1].sp = -0x8000;
         ewk->wu.mvxy.d[1].sp = -0xE000;
 
         if (ewk->wu.xyz[0].disp.pos < ewk->wu.vital_new) {
             ewk->wu.mvxy.a[0].sp = 0x10000;
             ewk->wu.mvxy.d[0].sp = 0x30000;
-            Moving_Plate[ewk->master_id] = 8;
+            g_state.Moving_Plate[ewk->master_id] = 8;
         } else {
             ewk->wu.mvxy.a[0].sp = -0x10000;
             ewk->wu.mvxy.d[0].sp = -0x30000;
-            Moving_Plate[ewk->master_id] = 4;
+            g_state.Moving_Plate[ewk->master_id] = 4;
         }
 
         return ewk->wu.dir_old = 99;
@@ -380,13 +381,13 @@ static void Move_Move_79(WORK_Other* ewk) {
 
         if (arrived[0] != 0 && arrived[1] != 0) {
             ewk->wu.routine_no[2]++;
-            OK_Moving_SA_Plate[ewk->master_id]--;
+            g_state.OK_Moving_SA_Plate[ewk->master_id]--;
         }
 
         break;
 
     case 2:
-        if (OK_Moving_SA_Plate[ewk->master_id] == 0) {
+        if (g_state.OK_Moving_SA_Plate[ewk->master_id] == 0) {
             ewk->wu.routine_no[2]++;
         }
 
@@ -395,13 +396,13 @@ static void Move_Move_79(WORK_Other* ewk) {
     case 3:
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[2] = 0;
-        Moving_Plate[ewk->master_id] = 0;
+        g_state.Moving_Plate[ewk->master_id] = 0;
         break;
     }
 
     if (ewk->wu.hit_quake == 0) {
-        Plate_X[ewk->master_id][0] = ewk->wu.xyz[0].disp.pos;
-        Plate_Y[ewk->master_id][0] = ewk->wu.xyz[1].disp.pos;
+        g_state.Plate_X[ewk->master_id][0] = ewk->wu.xyz[0].disp.pos;
+        g_state.Plate_Y[ewk->master_id][0] = ewk->wu.xyz[1].disp.pos;
     }
 }
 
@@ -412,14 +413,14 @@ static void Setup_Move_79(WORK_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_
     ewk->wu.routine_no[6] = 1;
     ewk->wu.routine_no[7] = 0;
     ewk->wu.dir_timer = 1;
-    ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
-                        Plate_Pos_Data_79[Play_Type][ewk->master_id][ewk->wu.dmcal_m][0];
-    ewk->wu.direction = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
-                        Plate_Pos_Data_79[Play_Type][ewk->master_id][ewk->wu.dmcal_m][1];
+    ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                        Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.dmcal_m][0];
+    ewk->wu.direction = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                        Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.dmcal_m][1];
     ewk->wu.mvxy.a[1].sp = Y_Value;
     ewk->wu.mvxy.d[1].sp = 0;
-    Plate_Disposal_No[ewk->master_id][ewk->master_player] = 1;
-    OK_Priority[ewk->master_id] = 0;
+    g_state.Plate_Disposal_No[ewk->master_id][ewk->master_player] = 1;
+    g_state.OK_Priority[ewk->master_id] = 0;
     ewk->wu.mvxy.a[0].sp = X_Value;
 
     if (!Option) {
@@ -457,14 +458,14 @@ static void Move_79(WORK_Other* ewk) {
         if (arrived[0] != 0 && arrived[1] != 0) {
             ewk->wu.routine_no[2]++;
             ewk->wu.hit_quake = ewk->wu.dmcal_m;
-            Moving_Plate_Counter[ewk->master_id]--;
+            g_state.Moving_Plate_Counter[ewk->master_id]--;
             ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->wu.hit_quake] + 35;
         }
 
         break;
 
     case 2:
-        if (Moving_Plate_Counter[ewk->master_id] == 0) {
+        if (g_state.Moving_Plate_Counter[ewk->master_id] == 0) {
             ewk->wu.routine_no[2]++;
         }
 
@@ -473,7 +474,7 @@ static void Move_79(WORK_Other* ewk) {
     case 3:
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[2] = 0;
-        Moving_Plate[ewk->master_id] = 0;
+        g_state.Moving_Plate[ewk->master_id] = 0;
         break;
     }
 }
@@ -481,7 +482,7 @@ static void Move_79(WORK_Other* ewk) {
 static void Check_Priority(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[7]) {
     case 0:
-        if (OK_Priority[ewk->master_id] == 0) {
+        if (g_state.OK_Priority[ewk->master_id] == 0) {
             break;
         }
 
@@ -534,7 +535,7 @@ static s32 EFF79_Move_Y(WORK_Other* ewk) {
 
         if (0 > ewk->wu.mvxy.a[1].sp) {
             if (ewk->wu.vital_old >= ewk->wu.xyz[1].disp.pos) {
-                OK_Priority[ewk->master_id] = 1;
+                g_state.OK_Priority[ewk->master_id] = 1;
                 ewk->wu.routine_no[5] = 2;
                 ewk->wu.routine_no[6]++;
                 ewk->wu.routine_no[7] = 99;
@@ -550,7 +551,7 @@ static s32 EFF79_Move_Y(WORK_Other* ewk) {
                 Setup_Command_Name(ewk);
             }
         } else if (ewk->wu.vital_old <= ewk->wu.xyz[1].disp.pos) {
-            OK_Priority[ewk->master_id] = 1;
+            g_state.OK_Priority[ewk->master_id] = 1;
             ewk->wu.routine_no[5] = 2;
             ewk->wu.routine_no[6]++;
             ewk->wu.routine_no[7] = 99;
@@ -584,35 +585,35 @@ static s32 EFF79_Move_Y(WORK_Other* ewk) {
 }
 
 static void Setup_Command_Name(WORK_Other* ewk) {
-    if (Moving_Plate[ewk->master_id] == 2) {
-        Disp_Command_Name[ewk->master_id][ewk->master_player] = 0;
+    if (g_state.Moving_Plate[ewk->master_id] == 2) {
+        g_state.Disp_Command_Name[ewk->master_id][ewk->master_player] = 0;
 
         switch (ewk->master_player) {
         case 0:
-            Disp_Command_Name[ewk->master_id][1] = 1;
-            Disp_Command_Name[ewk->master_id][2] = 0;
+            g_state.Disp_Command_Name[ewk->master_id][1] = 1;
+            g_state.Disp_Command_Name[ewk->master_id][2] = 0;
             break;
 
         case 1:
-            Disp_Command_Name[ewk->master_id][2] = 1;
-            Disp_Command_Name[ewk->master_id][0] = 0;
+            g_state.Disp_Command_Name[ewk->master_id][2] = 1;
+            g_state.Disp_Command_Name[ewk->master_id][0] = 0;
             break;
 
         default:
-            Disp_Command_Name[ewk->master_id][0] = 1;
-            Disp_Command_Name[ewk->master_id][1] = 0;
+            g_state.Disp_Command_Name[ewk->master_id][0] = 1;
+            g_state.Disp_Command_Name[ewk->master_id][1] = 0;
             break;
         }
     } else {
-        Disp_Command_Name[ewk->master_id][0] = 0;
-        Disp_Command_Name[ewk->master_id][1] = 0;
-        Disp_Command_Name[ewk->master_id][2] = 0;
-        Disp_Command_Name[ewk->master_id][ewk->master_player] = 1;
+        g_state.Disp_Command_Name[ewk->master_id][0] = 0;
+        g_state.Disp_Command_Name[ewk->master_id][1] = 0;
+        g_state.Disp_Command_Name[ewk->master_id][2] = 0;
+        g_state.Disp_Command_Name[ewk->master_id][ewk->master_player] = 1;
     }
 }
 
 static s32 Select_End_Sub_79(WORK_Other* ewk) {
-    if (Sel_Arts_Complete[ewk->master_id] == 0) {
+    if (g_state.Sel_Arts_Complete[ewk->master_id] == 0) {
         return 0;
     }
 
@@ -621,8 +622,8 @@ static s32 Select_End_Sub_79(WORK_Other* ewk) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.dir_timer = 5;
         Extra_Counter[ewk->master_id] = 2;
-        Plate_X[ewk->master_id][0] = ewk->wu.xyz[0].disp.pos;
-        Plate_Y[ewk->master_id][0] = ewk->wu.xyz[1].disp.pos;
+        g_state.Plate_X[ewk->master_id][0] = ewk->wu.xyz[0].disp.pos;
+        g_state.Plate_Y[ewk->master_id][0] = ewk->wu.xyz[1].disp.pos;
     } else if (Extra_Counter[ewk->master_id]) {
         ewk->wu.routine_no[0] = 6;
         ewk->wu.routine_no[1] = 0;
@@ -656,7 +657,7 @@ s32 effect_79_init(s16 pl_id, s16 plate_id, s16 pos_id, s16 time, s16 Target_BG)
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->master_id = pl_id;
     ewk->wu.char_index = 14;
-    ewk->wu.dir_old = Play_Type;
+    ewk->wu.dir_old = g_state.Play_Type;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
 
@@ -669,15 +670,15 @@ s32 effect_79_init(s16 pl_id, s16 plate_id, s16 pos_id, s16 time, s16 Target_BG)
     Setup_Pos_79(ewk);
 
     if (pos_id == 0) {
-        Disp_Command_Name[ewk->master_id][plate_id] = 1;
+        g_state.Disp_Command_Name[ewk->master_id][plate_id] = 1;
     } else {
-        Disp_Command_Name[ewk->master_id][plate_id] = 0;
+        g_state.Disp_Command_Name[ewk->master_id][plate_id] = 0;
     }
 
-    Plate_X[ewk->master_id][0] =
-        bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[Play_Type][ewk->master_id][0][0];
-    Plate_Y[ewk->master_id][0] =
-        bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[Play_Type][ewk->master_id][0][1];
+    g_state.Plate_X[ewk->master_id][0] =
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][0];
+    g_state.Plate_Y[ewk->master_id][0] =
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][1];
     return 0;
 }
 
@@ -685,13 +686,13 @@ static void Setup_Pos_79(WORK_Other* ewk) {
     if (ewk->master_priority) {
         ewk->wu.routine_no[0] = 3;
         ewk->wu.xyz[0].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[Play_Type][ewk->master_id][0][0];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][0];
         ewk->wu.xyz[1].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[Play_Type][ewk->master_id][0][1];
-        ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
-                            Plate_Pos_Data_79[Play_Type][ewk->master_id][ewk->master_priority][0];
-        ewk->wu.direction = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
-                            Plate_Pos_Data_79[Play_Type][ewk->master_id][ewk->master_priority][1];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][1];
+        ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                            Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->master_priority][0];
+        ewk->wu.direction = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                            Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->master_priority][1];
         ewk->wu.mvxy.a[1].sp = -0x20000;
         ewk->wu.mvxy.d[1].sp = -0x2000;
 
@@ -707,17 +708,17 @@ static void Setup_Pos_79(WORK_Other* ewk) {
     } else {
         ewk->wu.routine_no[0] = 0;
         OK_Appear79[ewk->master_id] = 0;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
-                                  Plate_Pos_Data_79[Play_Type][ewk->master_id][ewk->master_priority][0];
-        ewk->wu.xyz[1].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
-                                  Plate_Pos_Data_79[Play_Type][ewk->master_id][ewk->master_priority][1];
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                  Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->master_priority][0];
+        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                                  Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->master_priority][1];
     }
 
     ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->master_priority] + 35;
 }
 
 static void Check_Speed_79(WORK_Other* ewk) {
-    if (Play_Type == 1) {
+    if (g_state.Play_Type == 1) {
         ewk->wu.mvxy.a[0].sp /= 3;
         ewk->wu.mvxy.d[0].sp /= 3;
         ewk->wu.mvxy.a[1].sp /= 3;

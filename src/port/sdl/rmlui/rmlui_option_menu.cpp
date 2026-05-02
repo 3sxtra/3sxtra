@@ -8,6 +8,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_option_menu.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -15,7 +16,7 @@
 
 extern "C" {
 
-/* Game globals — Menu_Cursor_Y, IO_Result, save_w, Present_Mode */
+/* Game globals — g_state.Menu_Cursor_Y, g_state.IO_Result, save_w, g_state.Present_Mode */
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
@@ -64,7 +65,7 @@ extern "C" void rmlui_option_menu_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("option_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("option_cursor", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
     ctor.BindFunc("extra_option_available", [](Rml::Variant& v) { v = extra_option_available(); });
 
     // Event: user clicked a menu item → feed back into the CPS3 state machine
@@ -72,16 +73,16 @@ extern "C" void rmlui_option_menu_init(void) {
                            [](Rml::DataModelHandle /*model*/, Rml::Event& /*ev*/, const Rml::VariantList& args) {
                                if (!args.empty()) {
                                    int idx = args[0].Get<int>();
-                                   Menu_Cursor_Y[0] = (short)idx;
-                                   IO_Result = 0x100;
+                                   g_state.Menu_Cursor_Y[0] = (short)idx;
+                                   g_state.IO_Result = 0x100;
                                    SDL_Log("[RmlUi OptionMenu] Item selected: %d", idx);
                                }
                            });
 
-    // Event: cancel (back button) → IO_Result = 0x200
+    // Event: cancel (back button) → g_state.IO_Result = 0x200
     ctor.BindEventCallback("cancel",
                            [](Rml::DataModelHandle /*model*/, Rml::Event& /*ev*/, const Rml::VariantList& /*args*/) {
-                               IO_Result = 0x200;
+                               g_state.IO_Result = 0x200;
                                SDL_Log("[RmlUi OptionMenu] Cancel pressed");
                            });
 
@@ -101,7 +102,7 @@ extern "C" void rmlui_option_menu_update(void) {
     /* Note: bound as "option_cursor", so we cannot use DIRTY_INT(cursor,...) —
        the macro would dirty "cursor" instead of "option_cursor". */
     {
-        int v = (int)Menu_Cursor_Y[0];
+        int v = (int)g_state.Menu_Cursor_Y[0];
         if (v != s_cache.cursor) {
             s_cache.cursor = v;
             s_model_handle.DirtyVariable("option_cursor");

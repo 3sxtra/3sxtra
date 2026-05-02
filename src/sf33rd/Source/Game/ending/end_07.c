@@ -26,25 +26,25 @@ const s16 end_7_pos[4][2] = { { 256, 768 }, { 768, 768 }, { 768, 512 }, { 256, 2
 
 /** @brief Ibuki's ending entry point — initialize and run all ending scenes. */
 void end_07000(s16 pl_num) {
-    switch (end_w.r_no_1) {
+    switch (g_state.end_w.r_no_1) {
     case 0:
-        end_w.r_no_1++;
-        end_w.r_no_2 = 0;
+        g_state.end_w.r_no_1++;
+        g_state.end_w.r_no_2 = 0;
         common_end_init00(pl_num);
-        end_w.timer = timer_7_tbl[end_w.r_no_2];
+        g_state.end_w.timer = timer_7_tbl[g_state.end_w.r_no_2];
         common_end_init01();
         BGM_Request(0x31);
         break;
 
     case 1:
-        end_w.timer--;
+        g_state.end_w.timer--;
 
-        if (end_w.timer < 0) {
-            end_w.r_no_2++;
+        if (g_state.end_w.timer < 0) {
+            g_state.end_w.r_no_2++;
 
-            if (end_w.r_no_2 >= 4) {
-                end_w.r_no_1++;
-                end_w.end_flag = 1;
+            if (g_state.end_w.r_no_2 >= 4) {
+                g_state.end_w.r_no_1++;
+                g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
                 end_bg_pos_hosei2();
@@ -52,9 +52,9 @@ void end_07000(s16 pl_num) {
                 break;
             }
 
-            end_w.timer = timer_7_tbl[end_w.r_no_2];
-            bg_w.bgw[0].r_no_1 = 0;
-            bg_w.bgw[1].r_no_1 = 0;
+            g_state.end_w.timer = timer_7_tbl[g_state.end_w.r_no_2];
+            g_state.bg_w.bgw[0].r_no_1 = 0;
+            g_state.bg_w.bgw[1].r_no_1 = 0;
         }
 
         end_700_move();
@@ -72,19 +72,19 @@ void end_07000(s16 pl_num) {
 /** @brief Dispatch to the current scene handler for background layer 0. */
 static void end_700_move() {
     void (*end_700_jp[4])() = { end_700_0000, end_700_0000, end_700_2000, end_700_0000 };
-    bgw_ptr = &bg_w.bgw[0];
-    if (end_w.r_no_2 >= 4)
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    if (g_state.end_w.r_no_2 >= 4)
         return;
-    end_700_jp[end_w.r_no_2]();
+    end_700_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Dispatch to the current scene handler for background layer 1. */
 static void end_701_move() {
     void (*end_701_jp[4])() = { end_X_com01, end_700_0000, end_X_com01, end_700_0000 };
-    bgw_ptr = &bg_w.bgw[1];
-    if (end_w.r_no_2 >= 4)
+    bgw_ptr = &g_state.bg_w.bgw[1];
+    if (g_state.end_w.r_no_2 >= 4)
         return;
-    end_701_jp[end_w.r_no_2]();
+    end_701_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Scene handler — background setup with per-scene effects and messages. */
@@ -93,11 +93,11 @@ static void end_700_0000() {
     case 0:
         bgw_ptr->r_no_1++;
         Bg_On_W(1 << bgw_ptr->fam_no);
-        bgw_ptr->xy[0].disp.pos = end_7_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_7_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_7_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_7_pos[g_state.end_w.r_no_2][1];
 
         if (bgw_ptr->fam_no == 0) {
-            switch (end_w.r_no_2) {
+            switch (g_state.end_w.r_no_2) {
             case 0:
                 effect_E6_init(0x5B);
                 Rewrite_End_Message(1);
@@ -113,7 +113,7 @@ static void end_700_0000() {
                 effect_E6_init(0x5A);
                 Rewrite_End_Message(4);
                 end_fade_flag = 1;
-                end_fade_timer = timer_7_tbl[end_w.r_no_2] - 120;
+                end_fade_timer = timer_7_tbl[g_state.end_w.r_no_2] - 120;
                 break;
             }
         }
@@ -130,8 +130,8 @@ static void end_700_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_7_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_7_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_7_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_7_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         effect_E6_init(0x59);
         Rewrite_End_Message(3);

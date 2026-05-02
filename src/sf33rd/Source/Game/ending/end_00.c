@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -53,28 +54,28 @@ const s16 end00_quake_timer[32] = { 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, 4,
 
 /** @brief Gill's ending entry point — initialize and run all ending scenes. */
 void end_00000(s16 pl_num) {
-    switch (end_w.r_no_1) {
+    switch (g_state.end_w.r_no_1) {
     case 0:
-        end_w.r_no_1++;
-        end_w.r_no_2 = 0;
+        g_state.end_w.r_no_1++;
+        g_state.end_w.r_no_2 = 0;
         common_end_init00(pl_num);
-        end_w.timer = timer_0_tbl[end_w.r_no_2];
+        g_state.end_w.timer = timer_0_tbl[g_state.end_w.r_no_2];
         common_end_init01();
         BGM_Request(0x31);
         Bg_Off_W(2);
         break;
 
     case 1:
-        end_w.timer--;
+        g_state.end_w.timer--;
 
-        if (end_w.timer < 0) {
-            end_w.r_no_2++;
+        if (g_state.end_w.timer < 0) {
+            g_state.end_w.r_no_2++;
 
-            if (end_w.r_no_2 >= 5) {
+            if (g_state.end_w.r_no_2 >= 5) {
                 ToneDown(0xFF, 0);
                 FadeInit();
-                end_w.r_no_1++;
-                end_w.end_flag = 1;
+                g_state.end_w.r_no_1++;
+                g_state.end_w.end_flag = 1;
                 end_scn_pos_set2();
                 end_bg_pos_hosei2();
                 end_fam_set2();
@@ -82,9 +83,9 @@ void end_00000(s16 pl_num) {
                 break;
             }
 
-            end_w.timer = timer_0_tbl[end_w.r_no_2];
-            bg_w.bgw[0].r_no_1 = 0;
-            bg_w.bgw[1].r_no_1 = 0;
+            g_state.end_w.timer = timer_0_tbl[g_state.end_w.r_no_2];
+            g_state.bg_w.bgw[0].r_no_1 = 0;
+            g_state.bg_w.bgw[1].r_no_1 = 0;
         }
 
         end_000_move();
@@ -103,10 +104,10 @@ void end_00000(s16 pl_num) {
 /** @brief Dispatch to the current scene handler for background layer 0. */
 static void end_000_move() {
     void (*end_000_jp[5])() = { end_000_0000, end_000_0001, end_000_0002, end_000_0003, end_000_0004 };
-    bgw_ptr = &bg_w.bgw[0];
-    if (end_w.r_no_2 >= 5)
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    if (g_state.end_w.r_no_2 >= 5)
         return;
-    end_000_jp[end_w.r_no_2]();
+    end_000_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Scene 0 — initial background setup and quake flag init. */
@@ -114,8 +115,8 @@ static void end_000_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_0_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_0_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_0_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_0_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         bgw_ptr->abs_y = 0;
         Bg_On_W(1);
@@ -133,8 +134,8 @@ static void end_000_0001() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_0_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_0_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_0_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_0_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         bgw_ptr->abs_y = 0;
         Bg_On_W(1);
@@ -184,7 +185,7 @@ static void end_000_0001() {
     case 5:
         if (!bgw_ptr->free--) {
             bgw_ptr->r_no_1++;
-            Fade_Flag = 0;
+            g_state.Fade_Flag = 0;
             bgw_ptr->free = 300;
         }
 
@@ -220,7 +221,7 @@ static void end_000_0001() {
 
         if (bgw_ptr->free < 0) {
             bgw_ptr->r_no_1++;
-            end_w.timer = 0;
+            g_state.end_w.timer = 0;
         }
 
         break;
@@ -235,8 +236,8 @@ static void end_000_0002() {
 
         if (Request_Fade(2)) {
             bgw_ptr->r_no_1++;
-            bgw_ptr->xy[0].disp.pos = end_0_pos[end_w.r_no_2][0];
-            bgw_ptr->xy[1].disp.pos = end_0_pos[end_w.r_no_2][1];
+            bgw_ptr->xy[0].disp.pos = end_0_pos[g_state.end_w.r_no_2][0];
+            bgw_ptr->xy[1].disp.pos = end_0_pos[g_state.end_w.r_no_2][1];
             bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
             bgw_ptr->abs_y = 0;
             effect_E6_init(0xAC);
@@ -264,8 +265,8 @@ static void end_000_0003() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_0_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_0_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_0_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_0_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         bgw_ptr->abs_y = 0;
         effect_E6_init(0xAD);
@@ -282,13 +283,13 @@ static void end_000_0004() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_0_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_0_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_0_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_0_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
         Rewrite_End_Message(5);
         end_fade_flag = 1;
-        end_fade_timer = timer_0_tbl[end_w.r_no_2] - 120;
+        end_fade_timer = timer_0_tbl[g_state.end_w.r_no_2] - 120;
         bgw_ptr->speed_y = 0x440000 / gill_time[2];
         bgw_ptr->l_limit = gill_time[2];
         break;
@@ -379,7 +380,7 @@ static void end_000_0004() {
 
     case 6:
         ToneDown(0xFF, 0);
-        end_w.timer = 0;
+        g_state.end_w.timer = 0;
         bgw_ptr->xy[1].disp.pos = 248;
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
 
@@ -399,10 +400,10 @@ static void end_000_0004() {
 /** @brief Dispatch to the current scene handler for background layer 1. */
 static void end_001_move() {
     void (*end_001_jp[5])() = { end_X_com01, end_X_com01, end_X_com01, end_X_com01, end_001_0004 };
-    bgw_ptr = &bg_w.bgw[1];
-    if (end_w.r_no_2 >= 5)
+    bgw_ptr = &g_state.bg_w.bgw[1];
+    if (g_state.end_w.r_no_2 >= 5)
         return;
-    end_001_jp[end_w.r_no_2]();
+    end_001_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Scene 4 for layer 1 — vertical scroll with quake effects. */
@@ -410,7 +411,7 @@ static void end_001_0004() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_0_pos[end_w.r_no_2][0];
+        bgw_ptr->xy[0].disp.pos = end_0_pos[g_state.end_w.r_no_2][0];
         bgw_ptr->xy[1].disp.pos = 0;
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
@@ -456,7 +457,7 @@ static void end_001_0004() {
             bgw_ptr->frame_deff++;
             bgw_ptr->frame_deff &= 0x1F;
             bgw_ptr->r_limit = end00_quake_timer[bgw_ptr->frame_deff];
-            bgw_ptr->xy[0].disp.pos = end_0_pos[end_w.r_no_2][0];
+            bgw_ptr->xy[0].disp.pos = end_0_pos[g_state.end_w.r_no_2][0];
             bgw_ptr->xy[1].disp.pos = 48;
             bgw_ptr->xy[1].disp.pos += end00_quake_tbl2[bgw_ptr->frame_deff];
             bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;

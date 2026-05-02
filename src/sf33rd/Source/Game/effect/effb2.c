@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effb2.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effb3.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -23,8 +24,6 @@ const s16 fight_col_move_tbl[18] = { 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1
 
 // sbss
 
-s16 b2_curr_no = 0;
-s16 rf_b2_flag = 0;
 
 // Forward decls
 
@@ -42,8 +41,8 @@ void effect_B2_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0] += 1;
         ewk->wu.old_rno[0] = ewk->wu.old_rno[1] = ewk->wu.old_rno[2] = 0;
-        rf_b2_flag = 0;
-        b2_curr_no = 0;
+        g_state.rf_b2_flag = 0;
+        g_state.b2_curr_no = 0;
         ewk->wu.hit_stop = 2;
         work = random_16();
         work &= 3;
@@ -71,7 +70,7 @@ void effect_B2_move(WORK_Other* ewk) {
             ewk->wu.routine_no[0] += 1;
             ewk->wu.my_mr.size.y = 63;
             ewk->wu.hit_stop = 64;
-            rf_b2_flag = 0;
+            g_state.rf_b2_flag = 0;
             return;
         }
 
@@ -82,8 +81,8 @@ void effect_B2_move(WORK_Other* ewk) {
 
         if (ewk->wu.hit_stop < 0) {
             ewk->wu.routine_no[0] += 1;
-            b2_curr_no = 0;
-            rf_b2_flag = 0;
+            g_state.b2_curr_no = 0;
+            g_state.rf_b2_flag = 0;
             ewk->wu.hit_stop = 10;
             return;
         }
@@ -97,7 +96,7 @@ void effect_B2_move(WORK_Other* ewk) {
 
         if (ewk->wu.hit_stop < 0) {
             ewk->wu.routine_no[0] += 1;
-            rf_b2_flag = 0;
+            g_state.rf_b2_flag = 0;
             effect_L5_init(ewk);
             return;
         }
@@ -116,9 +115,9 @@ void effect_B2_move(WORK_Other* ewk) {
         break;
 
     case 6:
-        if (rf_b2_flag) {
+        if (g_state.rf_b2_flag) {
             ewk->wu.routine_no[0] += 1;
-            rf_b2_flag = 0;
+            g_state.rf_b2_flag = 0;
             return;
         }
 
@@ -127,7 +126,7 @@ void effect_B2_move(WORK_Other* ewk) {
     case 7:
         if (fight_col_chg_sub(ewk) != 0) {
             ewk->wu.routine_no[0] += 1;
-            rf_b2_flag = 0;
+            g_state.rf_b2_flag = 0;
             ewk->wu.routine_no[1] = 0;
             return;
         }
@@ -135,7 +134,7 @@ void effect_B2_move(WORK_Other* ewk) {
         break;
 
     case 8:
-        if (rf_b2_flag) {
+        if (g_state.rf_b2_flag) {
             ewk->wu.routine_no[0] += 1;
             return;
         }
@@ -143,7 +142,7 @@ void effect_B2_move(WORK_Other* ewk) {
         break;
 
     case 9:
-        Next_Step = 1;
+        g_state.Next_Step = 1;
         ewk->wu.routine_no[0] += 1;
         break;
 
@@ -166,7 +165,7 @@ void effect_B2_move(WORK_Other* ewk) {
 }
 
 static s32 b3_Break_Into_check(WORK_Other* ewk) {
-    if (Break_Into) {
+    if (g_state.Break_Into) {
         ewk->wu.routine_no[0] = 99;
         return 1;
     } else {
@@ -232,20 +231,20 @@ s32 effect_B2_init() {
     ewk->wu.id = 0x70;
     ewk->wu.work_id = 0x10;
     ewk->wu.my_family = 4;
-    bg_w.bgw[3].xy[0].cal = bg_w.bgw[3].wxy[0].cal = 0x100000;
-    bg_w.bgw[3].wxy[1].cal = 0;
-    bg_w.bgw[3].xy[1].cal = 0;
-    bg_w.bgw[3].position_x = 256 - bg_w.pos_offset;
-    bg_w.bgw[3].position_y = 0;
+    g_state.bg_w.bgw[3].xy[0].cal = g_state.bg_w.bgw[3].wxy[0].cal = 0x100000;
+    g_state.bg_w.bgw[3].wxy[1].cal = 0;
+    g_state.bg_w.bgw[3].xy[1].cal = 0;
+    g_state.bg_w.bgw[3].position_x = 256 - g_state.bg_w.pos_offset;
+    g_state.bg_w.bgw[3].position_y = 0;
     Bg_Family_Set_appoint(3);
 
-    switch (CurrentSave()->Battle_Number[Play_Type]) {
+    switch (CurrentSave()->Battle_Number[g_state.Play_Type]) {
     case 0:
         ewk->wu.type = 0;
         break;
 
     case 1:
-        if (Round_num == 2) {
+        if (g_state.Round_num == 2) {
             ewk->wu.type = 1;
         } else {
             ewk->wu.type = 0;
@@ -254,7 +253,7 @@ s32 effect_B2_init() {
         break;
 
     case 2:
-        if (Round_num == 4) {
+        if (g_state.Round_num == 4) {
             ewk->wu.type = 1;
         } else {
             ewk->wu.type = 0;
@@ -263,7 +262,7 @@ s32 effect_B2_init() {
         break;
 
     case 3:
-        if (Round_num == 6) {
+        if (g_state.Round_num == 6) {
             ewk->wu.type = 1;
         } else {
             ewk->wu.type = 0;

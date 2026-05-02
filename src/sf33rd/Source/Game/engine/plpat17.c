@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plpat17.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effi3.h"
 #include "sf33rd/Source/Game/effect/effl8.h"
@@ -42,7 +43,7 @@ static void Att_PL17_AT1(PLW* wk) {
         setup_mvxy_data(&wk->wu, wk->as->r_no);
         wk->wu.mvxy.index = wk->as->data_ix;
 
-        if (Bonus_Game_Flag != 20 || (Bonus_Game_Flag == 20 && wk->bs2_on_car == 0)) {
+        if (g_state.Bonus_Game_Flag != 20 || (g_state.Bonus_Game_Flag == 20 && wk->bs2_on_car == 0)) {
             wk->wu.xyz[1].disp.pos = 0;
         }
 

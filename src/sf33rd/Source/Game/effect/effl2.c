@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effl2.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -27,18 +28,18 @@ void effect_L2_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (Allow_a_battle_f == 0 && Conclusion_Flag == 1 && *C_No >= 2) {
-            if (!(Complete_Victory == 0) && Conclusion_Flag) {
+        if (g_state.Allow_a_battle_f == 0 && g_state.Conclusion_Flag == 1 && *g_state.C_No >= 2) {
+            if (!(g_state.Complete_Victory == 0) && g_state.Conclusion_Flag) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.old_rno[0] = 0;
 
-                if (Winner_id != ewk->master_id) {
+                if (g_state.Winner_id != ewk->master_id) {
                     set_char_move_init(&ewk->wu, 0, 2);
                 } else {
                     set_char_move_init(&ewk->wu, 0, 1);
                 }
             }
-        } else if (!EXE_flag && !Game_pause) {
+        } else if (!g_state.EXE_flag && !g_state.Game_pause) {
             effl2_dir_check(ewk);
         }
 
@@ -48,11 +49,11 @@ void effect_L2_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (Exec_Wipe) {
+        if (g_state.Exec_Wipe) {
             ewk->wu.old_rno[0] = 1;
         }
 
-        if (ewk->wu.old_rno[0] && !Exec_Wipe) {
+        if (ewk->wu.old_rno[0] && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 0;
         }
 
@@ -69,7 +70,7 @@ void effect_L2_move(WORK_Other* ewk) {
 }
 
 void effl2_dir_check(WORK_Other* ewk) {
-    s16 work = (plw[ewk->master_id].wu.xyz[0].disp.pos);
+    s16 work = (g_state.plw[ewk->master_id].wu.xyz[0].disp.pos);
 
     work >>= 6;
     work &= 15;
@@ -85,17 +86,17 @@ s32 effect_L2_init() {
     s16 ix;
     s16 oya_id;
 
-    if (My_char[0] == 10 || My_char[1] == 10) {
+    if (g_state.My_char[0] == 10 || g_state.My_char[1] == 10) {
         return -1;
     }
 
-    if (My_char[0] == 3 && My_char[1] == 3) {
+    if (g_state.My_char[0] == 3 && g_state.My_char[1] == 3) {
         return -1;
     }
 
-    if (My_char[0] == 3) {
+    if (g_state.My_char[0] == 3) {
         oya_id = 0;
-    } else if (My_char[1] == 3) {
+    } else if (g_state.My_char[1] == 3) {
         oya_id = 1;
     } else {
         return -1;
@@ -113,7 +114,7 @@ s32 effect_L2_init() {
     ewk->wu.cgromtype = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.my_family = 2;
-    ewk->my_master = &plw[oya_id];
+    ewk->my_master = &g_state.plw[oya_id];
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_mts = 7;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

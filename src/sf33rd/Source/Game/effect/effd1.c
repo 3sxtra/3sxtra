@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effd1.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -18,7 +19,7 @@
 static void fall_data_set(WORK_Other* ewk);
 
 void effect_D1_move(WORK_Other* ewk) {
-    if (Exec_Wipe) {
+    if (g_state.Exec_Wipe) {
         ewk->wu.no_death_attack = 1;
     }
 
@@ -32,7 +33,7 @@ void effect_D1_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.no_death_attack && !Exec_Wipe) {
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 99;
         } else {
             if (!ewk->wu.cg_type) {
@@ -54,7 +55,7 @@ void effect_D1_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (ewk->wu.no_death_attack && !Exec_Wipe) {
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 99;
         } else {
             if (!ewk->wu.cg_type) {
@@ -75,7 +76,7 @@ void effect_D1_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (ewk->wu.no_death_attack && !Exec_Wipe) {
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 99;
         } else {
             char_move(&ewk->wu);
@@ -103,7 +104,7 @@ static void fall_data_set(WORK_Other* ewk) {
 
     ewk->wu.old_rno[0] = 44;
     id_work = oya_ef->master_id ^ 1;
-    pos_work = plw[oya_ef->master_id].wu.xyz[0].disp.pos - plw[id_work].wu.xyz[0].disp.pos;
+    pos_work = g_state.plw[oya_ef->master_id].wu.xyz[0].disp.pos - g_state.plw[id_work].wu.xyz[0].disp.pos;
     ewk->wu.old_rno[2] = -8;
 
     if (ewk->wu.rl_flag) {

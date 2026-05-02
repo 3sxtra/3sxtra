@@ -19,9 +19,9 @@
 
 /** @brief Main handler for Main Street, England stage. */
 void BG040() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg0402();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg0401();
     zoom_ud_check();
     bg_pos_hosei2();

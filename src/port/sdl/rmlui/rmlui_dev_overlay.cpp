@@ -9,6 +9,7 @@
  * Toggled with F9.
  */
 #include "port/sdl/rmlui/rmlui_dev_overlay.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -169,8 +170,8 @@ static void snapshot_element(Rml::Element* el) {
     s_width_str = w ? w->ToString() : "";
     const Rml::Property* h = el->GetLocalProperty("height");
     s_height_str = h ? h->ToString() : "";
-    const Rml::Property* col = el->GetProperty("color");
-    s_color_hex = col ? col->ToString() : "#ffffff";
+    const Rml::Property* local_col = el->GetProperty("color");
+    s_color_hex = local_col ? local_col->ToString() : "#ffffff";
     s_elem_path = make_label(el);
     // Tier 1 additions
     const Rml::Property* pos = el->GetProperty("position");

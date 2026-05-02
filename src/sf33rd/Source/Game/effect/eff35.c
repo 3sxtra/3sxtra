@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff35.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff58.h"
@@ -71,7 +72,7 @@ static void eff35_0000(WORK_Other* ewk) {
 static void eff35_0001(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -90,7 +91,7 @@ static void eff35_0001(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -106,7 +107,7 @@ static void eff35_0001(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -122,7 +123,7 @@ static void eff35_0001(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -132,7 +133,7 @@ static void eff35_0001(WORK_Other* ewk) {
         if (ewk->wu.old_rno[4] <= 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 0;
-            Next_Step = 1;
+            g_state.Next_Step = 1;
         }
 
         disp_pos_trans_entry5(ewk);
@@ -152,7 +153,7 @@ static void eff35_0001(WORK_Other* ewk) {
 static void eff35_0002(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -169,7 +170,7 @@ static void eff35_0002(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -203,7 +204,7 @@ static void eff35_0003(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 99;
             break;
         }
@@ -237,12 +238,12 @@ static void eff35_0003(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 99;
             break;
         }
 
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             add_x_sub(&ewk->wu);
         }
 
@@ -290,13 +291,13 @@ static void eff35_0004(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (pcon_rno[0] == 2 && pcon_rno[2] >= 3) {
-            if (Bonus_Game_result >= 10 || Bonus_Game_ex_result >= 10) {
+        if (g_state.pcon_rno[0] == 2 && g_state.pcon_rno[2] >= 3) {
+            if (g_state.Bonus_Game_result >= 10 || g_state.Bonus_Game_ex_result >= 10) {
                 ewk->wu.routine_no[1]++;
             } else {
                 ewk->wu.routine_no[1] = 3;
             }
-        } else if (!EXE_flag && !Game_pause) {
+        } else if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -304,7 +305,7 @@ static void eff35_0004(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -317,7 +318,7 @@ static void eff35_0004(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -334,7 +335,7 @@ static void eff35_0004(WORK_Other* ewk) {
 static void eff35_0005(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -351,7 +352,7 @@ static void eff35_0005(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -363,8 +364,8 @@ static void eff35_0005(WORK_Other* ewk) {
             ewk->wu.disp_flag = 0;
         }
 
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + eff35_data_tbl[ewk->wu.type][0];
-        ewk->wu.xyz[1].disp.pos = bg_w.bgw[1].xy[1].disp.pos + eff35_data_tbl[ewk->wu.type][1];
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + eff35_data_tbl[ewk->wu.type][0];
+        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[1].xy[1].disp.pos + eff35_data_tbl[ewk->wu.type][1];
         disp_pos_trans_entry(ewk);
         break;
 
@@ -382,7 +383,7 @@ static void eff35_0005(WORK_Other* ewk) {
 static void eff35_0006(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -399,7 +400,7 @@ static void eff35_0006(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (Break_Into) {
+        if (g_state.Break_Into) {
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -409,11 +410,11 @@ static void eff35_0006(WORK_Other* ewk) {
         if (ewk->wu.old_rno[4] <= 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 0;
-            Next_Step = 1;
+            g_state.Next_Step = 1;
         }
 
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + eff35_data_tbl[ewk->wu.type][0];
-        ewk->wu.xyz[1].disp.pos = bg_w.bgw[1].xy[1].disp.pos + eff35_data_tbl[ewk->wu.type][1];
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + eff35_data_tbl[ewk->wu.type][0];
+        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[1].xy[1].disp.pos + eff35_data_tbl[ewk->wu.type][1];
         disp_pos_trans_entry(ewk);
         break;
 
@@ -443,7 +444,7 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
 
     switch (c_type) {
     case 5:
-        if (Country == COUNTRY_JAPAN || Country == COUNTRY_KOREA) {
+        if (g_state.Country == COUNTRY_JAPAN || g_state.Country == COUNTRY_KOREA) {
             char_num = 5;
         } else {
             char_num = 9;
@@ -452,7 +453,7 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
         break;
 
     case 7:
-        if (Country == COUNTRY_JAPAN || Country == COUNTRY_KOREA) {
+        if (g_state.Country == COUNTRY_JAPAN || g_state.Country == COUNTRY_KOREA) {
             char_num = 7;
         } else {
             char_num = 8;
@@ -461,7 +462,7 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
         break;
 
     case 10:
-        switch (Bonus_Game_result) {
+        switch (g_state.Bonus_Game_result) {
         case 2:
             char_num = 11;
             break;
@@ -473,7 +474,7 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
         default:
             char_num = 10;
             ewk->wu.routine_no[1] = 99;
-            Next_Step = 1;
+            g_state.Next_Step = 1;
             break;
         }
 

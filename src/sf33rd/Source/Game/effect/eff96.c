@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff96.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -21,7 +22,7 @@ void effect_96_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[6] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[6] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -29,7 +30,7 @@ void effect_96_move(WORK_Other* ewk) {
 
         if (ewk->wu.hit_stop) {
             ewk->wu.hit_stop--;
-        } else if (EXE_flag == 0 && Game_pause == 0) {
+        } else if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {

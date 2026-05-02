@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effi3.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
@@ -18,7 +19,7 @@ void effect_I3_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        bg_stop = 1;
+        g_state.bg_stop = 1;
 
         switch (i3_data[ewk->wu.type].sour) {
         case 1:
@@ -40,12 +41,12 @@ void effect_I3_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[0] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if (EXE_flag != 0 || Game_pause != 0) {
+        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
             break;
         }
 
@@ -59,7 +60,7 @@ void effect_I3_move(WORK_Other* ewk) {
 
     case 2:
     default:
-        bg_stop = 0;
+        g_state.bg_stop = 0;
         push_effect_work(&ewk->wu);
         break;
     }

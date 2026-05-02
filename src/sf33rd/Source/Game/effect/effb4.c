@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effb4.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -30,7 +31,7 @@ void effect_B4_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {

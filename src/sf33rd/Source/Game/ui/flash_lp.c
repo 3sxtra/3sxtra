@@ -9,6 +9,7 @@
  */
 
 #include "sf33rd/Source/Game/ui/flash_lp.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
@@ -31,7 +32,7 @@ void Flash_Lamp() {
     u8 mark;
     u8 color;
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
         return;
     }
 
@@ -39,23 +40,23 @@ void Flash_Lamp() {
         return;
     }
 
-    if (!Game_pause) {
-        switch (Lamp_No) {
+    if (!g_state.Game_pause) {
+        switch (g_state.Lamp_No) {
         case 0:
-            Lamp_No = 1;
-            Lamp_Index = 1;
-            Lamp_Timer = 1;
+            g_state.Lamp_No = 1;
+            g_state.Lamp_Index = 1;
+            g_state.Lamp_Timer = 1;
             /* fallthrough */
 
         case 1:
-            if (--Lamp_Timer == 0) {
-                if (++Lamp_Index > 1) {
-                    Lamp_Index = 0;
+            if (--g_state.Lamp_Timer == 0) {
+                if (++g_state.Lamp_Index > 1) {
+                    g_state.Lamp_Index = 0;
                 }
 
-                if (Lamp_Index < LAMP_FLASH_COUNT) {
-                    Lamp_Color = Lamp_Flash_Data[Lamp_Index][0];
-                    Lamp_Timer = Lamp_Flash_Data[Lamp_Index][1];
+                if (g_state.Lamp_Index < LAMP_FLASH_COUNT) {
+                    g_state.Lamp_Color = Lamp_Flash_Data[g_state.Lamp_Index][0];
+                    g_state.Lamp_Timer = Lamp_Flash_Data[g_state.Lamp_Index][1];
                 }
             }
 
@@ -63,30 +64,30 @@ void Flash_Lamp() {
         }
     }
 
-    for (ix = 0; ix <= CurrentSave()->Battle_Number[Play_Type]; ix++) {
-        mark = flash_win_type[0][ix];
+    for (ix = 0; ix <= CurrentSave()->Battle_Number[g_state.Play_Type]; ix++) {
+        mark = g_state.flash_win_type[0][ix];
 
-        if (flash_win_type[0][ix] == 0) {
+        if (g_state.flash_win_type[0][ix] == 0) {
             color = 7;
         } else {
-            color = Lamp_Color;
+            color = g_state.Lamp_Color;
         }
 
-        if (flash_win_type[0][ix] == sync_win_type[0][ix]) {
+        if (g_state.flash_win_type[0][ix] == g_state.sync_win_type[0][ix]) {
             if (!use_rmlui || !rmlui_hud_wins)
                 scfont_sqput(vmark_tbl[ix], 4, color, 0, mark * 2, 26, 2, 1, 2);
         }
 
-        mark = flash_win_type[1][ix];
+        mark = g_state.flash_win_type[1][ix];
         ix2p = ix + 4;
 
-        if (flash_win_type[1][ix] == 0) {
+        if (g_state.flash_win_type[1][ix] == 0) {
             color = 7;
         } else {
-            color = Lamp_Color;
+            color = g_state.Lamp_Color;
         }
 
-        if (flash_win_type[1][ix] == sync_win_type[1][ix]) {
+        if (g_state.flash_win_type[1][ix] == g_state.sync_win_type[1][ix]) {
             if (!use_rmlui || !rmlui_hud_wins)
                 scfont_sqput(vmark_tbl[ix2p], 4, color, 0, mark * 2, 26, 2, 1, 2);
         }

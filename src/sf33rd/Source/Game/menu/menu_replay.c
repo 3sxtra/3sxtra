@@ -1,4 +1,5 @@
 #include "sf33rd/Source/Game/menu/menu_replay.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/menu/menu_network.h"
 #include "sf33rd/Source/Game/menu/menu_network_constants.h"
 #include "sf33rd/Source/Game/effect/eff57.h"
@@ -108,14 +109,14 @@
 void Wait_Replay_Check(struct _TASK* task_ptr) {
     switch (task_ptr->free[1]) {
     case 0:
-        if (vm_w.Request != 0) {
+        if (g_state.vm_w.Request != 0) {
             break;
         }
 
         task_ptr->r_no[0] = 0;
         task_ptr->r_no[3] = 0;
 
-        if (vm_w.Number == 0 && vm_w.New_File == 0) {
+        if (g_state.vm_w.Number == 0 && g_state.vm_w.New_File == 0) {
             task_ptr->r_no[2] = 3;
             break;
         }
@@ -129,18 +130,18 @@ void Setup_Save_Replay_2nd(struct _TASK* task_ptr, s16 arg1) {
     if (FadeIn(1, 25, 8)) {
         task_ptr->r_no[2]++;
         task_ptr->free[3] = 0;
-        Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(Menu_Cursor_X[0], 8);
+        g_state.Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(g_state.Menu_Cursor_X[0], 8);
     }
 }
 
 void Setup_Replay_Sub(s16 type, MenuHeader char_type, s16 master_player) {
     effect_57_init(type, char_type, 0, REPLAY_Z_HEADER, 2);
-    Order[type] = 1;
-    Order_Dir[type] = 8;
-    Order_Timer[type] = 1;
+    g_state.Order[type] = 1;
+    g_state.Order_Dir[type] = 8;
+    g_state.Order_Timer[type] = 1;
     effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_SETUP_BG, master_player, 0, -1, -1, REPLAY_Z_DEPTH_SETUP);
-    Order[EFF_SLOT_CURSOR_BG] = 3;
-    Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+    g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
+    g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
 }
 
 void Reset_Replay(struct _TASK* task_ptr) {
@@ -148,7 +149,7 @@ void Reset_Replay(struct _TASK* task_ptr) {
     case 0:
         task_ptr->r_no[1]++;
         task_ptr->timer = 10;
-        Game_pause = GAME_PAUSE_ACTIVE;
+        g_state.Game_pause = GAME_PAUSE_ACTIVE;
         break;
 
     case 1:
@@ -172,16 +173,16 @@ void Reset_Replay(struct _TASK* task_ptr) {
 
         task_ptr->r_no[1]++;
         task_ptr->timer = 2;
-        G_No[2] = GAME_SUBMODE_REPLAY;
-        G_No[3] = 0;
-        seraph_flag = 0;
-        G_Timer = 10;
-        Cover_Timer = 5;
+        g_state.G_No[2] = GAME_SUBMODE_REPLAY;
+        g_state.G_No[3] = 0;
+        g_state.seraph_flag = 0;
+        g_state.G_Timer = 10;
+        g_state.Cover_Timer = 5;
         effect_work_kill_mod_plcol();
         move_effect_work(6);
-        Suicide[0] = 1;
-        Suicide[6] = 1;
-        judge_flag = 0;
+        g_state.Suicide[0] = 1;
+        g_state.Suicide[6] = 1;
+        g_state.judge_flag = 0;
         cpExitTask(TASK_PAUSE);
         break;
 
@@ -213,33 +214,33 @@ void After_Replay(struct _TASK* task_ptr) {
         task_ptr->r_no[1]++;
         ToneDown(REPLAY_TONE_NORMAL, 32);
         Menu_Common_Init();
-        Menu_Suicide[0] = 0;
-        Menu_Cursor_Y[0] = 0;
+        g_state.Menu_Suicide[0] = 0;
+        g_state.Menu_Cursor_Y[0] = 0;
 
         for (ix = 0, s5 = char_ix = '8'; ix < 3; ix++, s4 = char_ix++) {
             effect_61_init(0, ix + EFF_SLOT_REPLAY_MARKER, 0, 0, char_ix, ix, REPLAY_Z_DEPTH_MARKER);
-            Order[ix + EFF_SLOT_REPLAY_MARKER] = 3;
-            Order_Timer[ix + EFF_SLOT_REPLAY_MARKER] = 1;
+            g_state.Order[ix + EFF_SLOT_REPLAY_MARKER] = 3;
+            g_state.Order_Timer[ix + EFF_SLOT_REPLAY_MARKER] = 1;
         }
 
         effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_AFTER_BG, 0, 0, -1, -1, REPLAY_Z_DEPTH_AFTER);
-        Order[EFF_SLOT_CURSOR_BG] = 3;
-        Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+        g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
+        g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
         break;
 
     case 1:
         ToneDown(REPLAY_TONE_NORMAL, 32);
-        Pause_ID = 0;
+        g_state.Pause_ID = 0;
 
         if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 2, REPLAY_RESULT_MASK) == 0) {
-            Pause_ID = 1;
+            g_state.Pause_ID = 1;
             MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 2, REPLAY_RESULT_MASK);
         }
 
-        switch (IO_Result) {
+        switch (g_state.IO_Result) {
         case SWK_SOUTH:
             SE_selected();
-            task_ptr->r_no[1] = Menu_Cursor_Y[0] + 2;
+            task_ptr->r_no[1] = g_state.Menu_Cursor_Y[0] + 2;
             break;
 
         case SWK_EAST:
@@ -274,8 +275,8 @@ void After_Replay(struct _TASK* task_ptr) {
         ToneDown(REPLAY_TONE_NORMAL, 32);
 
         if (Exit_Sub(task_ptr, 0, 6)) {
-            Menu_Suicide[0] = 1;
-            Menu_Suicide[1] = Menu_Suicide[2] = Menu_Suicide[3] = 0;
+            g_state.Menu_Suicide[0] = 1;
+            g_state.Menu_Suicide[1] = g_state.Menu_Suicide[2] = g_state.Menu_Suicide[3] = 0;
         }
 
         break;
@@ -288,23 +289,23 @@ void After_Replay(struct _TASK* task_ptr) {
             task_ptr->r_no[2]++;
             task_ptr->timer = 5;
             Menu_Common_Init();
-            Menu_Cursor_X[0] = 0;
+            g_state.Menu_Cursor_X[0] = 0;
             if (!rmlui_menu_replay)
                 Setup_BG(1, BG_SLIDE_X_FULL, 0);
             if (!rmlui_menu_replay) {
                 effect_57_init(EFF_SLOT_REPLAY_HDR, MENU_HEADER_REPLAY, 0, REPLAY_Z_HEADER, 999);
-                Order[EFF_SLOT_REPLAY_HDR] = 3;
-                Order_Dir[EFF_SLOT_REPLAY_HDR] = 8;
-                Order_Timer[EFF_SLOT_REPLAY_HDR] = 1;
+                g_state.Order[EFF_SLOT_REPLAY_HDR] = 3;
+                g_state.Order_Dir[EFF_SLOT_REPLAY_HDR] = 8;
+                g_state.Order_Timer[EFF_SLOT_REPLAY_HDR] = 1;
             } else {
                 /* Blue background — same pattern as Network_Lobby case 11:
                  * effect_work_init() destroys all old effects, then we create
                  * a fresh blue BG on slot 0x4E. */
                 effect_work_init();
                 Message_Data->kind_req = NET_BG_MODE_BLUE;
-                Order[0x4E] = 5;
-                Order_Timer[0x4E] = 1;
-                Order_Dir[0x4E] = 1;
+                g_state.Order[0x4E] = 5;
+                g_state.Order_Timer[0x4E] = 1;
+                g_state.Order_Dir[0x4E] = 1;
                 effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
             }
             if (!rmlui_menu_replay)
@@ -312,8 +313,8 @@ void After_Replay(struct _TASK* task_ptr) {
             rmlui_replay_picker_open(1); /* always use RmlUI — ImGui removed */
             if (!rmlui_menu_replay) {
                 effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_PICKER_BG, 0, 0, -1, -1, REPLAY_Z_DEPTH_PICKER);
-                Order[EFF_SLOT_CURSOR_BG] = 3;
-                Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+                g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
+                g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
             }
             break;
 
@@ -353,25 +354,25 @@ void After_Replay(struct _TASK* task_ptr) {
 
     case 7:
         FadeOut(1, FADE_OPAQUE, 8);
-        Order[EFF_SLOT_REPLAY_HDR] = 4;
-        Order_Timer[EFF_SLOT_REPLAY_HDR] = 1;
-        Menu_Suicide[0] = 1;
+        g_state.Order[EFF_SLOT_REPLAY_HDR] = 4;
+        g_state.Order_Timer[EFF_SLOT_REPLAY_HDR] = 1;
+        g_state.Menu_Suicide[0] = 1;
         task_ptr->r_no[1]++;
         break;
 
     case 8:
         FadeOut(1, FADE_OPAQUE, 8);
-        Menu_Suicide[0] = 0;
+        g_state.Menu_Suicide[0] = 0;
 
         for (ix = 0, s3 = char_ix = '8'; ix < 3; ix++, s2 = char_ix++) {
             effect_61_init(0, ix + EFF_SLOT_REPLAY_MARKER, 0, 0, char_ix, ix, REPLAY_Z_DEPTH_MARKER);
-            Order[ix + EFF_SLOT_REPLAY_MARKER] = 3;
-            Order_Timer[ix + EFF_SLOT_REPLAY_MARKER] = 1;
+            g_state.Order[ix + EFF_SLOT_REPLAY_MARKER] = 3;
+            g_state.Order_Timer[ix + EFF_SLOT_REPLAY_MARKER] = 1;
         }
 
         effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_AFTER_BG, 0, 0, -1, -1, REPLAY_Z_DEPTH_AFTER);
-        Order[EFF_SLOT_CURSOR_BG] = 3;
-        Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+        g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
+        g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
         task_ptr->r_no[1]++;
         FadeInit();
 
@@ -391,28 +392,28 @@ void End_Replay_Menu(struct _TASK* task_ptr) {
 
     switch (task_ptr->r_no[1]) {
     case 0:
-        if (Allow_a_battle_f == 0) {
+        if (g_state.Allow_a_battle_f == 0) {
             break;
         }
 
         task_ptr->r_no[1] += 1;
-        Pause_ID = Decide_ID;
-        Pause_Down = 1;
-        Game_pause = GAME_PAUSE_ACTIVE;
+        g_state.Pause_ID = g_state.Decide_ID;
+        g_state.Pause_Down = 1;
+        g_state.Game_pause = GAME_PAUSE_ACTIVE;
         effect_A3_init(1, REPLAY_PAUSE_PARAM1, REPLAY_PAUSE_PARAM2, 0, 3, REPLAY_PAUSE_X1, REPLAY_PAUSE_Y1, 1);
         effect_A3_init(1, REPLAY_PAUSE_PARAM1, REPLAY_PAUSE_PARAM2, 1, 3, REPLAY_PAUSE_X2, REPLAY_PAUSE_Y2, 1);
-        Order[EFF_SLOT_CURSOR_BG] = 3;
-        Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+        g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
+        g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
         effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_PAUSE_BG, 2, 7, -1, -1, REPLAY_Z_DEPTH_PAUSE);
         /* fallthrough */
 
     case 1:
         task_ptr->r_no[1] += 1;
         Menu_Common_Init();
-        Menu_Cursor_Y[0] = 0;
+        g_state.Menu_Cursor_Y[0] = 0;
 
         for (ix = 0; ix < 4; ix++) {
-            Menu_Suicide[ix] = 0;
+            g_state.Menu_Suicide[ix] = 0;
         }
 
         effect_10_init(0, 0, 0, 4, 0, EFF10_PAUSE_CONTINUE, EFF10_LAYER_EXIT);
@@ -420,17 +421,17 @@ void End_Replay_Menu(struct _TASK* task_ptr) {
         break;
 
     case 2:
-        MC_Move_Sub(Check_Menu_Lever(Pause_ID, 0), 0, 1, REPLAY_RESULT_MASK);
+        MC_Move_Sub(Check_Menu_Lever(g_state.Pause_ID, 0), 0, 1, REPLAY_RESULT_MASK);
 
-        switch (IO_Result) {
+        switch (g_state.IO_Result) {
         case SWK_SOUTH:
-            switch (Menu_Cursor_Y[0]) {
+            switch (g_state.Menu_Cursor_Y[0]) {
             case 0:
                 task_ptr->r_no[0] = 0xC;
                 task_ptr->r_no[1] = 0;
 
                 for (ix = 0; ix < 4; ix++) {
-                    Menu_Suicide[ix] = 1;
+                    g_state.Menu_Suicide[ix] = 1;
                 }
 
                 SE_selected();
@@ -439,8 +440,8 @@ void End_Replay_Menu(struct _TASK* task_ptr) {
             case 1:
                 task_ptr->r_no[1] += 1;
                 SE_selected();
-                Menu_Suicide[0] = 1;
-                Menu_Cursor_Y[0] = 1;
+                g_state.Menu_Suicide[0] = 1;
+                g_state.Menu_Cursor_Y[0] = 1;
                 effect_10_init(0, 0, 3, 3, 1, EFF10_PAUSE_CONFIRM, EFF10_LAYER_EXIT);
                 effect_10_init(0, 1, 0, 0, 1, EFF10_PAUSE_YES, EFF10_LAYER_BTNCFG);
                 effect_10_init(0, 1, 1, 1, 1, EFF10_PAUSE_NO, EFF10_LAYER_BTNCFG);
@@ -453,22 +454,22 @@ void End_Replay_Menu(struct _TASK* task_ptr) {
         break;
 
     case 3:
-        ans = ~(plsw_01[Pause_ID]) & plsw_00[Pause_ID];
+        ans = ~(g_state.plsw_01[g_state.Pause_ID]) & g_state.plsw_00[g_state.Pause_ID];
 
         switch (ans) {
         case SWK_UP:
-            Menu_Cursor_Y[0]--;
-            if (Menu_Cursor_Y[0] < 0) {
-                Menu_Cursor_Y[0] = 0;
+            g_state.Menu_Cursor_Y[0]--;
+            if (g_state.Menu_Cursor_Y[0] < 0) {
+                g_state.Menu_Cursor_Y[0] = 0;
             } else {
                 SE_dir_cursor_move();
             }
             break;
 
         case SWK_DOWN:
-            Menu_Cursor_Y[0]++;
-            if (Menu_Cursor_Y[0] > 1) {
-                Menu_Cursor_Y[0] = 1;
+            g_state.Menu_Cursor_Y[0]++;
+            if (g_state.Menu_Cursor_Y[0] > 1) {
+                g_state.Menu_Cursor_Y[0] = 1;
             } else {
                 SE_dir_cursor_move();
             }
@@ -476,15 +477,15 @@ void End_Replay_Menu(struct _TASK* task_ptr) {
 
         case SWK_SOUTH: /* Confirm */
         case SWK_EAST:  /* Cancel */
-            if (Menu_Cursor_Y[0] || ans == SWK_EAST) {
+            if (g_state.Menu_Cursor_Y[0] || ans == SWK_EAST) {
                 /* User selected NO (cursor 1) or cancelled */
                 task_ptr->r_no[1] = 1;
-                Menu_Suicide[3] = 1;
+                g_state.Menu_Suicide[3] = 1;
             } else {
                 /* User selected YES (cursor 0) - gracefully exit to menu */
                 ToneDown(REPLAY_TONE_NORMAL, 32);
-                Replay_Status[0] = 0;
-                Replay_Status[1] = 0;
+                g_state.Replay_Status[0] = 0;
+                g_state.Replay_Status[1] = 0;
                 Back_to_Mode_Select(task_ptr);
             }
             break;

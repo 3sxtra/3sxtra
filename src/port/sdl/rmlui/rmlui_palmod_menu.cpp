@@ -13,6 +13,7 @@
  *                     reset_color, close_picker
  */
 #include "port/sdl/rmlui/rmlui_palmod_menu.h"
+#include "game_state.h"
 #include "port/config/config.h"
 #ifdef PALMOD_HAS_STORAGE
 #include "port/sdl/rmlui/palmod_storage.h"
@@ -30,10 +31,6 @@ extern "C" {
 
 #include "character_names.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
-
-extern unsigned char My_char[2];
-extern signed char Player_Color[2];
-extern unsigned char Play_Game;
 
 extern bool mods_menu_palmod_enabled;
 
@@ -206,14 +203,14 @@ static void restore_stage_original() {
 }
 
 /* Check if a palette color-index is all-black (empty/unused Extra preset).
- * Gill (My_char==0) uses both banks independently; everyone else only
+ * Gill (g_state.My_char==0) uses both banks independently; everyone else only
  * uses bank 0, so we must ignore bank 1 to avoid false negatives from
  * non-zero leftover data in unused bank 1 slots. */
 static bool is_palette_empty(int id, int color_index) {
     if (!s_plcol_valid[id] || color_index < 0 || color_index > 15)
         return true;
     const COL* col = &s_plcol_cache[id];
-    int num_banks = (My_char[id] == 0) ? 2 : 1;
+    int num_banks = (g_state.My_char[id] == 0) ? 2 : 1;
     for (int bank = 0; bank < num_banks; bank++) {
         for (int i = 1; i < 64; i++) { /* skip index 0 (transparent) */
             u16 c = col->col[bank][color_index][i];
@@ -250,9 +247,9 @@ static void palmod_on_color_loaded(int id, const COL* data) {
         s_color_max[id] = max_valid_palette(id);
         SDL_Log("[PalMod] P%d (%s, id=%d, gill=%d) slider max = %d (%s)",
                 id + 1,
-                character_get_name(My_char[id]),
-                My_char[id],
-                My_char[id] == 0,
+                character_get_name(g_state.My_char[id]),
+                g_state.My_char[id],
+                g_state.My_char[id] == 0,
                 s_color_max[id],
                 get_color_label(s_color_max[id]));
         /* Clamp current selection if it exceeds valid range */
@@ -313,7 +310,7 @@ static void get_current_context(const char** out_category, char* out_sub, size_t
         snprintf(out_sub, sub_size, "row_%d", s_stage_row);
     } else {
         *out_category = "char";
-        snprintf(out_sub, sub_size, "%s", character_get_name(My_char[0]));
+        snprintf(out_sub, sub_size, "%s", character_get_name(g_state.My_char[0]));
     }
 }
 #endif
@@ -390,7 +387,7 @@ static void apply_palette(int id, int color_index) {
     const COL* col = &s_plcol_cache[id];
     int base = id * 16;
 
-    if (My_char[id] == 0) {
+    if (g_state.My_char[id] == 0) {
         for (int i = 0; i < 64; i++) {
             ColorRAM[base][i] = palConvSrcToRam(col->col[0][color_index][i]);
             ColorRAM[base + 8][i] = palConvSrcToRam(col->col[1][color_index][i]);
@@ -415,7 +412,7 @@ static void apply_remix_preview() {
                 memcpy(ColorRAM[base + r], s_committed_cram[id][r], sizeof(ColorRAM[0]));
             palUpdateGhostCP3(base, 16);
         } else if (s_plcol_valid[id]) {
-            apply_palette(id, s_palmod_color[id] >= 0 ? s_palmod_color[id] : (int)Player_Color[id]);
+            apply_palette(id, s_palmod_color[id] >= 0 ? s_palmod_color[id] : (int)g_state.Player_Color[id]);
         }
     }
     if (s_stage_committed) {
@@ -511,13 +508,13 @@ static void apply_remix_preview() {
 
     // Apply for each active target
     if (s_remix_target_p1) {
-        int start = (s_remix_scope == 1) ? ((s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)Player_Color[0]) : 0;
+        int start = (s_remix_scope == 1) ? ((s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)g_state.Player_Color[0]) : 0;
         int end = (s_remix_scope == 1) ? start : 15;
         apply_to_range(start, end);
     }
     if (s_remix_target_p2) {
         int start =
-            (s_remix_scope == 1) ? 16 + ((s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)Player_Color[1]) : 16;
+            (s_remix_scope == 1) ? 16 + ((s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)g_state.Player_Color[1]) : 16;
         int end = (s_remix_scope == 1) ? start : 31;
         apply_to_range(start, end);
     }
@@ -528,7 +525,7 @@ static void apply_remix_preview() {
 }
 
 static void trigger_remix() {
-    if (s_init_complete && s_remix_auto_preview && s_edit_mode == 2 && Play_Game != 0) {
+    if (s_init_complete && s_remix_auto_preview && s_edit_mode == 2 && g_state.Play_Game != 0) {
         apply_remix_preview();
     }
 }
@@ -608,7 +605,7 @@ static void do_init(void) {
 
     ctor.BindFunc(
         "p1_color",
-        [](Rml::Variant& v) { v = (s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)Player_Color[0]; },
+        [](Rml::Variant& v) { v = (s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)g_state.Player_Color[0]; },
         [](const Rml::Variant& v) {
             int val = v.Get<int>();
             if (val < 0)
@@ -618,15 +615,15 @@ static void do_init(void) {
             s_palmod_color[0] = val;
             if (!s_init_complete)
                 return; /* don't write during doc load */
-            save_color(0, My_char[0], val);
+            save_color(0, g_state.My_char[0], val);
             s_config_dirty = true;
-            if (Play_Game != 0)
+            if (g_state.Play_Game != 0)
                 apply_palette(0, val);
         });
 
     ctor.BindFunc(
         "p2_color",
-        [](Rml::Variant& v) { v = (s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)Player_Color[1]; },
+        [](Rml::Variant& v) { v = (s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)g_state.Player_Color[1]; },
         [](const Rml::Variant& v) {
             int val = v.Get<int>();
             if (val < 0)
@@ -636,20 +633,20 @@ static void do_init(void) {
             s_palmod_color[1] = val;
             if (!s_init_complete)
                 return;
-            save_color(1, My_char[1], val);
+            save_color(1, g_state.My_char[1], val);
             s_config_dirty = true;
-            if (Play_Game != 0)
+            if (g_state.Play_Game != 0)
                 apply_palette(1, val);
         });
 
-    ctor.BindFunc("p1_name", [](Rml::Variant& v) { v = Rml::String(character_get_name(My_char[0])); });
-    ctor.BindFunc("p2_name", [](Rml::Variant& v) { v = Rml::String(character_get_name(My_char[1])); });
+    ctor.BindFunc("p1_name", [](Rml::Variant& v) { v = Rml::String(character_get_name(g_state.My_char[0])); });
+    ctor.BindFunc("p2_name", [](Rml::Variant& v) { v = Rml::String(character_get_name(g_state.My_char[1])); });
     ctor.BindFunc("p1_label", [](Rml::Variant& v) {
-        int c = (s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)Player_Color[0];
+        int c = (s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)g_state.Player_Color[0];
         v = Rml::String(get_color_label(c));
     });
     ctor.BindFunc("p2_label", [](Rml::Variant& v) {
-        int c = (s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)Player_Color[1];
+        int c = (s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)g_state.Player_Color[1];
         v = Rml::String(get_color_label(c));
     });
 
@@ -664,7 +661,7 @@ static void do_init(void) {
         [](Rml::Variant& v) { v = s_edit_mode; },
         [](const Rml::Variant& v) { s_edit_mode = v.Get<int>(); });
 
-    ctor.BindFunc("in_game", [](Rml::Variant& v) { v = (Play_Game != 0); });
+    ctor.BindFunc("in_game", [](Rml::Variant& v) { v = (g_state.Play_Game != 0); });
 
     /* ─── Stage tab ─── */
 
@@ -780,7 +777,7 @@ static void do_init(void) {
         s_edit_mode = 2;
         s_list_dirty = true;
         /* Cache original stage palette on first entry to remix tab */
-        if (!s_stage_original_valid && Play_Game != 0)
+        if (!s_stage_original_valid && g_state.Play_Game != 0)
             cache_stage_original();
         trigger_remix();
     });
@@ -924,9 +921,9 @@ static void do_init(void) {
         s_remix_committed[0] = s_remix_committed[1] = false;
         s_stage_committed = false;
         if (s_plcol_valid[0])
-            apply_palette(0, s_palmod_color[0] >= 0 ? s_palmod_color[0] : (int)Player_Color[0]);
+            apply_palette(0, s_palmod_color[0] >= 0 ? s_palmod_color[0] : (int)g_state.Player_Color[0]);
         if (s_plcol_valid[1])
-            apply_palette(1, s_palmod_color[1] >= 0 ? s_palmod_color[1] : (int)Player_Color[1]);
+            apply_palette(1, s_palmod_color[1] >= 0 ? s_palmod_color[1] : (int)g_state.Player_Color[1]);
         restore_stage_original();
     });
 
@@ -1098,9 +1095,9 @@ extern "C" void rmlui_palmod_menu_update(void) {
 
     /* Detect character changes → load saved overrides */
     for (int id = 0; id < 2; id++) {
-        if ((int)My_char[id] != s_last_char[id]) {
-            s_last_char[id] = (int)My_char[id];
-            s_palmod_color[id] = load_saved_color(id, My_char[id]);
+        if ((int)g_state.My_char[id] != s_last_char[id]) {
+            s_last_char[id] = (int)g_state.My_char[id];
+            s_palmod_color[id] = load_saved_color(id, g_state.My_char[id]);
             /* Recompute slider max for the new character */
             if (s_plcol_valid[id])
                 s_color_max[id] = max_valid_palette(id);
@@ -1111,18 +1108,18 @@ extern "C" void rmlui_palmod_menu_update(void) {
     }
 
     /* Re-apply saved palette when entering gameplay
-     * Only triggers on Play_Game 0→1 transition (round start).
+     * Only triggers on g_state.Play_Game 0→1 transition (round start).
      * Initialise s_prev to 0xFF so the very first call never
      * detects a false 0→1 transition when the menu is opened
      * mid-match. */
     static unsigned char s_prev_play_game = 0xFF;
-    if (s_prev_play_game == 0 && Play_Game != 0) {
+    if (s_prev_play_game == 0 && g_state.Play_Game != 0) {
         for (int id = 0; id < 2; id++) {
             if (s_palmod_color[id] >= 0 && plcol[id])
                 apply_palette(id, s_palmod_color[id]);
         }
     }
-    s_prev_play_game = Play_Game;
+    s_prev_play_game = g_state.Play_Game;
 
     /* ─── Dirty checking ─── */
 
@@ -1151,8 +1148,8 @@ extern "C" void rmlui_palmod_menu_update(void) {
         }                                                                                                              \
     } while (0)
 
-    int p1c = (s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)Player_Color[0];
-    int p2c = (s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)Player_Color[1];
+    int p1c = (s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)g_state.Player_Color[0];
+    int p2c = (s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)g_state.Player_Color[1];
 
     DIRTY_INT(p1_color, p1c);
     DIRTY_INT(p2_color, p2c);
@@ -1162,7 +1159,7 @@ extern "C" void rmlui_palmod_menu_update(void) {
     DIRTY_INT(sel_r, s_picker_r);
     DIRTY_INT(sel_g, s_picker_g);
     DIRTY_INT(sel_b, s_picker_b);
-    DIRTY_BOOL(in_game, Play_Game != 0);
+    DIRTY_BOOL(in_game, g_state.Play_Game != 0);
     DIRTY_BOOL(picker_active, s_picker_active);
 
     /* Dirty-check slider max values (change on character switch) */
@@ -1174,8 +1171,8 @@ extern "C" void rmlui_palmod_menu_update(void) {
         }
     }
 
-    DIRTY_STR(p1_name, character_get_name(My_char[0]));
-    DIRTY_STR(p2_name, character_get_name(My_char[1]));
+    DIRTY_STR(p1_name, character_get_name(g_state.My_char[0]));
+    DIRTY_STR(p2_name, character_get_name(g_state.My_char[1]));
     DIRTY_STR(p1_label, get_color_label(p1c));
     DIRTY_STR(p2_label, get_color_label(p2c));
     DIRTY_STR(sel_preview, color_to_css(cps3_pack(s_picker_r, s_picker_g, s_picker_b)));

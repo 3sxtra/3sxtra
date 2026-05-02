@@ -7,6 +7,7 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff49.h"
 #include "sf33rd/Source/Game/effect/eff58.h"
@@ -30,13 +31,13 @@ static void Setup_Continue_OBJ(void);
 static s16 Check_Exit_Continue(void);
 
 static void ms_continue_enter(struct _TASK* tp) {
-    Target_BG_X[3] = bg_w.bgw[3].wxy[0].disp.pos + 0x1CA;
-    Target_BG_X[1] = bg_w.bgw[1].wxy[0].disp.pos + 0x1CA;
-    Offset_BG_X[3] = 0;
-    Offset_BG_X[1] = 0;
-    bg_mvxy.a[0].sp = 0xE0000;
-    bg_mvxy.d[0].sp = 0;
-    Next_Step = 0;
+    g_state.Target_BG_X[3] = g_state.bg_w.bgw[3].wxy[0].disp.pos + 0x1CA;
+    g_state.Target_BG_X[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos + 0x1CA;
+    g_state.Offset_BG_X[3] = 0;
+    g_state.Offset_BG_X[1] = 0;
+    g_state.bg_mvxy.a[0].sp = 0xE0000;
+    g_state.bg_mvxy.d[0].sp = 0;
+    g_state.Next_Step = 0;
 
     Setup_Continue_OBJ();
     if (!use_rmlui || !rmlui_screen_continue) {
@@ -48,7 +49,7 @@ static void ms_continue_enter(struct _TASK* tp) {
     }
     effect_58_init(0xC, 1, 3);
     effect_58_init(0xC, 1, 1);
-    Suicide[2] = 1;
+    g_state.Suicide[2] = 1;
     effect_58_init(0x10, 5, 2);
 
     tp->free[0] = 0; // our phase
@@ -58,27 +59,27 @@ static void ms_continue_enter(struct _TASK* tp) {
 static void ms_continue_tick(struct _TASK* tp) {
     switch (tp->free[0]) {
     case 0:
-        /* Wait for Next_Step */
-        if (Next_Step) {
+        /* Wait for g_state.Next_Step */
+        if (g_state.Next_Step) {
             tp->free[0] += 1;
             tp->timer = 0x14;
         }
         break;
 
     case 1:
-        /* Wait for timer or Scene_Cut */
-        if (Scene_Cut) {
+        /* Wait for timer or g_state.Scene_Cut */
+        if (g_state.Scene_Cut) {
             tp->timer = 1;
         }
         if (--tp->timer <= 0) {
             tp->free[0] += 1;
-            Continue_Count_Down[LOSER] = 0;
+            g_state.Continue_Count_Down[g_state.LOSER] = 0;
         }
         break;
 
     case 2:
         /* Wait for continue countdown */
-        if (Continue_Count[LOSER] < 0) {
+        if (g_state.Continue_Count[g_state.LOSER] < 0) {
             tp->free[0] += 1;
         }
         break;
@@ -129,16 +130,16 @@ static void Setup_Continue_OBJ(void) {
 
 /** @brief Check whether both fighters have finished their exit animations. */
 static s16 Check_Exit_Continue(void) {
-    if (((E_Number[0][0]) == 2) || ((E_Number[1][0]) == 2)) {
+    if (((g_state.E_Number[0][0]) == 2) || ((g_state.E_Number[1][0]) == 2)) {
         return 0;
     }
-    if (E_Number[LOSER ^ 1][0] == 0) {
+    if (g_state.E_Number[g_state.LOSER ^ 1][0] == 0) {
         return 0x3C;
     }
-    if ((E_Number[LOSER ^ 1][0] != 3) && (E_Number[LOSER ^ 1][0] != 0)) {
+    if ((g_state.E_Number[g_state.LOSER ^ 1][0] != 3) && (g_state.E_Number[g_state.LOSER ^ 1][0] != 0)) {
         return 0;
     }
-    if ((E_Number[LOSER][0] != 3) && (E_Number[LOSER][0] != 0)) {
+    if ((g_state.E_Number[g_state.LOSER][0] != 3) && (g_state.E_Number[g_state.LOSER][0] != 0)) {
         return 0;
     }
     return 1;

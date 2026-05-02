@@ -18,13 +18,13 @@
 
 /** @brief Main handler for A Road In Kyoto, Japan stage. */
 void BG070() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg0702();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg0701();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bg0704();
-    bgw_ptr = &bg_w.bgw[5];
+    bgw_ptr = &g_state.bg_w.bgw[5];
     bg0703();
     zoom_ud_check();
     bg_pos_hosei2();

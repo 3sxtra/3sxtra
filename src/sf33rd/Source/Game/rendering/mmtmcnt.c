@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/rendering/mmtmcnt.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -50,11 +51,11 @@ const u8 mto_list[9][24] = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 /** @brief Purge texture data for any CPU-controlled player. */
 void Purge_com_player_from_mm() {
-    if (plw[0].wu.pl_operator == 0) {
+    if (g_state.plw[0].wu.pl_operator == 0) {
         purge_player_texture(0);
     }
 
-    if (plw[1].wu.pl_operator == 0) {
+    if (g_state.plw[1].wu.pl_operator == 0) {
         purge_player_texture(1);
     }
 }

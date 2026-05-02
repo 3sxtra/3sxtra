@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/screen/sel_pl.h"
+#include "game_state.h"
 #include "common.h"
 #include "constants.h"
 #include "main.h" /* TASK_MENU */
@@ -143,18 +144,18 @@ u8 hc3alpha;
 void Sel_PL_Control_Frame() {
     SEL_PL_X = 0;
 
-    if (Break_Into) {
+    if (g_state.Break_Into) {
         return;
     }
 
-    Scene_Cut = Cut_Cut_Cut();
+    g_state.Scene_Cut = Cut_Cut_Cut();
     Sel_PL_Control();
     Switch_Work();
-    ID = 0;
+    g_state.ID = 0;
     Sel_PL();
-    ID = 1;
+    g_state.ID = 1;
     Sel_PL();
-    Time_Over = false;
+    g_state.Time_Over = false;
 
     if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {
         SEL_PL_X = 0;
@@ -197,13 +198,13 @@ s16 Select_Player() {
 
 /** @brief Mirror input in training mode so the champion’s inputs control both sides. */
 static void Switch_Work() {
-    if (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS) {
+    if (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS) {
         return;
     }
 
-    switch (S_No[3]) {
+    switch (g_state.S_No[3]) {
     case 0:
-        if (Champion) {
+        if (g_state.Champion) {
             p1sw_0 = 0;
         } else {
             p2sw_0 = 0;
@@ -212,14 +213,14 @@ static void Switch_Work() {
         break;
 
     case 1:
-        S_No[3]++;
+        g_state.S_No[3]++;
         Default_Training_Data(0);
-        Record_Data_Tr = 0;
+        g_state.Record_Data_Tr = 0;
         Training_Disp_Work_Clear();
-        Menu_Cursor_X[0] = 0;
-        Training_Cursor = 0;
+        g_state.Menu_Cursor_X[0] = 0;
+        g_state.Training_Cursor = 0;
 
-        if (Champion) {
+        if (g_state.Champion) {
             p1sw_0 = p2sw_0;
             p1sw_1 = p2sw_0;
         } else {
@@ -230,7 +231,7 @@ static void Switch_Work() {
         break;
 
     case 2:
-        if (Champion) {
+        if (g_state.Champion) {
             p1sw_0 = p2sw_0;
         } else {
             p2sw_0 = p1sw_0;
@@ -243,7 +244,7 @@ static void Switch_Work() {
 /** @brief Top-level select-screen controller — run status, face, OBJ, player-select, and exit phases. */
 static void Sel_PL_Control() {
     Setup_Select_Status();
-    switch (S_No[0]) {
+    switch (g_state.S_No[0]) {
     case SEL_PL_CONT_1ST:
         Sel_PL_Cont_1st();
         break;
@@ -259,9 +260,9 @@ static void Sel_PL_Control() {
     }
     Face_Control();
     OBJ_Control();
-    ID2 = 0;
+    g_state.ID2 = 0;
     Player_Select_Control();
-    ID2 = 1;
+    g_state.ID2 = 1;
     Player_Select_Control();
     Check_Exit();
 }
@@ -271,21 +272,21 @@ static void Sel_PL_Cont_1st() {
     s16 xx;
 
     Switch_Screen(1);
-    S_No[0]++;
+    g_state.S_No[0]++;
     All_Clear_Suicide();
     SsBgmHalfVolume(0);
-    Face_No[0] = 0;
-    Face_No[1] = 0;
-    SO_No[0] = 0;
-    SO_No[1] = 0;
-    Exit_No = 0;
-    Fade_Flag = 0;
-    judge_flag = 0;
-    Game_pause = 0;
+    g_state.Face_No[0] = 0;
+    g_state.Face_No[1] = 0;
+    g_state.SO_No[0] = 0;
+    g_state.SO_No[1] = 0;
+    g_state.Exit_No = 0;
+    g_state.Fade_Flag = 0;
+    g_state.judge_flag = 0;
+    g_state.Game_pause = 0;
 
     for (xx = 0; xx < 4; xx++) {
-        SP_No[0][xx] = 0;
-        SP_No[1][xx] = 0;
+        g_state.SP_No[0][xx] = 0;
+        g_state.SP_No[1][xx] = 0;
     }
 
     Purge_mmtm_area(2);
@@ -295,30 +296,30 @@ static void Sel_PL_Cont_1st() {
     Initialize_BG();
     Setup_Cursor_Y();
 
-    if (Present_Mode == 4 || Present_Mode == 5) {
-        Select_Timer = 0x20;
+    if (g_state.Present_Mode == 4 || g_state.Present_Mode == 5) {
+        g_state.Select_Timer = 0x20;
     } else {
-        Select_Timer = 0x30;
+        g_state.Select_Timer = 0x30;
     }
 
-    Unit_Of_Timer = UNIT_OF_TIMER_MAX;
+    g_state.Unit_Of_Timer = UNIT_OF_TIMER_MAX;
     Setup_Face_ID();
     Setup_1st_Play_Type();
     Setup_Face_Sub();
-    Time_Stop = 1;
+    g_state.Time_Stop = 1;
     SelectTimer_Init();
-    Face_MV_Request = 0;
-    Face_Status = 0;
-    Face_Move = 0;
-    Break_Into_CPU = 0;
-    Explosion = 0;
-    Time_Over = false;
-    Move_Super_Arts[0] = 0;
-    Move_Super_Arts[1] = 0;
-    Flash_Complete[0] = 0;
-    Flash_Complete[1] = 0;
-    Cursor_Move[0] = 0;
-    Cursor_Move[1] = 0;
+    g_state.Face_MV_Request = 0;
+    g_state.Face_Status = 0;
+    g_state.Face_Move = 0;
+    g_state.Break_Into_CPU = 0;
+    g_state.Explosion = 0;
+    g_state.Time_Over = false;
+    g_state.Move_Super_Arts[0] = 0;
+    g_state.Move_Super_Arts[1] = 0;
+    g_state.Flash_Complete[0] = 0;
+    g_state.Flash_Complete[1] = 0;
+    g_state.Cursor_Move[0] = 0;
+    g_state.Cursor_Move[1] = 0;
     Check_Use_Gill();
     pulpul_stop();
     pp_operator_check_flag(1);
@@ -332,7 +333,7 @@ static void Sel_PL_Cont_1st() {
 static void Check_Use_Gill() {
     s16 ix;
 
-    if (Mode_Type == MODE_NETWORK) {
+    if (g_state.Mode_Type == MODE_NETWORK) {
         return;
     }
 
@@ -362,8 +363,8 @@ static void Check_Use_Gill() {
 static void Sel_PL_Cont_2nd() {
     Switch_Screen(1);
     Switch_Screen_Init(1);
-    S_No[0]++;
-    Request_E_No = 1;
+    g_state.S_No[0]++;
+    g_state.Request_E_No = 1;
     Clear_Flash_No();
 }
 
@@ -373,12 +374,12 @@ static void Sel_PL_Cont_3rd() {
         return;
     }
 
-    S_No[0]++;
-    Forbid_Break = 0;
+    g_state.S_No[0]++;
+    g_state.Forbid_Break = 0;
 
-    if (G_No[1] != 1) {
+    if (g_state.G_No[1] != 1) {
         // This is a comparison to zero in the decomp. Might be a programmer error
-        Demo_Flag = 0;
+        g_state.Demo_Flag = 0;
     }
 }
 
@@ -387,24 +388,24 @@ static void Sel_PL_Cont_4th() {
     // Do nothing
 }
 
-/** @brief Populate ID_of_Face grid from the Face_Cursor_Data layout table. */
+/** @brief Populate g_state.ID_of_Face grid from the Face_Cursor_Data layout table. */
 static void Setup_Face_ID() {
     s16 x;
     s16 y;
 
     for (y = 0; y < 3; y++) {
         for (x = 0; x < 8; x++) {
-            ID_of_Face[y][x] = Face_Cursor_Data[y][x];
+            g_state.ID_of_Face[y][x] = Face_Cursor_Data[y][x];
         }
     }
 }
 
 /** @brief Record the initial play-type so we know whether a second player joined later. */
 static void Setup_1st_Play_Type() {
-    if (Play_Type == 1) {
+    if (g_state.Play_Type == 1) {
         Play_Type_1st = 99;
     } else {
-        Play_Type_1st = Aborigine;
+        Play_Type_1st = g_state.Aborigine;
     }
 }
 
@@ -412,50 +413,50 @@ static void Setup_1st_Play_Type() {
 static void Setup_Face_Sub() {
     s16 x;
 
-    Complete_Face = 19;
+    g_state.Complete_Face = 19;
 
     for (x = 1; x < 20; x++) {
         effect_70_init(x);
     }
 }
 
-/** @brief Compute Select_Status from operator flags and arts-complete state. */
+/** @brief Compute g_state.Select_Status from operator flags and arts-complete state. */
 static void Setup_Select_Status() {
-    if (plw[0].wu.pl_operator) {
-        Select_Status[0] = 1;
+    if (g_state.plw[0].wu.pl_operator) {
+        g_state.Select_Status[0] = 1;
     } else {
-        Select_Status[0] = 0;
+        g_state.Select_Status[0] = 0;
     }
 
-    if (plw[1].wu.pl_operator) {
-        Select_Status[0] |= 2;
+    if (g_state.plw[1].wu.pl_operator) {
+        g_state.Select_Status[0] |= 2;
     }
 
-    if (Sel_Arts_Complete[0] != -1 && plw[0].wu.pl_operator != 0) {
-        Select_Status[1] = 1;
+    if (g_state.Sel_Arts_Complete[0] != -1 && g_state.plw[0].wu.pl_operator != 0) {
+        g_state.Select_Status[1] = 1;
     } else {
-        Select_Status[1] = 0;
+        g_state.Select_Status[1] = 0;
     }
 
-    if (Sel_Arts_Complete[1] != -1 && plw[1].wu.pl_operator != 0) {
-        Select_Status[1] |= 2;
+    if (g_state.Sel_Arts_Complete[1] != -1 && g_state.plw[1].wu.pl_operator != 0) {
+        g_state.Select_Status[1] |= 2;
     }
 }
 
-/** @brief Determine Aborigine (which player selects first) from operator state. */
+/** @brief Determine g_state.Aborigine (which player selects first) from operator state. */
 static u8 Setup_Aborigine() {
-    if (Select_Status[0] == 3) {
-        return Aborigine = 153;
+    if (g_state.Select_Status[0] == 3) {
+        return g_state.Aborigine = 153;
     }
 
-    if (Select_Status[0] == 1) {
-        return Aborigine = 0;
+    if (g_state.Select_Status[0] == 1) {
+        return g_state.Aborigine = 0;
     }
 
-    return Aborigine = 1;
+    return g_state.Aborigine = 1;
 }
 
-/** @brief Build the per-player Cursor_Y_Pos arrays from the Cursor_Y_Data table. */
+/** @brief Build the per-player g_state.Cursor_Y_Pos arrays from the Cursor_Y_Data table. */
 static void Setup_Cursor_Y() {
     s16 i;
     s16 j;
@@ -466,11 +467,11 @@ static void Setup_Cursor_Y() {
     s16 d;
 
     for (i = 2, a = j = 0; i >= 0; i--, b = j++) {
-        Cursor_Y_Pos[0][i] = Cursor_Y_Data[j];
+        g_state.Cursor_Y_Pos[0][i] = Cursor_Y_Data[j];
     }
 
     for (i = 2, c = j = 3; i >= 0; i--, d = j++) {
-        Cursor_Y_Pos[1][i] = Cursor_Y_Data[j];
+        g_state.Cursor_Y_Pos[1][i] = Cursor_Y_Data[j];
     }
 }
 
@@ -485,7 +486,7 @@ static void Initialize_BG() {
 /** @brief General BG setup — init zoom, store old position, set family. */
 static void Setup_BG_General() {
     Zoomf_Init();
-    bg_w.bgw[0].old_pos_x = bg_w.bgw[0].xy[0].disp.pos;
+    g_state.bg_w.bgw[0].old_pos_x = g_state.bg_w.bgw[0].xy[0].disp.pos;
     bg_pos_hosei2();
     Bg_Family_Set();
 }
@@ -495,28 +496,28 @@ static void Setup_FACE_BG() {
     s16 face_x;
     s16 face_y;
 
-    Unsubstantial_BG[1] = 1;
+    g_state.Unsubstantial_BG[1] = 1;
     face_x = Setup_Face_X();
     face_y = Setup_Face_Y();
-    bg_w.bgw[1].xy[0].disp.pos = face_x;
-    bg_w.bgw[1].xy[1].disp.pos = face_y;
-    bg_w.bgw[1].wxy[0].disp.pos = face_x;
-    bg_w.bgw[1].wxy[1].disp.pos = face_y;
-    bg_w.bgw[1].xy[0].disp.low = 0;
-    bg_w.bgw[1].xy[1].disp.low = 0;
-    bg_w.bgw[1].position_x = face_x;
-    bg_w.bgw[1].position_y = face_y;
-    bg_w.bgw[1].hos_xy[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos = bg_w.bgw[1].xy[0].disp.pos;
+    g_state.bg_w.bgw[1].xy[0].disp.pos = face_x;
+    g_state.bg_w.bgw[1].xy[1].disp.pos = face_y;
+    g_state.bg_w.bgw[1].wxy[0].disp.pos = face_x;
+    g_state.bg_w.bgw[1].wxy[1].disp.pos = face_y;
+    g_state.bg_w.bgw[1].xy[0].disp.low = 0;
+    g_state.bg_w.bgw[1].xy[1].disp.low = 0;
+    g_state.bg_w.bgw[1].position_x = face_x;
+    g_state.bg_w.bgw[1].position_y = face_y;
+    g_state.bg_w.bgw[1].hos_xy[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos = g_state.bg_w.bgw[1].xy[0].disp.pos;
     Bg_Family_Set_Ex(1);
 }
 
 /** @brief Return the X offset for the face-grid BG based on play type and aborigine. */
 static s16 Setup_Face_X() {
-    if (Play_Type == 1) {
+    if (g_state.Play_Type == 1) {
         return 604;
     }
 
-    if (Aborigine == 0) {
+    if (g_state.Aborigine == 0) {
         return 512;
     }
 
@@ -525,11 +526,11 @@ static s16 Setup_Face_X() {
 
 /** @brief Return the Y offset for the face-grid BG based on play type and aborigine. */
 static s16 Setup_Face_Y() {
-    if (Play_Type == 1) {
+    if (g_state.Play_Type == 1) {
         return 0;
     }
 
-    if (Aborigine == 0) {
+    if (g_state.Aborigine == 0) {
         return -24;
     }
 
@@ -538,7 +539,7 @@ static s16 Setup_Face_Y() {
 
 /** @brief Face-panel state machine — dispatch face phase and move the BG. */
 static void Face_Control() {
-    switch (Face_No[0]) {
+    switch (g_state.Face_No[0]) {
     case FACE_1ST:
         Face_1st();
         break;
@@ -557,72 +558,72 @@ static void Face_Control() {
 
 /** @brief Face phase 1 — choose initial face layout (1P or 2P). */
 static void Face_1st() {
-    if (Select_Status[0] == 3) {
-        Face_No[0] = 3;
+    if (g_state.Select_Status[0] == 3) {
+        g_state.Face_No[0] = 3;
     } else {
-        Face_No[0] = 1;
+        g_state.Face_No[0] = 1;
     }
 }
 
 /** @brief Face phase 2 — slide face BG when second player joins or first completes. */
 static void Face_2nd() {
-    if (Select_Status[0] == 3 && Face_MV_Request == 0) {
-        Face_No[0] = 3;
-        Face_MV_Time = 1;
+    if (g_state.Select_Status[0] == 3 && g_state.Face_MV_Request == 0) {
+        g_state.Face_No[0] = 3;
+        g_state.Face_MV_Time = 1;
 
-        if (Aborigine == 1) {
-            Face_MV_Request = 2;
-            bg_mvxy.a[0].sp = -0x90000;
-            bg_mvxy.d[0].sp = -0x8000;
+        if (g_state.Aborigine == 1) {
+            g_state.Face_MV_Request = 2;
+            g_state.bg_mvxy.a[0].sp = -0x90000;
+            g_state.bg_mvxy.d[0].sp = -0x8000;
             return;
         }
 
-        Face_MV_Request = 1;
-        bg_mvxy.a[0].sp = 0x90000;
-        bg_mvxy.d[0].sp = 0x8000;
+        g_state.Face_MV_Request = 1;
+        g_state.bg_mvxy.a[0].sp = 0x90000;
+        g_state.bg_mvxy.d[0].sp = 0x8000;
         return;
     }
 
-    if (Sel_PL_Complete[Aborigine]) {
-        Face_MV_Time = 5;
-        Face_No[0]++;
+    if (g_state.Sel_PL_Complete[g_state.Aborigine]) {
+        g_state.Face_MV_Time = 5;
+        g_state.Face_No[0]++;
 
-        if (Aborigine == 0) {
-            Face_MV_Request = 4;
-            bg_mvxy.a[0].sp = -0xC0000;
-            bg_mvxy.d[0].sp = -0x8000;
+        if (g_state.Aborigine == 0) {
+            g_state.Face_MV_Request = 4;
+            g_state.bg_mvxy.a[0].sp = -0xC0000;
+            g_state.bg_mvxy.d[0].sp = -0x8000;
             return;
         }
 
-        Face_MV_Request = 3;
-        bg_mvxy.a[0].sp = 0xC0000;
-        bg_mvxy.d[0].sp = 0x8000;
+        g_state.Face_MV_Request = 3;
+        g_state.bg_mvxy.a[0].sp = 0xC0000;
+        g_state.bg_mvxy.d[0].sp = 0x8000;
     }
 }
 
 /** @brief Face phase 3 — slide face BG back when both players are selecting. */
 static void Face_3rd() {
-    if (Select_Status[0] != 3) {
+    if (g_state.Select_Status[0] != 3) {
         return;
     }
 
-    if (Face_MV_Request != 0) {
+    if (g_state.Face_MV_Request != 0) {
         return;
     }
 
-    Face_No[0]++;
-    Face_MV_Time = 1;
+    g_state.Face_No[0]++;
+    g_state.Face_MV_Time = 1;
 
-    if (Aborigine == 1) {
-        Face_MV_Request = 2;
-        bg_mvxy.a[0].sp = -0xC0000;
-        bg_mvxy.d[0].sp = -0x8000;
+    if (g_state.Aborigine == 1) {
+        g_state.Face_MV_Request = 2;
+        g_state.bg_mvxy.a[0].sp = -0xC0000;
+        g_state.bg_mvxy.d[0].sp = -0x8000;
         return;
     }
 
-    Face_MV_Request = 1;
-    bg_mvxy.a[0].sp = 0xC0000;
-    bg_mvxy.d[0].sp = 0x8000;
+    g_state.Face_MV_Request = 1;
+    g_state.bg_mvxy.a[0].sp = 0xC0000;
+    g_state.bg_mvxy.d[0].sp = 0x8000;
 }
 
 /** @brief Face phase 4 — no-op (face movement complete). */
@@ -630,19 +631,19 @@ static void Face_4th() {}
 
 /** @brief Apply pending face-move requests as effect_93 BG scrolls. */
 static void Move_Face_BG() {
-    switch (Face_No[1]) {
+    switch (g_state.Face_No[1]) {
     case 0:
-        if (Face_MV_Request) {
-            Face_No[1]++;
-            Face_Move = Face_MV_Request;
-            effect_93_init(Face_Move - 1, Face_MV_Time);
+        if (g_state.Face_MV_Request) {
+            g_state.Face_No[1]++;
+            g_state.Face_Move = g_state.Face_MV_Request;
+            effect_93_init(g_state.Face_Move - 1, g_state.Face_MV_Time);
         }
 
         break;
 
     default:
-        if (!(Face_MV_Request = Face_Move)) {
-            Face_No[1] = 0;
+        if (!(g_state.Face_MV_Request = g_state.Face_Move)) {
+            g_state.Face_No[1] = 0;
         }
 
         break;
@@ -651,7 +652,7 @@ static void Move_Face_BG() {
 
 /** @brief OBJ state machine — dispatch portrait/plate object initialisation phases. */
 static void OBJ_Control() {
-    switch (SO_No[0]) {
+    switch (g_state.SO_No[0]) {
     case OBJ_1ST:
         OBJ_1st();
         break;
@@ -668,158 +669,158 @@ static void OBJ_Control() {
 static void OBJ_1st() {
     Setup_EFF69();
 
-    if (Select_Status[0] != 3) {
-        SO_No[0] = 1;
-        effect_38_init(Aborigine, Aborigine + 11, 127, 0, 2);
-        Order[Aborigine + 11] = 1;
-        Order_Timer[Aborigine + 11] = 35;
-        effect_52_init(Aborigine, 37);
-        Order[37] = 1;
-        Order_Timer[37] = 30;
-        Order_Dir[37] = 0;
-        effect_K6_init(Aborigine, Aborigine + 31, 31, 2);
-        Order[Aborigine + 31] = 1;
-        Order_Timer[Aborigine + 31] = 35;
-        Order_Dir[Aborigine + 31] = 0;
-        effect_K6_init(Aborigine, Aborigine + 25, 25, 2);
-        Order[Aborigine + 25] = 1;
-        Order_Timer[Aborigine + 25] = 35;
-        Order_Dir[Aborigine + 25] = 0;
-        Order[0] = 1;
-        Order_Timer[0] = 40;
-        Order_Dir[0] = 4;
-        Order[1] = 1;
-        Order_Timer[1] = 45;
-        Order_Dir[1] = 4;
-        Order[3] = 1;
-        Order_Timer[3] = 45;
-        Order_Dir[3] = 4;
-        effect_39_init(Aborigine, Aborigine + 13, 127, 2, 1);
-        Order[Aborigine + 13] = 1;
-        Order_Timer[Aborigine + 13] = 35;
-        Order_Dir[Aborigine + 13] = 0;
+    if (g_state.Select_Status[0] != 3) {
+        g_state.SO_No[0] = 1;
+        effect_38_init(g_state.Aborigine, g_state.Aborigine + 11, 127, 0, 2);
+        g_state.Order[g_state.Aborigine + 11] = 1;
+        g_state.Order_Timer[g_state.Aborigine + 11] = 35;
+        effect_52_init(g_state.Aborigine, 37);
+        g_state.Order[37] = 1;
+        g_state.Order_Timer[37] = 30;
+        g_state.Order_Dir[37] = 0;
+        effect_K6_init(g_state.Aborigine, g_state.Aborigine + 31, 31, 2);
+        g_state.Order[g_state.Aborigine + 31] = 1;
+        g_state.Order_Timer[g_state.Aborigine + 31] = 35;
+        g_state.Order_Dir[g_state.Aborigine + 31] = 0;
+        effect_K6_init(g_state.Aborigine, g_state.Aborigine + 25, 25, 2);
+        g_state.Order[g_state.Aborigine + 25] = 1;
+        g_state.Order_Timer[g_state.Aborigine + 25] = 35;
+        g_state.Order_Dir[g_state.Aborigine + 25] = 0;
+        g_state.Order[0] = 1;
+        g_state.Order_Timer[0] = 40;
+        g_state.Order_Dir[0] = 4;
+        g_state.Order[1] = 1;
+        g_state.Order_Timer[1] = 45;
+        g_state.Order_Dir[1] = 4;
+        g_state.Order[3] = 1;
+        g_state.Order_Timer[3] = 45;
+        g_state.Order_Dir[3] = 4;
+        effect_39_init(g_state.Aborigine, g_state.Aborigine + 13, 127, 2, 1);
+        g_state.Order[g_state.Aborigine + 13] = 1;
+        g_state.Order_Timer[g_state.Aborigine + 13] = 35;
+        g_state.Order_Dir[g_state.Aborigine + 13] = 0;
         effect_42_init(5);
-        Order[5] = 1;
-        Order_Timer[5] = 45;
-        Order_Dir[5] = 4;
+        g_state.Order[5] = 1;
+        g_state.Order_Timer[5] = 45;
+        g_state.Order_Dir[5] = 4;
         effect_42_init(6);
-        Order[6] = 1;
-        Order_Timer[6] = 45;
-        Order_Dir[6] = 4;
+        g_state.Order[6] = 1;
+        g_state.Order_Timer[6] = 45;
+        g_state.Order_Dir[6] = 4;
         return;
     }
 
-    SO_No[0] = 2;
+    g_state.SO_No[0] = 2;
     effect_75_init(42, 3, 2);
-    Order[42] = 3;
-    Order_Timer[42] = 1;
-    Order_Dir[42] = 3;
+    g_state.Order[42] = 3;
+    g_state.Order_Timer[42] = 1;
+    g_state.Order_Dir[42] = 3;
     effect_38_init(0, 11, 127, 1, 2);
-    Order[11] = 1;
-    Order_Timer[11] = 86;
+    g_state.Order[11] = 1;
+    g_state.Order_Timer[11] = 86;
     effect_38_init(1, 12, 127, 1, 2);
-    Order[12] = 1;
-    Order_Timer[12] = 86;
+    g_state.Order[12] = 1;
+    g_state.Order_Timer[12] = 86;
     effect_K6_init(0, 33, 31, 2);
-    Order[33] = 1;
-    Order_Timer[33] = 86;
-    Order_Dir[33] = 0;
+    g_state.Order[33] = 1;
+    g_state.Order_Timer[33] = 86;
+    g_state.Order_Dir[33] = 0;
     effect_52_init(0, 38);
-    Order[38] = 3;
-    Order_Timer[38] = 30;
+    g_state.Order[38] = 3;
+    g_state.Order_Timer[38] = 30;
     effect_K6_init(0, 27, 25, 2);
-    Order[27] = 3;
-    Order_Timer[27] = 86;
+    g_state.Order[27] = 3;
+    g_state.Order_Timer[27] = 86;
     effect_K6_init(1, 28, 25, 2);
-    Order[28] = 3;
-    Order_Timer[28] = 86;
+    g_state.Order[28] = 3;
+    g_state.Order_Timer[28] = 86;
     effect_K6_init(1, 34, 31, 2);
-    Order[34] = 1;
-    Order_Timer[34] = 86;
-    Order_Dir[34] = 0;
+    g_state.Order[34] = 1;
+    g_state.Order_Timer[34] = 86;
+    g_state.Order_Dir[34] = 0;
     effect_52_init(1, 39);
-    Order[39] = 3;
-    Order_Timer[39] = 30;
+    g_state.Order[39] = 3;
+    g_state.Order_Timer[39] = 30;
     effect_39_init(0, 15, 127, 2, 0);
-    Order[15] = 1;
-    Order_Timer[15] = 86;
-    Order_Dir[15] = 0;
+    g_state.Order[15] = 1;
+    g_state.Order_Timer[15] = 86;
+    g_state.Order_Dir[15] = 0;
     effect_39_init(1, 16, 127, 2, 0);
-    Order[16] = 1;
-    Order_Timer[16] = 86;
-    Order_Dir[16] = 0;
-    Order[4] = 3;
-    Order_Timer[4] = 86;
-    Order_Dir[4] = 255;
+    g_state.Order[16] = 1;
+    g_state.Order_Timer[16] = 86;
+    g_state.Order_Dir[16] = 0;
+    g_state.Order[4] = 3;
+    g_state.Order_Timer[4] = 86;
+    g_state.Order_Dir[4] = 255;
     effect_42_init(7);
-    Order[7] = 0;
-    Order_Timer[7] = 86;
+    g_state.Order[7] = 0;
+    g_state.Order_Timer[7] = 86;
     effect_42_init(8);
-    Order[8] = 0;
-    Order_Timer[8] = 86;
+    g_state.Order[8] = 0;
+    g_state.Order_Timer[8] = 86;
 }
 
 /** @brief OBJ phase 2 — reconfigure objects when a second player breaks in mid-select. */
 static void OBJ_2nd() {
-    if (Select_Status[0] != 3) {
+    if (g_state.Select_Status[0] != 3) {
         return;
     }
 
-    SO_No[0]++;
+    g_state.SO_No[0]++;
     effect_75_init(42, 3, 2);
-    Order[42] = 3;
-    Order_Timer[42] = 1;
-    Order_Dir[42] = 3;
-    Order[Aborigine + 11] = 4;
-    Order_Timer[Aborigine + 11] = 1;
-    Select_Start[Aborigine] = 2;
-    effect_38_init(New_Challenger, New_Challenger + 11, 127, 1, 2);
-    Order[New_Challenger + 11] = 1;
-    Order_Timer[New_Challenger + 11] = 1;
+    g_state.Order[42] = 3;
+    g_state.Order_Timer[42] = 1;
+    g_state.Order_Dir[42] = 3;
+    g_state.Order[g_state.Aborigine + 11] = 4;
+    g_state.Order_Timer[g_state.Aborigine + 11] = 1;
+    g_state.Select_Start[g_state.Aborigine] = 2;
+    effect_38_init(g_state.New_Challenger, g_state.New_Challenger + 11, 127, 1, 2);
+    g_state.Order[g_state.New_Challenger + 11] = 1;
+    g_state.Order_Timer[g_state.New_Challenger + 11] = 1;
     Go_Away_Red_Lines();
-    Order[Aborigine + 31] = 5;
-    Order_Timer[Aborigine + 31] = 1;
-    Order[Aborigine + 19] = 5;
-    Order_Timer[Aborigine + 19] = 1;
-    Order[Aborigine + 25] = 5;
-    Order_Timer[Aborigine + 25] = 1;
-    Order[Aborigine + 13] = 5;
-    Order_Timer[Aborigine + 13] = 1;
-    Order[37] = 4;
-    Order_Timer[37] = 1;
+    g_state.Order[g_state.Aborigine + 31] = 5;
+    g_state.Order_Timer[g_state.Aborigine + 31] = 1;
+    g_state.Order[g_state.Aborigine + 19] = 5;
+    g_state.Order_Timer[g_state.Aborigine + 19] = 1;
+    g_state.Order[g_state.Aborigine + 25] = 5;
+    g_state.Order_Timer[g_state.Aborigine + 25] = 1;
+    g_state.Order[g_state.Aborigine + 13] = 5;
+    g_state.Order_Timer[g_state.Aborigine + 13] = 1;
+    g_state.Order[37] = 4;
+    g_state.Order_Timer[37] = 1;
     effect_K6_init(0, 33, 31, 2);
-    Order[33] = 1;
-    Order_Timer[33] = 1;
-    Order_Dir[33] = 0;
+    g_state.Order[33] = 1;
+    g_state.Order_Timer[33] = 1;
+    g_state.Order_Dir[33] = 0;
     effect_K6_init(0, 27, 25, 2);
-    Order[27] = 1;
-    Order_Timer[27] = 1;
-    Order_Dir[27] = 0;
+    g_state.Order[27] = 1;
+    g_state.Order_Timer[27] = 1;
+    g_state.Order_Dir[27] = 0;
     effect_39_init(0, 15, 127, 2, 0);
-    Order[15] = 1;
-    Order_Timer[15] = 1;
-    Order_Dir[15] = 0;
+    g_state.Order[15] = 1;
+    g_state.Order_Timer[15] = 1;
+    g_state.Order_Dir[15] = 0;
     effect_K6_init(1, 34, 31, 2);
-    Order[34] = 1;
-    Order_Timer[34] = 1;
-    Order_Dir[34] = 0;
+    g_state.Order[34] = 1;
+    g_state.Order_Timer[34] = 1;
+    g_state.Order_Dir[34] = 0;
     effect_K6_init(1, 28, 25, 2);
-    Order[28] = 1;
-    Order_Timer[28] = 1;
-    Order_Dir[28] = 0;
+    g_state.Order[28] = 1;
+    g_state.Order_Timer[28] = 1;
+    g_state.Order_Dir[28] = 0;
     effect_39_init(1, 16, 127, 2, 0);
-    Order[16] = 1;
-    Order_Timer[16] = 1;
-    Order_Dir[16] = 0;
-    Order[4] = 3;
-    Order_Timer[4] = 1;
-    Order_Dir[4] = 255;
+    g_state.Order[16] = 1;
+    g_state.Order_Timer[16] = 1;
+    g_state.Order_Dir[16] = 0;
+    g_state.Order[4] = 3;
+    g_state.Order_Timer[4] = 1;
+    g_state.Order_Dir[4] = 255;
     effect_42_init(7);
-    Order[7] = 0;
-    Order_Timer[7] = 1;
+    g_state.Order[7] = 0;
+    g_state.Order_Timer[7] = 1;
     effect_42_init(8);
-    Order[8] = 0;
-    Order_Timer[8] = 1;
+    g_state.Order[8] = 0;
+    g_state.Order_Timer[8] = 1;
 }
 
 /** @brief OBJ phase 3 — no-op (object setup complete). */
@@ -830,37 +831,37 @@ static void Setup_EFF69() {
     s16 xx;
 
     for (xx = 0; xx < 5; xx++) {
-        Order[xx] = 0;
+        g_state.Order[xx] = 0;
         effect_69_init(xx);
     }
 }
 
 /** @brief Dismiss all red-line decoration objects with a fade-out animation. */
 static void Go_Away_Red_Lines() {
-    Order[0] = 2;
-    Order_Timer[0] = 1;
-    Order_Dir[0] = 8;
-    Order[2] = 2;
-    Order_Timer[2] = 1;
-    Order_Dir[2] = 8;
-    Order[1] = 2;
-    Order_Timer[1] = 1;
-    Order_Dir[1] = 8;
-    Order[3] = 2;
-    Order_Timer[3] = 1;
-    Order_Dir[3] = 8;
-    Order[5] = 2;
-    Order[6] = 2;
-    Order_Timer[5] = 1;
-    Order_Timer[6] = 1;
-    Order_Dir[5] = 8;
-    Order_Dir[6] = 8;
+    g_state.Order[0] = 2;
+    g_state.Order_Timer[0] = 1;
+    g_state.Order_Dir[0] = 8;
+    g_state.Order[2] = 2;
+    g_state.Order_Timer[2] = 1;
+    g_state.Order_Dir[2] = 8;
+    g_state.Order[1] = 2;
+    g_state.Order_Timer[1] = 1;
+    g_state.Order_Dir[1] = 8;
+    g_state.Order[3] = 2;
+    g_state.Order_Timer[3] = 1;
+    g_state.Order_Dir[3] = 8;
+    g_state.Order[5] = 2;
+    g_state.Order[6] = 2;
+    g_state.Order_Timer[5] = 1;
+    g_state.Order_Timer[6] = 1;
+    g_state.Order_Dir[5] = 8;
+    g_state.Order_Dir[6] = 8;
 }
 
 /** @brief Per-player select control — dispatch PL_Sel phases if the player is an operator. */
 static void Player_Select_Control() {
-    if (plw[ID2].wu.pl_operator != 0) {
-        switch (SP_No[ID2][1]) {
+    if (g_state.plw[g_state.ID2].wu.pl_operator != 0) {
+        switch (g_state.SP_No[g_state.ID2][1]) {
         case PL_SEL_1ST:
             PL_Sel_1st();
             break;
@@ -885,9 +886,9 @@ static void PL_Sel_1st() {
     s16 ret;
     s16 ret2;
 
-    if (Sel_PL_Complete[ID2] == -0x8000) {
-        SP_No[ID2][1] = 2;
-        Push_LDREQ_Queue_Player(ID2, My_char[ID2]);
+    if (g_state.Sel_PL_Complete[g_state.ID2] == -0x8000) {
+        g_state.SP_No[g_state.ID2][1] = 2;
+        Push_LDREQ_Queue_Player(g_state.ID2, g_state.My_char[g_state.ID2]);
         ret = check_use_all_SA();
         ret2 = check_without_SA();
         ret |= ret2;
@@ -896,30 +897,30 @@ static void PL_Sel_1st() {
             return;
         }
 
-        if (My_char[ID2] == 0) {
+        if (g_state.My_char[g_state.ID2] == 0) {
             return;
         }
 
-        Sel_Arts_Complete[ID2] = 0;
-        Setup_Plates(ID2, 0x55);
-        effect_50_init(ID2, 1, 0);
-        effect_50_init(ID2, 1, 1);
-        effect_50_init(ID2, 2, 0);
-        effect_50_init(ID2, 2, 1);
+        g_state.Sel_Arts_Complete[g_state.ID2] = 0;
+        Setup_Plates(g_state.ID2, 0x55);
+        effect_50_init(g_state.ID2, 1, 0);
+        effect_50_init(g_state.ID2, 1, 1);
+        effect_50_init(g_state.ID2, 2, 0);
+        effect_50_init(g_state.ID2, 2, 1);
 
         if (Debug_w[DEBUG_MY_CHAR_PL1]) {
-            My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
+            g_state.My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
         }
 
         if (!Debug_w[DEBUG_MY_CHAR_PL2]) {
             return;
         }
 
-        My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
+        g_state.My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
         return;
     }
 
-    SP_No[ID2][1]++;
+    g_state.SP_No[g_state.ID2][1]++;
 }
 
 /** @brief PL_Sel phase 2 — handle character confirmation via loading and SA-availability checks. */
@@ -927,9 +928,9 @@ static void PL_Sel_2nd() {
     s16 ret;
     s16 ret2;
 
-    switch (SP_No[ID2][3]) {
+    switch (g_state.SP_No[g_state.ID2][3]) {
     case 0:
-        if (!Sel_PL_Complete[ID2]) {
+        if (!g_state.Sel_PL_Complete[g_state.ID2]) {
             break;
         }
 
@@ -937,50 +938,50 @@ static void PL_Sel_2nd() {
         ret2 = check_without_SA();
         ret |= ret2;
 
-        if (ret != 0 || My_char[ID2] == 0) {
-            SP_No[ID2][3]++;
-            Cursor_Timer[ID2] = 40;
+        if (ret != 0 || g_state.My_char[g_state.ID2] == 0) {
+            g_state.SP_No[g_state.ID2][3]++;
+            g_state.Cursor_Timer[g_state.ID2] = 40;
             Go_Away_Red_Lines();
 
-            if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
-                S_No[3] = 1;
+            if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+                g_state.S_No[3] = 1;
                 break;
             }
 
             break;
         }
 
-        SP_No[ID2][1]++;
-        Setup_Plates(ID2, 1);
-        effect_50_init(ID2, 1, 0);
-        effect_50_init(ID2, 1, 1);
-        effect_50_init(ID2, 2, 0);
-        effect_50_init(ID2, 2, 1);
+        g_state.SP_No[g_state.ID2][1]++;
+        Setup_Plates(g_state.ID2, 1);
+        effect_50_init(g_state.ID2, 1, 0);
+        effect_50_init(g_state.ID2, 1, 1);
+        effect_50_init(g_state.ID2, 2, 0);
+        effect_50_init(g_state.ID2, 2, 1);
         break;
 
     case 1:
-        if ((Cursor_Timer[ID2] -= 1) != 0) {
+        if ((g_state.Cursor_Timer[g_state.ID2] -= 1) != 0) {
             break;
         }
 
-        Sel_Arts_Complete[ID2] = -1;
-        SP_No[ID2][1]++;
-        SP_No[ID2][3] = 0;
+        g_state.Sel_Arts_Complete[g_state.ID2] = -1;
+        g_state.SP_No[g_state.ID2][1]++;
+        g_state.SP_No[g_state.ID2][3] = 0;
         Setup_ID();
 
-        if (Used_char[ID2] != My_char[ID2]) {
-            Last_Player_id = ID2;
+        if (g_state.Used_char[g_state.ID2] != g_state.My_char[g_state.ID2]) {
+            g_state.Last_Player_id = g_state.ID2;
         }
 
-        Used_char[ID2] = My_char[ID2];
+        g_state.Used_char[g_state.ID2] = g_state.My_char[g_state.ID2];
         break;
     }
 }
 
 /** @brief PL_Sel phase 3 — wait for arts completion before advancing. */
 static void PL_Sel_3rd() {
-    if (Sel_Arts_Complete[ID2] < 0) {
-        SP_No[ID2][1]++;
+    if (g_state.Sel_Arts_Complete[g_state.ID2] < 0) {
+        g_state.SP_No[g_state.ID2][1]++;
     }
 }
 
@@ -992,17 +993,17 @@ static void PL_Sel_5th() {}
 
 /** @brief Spawn the 3 super-art selection plates for the given player. */
 static void Setup_Plates(s8 PL_id, s16 Time) {
-    Move_Super_Arts[PL_id] = 3;
-    Select_Arts[PL_id] = 3;
-    effect_79_init(PL_id, 0, Arts_Y_Data[Super_Arts[PL_id]][0], Time, 2);
-    effect_79_init(PL_id, 1, Arts_Y_Data[Super_Arts[PL_id]][1], Time, 2);
-    effect_79_init(PL_id, 2, Arts_Y_Data[Super_Arts[PL_id]][2], Time, 2);
+    g_state.Move_Super_Arts[PL_id] = 3;
+    g_state.Select_Arts[PL_id] = 3;
+    effect_79_init(PL_id, 0, Arts_Y_Data[g_state.Super_Arts[PL_id]][0], Time, 2);
+    effect_79_init(PL_id, 1, Arts_Y_Data[g_state.Super_Arts[PL_id]][1], Time, 2);
+    effect_79_init(PL_id, 2, Arts_Y_Data[g_state.Super_Arts[PL_id]][2], Time, 2);
 }
 
 /** @brief Per-player character-select state machine dispatcher. */
 static void Sel_PL() {
-    if (plw[ID].wu.pl_operator != 0) {
-        switch (SP_No[ID][0]) {
+    if (g_state.plw[g_state.ID].wu.pl_operator != 0) {
+        switch (g_state.SP_No[g_state.ID][0]) {
         case SEL_PL_1ST:
             Sel_PL_1st();
             break;
@@ -1025,25 +1026,25 @@ static void Sel_PL() {
     }
 }
 
-/** @brief Sel_PL phase 1 — init cursor/auto-repeat state, spawn D8/voice, set Select_Start. */
+/** @brief Sel_PL phase 1 — init cursor/auto-repeat state, spawn D8/voice, set g_state.Select_Start. */
 static void Sel_PL_1st() {
     u16 Rnd;
 
-    if (Exit_No) {
+    if (g_state.Exit_No) {
         return;
     }
 
-    SP_No[ID][0]++;
-    Stop_Cursor[ID] = 1;
-    Auto_No[ID] = 0;
-    Auto_Index[ID] = 0;
-    Auto_Cursor[ID] = 0;
-    Moving_Plate[ID] = 0;
-    Moving_Plate_Counter[ID] = 0;
-    Select_Start[ID] = 2;
-    Select_Arts[ID] = -1;
+    g_state.SP_No[g_state.ID][0]++;
+    g_state.Stop_Cursor[g_state.ID] = 1;
+    g_state.Auto_No[g_state.ID] = 0;
+    g_state.Auto_Index[g_state.ID] = 0;
+    g_state.Auto_Cursor[g_state.ID] = 0;
+    g_state.Moving_Plate[g_state.ID] = 0;
+    g_state.Moving_Plate_Counter[g_state.ID] = 0;
+    g_state.Select_Start[g_state.ID] = 2;
+    g_state.Select_Arts[g_state.ID] = -1;
 
-    if (ID == 1) {
+    if (g_state.ID == 1) {
         effect_D8_init(1, 1);
         effect_D8_init(1, 3);
         Rnd = random_16() & 3;
@@ -1055,88 +1056,88 @@ static void Sel_PL_1st() {
         Free_Ptr[0] = Voice_Random_Data[1][Rnd];
     }
 
-    if (Sel_PL_Complete[ID]) {
-        SP_No[ID][0] = 3;
-        Select_Start[ID] = 3;
-        Select_Arts[ID] = 3;
-        Stop_Cursor[ID] = 1;
-        paring_ctr_vs[0][ID] = 0;
-        paring_ctr_vs[1][ID] = 0;
+    if (g_state.Sel_PL_Complete[g_state.ID]) {
+        g_state.SP_No[g_state.ID][0] = 3;
+        g_state.Select_Start[g_state.ID] = 3;
+        g_state.Select_Arts[g_state.ID] = 3;
+        g_state.Stop_Cursor[g_state.ID] = 1;
+        g_state.paring_ctr_vs[0][g_state.ID] = 0;
+        g_state.paring_ctr_vs[1][g_state.ID] = 0;
         return;
     }
 
-    Arts_Y[ID] = Super_Arts[ID] = Last_Super_Arts[ID];
+    g_state.Arts_Y[g_state.ID] = g_state.Super_Arts[g_state.ID] = g_state.Last_Super_Arts[g_state.ID];
 }
 
-/** @brief Sel_PL phase 2 — wait for Select_Start countdown, then enable cursor input. */
+/** @brief Sel_PL phase 2 — wait for g_state.Select_Start countdown, then enable cursor input. */
 static void Sel_PL_2nd() {
-    if (Select_Start[ID] > 0) {
+    if (g_state.Select_Start[g_state.ID] > 0) {
         return;
     }
 
-    SP_No[ID][0]++;
-    Stop_Cursor[ID] = 0;
-    Deley_Shot_No[ID] = 0;
-    Cursor_Timer[ID] = 1;
+    g_state.SP_No[g_state.ID][0]++;
+    g_state.Stop_Cursor[g_state.ID] = 0;
+    g_state.Deley_Shot_No[g_state.ID] = 0;
+    g_state.Cursor_Timer[g_state.ID] = 1;
 
-    if (Demo_Flag == 0) {
-        Demo_Timer[ID] = 0;
-        Demo_Ptr[ID] = (u16*)Sel_PL_Data_Address[Select_Demo_Index];
+    if (g_state.Demo_Flag == 0) {
+        g_state.Demo_Timer[g_state.ID] = 0;
+        Demo_Ptr[g_state.ID] = (u16*)Sel_PL_Data_Address[g_state.Select_Demo_Index];
     }
 }
 
 /** @brief Sel_PL phase 3 — handle cursor+button input per-player (or demo), commit character on press. */
 static void Sel_PL_3rd() {
-    if (Stop_Cursor[ID] != 0 || Face_Move != 0) {
+    if (g_state.Stop_Cursor[g_state.ID] != 0 || g_state.Face_Move != 0) {
         return;
     }
 
-    if (Demo_Flag == 0) {
-        if (ID) {
+    if (g_state.Demo_Flag == 0) {
+        if (g_state.ID) {
             Sel_PL_Sub(1, Check_Demo_Data(1));
         } else {
             Sel_PL_Sub(0, Check_Demo_Data(0));
         }
-    } else if (ID) {
+    } else if (g_state.ID) {
         Sel_PL_Sub(1, Deley_Shot_Sub(1));
     } else {
         Sel_PL_Sub(0, Deley_Shot_Sub(0));
     }
 
-    if (Sel_PL_Complete[ID] >= 0) {
+    if (g_state.Sel_PL_Complete[g_state.ID] >= 0) {
         return;
     }
 
     if (Debug_w[DEBUG_MY_CHAR_PL1]) {
-        My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
+        g_state.My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
     }
 
     if (Debug_w[DEBUG_MY_CHAR_PL2]) {
-        My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
+        g_state.My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
     }
 
-    Push_LDREQ_Queue_Player(ID, My_char[ID]);
-    SP_No[ID][0]++;
-    Stop_Cursor[ID] = 1;
-    Auto_No[ID] = 0;
-    paring_ctr_vs[0][ID] = 0;
-    paring_ctr_vs[1][ID] = 0;
+    Push_LDREQ_Queue_Player(g_state.ID, g_state.My_char[g_state.ID]);
+    g_state.SP_No[g_state.ID][0]++;
+    g_state.Stop_Cursor[g_state.ID] = 1;
+    g_state.Auto_No[g_state.ID] = 0;
+    g_state.paring_ctr_vs[0][g_state.ID] = 0;
+    g_state.paring_ctr_vs[1][g_state.ID] = 0;
 
-    if (Continue_Coin[ID] == 0) {
-        Clear_Break_Com(ID);
-        grade_check_work_1st_init(ID, 0);
-        grade_check_work_1st_init(ID, 1);
-        Initialize_EM_Candidate(ID);
-        Best_Grade[ID] = -1;
-        Result_Timer[ID] = 180;
-        Request_Disp_Rank[ID][0] = -1;
-        Request_Disp_Rank[ID][1] = -1;
-        Request_Disp_Rank[ID][2] = -1;
-        Request_Disp_Rank[ID][3] = -1;
+    if (g_state.Continue_Coin[g_state.ID] == 0) {
+        Clear_Break_Com(g_state.ID);
+        grade_check_work_1st_init(g_state.ID, 0);
+        grade_check_work_1st_init(g_state.ID, 1);
+        Initialize_EM_Candidate(g_state.ID);
+        g_state.Best_Grade[g_state.ID] = -1;
+        g_state.Result_Timer[g_state.ID] = 180;
+        g_state.Request_Disp_Rank[g_state.ID][0] = -1;
+        g_state.Request_Disp_Rank[g_state.ID][1] = -1;
+        g_state.Request_Disp_Rank[g_state.ID][2] = -1;
+        g_state.Request_Disp_Rank[g_state.ID][3] = -1;
         return;
     }
 
-    Check_Same_CPU(ID);
+    Check_Same_CPU(g_state.ID);
 }
 
 /** @brief Delayed-shot sub — accumulate attack buttons over a short window for multi-button detection. */
@@ -1153,7 +1154,7 @@ static u16 Deley_Shot_Sub(s16 PL_id) {
     lever = Disposal_Of_Diagonal(sw);
     sw &= SWK_ATTACKS;
 
-    switch (Deley_Shot_No[PL_id]) {
+    switch (g_state.Deley_Shot_No[PL_id]) {
     case 0:
         if (!(sw & SWK_ATTACKS)) {
             break;
@@ -1168,15 +1169,15 @@ static u16 Deley_Shot_Sub(s16 PL_id) {
         }
 
         Color7[PL_id] = sw;
-        Deley_Shot_No[PL_id] = 1;
-        Deley_Shot_Timer[PL_id] = 3;
+        g_state.Deley_Shot_No[PL_id] = 1;
+        g_state.Deley_Shot_Timer[PL_id] = 3;
 
         break;
 
     case 1:
         Color7[PL_id] |= sw;
 
-        if ((Deley_Shot_Timer[PL_id] -= 1) == 0) {
+        if ((g_state.Deley_Shot_Timer[PL_id] -= 1) == 0) {
             return lever | Color7[PL_id];
         }
 
@@ -1192,42 +1193,42 @@ static u16 Deley_Shot_Sub(s16 PL_id) {
 
 /** @brief Sel_PL phase 4 — wait for arts plate animation to finish, then enable cursor. */
 static void Sel_PL_4th() {
-    if (!Select_Arts[ID]) {
-        SP_No[ID][0]++;
-        Stop_Cursor[ID] = 0;
+    if (!g_state.Select_Arts[g_state.ID]) {
+        g_state.SP_No[g_state.ID][0]++;
+        g_state.Stop_Cursor[g_state.ID] = 0;
     }
 }
 
 /** @brief Sel_PL phase 5 — super-art selection input; check boss on completion. */
 static void Sel_PL_5th() {
-    if (Stop_Cursor[ID] != 0 || Face_Move != 0) {
+    if (g_state.Stop_Cursor[g_state.ID] != 0 || g_state.Face_Move != 0) {
         return;
     }
 
-    if (Demo_Flag == 0) {
-        if (ID) {
+    if (g_state.Demo_Flag == 0) {
+        if (g_state.ID) {
             Sel_Arts_Sub(1, Check_Demo_Data(1), 0);
         } else {
             Sel_Arts_Sub(0, Check_Demo_Data(0), 0);
         }
-    } else if (ID) {
+    } else if (g_state.ID) {
         Sel_Arts_Sub(1, ~p2sw_1 & p2sw_0, p2sw_0);
     } else {
         Sel_Arts_Sub(0, ~p1sw_1 & p1sw_0, p1sw_0);
     }
 
-    if (!Sel_Arts_Complete[ID]) {
+    if (!g_state.Sel_Arts_Complete[g_state.ID]) {
         return;
     }
 
-    SP_No[ID][0]++;
+    g_state.SP_No[g_state.ID][0]++;
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
-        S_No[3] = 1;
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+        g_state.S_No[3] = 1;
     }
 
-    if (plw[0].wu.pl_operator == 0 || plw[1].wu.pl_operator == 0) {
-        Check_Boss(ID);
+    if (g_state.plw[0].wu.pl_operator == 0 || g_state.plw[1].wu.pl_operator == 0) {
+        Check_Boss(g_state.ID);
     }
 }
 
@@ -1261,13 +1262,13 @@ static u16 Disposal_Of_Diagonal(u16 sw) {
 
 /** @brief Character-grid cursor logic — move cursor, play SE, confirm on attack press. */
 static void Sel_PL_Sub(s16 PL_id, u16 sw) {
-    Cursor_Move[PL_id] = 0;
+    g_state.Cursor_Move[PL_id] = 0;
 
-    if (Sel_PL_Complete[PL_id]) {
+    if (g_state.Sel_PL_Complete[PL_id]) {
         return;
     }
 
-    if (Time_Over) {
+    if (g_state.Time_Over) {
         sw = SWK_WEST;
     }
 
@@ -1275,53 +1276,53 @@ static void Sel_PL_Sub(s16 PL_id, u16 sw) {
         Auto_Repeat_Sub(PL_id);
     }
 
-    if ((Cursor_Timer[PL_id] -= 1) == 0) {
-        Cursor_Timer[PL_id] = 1;
+    if ((g_state.Cursor_Timer[PL_id] -= 1) == 0) {
+        g_state.Cursor_Timer[PL_id] = 1;
 
         if (sw & SWK_RIGHT) {
-            Cursor_Timer[PL_id] = 5;
+            g_state.Cursor_Timer[PL_id] = 5;
             Sel_PL_Sub_CR(PL_id);
         } else if (sw & SWK_LEFT) {
-            Cursor_Timer[PL_id] = 5;
+            g_state.Cursor_Timer[PL_id] = 5;
             Sel_PL_Sub_CL(PL_id);
         } else if (sw & SWK_UP) {
-            Cursor_Timer[PL_id] = 5;
+            g_state.Cursor_Timer[PL_id] = 5;
             Sel_PL_Sub_CU(PL_id);
         } else if (sw & SWK_DOWN) {
-            Cursor_Timer[PL_id] = 5;
+            g_state.Cursor_Timer[PL_id] = 5;
             Sel_PL_Sub_CD(PL_id);
         }
     }
 
-    if (Cursor_Move[PL_id]) {
-        Sound_SE(ID + 96);
+    if (g_state.Cursor_Move[PL_id]) {
+        Sound_SE(g_state.ID + 96);
     }
 
     if (!(sw & SWK_ATTACKS)) {
         return;
     }
 
-    Sel_PL_Complete[PL_id] = 1;
-    My_char[PL_id] = ID_of_Face[Cursor_Y[PL_id]][Cursor_X[PL_id]];
+    g_state.Sel_PL_Complete[PL_id] = 1;
+    g_state.My_char[PL_id] = g_state.ID_of_Face[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]];
 
-    if (Last_My_char2[PL_id] != My_char[PL_id]) {
-        Arts_Y[ID] = Super_Arts[ID] = Last_Super_Arts[ID] = 0;
-        Introduce_Boss[ID][0] = 0;
+    if (g_state.Last_My_char2[PL_id] != g_state.My_char[PL_id]) {
+        g_state.Arts_Y[g_state.ID] = g_state.Super_Arts[g_state.ID] = g_state.Last_Super_Arts[g_state.ID] = 0;
+        g_state.Introduce_Boss[g_state.ID][0] = 0;
     }
 
-    Last_My_char2[PL_id] = My_char[PL_id];
-    Last_Selected_ID = PL_id;
-    Order[1] = 2;
-    Order_Timer[1] = 1;
-    Order_Dir[1] = 8;
+    g_state.Last_My_char2[PL_id] = g_state.My_char[PL_id];
+    g_state.Last_Selected_ID = PL_id;
+    g_state.Order[1] = 2;
+    g_state.Order_Timer[1] = 1;
+    g_state.Order_Dir[1] = 8;
 
-    if (Select_Status[0] != 3) {
-        Order[2] = 1;
-        Order_Timer[2] = 10;
-        Order_Dir[2] = 4;
+    if (g_state.Select_Status[0] != 3) {
+        g_state.Order[2] = 1;
+        g_state.Order_Timer[2] = 10;
+        g_state.Order_Dir[2] = 4;
     }
 
-    Sound_SE(ID + 98);
+    Sound_SE(g_state.ID + 98);
     Sound_SE(*Free_Ptr[PL_id]++);
     Setup_PL_Color(PL_id, sw);
     Correct_Control_Time(PL_id);
@@ -1329,145 +1330,145 @@ static void Sel_PL_Sub(s16 PL_id, u16 sw) {
 
 /** @brief Move cursor right on the face grid, wrapping rows. */
 static void Sel_PL_Sub_CR(s16 PL_id) {
-    if (Cursor_X[PL_id] == 7) {
+    if (g_state.Cursor_X[PL_id] == 7) {
         return;
     }
 
-    Cursor_Move[PL_id] = 1;
+    g_state.Cursor_Move[PL_id] = 1;
 
     do {
-        Cursor_Y[PL_id]++;
+        g_state.Cursor_Y[PL_id]++;
 
-        switch (Cursor_X[PL_id]) {
+        switch (g_state.Cursor_X[PL_id]) {
         case 6:
-            if (Cursor_Y[PL_id] > 1) {
-                Cursor_Y[PL_id] = 1;
-                Cursor_X[PL_id] = 0;
+            if (g_state.Cursor_Y[PL_id] > 1) {
+                g_state.Cursor_Y[PL_id] = 1;
+                g_state.Cursor_X[PL_id] = 0;
             }
 
             break;
 
         default:
-            if (Cursor_Y[PL_id] > 2) {
-                Cursor_Y[PL_id] = 0;
-                Cursor_X[PL_id]++;
+            if (g_state.Cursor_Y[PL_id] > 2) {
+                g_state.Cursor_Y[PL_id] = 0;
+                g_state.Cursor_X[PL_id]++;
             }
 
             break;
         }
-    } while (!permission_player[Present_Mode].ok[Face_Cursor_Data[Cursor_Y[PL_id]][Cursor_X[PL_id]]]);
+    } while (!permission_player[g_state.Present_Mode].ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
 }
 
 /** @brief Move cursor left on the face grid, wrapping rows. */
 static void Sel_PL_Sub_CL(s16 PL_id) {
-    if (Cursor_X[PL_id] == 7) {
+    if (g_state.Cursor_X[PL_id] == 7) {
         return;
     }
 
-    Cursor_Move[PL_id] = 1;
+    g_state.Cursor_Move[PL_id] = 1;
 
     do {
-        Cursor_Y[PL_id]--;
+        g_state.Cursor_Y[PL_id]--;
 
-        switch (Cursor_X[PL_id]) {
+        switch (g_state.Cursor_X[PL_id]) {
         case 0:
-            if (Cursor_Y[PL_id] <= 0) {
-                Cursor_Y[PL_id] = 1;
-                Cursor_X[PL_id] = 6;
+            if (g_state.Cursor_Y[PL_id] <= 0) {
+                g_state.Cursor_Y[PL_id] = 1;
+                g_state.Cursor_X[PL_id] = 6;
             }
             break;
 
         case 1:
-            if (Cursor_Y[PL_id] < 0) {
-                Cursor_Y[PL_id] = 2;
-                Cursor_X[PL_id] = 0;
+            if (g_state.Cursor_Y[PL_id] < 0) {
+                g_state.Cursor_Y[PL_id] = 2;
+                g_state.Cursor_X[PL_id] = 0;
             }
             break;
 
         default:
-            if (Cursor_Y[PL_id] < 0) {
-                Cursor_Y[PL_id] = 2;
-                Cursor_X[PL_id]--;
+            if (g_state.Cursor_Y[PL_id] < 0) {
+                g_state.Cursor_Y[PL_id] = 2;
+                g_state.Cursor_X[PL_id]--;
             }
 
             break;
         }
-    } while (!permission_player[Present_Mode].ok[Face_Cursor_Data[Cursor_Y[PL_id]][Cursor_X[PL_id]]]);
+    } while (!permission_player[g_state.Present_Mode].ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
 }
 
 /** @brief Move cursor up on the face grid, wrapping columns. */
 static void Sel_PL_Sub_CU(s16 PL_id) {
-    Cursor_Move[PL_id] = 1;
+    g_state.Cursor_Move[PL_id] = 1;
 
     do {
-        Cursor_X[PL_id]++;
+        g_state.Cursor_X[PL_id]++;
 
-        switch (Cursor_Y[PL_id]) {
+        switch (g_state.Cursor_Y[PL_id]) {
         case 0:
-            if (Cursor_X[PL_id] > 6) {
-                Cursor_X[PL_id] = 1;
+            if (g_state.Cursor_X[PL_id] > 6) {
+                g_state.Cursor_X[PL_id] = 1;
             }
 
             break;
 
         case 1:
-            if (Cursor_X[PL_id] > 7) {
-                Cursor_X[PL_id] = 0;
+            if (g_state.Cursor_X[PL_id] > 7) {
+                g_state.Cursor_X[PL_id] = 0;
             }
 
             break;
 
         default:
-            if (Cursor_X[PL_id] > 5) {
-                Cursor_X[PL_id] = 0;
+            if (g_state.Cursor_X[PL_id] > 5) {
+                g_state.Cursor_X[PL_id] = 0;
             }
 
             break;
         }
-    } while (!permission_player[Present_Mode].ok[Face_Cursor_Data[Cursor_Y[PL_id]][Cursor_X[PL_id]]]);
+    } while (!permission_player[g_state.Present_Mode].ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
 }
 
 /** @brief Move cursor down on the face grid, wrapping columns. */
 static void Sel_PL_Sub_CD(s16 PL_id) {
-    Cursor_Move[PL_id] = 1;
+    g_state.Cursor_Move[PL_id] = 1;
 
     do {
-        Cursor_X[PL_id]--;
+        g_state.Cursor_X[PL_id]--;
 
-        switch (Cursor_Y[PL_id]) {
+        switch (g_state.Cursor_Y[PL_id]) {
         case 0:
-            if (Cursor_X[PL_id] <= 0) {
-                Cursor_X[PL_id] = 6;
+            if (g_state.Cursor_X[PL_id] <= 0) {
+                g_state.Cursor_X[PL_id] = 6;
             }
 
             break;
 
         case 1:
-            if (Cursor_X[PL_id] < 0) {
-                Cursor_X[PL_id] = 7;
+            if (g_state.Cursor_X[PL_id] < 0) {
+                g_state.Cursor_X[PL_id] = 7;
             }
 
             break;
 
         default:
-            if (Cursor_X[PL_id] < 0) {
-                Cursor_X[PL_id] = 5;
+            if (g_state.Cursor_X[PL_id] < 0) {
+                g_state.Cursor_X[PL_id] = 5;
             }
 
             break;
         }
-    } while (!permission_player[Present_Mode].ok[Face_Cursor_Data[Cursor_Y[PL_id]][Cursor_X[PL_id]]]);
+    } while (!permission_player[g_state.Present_Mode].ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
 }
 
 /** @brief Auto-repeat logic for held directions on the character grid (accelerating repeat). */
 static void Auto_Repeat_Sub(s16 PL_id) {
     u16 sw;
 
-    if (Demo_Flag == 0) {
+    if (g_state.Demo_Flag == 0) {
         return;
     }
 
-    if (Cursor_Move[PL_id]) {
+    if (g_state.Cursor_Move[PL_id]) {
         return;
     }
 
@@ -1479,56 +1480,56 @@ static void Auto_Repeat_Sub(s16 PL_id) {
 
     sw = Disposal_Of_Diagonal(sw);
 
-    switch (Auto_No[PL_id]) {
+    switch (g_state.Auto_No[PL_id]) {
     case 0:
         if (sw & SWK_RIGHT) {
-            Auto_No[PL_id] = 1;
-            Auto_Cursor[PL_id] = 8;
-            Auto_Timer[PL_id] = Repeat_Time_Data[0];
-            Auto_Index[PL_id] = 1;
+            g_state.Auto_No[PL_id] = 1;
+            g_state.Auto_Cursor[PL_id] = 8;
+            g_state.Auto_Timer[PL_id] = Repeat_Time_Data[0];
+            g_state.Auto_Index[PL_id] = 1;
             break;
         }
 
         if (sw & SWK_LEFT) {
-            Auto_No[PL_id] = 1;
-            Auto_Cursor[PL_id] = 4;
-            Auto_Timer[PL_id] = Repeat_Time_Data[0];
-            Auto_Index[PL_id] = 1;
+            g_state.Auto_No[PL_id] = 1;
+            g_state.Auto_Cursor[PL_id] = 4;
+            g_state.Auto_Timer[PL_id] = Repeat_Time_Data[0];
+            g_state.Auto_Index[PL_id] = 1;
             break;
         }
 
         if (sw & SWK_UP) {
-            Auto_No[PL_id] = 1;
-            Auto_Cursor[PL_id] = 1;
-            Auto_Timer[PL_id] = Repeat_Time_Data[0];
-            Auto_Index[PL_id] = 1;
+            g_state.Auto_No[PL_id] = 1;
+            g_state.Auto_Cursor[PL_id] = 1;
+            g_state.Auto_Timer[PL_id] = Repeat_Time_Data[0];
+            g_state.Auto_Index[PL_id] = 1;
             break;
         }
 
         if (sw & SWK_DOWN) {
-            Auto_No[PL_id] = 1;
-            Auto_Cursor[PL_id] = 2;
-            Auto_Timer[PL_id] = Repeat_Time_Data[0];
-            Auto_Index[PL_id] = 1;
+            g_state.Auto_No[PL_id] = 1;
+            g_state.Auto_Cursor[PL_id] = 2;
+            g_state.Auto_Timer[PL_id] = Repeat_Time_Data[0];
+            g_state.Auto_Index[PL_id] = 1;
         }
 
         break;
 
     case 1:
-        if (sw != Auto_Cursor[PL_id]) {
-            Auto_No[PL_id] = 0;
+        if (sw != g_state.Auto_Cursor[PL_id]) {
+            g_state.Auto_No[PL_id] = 0;
             break;
         }
 
-        if (Auto_Timer[PL_id] -= 1) {
+        if (g_state.Auto_Timer[PL_id] -= 1) {
             break;
         }
 
-        Auto_Timer[PL_id] = Repeat_Time_Data[Auto_Index[PL_id]];
-        Auto_Index[PL_id]++;
+        g_state.Auto_Timer[PL_id] = Repeat_Time_Data[g_state.Auto_Index[PL_id]];
+        g_state.Auto_Index[PL_id]++;
 
-        if ((Auto_Index[PL_id]) > 2) {
-            Auto_Index[PL_id] = 2;
+        if ((g_state.Auto_Index[PL_id]) > 2) {
+            g_state.Auto_Index[PL_id] = 2;
         }
 
         if (sw & SWK_RIGHT) {
@@ -1555,7 +1556,7 @@ static void Auto_Repeat_Sub(s16 PL_id) {
 static u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
     u16 sw;
 
-    if (Cursor_Move[PL_id] || Demo_Flag == 0) {
+    if (g_state.Cursor_Move[PL_id] || g_state.Demo_Flag == 0) {
         return 0;
     }
 
@@ -1565,34 +1566,34 @@ static u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
         sw = p2sw_0;
     }
 
-    switch (Auto_No[PL_id]) {
+    switch (g_state.Auto_No[PL_id]) {
     case 0:
         if (sw & SWK_UP) {
-            Auto_No[PL_id] = 1;
-            Auto_Cursor[PL_id] = 1;
-            Auto_Timer[PL_id] = Repeat_Time_Data_Wife[0];
-            Auto_Index[PL_id] = 1;
+            g_state.Auto_No[PL_id] = 1;
+            g_state.Auto_Cursor[PL_id] = 1;
+            g_state.Auto_Timer[PL_id] = Repeat_Time_Data_Wife[0];
+            g_state.Auto_Index[PL_id] = 1;
         } else if (sw & SWK_DOWN) {
-            Auto_No[PL_id] = 1;
-            Auto_Cursor[PL_id] = 2;
-            Auto_Timer[PL_id] = Repeat_Time_Data_Wife[0];
-            Auto_Index[PL_id] = 1;
+            g_state.Auto_No[PL_id] = 1;
+            g_state.Auto_Cursor[PL_id] = 2;
+            g_state.Auto_Timer[PL_id] = Repeat_Time_Data_Wife[0];
+            g_state.Auto_Index[PL_id] = 1;
         }
 
         break;
 
     case 1:
-        sw &= Auto_Cursor[PL_id];
+        sw &= g_state.Auto_Cursor[PL_id];
 
         if (sw) {
-            if (Auto_Timer[PL_id] -= 1) {
+            if (g_state.Auto_Timer[PL_id] -= 1) {
                 break;
             }
 
-            Auto_Timer[PL_id] = Repeat_Time_Data_Wife[Auto_Index[PL_id]++];
+            g_state.Auto_Timer[PL_id] = Repeat_Time_Data_Wife[g_state.Auto_Index[PL_id]++];
 
-            if (Auto_Index[PL_id] > 2) {
-                Auto_Index[PL_id] = 2;
+            if (g_state.Auto_Index[PL_id] > 2) {
+                g_state.Auto_Index[PL_id] = 2;
             }
 
             if (sw & SWK_UP) {
@@ -1606,7 +1607,7 @@ static u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
             break;
         }
 
-        Auto_No[PL_id] = 0;
+        g_state.Auto_No[PL_id] = 0;
         break;
     }
 
@@ -1617,23 +1618,23 @@ static u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
 static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
     u16 lever_sw;
 
-    if (Sel_Arts_Complete[PL_id]) {
+    if (g_state.Sel_Arts_Complete[PL_id]) {
         return;
     }
 
-    if (Moving_Plate_Counter[PL_id]) {
+    if (g_state.Moving_Plate_Counter[PL_id]) {
         return;
     }
 
-    if (Moving_Plate[PL_id]) {
+    if (g_state.Moving_Plate[PL_id]) {
         return;
     }
 
-    if (Plate_Disposal_No[PL_id][0] != 0 || Plate_Disposal_No[PL_id][1] != 0 || Plate_Disposal_No[PL_id][2] != 0) {
+    if (g_state.Plate_Disposal_No[PL_id][0] != 0 || g_state.Plate_Disposal_No[PL_id][1] != 0 || g_state.Plate_Disposal_No[PL_id][2] != 0) {
         return;
     }
 
-    if (Time_Over) {
+    if (g_state.Time_Over) {
         sw = SWK_WEST;
     }
 
@@ -1644,41 +1645,41 @@ static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
     }
 
     if (sw & SWK_DOWN) {
-        Sound_SE(ID + 96);
-        Moving_Plate[PL_id] = 2;
-        Moving_Plate_Counter[PL_id] = 3;
-        OK_Priority[PL_id] = 0;
+        Sound_SE(g_state.ID + 96);
+        g_state.Moving_Plate[PL_id] = 2;
+        g_state.Moving_Plate_Counter[PL_id] = 3;
+        g_state.OK_Priority[PL_id] = 0;
 
-        if ((Arts_Y[PL_id] += 1) > 2) {
-            Arts_Y[PL_id] = 0;
+        if ((g_state.Arts_Y[PL_id] += 1) > 2) {
+            g_state.Arts_Y[PL_id] = 0;
         }
     }
 
     if (sw & SWK_UP) {
-        Sound_SE(ID + 96);
-        Moving_Plate[PL_id] = 1;
-        Moving_Plate_Counter[PL_id] = 3;
-        OK_Priority[PL_id] = 0;
+        Sound_SE(g_state.ID + 96);
+        g_state.Moving_Plate[PL_id] = 1;
+        g_state.Moving_Plate_Counter[PL_id] = 3;
+        g_state.OK_Priority[PL_id] = 0;
 
-        if ((Arts_Y[PL_id] -= 1) < 0) {
-            Arts_Y[PL_id] = 2;
+        if ((g_state.Arts_Y[PL_id] -= 1) < 0) {
+            g_state.Arts_Y[PL_id] = 2;
         }
     }
 
     if (sw & SWK_ATTACKS) {
-        Stop_Cursor[ID] = 1;
-        Slide_Type = PL_id;
-        Sel_Arts_Complete[PL_id] = 1;
-        Last_Super_Arts[PL_id] = Super_Arts[PL_id] = Arts_Y[PL_id];
-        Sound_SE(ID + 98);
+        g_state.Stop_Cursor[g_state.ID] = 1;
+        g_state.Slide_Type = PL_id;
+        g_state.Sel_Arts_Complete[PL_id] = 1;
+        g_state.Last_Super_Arts[PL_id] = g_state.Super_Arts[PL_id] = g_state.Arts_Y[PL_id];
+        Sound_SE(g_state.ID + 98);
         Sound_SE(*Free_Ptr[PL_id]++);
         Setup_ID();
 
-        if (Used_char[PL_id] != My_char[PL_id]) {
-            Last_Player_id = PL_id;
+        if (g_state.Used_char[PL_id] != g_state.My_char[PL_id]) {
+            g_state.Last_Player_id = PL_id;
         }
 
-        Used_char[PL_id] = My_char[PL_id];
+        g_state.Used_char[PL_id] = g_state.My_char[PL_id];
     }
 }
 
@@ -1691,43 +1692,43 @@ static void Check_Exit() {
      * Keeping rmlui_char_select_visible == true ensures native effects
      * (eff42 timer, eff79 SA plates, etc.) stay gated through the exit
      * transition.  All visible RmlUI elements already hide themselves
-     * via data bindings (Exit_No >= 1), and the auto-hide in
-     * rmlui_char_select_update() cleans up when Play_Game != 0. */
+     * via data bindings (g_state.Exit_No >= 1), and the auto-hide in
+     * rmlui_char_select_update() cleans up when g_state.Play_Game != 0. */
 
-    Sel_Exit_Tbl[Exit_No]();
+    Sel_Exit_Tbl[g_state.Exit_No]();
 }
 
 /** @brief Exit phase 1 — wait until all operators have arts complete, dismiss red lines, route to handicap or normal
  * exit. */
 static void Exit_1st() {
-    if (plw[0].wu.pl_operator != 0 && Sel_Arts_Complete[0] >= 0) {
+    if (g_state.plw[0].wu.pl_operator != 0 && g_state.Sel_Arts_Complete[0] >= 0) {
         return;
     }
 
-    if (plw[1].wu.pl_operator != 0 && Sel_Arts_Complete[1] >= 0) {
+    if (g_state.plw[1].wu.pl_operator != 0 && g_state.Sel_Arts_Complete[1] >= 0) {
         return;
     }
 
     Go_Away_Red_Lines();
-    Order[4] = 4;
-    Order_Timer[4] = 1;
-    Order[7] = 4;
-    Order[8] = 4;
-    Order_Timer[7] = 1;
-    Order_Timer[8] = 1;
+    g_state.Order[4] = 4;
+    g_state.Order_Timer[4] = 1;
+    g_state.Order[7] = 4;
+    g_state.Order[8] = 4;
+    g_state.Order_Timer[7] = 1;
+    g_state.Order_Timer[8] = 1;
     Setup_Training_Difficulty();
 
-    if (Mode_Type == MODE_VERSUS && CurrentSave()->Handicap != 0) {
-        Exit_No = 7;
+    if (g_state.Mode_Type == MODE_VERSUS && CurrentSave()->Handicap != 0) {
+        g_state.Exit_No = 7;
     } else {
-        Exit_No++;
+        g_state.Exit_No++;
     }
 
-    if (Demo_Flag) {
-        E_No[0] = 3;
-        E_No[1] = 0;
-        E_No[2] = 0;
-        E_No[3] = 0;
+    if (g_state.Demo_Flag) {
+        g_state.E_No[0] = 3;
+        g_state.E_No[1] = 0;
+        g_state.E_No[2] = 0;
+        g_state.E_No[3] = 0;
     }
 }
 
@@ -1735,116 +1736,116 @@ static void Exit_1st() {
 static void Exit_2nd() {
     s16 xx;
 
-    S_No[1] = 0;
+    g_state.S_No[1] = 0;
 
-    if (Select_Status[0] == 3) {
-        Exit_No = 3;
-        Last_My_char[0] = My_char[0];
-        Last_My_char[1] = My_char[1];
-        Battle_Country = Setup_Battle_Country();
-        bg_w.stage = Battle_Country;
-        bg_w.area = 0;
+    if (g_state.Select_Status[0] == 3) {
+        g_state.Exit_No = 3;
+        g_state.Last_My_char[0] = g_state.My_char[0];
+        g_state.Last_My_char[1] = g_state.My_char[1];
+        g_state.Battle_Country = Setup_Battle_Country();
+        g_state.bg_w.stage = g_state.Battle_Country;
+        g_state.bg_w.area = 0;
 
         if (Debug_w[DEBUG_STAGE_SELECT]) {
-            Battle_Country = bg_w.stage = Debug_w[DEBUG_STAGE_SELECT] - 1;
+            g_state.Battle_Country = g_state.bg_w.stage = Debug_w[DEBUG_STAGE_SELECT] - 1;
         }
 
-        Push_LDREQ_Queue_BG(bg_w.stage + 0);
+        Push_LDREQ_Queue_BG(g_state.bg_w.stage + 0);
         return;
     }
 
-    if (Scene_Cut) {
-        Exit_Timer = 1;
+    if (g_state.Scene_Cut) {
+        g_state.Exit_Timer = 1;
     } else {
-        Exit_Timer = 60;
+        g_state.Exit_Timer = 60;
     }
 
-    Exit_No++;
-    Last_My_char[Player_id] = My_char[Player_id];
-    Time_Stop = 2;
+    g_state.Exit_No++;
+    g_state.Last_My_char[g_state.Player_id] = g_state.My_char[g_state.Player_id];
+    g_state.Time_Stop = 2;
 
     for (xx = 0; xx < 4; xx++) {
-        SC_No[xx] = 0;
+        g_state.SC_No[xx] = 0;
     }
 }
 
-/** @brief Exit phase 3 — run Select_CPU_First, then set EM_Rank for the upcoming fight. */
+/** @brief Exit phase 3 — run Select_CPU_First, then set g_state.EM_Rank for the upcoming fight. */
 static void Exit_3rd() {
     if (!Select_CPU_First()) {
         return;
     }
 
-    Exit_No++;
-    S_No[1] = 0;
-    Suicide[3] = 1;
+    g_state.Exit_No++;
+    g_state.S_No[1] = 0;
+    g_state.Suicide[3] = 1;
 
-    if (VS_Index[Player_id] >= 9) {
-        EM_Rank = 1;
+    if (g_state.VS_Index[g_state.Player_id] >= 9) {
+        g_state.EM_Rank = 1;
         return;
     }
 
-    EM_Rank = 0;
+    g_state.EM_Rank = 0;
 }
 
 /** @brief Exit phase 4 — fade in, start BGM, spawn VS-screen objects. */
 static void Exit_4th() {
     FadeInit();
     FadeIn(0, 4, 8);
-    Exit_No++;
-    Forbid_Break = 0;
-    Suicide[0] = 1;
-    Menu_Suicide[0] = 1;
-    bgPalCodeOffset[0] = 144;
+    g_state.Exit_No++;
+    g_state.Forbid_Break = 0;
+    g_state.Suicide[0] = 1;
+    g_state.Menu_Suicide[0] = 1;
+    g_state.bgPalCodeOffset[0] = 144;
     BGM_Request(51);
-    Exit_Timer = 240;
+    g_state.Exit_Timer = 240;
     effect_58_init(17, 2, 0);
 
-    if (Select_Status[0] != 3) {
+    if (g_state.Select_Status[0] != 3) {
         effect_K6_init(0, 35, 35, 2);
-        Order[35] = 3;
-        Order_Timer[35] = 1;
+        g_state.Order[35] = 3;
+        g_state.Order_Timer[35] = 1;
         effect_K6_init(1, 36, 35, 2);
-        Order[36] = 3;
-        Order_Timer[36] = 1;
-        effect_39_init(0, 17, My_char[0], 2, 0);
-        Order[17] = 3;
-        Order_Timer[17] = 1;
-        effect_39_init(1, 18, My_char[1], 2, 0);
-        Order[18] = 3;
-        Order_Timer[18] = 1;
+        g_state.Order[36] = 3;
+        g_state.Order_Timer[36] = 1;
+        effect_39_init(0, 17, g_state.My_char[0], 2, 0);
+        g_state.Order[17] = 3;
+        g_state.Order_Timer[17] = 1;
+        effect_39_init(1, 18, g_state.My_char[1], 2, 0);
+        g_state.Order[18] = 3;
+        g_state.Order_Timer[18] = 1;
         effect_K6_init(0, 29, 29, 2);
-        Order[29] = 3;
-        Order_Timer[29] = 1;
+        g_state.Order[29] = 3;
+        g_state.Order_Timer[29] = 1;
         effect_K6_init(1, 30, 29, 2);
-        Order[30] = 3;
-        Order_Timer[30] = 1;
-    } else if (Win_Record[Champion]) {
+        g_state.Order[30] = 3;
+        g_state.Order_Timer[30] = 1;
+    } else if (g_state.Win_Record[g_state.Champion]) {
         effect_76_init(72);
-        Order[72] = 3;
-        Order_Timer[72] = 1;
+        g_state.Order[72] = 3;
+        g_state.Order_Timer[72] = 1;
         effect_76_init(73);
-        Order[73] = 3;
-        Order_Timer[73] = 1;
+        g_state.Order[73] = 3;
+        g_state.Order_Timer[73] = 1;
     }
 
     effect_43_init(2, 2);
-    Order[42] = 2;
-    Order_Timer[42] = 1;
-    Order_Dir[42] = 5;
+    g_state.Order[42] = 2;
+    g_state.Order_Timer[42] = 1;
+    g_state.Order_Dir[42] = 5;
 }
 
 /** @brief Exit phase 5 — count down while fading, then advance. */
 static void Exit_5th() {
-    Exit_Timer--;
+    g_state.Exit_Timer--;
 
     if (!FadeIn(0, 4, 8)) {
         return;
     }
 
-    Exit_No++;
+    g_state.Exit_No++;
 
-    if (Exit_Timer < 0) {
-        Exit_Timer = 1;
+    if (g_state.Exit_Timer < 0) {
+        g_state.Exit_Timer = 1;
     }
 }
 
@@ -1854,25 +1855,25 @@ static void Exit_6th() {
         return;
     }
 
-    if (!Check_LDREQ_Queue_BG(bg_w.stage + 0)) {
+    if (!Check_LDREQ_Queue_BG(g_state.bg_w.stage + 0)) {
         return;
     }
 
     // We shouldn't skip VS screen in network mode, because that can lead to IO race conditions
-    if (Scene_Cut && (Mode_Type != MODE_NETWORK)) {
-        Exit_Timer = 1;
+    if (g_state.Scene_Cut && (g_state.Mode_Type != MODE_NETWORK)) {
+        g_state.Exit_Timer = 1;
     }
 
-    if ((Exit_Timer -= 1) == 0) {
-        Exit_No++;
+    if ((g_state.Exit_Timer -= 1) == 0) {
+        g_state.Exit_No++;
         init_omop();
     }
 }
 
 /** @brief Exit phase 7 — set final battle stage and signal exit. */
 static void Exit_7th() {
-    bg_w.stage = Battle_Country;
-    bg_w.area = 0;
+    g_state.bg_w.stage = g_state.Battle_Country;
+    g_state.bg_w.area = 0;
     SEL_PL_X = 1;
 
     if (use_rmlui && rmlui_screen_select)
@@ -1881,38 +1882,38 @@ static void Exit_7th() {
 
 /** @brief Handicap phase 1 — spawn handicap menu UI (vital bars, stage selector, labels). */
 static void Handicap_1st() {
-    Exit_No++;
+    g_state.Exit_No++;
     Decide_Stage = 0;
     Menu_Common_Init();
     Setup_Training_Difficulty();
-    SP_No[0][2] = 0;
-    SP_No[1][2] = 0;
+    g_state.SP_No[0][2] = 0;
+    g_state.SP_No[1][2] = 0;
     effect_66_init(138, 31, 0, 2, -1, -1, -0x7FF8);
-    Order[138] = 3;
-    Order_Timer[138] = 1;
+    g_state.Order[138] = 3;
+    g_state.Order_Timer[138] = 1;
     effect_66_init(139, 35, 0, 2, 71, 20, 0);
-    Order[139] = 5;
+    g_state.Order[139] = 5;
     effect_66_init(140, 36, 0, 2, 71, 20, 0);
-    Order[140] = 5;
+    g_state.Order[140] = 5;
     effect_66_init(141, 37, 0, 2, 71, 21, 0);
-    Order[141] = 5;
+    g_state.Order[141] = 5;
     effect_66_init(91, 28, 0, 2, 71, 15, 0);
-    Order[91] = 3;
-    Order_Timer[91] = 1;
+    g_state.Order[91] = 3;
+    g_state.Order_Timer[91] = 1;
     effect_66_init(92, 29, 0, 2, 71, 16, 0);
-    Order[92] = 3;
-    Order_Timer[92] = 1;
+    g_state.Order[92] = 3;
+    g_state.Order_Timer[92] = 1;
     effect_66_init(93, 30, 0, 2, 71, 17, 0);
-    Order[93] = 3;
-    Order_Timer[93] = 1;
+    g_state.Order[93] = 3;
+    g_state.Order_Timer[93] = 1;
     effect_66_init(120, 32, 0, 2, 71, 18, 0);
-    Order[120] = 2;
-    Order_Timer[120] = 1;
+    g_state.Order[120] = 2;
+    g_state.Order_Timer[120] = 1;
     effect_66_init(121, 33, 0, 2, 71, 18, 0);
-    Order[121] = 2;
-    Order_Timer[121] = 1;
+    g_state.Order[121] = 2;
+    g_state.Order_Timer[121] = 1;
     effect_66_init(122, 34, 0, 2, 71, 19, 0);
-    Order[122] = 5;
+    g_state.Order[122] = 5;
     effect_99_init(0, 0, 0x7047, 0, 0, 0);
     effect_99_init(1, 0, 0x7047, 1, 1, 0);
     effect_99_init(255, 1, 0x7047, 2, 2, 0);
@@ -1922,26 +1923,26 @@ static void Handicap_1st() {
 
 /** @brief Handicap phase 2 — run per-player handicap control. */
 static void Handicap_2nd() {
-    ID2 = 0;
+    g_state.ID2 = 0;
     Handicap_Control();
-    ID2 = 1;
+    g_state.ID2 = 1;
     Handicap_Control();
 }
 
 /** @brief Handicap phase 3 — fade BGM and return to exit phase 1 when timer expires. */
 static void Handicap_3rd() {
-    if (S_Timer == 9) {
+    if (g_state.S_Timer == 9) {
         SsBgmFadeOut(0x1000);
     }
 
-    if ((S_Timer -= 1) == 0) {
-        Exit_No = 1;
+    if ((g_state.S_Timer -= 1) == 0) {
+        g_state.Exit_No = 1;
     }
 }
 
 /** @brief Per-player handicap sub-state machine dispatcher. */
 static void Handicap_Control() {
-    switch (SP_No[ID2][2]) {
+    switch (g_state.SP_No[g_state.ID2][2]) {
     case HANDICAP_1:
         Handicap_1();
         break;
@@ -1959,27 +1960,27 @@ static void Handicap_Control() {
 
 /** @brief Handicap sub 1 — vital-bar selection for this player; advance when confirmed. */
 static void Handicap_1() {
-    Handicap_Vital_Select(ID2);
+    Handicap_Vital_Select(g_state.ID2);
 
-    if (!(IO_Result & 0x100)) {
+    if (!(g_state.IO_Result & 0x100)) {
         return;
     }
 
     SE_selected();
-    Order[ID2 + 120] = 5;
-    Order[ID2 + 139] = 6;
-    Order_Timer[ID2 + 139] = 1;
+    g_state.Order[g_state.ID2 + 120] = 5;
+    g_state.Order[g_state.ID2 + 139] = 6;
+    g_state.Order_Timer[g_state.ID2 + 139] = 1;
 
-    if (SP_No[ID2 ^ 1][2] == 2) {
-        SP_No[ID2][2] = 1;
+    if (g_state.SP_No[g_state.ID2 ^ 1][2] == 2) {
+        g_state.SP_No[g_state.ID2][2] = 1;
         return;
     }
 
-    SP_No[ID2][2] = 2;
+    g_state.SP_No[g_state.ID2][2] = 2;
 
-    if (SP_No[ID2 ^ 1][2] < 3) {
-        Order[122] = 2;
-        Order_Timer[122] = 1;
+    if (g_state.SP_No[g_state.ID2 ^ 1][2] < 3) {
+        g_state.Order[122] = 2;
+        g_state.Order_Timer[122] = 1;
     }
 }
 
@@ -1987,25 +1988,25 @@ static void Handicap_1() {
 static void Handicap_2() {
     u16 sw;
 
-    if (ID2 == 0) {
+    if (g_state.ID2 == 0) {
         sw = ~p1sw_1 & p1sw_0;
     } else {
         sw = ~p2sw_1 & p2sw_0;
     }
 
     if (sw & SWK_EAST && Decide_Stage == 0) {
-        SP_No[ID2][2] = 0;
+        g_state.SP_No[g_state.ID2][2] = 0;
         SE_selected();
-        Order[ID2 + 139] = 5;
-        Order[ID2 + 120] = 2;
-        Order_Timer[ID2 + 120] = 1;
+        g_state.Order[g_state.ID2 + 139] = 5;
+        g_state.Order[g_state.ID2 + 120] = 2;
+        g_state.Order_Timer[g_state.ID2 + 120] = 1;
         return;
     }
 
-    if (SP_No[ID2 ^ 1][2] == 0) {
-        SP_No[ID2][2] = 2;
-        Order[122] = 2;
-        Order_Timer[122] = 1;
+    if (g_state.SP_No[g_state.ID2 ^ 1][2] == 0) {
+        g_state.SP_No[g_state.ID2][2] = 2;
+        g_state.Order[122] = 2;
+        g_state.Order_Timer[122] = 1;
     }
 }
 
@@ -2013,25 +2014,25 @@ u8 hc3alphaadd = { 1 };
 
 /** @brief Handicap sub 3 — stage selection with flashing cursor; back or confirm. */
 static void Handicap_3() {
-    Handicap_Stage_Select(ID2);
+    Handicap_Stage_Select(g_state.ID2);
 
-    if (IO_Result & 0x100) {
-        SP_No[ID2][2]++;
+    if (g_state.IO_Result & 0x100) {
+        g_state.SP_No[g_state.ID2][2]++;
         SE_selected();
-        Order[141] = 6;
-        Order_Timer[141] = 1;
-        Order[122] = 5;
+        g_state.Order[141] = 6;
+        g_state.Order_Timer[141] = 1;
+        g_state.Order[122] = 5;
         Decide_Stage = 1;
         return;
     }
 
-    if (IO_Result & 0x200 && Decide_Stage == 0) {
-        SP_No[ID2][2] = 0;
+    if (g_state.IO_Result & 0x200 && Decide_Stage == 0) {
+        g_state.SP_No[g_state.ID2][2] = 0;
         SE_selected();
-        Order[122] = 5;
-        Order[ID2 + 139] = 5;
-        Order[ID2 + 120] = 2;
-        Order_Timer[ID2 + 120] = 1;
+        g_state.Order[122] = 5;
+        g_state.Order[g_state.ID2 + 139] = 5;
+        g_state.Order[g_state.ID2 + 120] = 2;
+        g_state.Order_Timer[g_state.ID2 + 120] = 1;
     }
 
     hc3alpha += hc3alphaadd;
@@ -2049,7 +2050,7 @@ static void Handicap_3() {
         return;
     }
 
-    if (ID2) {
+    if (g_state.ID2) {
         f32 dmypos[8] = { 296.0f, 90.0f, 296.0f, 98.0f, 284.0f, 90.0f, 268.0f, 112.0f };
         Renderer_Queue2DPrimitive(dmypos, PrioBase[2], (hc3alpha + 48) * 0x1000000 | 0xFFFFFF, 0);
     } else {
@@ -2060,17 +2061,17 @@ static void Handicap_3() {
 
 /** @brief Handicap sub 4 — wait for both players to finish, then advance to exit timer. */
 static void Handicap_4() {
-    if (SP_No[0][2] > 0 && SP_No[1][2] > 0) {
-        Exit_No = 9;
-        S_Timer = 60;
+    if (g_state.SP_No[0][2] > 0 && g_state.SP_No[1][2] > 0) {
+        g_state.Exit_No = 9;
+        g_state.S_Timer = 60;
     }
 }
 
 /** @brief Read pad input and process vital-bar handicap lever movement. */
 static void Handicap_Vital_Select(s16 PL_id) {
     Setup_Pad_or_Stick();
-    IO_Result = Check_Menu_Lever(PL_id, 0);
-    Handicap_Vital_Move_Sub(IO_Result, PL_id);
+    g_state.IO_Result = Check_Menu_Lever(PL_id, 0);
+    Handicap_Vital_Move_Sub(g_state.IO_Result, PL_id);
 }
 
 /** @brief Move the vital-bar handicap slider left/right (direction swapped for 2P). */
@@ -2078,8 +2079,8 @@ static u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id) {
     if (PL_id == 0) {
         switch (sw) {
         case SWK_LEFT:
-            if ((Vital_Handicap[Present_Mode][PL_id] += 1) > 7) {
-                Vital_Handicap[Present_Mode][PL_id] = 7;
+            if ((g_state.Vital_Handicap[g_state.Present_Mode][PL_id] += 1) > 7) {
+                g_state.Vital_Handicap[g_state.Present_Mode][PL_id] = 7;
             } else {
                 SE_dir_cursor_move();
             }
@@ -2087,8 +2088,8 @@ static u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id) {
             return SWK_LEFT;
 
         case SWK_RIGHT:
-            if ((Vital_Handicap[Present_Mode][PL_id] -= 1) < 0) {
-                Vital_Handicap[Present_Mode][PL_id] = 0;
+            if ((g_state.Vital_Handicap[g_state.Present_Mode][PL_id] -= 1) < 0) {
+                g_state.Vital_Handicap[g_state.Present_Mode][PL_id] = 0;
             } else {
                 SE_dir_cursor_move();
             }
@@ -2098,8 +2099,8 @@ static u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id) {
     } else {
         switch (sw) {
         case SWK_LEFT:
-            if ((Vital_Handicap[Present_Mode][PL_id] -= 1) < 0) {
-                Vital_Handicap[Present_Mode][PL_id] = 0;
+            if ((g_state.Vital_Handicap[g_state.Present_Mode][PL_id] -= 1) < 0) {
+                g_state.Vital_Handicap[g_state.Present_Mode][PL_id] = 0;
             } else {
                 SE_dir_cursor_move();
             }
@@ -2107,8 +2108,8 @@ static u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id) {
             return SWK_LEFT;
 
         case SWK_RIGHT:
-            if ((Vital_Handicap[Present_Mode][PL_id] += 1) > 7) {
-                Vital_Handicap[Present_Mode][PL_id] = 7;
+            if ((g_state.Vital_Handicap[g_state.Present_Mode][PL_id] += 1) > 7) {
+                g_state.Vital_Handicap[g_state.Present_Mode][PL_id] = 7;
             } else {
                 SE_dir_cursor_move();
             }
@@ -2123,32 +2124,32 @@ static u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id) {
 /** @brief Read pad input and process stage-select lever movement. */
 static void Handicap_Stage_Select(s16 PL_id) {
     Setup_Pad_or_Stick();
-    IO_Result = Check_Menu_Lever(PL_id, 0);
-    Handicap_Stage_Move_Sub(IO_Result);
+    g_state.IO_Result = Check_Menu_Lever(PL_id, 0);
+    Handicap_Stage_Move_Sub(g_state.IO_Result);
 }
 
 /** @brief Move the stage selector left/right, wrapping and skipping stage 17. */
 static void Handicap_Stage_Move_Sub(u16 sw) {
     switch (sw) {
     case SWK_LEFT:
-        if ((VS_Stage -= 1) < 0) {
-            VS_Stage = 20;
+        if ((g_state.VS_Stage -= 1) < 0) {
+            g_state.VS_Stage = 20;
         }
 
-        if (VS_Stage == 17) {
-            VS_Stage = 16;
+        if (g_state.VS_Stage == 17) {
+            g_state.VS_Stage = 16;
         }
 
         SE_dir_cursor_move();
         break;
 
     case SWK_RIGHT:
-        if ((VS_Stage += 1) > 20) {
-            VS_Stage = 0;
+        if ((g_state.VS_Stage += 1) > 20) {
+            g_state.VS_Stage = 0;
         }
 
-        if (VS_Stage == 17) {
-            VS_Stage = 18;
+        if (g_state.VS_Stage == 17) {
+            g_state.VS_Stage = 18;
         }
 
         SE_dir_cursor_move();
@@ -2161,69 +2162,69 @@ static void Correct_Control_Time(s16 PL_id) {
     u8 xx;
     u8 zz;
 
-    if (Play_Type == 1) {
+    if (g_state.Play_Type == 1) {
         return;
     }
 
-    if (Stage_Continue[PL_id] == 0) {
+    if (g_state.Stage_Continue[PL_id] == 0) {
         return;
     }
 
-    xx = Stage_Continue[PL_id];
+    xx = g_state.Stage_Continue[PL_id];
 
-    if (VS_Index[PL_id] >= 9) {
+    if (g_state.VS_Index[PL_id] >= 9) {
         zz = 1;
     } else {
         zz = 0;
     }
 
-    if (Stage_Continue[PL_id] >= 16) {
+    if (g_state.Stage_Continue[PL_id] >= 16) {
         xx = 16;
     } else {
-        xx = Stage_Continue[PL_id];
+        xx = g_state.Stage_Continue[PL_id];
     }
 
-    Control_Time = SC_Personal_Time[PL_id] - Correct_Cont_Time_Data[zz][xx];
+    g_state.Control_Time = g_state.SC_Personal_Time[PL_id] - Correct_Cont_Time_Data[zz][xx];
 
-    if (Control_Time < 0) {
-        Control_Time = 0;
+    if (g_state.Control_Time < 0) {
+        g_state.Control_Time = 0;
     }
 
-    SC_Personal_Time[PL_id] = Control_Time;
+    g_state.SC_Personal_Time[PL_id] = g_state.Control_Time;
 }
 
-/** @brief If the player is at boss stage and hasn’t seen the intro, force max time and flag Break_Into_CPU. */
+/** @brief If the player is at boss stage and hasn’t seen the intro, force max time and flag g_state.Break_Into_CPU. */
 static s32 Check_Boss(s16 PL_id) {
-    if (VS_Index[Player_id] >= 9 && Introduce_Boss[Player_id][1] == 0) {
-        Control_Time = Limit_Time;
-        SC_Personal_Time[PL_id] = Control_Time;
-        return Break_Into_CPU = 1;
+    if (g_state.VS_Index[g_state.Player_id] >= 9 && g_state.Introduce_Boss[g_state.Player_id][1] == 0) {
+        g_state.Control_Time = g_state.Limit_Time;
+        g_state.SC_Personal_Time[PL_id] = g_state.Control_Time;
+        return g_state.Break_Into_CPU = 1;
     }
 
-    return Break_Into_CPU = 0;
+    return g_state.Break_Into_CPU = 0;
 }
 
-/** @brief Pick the battle stage from VS_Stage, random, or character match-up. */
+/** @brief Pick the battle stage from g_state.VS_Stage, random, or character match-up. */
 static u8 Setup_Battle_Country() {
     s16 Rnd32;
 
-    if (Mode_Type == MODE_VERSUS) {
-        if (VS_Stage == 20) {
+    if (g_state.Mode_Type == MODE_VERSUS) {
+        if (g_state.VS_Stage == 20) {
             Rnd32 = random_32();
             return Random_Stage_Data[1][Rnd32];
         }
 
-        return VS_Stage;
+        return g_state.VS_Stage;
     }
 
-    if (My_char[0] == 17 && My_char[1] == 17) {
+    if (g_state.My_char[0] == 17 && g_state.My_char[1] == 17) {
         Rnd32 = random_32();
         return Random_Stage_Data[0][Rnd32];
     }
 
-    if (My_char[New_Challenger] == 17) {
-        return My_char[Champion];
+    if (g_state.My_char[g_state.New_Challenger] == 17) {
+        return g_state.My_char[g_state.Champion];
     }
 
-    return My_char[New_Challenger];
+    return g_state.My_char[g_state.New_Challenger];
 }

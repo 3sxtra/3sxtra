@@ -17,11 +17,11 @@
 
 /** @brief Main handler for Rooftop, New York stage. */
 void BG140() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg1401();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg1400();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bg1402();
     zoom_ud_check();
     bg_pos_hosei2();
@@ -42,7 +42,7 @@ void bg1401_init00() {
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
     bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
     bgw_ptr->zuubun = 0;
-    bg_app = 0;
+    g_state.bg_app = 0;
     effect_06_init();
     effect_12_init(0);
 }

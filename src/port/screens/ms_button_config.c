@@ -12,7 +12,7 @@
  *   Item 10:    "Exit" — returns to Option_Select
  *
  * Both players can navigate simultaneously. L/R value changes modify
- * Convert_Buff[1] directly via Button_Config_Sub() / Button_Move_Sub_LR().
+ * g_state.Convert_Buff[1] directly via Button_Config_Sub() / Button_Move_Sub_LR().
  * On exit (confirm or cancel), values are committed via Save_Game_Data().
  * On "Default" (item 9), values are reset via Setup_IO_ConvDataDefault().
  *
@@ -34,16 +34,17 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff23.h"         /* effect_23_init */
 #include "sf33rd/Source/Game/effect/eff57.h"         /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff66.h"         /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"      /* Menu_Cursor_Y, Menu_Cursor_Move, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"      /* g_state.Menu_Cursor_Y, g_state.Menu_Cursor_Move, etc. */
 #include "sf33rd/Source/Game/io/pulpul.h"            /* pp_operator_check_flag */
 #include "sf33rd/Source/Game/menu/menu.h"            /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"   /* Button_Config_Sub, Button_Exit_Check, etc. */
 #include "sf33rd/Source/Game/sound/sound3rd.h"       /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"         /* Suicide */
+#include "sf33rd/Source/Game/system/reset.h"         /* g_state.Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"       /* Save_Game_Data, Copy_Key_Disp_Work */
 #include "sf33rd/Source/Game/ui/sc_sub.h"            /* FadeOut, FadeIn, FadeInit */
 #include "port/sdl/input/controller_image_overlay.h" /* ControllerImageOverlay_Init/Shutdown */
@@ -83,25 +84,25 @@ static void button_config_enter(struct _TASK* task_ptr) {
     Menu_Common_Init();
     pp_operator_check_flag(0);
     ControllerImageOverlay_Init();
-    Menu_Cursor_Y[0] = 0;
-    Menu_Cursor_Y[1] = 0;
-    Menu_Suicide[1] = 1;
-    Menu_Suicide[2] = 0;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Cursor_Y[1] = 0;
+    g_state.Menu_Suicide[1] = 1;
+    g_state.Menu_Suicide[2] = 0;
     Copy_Key_Disp_Work();
 
     /* Kill/setup parent effect slots */
-    Order[0x4F] = 4;
-    Order_Timer[0x4F] = 1;
-    Order[0x4E] = 2;
-    Order_Dir[0x4E] = 2;
-    Order_Timer[0x4E] = 1;
+    g_state.Order[0x4F] = 4;
+    g_state.Order_Timer[0x4F] = 1;
+    g_state.Order[0x4E] = 2;
+    g_state.Order_Dir[0x4E] = 2;
+    g_state.Order_Timer[0x4E] = 1;
 
     /* Header bar — CPS3 only (skip when RmlUi active) */
     if (!use_rmlui || !rmlui_menu_button_config) {
         effect_57_init(0x6B, MENU_HEADER_BUTTON_CONFIG, 0, 0x3F, 2);
-        Order[0x6B] = 1;
-        Order_Dir[0x6B] = 8;
-        Order_Timer[0x6B] = 1;
+        g_state.Order[0x6B] = 1;
+        g_state.Order_Dir[0x6B] = 8;
+        g_state.Order_Timer[0x6B] = 1;
     }
 
     /* Button mapping labels and indicators */
@@ -111,13 +112,13 @@ static void button_config_enter(struct _TASK* task_ptr) {
         /* 12 effect_23 button mapping labels — P1 (type=2) and P2 (type=3) */
         for (ix = 0; ix < 12; ix++) {
             effect_23_init(0, ix + 0x50, 0, 2, 2, ix, 0x70A7, ix + 9, 1);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
+            g_state.Order[ix + 0x50] = 1;
+            g_state.Order_Dir[ix + 0x50] = 4;
+            g_state.Order_Timer[ix + 0x50] = ix + 0x14;
             effect_23_init(1, ix + 0x5C, 0, 2, 3, ix, 0x70A7, ix + 9, 1);
-            Order[ix + 0x5C] = 1;
-            Order_Dir[ix + 0x5C] = 4;
-            Order_Timer[ix + 0x5C] = ix + 0x14;
+            g_state.Order[ix + 0x5C] = 1;
+            g_state.Order_Dir[ix + 0x5C] = 4;
+            g_state.Order_Timer[ix + 0x5C] = ix + 0x14;
         }
 
         /* 9 effect_23 button labels (rows) — P1 and P2 */
@@ -129,26 +130,26 @@ static void button_config_enter(struct _TASK* task_ptr) {
             }
 
             effect_23_init(0, ix + 0x78, 0, 2, disp_index, ix, 0x70A7, ix, 0);
-            Order[ix + 0x78] = 1;
-            Order_Dir[ix + 0x78] = 4;
-            Order_Timer[ix + 0x78] = ix + 0x14;
+            g_state.Order[ix + 0x78] = 1;
+            g_state.Order_Dir[ix + 0x78] = 4;
+            g_state.Order_Timer[ix + 0x78] = ix + 0x14;
             effect_23_init(1, ix + 0x81, 0, 2, disp_index, ix, 0x70A7, ix, 0);
-            Order[ix + 0x81] = 1;
-            Order_Dir[ix + 0x81] = 4;
-            Order_Timer[ix + 0x81] = ix + 0x14;
+            g_state.Order[ix + 0x81] = 1;
+            g_state.Order_Dir[ix + 0x81] = 4;
+            g_state.Order_Timer[ix + 0x81] = ix + 0x14;
         }
 
-        Menu_Cursor_Move = 0x22;
+        g_state.Menu_Cursor_Move = 0x22;
 
         /* Confirmation button overlays */
         effect_66_init(0x8A, 7, 2, 0, -1, -1, -0x7FFF);
-        Order[0x8A] = 1;
-        Order_Dir[0x8A] = 4;
-        Order_Timer[0x8A] = 0x14;
+        g_state.Order[0x8A] = 1;
+        g_state.Order_Dir[0x8A] = 4;
+        g_state.Order_Timer[0x8A] = 0x14;
         effect_66_init(0x8B, 8, 2, 0, -1, -1, -0x7FFF);
-        Order[0x8B] = 1;
-        Order_Dir[0x8B] = 4;
-        Order_Timer[0x8B] = 0x14;
+        g_state.Order[0x8B] = 1;
+        g_state.Order_Dir[0x8B] = 4;
+        g_state.Order_Timer[0x8B] = 0x14;
     }
 
     /* ── Set r_no[1] to 10 for Button_Exit_Check compatibility ──
@@ -178,7 +179,7 @@ static void button_config_tick(struct _TASK* task_ptr) {
     /* ── One-time post-wait-phase setup ── */
     if (!s_wait_done) {
         s_wait_done = true;
-        Suicide[3] = 0;
+        g_state.Suicide[3] = 0;
     }
 
     /* ── Preserve r_no[1]=10 for Button_Exit_Check routing ── */
@@ -195,7 +196,7 @@ static void button_config_tick(struct _TASK* task_ptr) {
      * Return_Option_Mode_Sub sets r_no[1]=7.
      * If r_no[1] is no longer 10, we know the exit path fired. */
     if (task_ptr->r_no[1] != 10) {
-        /* Button_Exit_Check already set r_no, free[], Menu_Suicide,
+        /* Button_Exit_Check already set r_no, free[], g_state.Menu_Suicide,
          * hid RmlUi, shut down ControllerImageOverlay, and killed
          * effect 0x6B. Hand off to legacy. */
         MenuScreen_ExitToLegacy(task_ptr);

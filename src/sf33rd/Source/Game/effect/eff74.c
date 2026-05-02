@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff74.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff57.h"
@@ -20,12 +21,12 @@ const s16 EFF74_Pos_Data[3][2][2] = { { { 0, 148 }, { 0, 116 } },
 void (*const EFF74_Jmp_Tbl[5])();
 
 void effect_74_move(WORK_Other* ewk) {
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
-    if (Order[ewk->wu.dir_old] == 4) {
+    if (g_state.Order[ewk->wu.dir_old] == 4) {
         ewk->wu.routine_no[0] = 4;
     }
 
@@ -35,7 +36,7 @@ void effect_74_move(WORK_Other* ewk) {
         return;
     }
 
-    if (Menu_Cursor_Y[0] == ewk->master_id) {
+    if (g_state.Menu_Cursor_Y[0] == ewk->master_id) {
         set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, 2, 0);
     } else {
         set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, 1, 0);
@@ -45,7 +46,7 @@ void effect_74_move(WORK_Other* ewk) {
 }
 
 static void EFF74_WAIT(WORK_Other* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
@@ -55,7 +56,7 @@ static void EFF74_SUDDENLY(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
@@ -68,8 +69,8 @@ static void EFF74_SUDDENLY(WORK_Other* ewk) {
             pos_y = 136;
         }
 
-        ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 0;
-        ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + pos_y + 12;
+        ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 0;
+        ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + pos_y + 12;
         ewk->wu.position_z = 64;
 
         if (ewk->master_id) {
@@ -79,15 +80,15 @@ static void EFF74_SUDDENLY(WORK_Other* ewk) {
         }
 
         ewk->wu.position_x =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF74_Pos_Data[ewk->wu.type][ewk->master_id][0];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF74_Pos_Data[ewk->wu.type][ewk->master_id][0];
         ewk->wu.position_y =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + EFF74_Pos_Data[ewk->wu.type][ewk->master_id][1];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + EFF74_Pos_Data[ewk->wu.type][ewk->master_id][1];
         ewk->wu.position_z = 64;
         break;
 
     default:
         ewk->wu.routine_no[0] = 0;
-        Order[ewk->wu.dir_old] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
         break;
     }
 }

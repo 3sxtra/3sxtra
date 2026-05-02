@@ -58,25 +58,25 @@ const s16 end_500_quake_tbl[8] = { 2, 4, -2, -4, -2, -4, 2, 4 };
 
 /** @brief Necro's ending entry point — initialize and run all ending scenes. */
 void end_05000(s16 pl_num) {
-    switch (end_w.r_no_1) {
+    switch (g_state.end_w.r_no_1) {
     case 0:
-        end_w.r_no_1++;
-        end_w.r_no_2 = 0;
+        g_state.end_w.r_no_1++;
+        g_state.end_w.r_no_2 = 0;
         common_end_init00(pl_num);
-        end_w.timer = timer_5_tbl[end_w.r_no_2];
+        g_state.end_w.timer = timer_5_tbl[g_state.end_w.r_no_2];
         common_end_init01();
         BGM_Request(0x32);
         break;
 
     case 1:
-        end_w.timer--;
+        g_state.end_w.timer--;
 
-        if (end_w.timer < 0) {
-            end_w.r_no_2++;
+        if (g_state.end_w.timer < 0) {
+            g_state.end_w.r_no_2++;
 
-            if (end_w.r_no_2 == 13) {
-                end_w.r_no_1++;
-                end_w.end_flag = 1;
+            if (g_state.end_w.r_no_2 == 13) {
+                g_state.end_w.r_no_1++;
+                g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
                 end_bg_pos_hosei2();
@@ -84,10 +84,10 @@ void end_05000(s16 pl_num) {
                 break;
             }
 
-            end_w.timer = timer_5_tbl[end_w.r_no_2];
-            bg_w.bgw[0].r_no_1 = 0;
-            bg_w.bgw[1].r_no_1 = 0;
-            bg_w.bgw[2].r_no_1 = 0;
+            g_state.end_w.timer = timer_5_tbl[g_state.end_w.r_no_2];
+            g_state.bg_w.bgw[0].r_no_1 = 0;
+            g_state.bg_w.bgw[1].r_no_1 = 0;
+            g_state.bg_w.bgw[2].r_no_1 = 0;
         }
 
         end_500_move();
@@ -107,23 +107,23 @@ static void end_500_move() {
     void (*end_500_jp[13])() = { end_500_comm, end_500_0001, end_500_0001, end_500_comm, end_500_comm,
                                  end_500_comm, end_500_0006, end_500_0007, end_500_0008, end_X_com01,
                                  end_X_com01,  end_500_0011, end_X_com01 };
-    bgw_ptr = &bg_w.bgw[0];
-    if (end_w.r_no_2 >= 13)
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    if (g_state.end_w.r_no_2 >= 13)
         return;
-    end_500_jp[end_w.r_no_2]();
+    end_500_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Common scene handler — background setup with message and effects. */
 static void end_500_comm() {
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
 
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_5_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_5_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_5_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_5_pos[g_state.end_w.r_no_2][1];
 
-        switch (end_w.r_no_2) {
+        switch (g_state.end_w.r_no_2) {
         case 0:
             Bg_On_W(1);
             Rewrite_End_Message(0);
@@ -154,19 +154,19 @@ static void end_500_comm() {
 
 /** @brief Scene 1 — background setup with vertical scroll. */
 static void end_500_0001() {
-    bgw_ptr = bg_w.bgw;
+    bgw_ptr = g_state.bg_w.bgw;
 
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = 0;
-        bgw_ptr->xy[0].disp.pos = end_5_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_5_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_5_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_5_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->frame_deff = 0;
         bgw_ptr->free = necro_quake_timer[bgw_ptr->frame_deff];
 
-        switch (end_w.r_no_2) {
+        switch (g_state.end_w.r_no_2) {
         case 1:
             effect_E6_init(9);
             Rewrite_End_Message(1);
@@ -187,9 +187,9 @@ static void end_500_0001() {
             bgw_ptr->frame_deff++;
             bgw_ptr->frame_deff &= 0x1F;
             bgw_ptr->free = necro_quake_timer[bgw_ptr->frame_deff];
-            bgw_ptr->xy[0].disp.pos = end_5_pos[end_w.r_no_2][0];
+            bgw_ptr->xy[0].disp.pos = end_5_pos[g_state.end_w.r_no_2][0];
             bgw_ptr->xy[0].disp.pos += necro_quake_tbl[bgw_ptr->frame_deff][0];
-            bgw_ptr->xy[1].disp.pos = end_5_pos[end_w.r_no_2][1];
+            bgw_ptr->xy[1].disp.pos = end_5_pos[g_state.end_w.r_no_2][1];
             bgw_ptr->xy[1].disp.pos += necro_quake_tbl[bgw_ptr->frame_deff][1];
             bgw_ptr->abs_x = 512;
             bgw_ptr->abs_x += necro_quake_tbl[bgw_ptr->frame_deff][0];
@@ -216,7 +216,7 @@ static void end_500_0006() {
         if (end_fade_complete()) {
             bgw_ptr->r_no_1++;
             end_no_cut = 0;
-            end_w.timer = 30;
+            g_state.end_w.timer = 30;
             overwrite_panel(0xFF000000, 0x17);
         }
 
@@ -234,10 +234,10 @@ static void end_500_quake_y_sub() {
 
     if (bgw_ptr->frame_deff <= 0) {
         bgw_ptr->frame_deff = 4;
-        bg_w.quake_y_index++;
-        bg_w.quake_y_index &= 7;
-        bgw_ptr->xy[1].disp.pos += end_500_quake_tbl[bg_w.quake_y_index];
-        bgw_ptr->abs_y += end_500_quake_tbl[bg_w.quake_y_index];
+        g_state.bg_w.quake_y_index++;
+        g_state.bg_w.quake_y_index &= 7;
+        bgw_ptr->xy[1].disp.pos += end_500_quake_tbl[g_state.bg_w.quake_y_index];
+        bgw_ptr->abs_y += end_500_quake_tbl[g_state.bg_w.quake_y_index];
     }
 }
 
@@ -278,7 +278,7 @@ static void end_500_0007() {
         if (bgw_ptr->xy[0].disp.pos < 193) {
             bgw_ptr->r_no_1++;
             effect_E6_init(0x11);
-            bg_w.quake_y_index = 0;
+            g_state.bg_w.quake_y_index = 0;
             bgw_ptr->frame_deff = 4;
         }
 
@@ -290,7 +290,7 @@ static void end_500_0007() {
 
         if (bgw_ptr->xy[0].disp.pos < -127) {
             bgw_ptr->r_no_1++;
-            end_w.timer = 0;
+            g_state.end_w.timer = 0;
         }
 
         break;
@@ -364,7 +364,7 @@ static void end_500_0008() {
 
         if (bgw_ptr->xy[0].disp.pos < -1855) {
             bgw_ptr->r_no_1++;
-            end_w.timer = 18;
+            g_state.end_w.timer = 18;
         }
 
         break;
@@ -389,7 +389,7 @@ static void end_500_0011() {
 
 /** @brief Animate layer 0 background scroll. */
 static void end_5_bg0_move_sub() {
-    if (end_w.r_no_2 == 7) {
+    if (g_state.end_w.r_no_2 == 7) {
         bgw_ptr->xy[0].cal += 0xFFF60000;
     } else {
         bgw_ptr->xy[0].cal += 0xFFFA0000;
@@ -436,10 +436,10 @@ static void end_501_move() {
     void (*end_501_jp[13])() = { end_X_com01,  end_X_com01,  end_X_com01,  end_X_com01,  end_X_com01,
                                  end_X_com01,  end_X_com01,  end_501_0007, end_501_0008, end_501_0009,
                                  end_501_0010, end_501_0011, end_501_0012 };
-    bgw_ptr = &bg_w.bgw[1];
-    if (end_w.r_no_2 >= 13)
+    bgw_ptr = &g_state.bg_w.bgw[1];
+    if (g_state.end_w.r_no_2 >= 13)
         return;
-    end_501_jp[end_w.r_no_2]();
+    end_501_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Layer 1 scene 7 — quake with lightning flash. */
@@ -472,7 +472,7 @@ static void end_501_0007() {
     case 3:
         if (end_fade_complete()) {
             bgw_ptr->r_no_1++;
-            bg_w.bgw[0].r_no_1 = 2;
+            g_state.bg_w.bgw[0].r_no_1 = 2;
         }
 
         /* fallthrough */
@@ -509,7 +509,7 @@ static void end_501_0009() {
 
         if (end_etc_flag) {
             bgw_ptr->r_no_1++;
-            end_w.timer = 0;
+            g_state.end_w.timer = 0;
         }
 
         break;
@@ -533,7 +533,7 @@ static void end_501_0010() {
         if (end_fade_complete()) {
             bgw_ptr->r_no_1++;
             end_no_cut = 0;
-            end_w.timer = 30;
+            g_state.end_w.timer = 30;
             overwrite_panel(0xFFFFFFFF, 0x17);
         }
 
@@ -590,7 +590,7 @@ static void end_501_0012() {
         bgw_ptr->r_no_1++;
         effect_E6_init(0xE);
         end_fade_flag = 1;
-        end_fade_timer = timer_5_tbl[end_w.r_no_2] - 120;
+        end_fade_timer = timer_5_tbl[g_state.end_w.r_no_2] - 120;
         /* fallthrough */
 
     case 1:

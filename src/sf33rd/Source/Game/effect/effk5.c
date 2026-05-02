@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effk5.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/caldir.h"
@@ -121,10 +122,10 @@ void effect_K5_move(WORK_Other* ewk) {
             K5_main_process(&ewk->wu, mwk, mvj);
         }
 
-        K5_init_data_copy2((K5Data*)&rambod[mwk->id], mvj, 4);
-        K5_init_data_copy2((K5Data*)&ramhan[mwk->id], mvj + 4, 4);
-        mwk->h_bod = &rambod[mwk->id];
-        mwk->h_han = &ramhan[mwk->id];
+        K5_init_data_copy2((K5Data*)&g_state.rambod[mwk->id], mvj, 4);
+        K5_init_data_copy2((K5Data*)&g_state.ramhan[mwk->id], mvj + 4, 4);
+        mwk->h_bod = &g_state.rambod[mwk->id];
+        mwk->h_han = &g_state.ramhan[mwk->id];
         break;
 
     case 2:
@@ -218,14 +219,14 @@ static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
                 break;
 
             case 49:
-                if ((test_flag == 0) || (ixbfw_cut == 0)) {
+                if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
                     ewk->cg_ix += (gotcp.cps[3] - 1) * mwk->cgd_type;
                 }
 
                 break;
 
             case 50:
-                if ((test_flag == 0) || (ixbfw_cut == 0)) {
+                if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
                     ewk->cg_ix -= (gotcp.cps[3] + 1) * mwk->cgd_type;
                 }
 
@@ -453,7 +454,7 @@ s32 effect_K5_init(PLW* wk) {
     WORK_Other* ewk;
     s16 ix;
 
-    if (Bonus_Game_Flag == 0x14) {
+    if (g_state.Bonus_Game_Flag == 0x14) {
         return -1;
     }
 

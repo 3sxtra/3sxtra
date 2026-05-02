@@ -10,6 +10,7 @@
  */
 
 #include "sf33rd/Source/Game/io/gd3rd.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
@@ -183,13 +184,13 @@ static void Push_LDREQ_Queue_Union(s16 ix) {
 
 /** @brief Enqueue load requests for metamorphosis character data. */
 static void Push_LDREQ_Queue_Metamor() {
-    switch ((My_char[0] == CHAR_TWELVE) + (My_char[1] == CHAR_TWELVE) * 2) {
+    switch ((g_state.My_char[0] == CHAR_TWELVE) + (g_state.My_char[1] == CHAR_TWELVE) * 2) {
     case 1:
-        Push_LDREQ_Queue_Direct(My_char[1] + METAMOR_BASE_INDEX, 0);
+        Push_LDREQ_Queue_Direct(g_state.My_char[1] + METAMOR_BASE_INDEX, 0);
         break;
 
     case 2:
-        Push_LDREQ_Queue_Direct(My_char[0] + METAMOR_BASE_INDEX, 1);
+        Push_LDREQ_Queue_Direct(g_state.My_char[0] + METAMOR_BASE_INDEX, 1);
         break;
 
     case 3:
@@ -198,7 +199,7 @@ static void Push_LDREQ_Queue_Metamor() {
     }
 }
 
-/** @brief Enqueue a direct load request by index and ID. */
+/** @brief Enqueue a direct load request by index and g_state.ID. */
 void Push_LDREQ_Queue_Direct(s16 ix, s16 id) {
     REQ ldreq;
     if (ix < 0 || ix >= LDREQ_TBL_SIZE) {
@@ -302,7 +303,7 @@ static void disp_ldreq_status() {
             }
         }
 
-        flPrintL(2, i + 18, "%4d", system_timer);
+        flPrintL(2, i + 18, "%4d", g_state.system_timer);
     }
 }
 

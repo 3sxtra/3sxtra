@@ -289,7 +289,7 @@ void q_ldreq_texture_group(REQ* curr) {
                 const CharInitData* arcade_data = ArcadeBalance_IsEnabled() ? ArcadeCharData_Get(character_id) : NULL;
 
                 if (arcade_data) {
-                    I_MemCopy(dst, arcade_data);
+                    SDL_memcpy(dst, arcade_data, sizeof(CharInitData));
                 } else {
                     for (i = 0; i < 25; i++) {
                         ((uintptr_t*)dst)[i] = ldchd + ((u32*)ldchd)[i];

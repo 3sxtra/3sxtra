@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff34.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -35,7 +36,7 @@ void effect_34_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (EXE_flag || Game_pause || bg_w.bgw[1].xy[1].disp.pos >= 104) {
+        if (g_state.EXE_flag || g_state.Game_pause || g_state.bg_w.bgw[1].xy[1].disp.pos >= 104) {
             suzi_sync_pos_set(ewk);
             sort_push_request(&ewk->wu);
             break;
@@ -54,7 +55,7 @@ void effect_34_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (EXE_flag || Game_pause) {
+        if (g_state.EXE_flag || g_state.Game_pause) {
             suzi_sync_pos_set(ewk);
             sort_push_request(&ewk->wu);
             break;
@@ -73,7 +74,7 @@ void effect_34_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (EXE_flag || Game_pause) {
+        if (g_state.EXE_flag || g_state.Game_pause) {
             suzi_sync_pos_set(ewk);
             sort_push_request(&ewk->wu);
             break;
@@ -127,12 +128,12 @@ s32 effect_34_init(WORK* wk, s32 /* unused */) {
     ewk->wu.position_z = ewk->wu.my_priority - 12;
     ewk->wu.char_table[0] = _etc3_char_table;
     ewk->wu.sync_suzi = 0;
-    ewk->wu.char_index = bg_w.stage == 6 ? 4 : 8;
+    ewk->wu.char_index = g_state.bg_w.stage == 6 ? 4 : 8;
 
     if (wk->rl_flag) {
-        ewk->wu.old_rno[1] = bg_w.bgw[1].wxy[0].disp.pos - (bg_w.pos_offset + 32);
+        ewk->wu.old_rno[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos - (g_state.bg_w.pos_offset + 32);
     } else {
-        ewk->wu.old_rno[1] = bg_w.bgw[1].wxy[0].disp.pos + (bg_w.pos_offset + 32);
+        ewk->wu.old_rno[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos + (g_state.bg_w.pos_offset + 32);
     }
 
     suzi_offset_set(ewk);

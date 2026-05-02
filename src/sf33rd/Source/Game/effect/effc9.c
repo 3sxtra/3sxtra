@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effc9.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff03.h"
@@ -94,13 +95,13 @@ void effect_C9_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if ((ewk->wu.dead_f == 1) || (Suicide[0] != 0)) {
+        if ((ewk->wu.dead_f == 1) || (g_state.Suicide[0] != 0)) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
         }
 
-        if ((EXE_flag == 0) && (Game_pause == 0)) {
+        if ((g_state.EXE_flag == 0) && (g_state.Game_pause == 0)) {
             char_move(&ewk->wu);
 
             switch (ewk->wu.routine_no[1]) {
@@ -150,7 +151,7 @@ void effect_C9_move(WORK_Other* ewk) {
                     }
                 }
 
-                if (Event_Judge_Gals) {
+                if (g_state.Event_Judge_Gals) {
                     ewk->wu.routine_no[1] += 1;
                     set_char_move_init(&ewk->wu, 0, 1);
                 }
@@ -161,7 +162,7 @@ void effect_C9_move(WORK_Other* ewk) {
                 if (ewk->wu.cg_type == 0xFF) {
                     ewk->wu.routine_no[1] += 1;
                     set_char_move_init(&ewk->wu, 0, 2);
-                    effect_37_init(&ewk->wu, ewk->wu.charset_id, EJG_index[ewk->wu.type]);
+                    effect_37_init(&ewk->wu, ewk->wu.charset_id, g_state.EJG_index[ewk->wu.type]);
                 }
 
                 break;
@@ -169,7 +170,7 @@ void effect_C9_move(WORK_Other* ewk) {
             case 2:
                 if (ewk->wu.cg_type == 0xFF) {
                     ewk->wu.routine_no[1] += 1;
-                    Event_Judge_Gals -= 1;
+                    g_state.Event_Judge_Gals -= 1;
                 }
 
                 break;
@@ -204,7 +205,7 @@ s32 effect_C9_init(PLW* arg0, u8 data) {
     ewk->wu.id = 129;
     ewk->wu.work_id = 16;
     ewk->wu.type = data;
-    ewk->wu.charset_id = ag_sel_table[bg_w.stage][Round_num & 3][data];
+    ewk->wu.charset_id = ag_sel_table[g_state.bg_w.stage][g_state.Round_num & 3][data];
     ewk->wu.cgromtype = 1;
     ewk->wu.my_family = 2;
     ewk->wu.my_col_mode = 0x4200;
@@ -218,27 +219,27 @@ void setup_EJG_index() {
     s16 i;
     s16 gra;
 
-    if (judge_gals[0].grade < judge_gals[1].grade) {
-        gra = judge_gals[1].grade - judge_gals[0].grade;
+    if (g_state.judge_gals[0].grade < g_state.judge_gals[1].grade) {
+        gra = g_state.judge_gals[1].grade - g_state.judge_gals[0].grade;
     } else {
-        gra = judge_gals[0].grade - judge_gals[1].grade;
+        gra = g_state.judge_gals[0].grade - g_state.judge_gals[1].grade;
     }
 
     if (gra > 5) {
-        if (Winner_id) {
-            EJG_index[0] = 1;
-            EJG_index[1] = 1;
-            EJG_index[2] = 1;
-            EJG_index[3] = 0xFF;
+        if (g_state.Winner_id) {
+            g_state.EJG_index[0] = 1;
+            g_state.EJG_index[1] = 1;
+            g_state.EJG_index[2] = 1;
+            g_state.EJG_index[3] = 0xFF;
         } else {
-            EJG_index[0] = 0;
-            EJG_index[1] = 0;
-            EJG_index[2] = 0;
-            EJG_index[3] = 0xFF;
+            g_state.EJG_index[0] = 0;
+            g_state.EJG_index[1] = 0;
+            g_state.EJG_index[2] = 0;
+            g_state.EJG_index[3] = 0xFF;
         }
     } else {
         for (i = 0; i < 4; i++) {
-            EJG_index[i] = sel_ejg_ix_table[Winner_id & 1][Game_timer & 1][i];
+            g_state.EJG_index[i] = sel_ejg_ix_table[g_state.Winner_id & 1][g_state.Game_timer & 1][i];
         }
     }
 }

@@ -7,6 +7,7 @@
  * replaced by three static const vtable instances (GL, GPU, SDL2D).
  */
 #include "port/sdl/renderer/sdl_text_renderer.h"
+#include "game_state.h"
 #include "port/text_renderer_vtable.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_text_renderer_internal.h"

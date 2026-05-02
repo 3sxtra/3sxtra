@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/rendering/color3rd.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/sound/spu.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/cse.h"
@@ -30,7 +31,7 @@ typedef struct {
 } col_file_data;
 
 typedef struct {
-    u16 col[2][16][64];
+    u16 col[2][8][64];
 } COL_x1000;
 
 typedef struct {
@@ -38,15 +39,15 @@ typedef struct {
 } COL_x80;
 
 typedef struct {
-    u16 col[3][64];
+    u16 col[2][192];
 } COL_x180;
 
 typedef struct {
-    u16 col[2][64];
+    u16 col[2][128];
 } COL_x100;
 
 typedef struct {
-    u16 col[20][16][16];
+    u16 col[2][8][16];
 } COL_x2800;
 
 // bss
@@ -228,10 +229,10 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
     switch (type) {
     case 1:
         plcol[id] = (COL*)Get_ramcnt_address(key);
-        if (My_char[id] == 0) {
+        if (g_state.My_char[id] == 0) {
             for (i = 0; i < 64; i++) {
-                ColorRAM[id * 16][i] = palConvSrcToRam(plcol[id]->col[0][Player_Color[id]][i]);
-                ColorRAM[(id * 16) + 8][i] = palConvSrcToRam(plcol[id]->col[1][Player_Color[id]][i]);
+                ColorRAM[id * 16][i] = palConvSrcToRam(plcol[id]->col[0][g_state.Player_Color[id]][i]);
+                ColorRAM[(id * 16) + 8][i] = palConvSrcToRam(plcol[id]->col[1][g_state.Player_Color[id]][i]);
             }
 
             for (i = 0; i < 6; i++) {
@@ -242,7 +243,7 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
             }
         } else {
 
-            tradrs = (u16*)plcol[id]->col[0][Player_Color[id]];
+            tradrs = (u16*)plcol[id]->col[0][g_state.Player_Color[id]];
             ldadrs = (u16*)ColorRAM[id * 16];
             for (i = 0; i < 64; i++) {
                 ldadrs[i] = ldadrs[i + 512] = palConvSrcToRam(tradrs[i]);
@@ -303,24 +304,24 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
         COL_x1000* dadr = (COL_x1000*)Get_ramcnt_address(key);
         if (id == 2) {
             for (i = 0; i < 64; i++) {
-                hi_meta[0][0][i] = dadr->col[0][Player_Color[0]][i];
-                hi_meta[0][1][i] = dadr->col[0][Player_Color[0]][i];
-                hi_meta[1][0][i] = dadr->col[0][Player_Color[1]][i];
-                hi_meta[1][1][i] = dadr->col[0][Player_Color[1]][i];
+                hi_meta[0][0][i] = dadr->col[0][g_state.Player_Color[0]][i];
+                hi_meta[0][1][i] = dadr->col[0][g_state.Player_Color[0]][i];
+                hi_meta[1][0][i] = dadr->col[0][g_state.Player_Color[1]][i];
+                hi_meta[1][1][i] = dadr->col[0][g_state.Player_Color[1]][i];
             }
 
             metamor_color_store(0);
             metamor_color_store(1);
         } else {
-            if ((My_char[(id + 1) & 1]) == 0) {
+            if ((g_state.My_char[(id + 1) & 1]) == 0) {
                 for (i = 0; i < 64; i++) {
-                    hi_meta[id][0][i] = dadr->col[0][Player_Color[id]][i];
-                    hi_meta[id][1][i] = dadr->col[1][Player_Color[id]][i];
+                    hi_meta[id][0][i] = dadr->col[0][g_state.Player_Color[id]][i];
+                    hi_meta[id][1][i] = dadr->col[1][g_state.Player_Color[id]][i];
                 }
             } else {
                 for (i = 0; i < 64; i++) {
-                    hi_meta[id][0][i] = dadr->col[0][Player_Color[id]][i];
-                    hi_meta[id][1][i] = dadr->col[0][Player_Color[id]][i];
+                    hi_meta[id][0][i] = dadr->col[0][g_state.Player_Color[id]][i];
+                    hi_meta[id][1][i] = dadr->col[0][g_state.Player_Color[id]][i];
                 }
             }
 
@@ -331,7 +332,7 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
     }
     case 4: {
         COL_x80* adr = (COL_x80*)Get_ramcnt_address(key);
-        u16* src = (&adr[Player_Color[id]])->col;
+        u16* src = (&adr[g_state.Player_Color[id]])->col;
         u16* dst = (u16*)&ColorRAM[data + (id * 16)][0];
 
         // these unsigned constants are here intentionally, otherwise wouldn't match.
@@ -351,7 +352,7 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
     }
     case 5: {
         COL_x180* adr = (COL_x180*)Get_ramcnt_address(key);
-        u16* src = (&adr[Player_Color[id]])->col[0];
+        u16* src = (&adr[g_state.Player_Color[id]])->col[0];
         u16* dst = (u16*)&ColorRAM[data + (id * 16)][0];
         for (i = 0; i < 192U; i++) {
             dst[i] = palConvSrcToRam(src[i]);
@@ -369,7 +370,7 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
     }
     case 6: {
         COL_x100* adr = (COL_x100*)Get_ramcnt_address(key);
-        u16* src = (&adr[Player_Color[id]])->col[0];
+        u16* src = (&adr[g_state.Player_Color[id]])->col[0];
         u16* dst = (u16*)&ColorRAM[data + (id * 16)][0];
 
         for (i = 0; i < 128U; i++) {
@@ -391,8 +392,8 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
         tradrs = (u16*)&ColorRAM[41];
 
         for (i = 0; i < 16; i++) {
-            ldadrs[i] = palConvSrcToRam(adrs->col[My_char[0]][Player_Color[0]][i]);
-            tradrs[i] = palConvSrcToRam(adrs->col[My_char[1]][Player_Color[1]][i]);
+            ldadrs[i] = palConvSrcToRam(adrs->col[g_state.My_char[0]][g_state.Player_Color[0]][i]);
+            tradrs[i] = palConvSrcToRam(adrs->col[g_state.My_char[1]][g_state.Player_Color[1]][i]);
         }
 
         Push_ramcnt_key(key);

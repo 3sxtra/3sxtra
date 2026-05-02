@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff23.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/rendering/legacy_matrix.h"
 #include "port/sdl/input/controller_image_overlay.h"
@@ -79,7 +80,7 @@ void effect_23_move(WORK_Other_CONN* ewk) {
         return;
     }
 
-    if (Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
+    if (g_state.Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
         ewk->wu.my_clear_level = 0;
     } else {
         ewk->wu.my_clear_level = 128;
@@ -118,7 +119,7 @@ void effect_23_move(WORK_Other_CONN* ewk) {
 }
 
 static void EFF23_WAIT(WORK_Other_CONN* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 
@@ -128,15 +129,15 @@ static void EFF23_WAIT(WORK_Other_CONN* ewk) {
 static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
     s16 offset_x;
 
-    if (Order[ewk->wu.dir_old] != 1) {
-        ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
+    if (g_state.Order[ewk->wu.dir_old] != 1) {
+        ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
         return;
     }
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
@@ -144,12 +145,12 @@ static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
         ewk->wu.disp_flag = 1;
         offset_x = ewk->master_id * 192;
         ewk->wu.xyz[0].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_23[ewk->wu.dir_step][0] + 384 + offset_x;
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_23[ewk->wu.dir_step][0] + 384 + offset_x;
         ewk->wu.xyz[1].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_23[ewk->wu.dir_step][1];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_23[ewk->wu.dir_step][1];
         ewk->wu.position_z = 68;
         ewk->wu.hit_quake =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_23[ewk->wu.dir_step][0] + offset_x;
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_23[ewk->wu.dir_step][0] + offset_x;
         ewk->wu.mvxy.a[0].sp = -0x400000;
         ewk->wu.mvxy.d[0].sp = 0x50000;
         break;
@@ -162,13 +163,13 @@ static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
             break;
         }
 
-        if (Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
-            Order[ewk->wu.dir_old] = 0;
+        if (g_state.Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
+            g_state.Order[ewk->wu.dir_old] = 0;
         }
 
         ewk->wu.routine_no[0] = 0;
         ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
-        Menu_Cursor_Move--;
+        g_state.Menu_Cursor_Move--;
         break;
     }
 }
@@ -209,7 +210,7 @@ s32 effect_23_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 lette
 static void Setup_23_Sub(WORK_Other_CONN* ewk) {
     switch (ewk->master_priority) {
     case 0:
-        Setup_Letter_23(ewk, Convert_Buff[1][ewk->master_id][ewk->wu.type]);
+        Setup_Letter_23(ewk, g_state.Convert_Buff[1][ewk->master_id][ewk->wu.type]);
         break;
 
     default:

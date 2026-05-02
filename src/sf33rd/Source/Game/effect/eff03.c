@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff03.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -154,17 +155,17 @@ void effect_03_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[0] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if (Pause_Hit_Marks) {
+        if (g_state.Pause_Hit_Marks) {
             break;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {

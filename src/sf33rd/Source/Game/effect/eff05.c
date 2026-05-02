@@ -104,12 +104,12 @@ s32 effect_05_init() {
     s16 i;
     const s16* data_ptr;
 
-    lp_cnt = scr_obj_num[bg_w.bg_index];
+    lp_cnt = scr_obj_num[g_state.bg_w.bg_index];
     if (lp_cnt == 0) {
         return 0;
     }
 
-    data_ptr = scr_obj_data[bg_w.bg_index];
+    data_ptr = scr_obj_data[g_state.bg_w.bg_index];
 
     for (i = 0; i < lp_cnt; i++) {
         if ((ix = pull_effect_work(4)) == -1) {
@@ -123,7 +123,7 @@ s32 effect_05_init() {
         ewk->wu.cgromtype = 1;
         ewk->wu.rl_flag = 0;
         ewk->wu.my_col_mode = 0x4200;
-        ewk->wu.char_table[0] = char_add[bg_w.bg_index];
+        ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
         ewk->wu.type = i;
         ewk->wu.dead_f = *data_ptr++;
         ewk->wu.my_family = *data_ptr++;

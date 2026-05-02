@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff94.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -41,7 +42,7 @@ void effect_94_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             eff94_move_jp[ewk->wu.routine_no[1]](ewk);
         }
 
@@ -63,7 +64,7 @@ void effect_94_move(WORK_Other* ewk) {
 void eff94_0000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
-        if (bg_w.quake_y_index > 3) {
+        if (g_state.bg_w.quake_y_index > 3) {
             ewk->wu.routine_no[2]++;
         }
 
@@ -89,7 +90,7 @@ void eff94_0000(WORK_Other* ewk) {
 void eff94_1000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
-        if (bg_w.quake_y_index > 3) {
+        if (g_state.bg_w.quake_y_index > 3) {
             ewk->wu.routine_no[2]++;
             set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[2]);
         }
@@ -154,10 +155,10 @@ void eff94_2000(WORK_Other* ewk) {
 void eff94_2000_0(WORK_Other* ewk) {
     ewk->wu.disp_flag = 0;
 
-    if (bg_w.quake_y_index > 3) {
+    if (g_state.bg_w.quake_y_index > 3) {
         ewk->wu.routine_no[2]++;
 
-        if (bg_w.quake_y_index >= 24) {
+        if (g_state.bg_w.quake_y_index >= 24) {
             ewk->wu.old_rno[3] = 1;
             return;
         }
@@ -206,8 +207,8 @@ void eff94_2000_2(WORK_Other* ewk) {
 void eff94_2000_3(WORK_Other* ewk) {
     char_move(&ewk->wu);
 
-    if ((ewk->wu.xyz[0].disp.pos <= bg_w.bgw[1].l_limit2 - bg_w.pos_offset) ||
-        ewk->wu.xyz[0].disp.pos >= bg_w.bgw[1].r_limit2 + bg_w.pos_offset) {
+    if ((ewk->wu.xyz[0].disp.pos <= g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset) ||
+        ewk->wu.xyz[0].disp.pos >= g_state.bg_w.bgw[1].r_limit2 + g_state.bg_w.pos_offset) {
         ewk->wu.routine_no[2]++;
         ewk->wu.disp_flag = 0;
         ewk->wu.dir_timer = 4;
@@ -249,7 +250,7 @@ void eff94_3000_4(WORK_Other* ewk) {
 void eff94_4000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
-        if (bg_w.quake_y_index > 3) {
+        if (g_state.bg_w.quake_y_index > 3) {
             ewk->wu.routine_no[2]++;
         }
 
@@ -264,7 +265,7 @@ void eff94_4000(WORK_Other* ewk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type == 9) {
-            if (bg_w.quake_y_index > 3) {
+            if (g_state.bg_w.quake_y_index > 3) {
                 ewk->wu.routine_no[2] = 1;
                 break;
             }
@@ -295,7 +296,7 @@ s32 effect_94_init(u8 type94) {
     ewk->wu.type = type94;
     ewk->wu.dead_f = 0;
     ewk->wu.my_col_mode = 0x4200;
-    ewk->wu.char_table[0] = char_add[bg_w.bg_index];
+    ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
     ewk->wu.my_family = *data_ptr++;
     ewk->wu.my_col_code = *data_ptr++;
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = *data_ptr++;

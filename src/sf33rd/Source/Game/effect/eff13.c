@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff13.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff00.h"
 #include "sf33rd/Source/Game/effect/eff96.h"
@@ -145,7 +146,7 @@ void effect_13_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[6] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[6] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -155,7 +156,7 @@ void effect_13_move(WORK_Other* ewk) {
             ewk->wu.hit_stop = -ewk->wu.hit_stop;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             kind_of_tama_process[tama->kind_of_tama](ewk, tama);
         }
 
@@ -1020,7 +1021,7 @@ static void kotp_07000(WORK_Other* ewk, TAMA* twk) {
         cal_mvxy_speed(&ewk->wu);
         char_move(&ewk->wu);
 
-        if (bg_w.stage == 20) {
+        if (g_state.bg_w.stage == 20) {
             ewk->wu.vs_id = 7;
         }
 
@@ -1853,7 +1854,7 @@ s32 effect_13_init(WORK* wk, u8 data) {
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.old_rno[7] = wk->my_col_code;
     ewk->wu.weight_level = wk->weight_level;
-    ewk->wu.rl_waza = Round_num;
+    ewk->wu.rl_waza = g_state.Round_num;
     ewk->my_master = wk;
 
     if (wk->work_id == 1) {

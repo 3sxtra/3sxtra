@@ -10,6 +10,7 @@
  */
 
 #include "sf33rd/Source/Game/demo/demo00.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/demo/demo_states.h"
 #include "common.h"
 #include <stdio.h>
@@ -50,76 +51,76 @@ f32 picon_level;
 
 /** @brief Warning screen state machine — show/fade the boot warning overlay. */
 s32 Warning() {
-    Next_Demo = 0;
+    g_state.Next_Demo = 0;
 
-    switch (D_No[1]) {
+    switch (g_state.D_No[1]) {
     case WARN_INIT:
-        D_No[1] = WARN_FADE_IN;
-        D_Timer = 120;
+        g_state.D_No[1] = WARN_FADE_IN;
+        g_state.D_Timer = 120;
         FadeInit();
-        Next_Demo = 0;
+        g_state.Next_Demo = 0;
         break;
 
     case WARN_FADE_IN:
         Put_Warning(1);
-        Next_Demo = 0;
+        g_state.Next_Demo = 0;
 
         if (FadeIn(1, 8, 8) != 0) {
-            D_No[1] += 1;
-            D_Timer = 120;
+            g_state.D_No[1] += 1;
+            g_state.D_Timer = 120;
         }
 
         break;
 
     case WARN_DISPLAY:
         if (((p1sw_0 & 0x4FF0) | (p2sw_0 & 0x4FF0)) != 0) {
-            D_Timer = 2;
-            D_No[1] = WARN_SKIP_WAIT;
+            g_state.D_Timer = 2;
+            g_state.D_No[1] = WARN_SKIP_WAIT;
             FadeInit();
         }
 
         Put_Warning(1);
-        Next_Demo = 0;
+        g_state.Next_Demo = 0;
 
-        if (!--D_Timer) {
-            D_No[1] += 1;
-            D_Timer = 180;
+        if (!--g_state.D_Timer) {
+            g_state.D_No[1] += 1;
+            g_state.D_Timer = 180;
         }
 
         break;
 
     case WARN_SKIP_WAIT:
         if (((p1sw_0 & 0x4FF0) | (p2sw_0 & 0x4FF0)) != 0) {
-            D_Timer = 1;
+            g_state.D_Timer = 1;
         }
 
-        if (!--D_Timer) {
-            D_No[1] += 1;
+        if (!--g_state.D_Timer) {
+            g_state.D_No[1] += 1;
             FadeInit();
         }
 
         Put_Warning(1);
-        Next_Demo = 0;
+        g_state.Next_Demo = 0;
         break;
 
     case WARN_FADE_OUT:
         Put_Warning(1);
-        Next_Demo = 0;
+        g_state.Next_Demo = 0;
 
         if (FadeOut(1, 8, 8) != 0) {
-            D_No[1] += 1;
+            g_state.D_No[1] += 1;
         }
 
         break;
 
     default:
-        D_No[1] = WARN_INIT;
+        g_state.D_No[1] = WARN_INIT;
         TexRelease(590);
-        Next_Demo = 1;
+        g_state.Next_Demo = 1;
         break;
     }
 
-    return Next_Demo;
+    return g_state.Next_Demo;
 }
 
 /** @brief Capcom logo sequence — load textures, animate, fade in/out. */
@@ -138,17 +139,17 @@ s32 CAPCOM_Logo() {
     }
 
     ppgSetupCurrentDataList(&ppgCapLogoList);
-    Next_Demo = 0;
+    g_state.Next_Demo = 0;
 
-    switch (D_No[1]) {
+    switch (g_state.D_No[1]) {
     case CAPLOGO_INIT:
-        D_No[1] += 1;
+        g_state.D_No[1] += 1;
         checkAdxFileLoaded();
         checkSelObjFileLoaded();
         break;
 
     case CAPLOGO_LOAD_BGM:
-        D_No[1] += 1;
+        g_state.D_No[1] += 1;
         Standby_BGM(67);
         CAPLOGO_Init();
         Push_LDREQ_Queue_Direct(0x16, 2);
@@ -157,15 +158,15 @@ s32 CAPCOM_Logo() {
 
     case CAPLOGO_WAIT_LOAD:
         if (Check_LDREQ_Clear() != 0) {
-            D_No[1] += 1;
-            D_Timer = 10;
+            g_state.D_No[1] += 1;
+            g_state.D_Timer = 10;
         }
 
         break;
 
     case CAPLOGO_PRE_ANIM:
-        if (--D_Timer == 0) {
-            D_No[1] += 1;
+        if (--g_state.D_Timer == 0) {
+            g_state.D_No[1] += 1;
             op_timer0 = 0;
             Go_BGM();
         }
@@ -174,7 +175,7 @@ s32 CAPCOM_Logo() {
 
     case CAPLOGO_ANIMATE:
         if (!CAPLOGO_Move(0)) {
-            D_No[1] += 1;
+            g_state.D_No[1] += 1;
             Push_LDREQ_Queue_Direct(0x17, 2);
             FadeInit();
         }
@@ -185,8 +186,8 @@ s32 CAPCOM_Logo() {
         CAPLOGO_Move(1);
 
         if (FadeIn(1, 6, 8) != 0) {
-            D_No[1] += 1;
-            D_Timer = 256;
+            g_state.D_No[1] += 1;
+            g_state.D_Timer = 256;
             Push_LDREQ_Queue_Direct(0x18, 2);
         }
 
@@ -195,8 +196,8 @@ s32 CAPCOM_Logo() {
     case CAPLOGO_HOLD:
         CAPLOGO_Move(1);
 
-        if (--D_Timer == 0) {
-            D_No[1] += 1;
+        if (--g_state.D_Timer == 0) {
+            g_state.D_No[1] += 1;
             FadeInit();
         }
 
@@ -206,7 +207,7 @@ s32 CAPCOM_Logo() {
         CAPLOGO_Move(1);
 
         if (FadeOut(1, 6, 8) != 0) {
-            D_No[1] += 1;
+            g_state.D_No[1] += 1;
         }
 
         break;
@@ -214,11 +215,11 @@ s32 CAPCOM_Logo() {
     default:
         printf("[BOOT] CAPCOM_Logo: COMPLETE, releasing tex 600\n");
         TexRelease(600);
-        Next_Demo = 1;
+        g_state.Next_Demo = 1;
         break;
     }
 
-    return Next_Demo;
+    return g_state.Next_Demo;
 }
 
 /** @brief Load the Capcom logo PPG texture and set up palette data. */
@@ -252,7 +253,7 @@ static s16 CAPLOGO_Move(u16 type) {
 
     switch (type) {
     case 0:
-        if (!Game_pause && (op_timer0 != 61)) {
+        if (!g_state.Game_pause && (op_timer0 != 61)) {
             ppgSetupCurrentPaletteNumber(0, op_timer0 / 2);
             op_timer0 += 1;
             rnum = 1;

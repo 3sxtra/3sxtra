@@ -1,4 +1,5 @@
 #include "sf33rd/Source/Game/message/en/pl18end_en.h"
+#include "game_state.h"
 #include "common.h"
 
 static s8* msgEndPL18_00[1] = { "" };

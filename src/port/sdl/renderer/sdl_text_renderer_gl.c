@@ -7,6 +7,7 @@
  * with optional background rectangles.
  */
 #include "port/sdl/renderer/sdl_text_renderer.h"
+#include "game_state.h"
 #include "port/sdl/renderer/sdl_text_renderer_internal.h"
 
 #include <string.h>

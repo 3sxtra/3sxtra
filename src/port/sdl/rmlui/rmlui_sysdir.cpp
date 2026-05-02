@@ -7,15 +7,16 @@
  *
  * Key globals:
  *   system_dir[1].contents[page][row] — toggle values
- *   Menu_Cursor_Y[0] — cursor position
- *   Menu_Page, Page_Max — pagination
+ *   g_state.Menu_Cursor_Y[0] — cursor position
+ *   g_state.Menu_Page, g_state.Page_Max — pagination
  *   Page_Data[10] — rows per page
  *   Letter_Data_51[10][6][4] — value label strings
  *   msgSysDirTbl — row label + description strings
- *   Direction_Working[1], Convert_Buff[3][0][0] — top-level page selector
+ *   g_state.Direction_Working[1], g_state.Convert_Buff[3][0][0] — top-level page selector
  */
 
 #include "port/sdl/rmlui/rmlui_sysdir.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -135,18 +136,18 @@ extern "C" void rmlui_sysdir_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("cursor_y", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
-    ctor.BindFunc("page", [](Rml::Variant& v) { v = (int)Menu_Page; });
-    ctor.BindFunc("page_max", [](Rml::Variant& v) { v = (int)Page_Max; });
+    ctor.BindFunc("cursor_y", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
+    ctor.BindFunc("page", [](Rml::Variant& v) { v = (int)g_state.Menu_Page; });
+    ctor.BindFunc("page_max", [](Rml::Variant& v) { v = (int)g_state.Page_Max; });
     ctor.BindFunc("page_count", [](Rml::Variant& v) {
-        if (Menu_Page >= 0 && Menu_Page < 10)
-            v = (int)Page_Data[Menu_Page];
+        if (g_state.Menu_Page >= 0 && g_state.Menu_Page < 10)
+            v = (int)Page_Data[g_state.Menu_Page];
         else
             v = 0;
     });
-    ctor.BindFunc("dir_working", [](Rml::Variant& v) { v = (int)Convert_Buff[3][0][0]; });
+    ctor.BindFunc("dir_working", [](Rml::Variant& v) { v = (int)g_state.Convert_Buff[3][0][0]; });
     ctor.BindFunc("dir_label",
-                  [](Rml::Variant& v) { v = Rml::String(Convert_Buff[3][0][0] == 0 ? "NORMAL" : "CUSTOM"); });
+                  [](Rml::Variant& v) { v = Rml::String(g_state.Convert_Buff[3][0][0] == 0 ? "NORMAL" : "CUSTOM"); });
     ctor.BindFunc("in_subpage", [](Rml::Variant& v) { v = s_in_subpage; });
 
     // Per-row labels (0-5)
@@ -158,7 +159,7 @@ extern "C" void rmlui_sysdir_init(void) {
                 v = Rml::String("");
                 return;
             }
-            int pg = Menu_Page;
+            int pg = g_state.Menu_Page;
             if (pg < 0 || pg >= 10 || idx >= Page_Data[pg]) {
                 v = Rml::String("");
                 return;
@@ -176,7 +177,7 @@ extern "C" void rmlui_sysdir_init(void) {
                 v = Rml::String("");
                 return;
             }
-            int pg = Menu_Page;
+            int pg = g_state.Menu_Page;
             if (pg < 0 || pg >= 10 || idx >= Page_Data[pg]) {
                 v = Rml::String("");
                 return;
@@ -192,7 +193,7 @@ extern "C" void rmlui_sysdir_init(void) {
             v = Rml::String("");
             return;
         }
-        int pg = Menu_Page;
+        int pg = g_state.Menu_Page;
         if (pg < 0 || pg >= 10) {
             v = Rml::String("");
             return;
@@ -221,8 +222,8 @@ extern "C" void rmlui_sysdir_init(void) {
             v = Rml::String("");
             return;
         }
-        int pg = Menu_Page;
-        int row = Menu_Cursor_Y[0];
+        int pg = g_state.Menu_Page;
+        int row = g_state.Menu_Cursor_Y[0];
         if (pg < 0 || pg >= 10) {
             v = Rml::String("");
             return;
@@ -262,14 +263,14 @@ extern "C" void rmlui_sysdir_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("sysdir"))
         return;
 
-    DIRTY_INT(cursor_y, (int)Menu_Cursor_Y[0]);
-    DIRTY_INT(page, (int)Menu_Page);
-    DIRTY_INT(page_max, (int)Page_Max);
-    DIRTY_INT(dir_working, (int)Convert_Buff[3][0][0]);
+    DIRTY_INT(cursor_y, (int)g_state.Menu_Cursor_Y[0]);
+    DIRTY_INT(page, (int)g_state.Menu_Page);
+    DIRTY_INT(page_max, (int)g_state.Page_Max);
+    DIRTY_INT(dir_working, (int)g_state.Convert_Buff[3][0][0]);
     s_model_handle.DirtyVariable("dir_label");
     DIRTY_BOOL(in_subpage, s_in_subpage);
 
-    int pg = Menu_Page;
+    int pg = g_state.Menu_Page;
     if (pg >= 0 && pg < 10) {
         int pc = (int)Page_Data[pg];
         DIRTY_INT(page_count, pc);

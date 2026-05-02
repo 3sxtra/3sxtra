@@ -7,6 +7,7 @@
  * to the OpenGL backend for platforms with SDL_GPU support.
  */
 #include "sdl_game_renderer_gpu_internal.h"
+#include "game_state.h"
 
 #include "port/mods/modded_stage.h"
 #include "port/sdl/app/sdl_app_config.h"
@@ -345,8 +346,8 @@ void SDLGameRendererGPU_RenderFrame(void) {
             // Write palette colors
             int c;
             for (c = 0; c < pal->ncolors && c < PALETTE_TEX_WIDTH; c++) {
-                SDL_Color col = pal->colors[c];
-                dst[c] = (col.a << 24) | (col.b << 16) | (col.g << 8) | col.r;
+                SDL_Color local_col = pal->colors[c];
+                dst[c] = (local_col.a << 24) | (local_col.b << 16) | (local_col.g << 8) | local_col.r;
             }
             // Zero remaining entries (important for 16-color palettes)
             for (; c < PALETTE_TEX_WIDTH; c++) {

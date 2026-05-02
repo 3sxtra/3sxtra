@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effect.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -59,7 +60,7 @@ void disp_effect_work() {
     }
 
     if (Debug_w[DEBUG_EFF_NUM_DISP] == 2) {
-        /* Mode 2: draw effect ID at each visual effect's screen position
+        /* Mode 2: draw effect g_state.ID at each visual effect's screen position
          * with a drop-shadow for readability against game graphics. */
         for (index = 0; index <= 7; index += 1) {
             for (curr_ix = head_ix[index]; curr_ix != -1; curr_ix = next_ix) {
@@ -215,7 +216,7 @@ s16 pull_effect_work(s16 index) {
 /// @brief Searches for an effect.
 /// @param index Index of the list to perform search in.
 /// @param flag Set to `true` to search from the tail, `false` to search from the head.
-/// @param tid ID to search for.
+/// @param tid g_state.ID to search for.
 /// @return Index of the effect, or `-1` if it couldn't be found.
 s16 search_effect_index(s16 index, s16 flag, s16 tid) {
     WORK* c_addr;
@@ -457,7 +458,7 @@ s32 setup_status_flag(WORK* wk, u8 data) {
 }
 
 s32 reset_extra_bg_flag(WORK* wk, u8 /* unused */) {
-    another_bg[wk->id] = 0;
+    g_state.another_bg[wk->id] = 0;
     return 0;
 }
 
@@ -508,13 +509,13 @@ s32 setup_free_program(s32 /* unused */, s32 /* unused */) {
 }
 
 s32 setup_bg_quake_x(s32 /* unused */, u8 data) {
-    bg_w.quake_x_index = data;
+    g_state.bg_w.quake_x_index = data;
     return 0;
 }
 
 s32 setup_bg_quake_y(s32 /* unused */, u8 data) {
-    bg_w.quake_y_index = data;
-    pp_screen_quake(bg_w.quake_y_index);
+    g_state.bg_w.quake_y_index = data;
+    pp_screen_quake(g_state.bg_w.quake_y_index);
     return 0;
 }
 
@@ -541,7 +542,7 @@ s32 setup_command_number(PLW* wk, u8 data) {
 u8 old_my_char_check(u8 num, u8 flag) {
     switch (flag) {
     case 0:
-        if ((Country == COUNTRY_JAPAN) || (Country == COUNTRY_KOREA)) {
+        if ((g_state.Country == COUNTRY_JAPAN) || (g_state.Country == COUNTRY_KOREA)) {
             if (num > 14) {
                 num += 1;
             }
@@ -575,8 +576,8 @@ void setup_shadow_of_the_Effy(WORK* wk) {
 }
 
 void set_init_A4_flag() {
-    plw[0].init_E3_flag = 1;
-    plw[1].init_E3_flag = 1;
-    plw[0].init_E4_flag = 1;
-    plw[1].init_E4_flag = 1;
+    g_state.plw[0].init_E3_flag = 1;
+    g_state.plw[1].init_E3_flag = 1;
+    g_state.plw[0].init_E4_flag = 1;
+    g_state.plw[1].init_E4_flag = 1;
 }

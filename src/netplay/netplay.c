@@ -129,9 +129,9 @@ static void clean_input_buffers() {
     p2sw_1 = 0;
     p1sw_buff = 0;
     p2sw_buff = 0;
-    SDL_zeroa(PLsw);
-    SDL_zeroa(plsw_00);
-    SDL_zeroa(plsw_01);
+    SDL_zeroa(g_state.PLsw);
+    SDL_zeroa(g_state.plsw_00);
+    SDL_zeroa(g_state.plsw_01);
 }
 
 /**
@@ -145,14 +145,14 @@ static void clean_input_buffers() {
  * first rollback frame starts from the same state on both sides.
  *
  * Categories of things canonicalized:
- *  - Task/state machine routing numbers (G_No, C_No, SC_No, E_No)
- *  - Mode and play type (MODE_NETWORK, Play_Mode)
+ *  - Task/state machine routing numbers (g_state.G_No, g_state.C_No, g_state.SC_No, g_state.E_No)
+ *  - Mode and play type (MODE_NETWORK, g_state.Play_Mode)
  *  - Game settings (Time_Limit, Battle_Number, Damage_Level, etc.)
- *  - Timers (Game_timer, Control_Time, E_Timer, G_Timer, etc.)
- *  - RNG indices (Random_ix16, Random_ix32)
- *  - Button config (Pad_Infor forced to identity, Check_Buff/Convert_Buff zeroed)
- *  - Background state (bg_pos, fm_pos, bg_prm, Screen_Switch)
- *  - Per-player globals (Champion, Connect_Status, Operator_Status, etc.)
+ *  - Timers (g_state.Game_timer, g_state.Control_Time, g_state.E_Timer, g_state.G_Timer, etc.)
+ *  - RNG indices (g_state.Random_ix16, g_state.Random_ix32)
+ *  - Button config (Pad_Infor forced to identity, g_state.Check_Buff/g_state.Convert_Buff zeroed)
+ *  - Background state (g_state.bg_pos, g_state.fm_pos, g_state.bg_prm, g_state.Screen_Switch)
+ *  - Per-player globals (g_state.Champion, g_state.Connect_Status, g_state.Operator_Status, etc.)
  *  - Input buffers (clean_input_buffers)
  */
 static void setup_vs_mode() {
@@ -165,13 +165,13 @@ static void setup_vs_mode() {
     // The native LAN lobby doesn't hit this because the menu system goes
     // through a proper fade-destroy-reinit cycle.
     //
-    // We only zero player/combat state — NOT engine globals (G_No, Country,
+    // We only zero player/combat state — NOT engine globals (g_state.G_No, g_state.Country,
     // task routing, etc.) because step_game() runs during TRANSITIONING
-    // to advance the game state machine (G_No[1]: 12→1).
+    // to advance the game state machine (g_state.G_No[1]: 12→1).
     // ====================================================================
-    SDL_zeroa(plw);
-    SDL_zeroa(zanzou_table);
-    SDL_zeroa(super_arts);
+    SDL_zeroa(g_state.plw);
+    SDL_zeroa(g_state.zanzou_table);
+    SDL_zeroa(g_state.super_arts);
 
     // Task timers and scratch data evolve independently per peer during menus.
     // Zero them for deterministic start. DO NOT zero r_no or condition —
@@ -188,14 +188,14 @@ static void setup_vs_mode() {
 
     // Zero pause flags — if one peer was paused before entering netplay,
     // these would differ on the first synced frame.
-    Pause = 0;
-    Game_pause = 0;
+    g_state.Pause = 0;
+    g_state.Game_pause = 0;
 
-    // Re-set after zeroing plw — both players must be active for 2P mode
-    plw[0].wu.pl_operator = 1;
-    plw[1].wu.pl_operator = 1;
-    Operator_Status[0] = 1;
-    Operator_Status[1] = 1;
+    // Re-set after zeroing g_state.plw — both players must be active for 2P mode
+    g_state.plw[0].wu.pl_operator = 1;
+    g_state.plw[1].wu.pl_operator = 1;
+    g_state.Operator_Status[0] = 1;
+    g_state.Operator_Status[1] = 1;
     Clear_Personal_Data(0);
     Clear_Personal_Data(1);
     grade_check_work_1st_init(0, 0);
@@ -210,17 +210,17 @@ static void setup_vs_mode() {
     // for rollback, every restore to an early frame would replay garbage.
     System_all_clear_Level_B();
 
-    G_No[0] = 2;
-    E_No[0] = 1;
-    Demo_Flag = 1;
+    g_state.G_No[0] = 2;
+    g_state.E_No[0] = 1;
+    g_state.Demo_Flag = 1;
 
-    G_No[1] = 12;
-    G_No[2] = 1;
-    Mode_Type = MODE_NETWORK;
-    Present_Mode = MODE_NETWORK;
-    Play_Mode = 0;
-    Replay_Status[0] = 0;
-    Replay_Status[1] = 0;
+    g_state.G_No[1] = 12;
+    g_state.G_No[2] = 1;
+    g_state.Mode_Type = MODE_NETWORK;
+    g_state.Present_Mode = MODE_NETWORK;
+    g_state.Play_Mode = 0;
+    g_state.Replay_Status[0] = 0;
+    g_state.Replay_Status[1] = 0;
     cpExitTask(TASK_MENU);
 
     // Force standard game settings so both peers use identical values
@@ -234,43 +234,43 @@ static void setup_vs_mode() {
     save_w[MODE_NETWORK].Handicap = 0;
     save_w[MODE_NETWORK].GuardCheck = 0;
 
-    E_Timer = 0; // E_Timer can have different values depending on when the session was initiated
+    g_state.E_Timer = 0; // g_state.E_Timer can have different values depending on when the session was initiated
 
-    Deley_Shot_No[0] = 0;
-    Deley_Shot_No[1] = 0;
-    Deley_Shot_Timer[0] = 15;
-    Deley_Shot_Timer[1] = 15;
-    Random_ix16 = 0;
-    Round_num = 0;
-    Game_timer = 0;
-    Random_ix32 = 0;
+    g_state.Deley_Shot_No[0] = 0;
+    g_state.Deley_Shot_No[1] = 0;
+    g_state.Deley_Shot_Timer[0] = 15;
+    g_state.Deley_Shot_Timer[1] = 15;
+    g_state.Random_ix16 = 0;
+    g_state.Round_num = 0;
+    g_state.Game_timer = 0;
+    g_state.Random_ix32 = 0;
     Clear_Flash_Init(4);
 
     // Ensure both peers start with identical timer state regardless of local DIP switch settings.
     // Without this, CurrentSave()->Time_Limit can differ per player's config.
-    Counter_hi = 99;
-    Counter_low = 60;
+    g_state.Counter_hi = 99;
+    g_state.Counter_low = 60;
 
-    // Flash_Complete runs during the character select screen at slightly different
+    // g_state.Flash_Complete runs during the character select screen at slightly different
     // speeds per peer depending on when they connected. Zero it to sync.
-    Flash_Complete[0] = 0;
-    Flash_Complete[1] = 0;
+    g_state.Flash_Complete[0] = 0;
+    g_state.Flash_Complete[1] = 0;
 
     // BG scroll positions and parameters evolve independently during the transition
     // phase before synced gameplay. Zero them so both peers start identical.
-    SDL_zeroa(bg_pos);
-    SDL_zeroa(fm_pos);
-    SDL_zeroa(bg_prm);
-    Screen_Switch = 0;
-    Screen_Switch_Buffer = 0;
-    system_timer = 0;
+    SDL_zeroa(g_state.bg_pos);
+    SDL_zeroa(g_state.fm_pos);
+    SDL_zeroa(g_state.bg_prm);
+    g_state.Screen_Switch = 0;
+    g_state.Screen_Switch_Buffer = 0;
+    g_state.system_timer = 0;
     Interrupt_Timer = 0;
 
-    // Order[] tracks rendering layer visibility for character select UI elements.
-    // Weak_PL picks the weaker CPU during demo/attract mode via random_16().
+    // g_state.Order[] tracks rendering layer visibility for character select UI elements.
+    // g_state.Weak_PL picks the weaker CPU during demo/attract mode via random_16().
     // Both diverge per peer before battle; zero them for a clean start.
-    SDL_zeroa(Order);
-    Weak_PL = 0;
+    SDL_zeroa(g_state.Order);
+    g_state.Weak_PL = 0;
 
     // Force identity button config for MODE_NETWORK so Convert_User_Setting()
     // is a no-op during simulation. Each player's actual config was already
@@ -300,34 +300,34 @@ static void setup_vs_mode() {
         save_w[MODE_NETWORK].Battle_Number[1] = 1; // 1 + 1 = 2 round wins needed
     }
 
-    // Check_Buff and Convert_Buff hold per-player button remapping tables.
+    // g_state.Check_Buff and g_state.Convert_Buff hold per-player button remapping tables.
     // Each peer loads them from their local config, so they differ between
     // players. Zero them so the simulation uses identity mappings.
-    SDL_zeroa(Check_Buff);
-    SDL_zeroa(Convert_Buff);
+    SDL_zeroa(g_state.Check_Buff);
+    SDL_zeroa(g_state.Convert_Buff);
 
     // Timers that evolved independently during menus/transition.
-    // Without this, Game_timer and Control_Time diverge immediately.
-    Game_timer = 0;
-    Control_Time = 0;
-    players_timer = 0;
-    G_Timer = 0;
+    // Without this, g_state.Game_timer and g_state.Control_Time diverge immediately.
+    g_state.Game_timer = 0;
+    g_state.Control_Time = 0;
+    g_state.players_timer = 0;
+    g_state.G_Timer = 0;
 
     // Per-player globals that can hold stale values from the previous
     // game session or differ based on who connected first.
-    Champion = 0;
-    Forbid_Break = 0;
-    Connect_Status = 0;
-    Stop_SG = 0;
-    Exec_Wipe = 0;
-    Gap_Timer = 0;
-    SDL_zeroa(E_No);
+    g_state.Champion = 0;
+    g_state.Forbid_Break = 0;
+    g_state.Connect_Status = 0;
+    g_state.Stop_SG = 0;
+    g_state.Exec_Wipe = 0;
+    g_state.Gap_Timer = 0;
+    SDL_zeroa(g_state.E_No);
 
     // State machine routing numbers evolve per-player during character select.
-    // Each peer advances C_No/SC_No from its own perspective, causing them to
+    // Each peer advances g_state.C_No/g_state.SC_No from its own perspective, causing them to
     // diverge before battle. Zero them so both peers start identical.
-    SDL_zeroa(C_No);
-    SDL_zeroa(SC_No);
+    SDL_zeroa(g_state.C_No);
+    SDL_zeroa(g_state.SC_No);
 
     // ====================================================================
     // PHASE 3: Zero checksummed globals not covered above.
@@ -340,52 +340,52 @@ static void setup_vs_mode() {
     // ====================================================================
 
     // Extended RNG indices (attract mode advances these independently)
-    Random_ix16_ex = 0;
-    Random_ix32_ex = 0;
-    Random_ix16_com = 0;
-    Random_ix32_com = 0;
-    Random_ix16_ex_com = 0;
-    Random_ix32_ex_com = 0;
+    g_state.Random_ix16_ex = 0;
+    g_state.Random_ix32_ex = 0;
+    g_state.Random_ix16_com = 0;
+    g_state.Random_ix32_com = 0;
+    g_state.Random_ix16_ex_com = 0;
+    g_state.Random_ix32_ex_com = 0;
 
     // Round/match state
-    Round_Level = 0;
-    Round_Result = 0;
-    SDL_zeroa(PL_Wins);
-    Conclusion_Type = 0;
-    SDL_zeroa(win_type);
+    g_state.Round_Level = 0;
+    g_state.Round_Result = 0;
+    SDL_zeroa(g_state.PL_Wins);
+    g_state.Conclusion_Type = 0;
+    SDL_zeroa(g_state.win_type);
 
     // Player identity (set later by character select, but must start clean)
     // Clean up stale attract/demo sequences that mutate start-of-match state
-    Combo_Demo_Flag = 0;
-    Select_Demo_Index = 0;
-    Demo_Stage_Index = 0;
-    Demo_PL_Index = 0;
+    g_state.Combo_Demo_Flag = 0;
+    g_state.Select_Demo_Index = 0;
+    g_state.Demo_Stage_Index = 0;
+    g_state.Demo_PL_Index = 0;
 
-    SDL_zeroa(My_char);
-    SDL_zeroa(Super_Arts);
+    SDL_zeroa(g_state.My_char);
+    SDL_zeroa(g_state.Super_Arts);
 
     // Combat flags (stale from previous match or attract mode demo fights)
-    SDL_zeroa(Attack_Flag);
-    SDL_zeroa(Counter_Attack);
-    SDL_zeroa(Guard_Flag);
-    SDL_zeroa(Flip_Flag);
-    SDL_zeroa(Lie_Flag);
-    SDL_zeroa(Attack_Counter);
-    SDL_zeroa(Bullet_No);
-    SDL_zeroa(Bullet_Counter);
-    SDL_zeroa(paring_counter);
+    SDL_zeroa(g_state.Attack_Flag);
+    SDL_zeroa(g_state.Counter_Attack);
+    SDL_zeroa(g_state.Guard_Flag);
+    SDL_zeroa(g_state.Flip_Flag);
+    SDL_zeroa(g_state.Lie_Flag);
+    SDL_zeroa(g_state.Attack_Counter);
+    SDL_zeroa(g_state.Bullet_No);
+    SDL_zeroa(g_state.Bullet_Counter);
+    SDL_zeroa(g_state.paring_counter);
 
     // Game flow
-    VS_Stage = 0;
+    g_state.VS_Stage = 0;
 
     // Slow motion
-    SLOW_timer = 0;
-    SLOW_flag = 0;
-    EXE_flag = 0;
+    g_state.SLOW_timer = 0;
+    g_state.SLOW_flag = 0;
+    g_state.EXE_flag = 0;
 
     // Stun gauge / vitality
-    SDL_zeroa(piyori_type);
-    Max_vitality = 160; // MAX_VITALITY_DEFAULT — must not be 0 (setup_vitality divides by it)
+    SDL_zeroa(g_state.piyori_type);
+    g_state.Max_vitality = 160; // MAX_VITALITY_DEFAULT — must not be 0 (setup_vitality divides by it)
 
     clean_input_buffers();
 }
@@ -531,7 +531,7 @@ static u16 recall_input(int player, int frame) {
 }
 
 static bool game_ready_to_run_character_select() {
-    return G_No[1] == 1;
+    return g_state.G_No[1] == 1;
 }
 
 static bool need_to_catch_up() {
@@ -566,8 +566,8 @@ static void step_game(bool render) {
  * rollback replay). Injects the confirmed inputs for both players into the
  * game's input globals:
  *
- *  - PLsw[p][0] (current frame) ← inputs[p] from GekkoNet
- *  - PLsw[p][1] (previous frame) ← recall_input(p, frame - 1)
+ *  - g_state.PLsw[p][0] (current frame) ← inputs[p] from GekkoNet
+ *  - g_state.PLsw[p][1] (previous frame) ← recall_input(p, frame - 1)
  *  - p1sw_0/p2sw_0 ← mirrored copies for legacy code paths
  *
  * Input history is recorded via note_input() for future previous-frame lookups.
@@ -577,10 +577,10 @@ static void advance_game(const GekkoGameEvent* event, bool render) {
     const u16* inputs = (u16*)event->data.adv.inputs;
     const int frame = event->data.adv.frame;
 
-    p1sw_0 = PLsw[0][0] = inputs[0];
-    p2sw_0 = PLsw[1][0] = inputs[1];
-    p1sw_1 = PLsw[0][1] = recall_input(0, frame - 1);
-    p2sw_1 = PLsw[1][1] = recall_input(1, frame - 1);
+    p1sw_0 = g_state.PLsw[0][0] = inputs[0];
+    p2sw_0 = g_state.PLsw[1][0] = inputs[1];
+    p1sw_1 = g_state.PLsw[0][1] = recall_input(0, frame - 1);
+    p2sw_1 = g_state.PLsw[1][1] = recall_input(1, frame - 1);
 
     note_input(inputs[0], 0, frame);
     note_input(inputs[1], 1, frame);
@@ -740,7 +740,7 @@ static void update_network_stats() {
 
 static void run_netplay() {
     // Apply dynamic tuning once when battle starts
-    if (!dynamic_delay_applied && G_No[1] == 2) {
+    if (!dynamic_delay_applied && g_state.G_No[1] == 2) {
         if (ping_sample_count > 0) {
             float avg = ping_sum / ping_sample_count;
             float jitter_avg = jitter_sum / ping_sample_count;
@@ -902,7 +902,7 @@ void Netplay_Run() {
                             if (local_id != peers[i].instance_id) {
                                 we_initiated = (local_id < peers[i].instance_id);
                             } else {
-                                // ID collision (same-machine same-binary): tiebreak by port
+                                // g_state.ID collision (same-machine same-binary): tiebreak by port
                                 we_initiated = (configuration.netplay.port < target_peer->port);
                             }
                         } else {
@@ -924,12 +924,12 @@ void Netplay_Run() {
                 if (local_auto && peers[i].wants_auto_connect) {
                     target_peer = &peers[i];
                     should_be_ready = true;
-                    // Tiebreaker: lower instance ID = P1 (initiator)
+                    // Tiebreaker: lower instance g_state.ID = P1 (initiator)
                     uint32_t local_id = Discovery_GetLocalInstanceID();
                     if (local_id != peers[i].instance_id) {
                         we_initiated = (local_id < peers[i].instance_id);
                     } else {
-                        // ID collision (same-machine same-binary): tiebreak by port
+                        // g_state.ID collision (same-machine same-binary): tiebreak by port
                         we_initiated = (configuration.netplay.port < target_peer->port);
                     }
                     break;
@@ -972,7 +972,7 @@ void Netplay_Run() {
         if (game_ready_to_run_character_select()) {
             transition_ready_frames += 1;
             if (transition_ready_frames == 1)
-                printf("[netplay] character select reached (G_No[1]=%d)\n", G_No[1]);
+                printf("[netplay] character select reached (g_state.G_No[1]=%d)\n", g_state.G_No[1]);
         } else {
             transition_ready_frames = 0;
             // Keep both peers in a deterministic pre-session state by

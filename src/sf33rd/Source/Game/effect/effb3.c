@@ -106,13 +106,13 @@ static void round_move(WORK_Other* ewk) {
 
         if (ewk->wu.hit_quake) {
             Sound_SE(138);
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].position_x + bg_w.pos_offset;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
             ewk->wu.xyz[0].disp.pos -= 96;
             ewk->wu.xyz[1].disp.pos = 144;
             set_char_move_init2(&ewk->wu, 0, 2, 4, 0);
         } else {
             Sound_SE(oya_adrs->wu.dir_old);
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].position_x + bg_w.pos_offset;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
             ewk->wu.xyz[0].disp.pos -= 32;
             set_char_move_init2(&ewk->wu, 0, 2, 2, 0);
         }
@@ -134,7 +134,7 @@ static void fight_move(WORK_Other* ewk) {
         set_char_move_init2(&ewk->wu, 0, 2, 5, 0);
         ewk->wu.my_mr.size.x = 63;
         ewk->wu.my_mr.size.y = 0;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].position_x + bg_w.pos_offset;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
         ewk->wu.xyz[1].disp.pos = 144;
         disp_pos_trans_entry5(ewk);
         break;
@@ -173,7 +173,7 @@ static void fight_vanish(WORK_Other* ewk) {
         break;
 
     case 2:
-        rf_b2_flag = 1;
+        g_state.rf_b2_flag = 1;
         disp_pos_trans_entry5(ewk);
         break;
     }
@@ -200,7 +200,7 @@ s32 effect_B3_init(WORK_Other* oya) {
     ewk->wu.xyz[1].cal = 0x780000;
     ewk->wu.xyz[0].disp.low = 0;
     *ewk->wu.char_table = _etc_char_table;
-    ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].position_x + bg_w.pos_offset;
+    ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
     ewk->wu.xyz[1].disp.pos = 0x90;
     ewk->wu.old_rno[1] = 0;
 

@@ -25,25 +25,25 @@ const s16 end_8_pos[4][2] = { { 256, 768 }, { 256, 512 }, { 256, 0 }, { 768, 512
 
 /** @brief Elena's ending entry point — initialize and run all ending scenes. */
 void end_08000(s16 pl_num) {
-    switch (end_w.r_no_1) {
+    switch (g_state.end_w.r_no_1) {
     case 0:
-        end_w.r_no_1++;
-        end_w.r_no_2 = 0;
+        g_state.end_w.r_no_1++;
+        g_state.end_w.r_no_2 = 0;
         common_end_init00(pl_num);
         common_end_init01();
         BGM_Request(0x31);
-        end_w.timer = timer_8_tbl[end_w.r_no_2];
+        g_state.end_w.timer = timer_8_tbl[g_state.end_w.r_no_2];
         break;
 
     case 1:
-        end_w.timer--;
+        g_state.end_w.timer--;
 
-        if (end_w.timer < 0) {
-            end_w.r_no_2++;
+        if (g_state.end_w.timer < 0) {
+            g_state.end_w.r_no_2++;
 
-            if ((end_w.r_no_2) == 4) {
-                end_w.r_no_1++;
-                end_w.end_flag = 1;
+            if ((g_state.end_w.r_no_2) == 4) {
+                g_state.end_w.r_no_1++;
+                g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
                 end_bg_pos_hosei2();
@@ -51,8 +51,8 @@ void end_08000(s16 pl_num) {
                 break;
             }
 
-            end_w.timer = timer_8_tbl[end_w.r_no_2];
-            bg_w.bgw[0].r_no_1 = 0;
+            g_state.end_w.timer = timer_8_tbl[g_state.end_w.r_no_2];
+            g_state.bg_w.bgw[0].r_no_1 = 0;
         }
 
         end_800_move();
@@ -69,10 +69,10 @@ void end_08000(s16 pl_num) {
 /** @brief Dispatch to the current scene handler for background layer 0. */
 static void end_800_move() {
     void (*end_800_jp[4])() = { end_8000_0000, end_8000_0001, end_8000_0002, end_8000_0002 };
-    bgw_ptr = &bg_w.bgw[0];
-    if (end_w.r_no_2 >= 4)
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    if (g_state.end_w.r_no_2 >= 4)
         return;
-    end_800_jp[end_w.r_no_2]();
+    end_800_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Scene 0 — horizontal pan with effect initialization. */
@@ -82,8 +82,8 @@ static void end_8000_0000() {
         bgw_ptr->r_no_1++;
         Bg_On_W(1);
         effect_E6_init(0x46);
-        bgw_ptr->xy[0].disp.pos = end_8_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_8_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_8_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_8_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         Rewrite_End_Message(1);
         break;
@@ -109,8 +109,8 @@ static void end_8000_0001() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_8_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_8_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_8_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_8_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
         Rewrite_End_Message(2);
@@ -137,12 +137,12 @@ static void end_8000_0002() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_8_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_8_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_8_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_8_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = 512;
         bgw_ptr->abs_y = 0;
 
-        switch (end_w.r_no_2) {
+        switch (g_state.end_w.r_no_2) {
         case 2:
             Rewrite_End_Message(3);
             break;
@@ -151,7 +151,7 @@ static void end_8000_0002() {
             effect_E6_init(0x47);
             effect_E6_init(0x48);
             end_fade_flag = 1;
-            end_fade_timer = timer_8_tbl[end_w.r_no_2] - 120;
+            end_fade_timer = timer_8_tbl[g_state.end_w.r_no_2] - 120;
             Rewrite_End_Message(4);
             break;
         }

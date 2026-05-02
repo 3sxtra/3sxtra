@@ -5,10 +5,11 @@
  * Drives the pause.rml document showing "1P PAUSE" / "2P PAUSE" text
  * with a CSS blink animation, and a controller-disconnected message.
  *
- * Key globals: Pause_Down, Pause_ID, Interface_Type[], Pause_Type
+ * Key globals: g_state.Pause_Down, g_state.Pause_ID, Interface_Type[], g_state.Pause_Type
  */
 
 #include "port/sdl/rmlui/rmlui_pause_overlay.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -41,11 +42,11 @@ extern "C" void rmlui_pause_overlay_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("pause_player", [](Rml::Variant& v) { v = (int)Pause_ID; });
-    ctor.BindFunc("pause_visible", [](Rml::Variant& v) { v = (bool)(Pause_Down != 0); });
-    ctor.BindFunc("pause_label", [](Rml::Variant& v) { v = Rml::String(Pause_ID == 0 ? "1P PAUSE" : "2P PAUSE"); });
-    ctor.BindFunc("ctrl_disconnected", [](Rml::Variant& v) { v = (bool)(Pause_Down != 0 && Pause_Type == 2); });
-    ctor.BindFunc("disconnect_port", [](Rml::Variant& v) { v = (int)(Pause_ID + 1); });
+    ctor.BindFunc("pause_player", [](Rml::Variant& v) { v = (int)g_state.Pause_ID; });
+    ctor.BindFunc("pause_visible", [](Rml::Variant& v) { v = (bool)(g_state.Pause_Down != 0); });
+    ctor.BindFunc("pause_label", [](Rml::Variant& v) { v = Rml::String(g_state.Pause_ID == 0 ? "1P PAUSE" : "2P PAUSE"); });
+    ctor.BindFunc("ctrl_disconnected", [](Rml::Variant& v) { v = (bool)(g_state.Pause_Down != 0 && g_state.Pause_Type == 2); });
+    ctor.BindFunc("disconnect_port", [](Rml::Variant& v) { v = (int)(g_state.Pause_ID + 1); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -58,7 +59,7 @@ extern "C" void rmlui_pause_overlay_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
 
-    bool visible = (Pause_Down != 0);
+    bool visible = (g_state.Pause_Down != 0);
     if (visible != s_cache.pause_visible) {
         s_cache.pause_visible = visible;
         s_model_handle.DirtyVariable("pause_visible");
@@ -69,7 +70,7 @@ extern "C" void rmlui_pause_overlay_update(void) {
             rmlui_wrapper_hide_game_document("pause");
     }
 
-    int pid = (int)Pause_ID;
+    int pid = (int)g_state.Pause_ID;
     if (pid != s_cache.pause_player) {
         s_cache.pause_player = pid;
         s_model_handle.DirtyVariable("pause_player");
@@ -77,7 +78,7 @@ extern "C" void rmlui_pause_overlay_update(void) {
         s_model_handle.DirtyVariable("disconnect_port");
     }
 
-    bool disc = (Pause_Down != 0 && Pause_Type == 2);
+    bool disc = (g_state.Pause_Down != 0 && g_state.Pause_Type == 2);
     if (disc != s_cache.ctrl_disconnected) {
         s_cache.ctrl_disconnected = disc;
         s_model_handle.DirtyVariable("ctrl_disconnected");

@@ -12,6 +12,7 @@
  */
 
 #include "sf33rd/Source/Game/debug/font_test.h"
+#include "game_state.h"
 #include "common.h"
 #include "main.h"
 #include "port/rendering/renderer.h"
@@ -304,7 +305,7 @@ static void FontTest_Page5(void) {
 }
 
 /* ════════════════════════════════════════════════════════════════
- *  Page 6: Score Digits — All Sizes
+ *  Page 6: g_state.Score Digits — All Sizes
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page6(void) {
     u8 d;

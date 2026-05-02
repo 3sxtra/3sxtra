@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effi9.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effj0.h"
@@ -45,7 +46,7 @@ void effect_I9_move(WORK_Other* ewk) {
             break;
         }
 
-        if (!EXE_flag && !Game_pause && mwk->wu.hit_stop <= 0 && --ewk->wu.dir_timer == 0) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && mwk->wu.hit_stop <= 0 && --ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[0] = 2;
         }
 

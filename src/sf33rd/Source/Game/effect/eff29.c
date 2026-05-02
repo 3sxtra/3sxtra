@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff29.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -27,7 +28,7 @@ void effect_29_move(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] <= 0) {
@@ -41,7 +42,7 @@ void effect_29_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {

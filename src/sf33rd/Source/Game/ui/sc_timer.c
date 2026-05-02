@@ -7,6 +7,7 @@
  */
 
 #include "sf33rd/Source/Game/ui/sc_timer.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
 #include "common.h"
 
@@ -204,7 +205,7 @@ void hnc_wipeinit(u8 atr) {
     u8 k;
 
     ppgSetupCurrentDataList(&ppgScrList);
-    Hnc_Num = 0;
+    g_state.Hnc_Num = 0;
     scrscrntex[0].z = scrscrntex[1].z = scrscrntex[2].z = scrscrntex[3].z = PrioBase[2];
     ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
 
@@ -249,7 +250,7 @@ s32 hnc_wipeout(u8 atr) {
         ipy = 88;
         ipu = 8;
         ipv = 72;
-        len = 8 - Hnc_Num;
+        len = 8 - g_state.Hnc_Num;
 
         for (i = 0; i < 2; i++) {
             for (j = 0; j < 23; j++) {
@@ -311,9 +312,9 @@ s32 hnc_wipeout(u8 atr) {
         }
     }
 
-    Hnc_Num++;
+    g_state.Hnc_Num++;
 
-    if (Hnc_Num == 8) {
+    if (g_state.Hnc_Num == 8) {
         return 1;
     }
 
@@ -360,7 +361,7 @@ void nw_set(u8 PL_num, u8 atr) {
     scfont_sqput(nwdata_tbl[PL_num][5], 9, atr, 2, 17, 22, 13, 4, 2);
 }
 
-/* ── Score fonts ───────────────────────────────────────────────── */
+/* ── g_state.Score fonts ───────────────────────────────────────────────── */
 
 /** @brief Render an 8×16 score-font character. */
 void score8x16_put(u16 x, u16 y, u8 atr, u8 chr) {
@@ -617,15 +618,15 @@ void SF3_logo(u8 step) {
     /* RmlUi bypass: suppress original sprite logo when an RmlUi screen
      * provides its own logo. Two cases:
      *   1. Title screen (title_tex_flag set) — large animated logo
-     *   2. Attract demo fights (G_No[0]==1, G_No[1]>=3) — small in-match logo
+     *   2. Attract demo fights (g_state.G_No[0]==1, g_state.G_No[1]>=3) — small in-match logo
      *      replaced by attract_overlay.rml's logo_small.png */
     if (use_rmlui &&
-        ((rmlui_screen_title && title_tex_flag) || (rmlui_screen_attract_overlay && G_No[0] == 1 && G_No[1] >= 3))) {
+        ((rmlui_screen_title && title_tex_flag) || (rmlui_screen_attract_overlay && g_state.G_No[0] == 1 && g_state.G_No[1] >= 3))) {
         /* Match native SF33rd_Logo timing:
          *   step 0-7  = logo building tile-by-tile  → HD logo stays hidden
          *   step == 8 = logo fully revealed          → show HD logo
          *   step > 8  = logo disappearing            → hide HD logo */
-        if (rmlui_screen_attract_overlay && G_No[0] == 1 && G_No[1] >= 3) {
+        if (rmlui_screen_attract_overlay && g_state.G_No[0] == 1 && g_state.G_No[1] >= 3) {
             if (step == 8)
                 rmlui_attract_overlay_show_logo();
             else if (step > 8)
@@ -778,7 +779,7 @@ void Training_Disp_Work_Clear() {
 void Training_Damage_Set(s16 damage, s16 arg1, u8 kezuri) {
     u8 j;
 
-    if (Training_ID == 0) {
+    if (g_state.Training_ID == 0) {
         j = 1;
     } else {
         j = 0;
@@ -820,7 +821,7 @@ void Training_Data_Disp() {
 
     ppgSetupCurrentDataList(&ppgScrList);
 
-    if (Disp_Attack_Data == 0) {
+    if (g_state.Disp_Attack_Data == 0) {
         return;
     }
 
@@ -828,7 +829,7 @@ void Training_Data_Disp() {
         return;
     }
 
-    if (Training_ID == 0) {
+    if (g_state.Training_ID == 0) {
         j = 1;
     } else {
         j = 0;
@@ -844,7 +845,7 @@ void Training_Data_Disp() {
                       76,
                       8,
                       i + 5,
-                      Training_combo_prio_tbl[i] + (sa_pa_flag * 14) * i);
+                      Training_combo_prio_tbl[i] + (g_state.sa_pa_flag * 14) * i);
 
         SSPutDec3(i + (Training_combo_pos_tbl[j] + 158),
                   i + 48,
@@ -852,7 +853,7 @@ void Training_Data_Disp() {
                   tr_data[j].damage,
                   3,
                   i + 7,
-                  Training_combo_prio_tbl[i] + (sa_pa_flag * 14) * i);
+                  Training_combo_prio_tbl[i] + (g_state.sa_pa_flag * 14) * i);
     }
 
     for (i = 0; i < 2; i++) {
@@ -865,7 +866,7 @@ void Training_Data_Disp() {
                       134,
                       8,
                       i + 5,
-                      Training_combo_prio_tbl[i] + (sa_pa_flag * 14) * i);
+                      Training_combo_prio_tbl[i] + (g_state.sa_pa_flag * 14) * i);
 
         SSPutDec3(i + (Training_combo_pos_tbl[j] + 158),
                   i + 58,
@@ -873,7 +874,7 @@ void Training_Data_Disp() {
                   tr_data[j].disp_total_damage,
                   3,
                   i + 7,
-                  Training_combo_prio_tbl[i] + (sa_pa_flag * 14) * i);
+                  Training_combo_prio_tbl[i] + (g_state.sa_pa_flag * 14) * i);
     }
 
     if (tr_data[j].frash_flag) {
@@ -907,7 +908,7 @@ void Training_Data_Disp() {
                       98,
                       8,
                       i + 3,
-                      Training_combo_prio_tbl[i] + (sa_pa_flag * 14) * i);
+                      Training_combo_prio_tbl[i] + (g_state.sa_pa_flag * 14) * i);
 
         SSPutDec3(i + (Training_combo_pos_tbl[j] + 158),
                   i + 68,
@@ -915,7 +916,7 @@ void Training_Data_Disp() {
                   tr_data[j].max_hitcombo,
                   2,
                   gr + i,
-                  Training_combo_prio_tbl[i] + (sa_pa_flag * 14) * i);
+                  Training_combo_prio_tbl[i] + (g_state.sa_pa_flag * 14) * i);
     }
 }
 

@@ -7,7 +7,7 @@
  * that transitions back to the character select screen.
  *
  * The legacy function has 3 phases:
- *   case 0: timer=0xA, Game_pause=0x81
+ *   case 0: timer=0xA, g_state.Game_pause=0x81
  *   case 1: timer countdown, Check_LDREQ_Break, Switch_Screen_Init
  *   case 2: Switch_Screen, then cpExitTask(TASK_MENU)
  *
@@ -22,6 +22,7 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Character_Change, IN_GAME_JMP_COUNT */
 #include "structs.h"

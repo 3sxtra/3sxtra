@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effa3.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -80,12 +81,12 @@ void effect_A3_move(WORK_Other* ewk) {
     s16 clear_level;
     f32 prio;
 
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
-    if (ewk->master_priority != Menu_Cursor_Y[0]) {
+    if (ewk->master_priority != g_state.Menu_Cursor_Y[0]) {
         color = 9;
     } else {
         color = 5;
@@ -99,10 +100,10 @@ void effect_A3_move(WORK_Other* ewk) {
 
     clear_level = 0;
 
-    if (Record_Data_Tr == 0 && ewk->wu.type == 0 && ewk->master_priority == 2) {
+    if (g_state.Record_Data_Tr == 0 && ewk->wu.type == 0 && ewk->master_priority == 2) {
         clear_level = 1;
     }
-    if (Record_Data_Tr == 0 && ewk->wu.type == 11 && ewk->master_priority == 1) {
+    if (g_state.Record_Data_Tr == 0 && ewk->wu.type == 11 && ewk->master_priority == 1) {
         clear_level = 1;
     }
 

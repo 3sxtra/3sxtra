@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff19.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -40,7 +41,7 @@ void effect_19_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             eff19_quake_sub(ewk);
         }
 
@@ -60,15 +61,15 @@ void eff19_quake_sub(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (bg_w.quake_y_index <= 2) {
+        if (g_state.bg_w.quake_y_index <= 2) {
             break;
         }
 
         work = random_16();
 
-        if (bg_w.quake_y_index < 8) {
+        if (g_state.bg_w.quake_y_index < 8) {
             fall_go = effect_19_s_tbl[work];
-        } else if (bg_w.quake_y_index > 14) {
+        } else if (g_state.bg_w.quake_y_index > 14) {
             fall_go = effect_19_l_tbl[work];
         } else {
             fall_go = effect_19_m_tbl[work];

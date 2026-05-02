@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/pls03.h"
+#include "game_state.h"
 #include "bin2obj/asstbl.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -60,11 +61,11 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
         return 0;
     }
 
-    if (pcon_dp_flag) {
+    if (g_state.pcon_dp_flag) {
         return 0;
     }
 
-    if (((Bonus_Game_Flag == 0x14) && (wk->bs2_on_car)) || (wk->wu.xyz[1].disp.pos <= 0)) {
+    if (((g_state.Bonus_Game_Flag == 0x14) && (wk->bs2_on_car)) || (wk->wu.xyz[1].disp.pos <= 0)) {
         if (wk->spmv_ng_flag & DIP_UNKNOWN_30) {
             return 0;
         }
@@ -194,10 +195,10 @@ s16 check_super_arts_attack(PLW* wk) {
     s16 rnum = 0;
     s16 i;
 
-    if (cmd_sel[wk->wu.id]) {
+    if (g_state.cmd_sel[wk->wu.id]) {
         if (wk->sa->ok != -1) {
             for (i = 0; i < 3; i++) {
-                Super_Arts[wk->wu.id] = i;
+                g_state.Super_Arts[wk->wu.id] = i;
                 set_super_arts_status_dc(wk->wu.id);
                 rnum = check_super_arts_attack_dc(wk);
 
@@ -225,7 +226,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
         return 0;
     }
 
-    if (pcon_dp_flag) {
+    if (g_state.pcon_dp_flag) {
         return 0;
     }
 
@@ -233,7 +234,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
         wk->permited_koa |= 1;
     }
 
-    if (((Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
+    if (((g_state.Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
         if (wk->spmv_ng_flag & DIP_UNKNOWN_30) {
             return 0;
         }
@@ -346,11 +347,11 @@ s32 execute_super_arts(PLW* wk) {
         wk->permited_koa |= 1;
     }
 
-    if ((wk->sa->gauge_type != 3) && pcon_dp_flag) {
+    if ((wk->sa->gauge_type != 3) && g_state.pcon_dp_flag) {
         return 0;
     }
 
-    if (((Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
+    if (((g_state.Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
         if (wk->spmv_ng_flag & DIP_UNKNOWN_30) {
             return 0;
         }
@@ -409,11 +410,11 @@ s32 check_special_attack(PLW* wk) {
         wk->permited_koa |= 2;
     }
 
-    if (pcon_dp_flag) {
+    if (g_state.pcon_dp_flag) {
         return 0;
     }
 
-    if (((Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
+    if (((g_state.Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
         conpane = (u16*)wk->cp;
 
         for (i = 28; i < 38; i++) {
@@ -608,7 +609,7 @@ s32 check_leap_attack(PLW* wk) {
         return 0;
     }
 
-    if (pcon_dp_flag) {
+    if (g_state.pcon_dp_flag) {
         return 0;
     }
 
@@ -632,7 +633,7 @@ s32 check_leap_attack(PLW* wk) {
         }
     }
 
-    if (((Bonus_Game_Flag != 0x14) || !wk->bs2_on_car) && (wk->wu.xyz[1].disp.pos > 0)) {
+    if (((g_state.Bonus_Game_Flag != 0x14) || !wk->bs2_on_car) && (wk->wu.xyz[1].disp.pos > 0)) {
         return 0;
     }
 
@@ -736,7 +737,7 @@ s32 check_nm_attack(PLW* wk) {
         break;
 
     default:
-        if (((Bonus_Game_Flag != 0x14) || !wk->bs2_on_car) && (wk->wu.xyz[1].disp.pos > 0)) {
+        if (((g_state.Bonus_Game_Flag != 0x14) || !wk->bs2_on_car) && (wk->wu.xyz[1].disp.pos > 0)) {
             return 0;
         }
 
@@ -779,7 +780,7 @@ s32 check_chouhatsu(PLW* wk) {
         return 0;
     }
 
-    if ((wk->spmv_ng_flag & DIP_TAUNT_AFTER_KO_DISABLED) && pcon_dp_flag) {
+    if ((wk->spmv_ng_flag & DIP_TAUNT_AFTER_KO_DISABLED) && g_state.pcon_dp_flag) {
         return 0;
     }
 
@@ -843,7 +844,7 @@ const u8 nml_catch_h2_ok[2][20] = { { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16
 s32 check_catch_attack(PLW* wk) {
     s16 kos;
 
-    if (pcon_dp_flag) {
+    if (g_state.pcon_dp_flag) {
         return 0;
     }
 
@@ -1083,7 +1084,7 @@ s16 get_em_body_range(WORK* wk) {
     s16* dad;
     s16 res_hs;
 
-    if (Bonus_Game_Flag == 20 && wk->pl_operator != 0) {
+    if (g_state.Bonus_Game_Flag == 20 && wk->pl_operator != 0) {
         em = (WORK*)((WORK*)wk->target_adrs)->my_effadrs;
         dad = (s16*)(em->hosei_adrs + (get_sel_hosei_tbl_ix(((WORK_Other*)em)->master_player) + 1));
         res_hs = wk->xyz[0].disp.pos - (em->xyz[0].disp.pos + dad[0] + (dad[1] / 2));
@@ -1156,7 +1157,7 @@ s16 renbanshot_conpaneshot(const s16* dadr, s16 pow) {
     return rc_shot_conv[dadr[pow] & 0xF];
 }
 
-/** @brief Converts data command ID to control panel command. */
+/** @brief Converts data command g_state.ID to control panel command. */
 s16 datacmd_conpanecmd(s16 dat) {
     dat = (dat & 0x700) >> 1 | (dat & 0x7F);
     return dat;

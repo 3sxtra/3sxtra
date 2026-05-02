@@ -25,6 +25,10 @@
 #ifndef NETPLAY_GAME_STATE_H
 #define NETPLAY_GAME_STATE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/cmb_win.h"
@@ -767,7 +771,7 @@ typedef struct GameState {
     END_W end_w;
 
     // work_sys
-    s32 scr_sc;
+    float scr_sc;
     s32 X_Adjust;
     s32 Y_Adjust;
 
@@ -798,6 +802,12 @@ void load_state_from_event(const struct GekkoGameEvent* event);
 
 #if DEBUG
 void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_checksum);
+#endif
+
+extern GameState g_state;
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effg8.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -17,7 +18,7 @@
 const s32 effg8_sp_tbl[28][4];
 
 void effect_G8_move(WORK_Other* ewk) {
-    if (!akebono_flag) {
+    if (!g_state.akebono_flag) {
         ewk->wu.routine_no[0] = 99;
     }
 

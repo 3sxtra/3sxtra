@@ -1,4 +1,5 @@
 #include "port/ui/native_imgui.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/engine/workuser_select.h"
@@ -42,7 +43,7 @@ void NativeUI_SetLetterType(u16 type) {
     s_letter_type = type;
 }
 
-// Scope ID Stack
+// Scope g_state.ID Stack
 static int s_id_stack[16];
 static int s_id_stack_size = 0;
 
@@ -131,7 +132,7 @@ void NativeUI_Clear(void) {
                     push_effect_work((WORK*)w);
                 }
             }
-            Order[slot] = 0;
+            g_state.Order[slot] = 0;
             s_elements[i].id_hash = 0;
         }
     }
@@ -139,7 +140,7 @@ void NativeUI_Clear(void) {
     memset(s_elements, 0, sizeof(s_elements));
     s_frame_counter = 0;
     s_focus_index = 0;
-    // Do NOT wipe Menu_Cursor_Y[0] here. It destroys state for dispatch targets right after calling NativeUI_Clear.
+    // Do NOT wipe g_state.Menu_Cursor_Y[0] here. It destroys state for dispatch targets right after calling NativeUI_Clear.
     s_scroll_current_offset = 0;
     s_in_scroll_list = false;
     s_graphic_offset = 0;
@@ -165,7 +166,7 @@ void NativeUI_End(void) {
             int slot = s_elements[i].effect_slot;
             
             // JUDGE PETROV FIX: Hunt down and explicitly kill the CPS3 task
-            // instead of spamming Suicide[0]=1 and risking collateral damage.
+            // instead of spamming g_state.Suicide[0]=1 and risking collateral damage.
             for (int k = 0; k < EFFECT_MAX; k++) {
                 WORK_Other* w = (WORK_Other*)frw[k];
                 if (w->wu.be_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
@@ -173,7 +174,7 @@ void NativeUI_End(void) {
                 }
             }
             
-            Order[slot] = 0;
+            g_state.Order[slot] = 0;
             s_elements[i].id_hash = 0;
         }
     }
@@ -183,7 +184,7 @@ void NativeUI_End(void) {
         if (s_focus_index < 0) s_focus_index = s_max_index - 1;
         if (s_focus_index >= s_max_index) s_focus_index = 0;
     }
-    Menu_Cursor_Y[0] = s_focus_index;
+    g_state.Menu_Cursor_Y[0] = s_focus_index;
 }
 
 void NativeUI_SetNextPos(int x, int y) {
@@ -236,9 +237,9 @@ void NativeUI_Header(int header_type) {
     int slot = AllocSlot((uint32_t)header_type + 0x10000, &is_new);
     if (slot != -1 && is_new) {
         // Initialize if newly created
-        Order[slot] = 1;
-        Order_Dir[slot] = 8;
-        Order_Timer[slot] = 1;
+        g_state.Order[slot] = 1;
+        g_state.Order_Dir[slot] = 8;
+        g_state.Order_Timer[slot] = 1;
         effect_57_init(slot, (MenuHeader)header_type, 0, 0x3F, 2);
     }
 }
@@ -273,14 +274,14 @@ bool NativeUI_ButtonEx(const char* label, bool disabled) {
     int slot = AllocSlot(hash, &is_new);
     
     if (slot != -1 && is_new) { 
-        Order[slot] = 1;
-        Order_Dir[slot] = 4;
+        g_state.Order[slot] = 1;
+        g_state.Order_Dir[slot] = 4;
         int visual_index = my_index - s_scroll_current_offset;
-        Order_Timer[slot] = visual_index + 7; // Use visual offset for animation sequence
+        g_state.Order_Timer[slot] = visual_index + 7; // Use visual offset for animation sequence
         
         int graphic_index = my_index + s_graphic_offset;
         // Arg 5 (char_ix) dictates absolute graphic string and Y layout from Slide_Pos_Data_61.
-        // Arg 6 (cursor_index) connects to Menu_Cursor_Y[0] for dynamic highlighting.
+        // Arg 6 (cursor_index) connects to g_state.Menu_Cursor_Y[0] for dynamic highlighting.
         effect_61_init(0, slot, 0, s_master_player, graphic_index, my_index, s_letter_type); 
     }
     

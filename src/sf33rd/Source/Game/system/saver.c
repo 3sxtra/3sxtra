@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/system/saver.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/reset.h"
@@ -63,12 +64,12 @@ void Saver_Init(struct _TASK* task_ptr) {
 
 /** @brief Check for inactivity — increment the idle timer and advance to fade when threshold is reached. */
 void Saver_Check(struct _TASK* task_ptr) {
-    if (Demo_Flag == 0) {
+    if (g_state.Demo_Flag == 0) {
         task_ptr->timer = 0;
         return;
     }
 
-    if ((PLsw[0][0] != 0) || (PLsw[1][0] != 0)) {
+    if ((g_state.PLsw[0][0] != 0) || (g_state.PLsw[1][0] != 0)) {
         task_ptr->timer = 0;
         return;
     }
@@ -80,7 +81,7 @@ void Saver_Check(struct _TASK* task_ptr) {
 
 /** @brief Active screensaver state — fade out the screen; reset on any input. */
 void Saver_Move(struct _TASK* task_ptr) {
-    if ((PLsw[0][0] != 0) || PLsw[1][0] != 0) {
+    if ((g_state.PLsw[0][0] != 0) || g_state.PLsw[1][0] != 0) {
         Saver_Init(task_ptr);
 
     } else {

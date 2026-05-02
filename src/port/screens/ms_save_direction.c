@@ -25,12 +25,12 @@
  * Save_Direction flow (AT index 19, r_no[2] cases 0-3):
  *
  * case 0: FadeOut, setup BG, replay header, file property, flash init.
- *         Menu_Suicide[1]=1, Menu_Suicide[2]=0, Menu_Cursor_X[0]=0.
+ *         g_state.Menu_Suicide[1]=1, g_state.Menu_Suicide[2]=0, g_state.Menu_Cursor_X[0]=0.
  *
  * case 1: Menu_Sub_case1 wait. On completion, NativeSave_SaveDirection().
  *
  * case 2: Setup_Save_Replay_2nd(task_ptr, 2) — post-save visual feedback.
  *
- * case 3: IO_Result = 0x200 (force cancel), Load_Replay_MC_Sub routes
+ * case 3: g_state.IO_Result = 0x200 (force cancel), Load_Replay_MC_Sub routes
  *         back to SysDir (r_no[1]=5) via the cancel branch.
  */

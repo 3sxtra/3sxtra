@@ -25,13 +25,13 @@
  * Load_Direction flow (AT index 20, r_no[2] cases 0-3):
  *
  * case 0: FadeOut, setup BG, replay header, file property, flash init.
- *         Menu_Suicide[1]=1, Menu_Suicide[2]=0, Menu_Cursor_X[0]=0.
+ *         g_state.Menu_Suicide[1]=1, g_state.Menu_Suicide[2]=0, g_state.Menu_Cursor_X[0]=0.
  *
  * case 1: Menu_Sub_case1 wait. On completion, NativeSave_LoadDirection().
  *
  * case 2: FadeIn(1, 0x19, 8). On completion: r_no[2]++, free[3]=0,
- *         Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(0, 8).
+ *         g_state.Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(0, 8).
  *
- * case 3: IO_Result = 0x200 (force cancel), Load_Replay_MC_Sub routes
+ * case 3: g_state.IO_Result = 0x200 (force cancel), Load_Replay_MC_Sub routes
  *         back to SysDir (r_no[1]=5) via the cancel branch.
  */

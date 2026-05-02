@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_win_screen.h"
 
@@ -42,7 +43,7 @@ u8 WIN_X;
 s32 Winner_Scene() {
     struct _TASK* tp = MenuTask_GetTaskPtr();
 
-    if (Break_Into) {
+    if (g_state.Break_Into) {
         return 0;
     }
 
@@ -53,7 +54,7 @@ s32 Winner_Scene() {
         tp->r_no[1] = MENU_SCREEN_WIN;
     }
 
-    Scene_Cut = Cut_Cut_Cut();
+    g_state.Scene_Cut = Cut_Cut_Cut();
     MenuScreen_Tick(tp);
 
     if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
@@ -72,7 +73,7 @@ s32 Winner_Scene() {
 s32 Loser_Scene() {
     struct _TASK* tp = MenuTask_GetTaskPtr();
 
-    if (Break_Into) {
+    if (g_state.Break_Into) {
         return 0;
     }
 
@@ -83,7 +84,7 @@ s32 Loser_Scene() {
         tp->r_no[1] = MENU_SCREEN_LOSER;
     }
 
-    Scene_Cut = Cut_Cut_Loser();
+    g_state.Scene_Cut = Cut_Cut_Loser();
     MenuScreen_Tick(tp);
 
     if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
@@ -100,19 +101,19 @@ s32 Loser_Scene() {
 
 /** @brief Spawn win-streak display objects ("1st WIN", "2nd WIN", etc.) based on current mode. */
 void Setup_Wins_OBJ() {
-    if (Mode_Type == MODE_VERSUS) {
-        WGJ_Win = VS_Win_Record[Winner_id];
+    if (g_state.Mode_Type == MODE_VERSUS) {
+        g_state.WGJ_Win = g_state.VS_Win_Record[g_state.Winner_id];
     } else {
-        WGJ_Win = Win_Record[Winner_id];
+        g_state.WGJ_Win = g_state.Win_Record[g_state.Winner_id];
     }
 
-    if ((WGJ_Win == 0) || (Mode_Type == MODE_NETWORK)) {
+    if ((g_state.WGJ_Win == 0) || (g_state.Mode_Type == MODE_NETWORK)) {
         return;
     }
 
     effect_L1_init(0);
 
-    if (WGJ_Win > 1) {
+    if (g_state.WGJ_Win > 1) {
         spawn_effect_76(0x2F, 3, 1);
         spawn_effect_76(0x31, 3, 1);
     } else {

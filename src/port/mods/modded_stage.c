@@ -7,10 +7,11 @@
  * 384×224 canvas FBO is then composited on top with blending, so sprites
  * appear over the HD background without any downscaling.
  *
- * All scroll/positioning data is read directly from the live bg_w engine
+ * All scroll/positioning data is read directly from the live g_state.bg_w engine
  * struct — this system owns zero gameplay state and is purely cosmetic.
  */
 #include "port/mods/modded_stage.h"
+#include "game_state.h"
 #include "port/config/config.h"
 #include "port/config/paths.h"
 #include "port/mods/stage_config.h"
@@ -32,7 +33,7 @@
 #define BGW_ARRAY_SIZE 7
 
 typedef struct {
-    void* texture; /* GL texture ID */
+    void* texture; /* GL texture g_state.ID */
     int width;
     int height;
 } ModdedLayerResources;
@@ -152,7 +153,7 @@ void ModdedStage_Unload(void) {
 /* ---------- Query ---------- */
 
 bool ModdedStage_IsActiveForCurrentStage(void) {
-    return s_enabled && s_layer_res_count > 0 && s_loaded_stage == bg_w.stage;
+    return s_enabled && s_layer_res_count > 0 && s_loaded_stage == g_state.bg_w.stage;
 }
 
 int ModdedStage_GetLayerCount(void) {
@@ -163,7 +164,7 @@ int ModdedStage_GetLoadedStageIndex(void) {
     return s_loaded_stage;
 }
 
-static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, const BG* bg) {
+static void draw_layer(int layer_index, const BackgroundParameters* local_bg_prm, const BG* bg) {
     if (layer_index < 0 || layer_index >= MAX_STAGE_LAYERS)
         return;
 
@@ -215,8 +216,8 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
 
     if (bg_idx >= 0 && bg_idx < BGW_ARRAY_SIZE && bg != NULL) {
         const BGW* bgw = &bg->bgw[bg_idx];
-        float raw_x = (float)(s16)bg_prm[bg_idx].bg_h_shift;
-        float raw_y = (float)(s16)bg_prm[bg_idx].bg_v_shift;
+        float raw_x = (float)(s16)local_bg_prm[bg_idx].bg_h_shift;
+        float raw_y = (float)(s16)local_bg_prm[bg_idx].bg_v_shift;
 
         /* bg_h_shift = wxy.pos - pos_offset  (see bg_pos_hosei / Irl_Scrn).
          * wxy.pos is clamped to [l_limit2, r_limit2] by bg_base_x_move_check.
@@ -305,6 +306,6 @@ void ModdedStage_Render(const BG* bg) {
     }
 
     for (int i = 0; i < count; i++) {
-        draw_layer(sort_buf[i].index, bg_prm, bg); // Pass global bg_prm array + BG struct
+        draw_layer(sort_buf[i].index, g_state.bg_prm, bg); // Pass global g_state.bg_prm array + BG struct
     }
 }

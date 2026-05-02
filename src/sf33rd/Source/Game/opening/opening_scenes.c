@@ -10,6 +10,7 @@
  */
 
 #include "sf33rd/Source/Game/opening/opening.h"
+#include "game_state.h"
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
@@ -1583,16 +1584,16 @@ static void opening_title_01() {
     effect_F5_init(9);
     Disp_Copyright();
     Bg_Off_W(0xFU);
-    Scrn_Move_Set(0, 0x200 - bg_w.pos_offset, 0);
-    Scrn_Move_Set(1, 0x200 - bg_w.pos_offset, 0);
-    pos_work_x = -(0x200 - bg_w.pos_offset);
+    Scrn_Move_Set(0, 0x200 - g_state.bg_w.pos_offset, 0);
+    Scrn_Move_Set(1, 0x200 - g_state.bg_w.pos_offset, 0);
+    pos_work_x = -(0x200 - g_state.bg_w.pos_offset);
     pos_work_y = 0x300;
     Family_Set_W(1, pos_work_x, pos_work_y);
     op_end_flag = 1;
-    bg_stop = 0;
-    akebono_flag = 0;
-    aku_flag = 0;
-    sa_pa_flag = 0;
-    bg_app = 0;
-    bg_w.chase_flag = 0;
+    g_state.bg_stop = 0;
+    g_state.akebono_flag = 0;
+    g_state.aku_flag = 0;
+    g_state.sa_pa_flag = 0;
+    g_state.bg_app = 0;
+    g_state.bg_w.chase_flag = 0;
 }

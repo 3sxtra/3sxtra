@@ -117,7 +117,7 @@ void disp_texcash_free_area() {
                 flPrintL(40, i + 8, "%3X", mts[i].mltgidx16);
                 flPrintL(46, i + 8, "%2X", mts[i].mltnum);
 
-                if ((i == 7) && (mts_ob_curr_stage != bg_w.stage)) {
+                if ((i == 7) && (mts_ob_curr_stage != g_state.bg_w.stage)) {
                     flPrintColor(0xFFFF8F8F);
                     flPrintL(11, i + 8, "!?");
                     flPrintColor(0xFFCFCFCF);
@@ -352,12 +352,12 @@ void make_texcash_work(s16 ix) {
         }
     } else {
         if (ix == 7) {
-            if (bg_w.stage >= 22) {
+            if (g_state.bg_w.stage >= 22) {
                 return;
             }
-            page16 = mts_OB_page[bg_w.stage][0];
-            page32 = mts_OB_page[bg_w.stage][1];
-            mts_ob_curr_stage = bg_w.stage;
+            page16 = mts_OB_page[g_state.bg_w.stage][0];
+            page32 = mts_OB_page[g_state.bg_w.stage][1];
+            mts_ob_curr_stage = g_state.bg_w.stage;
         } else {
             page16 = mts_base[ix].p16;
             page32 = mts_base[ix].p32;

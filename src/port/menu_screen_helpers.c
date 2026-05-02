@@ -13,8 +13,9 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Menu_Cursor_Move, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, g_state.Menu_Cursor_Move, etc. */
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop()  */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init(), Check_Menu_Lever() */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub(), Exit_Sub(), Back_to_Mode_Select() */
@@ -73,9 +74,9 @@ bool MenuScreen_WaitTimer(struct _TASK* task_ptr) {
  *  etc.).
  *
  *  @param cursor_max  Maximum cursor index (0-based: 6 for 7 items).
- *  @param skip_item   Item index to skip when Connect_Status == 0,
+ *  @param skip_item   Item index to skip when g_state.Connect_Status == 0,
  *                     e.g. 1 to skip VS when no P2. Pass 0xFF to disable.
- *  @return            IO_Result value (SWK_UP, SWK_DOWN, button bits, or 0).
+ *  @return            g_state.IO_Result value (SWK_UP, SWK_DOWN, button bits, or 0).
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 u16 MenuScreen_HandleCursor(int cursor_max, int skip_item) {
@@ -118,14 +119,14 @@ u16 MenuScreen_HandleCursorLR(void) {
  *  MenuScreen_HandleGridCursor — 2D grid cursor for Memory Card / Replay.
  *
  *  Wraps Dir_Move_Sub2(Check_Menu_Lever(0, 0)) for screens that navigate
- *  a file grid. Updates Menu_Cursor_X[] and Menu_Cursor_Y[].
+ *  a file grid. Updates g_state.Menu_Cursor_X[] and g_state.Menu_Cursor_Y[].
  *
  *  @param max_x  Maximum X position (columns - 1).
  *  @param max_y  Maximum Y position (rows - 1).
- *  @return       IO_Result value.
+ *  @return       g_state.IO_Result value.
  *
- *  Note: The legacy Dir_Move_Sub2 uses the global Menu_Max for wrapping.
- *  The caller must set Menu_Max before calling this helper if the
+ *  Note: The legacy Dir_Move_Sub2 uses the global g_state.Menu_Max for wrapping.
+ *  The caller must set g_state.Menu_Max before calling this helper if the
  *  screen uses the global-based wrapping (as Memory Card and Replay do).
  * ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -156,7 +157,7 @@ u16 MenuScreen_HandleGridCursor(int max_x, int max_y) {
  *
  *  @param task_ptr    The menu task pointer.
  *  @param hdr         MenuHeader enum value for the header bar effect.
- *  @param slot        Order[] slot for the header bar.
+ *  @param slot        g_state.Order[] slot for the header bar.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 void MenuScreen_EnterSub(struct _TASK* task_ptr, MenuHeader hdr, u8 slot) {
@@ -168,13 +169,13 @@ void MenuScreen_EnterSub(struct _TASK* task_ptr, MenuHeader hdr, u8 slot) {
     Menu_Common_Init();
 
     /* Restore cursor from saved position (level 1 — same as Menu_in_Sub) */
-    Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
+    g_state.Menu_Cursor_Y[0] = g_state.Cursor_Y_Pos[0][1];
 
     /* Effect layer management */
-    Menu_Suicide[0] = 1; /* kill parent effects */
-    Menu_Suicide[1] = 0; /* enable our effects */
-    Order[slot] = 4;
-    Order_Timer[slot] = 1;
+    g_state.Menu_Suicide[0] = 1; /* kill parent effects */
+    g_state.Menu_Suicide[1] = 0; /* enable our effects */
+    g_state.Order[slot] = 4;
+    g_state.Order_Timer[slot] = 1;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -185,11 +186,11 @@ void MenuScreen_EnterSub(struct _TASK* task_ptr, MenuHeader hdr, u8 slot) {
  *  complete — the caller should then call MenuScreen_Goto() or
  *  MenuScreen_Back() to trigger the actual transition.
  *
- *  Saves the current cursor position to Cursor_Y_Pos[cursor_ix] and
+ *  Saves the current cursor position to g_state.Cursor_Y_Pos[cursor_ix] and
  *  stops vibration (pulpul_stop).
  *
  *  @param task_ptr    The menu task pointer.
- *  @param cursor_ix   Index into Cursor_Y_Pos to save cursor position.
+ *  @param cursor_ix   Index into g_state.Cursor_Y_Pos to save cursor position.
  *  @return            true when fade-out is complete.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -203,8 +204,8 @@ bool MenuScreen_ExitFade(struct _TASK* task_ptr, s16 cursor_ix) {
     case 1:
         if (FadeOut(1, 0x19, 8) != 0) {
             task_ptr->free[0] = 0;
-            Cursor_Y_Pos[0][cursor_ix] = Menu_Cursor_Y[0];
-            Cursor_Y_Pos[1][cursor_ix] = Menu_Cursor_Y[1];
+            g_state.Cursor_Y_Pos[0][cursor_ix] = g_state.Menu_Cursor_Y[0];
+            g_state.Cursor_Y_Pos[1][cursor_ix] = g_state.Menu_Cursor_Y[1];
             pulpul_stop();
             return true;
         }

@@ -11,6 +11,7 @@
  * keeps the retained-mode DOM efficient — only changed elements re-render.
  */
 #include "port/sdl/rmlui/rmlui_mods_menu.h"
+#include "game_state.h"
 #include "port/config/config.h"
 #include "port/rendering/sdl_bezel.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
@@ -47,7 +48,6 @@ extern bool mods_menu_palmod_enabled;
 #include "sf33rd/Source/Game/debug/debug_config.h"
 
 /* Game state — 0 = in menus, 1-2 = in gameplay */
-extern unsigned char Play_Game;
 
 /* Debug HUD toggle */
 extern bool show_debug_hud;
@@ -270,7 +270,7 @@ static void do_init(void) {
         [](const Rml::Variant& v) { broadcast_config.source = (BroadcastSource)v.Get<int>(); });
 
     // --- Read-only state ---
-    constructor.BindFunc("in_game", [](Rml::Variant& v) { v = (Play_Game != 0); });
+    constructor.BindFunc("in_game", [](Rml::Variant& v) { v = (g_state.Play_Game != 0); });
 
     s_model_handle = constructor.GetModelHandle();
     s_model_registered = true;
@@ -295,10 +295,10 @@ extern "C" void rmlui_mods_menu_update(void) {
         return;
 
     // Auto-reset debug options when transitioning from gameplay to menus
-    if (s_prev_play_game != 0 && Play_Game == 0) {
+    if (s_prev_play_game != 0 && g_state.Play_Game == 0) {
         reset_debug_on_exit_game();
     }
-    s_prev_play_game = Play_Game;
+    s_prev_play_game = g_state.Play_Game;
 
 // Snapshot current state and dirty-check against cache
 #define DIRTY_BOOL(name, expr)                                                                                         \
@@ -341,7 +341,7 @@ extern "C" void rmlui_mods_menu_update(void) {
     DIRTY_INT(sprite_type_sb, (int)Debug_w[DEBUG_NO_DISP_TYPE_SB]);
     DIRTY_BOOL(freeze_effects, Debug_w[DEBUG_EFF_NOT_MOVE] != 0);
     DIRTY_BOOL(mute_bgm, Debug_w[DEBUG_PUB_BGM_OFF] != 0);
-    DIRTY_BOOL(in_game, Play_Game != 0);
+    DIRTY_BOOL(in_game, g_state.Play_Game != 0);
     DIRTY_BOOL(vsync, SDLApp_IsVSyncEnabled());
     DIRTY_BOOL(broadcast_enabled, broadcast_config.enabled);
     DIRTY_INT(broadcast_source, (int)broadcast_config.source);

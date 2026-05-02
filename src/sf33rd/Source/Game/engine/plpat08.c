@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plpat08.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
@@ -52,7 +53,7 @@ static void Att_PL08_HEALING(PLW* wk) {
             }
         }
 
-        if (!pcon_dp_flag) {
+        if (!g_state.pcon_dp_flag) {
             switch (wk->wu.cg_type) {
             case 24:
                 wk->wu.vital_new += 3;

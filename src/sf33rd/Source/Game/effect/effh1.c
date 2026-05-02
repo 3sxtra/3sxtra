@@ -27,7 +27,7 @@ const s16 effh1_data_tbl[8][5] = { { -96, 256, 74, 34, 10 }, { 64, 288, 74, 34, 
 void effect_H1_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (ewk->wu.old_rno[6] < end_w.r_no_2) {
+        if (ewk->wu.old_rno[6] < g_state.end_w.r_no_2) {
             ewk->wu.routine_no[1] = 99;
             break;
         }
@@ -57,7 +57,7 @@ static void eff_h1_move(WORK_Other* ewk) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 1;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-            ewk->wu.xyz[0].disp.pos += bg_w.bgw[1].xy[0].disp.pos;
+            ewk->wu.xyz[0].disp.pos += g_state.bg_w.bgw[1].xy[0].disp.pos;
         }
 
         break;
@@ -103,7 +103,7 @@ s32 effect_H1_init() {
         ewk->wu.type = i;
         ewk->wu.work_id = 16;
         ewk->wu.cgromtype = 1;
-        ewk->wu.old_rno[6] = end_w.r_no_2;
+        ewk->wu.old_rno[6] = g_state.end_w.r_no_2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.char_table[0] = (u32*)_end_char_table;
         ewk->wu.my_family = 2;

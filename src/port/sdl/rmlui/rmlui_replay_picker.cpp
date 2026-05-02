@@ -5,13 +5,14 @@
  * Replaces the ImGui ReplayPicker_Open/Update/GetSelectedSlot flow
  * with an RmlUi overlay showing replay file list and confirmation.
  * Input handling (cursor, confirm, cancel, tabs, pagination) is done
- * here via PLsw polling; the .rml document just reflects the data model.
+ * here via g_state.PLsw polling; the .rml document just reflects the data model.
  *
  * Layout: leaderboard-style dark panel with LOCAL/NETPLAY tabs,
  * paginated rows (5 per page), and footer with controls.
  */
 
 #include "port/sdl/rmlui/rmlui_replay_picker.h"
+#include "game_state.h"
 #include "port/save/native_save.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
@@ -27,7 +28,7 @@ extern "C" {
 #include "structs.h"
 } // extern "C"
 
-/* ── Character name table (SF3:3S roster, index matches My_char) ── */
+/* ── Character name table (SF3:3S roster, index matches g_state.My_char) ── */
 static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
                                               "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
                                               "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
@@ -332,7 +333,7 @@ extern "C" int rmlui_replay_picker_poll(void) {
     /* Read controller input (edge-triggered) */
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {
-        trigger |= (~PLsw[i][1] & PLsw[i][0]);
+        trigger |= (~g_state.PLsw[i][1] & g_state.PLsw[i][0]);
     }
 
     int max_cursor = (int)s_slots.size() - 1;

@@ -11,6 +11,7 @@
  * Originally from the PS2 graphics data module.
  */
 #include "sf33rd/Source/Common/PPGFile.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/rendering/renderer.h"
 #include "rendering/game_renderer.h"

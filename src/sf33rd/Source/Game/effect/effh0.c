@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effh0.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -25,7 +26,7 @@ void effect_H0_move(WORK_Other_CONN* ewk) {
             ewk->wu.old_cgnum = 0;
             ewk->wu.dir_timer = 60;
             ewk->wu.position_z = ewk->wu.my_priority = 9;
-            ewk->conn[0].chr = (Bonus_Stage_Level % 10) + 32490;
+            ewk->conn[0].chr = (g_state.Bonus_Stage_Level % 10) + 32490;
             break;
 
         case 1:
@@ -62,8 +63,8 @@ void effect_H0_move(WORK_Other_CONN* ewk) {
 }
 
 static void effH0_trans(WORK* ewk) {
-    ewk->position_x = bg_w.bgw[2].wxy[0].disp.pos;
-    ewk->position_y = bg_w.bgw[2].wxy[1].disp.pos;
+    ewk->position_x = g_state.bg_w.bgw[2].wxy[0].disp.pos;
+    ewk->position_y = g_state.bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);
 }
 

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effc3.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff00.h"
 #include "sf33rd/Source/Game/effect/effc2.h"
@@ -1064,7 +1065,7 @@ void effect_C3_move(WORK_Other* ewk) {
 
         ewk->wu.dir_old = bs2_sync_bomb(&ewk->wu);
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             effC3_main_process(ewk);
         }
 

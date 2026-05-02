@@ -5,6 +5,7 @@
  */
 
 #include "sf33rd/Source/Game/stage/bg_load.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/bg_rewrite.h"
@@ -91,8 +92,8 @@ void Bg_TexInit() {
 void Bg_Close() {
     u32 i;
 
-    tokusyu_stage = 0;
-    rw_num = 0;
+    g_state.tokusyu_stage = 0;
+    g_state.rw_num = 0;
 
     for (i = 0; i < 3; i++) {
         ppgReleaseTextureHandle(&ppgBgTex[i], -1);
@@ -103,9 +104,9 @@ void Bg_Close() {
     ppgReleasePaletteHandle(&ppgAkePal, -1);
     ppgReleaseTextureHandle(&ppgAkaneTex, -1);
     ppgReleasePaletteHandle(&ppgAkanePal, -1);
-    Screen_Switch = 0;
-    Screen_Switch_Buffer = 0;
-    bg_disp_off = 0;
+    g_state.Screen_Switch = 0;
+    g_state.Screen_Switch_Buffer = 0;
+    g_state.bg_disp_off = 0;
 
     /* Unload any modded stage textures */
     ModdedStage_Unload();
@@ -135,41 +136,41 @@ void Bg_Texture_Load_EX() {
     bg_texture_type = 0x12; // gameplay stage (ramcnt type)
 
     for (i = 0; i < 8; i++) {
-        bgPalCodeOffset[i] = 0x12C;
+        g_state.bgPalCodeOffset[i] = 0x12C;
     }
 
-    ending_flag = 0;
+    g_state.ending_flag = 0;
 
     for (stg = 0; stg < 3; stg++) {
-        if (stage_bgw_number[bg_w.stage][stg] != 0) {
+        if (stage_bgw_number[g_state.bg_w.stage][stg] != 0) {
             break;
         }
     }
 
-    for (i = 0; i < use_real_scr[bg_w.stage]; i++) {
-        scr_bcm[stg + i] = bg_map_tbl[bg_w.stage][i];
+    for (i = 0; i < use_real_scr[g_state.bg_w.stage]; i++) {
+        scr_bcm[stg + i] = bg_map_tbl[g_state.bg_w.stage][i];
     }
 
     for (i = 0; i < 3; i++) {
-        if (stage_bgw_number[bg_w.stage][i] > 0) {
+        if (stage_bgw_number[g_state.bg_w.stage][i] > 0) {
             Bg_On_R(1 << i);
         }
     }
 
-    if (bg_w.stage == 7) {
+    if (g_state.bg_w.stage == 7) {
         Bg_On_R(4);
     }
 
     key1 = Search_ramcnt_type(0x12);
     loadAdrs = (void*)Get_ramcnt_address(key1);
     loadSize = Get_size_data_ramcnt_key(key1);
-    bg_extract_priorities(stage_priority[bg_w.stage], 3);
+    bg_extract_priorities(stage_priority[g_state.bg_w.stage], 3);
 
     bg_priority[3] = 70;
     accnum = 0;
 
-    for (j = 0; j < bg_w.scrno; j++, assign3 = stg++) {
-        tgbix = bgtex_stage_gbix[bg_w.stage][j];
+    for (j = 0; j < g_state.bg_w.scrno; j++, assign3 = stg++) {
+        tgbix = bgtex_stage_gbix[g_state.bg_w.stage][j];
         mask = 0x80000000;
         ppgSetupCurrentDataList(&ppgBgList[stg]);
         ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, (stg * 64) + 0x84, 32, 0, 0);
@@ -183,9 +184,9 @@ void Bg_Texture_Load_EX() {
         }
     }
 
-    accnum = bg_setup_rewrite_textures(loadAdrs, loadSize, rewrite_scr[bg_w.stage], (stg * 64) + 0x64, accnum);
+    accnum = bg_setup_rewrite_textures(loadAdrs, loadSize, rewrite_scr[g_state.bg_w.stage], (stg * 64) + 0x64, accnum);
 
-    if (bg_w.stage == 7) {
+    if (g_state.bg_w.stage == 7) {
         ppgSetupCurrentDataList(&ppgAkaneList);
         ppgSetupPalChunk(NULL, loadAdrs, loadSize, 0, 0, 1);
         ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 0, 3, 0, 0);
@@ -199,7 +200,7 @@ void Bg_Texture_Load_EX() {
         ppgSourceDataReleased(&ppgAkaneList);
     }
 
-    if (bg_w.stage != 20 && bg_w.stage != 21) {
+    if (g_state.bg_w.stage != 20 && g_state.bg_w.stage != 21) {
         akeKey = Search_ramcnt_type(0x1F);
         akeSize = Get_size_data_ramcnt_key(akeKey);
         akeAdrs = (u8*)Get_ramcnt_address(akeKey);
@@ -216,7 +217,7 @@ void Bg_Texture_Load_EX() {
     }
 
     /* Try to load HD modded stage assets for this stage */
-    ModdedStage_LoadForStage(bg_w.stage);
+    ModdedStage_LoadForStage(g_state.bg_w.stage);
 
     /* Reset Shin Gouki palette state on stage load. */
     s_gouki_pal_xored = 0;
@@ -241,15 +242,15 @@ void Bg_Texture_Load2(u8 type) {
     Bg_TexInit();
     bg_texture_type = 0x18; // select/etc screen (ramcnt type)
     (void)assign;
-    ending_flag = 0;
-    tokusyu_stage = 0;
-    rw_num = 0;
+    g_state.ending_flag = 0;
+    g_state.tokusyu_stage = 0;
+    g_state.rw_num = 0;
 
     for (i = 0; i < 4; i++) {
-        rw_bg_flag[i] = 0;
+        g_state.rw_bg_flag[i] = 0;
     }
 
-    for (i = 0; i < bg_w.scno; i++) {
+    for (i = 0; i < g_state.bg_w.scno; i++) {
         scr_bcm[i] = bg_map_tbl2[type];
         Bg_On_R(1 << i);
     }
@@ -284,7 +285,7 @@ void Bg_Texture_Load2(u8 type) {
         }
     }
 
-    bgPalCodeOffset[0] = etcBgPalCnvTable[type] + 144;
+    g_state.bgPalCodeOffset[0] = g_state.etcBgPalCnvTable[type] + 144;
 }
 
 /** @brief Load background textures used during ending sequences. */
@@ -302,10 +303,10 @@ void Bg_Texture_Load_Ending(s16 type) {
     u32 assign2;
 
     mmDebWriteTag("\nENDING\n\n");
-    rw_num = 0;
+    g_state.rw_num = 0;
     Bg_TexInit();
     bg_texture_type = 0x20; // ending (distinct type)
-    ending_flag = 1;
+    g_state.ending_flag = 1;
 
     for (i = 0; i < end_use_real_scr[type]; i++) {
         scr_bcm[i] = ending_map_tbl[type][i];
@@ -314,7 +315,7 @@ void Bg_Texture_Load_Ending(s16 type) {
     loadSize = load_it_use_any_key2(bgtex_ending_file[type], &loadAdrs, &key1, 2, 0);
     bg_extract_priorities(ending_priority[0], 4);
 
-    for (accnum = 0, j = 0; j < bg_w.scrno; j++) {
+    for (accnum = 0, j = 0; j < g_state.bg_w.scrno; j++) {
         tgbix[0] = bgtex_ending_gbix[type][j * 2];
         tgbix[1] = bgtex_ending_gbix[type][(j * 2) + 1];
         mask = 0x80000000;
@@ -338,11 +339,11 @@ void Bg_Texture_Load_Ending(s16 type) {
 
     switch (type) {
     case 14:
-        tokusyu_stage = 5;
+        g_state.tokusyu_stage = 5;
 
         for (i = 0; i < 4; i++) {
             for (j = 0; j < 4; j++) {
-                gouki_end_gbix[j + (i * 4)] = (j + ((i * 8) + 100));
+                g_state.gouki_end_gbix[j + (i * 4)] = (j + ((i * 8) + 100));
             }
         }
 
@@ -359,11 +360,11 @@ void Bg_Texture_Load_Ending(s16 type) {
         break;
 
     case 15:
-        tokusyu_stage = 6;
+        g_state.tokusyu_stage = 6;
         break;
 
     case 19:
-        tokusyu_stage = 7;
+        g_state.tokusyu_stage = 7;
         ppgSetupCurrentDataList(&ppgAkeList);
         ppgSetupPalChunk(NULL, loadAdrs, loadSize, 0, 0, 1);
         ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 0xE4, 1, 0, 0);
@@ -373,7 +374,7 @@ void Bg_Texture_Load_Ending(s16 type) {
         break;
 
     default:
-        tokusyu_stage = 7;
+        g_state.tokusyu_stage = 7;
         break;
     }
 

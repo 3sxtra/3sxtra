@@ -19,15 +19,15 @@
 
 /** @brief Main handler for Lair of the Four Kings, China stage. */
 void BG120() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg1202();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg1201();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bg_fam0C00();
-    bgw_ptr = &bg_w.bgw[6];
+    bgw_ptr = &g_state.bg_w.bgw[6];
     bg_fam0C00();
-    bgw_ptr = &bg_w.bgw[5];
+    bgw_ptr = &g_state.bg_w.bgw[5];
     bg_fam0C00();
     zoom_ud_check();
     bg_pos_hosei2();

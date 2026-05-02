@@ -21,6 +21,7 @@
 #ifdef ENABLE_GPIO_LAG_TEST
 
 #include "port/linux/gpio_lag_test.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/io/ioconv.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -176,12 +177,12 @@ void GpioLagTest_OnInputPoll(void) {
         /* Debounce: ignore any rising edges within 30 frames (0.5s) of the last one
            to eliminate physical switch bounce corrupting the receive_frame. */
         static uint32_t s_last_press_frame = 0;
-        if (system_timer - s_last_press_frame < 30) {
+        if (g_state.system_timer - s_last_press_frame < 30) {
             return;
         }
-        s_last_press_frame = system_timer;
+        s_last_press_frame = g_state.system_timer;
 
-        s_receive_frame = system_timer;
+        s_receive_frame = g_state.system_timer;
         s_receive_ticks = SDL_GetPerformanceCounter();
         s_active_frame = 0;
         s_active_ticks = 0;
@@ -190,8 +191,8 @@ void GpioLagTest_OnInputPoll(void) {
         s_display_timer = DISPLAY_PERSIST_FRAMES;
 
         /* Capture initial routine_no for change detection */
-        s_initial_routine_0 = plw[0].wu.routine_no[0];
-        s_initial_routine_1 = plw[0].wu.routine_no[1];
+        s_initial_routine_0 = g_state.plw[0].wu.routine_no[0];
+        s_initial_routine_1 = g_state.plw[0].wu.routine_no[1];
 
         SDL_Log("[GpioLagTest] Button PRESSED — receive_frame=%u, routine_no=[%d,%d]",
                 s_receive_frame,
@@ -206,9 +207,9 @@ void GpioLagTest_UpdateFrameTracking(void) {
 
     /* Check if game state reacted to the input (routine_no changed) */
     if (s_tracking && !s_result_ready) {
-        if (plw[0].wu.routine_no[0] != s_initial_routine_0 || plw[0].wu.routine_no[1] != s_initial_routine_1) {
+        if (g_state.plw[0].wu.routine_no[0] != s_initial_routine_0 || g_state.plw[0].wu.routine_no[1] != s_initial_routine_1) {
 
-            s_active_frame = system_timer;
+            s_active_frame = g_state.system_timer;
             s_active_ticks = SDL_GetPerformanceCounter();
             s_result_ready = true;
 
@@ -221,8 +222,8 @@ void GpioLagTest_UpdateFrameTracking(void) {
                     lag_ms,
                     s_initial_routine_0,
                     s_initial_routine_1,
-                    plw[0].wu.routine_no[0],
-                    plw[0].wu.routine_no[1]);
+                    g_state.plw[0].wu.routine_no[0],
+                    g_state.plw[0].wu.routine_no[1]);
         }
     }
 
@@ -255,7 +256,7 @@ GpioLagTestState GpioLagTest_GetState(void) {
     state.input_held = s_button_held;
     state.tracking = s_tracking;
     state.result_ready = s_result_ready;
-    state.current_frame = system_timer;
+    state.current_frame = g_state.system_timer;
     state.receive_frame = s_receive_frame;
     state.active_frame = s_active_frame;
     state.lag_frames = s_result_ready ? (int32_t)(s_active_frame - s_receive_frame) : 0;

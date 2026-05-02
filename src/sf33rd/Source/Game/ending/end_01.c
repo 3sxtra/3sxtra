@@ -28,25 +28,25 @@ const s16 end_1_pos[5][2] = { { 256, 768 }, { 256, 512 }, { 768, 512 }, { 256, 2
 
 /** @brief Alex's ending entry point — initialize and run all ending scenes. */
 void end_01000(s16 pl_num) {
-    switch (end_w.r_no_1) {
+    switch (g_state.end_w.r_no_1) {
     case 0:
-        end_w.r_no_1++;
-        end_w.r_no_2 = 0;
+        g_state.end_w.r_no_1++;
+        g_state.end_w.r_no_2 = 0;
         common_end_init00(pl_num);
-        end_w.timer = timer_1_tbl[end_w.r_no_2];
+        g_state.end_w.timer = timer_1_tbl[g_state.end_w.r_no_2];
         common_end_init01();
         BGM_Request(0x31);
         break;
 
     case 1:
-        end_w.timer--;
+        g_state.end_w.timer--;
 
-        if (end_w.timer < 0) {
-            end_w.r_no_2++;
+        if (g_state.end_w.timer < 0) {
+            g_state.end_w.r_no_2++;
 
-            if (end_w.r_no_2 >= 5) {
-                end_w.r_no_1++;
-                end_w.end_flag = 1;
+            if (g_state.end_w.r_no_2 >= 5) {
+                g_state.end_w.r_no_1++;
+                g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
                 end_bg_pos_hosei2();
@@ -54,9 +54,9 @@ void end_01000(s16 pl_num) {
                 break;
             }
 
-            end_w.timer = timer_1_tbl[end_w.r_no_2];
-            bg_w.bgw[0].r_no_1 = 0;
-            bg_w.bgw[1].r_no_1 = 0;
+            g_state.end_w.timer = timer_1_tbl[g_state.end_w.r_no_2];
+            g_state.bg_w.bgw[0].r_no_1 = 0;
+            g_state.bg_w.bgw[1].r_no_1 = 0;
         }
 
         end_100_move();
@@ -73,10 +73,10 @@ void end_01000(s16 pl_num) {
 /** @brief Dispatch to the current scene handler for background layer 0. */
 static void end_100_move() {
     void (*end_100_jp[5])() = { end_100_0000, end_100_0001, end_100_0002, end_100_0002, end_100_0004 };
-    bgw_ptr = &bg_w.bgw[0];
-    if (end_w.r_no_2 >= 5)
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    if (g_state.end_w.r_no_2 >= 5)
         return;
-    end_100_jp[end_w.r_no_2]();
+    end_100_jp[g_state.end_w.r_no_2]();
 }
 
 /** @brief Scene 0 — initial background pan and fade sequence. */
@@ -84,8 +84,8 @@ static void end_100_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_1_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_1_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_1_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_1_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
         bgw_ptr->abs_y = 0;
         Bg_On_W(1);
@@ -147,7 +147,7 @@ static void end_100_0000() {
 
         if (bgw_ptr->free < 0) {
             bgw_ptr->r_no_1++;
-            end_w.timer = 0;
+            g_state.end_w.timer = 0;
         }
     }
 }
@@ -160,8 +160,8 @@ static void end_100_0001() {
         if (Request_Fade(2)) {
             bgw_ptr->r_no_1 += 1;
             end_no_cut = 1;
-            bgw_ptr->xy[0].disp.pos = end_1_pos[end_w.r_no_2][0];
-            bgw_ptr->xy[1].disp.pos = end_1_pos[end_w.r_no_2][1];
+            bgw_ptr->xy[0].disp.pos = end_1_pos[g_state.end_w.r_no_2][0];
+            bgw_ptr->xy[1].disp.pos = end_1_pos[g_state.end_w.r_no_2][1];
             bgw_ptr->abs_x = 512;
             effect_E6_init(0xA3);
             Rewrite_End_Message(2);
@@ -187,10 +187,10 @@ static void end_100_0002() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        bgw_ptr->xy[0].disp.pos = end_1_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_1_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_1_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_1_pos[g_state.end_w.r_no_2][1];
 
-        switch (end_w.r_no_2) {
+        switch (g_state.end_w.r_no_2) {
         case 2:
             effect_E6_init(0xA4U);
             Rewrite_End_Message(3U);
@@ -213,13 +213,13 @@ static void end_100_0004() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1 += 1;
-        bgw_ptr->xy[0].disp.pos = end_1_pos[end_w.r_no_2][0];
-        bgw_ptr->xy[1].disp.pos = end_1_pos[end_w.r_no_2][1];
+        bgw_ptr->xy[0].disp.pos = end_1_pos[g_state.end_w.r_no_2][0];
+        bgw_ptr->xy[1].disp.pos = end_1_pos[g_state.end_w.r_no_2][1];
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
         effect_E6_init(0xA6);
         Rewrite_End_Message(5);
         end_fade_flag = 1;
-        end_fade_timer = timer_1_tbl[end_w.r_no_2] - 120;
+        end_fade_timer = timer_1_tbl[g_state.end_w.r_no_2] - 120;
         bgw_ptr->speed_y = 0x4000;
         break;
 

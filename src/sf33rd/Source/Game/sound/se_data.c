@@ -12,6 +12,7 @@
  */
 
 #include "sf33rd/Source/Game/sound/se_data.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "common.h"
 #include "structs.h"
@@ -185,7 +186,7 @@ extern const u16 Bonus_Voice_Data[768];
 
 /** @brief Remap SE code through the bonus-stage voice table if applicable. */
 static u16 Check_Bonus_SE(u16 Code) {
-    if ((Bonus_Game_Flag == 0) || (Bonus_Type != 20)) {
+    if ((g_state.Bonus_Game_Flag == 0) || (g_state.Bonus_Type != 20)) {
         return Code;
     }
 

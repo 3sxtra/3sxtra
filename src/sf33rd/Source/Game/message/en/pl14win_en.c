@@ -1,4 +1,5 @@
 #include "sf33rd/Source/Game/message/en/pl14win_en.h"
+#include "game_state.h"
 #include "common.h"
 
 static s8* msgWinPL14_00P[1] = { "" };

@@ -7,6 +7,7 @@
  * when characters change between rounds.
  */
 #include "port/rendering/sdl_bezel.h"
+#include "game_state.h"
 #include "port/config/paths.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
@@ -157,7 +158,7 @@ void BezelSystem_SetCharacters(int p1_char, int p2_char) {
     current_textures.right = r_tex;
 }
 
-/** @brief Map a character ID to its bezel asset name prefix. */
+/** @brief Map a character g_state.ID to its bezel asset name prefix. */
 const char* BezelSystem_GetCharacterAssetPrefix(int char_id) {
     if (char_id >= 0 && char_id < (int)(sizeof(bezel_char_names) / sizeof(bezel_char_names[0]))) {
         return bezel_char_names[char_id];

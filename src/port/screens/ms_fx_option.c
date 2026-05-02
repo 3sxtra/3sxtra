@@ -8,13 +8,14 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/AcrSDK/common/pad.h"           /* SWK_UP, etc. */
 #include "sf33rd/Source/Game/effect/eff57.h"    /* effect_57_init */
-#include "sf33rd/Source/Game/engine/workuser.h" /* Menu_Cursor_Y */
+#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.Menu_Cursor_Y */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
 #include "sf33rd/Source/Game/sound/sound3rd.h"  /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"    /* Menu_Suicide */
+#include "sf33rd/Source/Game/system/reset.h"    /* g_state.Menu_Suicide */
 #include "sf33rd/Source/Game/ui/sc_sub.h"       /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                            /* struct _TASK */
 
@@ -29,17 +30,17 @@ static void fx_option_enter(struct _TASK* task_ptr) {
     task_ptr->timer = 0;
 
     /* Kill the native CPS3 sprites from the Option Menu */
-    Menu_Suicide[1] = 1;
-    Menu_Suicide[2] = 0;
+    g_state.Menu_Suicide[1] = 1;
+    g_state.Menu_Suicide[2] = 0;
 
     /* Show the RmlUi document immediately */
     rmlui_fx_option_show();
 
     /* Spawn the native "OPTION MENU" sprite header natively since fx_option
      * relies on the legacy sprite rather than an HTML title. */
-    Order[0x4F] = 1;
-    Order_Dir[0x4F] = 8;
-    Order_Timer[0x4F] = 1;
+    g_state.Order[0x4F] = 1;
+    g_state.Order_Dir[0x4F] = 8;
+    g_state.Order_Timer[0x4F] = 1;
     effect_57_init(0x4F, MENU_HEADER_OPTION_MENU, 0, 0x3F, 2);
 }
 
@@ -101,8 +102,8 @@ static void fx_option_exit(struct _TASK* task_ptr) {
     rmlui_fx_option_hide();
 
     /* Kill the native header when leaving FX Options */
-    Order[0x4F] = 4;
-    Order_Timer[0x4F] = 4;
+    g_state.Order[0x4F] = 4;
+    g_state.Order_Timer[0x4F] = 4;
 }
 
 extern MenuScreen g_screens[MENU_SCREEN_COUNT];

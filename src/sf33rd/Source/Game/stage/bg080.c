@@ -19,15 +19,15 @@
 
 /** @brief Main handler for Savanna, Kenya stage. */
 void BG080() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg0802();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg0801();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bg080_sync_common();
-    bgw_ptr = &bg_w.bgw[5];
+    bgw_ptr = &g_state.bg_w.bgw[5];
     bg080_sync_common();
-    bgw_ptr = &bg_w.bgw[6];
+    bgw_ptr = &g_state.bg_w.bgw[6];
     bg080_sync_common();
     zoom_ud_check();
     bg_pos_hosei2();

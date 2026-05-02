@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/system/sys_ranking.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/engine/pls02.h" /* random_16 */
 #include "common.h"
 #include "main.h"
@@ -43,14 +44,14 @@ s32 Check_Ranking(s16 PL_id) {
     Present_Data[PL_id].name[0] = 12;
     Present_Data[PL_id].name[1] = 10;
     Present_Data[PL_id].name[2] = 25;
-    Present_Data[PL_id].player = Stock_My_char[PL_id];
-    Present_Data[PL_id].player_color = Stock_Player_Color[PL_id];
-    Present_Data[PL_id].score = Continue_Coin[PL_id] + Score[PL_id][0];
-    Present_Data[PL_id].wins = Stock_Win_Record[PL_id];
-    Present_Data[PL_id].cpu_grade = judge_final[PL_id]->vs_cpu_grade[12];
-    Present_Data[PL_id].grade = Best_Grade[PL_id];
+    Present_Data[PL_id].player = g_state.Stock_My_char[PL_id];
+    Present_Data[PL_id].player_color = g_state.Stock_Player_Color[PL_id];
+    Present_Data[PL_id].score = g_state.Continue_Coin[PL_id] + g_state.Score[PL_id][0];
+    Present_Data[PL_id].wins = g_state.Stock_Win_Record[PL_id];
+    Present_Data[PL_id].cpu_grade = g_state.judge_final[PL_id]->vs_cpu_grade[12];
+    Present_Data[PL_id].grade = g_state.Best_Grade[PL_id];
 
-    if (Break_Com[PL_id][0]) {
+    if (g_state.Break_Com[PL_id][0]) {
         Present_Data[PL_id].all_clear = 1;
     } else {
         Present_Data[PL_id].all_clear = 0;
@@ -231,19 +232,19 @@ void Initialize_EM_Candidate(s16 PL_id) {
     Setup_Candidate_Buff(PL_id);
 
     for (ix = 0; ix < EM_CANDIDATE_SLOTS; ix++) {
-        EM_Candidate[PL_id][0][ix] = Check_EM_Buff(ix, ok_urien);
-        EM_Candidate[PL_id][1][ix] = Check_EM_Buff(ix, ok_urien);
+        g_state.EM_Candidate[PL_id][0][ix] = Check_EM_Buff(ix, ok_urien);
+        g_state.EM_Candidate[PL_id][1][ix] = Check_EM_Buff(ix, ok_urien);
     }
 
-    EM_Candidate[PL_id][0][8] = Middle_Class_Boss_Data[My_char[PL_id]];
-    EM_Candidate[PL_id][1][8] = Middle_Class_Boss_Data[My_char[PL_id]];
+    g_state.EM_Candidate[PL_id][0][8] = Middle_Class_Boss_Data[g_state.My_char[PL_id]];
+    g_state.EM_Candidate[PL_id][1][8] = Middle_Class_Boss_Data[g_state.My_char[PL_id]];
 
-    if (My_char[PL_id] != 0) {
-        EM_Candidate[PL_id][0][9] = 0;
-        EM_Candidate[PL_id][1][9] = 0;
+    if (g_state.My_char[PL_id] != 0) {
+        g_state.EM_Candidate[PL_id][0][9] = 0;
+        g_state.EM_Candidate[PL_id][1][9] = 0;
     } else {
-        EM_Candidate[PL_id][0][9] = 1;
-        EM_Candidate[PL_id][1][9] = 1;
+        g_state.EM_Candidate[PL_id][0][9] = 1;
+        g_state.EM_Candidate[PL_id][1][9] = 1;
     }
 }
 
@@ -254,11 +255,11 @@ static void Setup_Candidate_Buff(s16 PL_id) {
     s16 s2;
 
     for (em = 0, s2 = ix = 1; ix <= 19; ix++) {
-        if (My_char[PL_id] == 0 && ix == 1) {
+        if (g_state.My_char[PL_id] == 0 && ix == 1) {
             continue;
         }
 
-        if (ix == My_char[PL_id]) {
+        if (ix == g_state.My_char[PL_id]) {
             continue;
         }
 
@@ -266,11 +267,11 @@ static void Setup_Candidate_Buff(s16 PL_id) {
             continue;
         }
 
-        if (ix == Middle_Class_Boss_Data[My_char[PL_id]]) {
+        if (ix == Middle_Class_Boss_Data[g_state.My_char[PL_id]]) {
             continue;
         }
 
-        if (Break_Com[PL_id][ix]) {
+        if (g_state.Break_Com[PL_id][ix]) {
             continue;
         }
 
@@ -365,11 +366,11 @@ void Check_Same_CPU(s16 PL_id) {
     s16 ix;
     s16 ok_urien;
 
-    if (VS_Index[PL_id] >= 9) {
+    if (g_state.VS_Index[PL_id] >= 9) {
         return;
     }
 
-    if (Last_My_char[PL_id] == My_char[PL_id]) {
+    if (g_state.Last_My_char[PL_id] == g_state.My_char[PL_id]) {
         return;
     }
 
@@ -381,13 +382,13 @@ void Check_Same_CPU(s16 PL_id) {
 
     Setup_Candidate_Buff(PL_id);
 
-    for (ix = VS_Index[PL_id]; ix < EM_CANDIDATE_SLOTS; ix++) {
-        EM_Candidate[PL_id][0][ix] = Check_EM_Buff(ix, ok_urien);
-        EM_Candidate[PL_id][1][ix] = Check_EM_Buff(ix, ok_urien);
+    for (ix = g_state.VS_Index[PL_id]; ix < EM_CANDIDATE_SLOTS; ix++) {
+        g_state.EM_Candidate[PL_id][0][ix] = Check_EM_Buff(ix, ok_urien);
+        g_state.EM_Candidate[PL_id][1][ix] = Check_EM_Buff(ix, ok_urien);
     }
 
-    EM_Candidate[PL_id][0][8] = Middle_Class_Boss_Data[My_char[PL_id]];
-    EM_Candidate[PL_id][1][8] = Middle_Class_Boss_Data[My_char[PL_id]];
+    g_state.EM_Candidate[PL_id][0][8] = Middle_Class_Boss_Data[g_state.My_char[PL_id]];
+    g_state.EM_Candidate[PL_id][1][8] = Middle_Class_Boss_Data[g_state.My_char[PL_id]];
 }
 
 /** @brief Clear the defeated-opponent tracking array for the given player. */
@@ -395,6 +396,6 @@ void Clear_Break_Com(s16 PL_id) {
     s16 x;
 
     for (x = 0; x <= 19; x++) {
-        Break_Com[PL_id][x] = 0;
+        g_state.Break_Com[PL_id][x] = 0;
     }
 }

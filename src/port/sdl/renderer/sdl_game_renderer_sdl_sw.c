@@ -3,6 +3,7 @@
  * @brief CPU-side software rasterizer for the SDL2D renderer backend.
  */
 #include "common.h"
+#include "game_state.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"

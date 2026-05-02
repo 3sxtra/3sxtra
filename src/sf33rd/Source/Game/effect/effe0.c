@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effe0.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -36,17 +37,17 @@ void effect_E0_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (Sel_EM_Complete[Player_id]) {
-            if (VS_Index[Player_id] >= 8) {
+        if (g_state.Sel_EM_Complete[g_state.Player_id]) {
+            if (g_state.VS_Index[g_state.Player_id] >= 8) {
                 ewk->wu.routine_no[0] = 4;
             } else {
                 ewk->wu.routine_no[0] = 2;
             }
 
             ewk->wu.dir_timer = 1;
-        } else if (Moving_Plate[Player_id] != 0 && ewk->wu.dm_vital == 0) {
-            if (--Moving_Plate_Counter[Player_id] == 0) {
-                Moving_Plate[Player_id] = 0;
+        } else if (g_state.Moving_Plate[g_state.Player_id] != 0 && ewk->wu.dm_vital == 0) {
+            if (--g_state.Moving_Plate_Counter[g_state.Player_id] == 0) {
+                g_state.Moving_Plate[g_state.Player_id] = 0;
             }
 
             Setup_Char_E0(ewk);
@@ -63,7 +64,7 @@ void effect_E0_move(WORK_Other* ewk) {
         ewk->wu.routine_no[0]++;
         ewk->wu.dir_timer = 20;
 
-        if (Temporary_EM[Player_id] == ewk->wu.direction) {
+        if (g_state.Temporary_EM[g_state.Player_id] == ewk->wu.direction) {
             ewk->wu.char_index = ((ewk->wu.direction - 1) * 4) + 38;
         } else {
             ewk->wu.char_index = ((ewk->wu.direction - 1) * 4) + 37;
@@ -73,13 +74,13 @@ void effect_E0_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (Exec_Wipe == 0) {
+        if (g_state.Exec_Wipe == 0) {
             char_move(&ewk->wu);
         }
 
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[0]++;
-            Sel_EM_Complete[Player_id] |= ~0x7F;
+            g_state.Sel_EM_Complete[g_state.Player_id] |= ~0x7F;
             ewk->wu.char_index = ((ewk->wu.direction - 1) * 4) + 35;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         }
@@ -95,8 +96,8 @@ void effect_E0_move(WORK_Other* ewk) {
 
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        /* Show during stage select (Exit_No != 0); gate during char select only */
-        if (!rmlui_char_select_visible || Exit_No != 0)
+        /* Show during stage select (g_state.Exit_No != 0); gate during char select only */
+        if (!rmlui_char_select_visible || g_state.Exit_No != 0)
             sort_push_request4(&ewk->wu);
         return;
 
@@ -105,14 +106,14 @@ void effect_E0_move(WORK_Other* ewk) {
         return;
     }
 
-    if (ewk->wu.dm_vital == 0 && Exec_Wipe == 0) {
+    if (ewk->wu.dm_vital == 0 && g_state.Exec_Wipe == 0) {
         char_move(&ewk->wu);
     }
 
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-    /* Show during stage select (Exit_No != 0); gate during char select only */
-    if (!rmlui_char_select_visible || Exit_No != 0)
+    /* Show during stage select (g_state.Exit_No != 0); gate during char select only */
+    if (!rmlui_char_select_visible || g_state.Exit_No != 0)
         sort_push_request4(&ewk->wu);
 }
 
@@ -120,7 +121,7 @@ static void Setup_Char_E0(WORK_Other* ewk) {
     ewk->wu.char_index = ((ewk->wu.direction - 1) * 4) + 35;
     ewk->wu.dir_step = 0;
 
-    if (ewk->wu.direction == Temporary_EM[Player_id]) {
+    if (ewk->wu.direction == g_state.Temporary_EM[g_state.Player_id]) {
         ewk->wu.char_index++;
     }
 }
@@ -144,8 +145,8 @@ s32 effect_E0_init(s16 Direction, s16 dm_vital, s16 Pos_Type) {
     ewk->wu.direction = Direction;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.xyz[0].disp.pos = Offset_BG_X[3] + bg_w.bgw[3].wxy[0].disp.pos + Plate_Pos_Data_E0[Pos_Type][0];
-    ewk->wu.xyz[1].disp.pos = bg_w.bgw[3].wxy[1].disp.pos + Plate_Pos_Data_E0[Pos_Type][1];
+    ewk->wu.xyz[0].disp.pos = g_state.Offset_BG_X[3] + g_state.bg_w.bgw[3].wxy[0].disp.pos + Plate_Pos_Data_E0[Pos_Type][0];
+    ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[3].wxy[1].disp.pos + Plate_Pos_Data_E0[Pos_Type][1];
     ewk->wu.position_z = 17;
 
     if (Direction == 2) {

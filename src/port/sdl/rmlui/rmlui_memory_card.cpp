@@ -8,14 +8,15 @@
  * Native menu structure (char_index 0x15..0x18):
  *   cursor 0: SAVE DATA
  *   cursor 1: LOAD DATA
- *   cursor 2: AUTO SAVE  (toggle: Convert_Buff[3][0][2], 0=OFF 1=ON)
+ *   cursor 2: AUTO SAVE  (toggle: g_state.Convert_Buff[3][0][2], 0=OFF 1=ON)
  *   cursor 3: EXIT
  *
  * Key globals (from workuser.h):
- *   Menu_Cursor_Y[], IO_Result, Convert_Buff[4][2][12]
+ *   g_state.Menu_Cursor_Y[], g_state.IO_Result, g_state.Convert_Buff[4][2][12]
  */
 
 #include "port/sdl/rmlui/rmlui_memory_card.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -54,11 +55,11 @@ extern "C" void rmlui_memory_card_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("cursor_y", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("cursor_y", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
 
-    // Auto-save toggle value: Convert_Buff[3][0][2], 0 = OFF, 1 = ON
+    // Auto-save toggle value: g_state.Convert_Buff[3][0][2], 0 = OFF, 1 = ON
     ctor.BindFunc("auto_save_label", [](Rml::Variant& v) {
-        int val = Convert_Buff[3][0][2];
+        int val = g_state.Convert_Buff[3][0][2];
         v = Rml::String(val ? "\"ON\"" : "\"OFF\"");
     });
 
@@ -76,11 +77,11 @@ extern "C" void rmlui_memory_card_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("memory_card"))
         return;
 
-    DIRTY_INT(cursor_y, (int)Menu_Cursor_Y[0]);
+    DIRTY_INT(cursor_y, (int)g_state.Menu_Cursor_Y[0]);
 
-    // Always dirty auto_save_label since it reads Convert_Buff which
+    // Always dirty auto_save_label since it reads g_state.Convert_Buff which
     // changes from left/right input without a simple scalar diff
-    int as_val = (int)Convert_Buff[3][0][2];
+    int as_val = (int)g_state.Convert_Buff[3][0][2];
     if (as_val != s_cache.auto_save) {
         s_cache.auto_save = as_val;
         s_model_handle.DirtyVariable("auto_save_label");

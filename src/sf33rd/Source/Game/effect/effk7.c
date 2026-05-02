@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effk7.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/com/com_pl.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -35,7 +36,7 @@ void effect_K7_move(WORK_Other* ewk) {
             mwk->wu.my_col_mode = ewk->wu.my_col_mode;
             mwk->wu.my_col_code = ewk->wu.my_col_code;
             mwk->wu.disp_flag = 1;
-        } else if (EXE_flag == 0 && Game_pause == 0) {
+        } else if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             K7_move_type_0(ewk, mwk);
         }
 
@@ -109,7 +110,7 @@ static void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
             break;
         }
 
-        if (pcon_rno[0] != 1) {
+        if (g_state.pcon_rno[0] != 1) {
             ewk->wu.routine_no[1] = 9;
             break;
         }
@@ -152,7 +153,7 @@ static s16 K7_mt0_rebirth_check(PLW* mwk) {
 
     switch (mwk->wu.routine_no[1]) {
     case 0:
-        if (pcon_dp_flag) {
+        if (g_state.pcon_dp_flag) {
             if (mwk->wu.routine_no[2] == 1 && mwk->wu.routine_no[3] != 0) {
                 num = 1;
             }
@@ -171,8 +172,8 @@ void K7_muriyari_metamor_rebirth(PLW* wk) {
         return;
     }
 
-    wk->player_number = My_char[wk->wu.id];
-    wk->wu.charset_id = plid_data[My_char[wk->wu.id]];
+    wk->player_number = g_state.My_char[wk->wu.id];
+    wk->wu.charset_id = plid_data[g_state.My_char[wk->wu.id]];
     set_base_data_metamorphose(wk, wk->wu.id);
     metamor_color_restore(wk->wu.id);
     wk->metamor_over = 0;
@@ -183,7 +184,7 @@ s32 effect_K7_init(PLW* wk) {
     WORK_Other* ewk;
     s16 ix;
 
-    if (test_flag) {
+    if (g_state.test_flag) {
         return -1;
     }
 

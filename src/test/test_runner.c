@@ -10,6 +10,7 @@
  */
 
 #include "test/test_runner.h"
+#include "game_state.h"
 #include "arcade/arcade_constants.h"
 #include "main.h"
 #include "port/menu_task.h"
@@ -78,8 +79,8 @@ static ReplayRound* current_round(void) {
 }
 
 static void set_cursor(ReplayCharacter character, int player) {
-    Cursor_X[player] = character_to_cursor[character][0];
-    Cursor_Y[player] = character_to_cursor[character][1];
+    g_state.Cursor_X[player] = character_to_cursor[character][0];
+    g_state.Cursor_Y[player] = character_to_cursor[character][1];
 }
 
 /// Repeatedly press and release a button
@@ -114,7 +115,7 @@ static void finish_round(void) {
 void TestRunner_Prologue() {
     p1sw_buff = 0;
     p2sw_buff = 0;
-    in_battle = (C_No[0] == 2);
+    in_battle = (g_state.C_No[0] == 2);
 
     if (!initialized) {
         ReplayGame_Parse(&game);
@@ -135,13 +136,13 @@ void TestRunner_Prologue() {
     }
 
     case PHASE_MENU:
-        if (G_No[1] == 1 && G_No[2] == 2) {
-            /* Even though we move cursor manually later, setting Last_My_char2
-             * is required for Last_Super_Arts to take effect. */
-            Last_My_char2[0] = game.characters[0];
-            Last_My_char2[1] = game.characters[1];
-            Last_Super_Arts[0] = game.supers[0];
-            Last_Super_Arts[1] = game.supers[1];
+        if (g_state.G_No[1] == 1 && g_state.G_No[2] == 2) {
+            /* Even though we move cursor manually later, setting g_state.Last_My_char2
+             * is required for g_state.Last_Super_Arts to take effect. */
+            g_state.Last_My_char2[0] = game.characters[0];
+            g_state.Last_My_char2[1] = game.characters[1];
+            g_state.Last_Super_Arts[0] = game.supers[0];
+            g_state.Last_Super_Arts[1] = game.supers[1];
             phase = PHASE_CHARACTER_SELECT_TRANSITION;
             wait_timer = 60;
             break;
@@ -173,9 +174,9 @@ void TestRunner_Prologue() {
             wait_timer -= 1;
 
             if (wait_timer <= 0) {
-                // We must set New_Challenger manually so that the game selects the correct stage.
+                // We must set g_state.New_Challenger manually so that the game selects the correct stage.
                 // If we set this var earlier it would be overwritten
-                New_Challenger = game.new_challenger;
+                g_state.New_Challenger = game.new_challenger;
                 char_select_phase = 2;
             }
 
@@ -203,25 +204,25 @@ void TestRunner_Prologue() {
         break;
 
     case PHASE_GAME_TRANSITION:
-        if (G_No[1] == 2) {
+        if (g_state.G_No[1] == 2) {
             phase = PHASE_GAME;
         } else {
             // Mash buttons to skip the VS animation
             mash_button(SWK_ATTACKS, 0);
             break;
         }
-        // fallthrough into PHASE_GAME once G_No transitions
+        // fallthrough into PHASE_GAME once g_state.G_No transitions
         goto play_frame;
 
     case PHASE_ROUND_TRANSITION:
-        if (G_No[1] != 2) {
+        if (g_state.G_No[1] != 2) {
             // Wait for the next round to start
             break;
         }
 
         SDL_IOStream* io = io_at_index(comparison_index - 1);
         if (io) {
-            Game_timer = read_s16(io, GAME_TIMER_OFFSET);
+            g_state.Game_timer = read_s16(io, GAME_TIMER_OFFSET);
             sync_values(io);
             SDL_CloseIO(io);
         }

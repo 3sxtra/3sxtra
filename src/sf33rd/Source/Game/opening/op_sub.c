@@ -10,6 +10,7 @@
  */
 
 #include "sf33rd/Source/Game/opening/op_sub.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/PPGFile.h"
@@ -100,7 +101,7 @@ void opbg_trans(OPBW* opbw, s16 x, s16 y) {
                 optw.hv = opbw->map[i][j].hv;
                 optw.off_x = (i << 8) - x;
                 optw.off_y = (y + 224) - ((j << 8) + 256);
-                optw.zx = optw.zy = scr_sc;
+                optw.zx = optw.zy = g_state.scr_sc;
                 optw.prio = opbw->prio;
                 optw.trans = opbw->map[i][j].trans;
                 optw.col.full = opbw->map[i][j].col.full;

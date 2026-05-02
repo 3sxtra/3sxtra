@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/bbbscom2.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff16.h"
 #include "sf33rd/Source/Game/effect/effc2.h"
@@ -13,15 +14,15 @@
 
 /** @brief Executes the AI for the car-crush bonus stage opponent. */
 void bbbs_com_execute2(PLW* wk) {
-    switch (Bonus_Stage_RNO[0]) {
+    switch (g_state.Bonus_Stage_RNO[0]) {
     case 0:
-        if (Bonus_Stage_RNO[1]) {
-            if (!Allow_a_battle_f) {
+        if (g_state.Bonus_Stage_RNO[1]) {
+            if (!g_state.Allow_a_battle_f) {
                 break;
             }
 
-            Bonus_Stage_RNO[0] = 1;
-            Bonus_Stage_RNO[1] = 0;
+            g_state.Bonus_Stage_RNO[0] = 1;
+            g_state.Bonus_Stage_RNO[1] = 0;
             wk->zettai_muteki_flag = true;
 
             break;
@@ -42,16 +43,16 @@ void bbbs_com_execute2(PLW* wk) {
         effect_C2_init(&wk->wu, 0);
         effect_16_init(wk, 0);
         effect_16_init(wk, 1);
-        Bonus_Stage_RNO[1] = 1;
+        g_state.Bonus_Stage_RNO[1] = 1;
 
         break;
 
     case 1:
         if (((WORK*)wk->wu.my_effadrs)->routine_no[0] == 2 && ((WORK*)wk->wu.my_effadrs)->routine_no[1] == 9) {
-            Bonus_Stage_RNO[0] = 2;
-            Bonus_Stage_RNO[1] = 0;
-            Allow_a_battle_f = 0;
-            pcon_dp_flag = true;
+            g_state.Bonus_Stage_RNO[0] = 2;
+            g_state.Bonus_Stage_RNO[1] = 0;
+            g_state.Allow_a_battle_f = 0;
+            g_state.pcon_dp_flag = true;
         }
 
         wk->wu.xyz[0].disp.pos = 468;

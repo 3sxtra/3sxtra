@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plpca.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff02.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -383,7 +384,7 @@ static void Catch_07000(PLW* wk) {
 
 /** @brief Checks if the running-catch can continue based on distance. */
 static s32 cat07_running_check(WORK* wk) {
-    if (wk->xyz[0].disp.pos < (bg_w.bgw[1].l_limit2 - 64) || wk->xyz[0].disp.pos > (bg_w.bgw[1].r_limit2 + 64)) {
+    if (wk->xyz[0].disp.pos < (g_state.bg_w.bgw[1].l_limit2 - 64) || wk->xyz[0].disp.pos > (g_state.bg_w.bgw[1].r_limit2 + 64)) {
         char_move_cmja(wk);
         setup_mvxy_data(wk, wk->mvxy.index);
         wk->mvxy.index++;
@@ -438,11 +439,11 @@ void subtract_cu_vital(PLW* wk) {
             if (wk->wu.vital_new < 0) {
                 wk->wu.vital_new = -1;
                 wk->dead_flag = 1;
-                dead_voice_flag = true;
+                g_state.dead_voice_flag = true;
 
-                if (!round_slow_flag) {
+                if (!g_state.round_slow_flag) {
                     set_conclusion_slow();
-                    round_slow_flag = true;
+                    g_state.round_slow_flag = true;
                 }
             } else if (wk->py->flag == 0) {
                 wk->py->now.quantity.h += wk->wu.dm_piyo;
@@ -457,7 +458,7 @@ void subtract_cu_vital(PLW* wk) {
         pp_pulpara_remake_dm_all(&wk->wu);
     }
 
-    if (Mode_Type == MODE_NORMAL_TRAINING && (Training_ID != wk->wu.id)) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
         Training_Damage_Set(wk->wu.dm_vital, wk->wu.dm_piyo, wk->wu.kezurare_flag);
     }
 

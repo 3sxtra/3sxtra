@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/rendering/mtrans.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
@@ -2757,6 +2758,7 @@ void mlt_obj_trans_update(MultiTexture* mt) {
 
 /** @brief Draw a colored box primitive at the given coordinates. */
 void draw_box(f64 arg0, f64 arg1, f64 arg2, f64 arg3, u32 col, u32 attr, s16 prio) {
+    if (g_state.Play_Game != 0 || attr != 0 || (col & 0xFF000000) == 0) return;
     f32 px;
     f32 py;
     f32 sx;

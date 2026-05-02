@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff73.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -36,7 +37,7 @@ void effect_73_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -56,7 +57,7 @@ void effect_73_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -74,7 +75,7 @@ void effect_73_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -102,7 +103,7 @@ s32 effect_73_init(WORK_Other* oya) {
     s16 work;
     s16 work2;
 
-    if (EXE_obroll) {
+    if (g_state.EXE_obroll) {
         return 0;
     }
 

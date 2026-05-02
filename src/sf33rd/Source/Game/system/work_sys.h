@@ -105,10 +105,7 @@ extern struct _SAVE_W save_w[SAVEW_COUNT];
  * This accessor simplifies access to the global `save_w[Present_Mode]` and ensures
  * safe reads without duplicating logic across call sites.
  */
-static inline struct _SAVE_W* CurrentSave(void) {
-    extern u8 Present_Mode;
-    return &save_w[Present_Mode];
-}
+#define CurrentSave() (&save_w[g_state.Present_Mode])
 extern Permission permission_player[6];
 extern SystemDir system_dir[6];
 extern _REPLAY_W Replay_w;

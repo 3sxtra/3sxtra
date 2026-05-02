@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff38.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -57,16 +58,16 @@ void effect_38_move(WORK_Other* ewk) {
 }
 
 static void EFF38_WAIT(WORK_Other* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
     }
 }
 
 static void EFF38_SUDDENLY(WORK_Other* ewk) {
-    if (--Order_Timer[ewk->wu.dir_old] == 0) {
+    if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
         ewk->wu.disp_flag = 1;
-        Order[ewk->wu.dir_old] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
         ewk->wu.routine_no[0] = 0;
         ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
         set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
@@ -78,20 +79,20 @@ static void EFF38_SLIDE_IN(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[6]) {
     case 0:
-        if (Order[ewk->wu.dir_old] != 1) {
+        if (g_state.Order[ewk->wu.dir_old] != 1) {
             if (ewk->master_id == 0) {
-                ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 128;
-                ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 32;
+                ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 128;
+                ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 32;
             } else {
-                ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 128;
-                ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos - 32;
+                ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 128;
+                ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos - 32;
             }
 
-            Order[ewk->wu.dir_old] = 1;
+            g_state.Order[ewk->wu.dir_old] = 1;
             break;
         }
 
-        if (--Order_Timer[ewk->wu.dir_old] == 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
             ewk->wu.routine_no[6]++;
             ewk->wu.disp_flag = 1;
             set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
@@ -118,35 +119,35 @@ static void EFF38_SLIDE_IN(WORK_Other* ewk) {
 static void Exit_Slide_in_38(WORK_Other* ewk) {
     ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
 
-    if (--Select_Start[ewk->master_id] < 0) {
-        Select_Start[ewk->master_id] = 0;
+    if (--g_state.Select_Start[ewk->master_id] < 0) {
+        g_state.Select_Start[ewk->master_id] = 0;
     }
 
     ewk->wu.routine_no[1] = 0;
     ewk->wu.routine_no[6] = 0;
 
-    if (Order[ewk->wu.dir_old] != 1) {
-        ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
+    if (g_state.Order[ewk->wu.dir_old] != 1) {
+        ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         return;
     }
 
     if (ewk->wu.vital_old == 0x7F) {
         ewk->wu.routine_no[0] = 5;
-        Order[ewk->wu.dir_old] = 5;
+        g_state.Order[ewk->wu.dir_old] = 5;
         return;
     }
 
     ewk->wu.routine_no[0] = 0;
-    Order[ewk->wu.dir_old] = 0;
+    g_state.Order[ewk->wu.dir_old] = 0;
 }
 
 static void EFF38_SLIDE_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] == 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
             ewk->wu.routine_no[6]++;
 
-            if (Order_Dir[ewk->wu.dir_old] == 8) {
+            if (g_state.Order_Dir[ewk->wu.dir_old] == 8) {
                 ewk->wu.mvxy.a[0].sp = 0xF0000;
                 ewk->wu.mvxy.d[0].sp = 0x8000;
             } else {
@@ -177,7 +178,7 @@ static void EFF38_SLIDE_OUT(WORK_Other* ewk) {
 static void EFF38_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] == 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 0;
         }
@@ -193,25 +194,25 @@ static void EFF38_KILL(WORK_Other* ewk) {
 static void EFF38_SHIFT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] != 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
             break;
         }
 
         ewk->wu.routine_no[1]++;
 
         if (ewk->master_id == 0) {
-            ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][0];
-            ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + EFF38_Base_XY[ewk->master_id][1][1] +
+            ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + EFF38_Base_XY[ewk->master_id][1][1] +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][1];
             ewk->wu.mvxy.a[0].sp = -0x60000;
             ewk->wu.mvxy.a[1].sp = 0x30000;
             cal_delta_speed(&ewk->wu, 10, ewk->wu.hit_quake, ewk->wu.vital_new, 1, 1);
             ewk->wu.dir_timer = 10;
         } else {
-            ewk->wu.hit_quake = 128 + bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+            ewk->wu.hit_quake = 128 + g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][0];
-            ewk->wu.vital_new = -32 + bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+            ewk->wu.vital_new = -32 + g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][1];
             ewk->wu.mvxy.a[0].sp = 0x60000;
             ewk->wu.mvxy.a[1].sp = -0x30000;
@@ -224,12 +225,12 @@ static void EFF38_SHIFT(WORK_Other* ewk) {
     case 1:
         if (Shift_38(ewk)) {
             ewk->wu.routine_no[0] = 5;
-            Order[ewk->wu.dir_old] = 5;
+            g_state.Order[ewk->wu.dir_old] = 5;
             ewk->wu.routine_no[1] = 0;
             ewk->wu.routine_no[6] = 0;
 
-            if (--Select_Start[ewk->master_id] < 0) {
-                Select_Start[ewk->master_id] = 0;
+            if (--g_state.Select_Start[ewk->master_id] < 0) {
+                g_state.Select_Start[ewk->master_id] = 0;
             }
         }
 
@@ -241,7 +242,7 @@ static s32 Shift_38(WORK_Other* ewk) {
     s16 ix;
     s16 loop;
 
-    if (Scene_Cut) {
+    if (g_state.Scene_Cut) {
         loop = 3;
     } else {
         loop = 1;
@@ -306,8 +307,8 @@ static s32 Move_Y_Sub_38(WORK_Other* ewk, s16 Target_Y) {
 }
 
 static void EFF38_MOVE(WORK_Other* ewk) {
-    if (Order[ewk->wu.dir_old] != 5) {
-        ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
+    if (g_state.Order[ewk->wu.dir_old] != 5) {
+        ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
         return;
@@ -315,7 +316,7 @@ static void EFF38_MOVE(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (Sel_PL_Complete[ewk->master_id] || plw[ewk->master_id].wu.pl_operator == 0) {
+        if (g_state.Sel_PL_Complete[ewk->master_id] || g_state.plw[ewk->master_id].wu.pl_operator == 0) {
             ewk->wu.routine_no[1] = 2;
         } else {
             ewk->wu.routine_no[1]++;
@@ -324,14 +325,14 @@ static void EFF38_MOVE(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dir_step != ID_of_Face[Cursor_Y[ewk->master_id]][Cursor_X[ewk->master_id]]) {
-            ewk->wu.dir_step = ID_of_Face[Cursor_Y[ewk->master_id]][Cursor_X[ewk->master_id]];
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
-                                      EFF38_Base_XY[ewk->master_id][Play_Type][0] +
-                                      EFF38_Correct_Data[ewk->master_id][Play_Type][ewk->wu.dir_step][0];
-            ewk->wu.xyz[1].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
-                                      EFF38_Base_XY[ewk->master_id][Play_Type][1] +
-                                      EFF38_Correct_Data[ewk->master_id][Play_Type][ewk->wu.dir_step][1];
+        if (ewk->wu.dir_step != g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
+            ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                      EFF38_Base_XY[ewk->master_id][g_state.Play_Type][0] +
+                                      EFF38_Correct_Data[ewk->master_id][g_state.Play_Type][ewk->wu.dir_step][0];
+            ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                                      EFF38_Base_XY[ewk->master_id][g_state.Play_Type][1] +
+                                      EFF38_Correct_Data[ewk->master_id][g_state.Play_Type][ewk->wu.dir_step][1];
 
             if (ewk->master_id == 0 && ewk->wu.dir_step == 0) {
                 ewk->wu.dir_step = 23;
@@ -340,7 +341,7 @@ static void EFF38_MOVE(WORK_Other* ewk) {
             set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
         }
 
-        if (Sel_PL_Complete[ewk->master_id]) {
+        if (g_state.Sel_PL_Complete[ewk->master_id]) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -365,7 +366,7 @@ s32 effect_38_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Play_Status, s16 T
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x90;
     ewk->wu.my_family = Target_BG + 1;
-    ewk->wu.xyz[1].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 16;
+    ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 16;
     ewk->wu.char_index = 2;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->master_id = PL_id;
@@ -376,7 +377,7 @@ s32 effect_38_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Play_Status, s16 T
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
 
     if (Your_Char == 0x7F) {
-        ewk->wu.dir_step = ID_of_Face[Cursor_Y[ewk->master_id]][Cursor_X[ewk->master_id]];
+        ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
 
         if (ewk->wu.dir_step == 0 && PL_id == 0) {
             ewk->wu.dir_step = 23;
@@ -388,50 +389,50 @@ s32 effect_38_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Play_Status, s16 T
     ewk->wu.rl_flag = PL_id ^ 1;
 
     if (PL_id) {
-        if (My_char[PL_id] == 21) {
+        if (g_state.My_char[PL_id] == 21) {
             ewk->wu.dir_step++;
         }
 
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 272;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 272;
         ewk->wu.position_z = 75;
         ewk->wu.mvxy.a[0].sp = -0xF0000;
         ewk->wu.mvxy.d[0].sp = -0x8000;
         ewk->wu.mvxy.d[1].sp = 0;
 
         if (Play_Status == 0) {
-            ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][0][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][0][0] +
                                 EFF38_Correct_Data[ewk->master_id][0][ewk->wu.dir_step][0];
-            ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+            ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                                           EFF38_Base_XY[ewk->master_id][0][1] +
                                                           EFF38_Correct_Data[ewk->master_id][0][ewk->wu.dir_step][1];
         } else {
-            ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][0];
-            ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+            ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                                           EFF38_Base_XY[ewk->master_id][1][1] +
                                                           EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][1];
         }
     } else {
-        if (Your_Char != 0x7F && My_char[PL_id] == 0) {
+        if (Your_Char != 0x7F && g_state.My_char[PL_id] == 0) {
             ewk->wu.dir_step = 0x17;
         }
 
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 272;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 272;
         ewk->wu.position_z = 77;
         ewk->wu.mvxy.a[0].sp = 0xF0000;
         ewk->wu.mvxy.d[0].sp = 0x8000;
         ewk->wu.mvxy.d[1].sp = 0;
 
         if (Play_Status == 0) {
-            ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][0][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][0][0] +
                                 EFF38_Correct_Data[ewk->master_id][0][ewk->wu.dir_step][0];
-            ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+            ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                                           EFF38_Base_XY[ewk->master_id][0][1] +
                                                           EFF38_Correct_Data[ewk->master_id][0][ewk->wu.dir_step][1];
         } else {
-            ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][0];
-            ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+            ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                                           EFF38_Base_XY[ewk->master_id][1][1] +
                                                           EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][1];
         }

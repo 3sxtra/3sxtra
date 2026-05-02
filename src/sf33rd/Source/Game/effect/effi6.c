@@ -81,7 +81,7 @@ s32 effect_I6_init(WORK_Other* oya) {
     ewk->wu.my_mts = 0xE;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     *ewk->wu.char_table = (u32*)_etc_char_table;
-    ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].position_x + bg_w.pos_offset;
+    ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos;
     ewk->wu.xyz[1].disp.pos = 0x90;
     return 0;

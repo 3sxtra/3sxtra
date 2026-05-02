@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff85.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -35,7 +36,7 @@ void eff85_0100(WORK_Other* ewk) {
     void (*const eff85_move_tbl[9])(WORK_Other*) = { eff85_1000,   eff85_common, eff85_3000, eff85_common, eff85_5000,
                                                      eff85_common, eff85_7000,   eff85_8000, eff85_9000 };
 
-    if (!EXE_flag && !Game_pause && !EXE_obroll) {
+    if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
         eff85_move_tbl[ewk->wu.routine_no[1]](ewk);
     }
 
@@ -219,8 +220,8 @@ void eff85_9000(WORK_Other* ewk) {
         add_x_sub(&ewk->wu);
         add_y_sub(&ewk->wu);
 
-        if (ewk->wu.xyz[0].disp.pos >= bg_w.bgw[1].l_limit2 - bg_w.pos_offset &&
-            ewk->wu.xyz[0].disp.pos <= bg_w.bgw[1].r_limit2 + bg_w.pos_offset) {
+        if (ewk->wu.xyz[0].disp.pos >= g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset &&
+            ewk->wu.xyz[0].disp.pos <= g_state.bg_w.bgw[1].r_limit2 + g_state.bg_w.pos_offset) {
             break;
         }
 
@@ -229,7 +230,7 @@ void eff85_9000(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (bg_w.bgw[1].wxy[0].disp.pos > 720) {
+        if (g_state.bg_w.bgw[1].wxy[0].disp.pos > 720) {
             ewk->wu.routine_no[1] = 0;
             ewk->wu.routine_no[2] = 0;
         }
@@ -239,7 +240,7 @@ void eff85_9000(WORK_Other* ewk) {
 }
 
 s32 swallow_sprize_check(WORK_Other* ewk) {
-    if (bg_w.quake_y_index > 3) {
+    if (g_state.bg_w.quake_y_index > 3) {
         ewk->wu.routine_no[1] = 8;
         ewk->wu.routine_no[2] = 0;
         return 0;
@@ -257,7 +258,7 @@ s32 effect_85_init() {
     WORK_Other* ewk;
     s16 ix;
 
-    if (EXE_obroll) {
+    if (g_state.EXE_obroll) {
         return 0;
     }
 

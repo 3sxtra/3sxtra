@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/bbbscom.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff16.h"
 #include "sf33rd/Source/Game/effect/effb1.h"
@@ -19,19 +20,19 @@ const s32 bbbs_jump_level[4][2];
 
 /** @brief Executes the AI for the basketball bonus stage opponent. */
 void bbbs_com_execute(PLW* wk) {
-    switch (Bonus_Stage_RNO[0]) {
+    switch (g_state.Bonus_Stage_RNO[0]) {
     case 0:
-        if (Allow_a_battle_f == 0) {
+        if (g_state.Allow_a_battle_f == 0) {
             break;
         }
 
-        Bonus_Stage_Tix = 0;
-        Bonus_Stage_RNO[0] = 1;
+        g_state.Bonus_Stage_Tix = 0;
+        g_state.Bonus_Stage_RNO[0] = 1;
 
-        if ((wk->wu.dir_timer = bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix].timer)) {
-            Bonus_Stage_RNO[1] = 1;
+        if ((wk->wu.dir_timer = bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].timer)) {
+            g_state.Bonus_Stage_RNO[1] = 1;
         } else {
-            Bonus_Stage_RNO[1] = 2;
+            g_state.Bonus_Stage_RNO[1] = 2;
         }
 
         wk->zettai_muteki_flag = true;
@@ -44,7 +45,7 @@ void bbbs_com_execute(PLW* wk) {
         break;
 
     case 1:
-        switch (Bonus_Stage_RNO[1]) {
+        switch (g_state.Bonus_Stage_RNO[1]) {
         case 0:
             if (wk->wu.routine_no[1] != 0) {
                 break;
@@ -54,28 +55,28 @@ void bbbs_com_execute(PLW* wk) {
                 break;
             }
 
-            Bonus_Stage_Tix++;
+            g_state.Bonus_Stage_Tix++;
 
-            if (bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix].timer == -1) {
-                Bonus_Stage_RNO[0] = 2;
-                Bonus_Stage_RNO[1] = 0;
+            if (bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].timer == -1) {
+                g_state.Bonus_Stage_RNO[0] = 2;
+                g_state.Bonus_Stage_RNO[1] = 0;
                 break;
             }
 
-            if ((wk->wu.dir_timer = bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix].timer)) {
-                if (bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix].kosuu) {
-                    Bonus_Stage_RNO[1] = 1;
+            if ((wk->wu.dir_timer = bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].timer)) {
+                if (bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].kosuu) {
+                    g_state.Bonus_Stage_RNO[1] = 1;
                     break;
                 } else {
-                    Bonus_Stage_RNO[1] = 5;
+                    g_state.Bonus_Stage_RNO[1] = 5;
                     break;
                 }
             } else {
-                if (bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix].kosuu) {
-                    Bonus_Stage_RNO[1] = 2;
+                if (bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].kosuu) {
+                    g_state.Bonus_Stage_RNO[1] = 2;
                     break;
                 } else {
-                    Bonus_Stage_RNO[1] = 6;
+                    g_state.Bonus_Stage_RNO[1] = 6;
                     break;
                 }
             }
@@ -84,52 +85,52 @@ void bbbs_com_execute(PLW* wk) {
 
         case 1:
             if (--wk->wu.dir_timer < 1) {
-                Bonus_Stage_RNO[1] = 2;
+                g_state.Bonus_Stage_RNO[1] = 2;
             }
 
             break;
 
         case 2:
-            Bonus_Stage_RNO[1] = 3;
+            g_state.Bonus_Stage_RNO[1] = 3;
             wk->wu.routine_no[1] = 4;
             wk->wu.routine_no[2] = 31;
             wk->wu.routine_no[3] = 0;
             wk->wu.char_index = 71;
-            wk->wu.cmwk[5] = bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix].kosuu;
+            wk->wu.cmwk[5] = bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].kosuu;
             wk->wu.mvxy.d[0].sp = 0;
             wk->wu.mvxy.a[0].sp = 0;
-            wk->wu.mvxy.a[1].sp = bbbs_jump_level[bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix].jmplv][0];
-            wk->wu.mvxy.d[1].sp = bbbs_jump_level[bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix].jmplv][1];
+            wk->wu.mvxy.a[1].sp = bbbs_jump_level[bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].jmplv][0];
+            wk->wu.mvxy.d[1].sp = bbbs_jump_level[bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].jmplv][1];
             break;
 
         case 3:
             if (wk->wu.cg_type == 20) {
                 wk->wu.cg_type = 0;
-                setup_effI8(wk, &bbbs_table[bbbs_type][Bonus_Stage_Level][Bonus_Stage_Tix]);
-                Bonus_Stage_RNO[1] = 4;
+                setup_effI8(wk, &bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix]);
+                g_state.Bonus_Stage_RNO[1] = 4;
             }
 
             break;
 
         case 4:
             if (wk->wu.routine_no[1] == 4 && wk->wu.routine_no[2] == 31 && wk->wu.routine_no[3] == 3) {
-                Bonus_Stage_RNO[1] = 0;
+                g_state.Bonus_Stage_RNO[1] = 0;
             }
 
             break;
 
         case 5:
             if (--wk->wu.dir_timer < 1) {
-                Bonus_Stage_RNO[1] = 6;
-                Allow_a_battle_f = 0;
+                g_state.Bonus_Stage_RNO[1] = 6;
+                g_state.Allow_a_battle_f = 0;
             }
 
             break;
 
         case 6:
-            Bonus_Stage_RNO[0] = 2;
-            Bonus_Stage_RNO[1] = 0;
-            Allow_a_battle_f = 0;
+            g_state.Bonus_Stage_RNO[0] = 2;
+            g_state.Bonus_Stage_RNO[1] = 0;
+            g_state.Allow_a_battle_f = 0;
             break;
         }
 
@@ -140,8 +141,8 @@ void bbbs_com_execute(PLW* wk) {
 
 /** @brief Initializes the bonus stage AI work data. */
 void bbbs_com_initialize() {
-    Bonus_Stage_RNO[0] = Bonus_Stage_RNO[1] = 0;
-    Bonus_Stage_RNO[2] = Bonus_Stage_RNO[3] = 0;
+    g_state.Bonus_Stage_RNO[0] = g_state.Bonus_Stage_RNO[1] = 0;
+    g_state.Bonus_Stage_RNO[2] = g_state.Bonus_Stage_RNO[3] = 0;
 }
 
 /** @brief Configures the bonus game difficulty level based on player performance. */
@@ -155,23 +156,23 @@ void makeup_bonus_game_level(s16 ix) {
         swdat = p1sw_0;
     }
 
-    bbbs_type = 1;
+    g_state.bbbs_type = 1;
 
     if (katteni_bonus_nando(swdat)) {
-        Bonus_Stage_Level = set_bonus_game_nando(swdat);
+        g_state.Bonus_Stage_Level = set_bonus_game_nando(swdat);
 
-        if (Bonus_Stage_Level > 4) {
-            bbbs_type = 0;
-            Bonus_Stage_Level -= 5;
+        if (g_state.Bonus_Stage_Level > 4) {
+            g_state.bbbs_type = 0;
+            g_state.Bonus_Stage_Level -= 5;
         }
     } else {
-        Bonus_Stage_Level = set_bonus_game_difficulty(emid);
+        g_state.Bonus_Stage_Level = set_bonus_game_difficulty(emid);
     }
 }
 
-/** @brief Sets the bonus game difficulty based on the current enemy ID. */
+/** @brief Sets the bonus game difficulty based on the current enemy g_state.ID. */
 s32 set_bonus_game_difficulty(s16 emid) {
-    s16 grade = judge_final[emid][0].vs_cpu_grade[11];
+    s16 grade = g_state.judge_final[emid][0].vs_cpu_grade[11];
 
     if (grade < 9) {
         return 0;

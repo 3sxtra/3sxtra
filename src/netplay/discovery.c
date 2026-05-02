@@ -1,5 +1,6 @@
 // Use standalone configuration.h to avoid structs.h/Winsock typedef conflicts.
 #include "discovery.h"
+#include "game_state.h"
 #include "net_tuning.h"
 #include "configuration.h"
 #include "identity.h"
@@ -76,7 +77,7 @@ static void remove_dismissed(uint32_t id) {
 }
 
 void Discovery_Init(bool auto_connect) {
-    // Generate a cryptographically strong unique instance ID.
+    // Generate a cryptographically strong unique instance g_state.ID.
     // SDL_rand_bits() returns a full 32-bit random value via SDL's CSPRNG,
     // which is seeded independently per process — no address-XOR collision
     // risk even when two instances of the same binary run simultaneously on

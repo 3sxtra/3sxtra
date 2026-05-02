@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effa8.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/rendering/legacy_matrix.h"
 #include "port/sdl/input/controller_image_overlay.h"
@@ -77,7 +78,7 @@ const s8* Letter_Data_A8DC[69] = { "-PLAY(  )",
                                    "54. Final Results",
                                    "55. Stage Results",
                                    "56. Judgement",
-                                   "57. Stage Select & Score Ranking",
+                                   "57. Stage Select & g_state.Score Ranking",
                                    "58. Continue",
                                    "59. We Await Your Return,Warrior!",
                                    "60. Gill Appears!",
@@ -147,7 +148,7 @@ const s8* Letter_Data_A8AC[69] = { "-PLAY(  )",
                                    "38. Final Results",
                                    "39. Stage Results",
                                    "40. Judgement",
-                                   "41. Stage Select & Score Ranking",
+                                   "41. Stage Select & g_state.Score Ranking",
                                    "42. Continue",
                                    "43. We Await Your Return,Warrior!",
                                    "44. Gill Appears!",
@@ -164,12 +165,12 @@ const s8** Letter_Data_A8[2] = { Letter_Data_A8DC, Letter_Data_A8AC };
 void effect_A8_move(WORK_Other_CONN* ewk) {
     s16 ix;
 
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
-    if (Menu_Cursor_Y[0] == ewk->wu.type) {
+    if (g_state.Menu_Cursor_Y[0] == ewk->wu.type) {
         ewk->wu.disp_flag = 1;
     } else {
         ewk->wu.disp_flag = 0;
@@ -177,9 +178,9 @@ void effect_A8_move(WORK_Other_CONN* ewk) {
 
     switch (ewk->master_id) {
     case 2:
-        ewk->wu.my_clear_level = Flash_Synchro;
+        ewk->wu.my_clear_level = g_state.Flash_Synchro;
         Setup_A8_Sub(ewk);
-        ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_A8[ewk->wu.dir_step][0];
+        ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_A8[ewk->wu.dir_step][0];
         ix = ewk->num_of_conn - 1;
         ix = ewk->conn[ix].nx;
         ewk->wu.position_x -= ix / 2;
@@ -191,7 +192,7 @@ void effect_A8_move(WORK_Other_CONN* ewk) {
         sort_push_request3(&ewk->wu);
 
         if (ewk->wu.disp_flag) {
-            if (Order_Dir[ewk->wu.dir_old]) {
+            if (g_state.Order_Dir[ewk->wu.dir_old]) {
                 /* PLAY button: south (row 4), model coords (-87, 25) size 22×17 */
                 Vec3 pv0 = { -87.0f, 25.0f, 0.0f };
                 Vec3 pv1 = { -87.0f + 22.0f, 25.0f - 17.0f, 0.0f };
@@ -250,8 +251,8 @@ s32 effect_A8_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 curso
     ewk->wu.dir_step = pos_index;
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_A8[ewk->wu.dir_step][0];
-    ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_A8[ewk->wu.dir_step][1];
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_A8[ewk->wu.dir_step][0];
+    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_A8[ewk->wu.dir_step][1];
     ewk->wu.position_z = 68;
 
     if (ewk->master_id != 3) {
@@ -282,7 +283,7 @@ static void Setup_A8_Sub(WORK_Other_CONN* ewk) {
         offset_x = 14;
     }
 
-    ptr = (u8*)Letter_Data_A8[sys_w.bgm_type][Order_Dir[ewk->wu.dir_old] + ewk->master_id];
+    ptr = (u8*)Letter_Data_A8[sys_w.bgm_type][g_state.Order_Dir[ewk->wu.dir_old] + ewk->master_id];
     ix = 0;
     x = 0;
 

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff71.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff72.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -24,7 +25,7 @@ void effect_71_move(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] <= 0) {
@@ -39,7 +40,7 @@ void effect_71_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             ewk->wu.routine_no[0] = 0;
             ewk->wu.old_rno[1] = 0;
             work = random_16();
@@ -60,7 +61,7 @@ s32 effect_71_init() {
     WORK_Other* ewk;
     s16 ix;
 
-    if (EXE_obroll) {
+    if (g_state.EXE_obroll) {
         return 0;
     }
 

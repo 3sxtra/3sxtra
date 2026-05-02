@@ -7,6 +7,7 @@
  * are stored in a flat array searched linearly by key.
  */
 #include "port/config/config.h"
+#include "game_state.h"
 #include "port/broadcast.h"
 #include "port/config/paths.h"
 #include "port/random.h"
@@ -368,7 +369,7 @@ void Config_Init() {
     }
     fclose(f);
 
-    // Generate a unique client ID if one doesn't exist
+    // Generate a unique client g_state.ID if one doesn't exist
     if (!Config_HasKey(CFG_KEY_LOBBY_CLIENT_ID) || SDL_strlen(Config_GetString(CFG_KEY_LOBBY_CLIENT_ID)) == 0) {
         uint8_t random_bytes[16];
         Sys_RandomBytes(random_bytes, sizeof(random_bytes));

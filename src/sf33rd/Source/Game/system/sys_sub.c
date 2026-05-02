@@ -17,6 +17,7 @@
  */
 
 #include "sf33rd/Source/Game/system/sys_sub.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "port/menu_task.h"
 #include "port/init_task.h"
@@ -66,18 +67,18 @@ const u16 Convert_Data[CONVERT_DATA_COUNT] = { 16, 32, 64, 256, 512, 1024, 272, 
 /** @brief Initialize screen-switch (wipe-out) state. */
 void Switch_Screen_Init(s32 /* unused */) {
     WipeInit();
-    Forbid_Break = 1;
-    Exec_Wipe = 1;
-    Gap_Timer = 4;
-    Stop_SG = 1;
-    Escape_SS = 1;
+    g_state.Forbid_Break = 1;
+    g_state.Exec_Wipe = 1;
+    g_state.Gap_Timer = 4;
+    g_state.Stop_SG = 1;
+    g_state.Escape_SS = 1;
 }
 
 /** @brief Advance the screen-switch wipe-out effect; returns 1 when complete. */
 s32 Switch_Screen(u8 Wipe_Type) {
-    if (WipeOut(Wipe_Type) && --Gap_Timer <= 0) {
-        Exec_Wipe = 0;
-        Stop_Combo = 0;
+    if (WipeOut(Wipe_Type) && --g_state.Gap_Timer <= 0) {
+        g_state.Exec_Wipe = 0;
+        g_state.Stop_Combo = 0;
         return 1;
     }
 
@@ -86,9 +87,9 @@ s32 Switch_Screen(u8 Wipe_Type) {
 
 /** @brief Advance the screen-switch wipe-in (revival) effect; returns 1 when complete. */
 s32 Switch_Screen_Revival(u8 Wipe_Type) {
-    if (WipeIn(Wipe_Type) && --Gap_Timer <= 0) {
-        Exec_Wipe = 0;
-        Stop_Combo = 0;
+    if (WipeIn(Wipe_Type) && --g_state.Gap_Timer <= 0) {
+        g_state.Exec_Wipe = 0;
+        g_state.Stop_Combo = 0;
         return 1;
     }
 
@@ -152,58 +153,58 @@ u16 Convert_User_Setting(s16 PL_id) {
 void Clear_Personal_Data(s16 PL_id) {
     s16 xx;
 
-    Lost_Round[PL_id] = 0;
-    Super_Arts_Finish[PL_id] = 0;
-    Perfect_Finish[PL_id] = 0;
-    Cheap_Finish[PL_id] = 0;
-    Completion_Bonus[PL_id][0] = 0;
-    Completion_Bonus[PL_id][1] = 0;
-    Stage_Continue[PL_id] = 0;
-    Introduce_Boss[PL_id][0] = 0;
-    Introduce_Boss[PL_id][1] = 0;
-    Introduce_Break_Into[PL_id] = 0;
-    Score[PL_id][0] = 0;
-    Stock_Score[PL_id] = 0;
-    Stage_Stock_Score[PL_id] = 0;
-    Continue_Coin[PL_id] = 0;
-    Win_Record[PL_id] = 0;
-    VS_Win_Record[PL_id] = 0;
-    Stock_Win_Record[PL_id] = 0;
-    VS_Index[PL_id] = 0;
-    Used_char[PL_id] = 0xFF;
-    Arts_Y[PL_id] = 0;
-    Continue_Count[PL_id] = 0;
-    Continue_Coin2[PL_id] = 0;
-    Sel_PL_Complete[PL_id] = 0;
-    Sel_Arts_Complete[PL_id] = 0;
-    Sel_EM_Complete[PL_id] = 0;
-    Last_Player_id = -1;
-    Last_Super_Arts[PL_id] = 0;
-    Last_My_char[PL_id] = -1;
-    Last_My_char2[PL_id] = -1;
-    Last_Selected_EM[PL_id] = 1;
-    Select_Start[PL_id] = 0;
-    paring_ctr_vs[0][PL_id] = 0;
-    Straight_Counter[PL_id] = 0;
-    Straight_Flag[PL_id] = 0;
-    SC_Personal_Time[PL_id] = 481;
-    E_Number[PL_id][0] = 0;
-    E_Number[PL_id][1] = 0;
-    E_Number[PL_id][2] = 0;
-    E_Number[PL_id][3] = 0;
-    E_07_Flag[PL_id] = 0;
-    Request_Break[PL_id] = 0;
+    g_state.Lost_Round[PL_id] = 0;
+    g_state.Super_Arts_Finish[PL_id] = 0;
+    g_state.Perfect_Finish[PL_id] = 0;
+    g_state.Cheap_Finish[PL_id] = 0;
+    g_state.Completion_Bonus[PL_id][0] = 0;
+    g_state.Completion_Bonus[PL_id][1] = 0;
+    g_state.Stage_Continue[PL_id] = 0;
+    g_state.Introduce_Boss[PL_id][0] = 0;
+    g_state.Introduce_Boss[PL_id][1] = 0;
+    g_state.Introduce_Break_Into[PL_id] = 0;
+    g_state.Score[PL_id][0] = 0;
+    g_state.Stock_Score[PL_id] = 0;
+    g_state.Stage_Stock_Score[PL_id] = 0;
+    g_state.Continue_Coin[PL_id] = 0;
+    g_state.Win_Record[PL_id] = 0;
+    g_state.VS_Win_Record[PL_id] = 0;
+    g_state.Stock_Win_Record[PL_id] = 0;
+    g_state.VS_Index[PL_id] = 0;
+    g_state.Used_char[PL_id] = 0xFF;
+    g_state.Arts_Y[PL_id] = 0;
+    g_state.Continue_Count[PL_id] = 0;
+    g_state.Continue_Coin2[PL_id] = 0;
+    g_state.Sel_PL_Complete[PL_id] = 0;
+    g_state.Sel_Arts_Complete[PL_id] = 0;
+    g_state.Sel_EM_Complete[PL_id] = 0;
+    g_state.Last_Player_id = -1;
+    g_state.Last_Super_Arts[PL_id] = 0;
+    g_state.Last_My_char[PL_id] = -1;
+    g_state.Last_My_char2[PL_id] = -1;
+    g_state.Last_Selected_EM[PL_id] = 1;
+    g_state.Select_Start[PL_id] = 0;
+    g_state.paring_ctr_vs[0][PL_id] = 0;
+    g_state.Straight_Counter[PL_id] = 0;
+    g_state.Straight_Flag[PL_id] = 0;
+    g_state.SC_Personal_Time[PL_id] = 481;
+    g_state.E_Number[PL_id][0] = 0;
+    g_state.E_Number[PL_id][1] = 0;
+    g_state.E_Number[PL_id][2] = 0;
+    g_state.E_Number[PL_id][3] = 0;
+    g_state.E_07_Flag[PL_id] = 0;
+    g_state.Request_Break[PL_id] = 0;
 
     if (PL_id == 0) {
-        Cursor_X[0] = permission_player[Present_Mode].cursor_infor[0].first_x;
-        Cursor_Y[0] = permission_player[Present_Mode].cursor_infor[0].first_y;
+        g_state.Cursor_X[0] = permission_player[g_state.Present_Mode].cursor_infor[0].first_x;
+        g_state.Cursor_Y[0] = permission_player[g_state.Present_Mode].cursor_infor[0].first_y;
     } else {
-        Cursor_X[1] = permission_player[Present_Mode].cursor_infor[1].first_x;
-        Cursor_Y[1] = permission_player[Present_Mode].cursor_infor[1].first_y;
+        g_state.Cursor_X[1] = permission_player[g_state.Present_Mode].cursor_infor[1].first_x;
+        g_state.Cursor_Y[1] = permission_player[g_state.Present_Mode].cursor_infor[1].first_y;
     }
 
     for (xx = 0; xx < 10; xx++) {
-        EM_History[PL_id][xx] = 0;
+        g_state.EM_History[PL_id][xx] = 0;
     }
 }
 
@@ -211,9 +212,9 @@ void Clear_Personal_Data(s16 PL_id) {
 s16 Check_Count_Cut(s16 PL_id, s16 Limit) {
     s16 xx;
 
-    Continue_Cut[PL_id] = 0;
+    g_state.Continue_Cut[PL_id] = 0;
 
-    if (Continue_Count[PL_id] >= (Limit)) {
+    if (g_state.Continue_Count[PL_id] >= (Limit)) {
         return 0;
     }
 
@@ -228,22 +229,22 @@ s16 Check_Count_Cut(s16 PL_id, s16 Limit) {
 
 /** @brief Display a personal counter value on the HUD for the given player. */
 void Disp_Personal_Count(s16 PL_id, s8 counter) {
-    SSPutDec(DE_X[PL_id] + 14, 0, 9, counter, 0);
+    SSPutDec(g_state.DE_X[PL_id] + 14, 0, 9, counter, 0);
 }
 
 /** @brief Determine play type (0 = single player, 1 = two players) from operator status. */
 void Setup_Play_Type() {
-    if (Operator_Status[0] & 0x7F && Operator_Status[1] & 0x7F) {
-        Play_Type = 1;
+    if (g_state.Operator_Status[0] & 0x7F && g_state.Operator_Status[1] & 0x7F) {
+        g_state.Play_Type = 1;
     } else {
-        Play_Type = 0;
+        g_state.Play_Type = 0;
     }
 }
 
 /** @brief Clear all flash-number slots for both players. */
 void Clear_Flash_No() {
-    F_No0[0] = F_No1[0] = F_No2[0] = F_No3[0] = 0;
-    F_No0[1] = F_No1[1] = F_No2[1] = F_No3[1] = 0;
+    g_state.F_No0[0] = g_state.F_No1[0] = g_state.F_No2[0] = g_state.F_No3[0] = 0;
+    g_state.F_No0[1] = g_state.F_No1[1] = g_state.F_No2[1] = g_state.F_No3[1] = 0;
 }
 
 void Set_Training_Hitbox_Display(bool enabled) {
@@ -255,19 +256,19 @@ bool Is_Training_Hitbox_Display_Enabled() {
 }
 
 bool Cut_Cut_Cut() {
-    if (Is_Training_Mode(Mode_Type)) {
+    if (Is_Training_Mode(g_state.Mode_Type)) {
         return true;
     }
 
-    if (Demo_Flag == 0) {
+    if (g_state.Demo_Flag == 0) {
         return false;
     }
 
-    if (plw[0].wu.pl_operator && (p1sw_0 & SWK_ATTACKS)) {
+    if (g_state.plw[0].wu.pl_operator && (p1sw_0 & SWK_ATTACKS)) {
         return true;
     }
 
-    if (plw[1].wu.pl_operator && (p2sw_0 & SWK_ATTACKS)) {
+    if (g_state.plw[1].wu.pl_operator && (p2sw_0 & SWK_ATTACKS)) {
         return true;
     }
 
@@ -300,15 +301,15 @@ s32 Button_Cut_EX(s16* pTimer, s16 limit) {
 
 /** @brief Determine the target player index (0 or 1) based on play type and operator state. */
 s32 Setup_Target_PL() {
-    if (Play_Type == 1) {
-        return Winner_id;
+    if (g_state.Play_Type == 1) {
+        return g_state.Winner_id;
     }
 
-    if (Round_Operator[0]) {
+    if (g_state.Round_Operator[0]) {
         return 0;
     }
 
-    if (plw[0].wu.pl_operator) {
+    if (g_state.plw[0].wu.pl_operator) {
         return 0;
     }
 
@@ -317,11 +318,11 @@ s32 Setup_Target_PL() {
 
 /** @brief Set up the final grade data for the losing player at game over. */
 void Setup_Final_Grade() {
-    if (Break_Com[Player_id][0] == 0) {
-        Final_Result_id = LOSER;
-        WGJ_Target = LOSER;
-        WGJ_Win = Win_Record[LOSER];
-        WGJ_Score = Continue_Coin[LOSER] + Score[LOSER][0];
+    if (g_state.Break_Com[g_state.Player_id][0] == 0) {
+        g_state.Final_Result_id = g_state.LOSER;
+        g_state.WGJ_Target = g_state.LOSER;
+        g_state.WGJ_Win = g_state.Win_Record[g_state.LOSER];
+        g_state.WGJ_Score = g_state.Continue_Coin[g_state.LOSER] + g_state.Score[g_state.LOSER][0];
     }
 }
 
@@ -330,12 +331,12 @@ void Clear_Win_Type() {
     s16 i;
 
     for (i = 0; i < 4; i++) {
-        win_type[0][i] = 0;
-        win_type[1][i] = 0;
-        flash_win_type[0][i] = 0;
-        flash_win_type[1][i] = 0;
-        sync_win_type[0][i] = 0;
-        sync_win_type[1][i] = 0;
+        g_state.win_type[0][i] = 0;
+        g_state.win_type[1][i] = 0;
+        g_state.flash_win_type[0][i] = 0;
+        g_state.flash_win_type[1][i] = 0;
+        g_state.sync_win_type[0][i] = 0;
+        g_state.sync_win_type[1][i] = 0;
     }
 }
 
@@ -344,8 +345,8 @@ void Clear_Disp_Ranking(s16 PL_id) {
     s16 ix;
 
     for (ix = 0; ix <= 3; ix++) {
-        Request_Disp_Rank[PL_id][ix] = -1;
-        Rank_In[PL_id][ix] = -1;
+        g_state.Request_Disp_Rank[PL_id][ix] = -1;
+        g_state.Rank_In[PL_id][ix] = -1;
     }
 }
 
@@ -400,30 +401,30 @@ void Meltw(u16* s, u16* d, s32 file_ptr) {
     }
 }
 
-/** @brief Assign COM_id and Player_id based on which side has an active operator. */
+/** @brief Assign g_state.COM_id and g_state.Player_id based on which side has an active operator. */
 void Setup_ID() {
-    if (Operator_Status[0] == 0) {
-        COM_id = 0;
-        Player_id = 1;
+    if (g_state.Operator_Status[0] == 0) {
+        g_state.COM_id = 0;
+        g_state.Player_id = 1;
     } else {
-        COM_id = 1;
-        Player_id = 0;
+        g_state.COM_id = 1;
+        g_state.Player_id = 0;
     }
 }
 
-/** @brief Restore task conditions from the keep_condition backup array. */
+/** @brief Restore task conditions from the g_state.keep_condition backup array. */
 void cpRevivalTask() {
     struct _TASK* task_ptr;
     s16 ix;
 
     for (task_ptr = task, ix = 0; ix < 11; task_ptr++, ix++) {
-        task_ptr->condition = keep_condition[ix];
+        task_ptr->condition = g_state.keep_condition[ix];
     }
 }
 
 /** @brief Check whether the menu task is active or in the correct training sub-state. */
 s32 Check_Menu_Task() {
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
         if (MenuTask_GetPhase() == MTP_IN_GAME && MenuTask_GetSubPhase() == MTSP_IN_GAME_ACTIVE) {
             return 1;
         }
@@ -444,23 +445,23 @@ void Setup_Limit_Time() {
 
     limit = Level_18_Data[CurrentSave()->Difficulty][16];
     limit += 20;
-    if (Country == COUNTRY_JAPAN) {
-        Limit_Time = 1241;
+    if (g_state.Country == COUNTRY_JAPAN) {
+        g_state.Limit_Time = 1241;
     } else {
-        Limit_Time = 1061;
+        g_state.Limit_Time = 1061;
     }
 
-    if (limit > Limit_Time) {
-        Limit_Time = limit;
+    if (limit > g_state.Limit_Time) {
+        g_state.Limit_Time = limit;
     }
 }
 
-/** @brief Compute the training-mode control time based on Limit_Time and difficulty. */
+/** @brief Compute the training-mode control time based on g_state.Limit_Time and difficulty. */
 void Setup_Training_Difficulty() {
     s16 unit_time;
     s16 min_time;
 
-    unit_time = Limit_Time - 481;
+    unit_time = g_state.Limit_Time - 481;
     unit_time = unit_time / 5;
     min_time = 481 - (unit_time * 2);
 
@@ -468,33 +469,33 @@ void Setup_Training_Difficulty() {
         min_time = 0;
     }
 
-    Control_Time = min_time + (unit_time * CurrentSave()->Difficulty);
+    g_state.Control_Time = min_time + (unit_time * CurrentSave()->Difficulty);
 }
 
 /** @brief Initialize a background layer at the given position and mark it as active. */
 void Setup_BG(s16 BG_INDEX, s16 X, s16 Y) {
-    Unsubstantial_BG[BG_INDEX] = 1;
-    bg_w.bgw[BG_INDEX].xy[0].disp.pos = X;
-    bg_w.bgw[BG_INDEX].xy[1].disp.pos = Y;
-    bg_w.bgw[BG_INDEX].wxy[0].disp.pos = X;
-    bg_w.bgw[BG_INDEX].wxy[1].disp.pos = Y;
-    bg_w.bgw[BG_INDEX].xy[0].disp.low = 0;
-    bg_w.bgw[BG_INDEX].xy[1].disp.low = 0;
-    bg_w.bgw[BG_INDEX].position_x = X;
-    bg_w.bgw[BG_INDEX].position_y = Y;
+    g_state.Unsubstantial_BG[BG_INDEX] = 1;
+    g_state.bg_w.bgw[BG_INDEX].xy[0].disp.pos = X;
+    g_state.bg_w.bgw[BG_INDEX].xy[1].disp.pos = Y;
+    g_state.bg_w.bgw[BG_INDEX].wxy[0].disp.pos = X;
+    g_state.bg_w.bgw[BG_INDEX].wxy[1].disp.pos = Y;
+    g_state.bg_w.bgw[BG_INDEX].xy[0].disp.low = 0;
+    g_state.bg_w.bgw[BG_INDEX].xy[1].disp.low = 0;
+    g_state.bg_w.bgw[BG_INDEX].position_x = X;
+    g_state.bg_w.bgw[BG_INDEX].position_y = Y;
     Bg_Family_Set_Ex(BG_INDEX);
 }
 
 /** @brief Initialize a virtual (non-substantiated) background layer at the given position. */
 void Setup_Virtual_BG(s16 BG_INDEX, s16 X, s16 Y) {
-    bg_w.bgw[BG_INDEX].xy[0].disp.pos = X;
-    bg_w.bgw[BG_INDEX].xy[1].disp.pos = Y;
-    bg_w.bgw[BG_INDEX].wxy[0].disp.pos = X;
-    bg_w.bgw[BG_INDEX].wxy[1].disp.pos = Y;
-    bg_w.bgw[BG_INDEX].xy[0].disp.low = 0;
-    bg_w.bgw[BG_INDEX].xy[1].disp.low = 0;
-    bg_w.bgw[BG_INDEX].position_x = X;
-    bg_w.bgw[BG_INDEX].position_y = Y;
+    g_state.bg_w.bgw[BG_INDEX].xy[0].disp.pos = X;
+    g_state.bg_w.bgw[BG_INDEX].xy[1].disp.pos = Y;
+    g_state.bg_w.bgw[BG_INDEX].wxy[0].disp.pos = X;
+    g_state.bg_w.bgw[BG_INDEX].wxy[1].disp.pos = Y;
+    g_state.bg_w.bgw[BG_INDEX].xy[0].disp.low = 0;
+    g_state.bg_w.bgw[BG_INDEX].xy[1].disp.low = 0;
+    g_state.bg_w.bgw[BG_INDEX].position_x = X;
+    g_state.bg_w.bgw[BG_INDEX].position_y = Y;
     Bg_Family_Set_Ex(BG_INDEX);
 }
 
@@ -503,7 +504,7 @@ void BG_move() {
     s16 ix;
 
     for (ix = 0; ix < 4; ix++) {
-        if (Unsubstantial_BG[ix]) {
+        if (g_state.Unsubstantial_BG[ix]) {
             bg_pos_hosei_sub2(ix);
             Bg_Family_Set_appoint(ix);
         }
@@ -517,7 +518,7 @@ void BG_move_Ex(u8 ix) {
 
 /** @brief Run per-frame basic processing: save old BG position, then move 6 effect work slots. */
 void Basic_Sub() {
-    bg_w.bgw[0].old_pos_x = bg_w.bgw[0].xy[0].disp.pos;
+    g_state.bg_w.bgw[0].old_pos_x = g_state.bg_w.bgw[0].xy[0].disp.pos;
     move_effect_work(0);
     move_effect_work(1);
     move_effect_work(2);
@@ -552,38 +553,38 @@ void BG_Draw_System() {
     u16 s2;
     u16 s3;
 
-    if (bg_disp_off == 0) {
+    if (g_state.bg_disp_off == 0) {
         if (ModdedStage_IsActiveForCurrentStage() || ModdedStage_IsRenderingDisabled()) {
             /* HD modded stage active or rendering disabled: suppress tile rendering
              * but keep scroll calculations alive so parallax positions are correct.
              * The actual HD layers are rendered from SDLApp_EndFrame(). */
             for (i = 0; i < 4; i++, s2 = mask *= 2) {
-                if (Screen_Switch_Buffer & mask) {
+                if (g_state.Screen_Switch_Buffer & mask) {
                     scr_calc(i);
                 }
             }
         } else {
             for (i = 0; i < 4; i++, s2 = mask *= 2) {
-                if (Screen_Switch_Buffer & mask) {
+                if (g_state.Screen_Switch_Buffer & mask) {
                     scr_trans(i);
                 }
             }
         }
     } else {
         for (i = 0; i < 4; i++, s3 = mask *= 2) {
-            if (Screen_Switch_Buffer & mask) {
+            if (g_state.Screen_Switch_Buffer & mask) {
                 scr_calc(i);
             }
         }
     }
 
-    if (Play_Game == 0) {
+    if (g_state.Play_Game == 0) {
         for (i = 0; i < 4; i++) {
-            if (Unsubstantial_BG[i]) {
+            if (g_state.Unsubstantial_BG[i]) {
                 scr_calc(i);
             }
         }
-    } else if (Play_Game == 1) {
+    } else if (g_state.Play_Game == 1) {
         Family_Move();
     } else {
         Ending_Family_Move();
@@ -594,16 +595,16 @@ void BG_Draw_System() {
 u16 Check_Demo_Data(s16 PL_id) {
     u16 ans;
 
-    if (Demo_Timer[PL_id] == 0) {
+    if (g_state.Demo_Timer[PL_id] == 0) {
         ans = *Demo_Ptr[PL_id];
         Demo_Ptr[PL_id]++;
     } else {
-        Demo_Timer[PL_id]--;
+        g_state.Demo_Timer[PL_id]--;
         return 0;
     }
 
     if (ans & 0x8000) {
-        Demo_Timer[PL_id] = ans & 0x7FFF;
+        g_state.Demo_Timer[PL_id] = ans & 0x7FFF;
         return 0;
     }
 
@@ -617,34 +618,34 @@ void System_all_clear_Level_B() {
     SelectTimer_Finish();
 }
 
-/** @brief Decrement C_Timer, skipping to zero if a player presses a button; returns remaining time. */
+/** @brief Decrement g_state.C_Timer, skipping to zero if a player presses a button; returns remaining time. */
 s16 Cut_Cut_C_Timer() {
-    C_Timer--;
+    g_state.C_Timer--;
 
     if (!Cut_Cut_Cut()) {
-        return C_Timer;
+        return g_state.C_Timer;
     }
 
-    return C_Timer = 0;
+    return g_state.C_Timer = 0;
 }
 
 /** @brief Set rendering priority order slot 56 to priority 7 for one frame. */
 void Switch_Priority_76() {
-    Order[56] = 7;
-    Order_Timer[56] = 1;
+    g_state.Order[56] = 7;
+    g_state.Order_Timer[56] = 1;
 }
 
 /** @brief Return xx (early exit value) if a player presses attack during a demo; otherwise return 1. */
 s32 Cut_Cut_Sub(s16 xx) {
-    if (Demo_Flag == 0) {
+    if (g_state.Demo_Flag == 0) {
         return 1;
     }
 
-    if (plw[0].wu.pl_operator && (p1sw_0 & SWK_ATTACKS)) {
+    if (g_state.plw[0].wu.pl_operator && (p1sw_0 & SWK_ATTACKS)) {
         return xx;
     }
 
-    if (plw[1].wu.pl_operator && (p2sw_0 & SWK_ATTACKS)) {
+    if (g_state.plw[1].wu.pl_operator && (p2sw_0 & SWK_ATTACKS)) {
         return xx;
     }
 
@@ -653,11 +654,11 @@ s32 Cut_Cut_Sub(s16 xx) {
 
 /** @brief Check if the losing player pressed an attack button to skip an animation. */
 bool Cut_Cut_Loser() {
-    if (Round_Operator[0] && (p1sw_0 & SWK_ATTACKS)) {
+    if (g_state.Round_Operator[0] && (p1sw_0 & SWK_ATTACKS)) {
         return true;
     }
 
-    if (Round_Operator[1] && (p2sw_0 & SWK_ATTACKS)) {
+    if (g_state.Round_Operator[1] && (p2sw_0 & SWK_ATTACKS)) {
         return true;
     }
 
@@ -675,7 +676,7 @@ void Soft_Reset_Sub() {
     sound_all_off();
     SsBgmHalfVolume(0);
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING) {
         Set_Training_Hitbox_Display(false);
     }
 
@@ -710,105 +711,105 @@ void Soft_Reset_Sub() {
     Reset_Sub0();
     InitTask_SetPhase(ITP_RUNNING);
     InitTask_ResetSubPhases();
-    vm_w.Request = 0;
-    vm_w.Access = 0;
+    g_state.vm_w.Request = 0;
+    g_state.vm_w.Access = 0;
 }
 
 /** @brief Clear pause/game state flags and reset mode to arcade defaults. */
 static void Reset_Sub0() {
-    Pause = 0;
-    Game_pause = 0;
-    Play_Game = 0;
-    Forbid_Break = 0;
-    Extra_Break = 0;
+    g_state.Pause = 0;
+    g_state.Game_pause = 0;
+    g_state.Play_Game = 0;
+    g_state.Forbid_Break = 0;
+    g_state.Extra_Break = 0;
 
     // Don't clobber netplay mode during soft resets
-    if (Mode_Type != MODE_NETWORK) {
-        Mode_Type = MODE_ARCADE;
-        Present_Mode = 1;
+    if (g_state.Mode_Type != MODE_NETWORK) {
+        g_state.Mode_Type = MODE_ARCADE;
+        g_state.Present_Mode = 1;
     } else {
-        Present_Mode = MODE_NETWORK;
+        g_state.Present_Mode = MODE_NETWORK;
     }
 
-    Play_Mode = 0;
-    Replay_Status[0] = 0;
-    Replay_Status[1] = 0;
+    g_state.Play_Mode = 0;
+    g_state.Replay_Status[0] = 0;
+    g_state.Replay_Status[1] = 0;
 }
 
 /** @brief Initialize the clear-flash pulsing effect with the given intensity level. */
 void Clear_Flash_Init(s16 level) {
-    Synchro_No = 0;
-    Flash_Synchro = 0;
-    Synchro_Level = level;
+    g_state.Synchro_No = 0;
+    g_state.Flash_Synchro = 0;
+    g_state.Synchro_Level = level;
 }
 
 /** @brief Advance the clear-flash oscillation and return the current flash intensity (0–127). */
 s16 Clear_Flash_Sub() {
-    switch (Synchro_No) {
+    switch (g_state.Synchro_No) {
     case 0:
-        Flash_Synchro -= Synchro_Level;
+        g_state.Flash_Synchro -= g_state.Synchro_Level;
 
-        if (Flash_Synchro <= 0) {
-            Synchro_No = 1;
-            Flash_Synchro = 1;
+        if (g_state.Flash_Synchro <= 0) {
+            g_state.Synchro_No = 1;
+            g_state.Flash_Synchro = 1;
         }
 
         break;
 
     case 1:
-        Flash_Synchro += Synchro_Level;
+        g_state.Flash_Synchro += g_state.Synchro_Level;
 
-        if (Flash_Synchro > 127) {
-            Synchro_No = 0;
-            Flash_Synchro = 127;
+        if (g_state.Flash_Synchro > 127) {
+            g_state.Synchro_No = 0;
+            g_state.Flash_Synchro = 127;
         }
 
         break;
     }
 
-    return Flash_Synchro;
+    return g_state.Flash_Synchro;
 }
 
 /** @brief Reset all four random-number generator index counters to zero. */
 void All_Clear_Random_ix() {
-    Random_ix16 = 0;
-    Random_ix32 = 0;
-    Random_ix16_ex = 0;
-    Random_ix32_ex = 0;
+    g_state.Random_ix16 = 0;
+    g_state.Random_ix32 = 0;
+    g_state.Random_ix16_ex = 0;
+    g_state.Random_ix32_ex = 0;
 }
 
-/** @brief Reset system_timer, Game_timer, and players_timer to zero. */
+/** @brief Reset g_state.system_timer, g_state.Game_timer, and g_state.players_timer to zero. */
 void All_Clear_Timer() {
-    system_timer = 0;
-    Game_timer = 0;
-    players_timer = 0;
+    g_state.system_timer = 0;
+    g_state.Game_timer = 0;
+    g_state.players_timer = 0;
 }
 
-/** @brief Clear miscellaneous message tracking state (old_mes_no2/3, old_mes_no_pl, mes_already). */
+/** @brief Clear miscellaneous message tracking state (g_state.old_mes_no2/3, g_state.old_mes_no_pl, g_state.mes_already). */
 void All_Clear_ETC() {
-    old_mes_no2 = 0;
-    old_mes_no3 = 0;
-    old_mes_no_pl = 0;
-    mes_already = 0;
+    g_state.old_mes_no2 = 0;
+    g_state.old_mes_no3 = 0;
+    g_state.old_mes_no_pl = 0;
+    g_state.mes_already = 0;
 }
 
 /** @brief Initialize all RNG indices to zero for netplay synchronization. */
 void Setup_Net_Random_ix() {
     u8 ix = 0;
 
-    Random_ix16 = ix;
-    Random_ix32 = ix;
-    Random_ix16_ex = ix;
-    Random_ix32_ex = ix;
+    g_state.Random_ix16 = ix;
+    g_state.Random_ix32 = ix;
+    g_state.Random_ix16_ex = ix;
+    g_state.Random_ix32_ex = ix;
 }
 
 /** @brief Request a fade transition with the given code; returns 1 if accepted, 0 if already fading. */
 s32 Request_Fade(u16 fade_code) {
-    if (Fade_Flag == 0) {
-        Fade_Flag = 1;
-        Fade_R_No0 = Fade_R_No1 = 0;
-        Fade_Number = fade_code;
-        Forbid_Break = 1;
+    if (g_state.Fade_Flag == 0) {
+        g_state.Fade_Flag = 1;
+        g_state.Fade_R_No0 = g_state.Fade_R_No1 = 0;
+        g_state.Fade_Number = fade_code;
+        g_state.Forbid_Break = 1;
         fade_cont_init();
         return 1;
     }
@@ -819,30 +820,30 @@ s32 Request_Fade(u16 fade_code) {
 /** @brief Advance the fade and return 1 when the fade completes (special variant). */
 s32 Check_Fade_Complete_SP() {
     fade_cont_main();
-    return Fade_Flag ^ 1;
+    return g_state.Fade_Flag ^ 1;
 }
 
 /** @brief Advance the fade and return 1 when the fade completes (normal variant). */
 s32 Check_Fade_Complete() {
-    if (Fade_Flag) {
+    if (g_state.Fade_Flag) {
         fade_cont_main();
         return 0;
     }
 
-    Forbid_Break = 1;
+    g_state.Forbid_Break = 1;
     return 1;
 }
 
-/** @brief Clear all 8 Suicide slots and all 4 Menu_Suicide flags. */
+/** @brief Clear all 8 g_state.Suicide slots and all 4 g_state.Menu_Suicide flags. */
 void All_Clear_Suicide() {
     s16 ix;
 
     for (ix = 0; ix < 8; ix++) {
-        Suicide[ix] = 0;
+        g_state.Suicide[ix] = 0;
     }
 
     for (ix = 0; ix < 4; ix++) {
-        Menu_Suicide[ix] = 0;
+        g_state.Menu_Suicide[ix] = 0;
     }
 }
 

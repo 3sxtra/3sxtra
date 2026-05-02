@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff98.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -28,7 +29,7 @@ void effect_98_move(WORK_Other* ewk) {
 }
 
 static void EFF98_WAIT(WORK_Other* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
@@ -36,18 +37,18 @@ static void EFF98_WAIT(WORK_Other* ewk) {
 static void EFF98_SLIDE_IN(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.vital_new =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][0];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][0];
         ewk->wu.xyz[1].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][1];
-        Stop_Cursor[ewk->master_id] = 1;
-        Disp_Command_Name[ewk->master_id][ewk->master_player] = 1;
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][1];
+        g_state.Stop_Cursor[ewk->master_id] = 1;
+        g_state.Disp_Command_Name[ewk->master_id][ewk->master_player] = 1;
         effect_80_init(ewk, ewk->master_id, ewk->master_player, ewk->wu.my_family - 1);
 
         if (ewk->master_id == 0) {
@@ -69,12 +70,12 @@ static void EFF98_SLIDE_IN(WORK_Other* ewk) {
 
         if (0 < ewk->wu.mvxy.a[0].sp) {
             if (ewk->wu.vital_new <= ewk->wu.xyz[0].disp.pos) {
-                Order[ewk->wu.dir_old] = 0;
+                g_state.Order[ewk->wu.dir_old] = 0;
                 ewk->wu.routine_no[0] = 0;
                 ewk->wu.xyz[0].disp.pos = ewk->wu.vital_new;
             }
         } else if (ewk->wu.vital_new >= ewk->wu.xyz[0].disp.pos) {
-            Order[ewk->wu.dir_old] = 0;
+            g_state.Order[ewk->wu.dir_old] = 0;
             ewk->wu.routine_no[0] = 0;
             ewk->wu.xyz[0].disp.pos = ewk->wu.vital_new;
         }
@@ -88,22 +89,22 @@ void EFF98_SLIDE_OUT(WORK_Other* /* unused */) {}
 static void EFF98_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.xyz[0].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][0];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][0];
         ewk->wu.xyz[1].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][1];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][1];
         set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
         break;
 
     default:
         ewk->wu.routine_no[0] = 0;
-        Order[ewk->wu.dir_old] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
         break;
     }
 }
@@ -111,7 +112,7 @@ static void EFF98_SUDDENLY(WORK_Other* ewk) {
 static void EFF98_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] == 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 0;
         }

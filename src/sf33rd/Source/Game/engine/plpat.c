@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plpat.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effg6.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -219,7 +220,7 @@ static void Attack_03000(PLW* wk) {
     case 0:
         wk->wu.routine_no[3]++;
         get_cancel_timer(wk);
-        if ((Bonus_Game_Flag == 20 && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
+        if ((g_state.Bonus_Game_Flag == 20 && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
             hoken_muriyari_chakuchi(wk);
             wk->wu.rl_flag = wk->wu.rl_waza;
             setup_lvdir_after_autodir(wk);
@@ -764,8 +765,8 @@ static void get_cancel_timer(PLW* wk) {
 
 /** @brief Forces a landing if the player is airborne as a safety check. */
 void hoken_muriyari_chakuchi(PLW* wk) {
-    if ((Bonus_Game_Flag == 20) && wk->bs2_on_car) {
-        wk->wu.xyz[1].disp.pos = bs2_floor[2];
+    if ((g_state.Bonus_Game_Flag == 20) && wk->bs2_on_car) {
+        wk->wu.xyz[1].disp.pos = g_state.bs2_floor[2];
         return;
     }
 

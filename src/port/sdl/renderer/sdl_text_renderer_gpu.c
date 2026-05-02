@@ -7,6 +7,7 @@
  * glyph rendering. Alternative to the OpenGL text renderer.
  */
 #include "port/sdl/app/sdl_app.h"
+#include "game_state.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_text_renderer.h"
 #include "port/sdl/renderer/sdl_text_renderer_internal.h"

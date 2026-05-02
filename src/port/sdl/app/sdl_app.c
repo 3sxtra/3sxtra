@@ -1401,7 +1401,7 @@ void SDLApp_EndFrame() {
     // Render all queued tasks to the FBO (skip in present-only mode — canvas already has last frame)
     if (!present_only_mode) {
         if (ModdedStage_IsActiveForCurrentStage()) {
-            ModdedStage_Render(&bg_w);
+            ModdedStage_Render(&g_state.bg_w);
 
             // ⚡ SDLGPU: Queue the canvas texture as an overlay quad BEFORE RenderFrame.
             // RenderFrame uploads all vertex/index data to the GPU. Any quads pushed after

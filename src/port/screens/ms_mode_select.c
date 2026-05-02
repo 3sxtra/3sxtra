@@ -12,6 +12,7 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Clear_Personal_Data */
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
@@ -19,7 +20,7 @@
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
 #include "sf33rd/Source/Game/engine/grade.h"       /* grade_check_work_1st_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Mode_Type, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, g_state.Mode_Type, etc. */
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Decide_PL, Exit_Sub */
@@ -27,7 +28,7 @@
 #include "sf33rd/Source/Game/rendering/texgroup.h" /* checkSelObjFileLoaded, load_any_texture_patnum */
 #include "sf33rd/Source/Game/screen/entry.h"       /* Entry_Task, TASK_ENTRY */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
 #include "sf33rd/Source/Game/system/saver.h"       /* Saver_Task, TASK_SAVER */
 #include "sf33rd/Source/Game/system/sysdir.h"      /* Setup_Training_Difficulty */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* cpExitTask */
@@ -60,10 +61,10 @@ static bool s_wait_done = false;
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter — extracted from Mode_Select case 0 (~55 lines of init)
  *
- *  Sets up Mode_Type, Entry task, cursor, effects, RmlUi.
+ *  Sets up g_state.Mode_Type, Entry task, cursor, effects, RmlUi.
  *  The dispatcher handles FadeOut/timer/wait/FadeIn automatically via
  *  MENU_PHASE_ENTER → WAIT → FADE_IN, but Mode_Select has custom
- *  logic in case 1 (Order, checkAdx, checkSelObj) that we handle
+ *  logic in case 1 (g_state.Order, checkAdx, checkSelObj) that we handle
  *  by setting them up here and relying on the WAIT phase timer.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -82,38 +83,38 @@ static void mode_select_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
 
-    Mode_Type = MODE_ARCADE;
-    Present_Mode = 1;
+    g_state.Mode_Type = MODE_ARCADE;
+    g_state.Present_Mode = 1;
 
     if (!Task_IsActive(TASK_ENTRY)) {
-        E_No[0] = 1;
-        E_No[1] = 2;
-        E_No[2] = 2;
-        E_No[3] = 0;
+        g_state.E_No[0] = 1;
+        g_state.E_No[1] = 2;
+        g_state.E_No[2] = 2;
+        g_state.E_No[3] = 0;
         cpReadyTask(TASK_ENTRY, Entry_Task);
     }
 
     Menu_Common_Init();
 
     for (ix = 0; ix < 4; ix++) {
-        Menu_Suicide[ix] = 0;
+        g_state.Menu_Suicide[ix] = 0;
     }
 
     Clear_Personal_Data(0);
     Clear_Personal_Data(1);
-    Menu_Cursor_Y[0] = Cursor_Y_Pos[0][0];
-    Cursor_Y_Pos[0][1] = 0;
-    Cursor_Y_Pos[0][2] = 0;
-    Cursor_Y_Pos[0][3] = 0;
+    g_state.Menu_Cursor_Y[0] = g_state.Cursor_Y_Pos[0][0];
+    g_state.Cursor_Y_Pos[0][1] = 0;
+    g_state.Cursor_Y_Pos[0][2] = 0;
+    g_state.Cursor_Y_Pos[0][3] = 0;
 
     for (ix = 0; ix < 4; ix++) {
-        Vital_Handicap[ix][0] = 7;
-        Vital_Handicap[ix][1] = 7;
+        g_state.Vital_Handicap[ix][0] = 7;
+        g_state.Vital_Handicap[ix][1] = 7;
     }
 
-    VS_Stage = 0x14;
-    Order[0x8A] = 4;
-    Order_Timer[0x8A] = 1;
+    g_state.VS_Stage = 0x14;
+    g_state.Order[0x8A] = 4;
+    g_state.Order_Timer[0x8A] = 1;
 
     for (ix = 0; ix < 4; ix++) {
         Message_Data[ix].order = 3;
@@ -136,20 +137,20 @@ static void mode_select_enter(struct _TASK* task_ptr) {
  *  The dispatcher guarantees on_tick is only called during MENU_PHASE_ACTIVE.
  *  The WAIT→FADE_IN transition is handled by the dispatcher.
  *
- *  However, Mode_Select case 1 has custom code (Order update, asset checks)
+ *  However, Mode_Select case 1 has custom code (g_state.Order update, asset checks)
  *  that runs during the wait phase.  We handle that in a custom wait-phase
  *  hook by checking whether the dispatcher's Menu_Sub_case1 just completed
  *  (we detect this via r_no[2] still being 1 → need to do the case 1 work).
  *  Actually, the dispatcher calls Menu_Sub_case1 in MENU_PHASE_WAIT and
  *  handles the transition.  But the custom code in Mode_Select case 1
- *  (Order[0x4E], checkAdx/SelObj) only runs ONCE when the timer expires.
+ *  (g_state.Order[0x4E], checkAdx/SelObj) only runs ONCE when the timer expires.
  *  Since on_tick is not called during WAIT, we put this code in on_enter's
  *  tail... no — the timer hasn't expired yet at on_enter time.
  *
  *  SOLUTION: We replicate the case 1 check at the top of on_tick.  The first
  *  time on_tick is called (phase just became ACTIVE → fade-in already done),
  *  we do the asset checks.  This is functionally equivalent because the
- *  Order[0x4E] and asset-check calls just need to happen after the wait timer
+ *  g_state.Order[0x4E] and asset-check calls just need to happen after the wait timer
  *  expires and before or during fade-in.  We call them once via a flag.
  * ═══════════════════════════════════════════════════════════════════════════ */
 static void mode_select_tick(struct _TASK* task_ptr) {
@@ -172,12 +173,12 @@ static void mode_select_tick(struct _TASK* task_ptr) {
     /* ── One-time post-wait-phase setup (replaces Mode_Select case 1) ── */
     if (!s_wait_done) {
         s_wait_done = true;
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 0;
-        Order_Timer[0x4E] = 1;
+        g_state.Order[0x4E] = 2;
+        g_state.Order_Dir[0x4E] = 0;
+        g_state.Order_Timer[0x4E] = 1;
         checkAdxFileLoaded();
         checkSelObjFileLoaded();
-        Suicide[3] = 0;
+        g_state.Suicide[3] = 0;
     }
 
     if (use_rmlui && rmlui_menu_mode) {
@@ -193,8 +194,8 @@ static void mode_select_tick(struct _TASK* task_ptr) {
         NativeUI_Header(MENU_HEADER_MODE_MENU);
 
         if (NativeUI_Button("ARCADE")) {
-            G_No[2] += 1;
-            Mode_Type = MODE_ARCADE;
+            g_state.G_No[2] += 1;
+            g_state.Mode_Type = MODE_ARCADE;
             task_ptr->r_no[0] = 5;
             cpExitTask(TASK_SAVER);
             Decide_PL(PL_id);
@@ -202,11 +203,11 @@ static void mode_select_tick(struct _TASK* task_ptr) {
             MenuScreen_ExitToLegacy(task_ptr);
         }
 
-        if (NativeUI_ButtonEx("VS MODE", Connect_Status == 0)) {
+        if (NativeUI_ButtonEx("VS MODE", g_state.Connect_Status == 0)) {
             Setup_VS_Mode(task_ptr);
-            G_No[1] = 12;
-            G_No[2] = 1;
-            Mode_Type = MODE_VERSUS;
+            g_state.G_No[1] = 12;
+            g_state.G_No[2] = 1;
+            g_state.Mode_Type = MODE_VERSUS;
             cpExitTask(TASK_MENU);
             NativeUI_Clear();
             MenuScreen_ExitToLegacy(task_ptr);

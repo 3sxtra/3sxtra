@@ -2,21 +2,22 @@
  * @file training_dummy.c
  * @brief Dummy AI Controller for Training Mode.
  *
- * Injects inputs directly into Lever_Buff[] and waza_flag[] to control the
- * training dummy. Uses the same Lever_Buff bitfield encoding as the native
+ * Injects inputs directly into g_state.Lever_Buff[] and waza_flag[] to control the
+ * training dummy. Uses the same g_state.Lever_Buff bitfield encoding as the native
  * CPU AI (4=left, 8=right, 2=down, 1=up).
  *
  * Parry system notes (from engine analysis):
  *   - cmd_main.c check_10() requires neutral→forward TRANSITION (case 0→1)
  *   - hitcheck.c defense_ground() checks waza_flag[3] (high), waza_flag[4] (low)
  *   - Red parry needs guard_chuu != 0 && guard_chuu < 5 (just_now flag)
- *   - Guard (blocking) uses saishin_lvdir, computed from cp->sw_lvbt from Lever_Buff
+ *   - Guard (blocking) uses saishin_lvdir, computed from cp->sw_lvbt from g_state.Lever_Buff
  */
 
 #include "training_dummy.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/pls02.h"    /* random_32_com() */
-#include "sf33rd/Source/Game/engine/workuser.h" /* Lever_Buff[] */
+#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.Lever_Buff[] */
 
 DummySettings g_dummy_settings = {
     .block_type = DUMMY_BLOCK_NONE,
@@ -33,7 +34,7 @@ DummySettings g_dummy_settings = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Lever_Buff helpers                                                 */
+/*  g_state.Lever_Buff helpers                                                 */
 /* ------------------------------------------------------------------ */
 
 static u16 guard_back_lever(PLW* wk) {
@@ -60,17 +61,17 @@ static void inject_mash(s16 dummy_id, DummyMashType type) {
 
     switch (type) {
     case DUMMY_MASH_FAST:
-        Lever_Buff[dummy_id] = (rnd & 0x0F) | 0x10 | 0x20;
+        g_state.Lever_Buff[dummy_id] = (rnd & 0x0F) | 0x10 | 0x20;
         break;
     case DUMMY_MASH_NORMAL:
         if (g_training_state.frame_number & 1) {
-            Lever_Buff[dummy_id] = (rnd & 0x0F) | 0x10;
+            g_state.Lever_Buff[dummy_id] = (rnd & 0x0F) | 0x10;
         } else {
-            Lever_Buff[dummy_id] = (rnd & 0x0F) | 0x20;
+            g_state.Lever_Buff[dummy_id] = (rnd & 0x0F) | 0x20;
         }
         break;
     case DUMMY_MASH_RANDOM:
-        Lever_Buff[dummy_id] = (rnd & 0x0F) | ((rnd >> 4) & 0x3F0);
+        g_state.Lever_Buff[dummy_id] = (rnd & 0x0F) | ((rnd >> 4) & 0x3F0);
         break;
     default:
         break;
@@ -112,19 +113,19 @@ static bool try_wakeup_reversal(PLW* wk, s16 dummy_id) {
 
         switch (g_dummy_settings.reversal_step) {
         case 0: /* Frame -4: forward */
-            Lever_Buff[dummy_id] = fwd;
+            g_state.Lever_Buff[dummy_id] = fwd;
             g_dummy_settings.reversal_step = 1;
             break;
         case 1: /* Frame -3: down */
-            Lever_Buff[dummy_id] = 0x02;
+            g_state.Lever_Buff[dummy_id] = 0x02;
             g_dummy_settings.reversal_step = 2;
             break;
         case 2: /* Frame -2: down-forward + LP */
-            Lever_Buff[dummy_id] = dfwd | 0x10;
+            g_state.Lever_Buff[dummy_id] = dfwd | 0x10;
             g_dummy_settings.reversal_step = 3;
             break;
         default: /* Frame -1 and beyond: hold df + LP */
-            Lever_Buff[dummy_id] = dfwd | 0x10;
+            g_state.Lever_Buff[dummy_id] = dfwd | 0x10;
             break;
         }
         return true;
@@ -184,13 +185,13 @@ static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
     if (g_training_state.frame_number & 1) {
         /* Forward frame */
         if (low) {
-            Lever_Buff[dummy_id] = 0x02; /* Down */
+            g_state.Lever_Buff[dummy_id] = 0x02; /* Down */
         } else {
-            Lever_Buff[dummy_id] = forward_lever(wk);
+            g_state.Lever_Buff[dummy_id] = forward_lever(wk);
         }
     } else {
         /* Neutral frame — required before forward for check_10 case 0→1 */
-        Lever_Buff[dummy_id] = 0;
+        g_state.Lever_Buff[dummy_id] = 0;
     }
 
     /* Directly set waza_flag to guarantee parry detection in hitcheck.
@@ -220,12 +221,12 @@ static void inject_red_parry(PLW* wk, s16 dummy_id, bool low) {
        even during blockstun for the parry validity to register */
     if (g_training_state.frame_number & 1) {
         if (low) {
-            Lever_Buff[dummy_id] = 0x02; /* Down */
+            g_state.Lever_Buff[dummy_id] = 0x02; /* Down */
         } else {
-            Lever_Buff[dummy_id] = forward_lever(wk);
+            g_state.Lever_Buff[dummy_id] = forward_lever(wk);
         }
     } else {
-        Lever_Buff[dummy_id] = 0;
+        g_state.Lever_Buff[dummy_id] = 0;
     }
 
     /* Set waza_flag high enough to exceed any grdb threshold */
@@ -380,9 +381,9 @@ static void execute_block_or_parry(PLW* wk, s16 dummy_id) {
          * from frame data; without that, crouch-guarding is the safest
          * default — it blocks everything except overheads. */
         if (g_dummy_settings.guard_low_default || opponent->is_crouching) {
-            Lever_Buff[dummy_id] = back | 0x02; /* Down-Back */
+            g_state.Lever_Buff[dummy_id] = back | 0x02; /* Down-Back */
         } else {
-            Lever_Buff[dummy_id] = back; /* Back (standing guard) */
+            g_state.Lever_Buff[dummy_id] = back; /* Back (standing guard) */
         }
     }
 }
@@ -395,7 +396,7 @@ void training_dummy_update_input(PLW* wk, s16 dummy_id) {
     if (!wk)
         return;
 
-    /* Mash takes full control of Lever_Buff when active */
+    /* Mash takes full control of g_state.Lever_Buff when active */
     try_stun_mash(dummy_id);
     try_wakeup_mash(wk, dummy_id);
 

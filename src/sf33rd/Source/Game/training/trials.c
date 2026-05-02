@@ -1,4 +1,5 @@
 #include "sf33rd/Source/Game/training/trials.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/game.h"
 #include "sf33rd/Source/Game/training/training_hud.h"
@@ -58,7 +59,7 @@ void trials_reset(void) {
     g_trials_state.combo_drop_grace = 0;
 
     // Also reset combo tracking so if they are currently hitting it resets
-    if (Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_TRIALS) {
         g_trials_state.last_combo_hits = g_training_state.p2.combo_hits;
     } else {
         g_trials_state.last_combo_hits = 0;
@@ -101,13 +102,13 @@ void trials_prev(void) {
 }
 
 void trials_init(void) {
-    if (Mode_Type != MODE_TRIALS)
+    if (g_state.Mode_Type != MODE_TRIALS)
         return;
 
     g_trials_state.is_active = true;
 
     // Set character based on P1's selection if not already set or invalid
-    s16 current_player_char = My_char[0];
+    s16 current_player_char = g_state.My_char[0];
     const TrialCharacterDef* cdef = get_char_def(current_player_char);
 
     if (cdef) {
@@ -133,7 +134,7 @@ static bool match_waza(const TrialStep* step, s16 waza_id) {
 }
 
 void trials_update(void) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
+    if (g_state.Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
 
     const TrialDef* cur_trial = trials_get_current_def();
@@ -141,8 +142,8 @@ void trials_update(void) {
         return;
 
     TrainingPlayerState* p2 = &g_training_state.p2;
-    PLW* pl1 = &plw[0];
-    PLW* pl2 = &plw[1];
+    PLW* pl1 = &g_state.plw[0];
+    PLW* pl2 = &g_state.plw[1];
 
     s32 current_hits = p2->combo_hits;
 
@@ -204,7 +205,7 @@ void trials_update(void) {
     g_trials_state.step_completed_this_frame = false;
 
     // ─── Hit-based step matching (uses pending_hit from engine hooks) ───
-    // The waza ID is globally unique across attacks/throws/fireballs so
+    // The waza g_state.ID is globally unique across attacks/throws/fireballs so
     // we match any pending hit against any hit-requiring step type.
     if (g_trials_state.pending_hit && !g_trials_state.failed) {
         g_trials_state.pending_hit = false;
@@ -266,7 +267,7 @@ void trials_update(void) {
 }
 
 void trials_draw(void) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
+    if (g_state.Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
     if (use_rmlui && rmlui_screen_trials)
         return;
@@ -334,10 +335,10 @@ void trials_draw(void) {
 // ----------------------------------------------------------------------------
 // Engine Event Hooks
 // These are called by the engine when hits/throws/fireballs connect.
-// They record the hit type and waza ID for trials_update() to consume.
+// They record the hit type and waza g_state.ID for trials_update() to consume.
 // ----------------------------------------------------------------------------
 void trials_on_hit_registered(s16 attacker_id, s16 kind_of_waza) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
+    if (g_state.Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
     // Only track P1's hits (attacker player_number == 0)
     if (attacker_id != 0)
@@ -348,7 +349,7 @@ void trials_on_hit_registered(s16 attacker_id, s16 kind_of_waza) {
 }
 
 void trials_on_parry(s16 defender_id) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
+    if (g_state.Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
 
     // Parry is used by specific trial steps (Ken Trial 8 — parry Chun-Li's SA)

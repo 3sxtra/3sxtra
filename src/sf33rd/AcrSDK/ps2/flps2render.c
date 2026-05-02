@@ -10,6 +10,7 @@
  * Originally from the PS2 SDK abstraction layer.
  */
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/tracy_zones.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
@@ -19,7 +20,7 @@
 
 #include "rendering/game_renderer.h"
 
-static void flPS2SetClearColor(u32 col);
+static void flPS2SetClearColor(u32 local_col);
 static s32 flPS2SendTextureRegister(u32 th);
 
 /** @brief Dispatch a render state change by function type and value. */
@@ -51,8 +52,8 @@ s32 flSetRenderState(enum _FLSETRENDERSTATE func, u32 value) {
 }
 
 /** @brief Set the frame clear (background) color. */
-static void flPS2SetClearColor(u32 col) {
-    flPs2State.FrameClearColor = col;
+static void flPS2SetClearColor(u32 local_col) {
+    flPs2State.FrameClearColor = local_col;
 }
 
 /** @brief Build and send the GS texture register packet for a texture handle. */

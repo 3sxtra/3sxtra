@@ -5,17 +5,18 @@
  * Implements the on_enter, on_tick, and on_exit callbacks for
  * MENU_SCREEN_RANKING.
  *
- * Two ranking flows exist, selected by D_No[0] at the time Ranking() is
+ * Two ranking flows exist, selected by g_state.D_No[0] at the time Ranking() is
  * called:
- *   D_No[0]==0  →  Ranking_01 path (attract-mode ranking)
- *   D_No[0]==1  →  Ranking_00 path (post-game ranking)
+ *   g_state.D_No[0]==0  →  Ranking_01 path (attract-mode ranking)
+ *   g_state.D_No[0]==1  →  Ranking_00 path (post-game ranking)
  *
  * The callbacks delegate to the existing Ranking_00() / Ranking_01()
- * dispatchers which manage their own phase state via D_No[]. The
+ * dispatchers which manage their own phase state via g_state.D_No[]. The
  * MenuScreen layer only handles the lifecycle gate (enter→active→exit).
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/screen/ranking.h"
@@ -27,27 +28,27 @@ static void ms_ranking_enter(struct _TASK* tp) {
 
 static void ms_ranking_tick(struct _TASK* tp) {
     /*
-     * Delegate to the legacy dispatchers. They manage their own D_No[]
-     * state and set Ranking_X = 1 when complete.
+     * Delegate to the legacy dispatchers. They manage their own g_state.D_No[]
+     * state and set g_state.Ranking_X = 1 when complete.
      */
-    if (D_No[0] == 1) {
+    if (g_state.D_No[0] == 1) {
         Ranking_00();
     } else {
         Ranking_01();
     }
 
     /* When the legacy code signals completion, request exit */
-    if (Ranking_X == 1) {
+    if (g_state.Ranking_X == 1) {
         MenuScreen_RequestFadeOut();
         /* Clear the flag so the Ranking wrapper doesn't return 1 instantly
          * before the fadeout completes. The wrapper will reset it to 1
          * in MENU_PHASE_EXIT. */
-        Ranking_X = 0;
+        g_state.Ranking_X = 0;
     }
 }
 
 static void ms_ranking_exit(struct _TASK* tp) {
-    /* Ranking_X acts as both the internal completion flag (checked in tick)
+    /* g_state.Ranking_X acts as both the internal completion flag (checked in tick)
      * and the external return value (set in the generic wrapper exit or here). */
 }
 

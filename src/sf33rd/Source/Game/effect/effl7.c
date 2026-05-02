@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effl7.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"
@@ -25,14 +26,14 @@ const s16 effl7_data_tbl[16];
 void effect_L7_move(WORK_Other* ewk) {
     WORK* oya_ptr = (WORK*)ewk->my_master;
 
-    if (Suicide[0] || (ewk->wu.dead_f)) {
+    if (g_state.Suicide[0] || (ewk->wu.dead_f)) {
         ewk->wu.routine_no[0] = 1;
         ewk->wu.disp_flag = 0;
     }
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if ((!EXE_flag) && (!Game_pause)) {
+        if ((!g_state.EXE_flag) && (!g_state.Game_pause)) {
             effl7_move(ewk);
         }
 
@@ -41,7 +42,7 @@ void effect_L7_move(WORK_Other* ewk) {
 
     case 1:
         ewk->wu.routine_no[0] += 1;
-        poison_flag[oya_ptr->id] = 0;
+        g_state.poison_flag[oya_ptr->id] = 0;
         /* fallthrough */
 
     default:
@@ -144,11 +145,11 @@ s32 effect_L7_init(WORK* wk, s32 /* unused */) {
     s16 ix;
     s16 kind_w;
 
-    if ((wk->work_id == 1) && (((PLW*)wk)->player_number != My_char[wk->id])) {
+    if ((wk->work_id == 1) && (((PLW*)wk)->player_number != g_state.My_char[wk->id])) {
         return 0;
     }
 
-    if (poison_flag[wk->id]) {
+    if (g_state.poison_flag[wk->id]) {
         return 0;
     }
 
@@ -177,18 +178,18 @@ s32 effect_L7_init(WORK* wk, s32 /* unused */) {
     ewk->wu.rl_flag = wk->rl_flag;
 
     if (wk->rl_flag) {
-        if (wk->xyz[0].disp.pos < bg_w.bgw[1].wxy[0].disp.pos) {
+        if (wk->xyz[0].disp.pos < g_state.bg_w.bgw[1].wxy[0].disp.pos) {
             ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos - 256;
         } else {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos - (bg_w.pos_offset + 32);
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - (g_state.bg_w.pos_offset + 32);
         }
 
         ewk->wu.old_rno[1] = wk->xyz[0].disp.pos - 32;
     } else {
-        if (wk->xyz[0].disp.pos > bg_w.bgw[1].wxy[0].disp.pos) {
+        if (wk->xyz[0].disp.pos > g_state.bg_w.bgw[1].wxy[0].disp.pos) {
             ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos + 256;
         } else {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + (bg_w.pos_offset + 32);
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + (g_state.bg_w.pos_offset + 32);
         }
 
         ewk->wu.old_rno[1] = wk->xyz[0].disp.pos + 32;
@@ -204,7 +205,7 @@ s32 effect_L7_init(WORK* wk, s32 /* unused */) {
     suzi_offset_set(ewk);
     kind_w = random_16();
     ewk->wu.old_rno[2] = effl7_data_tbl[kind_w];
-    poison_flag[wk->id] = 1;
+    g_state.poison_flag[wk->id] = 1;
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     return 0;

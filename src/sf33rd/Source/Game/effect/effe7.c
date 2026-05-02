@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effe7.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effe5.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -33,7 +34,7 @@ void effect_E7_move(WORK_Other* ewk) {
             break;
         }
 
-        if (Game_pause != 0x81) {
+        if (g_state.Game_pause != 0x81) {
             if (ewk->wu.old_rno[5]) {
                 ewk->wu.position_x = mwk->wu.position_x;
                 ewk->wu.position_y = mwk->wu.position_y;
@@ -47,7 +48,7 @@ void effect_E7_move(WORK_Other* ewk) {
                 ewk->wu.cg_flip = mwk->wu.cg_flip;
             }
 
-            if (EXE_flag == 0 && Game_pause == 0 && --ewk->wu.dir_timer <= 0) {
+            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0 && --ewk->wu.dir_timer <= 0) {
                 ewk->wu.disp_flag = 0;
                 ewk->wu.routine_no[0]++;
                 break;
@@ -96,12 +97,12 @@ void effect_E7_move(WORK_Other* ewk) {
 }
 
 static void effe7_get_zanzou_data(WORK_Other* ewk) {
-    ewk->wu.position_x = zanzou_table[ewk->master_id]->pos_x;
-    ewk->wu.position_y = zanzou_table[ewk->master_id]->pos_y;
-    ewk->wu.position_z = zanzou_table[ewk->master_id]->pos_z;
-    ewk->wu.cg_number = zanzou_table[ewk->master_id]->cg_num;
-    ewk->wu.rl_flag = zanzou_table[ewk->master_id]->flip;
-    ewk->wu.cg_flip = zanzou_table[ewk->master_id]->cg_flp;
+    ewk->wu.position_x = g_state.zanzou_table[ewk->master_id]->pos_x;
+    ewk->wu.position_y = g_state.zanzou_table[ewk->master_id]->pos_y;
+    ewk->wu.position_z = g_state.zanzou_table[ewk->master_id]->pos_z;
+    ewk->wu.cg_number = g_state.zanzou_table[ewk->master_id]->cg_num;
+    ewk->wu.rl_flag = g_state.zanzou_table[ewk->master_id]->flip;
+    ewk->wu.cg_flip = g_state.zanzou_table[ewk->master_id]->cg_flp;
 }
 
 s32 effect_E7_init(WORK_Other* ek, PLW* mk) {

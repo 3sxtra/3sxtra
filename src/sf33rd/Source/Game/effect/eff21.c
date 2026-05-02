@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff21.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -34,16 +35,16 @@ void effect_21_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
         }
 
         ewk->wu.xyz[0].disp.pos = ewk->wu.old_rno[0];
         ewk->wu.xyz[0].disp.low = 0;
-        ewk->wu.xyz[0].cal -= (ewk->wu.mvxy.a[0].sp * bg_w.bg2_sp_x2);
+        ewk->wu.xyz[0].cal -= (ewk->wu.mvxy.a[0].sp * g_state.bg_w.bg2_sp_x2);
         ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[2];
         ewk->wu.xyz[1].disp.low = 0;
-        ewk->wu.xyz[1].cal += (ewk->wu.mvxy.a[1].sp * bg_w.bg2_sp_y);
+        ewk->wu.xyz[1].cal += (ewk->wu.mvxy.a[1].sp * g_state.bg_w.bg2_sp_y);
 
         if (ewk->wu.old_rno[3]) {
             disp_pos_trans_entry_rs(ewk);
@@ -97,7 +98,7 @@ s32 effect_21_init(s16 sync_index) {
         ewk->wu.mvxy.a[0].sp = eff21_sp_tbl[*data_ptr][0];
         ewk->wu.mvxy.a[1].sp = eff21_sp_tbl[*data_ptr][1];
         data_ptr++;
-        ewk->wu.char_table[0] = char_add[bg_w.bg_index];
+        ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
         ewk->wu.xyz[0].disp.pos = ewk->wu.old_rno[0];
         ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[2];
         suzi_offset_set(ewk);

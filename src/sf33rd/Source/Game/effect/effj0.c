@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effj0.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
@@ -37,7 +38,7 @@ void effect_J0_move(WORK_Other* ewk) {
             break;
         }
 
-        if (!EXE_flag && !Game_pause && mwk->wu.hit_stop <= 0) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && mwk->wu.hit_stop <= 0) {
             if (--ewk->wu.dir_timer == 0) {
                 ewk->wu.routine_no[0] = 2;
                 break;

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff11.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -51,7 +52,7 @@ void effect_11_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause && !EXE_obroll) {
+        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             eff11_quake_sub(ewk);
         }
         disp_pos_trans_entry_r(ewk);
@@ -67,9 +68,9 @@ void effect_11_move(WORK_Other* ewk) {
 void eff11_quake_sub(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (bg_w.quake_y_index > 1) {
+        if (g_state.bg_w.quake_y_index > 1) {
             ewk->wu.routine_no[1]++;
-            ewk->wu.old_rno[1] = eff11_quake_index_tbl[bg_w.quake_y_index];
+            ewk->wu.old_rno[1] = eff11_quake_index_tbl[g_state.bg_w.quake_y_index];
             break;
         }
 

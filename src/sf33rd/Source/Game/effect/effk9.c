@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effk9.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -33,7 +34,7 @@ void effect_K9_move(WORK_Other* ewk) {
 
     case 1:
         if (ewk->wu.dead_f == 0) {
-            if (EXE_flag != 0 || Game_pause != 0 ||
+            if (g_state.EXE_flag != 0 || g_state.Game_pause != 0 ||
                 (ewk->wu.dir_old == mwk->now_koc && ewk->wu.dir_step == mwk->char_index &&
                  (char_move(&ewk->wu), ewk->wu.cg_type != 0xFF))) {
                 sort_push_request(&ewk->wu);
@@ -69,7 +70,7 @@ s32 effect_K9_init(WORK* wk, u8 data) {
     ewk->wu.my_mts = 6;
     ewk->wu.my_family = 8;
     ewk->wu.position_x = 192;
-    ewk->wu.position_y = 112 - base_y_pos;
+    ewk->wu.position_y = 112 - g_state.base_y_pos;
     ewk->wu.dir_old = wk->now_koc;
     ewk->wu.dir_step = wk->char_index;
     *ewk->wu.char_table = _plef_char_table;

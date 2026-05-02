@@ -1,4 +1,5 @@
 #include "sf33rd/Source/Game/menu/menu_save.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/menu/menu_network.h"
 #include "sf33rd/Source/Game/menu/menu_replay.h"
 #include "sf33rd/Source/Game/menu/menu_training.h"
@@ -108,7 +109,7 @@ void Wait_Load_Save(struct _TASK* task_ptr) {
 
     switch (task_ptr->free[1]) {
     case 0:
-        if (vm_w.Request != 0) {
+        if (g_state.vm_w.Request != 0) {
             break;
         }
 
@@ -133,7 +134,7 @@ void Wait_Load_Save(struct _TASK* task_ptr) {
         task_ptr->timer = 1;
 
         for (ix = 0; ix < 4; ix++) {
-            Menu_Suicide[ix] = 1;
+            g_state.Menu_Suicide[ix] = 1;
         }
 
         switch (task_ptr->r_no[1]) {
@@ -163,8 +164,8 @@ void Wait_Load_Save(struct _TASK* task_ptr) {
             break;
         }
 
-        Order[ix] = 4;
-        Order_Timer[ix] = 1;
+        g_state.Order[ix] = 4;
+        g_state.Order_Timer[ix] = 1;
         break;
 
     case 2:
@@ -203,12 +204,12 @@ void DAS_1st(struct _TASK* task_ptr) {
     FadeOut(1, FADE_OPAQUE, 8);
     task_ptr->r_no[1]++;
     task_ptr->timer = 5;
-    Order[EFF_SLOT_HEADER] = 2;
-    Order_Dir[EFF_SLOT_HEADER] = 0;
-    Order_Timer[EFF_SLOT_HEADER] = 1;
+    g_state.Order[EFF_SLOT_HEADER] = 2;
+    g_state.Order_Dir[EFF_SLOT_HEADER] = 0;
+    g_state.Order_Timer[EFF_SLOT_HEADER] = 1;
     effect_66_init(EFF_SLOT_CURSOR_BG, 8, 0, 0, -1, -1, SAVE_Z_DEPTH_CURSOR);
-    Order[EFF_SLOT_CURSOR_BG] = 3;
-    Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+    g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
+    g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
 }
 
 void DAS_2nd(struct _TASK* task_ptr) {
@@ -233,7 +234,7 @@ void DAS_4th(struct _TASK* task_ptr) {
     task_ptr->r_no[1] = 1;
     task_ptr->r_no[2] = 0;
     task_ptr->r_no[3] = 0;
-    Forbid_Reset = 0;
+    g_state.Forbid_Reset = 0;
 }
 
 void Disp_Auto_Save2(struct _TASK* task_ptr) {
@@ -259,7 +260,7 @@ void Disp_Auto_Save2(struct _TASK* task_ptr) {
 
 void DAS2_4th(struct _TASK* task_ptr) {
     /* NativeSave_SaveOptions() is synchronous, so always proceed */
-    G_No[2] = GAME_SUBMODE_SAVE;
+    g_state.G_No[2] = GAME_SUBMODE_SAVE;
     cpExitTask(TASK_MENU);
     Task_Activate(TASK_ENTRY);
 }

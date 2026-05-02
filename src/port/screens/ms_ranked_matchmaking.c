@@ -4,6 +4,7 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 #include "port/menu_task.h"
 #include "port/config/config.h"
 
@@ -35,8 +36,8 @@ static void ranked_matchmaking_enter(struct _TASK* task_ptr) {
 
     Netplay_EnterLobby();
 
-    Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
-    Menu_Suicide[1] = 0;        /* enable our items (master_player=1) */
+    g_state.Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
+    g_state.Menu_Suicide[1] = 0;        /* enable our items (master_player=1) */
     Message_Data->kind_req = 4; /* NET_BG_MODE_BLUE */
 
     effect_work_init();
@@ -44,13 +45,13 @@ static void ranked_matchmaking_enter(struct _TASK* task_ptr) {
     pulpul_stop();
 
     /* Reset cursor to top */
-    Menu_Cursor_Y[0] = 0;
-    Menu_Cursor_Y[1] = 0;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Cursor_Y[1] = 0;
 
     /* Blue background banner (standard for full-screen RmlUi sub-menus) */
-    Order[0x4E] = 5;
-    Order_Timer[0x4E] = 1;
-    Order_Dir[0x4E] = 1;
+    g_state.Order[0x4E] = 5;
+    g_state.Order_Timer[0x4E] = 1;
+    g_state.Order_Dir[0x4E] = 1;
     effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
 
     rmlui_ranked_matchmaking_show();
@@ -71,7 +72,7 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
     if (SDLNetplayUI_HasPendingInvite()) {
         u16 trigger = 0;
         for (int i = 0; i < 2; i++)
-            trigger |= (~plsw_01[i] & plsw_00[i]);
+            trigger |= (~g_state.plsw_01[i] & g_state.plsw_00[i]);
 
         if (trigger & 0x0100) { /* LP / SOUTH - Accept */
             Netplay_SetNegotiatedFT(SDLNetplayUI_GetPendingInviteFT());
@@ -85,7 +86,7 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
     } else if (SDLNetplayUI_HasOutgoingChallenge()) {
         u16 trigger = 0;
         for (int i = 0; i < 2; i++)
-            trigger |= (~plsw_01[i] & plsw_00[i]);
+            trigger |= (~g_state.plsw_01[i] & g_state.plsw_00[i]);
 
         if (trigger & (0x0100 | 0x0200)) { /* LP or MK - Cancel */
             SDLNetplayUI_CancelOutgoingChallenge();
@@ -97,7 +98,7 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
     /* ─── Menu Navigation ─── */
     u16 res = MenuScreen_HandleCursor(7, 0xFF);
     u16 sw = MenuScreen_HandleCursorLR();
-    int cursor = (int)Menu_Cursor_Y[0];
+    int cursor = (int)g_state.Menu_Cursor_Y[0];
 
     if (res & 0x0100) { /* LP / Select */
         switch (cursor) {

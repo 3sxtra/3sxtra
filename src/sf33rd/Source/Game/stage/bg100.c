@@ -19,9 +19,9 @@
 
 /** @brief Main handler for Underground Cave stage. */
 void BG100() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg1001();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg1000();
     zoom_ud_check();
     bg_pos_hosei2();
@@ -43,7 +43,7 @@ void bg1000_init00() {
     bgw_ptr->zuubun = 0;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
     bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
-    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos - bg_w.pos_offset;
+    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos - g_state.bg_w.pos_offset;
     bgw_ptr->hos_xy[0].disp.low = 0;
     effect_29_init();
 }
@@ -63,7 +63,7 @@ void bg1001_init00() {
     bgw_ptr->zuubun = 0;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
     bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
-    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos - bg_w.pos_offset;
+    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos - g_state.bg_w.pos_offset;
     bgw_ptr->hos_xy[0].disp.low = 0;
     bgw_ptr->wxy[1].cal = 0;
     bgw_ptr->xy[1].cal = 0;

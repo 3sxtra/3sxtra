@@ -140,7 +140,6 @@ extern u8 E_Number[2][4];
 extern u8 E_No[4];
 extern u8 C_No[4];
 // Game routine indices
-extern u8 G_No[4];
 extern u8 D_No[4];
 extern u8 M_No[4];
 extern u8 Exit_No;

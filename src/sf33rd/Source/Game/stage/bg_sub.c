@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/stage/bg_constants.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
@@ -36,10 +37,10 @@ void check_cg_zoom() {
     u16 lookp1;
     u16 lookp2;
 
-    p1zoom = plw[0].wu.cg_zoom;
-    p2zoom = plw[1].wu.cg_zoom;
+    p1zoom = g_state.plw[0].wu.cg_zoom;
+    p2zoom = g_state.plw[1].wu.cg_zoom;
 
-    if (bg_stop != 0 && !((p1zoom | p2zoom) & ZOOM_DISABLE)) {
+    if (g_state.bg_stop != 0 && !((p1zoom | p2zoom) & ZOOM_DISABLE)) {
         zmlv = p1zoom & ZOOM_LEVEL_MASK;
 
         if (zmlv < (p2zoom & ZOOM_LEVEL_MASK)) {
@@ -52,16 +53,16 @@ void check_cg_zoom() {
         p2zoom = zmlv | (lookp1 << 12 | lookp2 << ZOOM_LOOK_SHIFT);
     }
 
-    zoom_req_flag_old = zoom_request_flag;
-    zoom_request_flag = 0;
+    g_state.zoom_req_flag_old = g_state.zoom_request_flag;
+    g_state.zoom_request_flag = 0;
 
     for (i = 0; i < 2; i++) {
-        if (plw[i].scr_pos_set_flag) {
-            plw[i].wu.scr_mv_x = plw[i].wu.xyz[0].disp.pos;
-            plw[i].wu.scr_mv_y = plw[i].wu.xyz[1].disp.pos;
-        } else if (plw[i].tsukamare_f) {
-            plw[i].wu.scr_mv_x = plw[(i + 1) & 1].wu.xyz[0].disp.pos;
-            plw[i].wu.scr_mv_y = plw[(i + 1) & 1].wu.xyz[1].disp.pos;
+        if (g_state.plw[i].scr_pos_set_flag) {
+            g_state.plw[i].wu.scr_mv_x = g_state.plw[i].wu.xyz[0].disp.pos;
+            g_state.plw[i].wu.scr_mv_y = g_state.plw[i].wu.xyz[1].disp.pos;
+        } else if (g_state.plw[i].tsukamare_f) {
+            g_state.plw[i].wu.scr_mv_x = g_state.plw[(i + 1) & 1].wu.xyz[0].disp.pos;
+            g_state.plw[i].wu.scr_mv_y = g_state.plw[(i + 1) & 1].wu.xyz[1].disp.pos;
         }
     }
 
@@ -74,20 +75,20 @@ void check_cg_zoom() {
     case ZOOM_LOOK_LEFT:
         switch (zoom_wk) {
         case ZOOM_DISABLE:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = plw[0].wu.xyz[0].disp.pos;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = g_state.plw[0].wu.xyz[0].disp.pos;
             break;
 
         case ZOOM_LOOK_LEFT:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = (plw[0].wu.xyz[0].disp.pos + plw[1].wu.xyz[0].disp.pos) >> 1;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = (g_state.plw[0].wu.xyz[0].disp.pos + g_state.plw[1].wu.xyz[0].disp.pos) >> 1;
             break;
 
         case ZOOM_LOOK_RIGHT:
         case 0x0:
         case ZOOM_LOOK_BOTH:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = plw[1].wu.xyz[0].disp.pos;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = g_state.plw[1].wu.xyz[0].disp.pos;
             break;
         }
         break;
@@ -98,13 +99,13 @@ void check_cg_zoom() {
         case 0x0:
         case ZOOM_DISABLE:
         case ZOOM_LOOK_BOTH:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = plw[0].wu.xyz[0].disp.pos;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = g_state.plw[0].wu.xyz[0].disp.pos;
             break;
 
         case ZOOM_LOOK_RIGHT:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = (plw[0].wu.xyz[0].disp.pos + plw[1].wu.xyz[0].disp.pos) >> 1;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = (g_state.plw[0].wu.xyz[0].disp.pos + g_state.plw[1].wu.xyz[0].disp.pos) >> 1;
             break;
         }
         break;
@@ -112,18 +113,18 @@ void check_cg_zoom() {
     case 0x0:
         switch (zoom_wk) {
         case ZOOM_LOOK_BOTH:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = (plw[0].wu.xyz[0].disp.pos + plw[1].wu.xyz[0].disp.pos) >> 1;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = (g_state.plw[0].wu.xyz[0].disp.pos + g_state.plw[1].wu.xyz[0].disp.pos) >> 1;
             break;
 
         case ZOOM_LOOK_LEFT:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = plw[0].wu.xyz[0].disp.pos;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = g_state.plw[0].wu.xyz[0].disp.pos;
             break;
 
         case ZOOM_LOOK_RIGHT:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = plw[1].wu.xyz[0].disp.pos;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = g_state.plw[1].wu.xyz[0].disp.pos;
             break;
 
         case ZOOM_DISABLE:
@@ -137,16 +138,16 @@ void check_cg_zoom() {
         case 0x0:
         case ZOOM_LOOK_BOTH:
         case ZOOM_DISABLE:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = (plw[0].wu.xyz[0].disp.pos + plw[1].wu.xyz[0].disp.pos) >> 1;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = (g_state.plw[0].wu.xyz[0].disp.pos + g_state.plw[1].wu.xyz[0].disp.pos) >> 1;
             break;
         case ZOOM_LOOK_LEFT:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = plw[0].wu.xyz[0].disp.pos;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = g_state.plw[0].wu.xyz[0].disp.pos;
             break;
         case ZOOM_LOOK_RIGHT:
-            zoom_request_flag = ZOOM_REQ_X;
-            scr_req_x = plw[1].wu.xyz[0].disp.pos;
+            g_state.zoom_request_flag = ZOOM_REQ_X;
+            g_state.scr_req_x = g_state.plw[1].wu.xyz[0].disp.pos;
             break;
 
             break;
@@ -158,27 +159,27 @@ void check_cg_zoom() {
 
     switch (p1zoom & ZOOM_Y_MASK) {
     case ZOOM_DISABLE:
-        zoom_request_flag |= ZOOM_REQ_Y;
-        scr_req_y = 0;
+        g_state.zoom_request_flag |= ZOOM_REQ_Y;
+        g_state.scr_req_y = 0;
         break;
 
     case ZOOM_Y_LOOK_UP:
         switch (zoom_wk) {
         case ZOOM_Y_LOOK_UP:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = (plw[0].wu.xyz[1].disp.pos + plw[1].wu.xyz[1].disp.pos) >> 1;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = (g_state.plw[0].wu.xyz[1].disp.pos + g_state.plw[1].wu.xyz[1].disp.pos) >> 1;
             break;
 
         case ZOOM_Y_LOOK_DOWN:
         case 0x0:
         case ZOOM_Y_LOOK_BOTH:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = plw[1].wu.xyz[1].disp.pos;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = g_state.plw[1].wu.xyz[1].disp.pos;
             break;
 
         case ZOOM_DISABLE:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = 0;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = 0;
             break;
         }
         break;
@@ -188,18 +189,18 @@ void check_cg_zoom() {
         case ZOOM_Y_LOOK_UP:
         case 0x0:
         case ZOOM_Y_LOOK_BOTH:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = plw[0].wu.xyz[1].disp.pos;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = g_state.plw[0].wu.xyz[1].disp.pos;
             break;
 
         case ZOOM_Y_LOOK_DOWN:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = (plw[0].wu.xyz[1].disp.pos + plw[1].wu.xyz[1].disp.pos) >> 1;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = (g_state.plw[0].wu.xyz[1].disp.pos + g_state.plw[1].wu.xyz[1].disp.pos) >> 1;
             break;
 
         case ZOOM_DISABLE:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = 0;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = 0;
             break;
         }
         break;
@@ -207,26 +208,26 @@ void check_cg_zoom() {
     case 0x0:
         switch (zoom_wk) {
         case ZOOM_Y_LOOK_UP:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = plw[0].wu.xyz[1].disp.pos;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = g_state.plw[0].wu.xyz[1].disp.pos;
             break;
 
         case ZOOM_Y_LOOK_DOWN:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = plw[1].wu.xyz[1].disp.pos;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = g_state.plw[1].wu.xyz[1].disp.pos;
             break;
 
         case ZOOM_Y_LOOK_BOTH:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = (plw[0].wu.xyz[1].disp.pos + plw[1].wu.xyz[1].disp.pos) >> 1;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = (g_state.plw[0].wu.xyz[1].disp.pos + g_state.plw[1].wu.xyz[1].disp.pos) >> 1;
             break;
 
         case 0x0:
             break;
 
         case ZOOM_DISABLE:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = 0;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = 0;
             break;
         }
         break;
@@ -234,46 +235,46 @@ void check_cg_zoom() {
     case ZOOM_Y_LOOK_BOTH:
         switch (zoom_wk) {
         case ZOOM_Y_LOOK_UP:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = plw[0].wu.xyz[1].disp.pos;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = g_state.plw[0].wu.xyz[1].disp.pos;
             break;
 
         case ZOOM_Y_LOOK_DOWN:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = plw[1].wu.xyz[1].disp.pos;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = g_state.plw[1].wu.xyz[1].disp.pos;
             break;
 
         case ZOOM_Y_LOOK_BOTH:
         case 0x0:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = (plw[0].wu.xyz[1].disp.pos + plw[1].wu.xyz[1].disp.pos) >> 1;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = (g_state.plw[0].wu.xyz[1].disp.pos + g_state.plw[1].wu.xyz[1].disp.pos) >> 1;
             break;
 
         case ZOOM_DISABLE:
-            zoom_request_flag |= ZOOM_REQ_Y;
-            scr_req_y = 0;
+            g_state.zoom_request_flag |= ZOOM_REQ_Y;
+            g_state.scr_req_y = 0;
             break;
         }
         break;
     }
 
-    zoom_request_level = p1zoom & ZOOM_LEVEL_MASK;
+    g_state.zoom_request_level = p1zoom & ZOOM_LEVEL_MASK;
 
-    if (zoom_request_level < (p2zoom & ZOOM_LEVEL_MASK)) {
-        zoom_request_level = p2zoom & ZOOM_LEVEL_MASK;
+    if (g_state.zoom_request_level < (p2zoom & ZOOM_LEVEL_MASK)) {
+        g_state.zoom_request_level = p2zoom & ZOOM_LEVEL_MASK;
     }
 
-    if (zoom_request_level) {
-        zoom_request_flag |= ZOOM_REQ_ACTIVE;
+    if (g_state.zoom_request_level) {
+        g_state.zoom_request_flag |= ZOOM_REQ_ACTIVE;
     }
 }
 
 /** @brief Process camera chase movement each frame. */
 void bg_chase_move() {
-    if (!Bonus_Game_Flag) {
+    if (!g_state.Bonus_Game_Flag) {
         chase_start_check();
 
-        if (bg_w.chase_flag) {
+        if (g_state.bg_w.chase_flag) {
             chase_xy_move();
         }
     }
@@ -284,44 +285,44 @@ void chase_start_check() {
     s16 work;
     s16 work2;
 
-    if (zoom_request_flag & ZOOM_REQ_X_FIELD) {
-        if (chase_x != scr_req_x) {
-            chase_x = scr_req_x;
+    if (g_state.zoom_request_flag & ZOOM_REQ_X_FIELD) {
+        if (g_state.chase_x != g_state.scr_req_x) {
+            g_state.chase_x = g_state.scr_req_x;
 
             if (bgw_ptr->zuubun) {
-                bgw_ptr->chase_xy[0].disp.pos = bgw_ptr->abs_x + bg_w.pos_offset;
+                bgw_ptr->chase_xy[0].disp.pos = bgw_ptr->abs_x + g_state.bg_w.pos_offset;
             } else {
-                bgw_ptr->chase_xy[0].disp.pos = bgw_ptr->position_x + bg_w.pos_offset;
+                bgw_ptr->chase_xy[0].disp.pos = bgw_ptr->position_x + g_state.bg_w.pos_offset;
             }
 
-            chase_time_x = 6;
-            cal_bg_speed_data_x(bgw_ptr->fam_no, chase_time_x, chase_x);
-            bg_w.chase_flag |= CHASE_X_ACTIVE;
-            bg_w.chase_flag &= ~CHASE_X_RETURN;
-            bg_w.old_chase_flag = CHASE_X_ACTIVE;
+            g_state.chase_time_x = 6;
+            cal_bg_speed_data_x(bgw_ptr->fam_no, g_state.chase_time_x, g_state.chase_x);
+            g_state.bg_w.chase_flag |= CHASE_X_ACTIVE;
+            g_state.bg_w.chase_flag &= ~CHASE_X_RETURN;
+            g_state.bg_w.old_chase_flag = CHASE_X_ACTIVE;
         }
     } else {
-        work = zoom_req_flag_old & ZOOM_REQ_X_FIELD;
-        work2 = ~(zoom_request_flag & ZOOM_REQ_X_FIELD);
+        work = g_state.zoom_req_flag_old & ZOOM_REQ_X_FIELD;
+        work2 = ~(g_state.zoom_request_flag & ZOOM_REQ_X_FIELD);
         work &= work2;
 
         if (work) {
-            bg_w.chase_flag |= CHASE_X_RETURN;
-            bg_w.chase_flag &= ~CHASE_X_ACTIVE;
-            chase_x = bgw_ptr->wxy[0].disp.pos;
-            chase_time_x = 6;
-            cal_bg_speed_data_x(bgw_ptr->fam_no, chase_time_x, chase_x);
+            g_state.bg_w.chase_flag |= CHASE_X_RETURN;
+            g_state.bg_w.chase_flag &= ~CHASE_X_ACTIVE;
+            g_state.chase_x = bgw_ptr->wxy[0].disp.pos;
+            g_state.chase_time_x = 6;
+            cal_bg_speed_data_x(bgw_ptr->fam_no, g_state.chase_time_x, g_state.chase_x);
         }
     }
 
-    if (zoom_request_flag & ZOOM_REQ_Y_FIELD) {
-        bg_w.chase_flag |= CHASE_Y_ACTIVE;
-        bg_w.chase_flag &= ~CHASE_Y_RETURN;
-        bg_w.old_chase_flag |= CHASE_Y_ACTIVE;
-        bg_w.old_chase_flag &= ~CHASE_Y_RETURN;
+    if (g_state.zoom_request_flag & ZOOM_REQ_Y_FIELD) {
+        g_state.bg_w.chase_flag |= CHASE_Y_ACTIVE;
+        g_state.bg_w.chase_flag &= ~CHASE_Y_RETURN;
+        g_state.bg_w.old_chase_flag |= CHASE_Y_ACTIVE;
+        g_state.bg_w.old_chase_flag &= ~CHASE_Y_RETURN;
 
-        if (chase_y != scr_req_y) {
-            chase_y = scr_req_y;
+        if (g_state.chase_y != g_state.scr_req_y) {
+            g_state.chase_y = g_state.scr_req_y;
 
             if (bgw_ptr->abs_y < 0) {
                 bgw_ptr->chase_xy[1].disp.pos = 0;
@@ -329,48 +330,48 @@ void chase_start_check() {
                 bgw_ptr->chase_xy[1].disp.pos = bgw_ptr->abs_y;
             }
 
-            chase_time_y = 6;
-            cal_bg_speed_data_y(bgw_ptr->fam_no, chase_time_y, chase_y);
+            g_state.chase_time_y = 6;
+            cal_bg_speed_data_y(bgw_ptr->fam_no, g_state.chase_time_y, g_state.chase_y);
         }
     } else {
-        work = zoom_req_flag_old & ZOOM_REQ_Y_FIELD;
-        work2 = ~(zoom_request_flag & ZOOM_REQ_Y_FIELD);
+        work = g_state.zoom_req_flag_old & ZOOM_REQ_Y_FIELD;
+        work2 = ~(g_state.zoom_request_flag & ZOOM_REQ_Y_FIELD);
         work &= work2;
 
         if (work) {
-            bg_w.chase_flag |= CHASE_Y_RETURN;
-            bg_w.chase_flag &= ~CHASE_Y_ACTIVE;
-            chase_y = bgw_ptr->xy[1].disp.pos;
-            chase_time_y = 6;
-            cal_bg_speed_data_y(bgw_ptr->fam_no, chase_time_y, chase_y);
+            g_state.bg_w.chase_flag |= CHASE_Y_RETURN;
+            g_state.bg_w.chase_flag &= ~CHASE_Y_ACTIVE;
+            g_state.chase_y = bgw_ptr->xy[1].disp.pos;
+            g_state.chase_time_y = 6;
+            cal_bg_speed_data_y(bgw_ptr->fam_no, g_state.chase_time_y, g_state.chase_y);
         }
     }
 }
 
 /** @brief Move the camera chase target position. */
 void chase_xy_move() {
-    if (bg_w.chase_flag & CHASE_X_MASK) {
-        bg_w.bg2_sp_x2 = bg_w.bg2_sp_x = 0;
+    if (g_state.bg_w.chase_flag & CHASE_X_MASK) {
+        g_state.bg_w.bg2_sp_x2 = g_state.bg_w.bg2_sp_x = 0;
 
-        if (bg_w.chase_flag & CHASE_X_ACTIVE) {
-            chase_time_x -= 1;
+        if (g_state.bg_w.chase_flag & CHASE_X_ACTIVE) {
+            g_state.chase_time_x -= 1;
 
-            if (chase_time_x > 0) {
-                bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
-                bgw_ptr->chase_xy[0].cal += bg_mvxy.a[0].sp;
+            if (g_state.chase_time_x > 0) {
+                g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
+                bgw_ptr->chase_xy[0].cal += g_state.bg_mvxy.a[0].sp;
             }
         }
 
-        if (bg_w.chase_flag & CHASE_X_RETURN) {
-            chase_time_x -= 1;
+        if (g_state.bg_w.chase_flag & CHASE_X_RETURN) {
+            g_state.chase_time_x -= 1;
 
-            if (chase_time_x > 0) {
-                bg_mvxy.a[0].sp += bg_mvxy.d[0].sp;
-                bgw_ptr->chase_xy[0].cal += bg_mvxy.a[0].sp;
+            if (g_state.chase_time_x > 0) {
+                g_state.bg_mvxy.a[0].sp += g_state.bg_mvxy.d[0].sp;
+                bgw_ptr->chase_xy[0].cal += g_state.bg_mvxy.a[0].sp;
             } else {
-                bg_w.chase_flag &= ~CHASE_X_MASK;
-                bg_w.old_chase_flag &= ~CHASE_X_MASK;
-                bgw_ptr->chase_xy[0].disp.pos = chase_x;
+                g_state.bg_w.chase_flag &= ~CHASE_X_MASK;
+                g_state.bg_w.old_chase_flag &= ~CHASE_X_MASK;
+                bgw_ptr->chase_xy[0].disp.pos = g_state.chase_x;
             }
         }
 
@@ -384,29 +385,29 @@ void chase_xy_move() {
             bgw_ptr->chase_xy[0].disp.low = 0;
         }
 
-        bg_w.bg2_sp_x = bg_w.bg2_sp_x2 = bgw_ptr->chase_xy[0].disp.pos - bgw_ptr->pos_x_work;
+        g_state.bg_w.bg2_sp_x = g_state.bg_w.bg2_sp_x2 = bgw_ptr->chase_xy[0].disp.pos - bgw_ptr->pos_x_work;
     }
 
-    if (bg_w.chase_flag & CHASE_Y_MASK) {
-        if (bg_w.chase_flag & CHASE_Y_ACTIVE) {
-            chase_time_y -= 1;
+    if (g_state.bg_w.chase_flag & CHASE_Y_MASK) {
+        if (g_state.bg_w.chase_flag & CHASE_Y_ACTIVE) {
+            g_state.chase_time_y -= 1;
 
-            if (chase_time_y > 0) {
-                bg_mvxy.a[1].sp += bg_mvxy.d[1].sp;
-                bgw_ptr->chase_xy[1].cal += bg_mvxy.a[1].sp;
+            if (g_state.chase_time_y > 0) {
+                g_state.bg_mvxy.a[1].sp += g_state.bg_mvxy.d[1].sp;
+                bgw_ptr->chase_xy[1].cal += g_state.bg_mvxy.a[1].sp;
             }
         }
 
-        if (bg_w.chase_flag & CHASE_Y_RETURN) {
-            chase_time_y -= 1;
+        if (g_state.bg_w.chase_flag & CHASE_Y_RETURN) {
+            g_state.chase_time_y -= 1;
 
-            if (chase_time_y > 0) {
-                bg_mvxy.a[1].sp += bg_mvxy.d[1].sp;
-                bgw_ptr->chase_xy[1].cal += bg_mvxy.a[1].sp;
+            if (g_state.chase_time_y > 0) {
+                g_state.bg_mvxy.a[1].sp += g_state.bg_mvxy.d[1].sp;
+                bgw_ptr->chase_xy[1].cal += g_state.bg_mvxy.a[1].sp;
             } else {
-                bg_w.chase_flag &= CHASE_X_MASK;
-                bg_w.old_chase_flag &= CHASE_X_MASK;
-                bgw_ptr->chase_xy[1].disp.pos = chase_y;
+                g_state.bg_w.chase_flag &= CHASE_X_MASK;
+                g_state.bg_w.old_chase_flag &= CHASE_X_MASK;
+                bgw_ptr->chase_xy[1].disp.pos = g_state.chase_y;
             }
         }
 
@@ -415,7 +416,7 @@ void chase_xy_move() {
             bgw_ptr->chase_xy[1].disp.low = 0;
         }
 
-        bg_w.bg2_sp_y = bgw_ptr->chase_xy[1].disp.pos - bgw_ptr->pos_y_work;
+        g_state.bg_w.bg2_sp_y = bgw_ptr->chase_xy[1].disp.pos - bgw_ptr->pos_y_work;
     }
 }
 
@@ -431,18 +432,18 @@ void Bg_mv_tw(s32 value_x, s32 value_y) {
 void x_right_check(s16 d1) {
     s32 speed_w;
 
-    bg_w.scr_stop &= ~3;
+    g_state.bg_w.scr_stop &= ~3;
     speed_w = bgw_ptr->speed_x * d1;
-    ideal_w.iw[0].cal += speed_w;
+    g_state.ideal_w.iw[0].cal += speed_w;
 }
 
 /** @brief Clamp scroll position against the left boundary. */
 void x_left_check(s16 d0) {
     s32 speed_w;
 
-    bg_w.scr_stop &= ~3;
+    g_state.bg_w.scr_stop &= ~3;
     speed_w = bgw_ptr->speed_x * d0;
-    ideal_w.iw[0].cal += speed_w;
+    g_state.ideal_w.iw[0].cal += speed_w;
 }
 
 /** @brief No-op scroll function placeholder. */
@@ -454,8 +455,8 @@ void scr_10_20() {}
 /** @brief Scroll handler for stage 10, screen layer 1. */
 void scr_10_21() {
     s16 meri;
-    meri = plw[1].wu.scr_mv_x - satse[plw[1].player_number];
-    meri = meri - (ideal_w.iw[0].disp.pos - bg_w.pos_offset + SCR_ZONE_LEFT);
+    meri = g_state.plw[1].wu.scr_mv_x - satse[g_state.plw[1].player_number];
+    meri = meri - (g_state.ideal_w.iw[0].disp.pos - g_state.bg_w.pos_offset + SCR_ZONE_LEFT);
 
     x_left_check(meri);
 }
@@ -463,8 +464,8 @@ void scr_10_21() {
 /** @brief Scroll handler for stage 10, screen layer 2. */
 void scr_10_22() {
     s16 meri;
-    meri = plw[1].wu.scr_mv_x + satse[plw[1].player_number];
-    meri = meri - (ideal_w.iw[0].disp.pos + bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
+    meri = g_state.plw[1].wu.scr_mv_x + satse[g_state.plw[1].player_number];
+    meri = meri - (g_state.ideal_w.iw[0].disp.pos + g_state.bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
 
     x_right_check(meri);
 }
@@ -472,8 +473,8 @@ void scr_10_22() {
 /** @brief Scroll handler for stage 11, screen layer 0. */
 void scr_11_20() {
     s16 meri;
-    meri = plw[0].wu.scr_mv_x - satse[plw[0].player_number];
-    meri = meri - (ideal_w.iw[0].disp.pos - bg_w.pos_offset + SCR_ZONE_LEFT);
+    meri = g_state.plw[0].wu.scr_mv_x - satse[g_state.plw[0].player_number];
+    meri = meri - (g_state.ideal_w.iw[0].disp.pos - g_state.bg_w.pos_offset + SCR_ZONE_LEFT);
 
     x_left_check(meri);
 }
@@ -482,13 +483,13 @@ void scr_11_20() {
 void scr_11_21() {
     s16 meri;
 
-    if (plw[0].wu.scr_mv_x < plw[1].wu.scr_mv_x) {
-        meri = plw[0].wu.scr_mv_x - satse[plw[0].player_number];
+    if (g_state.plw[0].wu.scr_mv_x < g_state.plw[1].wu.scr_mv_x) {
+        meri = g_state.plw[0].wu.scr_mv_x - satse[g_state.plw[0].player_number];
     } else {
-        meri = plw[1].wu.scr_mv_x - satse[plw[1].player_number];
+        meri = g_state.plw[1].wu.scr_mv_x - satse[g_state.plw[1].player_number];
     }
 
-    meri = meri - (ideal_w.iw[0].disp.pos - bg_w.pos_offset + SCR_ZONE_LEFT);
+    meri = meri - (g_state.ideal_w.iw[0].disp.pos - g_state.bg_w.pos_offset + SCR_ZONE_LEFT);
 
     x_left_check(meri);
 }
@@ -498,18 +499,18 @@ void scr_11_22() {
     s16 meri;
     s16 meri2;
 
-    meri = (satse[plw[1].player_number] - satse[plw[0].player_number]);
+    meri = (satse[g_state.plw[1].player_number] - satse[g_state.plw[0].player_number]);
     meri >>= 1;
-    meri2 = plw[0].wu.scr_mv_x + plw[1].wu.scr_mv_x;
+    meri2 = g_state.plw[0].wu.scr_mv_x + g_state.plw[1].wu.scr_mv_x;
     meri2 >>= 1;
     meri2 += meri;
-    meri2 -= ideal_w.iw[0].disp.pos;
+    meri2 -= g_state.ideal_w.iw[0].disp.pos;
 
     if (meri2 < 0) {
-        if (plw[1].micchaku_flag != 1) {
+        if (g_state.plw[1].micchaku_flag != 1) {
             x_left_check(meri2);
         }
-    } else if (plw[0].micchaku_flag != 2) {
+    } else if (g_state.plw[0].micchaku_flag != 2) {
         x_right_check(meri2);
     }
 }
@@ -517,8 +518,8 @@ void scr_11_22() {
 /** @brief Scroll handler for stage 12, screen layer 0. */
 void scr_12_20() {
     s16 meri;
-    meri = plw[0].wu.scr_mv_x + satse[plw[0].player_number];
-    meri = meri - (ideal_w.iw[0].disp.pos + bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
+    meri = g_state.plw[0].wu.scr_mv_x + satse[g_state.plw[0].player_number];
+    meri = meri - (g_state.ideal_w.iw[0].disp.pos + g_state.bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
 
     x_right_check(meri);
 }
@@ -528,18 +529,18 @@ void scr_12_21() {
     s16 meri;
     s16 meri2;
 
-    meri = (satse[plw[0].player_number] - satse[plw[1].player_number]);
+    meri = (satse[g_state.plw[0].player_number] - satse[g_state.plw[1].player_number]);
     meri >>= 1;
-    meri2 = plw[0].wu.scr_mv_x + plw[1].wu.scr_mv_x;
+    meri2 = g_state.plw[0].wu.scr_mv_x + g_state.plw[1].wu.scr_mv_x;
     meri2 >>= 1;
     meri2 += meri;
-    meri2 -= ideal_w.iw[0].disp.pos;
+    meri2 -= g_state.ideal_w.iw[0].disp.pos;
 
     if (meri2 < 0) {
-        if (plw[0].micchaku_flag != 1) {
+        if (g_state.plw[0].micchaku_flag != 1) {
             x_left_check(meri2);
         }
-    } else if (plw[1].micchaku_flag != 2) {
+    } else if (g_state.plw[1].micchaku_flag != 2) {
         x_right_check(meri2);
     }
 }
@@ -548,13 +549,13 @@ void scr_12_21() {
 void scr_12_22() {
     s16 meri;
 
-    if (plw[0].wu.scr_mv_x > plw[1].wu.scr_mv_x) {
-        meri = plw[0].wu.scr_mv_x + satse[plw[0].player_number];
+    if (g_state.plw[0].wu.scr_mv_x > g_state.plw[1].wu.scr_mv_x) {
+        meri = g_state.plw[0].wu.scr_mv_x + satse[g_state.plw[0].player_number];
     } else {
-        meri = plw[1].wu.scr_mv_x + satse[plw[1].player_number];
+        meri = g_state.plw[1].wu.scr_mv_x + satse[g_state.plw[1].player_number];
     }
 
-    meri = meri - (ideal_w.iw[0].disp.pos + bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
+    meri = meri - (g_state.ideal_w.iw[0].disp.pos + g_state.bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
 
     x_right_check(meri);
 }
@@ -564,25 +565,25 @@ void bg_base_x_move_sub() {
     s16 work[2];
     s8 st[2];
     s8 i;
-    s16 bg_pos;
+    s16 calculated_bg_pos;
 
-    bg_pos = ideal_w.iw[0].disp.pos - bg_w.pos_offset;
+    calculated_bg_pos = g_state.ideal_w.iw[0].disp.pos - g_state.bg_w.pos_offset;
 
-    if (plw[0].wu.scr_mv_x < ideal_w.iw[0].disp.pos) {
-        work[0] = plw[0].wu.scr_mv_x - *&satse[plw[0].player_number];
+    if (g_state.plw[0].wu.scr_mv_x < g_state.ideal_w.iw[0].disp.pos) {
+        work[0] = g_state.plw[0].wu.scr_mv_x - *&satse[g_state.plw[0].player_number];
     } else {
-        work[0] = plw[0].wu.scr_mv_x + *&satse[plw[0].player_number];
+        work[0] = g_state.plw[0].wu.scr_mv_x + *&satse[g_state.plw[0].player_number];
     }
 
-    work[0] -= bg_pos;
+    work[0] -= calculated_bg_pos;
 
-    if (plw[1].wu.scr_mv_x < ideal_w.iw[0].disp.pos) {
-        work[1] = plw[1].wu.scr_mv_x - *&satse[plw[1].player_number];
+    if (g_state.plw[1].wu.scr_mv_x < g_state.ideal_w.iw[0].disp.pos) {
+        work[1] = g_state.plw[1].wu.scr_mv_x - *&satse[g_state.plw[1].player_number];
     } else {
-        work[1] = plw[1].wu.scr_mv_x + *&satse[plw[1].player_number];
+        work[1] = g_state.plw[1].wu.scr_mv_x + *&satse[g_state.plw[1].player_number];
     }
 
-    work[1] -= bg_pos;
+    work[1] -= calculated_bg_pos;
 
     if (work[0] < 0) {
         work[0] = 0;
@@ -613,39 +614,39 @@ void bg_base_x_move_sub() {
 void bg_base_x_move_check() {
     s16 mvstep, old_work;
 
-    bg_w.bg2_sp_x2 = bg_w.bg2_sp_x = 0;
+    g_state.bg_w.bg2_sp_x2 = g_state.bg_w.bg2_sp_x = 0;
 
-    if (!bg_stop && !bg_app_stop) {
-        if (bg_w.chase_flag & CHASE_X_MASK) {
+    if (!g_state.bg_stop && !g_state.bg_app_stop) {
+        if (g_state.bg_w.chase_flag & CHASE_X_MASK) {
             bgw_ptr->old_pos_x = bgw_ptr->chase_xy[0].disp.pos;
         } else {
             bgw_ptr->old_pos_x = bgw_ptr->wxy[0].disp.pos;
         }
 
         old_work = bgw_ptr->wxy[0].disp.pos;
-        ideal_w.iw[0].cal = bgw_ptr->wxy[0].cal;
+        g_state.ideal_w.iw[0].cal = bgw_ptr->wxy[0].cal;
         bg_base_x_move_sub();
-        mvstep = ideal_w.iw[0].disp.pos;
+        mvstep = g_state.ideal_w.iw[0].disp.pos;
         mvstep -= old_work;
-        ideal_w.iw[0].cal = 0;
-        ideal_w.iw[0].disp.pos = mvstep;
+        g_state.ideal_w.iw[0].cal = 0;
+        g_state.ideal_w.iw[0].disp.pos = mvstep;
 
         if (mvstep) {
             if (mvstep < 0) {
-                if (mvstep < -bg_w.max_x) {
-                    mvstep = -bg_w.max_x;
+                if (mvstep < -g_state.bg_w.max_x) {
+                    mvstep = -g_state.bg_w.max_x;
                 }
                 mvstep = -remake_x_mvstep(-mvstep);
             } else {
-                if (mvstep > bg_w.max_x) {
-                    mvstep = bg_w.max_x;
+                if (mvstep > g_state.bg_w.max_x) {
+                    mvstep = g_state.bg_w.max_x;
                 }
                 mvstep = remake_x_mvstep(mvstep);
             }
         }
 
-        ideal_w.iw[0].disp.pos = mvstep;
-        Bg_mv_tw(ideal_w.iw[0].cal, 0);
+        g_state.ideal_w.iw[0].disp.pos = mvstep;
+        Bg_mv_tw(g_state.ideal_w.iw[0].cal, 0);
 
         if (bgw_ptr->wxy[0].disp.pos < bgw_ptr->l_limit2) {
             bgw_ptr->wxy[0].disp.pos = bgw_ptr->l_limit2;
@@ -662,10 +663,10 @@ void bg_base_x_move_check() {
         }
     }
 
-    bg_w.bg2_sp_x = bgw_ptr->xy[0].disp.pos - bgw_ptr->pos_x_work;
-    bg_w.bg2_sp_x2 = bgw_ptr->wxy[0].disp.pos - bgw_ptr->pos_x_work;
+    g_state.bg_w.bg2_sp_x = bgw_ptr->xy[0].disp.pos - bgw_ptr->pos_x_work;
+    g_state.bg_w.bg2_sp_x2 = bgw_ptr->wxy[0].disp.pos - bgw_ptr->pos_x_work;
 
-    if (!(bg_w.chase_flag & CHASE_X_MASK)) {
+    if (!(g_state.bg_w.chase_flag & CHASE_X_MASK)) {
         bgw_ptr->chase_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos;
     }
 }
@@ -677,14 +678,14 @@ static s16 remake_x_mvstep(s16 mvstep) {
 
 /** @brief Set or release a fixed vertical position for the camera. */
 void Bg_Y_Sitei(u8 on_off, s16 pos) {
-    y_sitei_flag = on_off;
+    g_state.y_sitei_flag = on_off;
 
     if (on_off == 0) {
-        y_sitei_pos = 0;
+        g_state.y_sitei_pos = 0;
         return;
     }
 
-    y_sitei_pos = pos;
+    g_state.y_sitei_pos = pos;
 }
 
 /** @brief Check and apply base vertical scroll boundaries. */
@@ -692,18 +693,18 @@ void bg_base_y_move_check() {
     s32 pos_w, kake;
     s16 hi_pos;
 
-    if (y_sitei_flag == 1) {
-        hi_pos = y_sitei_pos;
+    if (g_state.y_sitei_flag == 1) {
+        hi_pos = g_state.y_sitei_pos;
     } else {
-        if (bg_stop)
+        if (g_state.bg_stop)
             goto end;
-        if (bg_app_stop)
+        if (g_state.bg_app_stop)
             goto end;
 
-        if (plw[0].wu.scr_mv_y > plw[1].wu.scr_mv_y) {
-            hi_pos = plw[0].wu.scr_mv_y;
+        if (g_state.plw[0].wu.scr_mv_y > g_state.plw[1].wu.scr_mv_y) {
+            hi_pos = g_state.plw[0].wu.scr_mv_y;
         } else {
-            hi_pos = plw[1].wu.scr_mv_y;
+            hi_pos = g_state.plw[1].wu.scr_mv_y;
         }
     }
 
@@ -727,39 +728,39 @@ void bg_base_y_move_check() {
             bgw_ptr->xy[1].disp.low = 0;
             bgw_ptr->wxy[1].disp.pos = bgw_ptr->y_limit2;
             bgw_ptr->wxy[1].disp.low = 0;
-            bg_w.scr_stop &= 0x7FFF;
+            g_state.bg_w.scr_stop &= 0x7FFF;
         }
     }
 end:
-    bg_w.bg2_sp_y = bgw_ptr->xy[1].disp.pos - bgw_ptr->pos_y_work;
+    g_state.bg_w.bg2_sp_y = bgw_ptr->xy[1].disp.pos - bgw_ptr->pos_y_work;
 }
 
 /** @brief Check and apply horizontal scroll for a foreground layer. */
 void bg_x_move_check() {
-    if (bg_w.chase_flag & CHASE_X_MASK) {
+    if (g_state.bg_w.chase_flag & CHASE_X_MASK) {
         bgw_ptr->old_pos_x = bgw_ptr->chase_xy[0].disp.pos;
     } else {
         bgw_ptr->old_pos_x = bgw_ptr->wxy[0].disp.pos;
     }
 
-    if (bg_w.chase_flag & CHASE_X_MASK) {
-        bgw_ptr->chase_xy[0].cal = bgw_ptr->speed_x * bg_w.bg2_sp_x2;
+    if (g_state.bg_w.chase_flag & CHASE_X_MASK) {
+        bgw_ptr->chase_xy[0].cal = bgw_ptr->speed_x * g_state.bg_w.bg2_sp_x2;
         bgw_ptr->chase_xy[0].disp.pos += bgw_ptr->pos_x_work;
     } else {
-        bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal = bgw_ptr->speed_x * bg_w.bg2_sp_x2;
+        bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal = bgw_ptr->speed_x * g_state.bg_w.bg2_sp_x2;
         bgw_ptr->xy[0].disp.pos += bgw_ptr->pos_x_work;
         bgw_ptr->wxy[0].disp.pos = bgw_ptr->xy[0].disp.pos;
     }
 
-    if (!(bg_w.chase_flag & CHASE_X_MASK)) {
+    if (!(g_state.bg_w.chase_flag & CHASE_X_MASK)) {
         bgw_ptr->chase_xy[0].disp.pos = bgw_ptr->wxy[0].disp.pos;
     }
 }
 
 /** @brief Check and apply vertical scroll for a foreground layer. */
 void bg_y_move_check() {
-    if (bg_w.chase_flag & CHASE_Y_MASK) {
-        bgw_ptr->chase_xy[1].cal = bgw_ptr->speed_y * bg_w.bg2_sp_y;
+    if (g_state.bg_w.chase_flag & CHASE_Y_MASK) {
+        bgw_ptr->chase_xy[1].cal = bgw_ptr->speed_y * g_state.bg_w.bg2_sp_y;
 
         if (bgw_ptr->y_limit2 < bgw_ptr->chase_xy[1].disp.pos) {
             bgw_ptr->chase_xy[1].disp.pos = bgw_ptr->y_limit2;
@@ -771,7 +772,7 @@ void bg_y_move_check() {
         return;
     }
 
-    bgw_ptr->xy[1].cal = bgw_ptr->speed_y * bg_w.bg2_sp_y;
+    bgw_ptr->xy[1].cal = bgw_ptr->speed_y * g_state.bg_w.bg2_sp_y;
 
     if (bgw_ptr->y_limit2 < bgw_ptr->xy[1].disp.pos) {
         bgw_ptr->xy[1].disp.pos = bgw_ptr->y_limit2;
@@ -788,84 +789,84 @@ void zoom_ud_check() {
     s16 work2;
     s16 pos_w;
 
-    if (bg_app) {
+    if (g_state.bg_app) {
         return;
     }
 
-    if (Bonus_Game_Flag) {
+    if (g_state.Bonus_Game_Flag) {
         return;
     }
 
-    if (bg_app_stop && bg_w.bg_f_x == ZOOM_FRAME_DEFAULT) {
+    if (g_state.bg_app_stop && g_state.bg_w.bg_f_x == ZOOM_FRAME_DEFAULT) {
         return;
     }
 
-    work2 = zoom_request_flag & ZOOM_LEVEL_MASK;
-    bg_w.frame_deff = ZOOM_FRAME_DEFAULT - zoom_request_level;
-    work = (~(zoom_req_flag_old) & (zoom_request_flag)&ZOOM_LEVEL_MASK);
+    work2 = g_state.zoom_request_flag & ZOOM_LEVEL_MASK;
+    g_state.bg_w.frame_deff = ZOOM_FRAME_DEFAULT - g_state.zoom_request_level;
+    work = (~(g_state.zoom_req_flag_old) & (g_state.zoom_request_flag)&ZOOM_LEVEL_MASK);
 
-    if (work && !bg_w.frame_flag) {
-        bg_w.frame_flag = 1;
-        bg_w.old_frame_flag = 1;
-        bg_w.center_y = BG_SCREEN_HEIGHT - scr_req_y;
+    if (work && !g_state.bg_w.frame_flag) {
+        g_state.bg_w.frame_flag = 1;
+        g_state.bg_w.old_frame_flag = 1;
+        g_state.bg_w.center_y = BG_SCREEN_HEIGHT - g_state.scr_req_y;
 
-        if (bg_w.center_y < 0) {
-            bg_w.center_y = 0;
+        if (g_state.bg_w.center_y < 0) {
+            g_state.bg_w.center_y = 0;
         }
 
-        if (scr_req_x < bg_w.bgw[1].l_limit2) {
-            if (bg_w.bgw[1].zuubun != 0) {
-                bg_w.center_x = scr_req_x + BG_WRAP_WIDTH;
-                pos_w = bg_w.bgw[1].wxy[0].disp.pos + BG_WRAP_WIDTH;
+        if (g_state.scr_req_x < g_state.bg_w.bgw[1].l_limit2) {
+            if (g_state.bg_w.bgw[1].zuubun != 0) {
+                g_state.bg_w.center_x = g_state.scr_req_x + BG_WRAP_WIDTH;
+                pos_w = g_state.bg_w.bgw[1].wxy[0].disp.pos + BG_WRAP_WIDTH;
             } else {
-                bg_w.center_x = scr_req_x;
-                pos_w = bg_w.bgw[1].wxy[0].disp.pos;
+                g_state.bg_w.center_x = g_state.scr_req_x;
+                pos_w = g_state.bg_w.bgw[1].wxy[0].disp.pos;
             }
 
-            pos_w -= bg_w.pos_offset;
-            bg_w.center_x -= pos_w;
-        } else if (bg_w.bgw[1].r_limit2 < scr_req_x) {
-            if (bg_w.bgw[1].zuubun != 0) {
-                bg_w.center_x = scr_req_x + BG_WRAP_WIDTH;
-                pos_w = bg_w.bgw[1].wxy[0].disp.pos + BG_WRAP_WIDTH;
+            pos_w -= g_state.bg_w.pos_offset;
+            g_state.bg_w.center_x -= pos_w;
+        } else if (g_state.bg_w.bgw[1].r_limit2 < g_state.scr_req_x) {
+            if (g_state.bg_w.bgw[1].zuubun != 0) {
+                g_state.bg_w.center_x = g_state.scr_req_x + BG_WRAP_WIDTH;
+                pos_w = g_state.bg_w.bgw[1].wxy[0].disp.pos + BG_WRAP_WIDTH;
             } else {
-                bg_w.center_x = scr_req_x;
-                pos_w = bg_w.bgw[1].wxy[0].disp.pos;
+                g_state.bg_w.center_x = g_state.scr_req_x;
+                pos_w = g_state.bg_w.bgw[1].wxy[0].disp.pos;
             }
 
-            pos_w -= bg_w.pos_offset;
-            bg_w.center_x -= pos_w;
+            pos_w -= g_state.bg_w.pos_offset;
+            g_state.bg_w.center_x -= pos_w;
         } else {
-            bg_w.center_x = BG_POS_OFFSET_DEFAULT;
-            bg_w.center_y = BG_SCREEN_HEIGHT;
+            g_state.bg_w.center_x = BG_POS_OFFSET_DEFAULT;
+            g_state.bg_w.center_y = BG_SCREEN_HEIGHT;
         }
     }
 
     if (work2) {
-        if (bg_w.bg_f_x > bg_w.frame_deff) {
-            Frame_Up((u16)bg_w.center_x, (u16)bg_w.center_y, 1);
-            bg_w.bg_f_x--;
-            bg_w.bg_f_y--;
+        if (g_state.bg_w.bg_f_x > g_state.bg_w.frame_deff) {
+            Frame_Up((u16)g_state.bg_w.center_x, (u16)g_state.bg_w.center_y, 1);
+            g_state.bg_w.bg_f_x--;
+            g_state.bg_w.bg_f_y--;
             return;
         }
 
-        if (bg_w.bg_f_x < bg_w.frame_deff) {
-            Frame_Down((u16)bg_w.center_x, (u16)bg_w.center_y, 1);
-            bg_w.bg_f_x++;
-            bg_w.bg_f_y++;
+        if (g_state.bg_w.bg_f_x < g_state.bg_w.frame_deff) {
+            Frame_Down((u16)g_state.bg_w.center_x, (u16)g_state.bg_w.center_y, 1);
+            g_state.bg_w.bg_f_x++;
+            g_state.bg_w.bg_f_y++;
 
-            if (bg_w.bg_f_x == ZOOM_FRAME_DEFAULT) {
-                bg_w.frame_flag = 0;
+            if (g_state.bg_w.bg_f_x == ZOOM_FRAME_DEFAULT) {
+                g_state.bg_w.frame_flag = 0;
                 Zoomf_Init();
             }
         }
-    } else if (bg_w.bg_f_x < ZOOM_FRAME_DEFAULT) {
-        Frame_Down((u16)bg_w.center_x, (u16)bg_w.center_y, 1);
-        bg_w.bg_f_x++;
-        bg_w.bg_f_y++;
+    } else if (g_state.bg_w.bg_f_x < ZOOM_FRAME_DEFAULT) {
+        Frame_Down((u16)g_state.bg_w.center_x, (u16)g_state.bg_w.center_y, 1);
+        g_state.bg_w.bg_f_x++;
+        g_state.bg_w.bg_f_y++;
 
-        if (bg_w.bg_f_x == ZOOM_FRAME_DEFAULT) {
-            bg_w.frame_flag = 0;
+        if (g_state.bg_w.bg_f_x == ZOOM_FRAME_DEFAULT) {
+            g_state.bg_w.frame_flag = 0;
             Zoomf_Init();
         }
     }
@@ -914,8 +915,8 @@ void suzi_sync_pos_set(WORK_Other* ewk) {
 
 /** @brief Update parallax family position for a single layer with Y offset. */
 static void bg_family_set_layer(s32 index, s16 y_offset) {
-    s16 x = bg_w.bgw[index].position_x;
-    s16 y = bg_w.bgw[index].position_y;
+    s16 x = g_state.bg_w.bgw[index].position_x;
+    s16 y = g_state.bg_w.bgw[index].position_y;
     y += y_offset;
     Scrn_Move_Set(index, x, y);
     x = -x & 0xFFFF;
@@ -926,7 +927,7 @@ static void bg_family_set_layer(s32 index, s16 y_offset) {
 /** @brief Update parallax family positions for all active layers. */
 void Bg_Family_Set() {
     s8 i;
-    for (i = 0; i < bg_w.scno; i++)
+    for (i = 0; i < g_state.bg_w.scno; i++)
         bg_family_set_layer(i, 0);
 }
 
@@ -938,7 +939,7 @@ void Bg_Family_Set_appoint(s32 num_of_bg) {
 /** @brief Update parallax family positions (alternate method, +8 Y offset). */
 void Bg_Family_Set_2() {
     s8 i;
-    for (i = 0; i < bg_w.scno; i++)
+    for (i = 0; i < g_state.bg_w.scno; i++)
         bg_family_set_layer(i, 8);
 }
 
@@ -949,11 +950,11 @@ void Bg_Family_Set_2_appoint(s32 num_of_bg) {
 
 /** @brief Update parallax family for the Akebono (dawn) layer. */
 void ake_Family_Set2() {
-    s16 x = bg_w.bgw[3].position_x;
-    s16 y = bg_w.bgw[3].position_y;
+    s16 x = g_state.bg_w.bgw[3].position_x;
+    s16 y = g_state.bg_w.bgw[3].position_y;
 
     Scrn_Move_Set(3, x, y);
-    x = BG_WRAP_WIDTH - bg_w.pos_offset;
+    x = BG_WRAP_WIDTH - g_state.bg_w.pos_offset;
     y = 0;
     x = -x & 0xFFFF;
     y = (BG_FAMILY_HEIGHT - (y & 0xFFFF)) & 0xFFFF;
@@ -965,34 +966,34 @@ static void bg_pos_hosei_impl(s16 bg_no, s16 apply_quake) {
     u16 pos;
     s16 pos2;
 
-    pos2 = bg_w.bgw[bg_no].wxy[0].disp.pos;
+    pos2 = g_state.bg_w.bgw[bg_no].wxy[0].disp.pos;
     pos = pos2 & 0xFFFF;
 
-    pos -= bg_w.pos_offset;
-    pos2 -= bg_w.pos_offset;
+    pos -= g_state.bg_w.pos_offset;
+    pos2 -= g_state.bg_w.pos_offset;
 
     if (apply_quake) {
-        if (bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
-            bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
-        pos += quake_x_tbl[bg_w.quake_x_index];
-        pos2 += quake_x_tbl[bg_w.quake_x_index];
+        if (g_state.bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
+            g_state.bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
+        pos += quake_x_tbl[g_state.bg_w.quake_x_index];
+        pos2 += quake_x_tbl[g_state.bg_w.quake_x_index];
     }
 
-    bg_w.bgw[bg_no].position_x = pos & 0xFFFF;
-    bg_w.bgw[bg_no].abs_x = pos2;
+    g_state.bg_w.bgw[bg_no].position_x = pos & 0xFFFF;
+    g_state.bg_w.bgw[bg_no].abs_x = pos2;
 
-    pos2 = bg_w.bgw[bg_no].xy[1].disp.pos;
+    pos2 = g_state.bg_w.bgw[bg_no].xy[1].disp.pos;
     pos = pos2 & 0xFFFF;
 
     if (apply_quake) {
-        if (bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
-            bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
-        pos += quake_y_tbl[bg_w.quake_y_index];
-        pos2 += quake_y_tbl[bg_w.quake_y_index];
+        if (g_state.bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
+            g_state.bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
+        pos += quake_y_tbl[g_state.bg_w.quake_y_index];
+        pos2 += quake_y_tbl[g_state.bg_w.quake_y_index];
     }
 
-    bg_w.bgw[bg_no].position_y = pos & 0xFFFF;
-    bg_w.bgw[bg_no].abs_y = pos2;
+    g_state.bg_w.bgw[bg_no].position_y = pos & 0xFFFF;
+    g_state.bg_w.bgw[bg_no].abs_y = pos2;
 }
 
 /** @brief Apply position correction to a single background layer (with quake). */
@@ -1011,40 +1012,40 @@ void bg_pos_hosei2() {
     u16 pos;
     u16 pos2;
 
-    while (bg_no < bg_w.scno) {
-        if ((bg_w.chase_flag & CHASE_X_MASK) != 0) {
-            pos2 = bg_w.bgw[bg_no].chase_xy[0].disp.pos;
+    while (bg_no < g_state.bg_w.scno) {
+        if ((g_state.bg_w.chase_flag & CHASE_X_MASK) != 0) {
+            pos2 = g_state.bg_w.bgw[bg_no].chase_xy[0].disp.pos;
         } else {
-            pos2 = bg_w.bgw[bg_no].wxy[0].disp.pos;
+            pos2 = g_state.bg_w.bgw[bg_no].wxy[0].disp.pos;
         }
 
         pos = pos2 & 0xFFFF;
-        pos -= bg_w.pos_offset;
-        if (bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
-            bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
-        pos += quake_x_tbl[bg_w.quake_x_index];
+        pos -= g_state.bg_w.pos_offset;
+        if (g_state.bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
+            g_state.bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
+        pos += quake_x_tbl[g_state.bg_w.quake_x_index];
 
-        bg_w.bgw[bg_no].position_x = pos & 0xFFFF;
+        g_state.bg_w.bgw[bg_no].position_x = pos & 0xFFFF;
 
-        pos2 -= bg_w.pos_offset;
-        pos2 += quake_x_tbl[bg_w.quake_x_index];
+        pos2 -= g_state.bg_w.pos_offset;
+        pos2 += quake_x_tbl[g_state.bg_w.quake_x_index];
 
-        bg_w.bgw[bg_no].abs_x = pos2;
+        g_state.bg_w.bgw[bg_no].abs_x = pos2;
 
-        if ((bg_w.chase_flag & CHASE_Y_MASK) != 0) {
-            pos2 = bg_w.bgw[bg_no].chase_xy[1].disp.pos;
+        if ((g_state.bg_w.chase_flag & CHASE_Y_MASK) != 0) {
+            pos2 = g_state.bg_w.bgw[bg_no].chase_xy[1].disp.pos;
         } else {
-            pos2 = bg_w.bgw[bg_no].xy[1].disp.pos;
+            pos2 = g_state.bg_w.bgw[bg_no].xy[1].disp.pos;
         }
 
         pos = pos2 & 0xFFFF;
-        if (bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
-            bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
-        pos += quake_y_tbl[bg_w.quake_y_index];
-        pos2 += quake_y_tbl[bg_w.quake_y_index];
+        if (g_state.bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
+            g_state.bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
+        pos += quake_y_tbl[g_state.bg_w.quake_y_index];
+        pos2 += quake_y_tbl[g_state.bg_w.quake_y_index];
 
-        bg_w.bgw[bg_no].position_y = pos & 0xFFFF;
-        bg_w.bgw[bg_no].abs_y = pos2;
+        g_state.bg_w.bgw[bg_no].position_y = pos & 0xFFFF;
+        g_state.bg_w.bgw[bg_no].abs_y = pos2;
 
         bg_no++;
     }
@@ -1052,38 +1053,38 @@ void bg_pos_hosei2() {
 
 /** @brief Get the horizontal center position between both players. */
 s16 get_center_position() {
-    if (Bonus_Game_Flag == BONUS_GAME_PARRY) {
+    if (g_state.Bonus_Game_Flag == BONUS_GAME_PARRY) {
         return 0x200;
     }
 
-    return bg_w.bgw[1].wxy[0].disp.pos;
+    return g_state.bg_w.bgw[1].wxy[0].disp.pos;
 }
 
 /** @brief Get the vertical height position between both players. */
 s16 get_height_position() {
-    return bg_w.bgw[1].xy[1].disp.pos;
+    return g_state.bg_w.bgw[1].xy[1].disp.pos;
 }
 
 /** @brief Clear all background work variables to defaults. */
 void bg_work_clear() {
     s16 i;
 
-    bg_w.bg_routine = 0;
-    bg_w.bg_r_1 = 0;
-    bg_w.bg_r_2 = 0;
-    bg_w.compel_flag = 0;
-    win_sp_flag = 0;
-    bg_stop = 0;
-    akebono_flag = 0;
-    aku_flag = 0;
-    sa_pa_flag = 0;
-    bg_app = 0;
-    bg_app_stop = 0;
+    g_state.bg_w.bg_routine = 0;
+    g_state.bg_w.bg_r_1 = 0;
+    g_state.bg_w.bg_r_2 = 0;
+    g_state.bg_w.compel_flag = 0;
+    g_state.win_sp_flag = 0;
+    g_state.bg_stop = 0;
+    g_state.akebono_flag = 0;
+    g_state.aku_flag = 0;
+    g_state.sa_pa_flag = 0;
+    g_state.bg_app = 0;
+    g_state.bg_app_stop = 0;
 
     for (i = 0; i < 7; i++) {
-        bg_w.bgw[i].r_no_0 = 0;
-        bg_w.bgw[i].r_no_1 = 0;
-        bg_w.bgw[i].r_no_2 = 0;
+        g_state.bg_w.bgw[i].r_no_0 = 0;
+        g_state.bg_w.bgw[i].r_no_1 = 0;
+        g_state.bg_w.bgw[i].r_no_2 = 0;
     }
 }
 
@@ -1091,20 +1092,20 @@ void bg_work_clear() {
 void compel_bg_init_position() {
     s16 i;
 
-    bg_w.compel_flag = 0;
+    g_state.bg_w.compel_flag = 0;
     Zoomf_Init();
-    bg_w.bg_f_x = ZOOM_FRAME_DEFAULT;
-    bg_w.bg_f_y = ZOOM_FRAME_DEFAULT;
-    bg_w.scr_stop = 0;
-    bg_w.frame_flag = 0;
-    bg_w.bg2_sp_x2 = bg_w.bg2_sp_x = 0;
+    g_state.bg_w.bg_f_x = ZOOM_FRAME_DEFAULT;
+    g_state.bg_w.bg_f_y = ZOOM_FRAME_DEFAULT;
+    g_state.bg_w.scr_stop = 0;
+    g_state.bg_w.frame_flag = 0;
+    g_state.bg_w.bg2_sp_x2 = g_state.bg_w.bg2_sp_x = 0;
 
     for (i = 0; i < 7; i++) {
-        bg_w.bgw[(i)].xy[0].disp.pos = bg_w.bgw[(i)].wxy[0].disp.pos = bg_w.bgw[(i)].pos_x_work;
-        bg_w.bgw[(i)].xy[1].disp.pos = bg_w.bgw[(i)].wxy[1].disp.pos = bg_w.bgw[(i)].pos_y_work;
-        bg_w.bgw[(i)].xy[0].disp.low = bg_w.bgw[(i)].wxy[0].disp.low = 0;
-        bg_w.bgw[(i)].xy[0].disp.low = bg_w.bgw[(i)].wxy[0].disp.low = 0;
-        bg_w.bgw[(i)].old_pos_x = bg_w.bgw[(i)].wxy[0].disp.pos;
+        g_state.bg_w.bgw[(i)].xy[0].disp.pos = g_state.bg_w.bgw[(i)].wxy[0].disp.pos = g_state.bg_w.bgw[(i)].pos_x_work;
+        g_state.bg_w.bgw[(i)].xy[1].disp.pos = g_state.bg_w.bgw[(i)].wxy[1].disp.pos = g_state.bg_w.bgw[(i)].pos_y_work;
+        g_state.bg_w.bgw[(i)].xy[0].disp.low = g_state.bg_w.bgw[(i)].wxy[0].disp.low = 0;
+        g_state.bg_w.bgw[(i)].xy[0].disp.low = g_state.bg_w.bgw[(i)].wxy[0].disp.low = 0;
+        g_state.bg_w.bgw[(i)].old_pos_x = g_state.bg_w.bgw[(i)].wxy[0].disp.pos;
     }
 }
 
@@ -1130,72 +1131,72 @@ void bg_initialize() {
     Family_Init();
     Scrn_Pos_Init();
     Zoomf_Init();
-    bg_w.bg_opaque = stage_opaque[bg_w.stage];
-    Screen_Switch = 0;
-    Screen_Switch_Buffer = 0;
-    bg_disp_off = 0;
-    bg_w.bg_index = bg_index_tbl[bg_w.stage][bg_w.area];
-    bg_w.scno = use_scr[bg_w.bg_index];
-    bg_w.scrno = use_real_scr[bg_w.bg_index];
-    y_sitei_flag = 0;
-    y_sitei_pos = 0;
+    g_state.bg_w.bg_opaque = stage_opaque[g_state.bg_w.stage];
+    g_state.Screen_Switch = 0;
+    g_state.Screen_Switch_Buffer = 0;
+    g_state.bg_disp_off = 0;
+    g_state.bg_w.bg_index = bg_index_tbl[g_state.bg_w.stage][g_state.bg_w.area];
+    g_state.bg_w.scno = use_scr[g_state.bg_w.bg_index];
+    g_state.bg_w.scrno = use_real_scr[g_state.bg_w.bg_index];
+    g_state.y_sitei_flag = 0;
+    g_state.y_sitei_pos = 0;
 
-    if (G_No[0] != 2 || G_No[1] != 2 || G_No[2] != 2) {
+    if (g_state.G_No[0] != 2 || g_state.G_No[1] != 2 || g_state.G_No[2] != 2) {
         Bg_Texture_Load_EX();
     }
 
     Bg_Kakikae_Set();
-    bg_w.pos_offset = BG_POS_OFFSET_DEFAULT;
+    g_state.bg_w.pos_offset = BG_POS_OFFSET_DEFAULT;
 
     for (i = 0; i < 7; i++) {
-        bg_w.bgw[i].pos_x_work = bg_w.bgw[i].pos_y_work = 0;
-        bg_w.bgw[i].zuubun = 0;
-        bg_w.bgw[i].xy[0].cal = 0;
-        bg_w.bgw[i].xy[1].cal = 0;
-        bg_w.bgw[i].wxy[0].cal = 0;
-        bg_w.bgw[i].wxy[1].cal = 0;
-        bg_w.bgw[i].hos_xy[0].cal = 0;
-        bg_w.bgw[i].hos_xy[1].cal = 0;
-        bg_w.bgw[i].speed_x = 0;
-        bg_w.bgw[i].speed_y = 0;
-        bg_w.bgw[i].rewrite_flag = 0;
-        bg_w.bgw[i].fam_no = i;
-        bg_w.bgw[i].r_no_1 = bg_w.bgw[i].r_no_2 = 0;
-        bg_w.bgw[i].speed_x = 0;
+        g_state.bg_w.bgw[i].pos_x_work = g_state.bg_w.bgw[i].pos_y_work = 0;
+        g_state.bg_w.bgw[i].zuubun = 0;
+        g_state.bg_w.bgw[i].xy[0].cal = 0;
+        g_state.bg_w.bgw[i].xy[1].cal = 0;
+        g_state.bg_w.bgw[i].wxy[0].cal = 0;
+        g_state.bg_w.bgw[i].wxy[1].cal = 0;
+        g_state.bg_w.bgw[i].hos_xy[0].cal = 0;
+        g_state.bg_w.bgw[i].hos_xy[1].cal = 0;
+        g_state.bg_w.bgw[i].speed_x = 0;
+        g_state.bg_w.bgw[i].speed_y = 0;
+        g_state.bg_w.bgw[i].rewrite_flag = 0;
+        g_state.bg_w.bgw[i].fam_no = i;
+        g_state.bg_w.bgw[i].r_no_1 = g_state.bg_w.bgw[i].r_no_2 = 0;
+        g_state.bg_w.bgw[i].speed_x = 0;
     }
 
-    bg_w.scr_stop = 0;
-    bg_w.frame_flag = 0;
-    bg_w.bg_f_x = ZOOM_FRAME_DEFAULT;
-    bg_w.bg_f_y = ZOOM_FRAME_DEFAULT;
-    bg_w.bg2_sp_x2 = bg_w.bg2_sp_x = 0;
-    bg_w.max_x = 8;
-    bg_w.old_chase_flag = bg_w.chase_flag = 0;
-    bg_w.quake_x_index = 0;
-    bg_w.quake_y_index = 0;
-    bg_w.frame_deff = ZOOM_FRAME_DEFAULT;
+    g_state.bg_w.scr_stop = 0;
+    g_state.bg_w.frame_flag = 0;
+    g_state.bg_w.bg_f_x = ZOOM_FRAME_DEFAULT;
+    g_state.bg_w.bg_f_y = ZOOM_FRAME_DEFAULT;
+    g_state.bg_w.bg2_sp_x2 = g_state.bg_w.bg2_sp_x = 0;
+    g_state.bg_w.max_x = 8;
+    g_state.bg_w.old_chase_flag = g_state.bg_w.chase_flag = 0;
+    g_state.bg_w.quake_x_index = 0;
+    g_state.bg_w.quake_y_index = 0;
+    g_state.bg_w.frame_deff = ZOOM_FRAME_DEFAULT;
 
-    for (i = 0; i < bg_w.scno; i++) {
-        bg_w.bgw[i].speed_x = *msp[bg_w.bg_index][i];
-        bg_w.bgw[i].speed_y = msp[bg_w.bg_index][i][1];
-        bg_w.bgw[i].rewrite_flag = 0;
-        bg_w.bgw[i].xy[1].disp.pos = bg_w.bgw[i].wxy[1].disp.pos = bg_w.bgw[i].pos_y_work = 0;
-        ptr = limit_tbl3[bg_w.bg_index][i];
-        bg_w.bgw[i].l_limit2 = *ptr++;
-        bg_w.bgw[i].r_limit2 = *ptr++;
-        bg_w.bgw[i].y_limit = *ptr++;
-        bg_w.bgw[i].y_limit2 = *ptr++;
-        bg_w.bgw[i].frame_deff = 0;
-        bg_w.bgw[i].max_x_limit = bg_w.bgw[i].speed_x * bg_w.max_x;
+    for (i = 0; i < g_state.bg_w.scno; i++) {
+        g_state.bg_w.bgw[i].speed_x = *msp[g_state.bg_w.bg_index][i];
+        g_state.bg_w.bgw[i].speed_y = msp[g_state.bg_w.bg_index][i][1];
+        g_state.bg_w.bgw[i].rewrite_flag = 0;
+        g_state.bg_w.bgw[i].xy[1].disp.pos = g_state.bg_w.bgw[i].wxy[1].disp.pos = g_state.bg_w.bgw[i].pos_y_work = 0;
+        ptr = limit_tbl3[g_state.bg_w.bg_index][i];
+        g_state.bg_w.bgw[i].l_limit2 = *ptr++;
+        g_state.bg_w.bgw[i].r_limit2 = *ptr++;
+        g_state.bg_w.bgw[i].y_limit = *ptr++;
+        g_state.bg_w.bgw[i].y_limit2 = *ptr++;
+        g_state.bg_w.bgw[i].frame_deff = 0;
+        g_state.bg_w.bgw[i].max_x_limit = g_state.bg_w.bgw[i].speed_x * g_state.bg_w.max_x;
     }
 
-    if (bg_w.stage != STAGE_ELENA) {
-        base_y_pos = 0x28;
+    if (g_state.bg_w.stage != STAGE_ELENA) {
+        g_state.base_y_pos = 0x28;
     } else {
-        base_y_pos = 0x30;
+        g_state.base_y_pos = 0x30;
     }
 
-    if (bg_w.stage > STAGE_BONUS_THRESHOLD) {
+    if (g_state.bg_w.stage > STAGE_BONUS_THRESHOLD) {
         bg_pos_hosei_sub3(2);
         Bg_Family_Set_appoint(2);
     }
@@ -1206,13 +1207,13 @@ void bg_initialize() {
 
 /** @brief Initialize the Akebono (dawn sky) background layer. */
 void akebono_initialize() {
-    bg_w.bgw[3].xy[0].cal = bg_w.bgw[3].wxy[0].cal = 0x100000;
-    bg_w.bgw[3].xy[1].cal = bg_w.bgw[3].wxy[1].cal = 0;
-    bg_w.bgw[3].position_x = BG_POS_OFFSET_DEFAULT - bg_w.pos_offset;
-    bg_w.bgw[3].position_y = 0;
+    g_state.bg_w.bgw[3].xy[0].cal = g_state.bg_w.bgw[3].wxy[0].cal = 0x100000;
+    g_state.bg_w.bgw[3].xy[1].cal = g_state.bg_w.bgw[3].wxy[1].cal = 0;
+    g_state.bg_w.bgw[3].position_x = BG_POS_OFFSET_DEFAULT - g_state.bg_w.pos_offset;
+    g_state.bg_w.bgw[3].position_y = 0;
     Bg_Family_Set_appoint(3);
-    bg_w.bgw[3].r_no_1 = bg_w.bgw[3].r_no_2 = 0;
-    bg_w.bgw[3].fam_no = 3;
+    g_state.bg_w.bgw[3].r_no_1 = g_state.bg_w.bgw[3].r_no_2 = 0;
+    g_state.bg_w.bgw[3].fam_no = 3;
     Bg_Off_R(8);
 }
 
@@ -1223,57 +1224,57 @@ void bg_etc_write(s16 type) {
     Family_Init();
     Scrn_Pos_Init();
     Zoomf_Init();
-    bg_w.bg_opaque = BG_OPAQUE_DEFAULT;
-    Screen_Switch = 0;
-    Screen_Switch_Buffer = 0;
-    bg_disp_off = 0;
-    bg_w.scno = bg_w.scrno = use_scr2[type];
-    bg_w.pos_offset = BG_POS_OFFSET_DEFAULT;
+    g_state.bg_w.bg_opaque = BG_OPAQUE_DEFAULT;
+    g_state.Screen_Switch = 0;
+    g_state.Screen_Switch_Buffer = 0;
+    g_state.bg_disp_off = 0;
+    g_state.bg_w.scno = g_state.bg_w.scrno = use_scr2[type];
+    g_state.bg_w.pos_offset = BG_POS_OFFSET_DEFAULT;
 
     Bg_Texture_Load2((u8)type);
 
     for (i = 0; i < 7; i++) {
-        bg_w.bgw[i].pos_x_work = 0;
-        bg_w.bgw[i].pos_y_work = 0;
-        bg_w.bgw[i].hos_xy[1].cal = bg_w.bgw[i].hos_xy[0].cal = bg_w.bgw[i].wxy[1].cal = bg_w.bgw[i].wxy[0].cal =
-            bg_w.bgw[i].xy[1].cal = bg_w.bgw[i].xy[0].cal = bg_w.bgw[i].zuubun = 0;
-        bg_w.bgw[i].rewrite_flag = 0;
-        bg_w.bgw[i].fam_no = i;
-        bg_w.bgw[i].speed_y = bg_w.bgw[i].speed_x = 0;
-        bg_w.bgw[i].r_no_1 = bg_w.bgw[i].r_no_2 = 0;
+        g_state.bg_w.bgw[i].pos_x_work = 0;
+        g_state.bg_w.bgw[i].pos_y_work = 0;
+        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[1].cal = g_state.bg_w.bgw[i].wxy[0].cal =
+            g_state.bg_w.bgw[i].xy[1].cal = g_state.bg_w.bgw[i].xy[0].cal = g_state.bg_w.bgw[i].zuubun = 0;
+        g_state.bg_w.bgw[i].rewrite_flag = 0;
+        g_state.bg_w.bgw[i].fam_no = i;
+        g_state.bg_w.bgw[i].speed_y = g_state.bg_w.bgw[i].speed_x = 0;
+        g_state.bg_w.bgw[i].r_no_1 = g_state.bg_w.bgw[i].r_no_2 = 0;
     }
 
-    bg_w.scr_stop = 0;
-    bg_w.frame_flag = 0;
-    bg_w.old_chase_flag = bg_w.chase_flag = 0;
-    bg_w.bg_f_x = ZOOM_FRAME_DEFAULT;
-    bg_w.bg_f_y = ZOOM_FRAME_DEFAULT;
-    bg_w.bg2_sp_x2 = bg_w.bg2_sp_x = 0;
-    bg_w.max_x = 8;
-    bg_w.quake_x_index = 0;
-    bg_w.quake_y_index = 0;
+    g_state.bg_w.scr_stop = 0;
+    g_state.bg_w.frame_flag = 0;
+    g_state.bg_w.old_chase_flag = g_state.bg_w.chase_flag = 0;
+    g_state.bg_w.bg_f_x = ZOOM_FRAME_DEFAULT;
+    g_state.bg_w.bg_f_y = ZOOM_FRAME_DEFAULT;
+    g_state.bg_w.bg2_sp_x2 = g_state.bg_w.bg2_sp_x = 0;
+    g_state.bg_w.max_x = 8;
+    g_state.bg_w.quake_x_index = 0;
+    g_state.bg_w.quake_y_index = 0;
 
-    for (i = 0; i < bg_w.scno; i++) {
-        bg_w.bgw[i].hos_xy[0].cal = bg_w.bgw[i].wxy[0].cal = bg_w.bgw[i].xy[0].cal = bg_pos_tbl2[type][i][0];
-        bg_w.bgw[i].hos_xy[1].cal = bg_w.bgw[i].wxy[1].cal = bg_w.bgw[i].xy[1].cal = bg_pos_tbl2[type][i][1];
-        bg_w.bgw[i].pos_y_work = bg_w.bgw[i].xy[1].disp.pos;
-        bg_w.bgw[i].old_pos_x = bg_w.bgw[i].pos_x_work = bg_w.bgw[i].xy[0].disp.pos;
-        bg_w.bgw[i].speed_x = msp2[type][i][0];
-        bg_w.bgw[i].speed_y = msp2[type][i][1];
-        bg_w.bgw[i].rewrite_flag = 0;
-        bg_w.bgw[i].zuubun = 0;
-        bg_w.bgw[i].frame_deff = ZOOM_FRAME_DEFAULT;
-        bg_w.bgw[i].max_x_limit = bg_w.bgw[i].speed_x * bg_w.max_x;
+    for (i = 0; i < g_state.bg_w.scno; i++) {
+        g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[0].cal = g_state.bg_w.bgw[i].xy[0].cal = bg_pos_tbl2[type][i][0];
+        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].wxy[1].cal = g_state.bg_w.bgw[i].xy[1].cal = bg_pos_tbl2[type][i][1];
+        g_state.bg_w.bgw[i].pos_y_work = g_state.bg_w.bgw[i].xy[1].disp.pos;
+        g_state.bg_w.bgw[i].old_pos_x = g_state.bg_w.bgw[i].pos_x_work = g_state.bg_w.bgw[i].xy[0].disp.pos;
+        g_state.bg_w.bgw[i].speed_x = msp2[type][i][0];
+        g_state.bg_w.bgw[i].speed_y = msp2[type][i][1];
+        g_state.bg_w.bgw[i].rewrite_flag = 0;
+        g_state.bg_w.bgw[i].zuubun = 0;
+        g_state.bg_w.bgw[i].frame_deff = ZOOM_FRAME_DEFAULT;
+        g_state.bg_w.bgw[i].max_x_limit = g_state.bg_w.bgw[i].speed_x * g_state.bg_w.max_x;
     }
 
-    base_y_pos = 40;
+    g_state.base_y_pos = 40;
 }
 
 /** @brief Check whether an object is outside the visible stage range. */
 s32 Ck_Range_Out_S(WORK_Other* ewk, s16 BG_No, s16 R) {
     s16 x;
 
-    x = ewk->wu.xyz[0].disp.pos - bg_w.bgw[BG_No].wxy[0].disp.pos;
+    x = ewk->wu.xyz[0].disp.pos - g_state.bg_w.bgw[BG_No].wxy[0].disp.pos;
 
     if (x < 0) {
         x = -x;

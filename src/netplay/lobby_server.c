@@ -17,6 +17,7 @@
 #define _GNU_SOURCE // Must be before any includes for getaddrinfo/timeval
 #endif
 #include "lobby_server.h"
+#include "game_state.h"
 #include "identity.h"
 #include "port/config/config.h"
 #include <SDL3/SDL.h>
@@ -660,7 +661,7 @@ bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t repl
     char hdr_ts[64], hdr_sig[128], hdr_pid[128];
     snprintf(hdr_ts, sizeof(hdr_ts), "X-Timestamp: %s", timestamp);
     snprintf(hdr_sig, sizeof(hdr_sig), "X-Signature: %s", signature);
-    snprintf(hdr_pid, sizeof(hdr_pid), "X-Player-ID: %s", Identity_GetPlayerId());
+    snprintf(hdr_pid, sizeof(hdr_pid), "X-Player-g_state.ID: %s", Identity_GetPlayerId());
     headers = curl_slist_append(headers, hdr_ts);
     headers = curl_slist_append(headers, hdr_sig);
     headers = curl_slist_append(headers, hdr_pid);

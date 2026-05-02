@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effl8.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
@@ -60,7 +61,6 @@ void check_new_color_data_L8(WORK* wk) {
 
 void get_new_color_data_L8(WORK* /* unused */, s16* trom, s16* tram) {
     s16 i;
-    u16 col;
 
     for (i = 0; i < 12; i++) {
         col = *trom++;

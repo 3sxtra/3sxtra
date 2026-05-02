@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff97.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -25,10 +26,10 @@ void effect_97_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
-            if (plw[ewk->master_id].wu.routine_no[2] == 1 && plw[ewk->master_id].wu.routine_no[3] == 0) {
+            if (g_state.plw[ewk->master_id].wu.routine_no[2] == 1 && g_state.plw[ewk->master_id].wu.routine_no[3] == 0) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.old_rno[0] = 16;
             }
@@ -39,7 +40,7 @@ void effect_97_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] > 0) {
@@ -50,7 +51,7 @@ void effect_97_move(WORK_Other* ewk) {
                 ewk->wu.mvxy.a[1].sp = 0xE8000;
                 ewk->wu.mvxy.d[1].sp = -0x6000;
 
-                if (plw[ewk->master_id].wu.id) {
+                if (g_state.plw[ewk->master_id].wu.id) {
                     ewk->wu.mvxy.a[0].sp = -0xA8000;
                     ewk->wu.mvxy.d[0].sp = -0x1000;
                 } else {
@@ -65,7 +66,7 @@ void effect_97_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] > 0) {

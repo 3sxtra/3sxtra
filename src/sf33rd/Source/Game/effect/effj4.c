@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effj4.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
@@ -21,7 +22,7 @@ void effect_J4_move(WORK_Other* ewk) {
         ewk->wu.rl_flag = 0;
 
         if (ewk->wu.type) {
-            SA_shadow_on = 1;
+            g_state.SA_shadow_on = 1;
         }
 
         if (ewk->wu.dir_timer == 0xFF) {
@@ -32,27 +33,27 @@ void effect_J4_move(WORK_Other* ewk) {
         ewk->wu.my_priority = ewk->wu.position_z = 71;
         ewk->wu.shell_ix[0] = 0;
         ewk->wu.shell_ix[1] = 384;
-        ewk->wu.shell_ix[2] = -base_y_pos;
+        ewk->wu.shell_ix[2] = -g_state.base_y_pos;
         ewk->wu.shell_ix[3] = 224;
         ewk->wu.position_x = 0;
         ewk->wu.position_y = 0;
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[0] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
             goto jump;
         }
 
-        if (Game_pause == 129 && !pcon_dp_flag) {
+        if (g_state.Game_pause == 129 && !g_state.pcon_dp_flag) {
             break;
         }
 
-        if (ewk->wu.dir_timer != 0x7FFF && !Game_pause && !EXE_flag && --ewk->wu.dir_timer <= 0) {
+        if (ewk->wu.dir_timer != 0x7FFF && !g_state.Game_pause && !g_state.EXE_flag && --ewk->wu.dir_timer <= 0) {
         jump:
             ewk->wu.routine_no[0]++;
 
             if (ewk->wu.type) {
-                SA_shadow_on = 0;
+                g_state.SA_shadow_on = 0;
             }
         }
 
@@ -95,7 +96,7 @@ s32 effect_J4_init(u8 data2) {
 }
 
 s32 setup_sa_shadow(u8 /* unused */, u8 data) {
-    if (test_flag) {
+    if (g_state.test_flag) {
         return -1;
     }
 

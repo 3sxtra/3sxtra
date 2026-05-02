@@ -22,11 +22,12 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 #include <stdio.h>
 
 #include "sf33rd/Source/Game/effect/eff45.h"                /* Message_Data */
 #include "sf33rd/Source/Game/menu/menu_network_constants.h" /* NET_BG_MODE_BLUE, EFF_Z_BLUE_BG */
-#include "sf33rd/Source/Game/engine/workuser.h"             /* Menu_Cursor_X, Decide_ID, Interface_Type, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"             /* g_state.Menu_Cursor_X, g_state.Decide_ID, Interface_Type, etc. */
 #include "sf33rd/Source/Game/menu/menu.h" /* Menu_Common_Init, Setup_Replay_Sub, Setup_Final_Cursor_Pos, Load_Replay_MC_Sub */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Setup_BG, Clear_Flash_Sub, Clear_Flash_Init */
@@ -76,15 +77,15 @@ static void load_replay_enter(struct _TASK* task_ptr) {
          * Same pattern as Network_Lobby case 11: effect_work_init() kills all
          * existing effects (Mode Select's menu items, cursor, header), then
          * we create a fresh blue BG on 0x4E. */
-        Menu_Cursor_X[1] = Menu_Cursor_X[0];
+        g_state.Menu_Cursor_X[1] = g_state.Menu_Cursor_X[0];
 
         effect_work_init();
         Menu_Common_Init();
 
         Message_Data->kind_req = NET_BG_MODE_BLUE;
-        Order[0x4E] = 5;
-        Order_Timer[0x4E] = 1;
-        Order_Dir[0x4E] = 1;
+        g_state.Order[0x4E] = 5;
+        g_state.Order_Timer[0x4E] = 1;
+        g_state.Order_Dir[0x4E] = 1;
         effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
 
         task_ptr->timer = 0;
@@ -92,7 +93,7 @@ static void load_replay_enter(struct _TASK* task_ptr) {
         rmlui_wrapper_hide_all_game_documents();
     } else {
         /* ── Legacy native path: full Menu_in_Sub + CPS3 effects ── */
-        Menu_Cursor_X[1] = Menu_Cursor_X[0];
+        g_state.Menu_Cursor_X[1] = g_state.Menu_Cursor_X[0];
         Clear_Flash_Sub();
 
         FadeOut(1, 0xFF, 8);
@@ -100,13 +101,13 @@ static void load_replay_enter(struct _TASK* task_ptr) {
         task_ptr->timer = 5;
         Menu_Common_Init();
 
-        Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
-        Menu_Suicide[0] = 1;
-        Menu_Suicide[1] = 0;
-        Order[0x64] = 4;
-        Order_Timer[0x64] = 1;
+        g_state.Menu_Cursor_Y[0] = g_state.Cursor_Y_Pos[0][1];
+        g_state.Menu_Suicide[0] = 1;
+        g_state.Menu_Suicide[1] = 0;
+        g_state.Order[0x64] = 4;
+        g_state.Order_Timer[0x64] = 1;
 
-        Menu_Cursor_X[0] = 0;
+        g_state.Menu_Cursor_X[0] = 0;
         Setup_BG(1, 0x200, 0);
         Setup_Replay_Sub(0x6E, MENU_HEADER_REPLAY, 1);
         Clear_Flash_Init(4);
@@ -121,7 +122,7 @@ static void load_replay_enter(struct _TASK* task_ptr) {
  *  state machine (calling Menu_Sub_case1 and FadeIn). However, Load_Replay
  *  has custom behavior:
  *    - After WAIT completes: open the RmlUi replay picker (case 1).
- *    - After FADE_IN: set Menu_Cursor_X (case 2).
+ *    - After FADE_IN: set g_state.Menu_Cursor_X (case 2).
  *    - During ACTIVE: poll the picker (case 3) then load game (case 4).
  *
  *  We handle the WAIT→picker transition in the first tick of ACTIVE phase.
@@ -141,7 +142,7 @@ static void load_replay_enter(struct _TASK* task_ptr) {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void load_replay_tick(struct _TASK* task_ptr) {
-    Menu_Cursor_X[1] = Menu_Cursor_X[0];
+    g_state.Menu_Cursor_X[1] = g_state.Menu_Cursor_X[0];
     Clear_Flash_Sub();
 
     switch (s_phase) {
@@ -152,7 +153,7 @@ static void load_replay_tick(struct _TASK* task_ptr) {
          * picker now and set up the cursor. */
         rmlui_replay_picker_open(0);
         task_ptr->free[3] = 0;
-        Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(0, 8);
+        g_state.Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(0, 8);
         s_phase = REPLAY_PHASE_PICKER_POLL;
         break;
 
@@ -169,23 +170,23 @@ static void load_replay_tick(struct _TASK* task_ptr) {
             const char* filename = rmlui_replay_picker_get_filename();
             if (NativeSave_LoadReplay(filename) == 0) {
                 /* Load successful — set up for game transition */
-                Decide_ID = 0;
+                g_state.Decide_ID = 0;
                 if (Interface_Type[0] == 0) {
-                    Decide_ID = 1;
+                    g_state.Decide_ID = 1;
                 }
                 task_ptr->r_no[2] = 4; /* for Load_Replay_Sub compatibility */
                 task_ptr->r_no[3] = 0;
                 s_phase = REPLAY_PHASE_GAME_LOAD;
             } else {
                 /* Load failed — cancel back to Mode_Select */
-                IO_Result = 0x200;
+                g_state.IO_Result = 0x200;
                 Load_Replay_MC_Sub(task_ptr, 0);
                 /* Load_Replay_MC_Sub sets r_no to return to Mode_Select */
                 MenuScreen_ExitToLegacy(task_ptr);
             }
         } else if (pick_result == -1) {
             /* User cancelled the picker — go back to Mode_Select */
-            IO_Result = 0x200;
+            g_state.IO_Result = 0x200;
             Load_Replay_MC_Sub(task_ptr, 0);
             /* Load_Replay_MC_Sub sets r_no to return to Mode_Select */
             MenuScreen_ExitToLegacy(task_ptr);

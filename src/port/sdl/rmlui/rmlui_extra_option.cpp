@@ -6,12 +6,13 @@
  * objects spawned by Setup_Next_Page() for Extra Option pages.
  *
  * Key globals:
- *   save_w[1].extra_option.contents[Menu_Page][row] — toggle values
- *   Menu_Page, Menu_Cursor_Y[0], Ex_Page_Data[], Ex_Title_Data[][],
+ *   save_w[1].extra_option.contents[g_state.Menu_Page][row] — toggle values
+ *   g_state.Menu_Page, g_state.Menu_Cursor_Y[0], Ex_Page_Data[], Ex_Title_Data[][],
  *   Ex_Letter_Data[][][] — data tables in ex_data.h / ex_data.c
  */
 
 #include "port/sdl/rmlui/rmlui_extra_option.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -76,13 +77,13 @@ extern "C" void rmlui_extra_option_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("extra_page", [](Rml::Variant& v) { v = (int)Menu_Page; });
+    ctor.BindFunc("extra_page", [](Rml::Variant& v) { v = (int)g_state.Menu_Page; });
     ctor.BindFunc("extra_page_max", [](Rml::Variant& v) { v = 3; }); // 0-indexed max
 
-    ctor.BindFunc("extra_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("extra_cursor", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
 
     ctor.BindFunc("extra_row_count", [](Rml::Variant& v) {
-        int page = Menu_Page;
+        int page = g_state.Menu_Page;
         if (page < 0 || page > 3)
             page = 0;
         v = (int)Ex_Page_Data[page];
@@ -94,14 +95,14 @@ extern "C" void rmlui_extra_option_init(void) {
             char name[32];
             snprintf(name, sizeof(name), "extra_label_%d", r);
             int row = r;
-            ctor.BindFunc(Rml::String(name), [row](Rml::Variant& v) { v = get_title_label(Menu_Page, row); });
+            ctor.BindFunc(Rml::String(name), [row](Rml::Variant& v) { v = get_title_label(g_state.Menu_Page, row); });
         }
         {
             char name[32];
             snprintf(name, sizeof(name), "extra_value_%d", r);
             int row = r;
             ctor.BindFunc(Rml::String(name), [row](Rml::Variant& v) {
-                int page = Menu_Page;
+                int page = g_state.Menu_Page;
                 if (page < 0 || page > 3)
                     page = 0;
                 int val = save_w[1].extra_option.contents[page][row];
@@ -124,7 +125,7 @@ extern "C" void rmlui_extra_option_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("extra_option"))
         return;
 
-    int page = (int)Menu_Page;
+    int page = (int)g_state.Menu_Page;
     if (page < 0 || page > 3)
         page = 0;
 
@@ -142,7 +143,7 @@ extern "C" void rmlui_extra_option_update(void) {
         }
     }
 
-    int cur = (int)Menu_Cursor_Y[0];
+    int cur = (int)g_state.Menu_Cursor_Y[0];
     if (cur != s_cache.cursor) {
         s_cache.cursor = cur;
         s_model_handle.DirtyVariable("extra_cursor");

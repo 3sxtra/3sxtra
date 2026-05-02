@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/pow_pow.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/pow_data.h"
@@ -18,7 +19,7 @@
  */
 static void cal_damage_core(WORK* att_wu, s16 att_plus, PLW* ds) {
     s16 power = Power_Data[att_wu->att.pow];
-    s16 yy = (Play_Type == 1) ? Pow_Control_Data_1[0][3] : Pow_Control_Data_1[0][Round_Level];
+    s16 yy = (g_state.Play_Type == 1) ? Pow_Control_Data_1[0][3] : Pow_Control_Data_1[0][g_state.Round_Level];
 
     ds->wu.dm_vital = (power * yy) / 100;
 
@@ -55,21 +56,21 @@ void Additinal_Score_DM(WORK_Other* wk, u16 ix) {
         id = wk->master_id;
     }
 
-    Score[id][2] += Score_Data[ix];
+    g_state.Score[id][2] += Score_Data[ix];
 
-    if (Score[id][2] >= 99999900) {
-        Score[id][2] = 99999900;
+    if (g_state.Score[id][2] >= 99999900) {
+        g_state.Score[id][2] = 99999900;
     }
 
-    if ((Mode_Type != MODE_VERSUS) && (Mode_Type != MODE_REPLAY)) {
-        if (!plw[id].wu.pl_operator) {
+    if ((g_state.Mode_Type != MODE_VERSUS) && (g_state.Mode_Type != MODE_REPLAY)) {
+        if (!g_state.plw[id].wu.pl_operator) {
             return;
         }
     }
 
-    Score[id][Play_Type] += Score_Data[ix];
+    g_state.Score[id][g_state.Play_Type] += Score_Data[ix];
 
-    if (Score[id][Play_Type] >= 99999900) {
-        Score[id][Play_Type] = 99999900;
+    if (g_state.Score[id][g_state.Play_Type] >= 99999900) {
+        g_state.Score[id][g_state.Play_Type] = 99999900;
     }
 }

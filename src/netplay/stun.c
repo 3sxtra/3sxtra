@@ -9,6 +9,7 @@
 #define _GNU_SOURCE // Must be before any includes for getaddrinfo/timeval
 #endif
 #include "stun.h"
+#include "game_state.h"
 #include "net_tuning.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
@@ -82,7 +83,7 @@ static void build_binding_request(uint8_t* buf, uint8_t* transaction_id) {
     buf[5] = 0x12;
     buf[6] = 0xA4;
     buf[7] = 0x42;
-    // Transaction ID (12 random bytes)
+    // Transaction g_state.ID (12 random bytes)
     for (int i = 0; i < 12; i++) {
         transaction_id[i] = (uint8_t)(SDL_rand(256));
         buf[8 + i] = transaction_id[i];
@@ -109,7 +110,7 @@ static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* t
     if (cookie != STUN_MAGIC_COOKIE)
         return false;
 
-    // Verify transaction ID
+    // Verify transaction g_state.ID
     if (memcmp(&buf[8], transaction_id, 12) != 0)
         return false;
 
@@ -143,7 +144,7 @@ static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* t
                 decoded_ipv6[1] = buf[offset + 5] ^ (uint8_t)(STUN_MAGIC_COOKIE >> 16);
                 decoded_ipv6[2] = buf[offset + 6] ^ (uint8_t)(STUN_MAGIC_COOKIE >> 8);
                 decoded_ipv6[3] = buf[offset + 7] ^ (uint8_t)(STUN_MAGIC_COOKIE);
-                // XOR remaining 12 bytes with transaction ID
+                // XOR remaining 12 bytes with transaction g_state.ID
                 for (int i = 0; i < 12; i++) {
                     decoded_ipv6[4 + i] = buf[offset + 8 + i] ^ transaction_id[i];
                 }
@@ -263,7 +264,7 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
             continue;
         }
 
-        // Build and send STUN request (fresh transaction ID per server)
+        // Build and send STUN request (fresh transaction g_state.ID per server)
         uint8_t request[20];
         uint8_t transaction_id[12];
         build_binding_request(request, transaction_id);

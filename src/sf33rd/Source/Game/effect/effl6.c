@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effl6.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -23,7 +24,7 @@ static void effl6_back(WORK_Other* ewk);
 void effect_L6_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             if (ewk->wu.type) {
                 effl6_flont(ewk);
             } else {
@@ -156,11 +157,11 @@ s32 effect_L6_init(WORK* wk, u8 typel6) {
         ewk->wu.rl_flag = wk->rl_flag ^ 1;
 
         if (wk->rl_flag) {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + bg_w.pos_offset;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset;
             ewk->wu.xyz[0].disp.pos += 32;
             ewk->wu.old_rno[1] = wk->xyz[0].disp.pos + 96;
         } else {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos - bg_w.pos_offset;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - g_state.bg_w.pos_offset;
             ewk->wu.xyz[0].disp.pos -= 32;
             ewk->wu.old_rno[1] = wk->xyz[0].disp.pos - 96;
         }
@@ -171,18 +172,18 @@ s32 effect_L6_init(WORK* wk, u8 typel6) {
         ewk->wu.rl_flag = wk->rl_flag;
 
         if (wk->rl_flag) {
-            if (wk->xyz[0].disp.pos < bg_w.bgw[1].wxy[0].disp.pos) {
+            if (wk->xyz[0].disp.pos < g_state.bg_w.bgw[1].wxy[0].disp.pos) {
                 ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos - 256;
             } else {
-                ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos - (bg_w.pos_offset + 32);
+                ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - (g_state.bg_w.pos_offset + 32);
             }
 
             ewk->wu.old_rno[1] = wk->xyz[0].disp.pos - 32;
         } else {
-            if (wk->xyz[0].disp.pos > bg_w.bgw[1].wxy[0].disp.pos) {
+            if (wk->xyz[0].disp.pos > g_state.bg_w.bgw[1].wxy[0].disp.pos) {
                 ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos + 256;
             } else {
-                ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + (bg_w.pos_offset + 32);
+                ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + (g_state.bg_w.pos_offset + 32);
             }
 
             ewk->wu.old_rno[1] = wk->xyz[0].disp.pos + 32;

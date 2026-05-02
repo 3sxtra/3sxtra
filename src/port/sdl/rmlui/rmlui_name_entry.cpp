@@ -7,10 +7,11 @@
  * grid, cursor position, and ranking label.
  *
  * Key globals: name_wk[], Name_Input_f, naming_cnt[], Name_00[],
- *              Rank_In[][], E_Number[][]
+ *              g_state.Rank_In[][], g_state.E_Number[][]
  */
 
 #include "port/sdl/rmlui/rmlui_name_entry.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -62,33 +63,33 @@ extern "C" void rmlui_name_entry_init(void) {
         return;
 
     ctor.BindFunc("ne_active", [](Rml::Variant& v) {
-        // Active when either player is in name entry state (E_Number[pl][0] == 2)
-        v = (bool)(E_Number[0][0] == 2 || E_Number[1][0] == 2);
+        // Active when either player is in name entry state (g_state.E_Number[pl][0] == 2)
+        v = (bool)(g_state.E_Number[0][0] == 2 || g_state.E_Number[1][0] == 2);
     });
     ctor.BindFunc("ne_rank", [](Rml::Variant& v) {
-        int pl = (E_Number[0][0] == 2) ? 0 : 1;
+        int pl = (g_state.E_Number[0][0] == 2) ? 0 : 1;
         v = (int)(name_wk[pl].rank_in + 1);
     });
     ctor.BindFunc("ne_char0", [](Rml::Variant& v) {
-        int pl = (E_Number[0][0] == 2) ? 0 : 1;
+        int pl = (g_state.E_Number[0][0] == 2) ? 0 : 1;
         char buf[2] = { char_for_code(name_wk[pl].code[0]), '\0' };
         v = Rml::String(buf);
     });
     ctor.BindFunc("ne_char1", [](Rml::Variant& v) {
-        int pl = (E_Number[0][0] == 2) ? 0 : 1;
+        int pl = (g_state.E_Number[0][0] == 2) ? 0 : 1;
         char buf[2] = { char_for_code(name_wk[pl].code[1]), '\0' };
         v = Rml::String(buf);
     });
     ctor.BindFunc("ne_char2", [](Rml::Variant& v) {
-        int pl = (E_Number[0][0] == 2) ? 0 : 1;
+        int pl = (g_state.E_Number[0][0] == 2) ? 0 : 1;
         char buf[2] = { char_for_code(name_wk[pl].code[2]), '\0' };
         v = Rml::String(buf);
     });
     ctor.BindFunc("ne_cursor", [](Rml::Variant& v) {
-        int pl = (E_Number[0][0] == 2) ? 0 : 1;
+        int pl = (g_state.E_Number[0][0] == 2) ? 0 : 1;
         v = (int)name_wk[pl].index;
     });
-    ctor.BindFunc("ne_player", [](Rml::Variant& v) { v = (int)((E_Number[0][0] == 2) ? 1 : 2); });
+    ctor.BindFunc("ne_player", [](Rml::Variant& v) { v = (int)((g_state.E_Number[0][0] == 2) ? 1 : 2); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -100,7 +101,7 @@ extern "C" void rmlui_name_entry_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
 
-    bool active = (E_Number[0][0] == 2 || E_Number[1][0] == 2);
+    bool active = (g_state.E_Number[0][0] == 2 || g_state.E_Number[1][0] == 2);
     if (active != s_cache.active) {
         s_cache.active = active;
         NEDIRTY(ne_active);
@@ -113,7 +114,7 @@ extern "C" void rmlui_name_entry_update(void) {
     if (!active)
         return;
 
-    int pl = (E_Number[0][0] == 2) ? 0 : 1;
+    int pl = (g_state.E_Number[0][0] == 2) ? 0 : 1;
     if (pl != s_cache.pl_id) {
         s_cache.pl_id = pl;
         NEDIRTY(ne_player);

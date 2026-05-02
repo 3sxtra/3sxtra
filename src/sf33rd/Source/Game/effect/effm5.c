@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effm5.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/animation/appear.h"
@@ -25,7 +26,7 @@
 void effect_M5_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.routine_no[0]++;
             ewk->wu.disp_flag = 1;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -35,16 +36,16 @@ void effect_M5_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] < 1) {
                 ewk->wu.routine_no[0]++;
-                Appear_car_stop[ewk->master_id] = 1;
+                g_state.Appear_car_stop[ewk->master_id] = 1;
                 set_char_move_init(&ewk->wu, 0, 0x68);
 
-                if (Demo_Flag != 0) {
+                if (g_state.Demo_Flag != 0) {
                     SsRequestPan(0x135, 0x40, 0x40, 0, 2);
                 }
             } else {
@@ -57,14 +58,14 @@ void effect_M5_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.old_rno[0] = 0x14;
             } else if (ewk->wu.cg_type == 2) {
-                demo_car_flag[ewk->master_id] = 1;
+                g_state.demo_car_flag[ewk->master_id] = 1;
             }
         }
 
@@ -73,7 +74,7 @@ void effect_M5_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] < 0) {
@@ -95,7 +96,7 @@ void effect_M5_move(WORK_Other* ewk) {
         break;
 
     case 4:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             ewk->wu.old_rno[0]--;
 
             if (ewk->wu.old_rno[0] < 0) {
@@ -111,7 +112,7 @@ void effect_M5_move(WORK_Other* ewk) {
 
     case 5:
         ewk->wu.routine_no[0]++;
-        demo_car_flag[ewk->master_id] = 0;
+        g_state.demo_car_flag[ewk->master_id] = 0;
         ewk->wu.disp_flag = 0;
         break;
 
@@ -136,7 +137,7 @@ s32 effect_M5_init(PLW* oya) {
     }
 
     ewk = (WORK_Other*)frw[ix];
-    demo_car_flag[oya->wu.id] = 0;
+    g_state.demo_car_flag[oya->wu.id] = 0;
     ewk->wu.be_flag = 1;
     ewk->wu.id = 225;
     ewk->wu.work_id = 16;
@@ -156,16 +157,16 @@ s32 effect_M5_init(PLW* oya) {
         ewk->wu.xyz[1].cal = 0;
         ewk->wu.rl_flag = 0;
         ewk->wu.old_rno[0] = 40;
-        work = (bg_w.bgw[1].pos_x_work + 168) & 0xFFFF;
-        ewk->wu.xyz[0].disp.pos = (bg_w.bgw[1].pos_x_work + 320) & 0xFFFF;
+        work = (g_state.bg_w.bgw[1].pos_x_work + 168) & 0xFFFF;
+        ewk->wu.xyz[0].disp.pos = (g_state.bg_w.bgw[1].pos_x_work + 320) & 0xFFFF;
         cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[0], work, 0, 1, 1);
     } else {
         ewk->wu.xyz[1].cal = 0;
         ewk->wu.xyz[0].disp.low = 0;
         ewk->wu.rl_flag = 1;
         ewk->wu.old_rno[0] = 40;
-        work = (bg_w.bgw[1].pos_x_work - 168) & 0xFFFF;
-        ewk->wu.xyz[0].disp.pos = (bg_w.bgw[1].pos_x_work - 320) & 0xFFFF;
+        work = (g_state.bg_w.bgw[1].pos_x_work - 168) & 0xFFFF;
+        ewk->wu.xyz[0].disp.pos = (g_state.bg_w.bgw[1].pos_x_work - 320) & 0xFFFF;
         cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[0], work, 0, 1, 1);
     }
 

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
+#include "game_state.h"
 #include "common.h"
 #include <stdio.h>
 #include <string.h>
@@ -316,7 +317,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 #define COLCD_LOG_ENTRY(colcd_val, mode_val)                                                                           \
     do {                                                                                                               \
         if (colcd_log && wk->cg_number != 0) {                                                                         \
-            u64 key = ((u64)bg_w.stage << 32) | ((u64)wk->cg_number << 16) | (u64)((colcd_val) & 0x1FF) | 1ULL;        \
+            u64 key = ((u64)g_state.bg_w.stage << 32) | ((u64)wk->cg_number << 16) | (u64)((colcd_val) & 0x1FF) | 1ULL;        \
             u32 slot = (u32)((key * 0x9E3779B97F4A7C15ULL) >> 50);                                                     \
             int colcd_i;                                                                                               \
             for (colcd_i = 0; colcd_i < 16; colcd_i++) {                                                               \
@@ -325,7 +326,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
                     break;                                                                                             \
                 if (seen[idx] == 0) {                                                                                  \
                     seen[idx] = key;                                                                                   \
-                    fprintf(colcd_log, "%d,%u,%d,%d\n", bg_w.stage, wk->cg_number, (colcd_val) & 0x1FF, (mode_val));   \
+                    fprintf(colcd_log, "%d,%u,%d,%d\n", g_state.bg_w.stage, wk->cg_number, (colcd_val) & 0x1FF, (mode_val));   \
                     fflush(colcd_log);                                                                                 \
                     break;                                                                                             \
                 }                                                                                                      \
@@ -400,7 +401,6 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 /** @brief Look up and return the current color code for a character. */
 s16 exchange_current_colcd(WORK* wk) {
     WORK* mwk;
-    s16 col = ((WORK_Other*)wk)->wu.current_colcd;
 
     switch (((WORK_Other*)wk)->wu.work_id) {
     case 0x1:
@@ -469,14 +469,14 @@ s32 sort_push_request(WORK* wk) {
         return 1;
     }
 
-    if ((wk->disp_flag == 2) && ((wk->blink_timing + Game_timer & 1))) {
+    if ((wk->disp_flag == 2) && ((wk->blink_timing + g_state.Game_timer & 1))) {
         return 1;
     }
 
-    Mtrans_use_trans_mode(wk, base_y_pos);
+    Mtrans_use_trans_mode(wk, g_state.base_y_pos);
 
     if (wk->kage_flag) {
-        shadow_setup(wk, base_y_pos);
+        shadow_setup(wk, g_state.base_y_pos);
     }
 
     return 2;
@@ -488,7 +488,7 @@ s32 sort_push_request2(WORK_Other* wk) {
         return 1;
     }
 
-    set_judge_area_sprite((WORK_Other_JUDGE*)wk, base_y_pos);
+    set_judge_area_sprite((WORK_Other_JUDGE*)wk, g_state.base_y_pos);
 
     return 2;
 }
@@ -513,11 +513,11 @@ s32 sort_push_request3(WORK* wk) {
         return 1;
     }
 
-    if ((wk->disp_flag == 2) && (wk->blink_timing + Game_timer & 1)) {
+    if ((wk->disp_flag == 2) && (wk->blink_timing + g_state.Game_timer & 1)) {
         return 1;
     }
 
-    if (set_conn_sprite((WORK_Other_CONN*)wk, base_y_pos) == 1) {
+    if (set_conn_sprite((WORK_Other_CONN*)wk, g_state.base_y_pos) == 1) {
         return 1;
     }
 
@@ -534,7 +534,7 @@ s32 sort_push_request4(WORK* wk) {
         return 1;
     }
 
-    if ((wk->disp_flag == 2) && ((wk->blink_timing + Game_timer) & 1)) {
+    if ((wk->disp_flag == 2) && ((wk->blink_timing + g_state.Game_timer) & 1)) {
         return 1;
     }
 
@@ -549,7 +549,7 @@ s32 sort_push_request4(WORK* wk) {
     }
 
     if ((wk->id != 0x4C) && (wk->id != 0x46)) {
-        if (judge_flag) {
+        if (g_state.judge_flag) {
             if (wk->position_z < 0x48) {
                 wk->my_bright_type = 1;
                 wk->my_bright_level = 7;
@@ -674,7 +674,7 @@ static s32 sort_push_request_box_impl(WORK* wk, s16 bsy) {
 
 /** @brief Push a sprite render request (variant A, with extended transform). */
 s32 sort_push_requestA(WORK* wk) {
-    return sort_push_request_box_impl(wk, base_y_pos);
+    return sort_push_request_box_impl(wk, g_state.base_y_pos);
 }
 
 /** @brief Push a sprite render request (variant B, with CP3 palette transform). */

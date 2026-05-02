@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/select_timer.h"
+#include "game_state.h"
 #include "constants.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -54,32 +55,32 @@ static u8 sbcd(u8 a, u8 b) {
     return d;
 }
 
-/** @brief Pause the timer if Time_Stop indicates sleep mode. */
+/** @brief g_state.Pause the timer if g_state.Time_Stop indicates sleep mode. */
 static void check_sleep() {
-    if (Time_Stop == 2) {
-        select_timer_state.step = 0;
+    if (g_state.Time_Stop == 2) {
+        g_state.select_timer_state.step = 0;
     }
 }
 
 /** @brief Initialize the select timer for a new selection phase. */
 void SelectTimer_Init() {
-    select_timer_state.is_running = true;
-    select_timer_state.step = 0;
+    g_state.select_timer_state.is_running = true;
+    g_state.select_timer_state.step = 0;
 }
 
 /** @brief Clear and stop the select timer. */
 void SelectTimer_Finish() {
-    I_ZeroStruct(select_timer_state);
+    I_ZeroStruct(g_state.select_timer_state);
 }
 
 /**
  * @brief Run one frame of the select timer state machine.
  *
- * Steps: 0=waiting for Time_Stop to clear, 1=counting down each second,
+ * Steps: 0=waiting for g_state.Time_Stop to clear, 1=counting down each second,
  * 2=reached zero (30-frame grace period), 3=timeout fired.
  */
 void SelectTimer_Run() {
-    if (Present_Mode == 4 || Present_Mode == 5) {
+    if (g_state.Present_Mode == 4 || g_state.Present_Mode == 5) {
         return;
     }
 
@@ -87,14 +88,14 @@ void SelectTimer_Run() {
         return;
     }
 
-    if (Break_Into) {
+    if (g_state.Break_Into) {
         return;
     }
 
-    switch (select_timer_state.step) {
+    switch (g_state.select_timer_state.step) {
     case 0:
-        if (Time_Stop == 0) {
-            select_timer_state.step = 1;
+        if (g_state.Time_Stop == 0) {
+            g_state.select_timer_state.step = 1;
         }
 
         break;
@@ -102,17 +103,17 @@ void SelectTimer_Run() {
     case 1:
         check_sleep();
 
-        if (--Unit_Of_Timer) {
+        if (--g_state.Unit_Of_Timer) {
             break;
         }
 
-        Unit_Of_Timer = UNIT_OF_TIMER_MAX;
+        g_state.Unit_Of_Timer = UNIT_OF_TIMER_MAX;
         s_bcd_carry = 0;
-        Select_Timer = sbcd(1, Select_Timer);
+        g_state.Select_Timer = sbcd(1, g_state.Select_Timer);
 
-        if (Select_Timer == 0) {
-            select_timer_state.step = 2;
-            select_timer_state.timer = 30;
+        if (g_state.Select_Timer == 0) {
+            g_state.select_timer_state.step = 2;
+            g_state.select_timer_state.timer = 30;
         }
 
         break;
@@ -120,15 +121,15 @@ void SelectTimer_Run() {
     case 2:
         check_sleep();
 
-        if (Select_Timer) {
-            select_timer_state.step = 1;
-            Unit_Of_Timer = UNIT_OF_TIMER_MAX;
+        if (g_state.Select_Timer) {
+            g_state.select_timer_state.step = 1;
+            g_state.Unit_Of_Timer = UNIT_OF_TIMER_MAX;
         } else {
-            select_timer_state.timer -= 1;
+            g_state.select_timer_state.timer -= 1;
 
-            if (select_timer_state.timer == 0) {
-                Time_Over = true;
-                select_timer_state.step = 3;
+            if (g_state.select_timer_state.timer == 0) {
+                g_state.Time_Over = true;
+                g_state.select_timer_state.step = 3;
             }
         }
 
@@ -136,17 +137,17 @@ void SelectTimer_Run() {
 
     case 3:
         check_sleep();
-        Time_Over = true;
+        g_state.Time_Over = true;
 
-        if (Select_Timer) {
-            select_timer_state.step = 1;
-            Unit_Of_Timer = UNIT_OF_TIMER_MAX;
+        if (g_state.Select_Timer) {
+            g_state.select_timer_state.step = 1;
+            g_state.Unit_Of_Timer = UNIT_OF_TIMER_MAX;
         }
 
         break;
 
     default:
-        select_timer_state.is_running = false;
+        g_state.select_timer_state.is_running = false;
         break;
     }
 }

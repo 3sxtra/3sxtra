@@ -19,9 +19,9 @@
  *   Item 5: Default
  *   Item 6: Exit
  *
- * L/R value changes are live — they modify X_Adjust_Buff, Y_Adjust_Buff,
+ * L/R value changes are live — they modify g_state.X_Adjust_Buff, g_state.Y_Adjust_Buff,
  * Disp_Size_H/V, and screen_mode via Screen_Move_Sub_LR().
- * On exit, commits X_Adjust and Y_Adjust from buffers.
+ * On exit, commits g_state.X_Adjust and g_state.Y_Adjust from buffers.
  * On "Default", resets all adjust values to zero and sizes to 100.
  *
  * Legacy location: menu_input.c lines 918–973 (Screen_Adjust_Sub / Screen_Exit_Check).
@@ -38,13 +38,14 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Screen_Adjust_Sub, Screen_Exit_Check, etc. */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Save_Game_Data */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* save_w, sys_w */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
@@ -64,7 +65,7 @@ static bool s_wait_done = false;
  *
  *  Initialize fade, timer, cursor, and header bar for MENU_HEADER_SCREEN_ADJUST.
  *  X/Y Adjust buffers are initialized from the option_select_enter flow
- *  which sets X_Adjust_Buff/Y_Adjust_Buff prior to entering sub-screens.
+ *  which sets g_state.X_Adjust_Buff/g_state.Y_Adjust_Buff prior to entering sub-screens.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void screen_adjust_enter(struct _TASK* task_ptr) {
@@ -74,22 +75,22 @@ static void screen_adjust_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[2] = 1;
     task_ptr->timer = 5;
     Menu_Common_Init();
-    Menu_Cursor_Y[0] = 0;
-    Menu_Suicide[1] = 1;
-    Menu_Suicide[2] = 0;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Suicide[1] = 1;
+    g_state.Menu_Suicide[2] = 0;
 
     /* Kill/setup parent effect slots */
-    Order[0x4F] = 4;
-    Order_Timer[0x4F] = 1;
-    Order[0x4E] = 2;
-    Order_Dir[0x4E] = 2;
-    Order_Timer[0x4E] = 1;
+    g_state.Order[0x4F] = 4;
+    g_state.Order_Timer[0x4F] = 1;
+    g_state.Order[0x4E] = 2;
+    g_state.Order_Dir[0x4E] = 2;
+    g_state.Order_Timer[0x4E] = 1;
 
     /* Header bar — CPS3 effect for Screen Adjust */
     effect_57_init(0x65, MENU_HEADER_SCREEN_ADJUST, 0, 0x3F, 2);
-    Order[0x65] = 1;
-    Order_Dir[0x65] = 8;
-    Order_Timer[0x65] = 1;
+    g_state.Order[0x65] = 1;
+    g_state.Order_Dir[0x65] = 8;
+    g_state.Order_Timer[0x65] = 1;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -103,13 +104,13 @@ static void screen_adjust_enter(struct _TASK* task_ptr) {
 static void screen_adjust_tick(struct _TASK* task_ptr) {
     if (!s_wait_done) {
         s_wait_done = true;
-        Suicide[3] = 0;
+        g_state.Suicide[3] = 0;
     }
 
     Screen_Adjust_Sub(0);
     Screen_Exit_Check(task_ptr, 0);
 
-    if (IO_Result == 0) {
+    if (g_state.IO_Result == 0) {
         Screen_Adjust_Sub(1);
         Screen_Exit_Check(task_ptr, 1);
     }

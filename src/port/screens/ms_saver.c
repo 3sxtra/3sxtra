@@ -7,6 +7,7 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/reset.h"
@@ -25,12 +26,12 @@ static void ms_saver_enter(struct _TASK* tp) {
 static void ms_saver_tick(struct _TASK* tp) {
     switch (tp->free[0]) {
     case 1: /* Saver_Check */
-        if (Demo_Flag == 0) {
+        if (g_state.Demo_Flag == 0) {
             tp->timer = 0;
             return;
         }
 
-        if ((PLsw[0][0] != 0) || (PLsw[1][0] != 0)) {
+        if ((g_state.PLsw[0][0] != 0) || (g_state.PLsw[1][0] != 0)) {
             tp->timer = 0;
             return;
         }
@@ -41,7 +42,7 @@ static void ms_saver_tick(struct _TASK* tp) {
         break;
 
     case 2: /* Saver_Move */
-        if ((PLsw[0][0] != 0) || PLsw[1][0] != 0) {
+        if ((g_state.PLsw[0][0] != 0) || g_state.PLsw[1][0] != 0) {
             /* Input detected -> exit screensaver */
             tp->free[0] = 1;
             tp->free[1] = 0;

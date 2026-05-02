@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effd9.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
@@ -74,7 +75,7 @@ void effect_D9_move(WORK_Other* ewk) {
             break;
         }
 
-        if ((ewk->wu.vital_old & 2) == 0 || EXE_flag != 0 || Game_pause != 0 || mwk->wu.hit_stop > 0 ||
+        if ((ewk->wu.vital_old & 2) == 0 || g_state.EXE_flag != 0 || g_state.Game_pause != 0 || mwk->wu.hit_stop > 0 ||
             (--ewk->wu.dir_timer >= 0)) {
             if ((ewk->wu.vital_old & 4) != 0) {
                 if (ewk->wu.dir_old == mwk->wu.dm_count_up) {

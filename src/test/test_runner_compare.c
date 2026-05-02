@@ -6,6 +6,7 @@
 #endif
 
 #include "test/test_runner_compare.h"
+#include "game_state.h"
 #include "arcade/arcade_constants.h"
 #include "arcade/arcade_char_data.h"
 #include "common.h"
@@ -39,7 +40,7 @@ static Position read_position(SDL_IOStream* io, int player) {
 }
 
 static Position get_position(int player) {
-    const XY* xyz = plw[player].wu.xyz;
+    const XY* xyz = g_state.plw[player].wu.xyz;
     return (Position) { .x = xyz[0].disp.pos, .y = xyz[1].disp.pos };
 }
 
@@ -53,7 +54,7 @@ static u16 read_game_timer(SDL_IOStream* io) {
 
 static void read_wcp(SDL_IOStream* io, WORK_CP dst[2]) {
     SDL_SeekIO(io, WCP_OFFSET, SDL_IO_SEEK_SET);
-    SDL_ReadIO(io, dst, sizeof(wcp));
+    SDL_ReadIO(io, dst, sizeof(g_state.wcp));
 
     for (int i = 0; i < 2; i++) {
         WORK_CP* w = &dst[i];
@@ -123,10 +124,10 @@ static void read_t_pl_lvr(SDL_IOStream* io, T_PL_LVR dst[2]) {
 
 static void compare_main_values(SDL_IOStream* io) {
     const u8 allow_a_battle_f_cps3 = read_allow_a_battle_f(io);
-    stop_if(Allow_a_battle_f != allow_a_battle_f_cps3);
+    stop_if(g_state.Allow_a_battle_f != allow_a_battle_f_cps3);
 
     const u8 round_timer_cps3 = read_u8(io, ROUND_TIMER_OFFSET);
-    stop_if(round_timer != round_timer_cps3);
+    stop_if(g_state.round_timer != round_timer_cps3);
 
     for (int i = 0; i < 2; i++) {
         const Sint64 plw_offset = calc_plw_offset(i);
@@ -140,19 +141,19 @@ static void compare_main_values(SDL_IOStream* io) {
         //     printf("≡ƒö┤ %llu pos x: %d vs %d\n", frame, pos_cps3.x, pos_3sx.x);
         // }
 
-        const s16 vital_new_3sx = plw[i].wu.vital_new;
+        const s16 vital_new_3sx = g_state.plw[i].wu.vital_new;
         const s16 vital_new_cps3 = read_s16(io, plw_offset + WORK_VITAL_NEW_OFFSET);
         stop_if(vital_new_3sx != vital_new_cps3);
 
-        const s16 stun_3sx = piyori_type[i].now.quantity.h;
+        const s16 stun_3sx = g_state.piyori_type[i].now.quantity.h;
         const s16 stun_cps3 = read_s16(io, PIYORI_TYPE_OFFSET + i * sizeof(PiyoriType) + offsetof(PiyoriType, now));
         stop_if(stun_3sx != stun_cps3);
 
-        const s16 sa_gauge_3sx = super_arts[i].gauge.s.h;
+        const s16 sa_gauge_3sx = g_state.super_arts[i].gauge.s.h;
         const s16 sa_gauge_cps3 = read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SA_WORK) + offsetof(SA_WORK, gauge));
         stop_if(sa_gauge_3sx != sa_gauge_cps3);
 
-        const s16 sa_store_3sx = super_arts[i].store;
+        const s16 sa_store_3sx = g_state.super_arts[i].store;
         const s16 sa_store_cps3 = read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SA_WORK) + offsetof(SA_WORK, store));
         stop_if(sa_store_3sx != sa_store_cps3);
     }
@@ -160,37 +161,37 @@ static void compare_main_values(SDL_IOStream* io) {
 
 static void compare_service_values(SDL_IOStream* io, bool compare_characters, Uint64 frame) {
     const u16 game_timer_cps3 = read_game_timer(io);
-    stop_if(Game_timer != game_timer_cps3);
+    stop_if(g_state.Game_timer != game_timer_cps3);
 
     const s16 counter_hi_cps3 = read_s16(io, COUNTER_HI_OFFSET);
-    stop_if(Counter_hi != counter_hi_cps3);
+    stop_if(g_state.Counter_hi != counter_hi_cps3);
 
     const s16 counter_low_cps3 = read_s16(io, COUNTER_LOW_OFFSET);
-    stop_if(Counter_low != counter_low_cps3);
+    stop_if(g_state.Counter_low != counter_low_cps3);
 
     const s16 random_ix16_cps3 = read_s16(io, RANDOM_IX_16_OFFSET);
-    // This is dirty, but syncing Random_ix16 every frame helps avoid animation-related desyncs
-    Random_ix16 = random_ix16_cps3;
+    // This is dirty, but syncing g_state.Random_ix16 every frame helps avoid animation-related desyncs
+    g_state.Random_ix16 = random_ix16_cps3;
 
     const s16 random_ix32_cps3 = read_s16(io, RANDOM_IX_32_OFFSET);
-    stop_if(Random_ix32 != random_ix32_cps3);
+    stop_if(g_state.Random_ix32 != random_ix32_cps3);
 
     const u8 cmb_stock_0_cps3 = read_u8(io, CMB_STOCK_OFFSET);
     const u8 cmb_stock_1_cps3 = read_u8(io, CMB_STOCK_OFFSET + 1);
-    stop_if(cmb_stock[0] != cmb_stock_0_cps3);
-    stop_if(cmb_stock[1] != cmb_stock_1_cps3);
+    stop_if(g_state.cmb_stock[0] != cmb_stock_0_cps3);
+    stop_if(g_state.cmb_stock[1] != cmb_stock_1_cps3);
 
     const u8 cmb_all_stock_cps3 = read_u8(io, CMB_ALL_STOCK_OFFSET);
-    stop_if(cmb_all_stock[0] != cmb_all_stock_cps3);
+    stop_if(g_state.cmb_all_stock[0] != cmb_all_stock_cps3);
 
     for (int i = 0; i < 4; i++) {
         const u16 c_no_cps3 = read_u16(io, C_NO_OFFSET + i * sizeof(u16));
-        stop_if(C_No[i] != c_no_cps3);
+        stop_if(g_state.C_No[i] != c_no_cps3);
 
         const u16 g_no_cps3 = read_u16(io, G_NO_OFFSET + i * sizeof(u16));
 
         if (i != 0) {
-            stop_if(G_No[i] != g_no_cps3);
+            stop_if(g_state.G_No[i] != g_no_cps3);
         }
     }
 
@@ -204,38 +205,38 @@ static void compare_service_values(SDL_IOStream* io, bool compare_characters, Ui
         // const u32 curr_rca_cps3 = read_u32(io, plw_offset + WORK_CURR_RCA_OFFSET);
         // printf("%llu curr_rca: 0x%x\n", frame, curr_rca_cps3);
 
-        const u8 caution_flag_3sx = plw[i].caution_flag;
+        const u8 caution_flag_3sx = g_state.plw[i].caution_flag;
         const u8 caution_flag_cps3 = read_u8(io, plw_offset + PLW_CAUTION_FLAG_OFFSET);
         stop_if(caution_flag_3sx != caution_flag_cps3);
 
-        const u8 do_not_move_3sx = plw[i].do_not_move;
+        const u8 do_not_move_3sx = g_state.plw[i].do_not_move;
         const u8 do_not_move_cps3 = read_u8(io, plw_offset + PLW_DO_NOT_MOVE_OFFSET);
         stop_if(do_not_move_3sx != do_not_move_cps3);
 
         for (int j = 0; j < 8; j++) {
-            const s16 routine_no_3sx = plw[i].wu.routine_no[j];
+            const s16 routine_no_3sx = g_state.plw[i].wu.routine_no[j];
             const s16 routine_no_cps3 = read_s16(io, plw_offset + WORK_ROUTINE_NO_OFFSET + j * 2);
             stop_if(routine_no_3sx != routine_no_cps3);
         }
 
-        const s16 dm_stop_3sx = plw[i].wu.dm_stop;
+        const s16 dm_stop_3sx = g_state.plw[i].wu.dm_stop;
         const s16 dm_stop_cps3 = read_s16(io, plw_offset + WORK_DM_STOP_OFFSET);
         stop_if(dm_stop_3sx != dm_stop_cps3);
 
-        const s16 hit_stop_3sx = plw[i].wu.hit_stop;
+        const s16 hit_stop_3sx = g_state.plw[i].wu.hit_stop;
         const s16 hit_stop_cps3 = read_s16(io, plw_offset + WORK_HIT_STOP_OFFSET);
         stop_if(hit_stop_3sx != hit_stop_cps3);
 
-        const u8 sa_stop_flag_3sx = plw[i].sa_stop_flag;
+        const u8 sa_stop_flag_3sx = g_state.plw[i].sa_stop_flag;
         const u8 sa_stop_flag_cps3 = read_u8(io, plw_offset + PLW_SA_STOP_FLAG_OFFSET);
         stop_if(sa_stop_flag_3sx != sa_stop_flag_cps3);
 
         // const u16 cg_ix_cps3 = read_u16(io, plw_offset + WORK_CG_IX_OFFSET);
-        // const u16 cg_ix_3sx = plw[i].wu.cg_ix;
+        // const u16 cg_ix_3sx = g_state.plw[i].wu.cg_ix;
         // stop_if(cg_ix_cps3 != cg_ix_3sx);
 
         const u16 cg_add_xy_cps3 = read_u16(io, plw_offset + WORK_CG_ADD_XY_OFFSET);
-        const u16 cg_add_xy_3sx = plw[i].wu.cg_add_xy;
+        const u16 cg_add_xy_3sx = g_state.plw[i].wu.cg_add_xy;
         stop_if(cg_add_xy_3sx != cg_add_xy_cps3);
     }
 }
@@ -246,7 +247,7 @@ static void compare_waza_work(SDL_IOStream* io) {
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 56; j++) {
-            const WAZA_WORK* w_3sx = &waza_work[i][j];
+            const WAZA_WORK* w_3sx = &g_state.waza_work[i][j];
             const WAZA_WORK* w_cps3 = &waza_work_cps3[i][j];
 
             stop_if(w_3sx->w_type != w_cps3->w_type);
@@ -273,7 +274,7 @@ static void compare_wcp(SDL_IOStream* io) {
         const s16 waza_type_cps3 = read_s16(io, WAZA_TYPE_OFFSET + i * sizeof(s16));
         stop_if(waza_type[i] != waza_type_cps3);
 
-        const WORK_CP* w_3sx = &wcp[i];
+        const WORK_CP* w_3sx = &g_state.wcp[i];
         const WORK_CP* w_cps3 = &wcp_cps3[i];
 
         stop_if(w_3sx->sw_lvbt != w_cps3->sw_lvbt);
@@ -313,7 +314,7 @@ void compare_values(SDL_IOStream* io, Uint64 frame) {
     // compare_waza_work(io);
     // compare_wcp(io);
 
-    const bool compare_characters = G_No[1] == 2 && G_No[2] == 1;
+    const bool compare_characters = g_state.G_No[1] == 2 && g_state.G_No[2] == 1;
     compare_service_values(io, compare_characters, frame);
 
     if (compare_characters) {
@@ -367,8 +368,8 @@ static void sync_waza_work(WAZA_WORK* dst, const WAZA_WORK* src, Character chara
 }
 
 void sync_values(SDL_IOStream* io) {
-    Random_ix16 = read_s16(io, RANDOM_IX_16_OFFSET);
-    Random_ix32 = read_s16(io, RANDOM_IX_32_OFFSET);
+    g_state.Random_ix16 = read_s16(io, RANDOM_IX_16_OFFSET);
+    g_state.Random_ix32 = read_s16(io, RANDOM_IX_32_OFFSET);
 
     // WORK_CP wcp_cps3[2];
     // read_wcp(io, wcp_cps3);
@@ -380,13 +381,13 @@ void sync_values(SDL_IOStream* io) {
     // read_t_pl_lvr(io, t_pl_lvr_cps3);
 
     for (int i = 0; i < 2; i++) {
-        const Character character = plw[i].player_number;
+        const Character character = g_state.plw[i].player_number;
 
-        // sync_lvr(&t_pl_lvr[i], &t_pl_lvr_cps3[i]);
-        // sync_wcp(&wcp[i], &wcp_cps3[i]);
+        // sync_lvr(&g_state.t_pl_lvr[i], &t_pl_lvr_cps3[i]);
+        // sync_wcp(&g_state.wcp[i], &wcp_cps3[i]);
 
         // for (int j = 0; j < 56; j++) {
-        //     sync_waza_work(&waza_work[i][j], &waza_work_cps3[i][j], character);
+        //     sync_waza_work(&g_state.waza_work[i][j], &waza_work_cps3[i][j], character);
         // }
     }
 }

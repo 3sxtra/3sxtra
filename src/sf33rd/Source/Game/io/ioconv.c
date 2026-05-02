@@ -8,6 +8,7 @@
  */
 
 #include "sf33rd/Source/Game/io/ioconv.h"
+#include "game_state.h"
 #include "port/menu_task.h"
 #include "common.h"
 #include "main.h"
@@ -94,7 +95,7 @@ u32 get_action_flag(const char* action) {
     return 0;
 }
 
-/** @brief Test whether a given input ID is active in the button state. */
+/** @brief Test whether a given input g_state.ID is active in the button state. */
 static bool is_input_active(SDLPad_ButtonState* state, InputID input_id) {
     switch (input_id) {
     case INPUT_ID_DPAD_UP:
@@ -158,11 +159,11 @@ void keyConvert() {
     s32 j;
     s32 repeat_on = 0;
 
-    if (Debug_w[DEBUG_AUTO_RAPID_SHOT] && mpp_w.inGame && (Game_pause == 0)) {
+    if (Debug_w[DEBUG_AUTO_RAPID_SHOT] && mpp_w.inGame && (g_state.Game_pause == 0)) {
         repeat_on = 1;
     }
 
-    if ((CurrentSave()->extra_option.contents[0][4]) && mpp_w.inGame && (Game_pause == 0)) {
+    if ((CurrentSave()->extra_option.contents[0][4]) && mpp_w.inGame && (g_state.Game_pause == 0)) {
         repeat_on = 1;
 
         if (MenuTask_IsActive() && (MenuTask_GetPhase() != MTP_TRAINING)) {

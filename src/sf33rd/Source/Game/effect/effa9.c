@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effa9.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -36,14 +37,14 @@ void effect_A9_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.vital_new) || Suicide[3] != 0) {
+        if (Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.vital_new) || g_state.Suicide[3] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 99;
             break;
         }
 
         if (ewk->wu.char_index == 55) {
-            if (E_07_Flag[LOSER]) {
+            if (g_state.E_07_Flag[g_state.LOSER]) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.dir_timer = 20;
                 SsRequest(0x62);
@@ -72,7 +73,7 @@ void effect_A9_move(WORK_Other* ewk) {
         break;
 
     case 4:
-        if (Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.vital_new) || Suicide[3] != 0) {
+        if (Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.vital_new) || g_state.Suicide[3] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 99;
         }
@@ -121,8 +122,8 @@ s32 effect_A9_init(s16 Char_Index, s16 Option, s16 Pos_Index, s16 Option2) {
     ewk->wu.char_index = Char_Index;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.xyz[0].disp.pos = Offset_BG_X[3] + bg_w.bgw[3].wxy[0].disp.pos + Position_Data_A9[Pos_Index][0];
-    ewk->wu.xyz[1].disp.pos = bg_w.bgw[3].wxy[1].disp.pos + Position_Data_A9[Pos_Index][1];
+    ewk->wu.xyz[0].disp.pos = g_state.Offset_BG_X[3] + g_state.bg_w.bgw[3].wxy[0].disp.pos + Position_Data_A9[Pos_Index][0];
+    ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[3].wxy[1].disp.pos + Position_Data_A9[Pos_Index][1];
     ewk->wu.xyz[2].disp.pos = Position_Data_A9[Pos_Index][2];
     ewk->wu.vital_new = Position_Data_A9[Pos_Index][3];
     Setup_A9(ewk, Char_Index, Option, Option2);

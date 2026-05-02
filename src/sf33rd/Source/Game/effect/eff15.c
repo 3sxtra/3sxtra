@@ -1,9 +1,10 @@
 /**
  * @file eff15.c
- * Effect: Score / Bonus Display Effect
+ * Effect: g_state.Score / Bonus Display Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff15.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -49,7 +50,7 @@ static void eff15_koishi(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -65,7 +66,7 @@ static void eff15_koishi(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {

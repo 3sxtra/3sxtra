@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/pls01.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/caldir.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -46,11 +47,11 @@ const s16 chcgp_hos[20] = { 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1
 
 /** @brief Checks if Super Art stop is currently active. */
 s32 sa_stop_check() {
-    if (plw[0].sa_stop_flag != 0) {
+    if (g_state.plw[0].sa_stop_flag != 0) {
         return 1;
     }
 
-    if (plw[1].sa_stop_flag != 0) {
+    if (g_state.plw[1].sa_stop_flag != 0) {
         return 1;
     }
 
@@ -109,9 +110,9 @@ void set_rl_waza(PLW* wk) {
     s16 result;
 
     while (1) {
-        if (Bonus_Game_Flag == 20) {
+        if (g_state.Bonus_Game_Flag == 20) {
             if (wk->wu.pl_operator != 0) {
-                if (wk->wu.xyz[0].disp.pos < bs2_hosei[0] || wk->wu.xyz[0].disp.pos > bs2_hosei[1]) {
+                if (wk->wu.xyz[0].disp.pos < g_state.bs2_hosei[0] || wk->wu.xyz[0].disp.pos > g_state.bs2_hosei[1]) {
                     break;
                 }
 
@@ -148,7 +149,7 @@ void set_rl_waza(PLW* wk) {
 s16 check_rl_on_car(PLW* wk) {
     s16 rnum;
 
-    if (Bonus_Game_Flag != 20) {
+    if (g_state.Bonus_Game_Flag != 20) {
         return 0;
     }
 
@@ -156,7 +157,7 @@ s16 check_rl_on_car(PLW* wk) {
         return 0;
     }
 
-    if (bs2_floor[2] == 0) {
+    if (g_state.bs2_floor[2] == 0) {
         return 0;
     }
 
@@ -164,15 +165,15 @@ s16 check_rl_on_car(PLW* wk) {
     wk->bs2_area_car = 0;
     wk->bs2_over_car = 0;
 
-    if (wk->wu.xyz[0].disp.pos >= bs2_floor[0] && !(wk->wu.xyz[0].disp.pos > bs2_floor[1])) {
+    if (wk->wu.xyz[0].disp.pos >= g_state.bs2_floor[0] && !(wk->wu.xyz[0].disp.pos > g_state.bs2_floor[1])) {
         wk->bs2_area_car = 1;
     }
 
-    if (wk->wu.xyz[0].disp.pos >= bs2_hosei[0] && !(wk->wu.xyz[0].disp.pos > bs2_hosei[1])) {
+    if (wk->wu.xyz[0].disp.pos >= g_state.bs2_hosei[0] && !(wk->wu.xyz[0].disp.pos > g_state.bs2_hosei[1])) {
         rnum = 1;
     }
 
-    if (wk->wu.xyz[1].disp.pos + (wk->wu.cg_jphos) >= bs2_floor[2]) {
+    if (wk->wu.xyz[1].disp.pos + (wk->wu.cg_jphos) >= g_state.bs2_floor[2]) {
         wk->bs2_over_car = 1;
     }
 
@@ -184,15 +185,15 @@ s32 saishin_bs2_area_car(PLW* wk) {
     wk->bs2_area_car2 = 0;
     wk->bs2_over_car2 = 0;
 
-    if (pcon_dp_flag) {
+    if (g_state.pcon_dp_flag) {
         return 1;
     }
 
-    if (wk->wu.xyz[0].disp.pos >= bs2_floor[0] && !(wk->wu.xyz[0].disp.pos > bs2_floor[1])) {
+    if (wk->wu.xyz[0].disp.pos >= g_state.bs2_floor[0] && !(wk->wu.xyz[0].disp.pos > g_state.bs2_floor[1])) {
         wk->bs2_area_car2 = 1;
     }
 
-    if (!(wk->wu.xyz[1].disp.pos + wk->wu.cg_jphos <= bs2_floor[2])) {
+    if (!(wk->wu.xyz[1].disp.pos + wk->wu.cg_jphos <= g_state.bs2_floor[2])) {
         wk->bs2_over_car2 = 1;
     }
 
@@ -213,7 +214,7 @@ s32 saishin_bs2_area_car(PLW* wk) {
 
 /** @brief Returns whether the player is standing on the car in bonus stage 2. */
 s8 saishin_bs2_on_car(PLW* wk) {
-    if (wk->bs2_on_car && (wk->wu.xyz[1].disp.pos > (bs2_floor[2] + 2))) {
+    if (wk->bs2_on_car && (wk->wu.xyz[1].disp.pos > (g_state.bs2_floor[2] + 2))) {
         wk->bs2_on_car = 0;
     }
 
@@ -348,7 +349,7 @@ s16 check_F_R_dash(PLW* wk) {
     s16 num;
     s16 rnum;
 
-    if (Bonus_Game_Flag != 20 || !wk->bs2_on_car) {
+    if (g_state.Bonus_Game_Flag != 20 || !wk->bs2_on_car) {
         if (wk->wu.xyz[1].disp.pos > 0) {
             return 0;
         }
@@ -477,7 +478,7 @@ s32 check_turn_to_back(PLW* wk) {
         return 0;
     }
 
-    if (Bonus_Game_Flag == 20) {
+    if (g_state.Bonus_Game_Flag == 20) {
         if (check_rl_flag(&wk->wu)) {
             return 0;
         }
@@ -694,9 +695,9 @@ void jumping_union_process(WORK* wk, s16 num) {
     cal_mvxy_speed(wk);
     char_move(wk);
 
-    if ((Bonus_Game_Flag == 20) && (wk->pl_operator != 0) && (saishin_bs2_area_car((PLW*)wk) == 0)) {
-        if (!(wk->xyz[1].disp.pos + wk->cg_jphos > bs2_floor[2])) {
-            wk->position_y = wk->xyz[1].disp.pos = bs2_floor[2];
+    if ((g_state.Bonus_Game_Flag == 20) && (wk->pl_operator != 0) && (saishin_bs2_area_car((PLW*)wk) == 0)) {
+        if (!(wk->xyz[1].disp.pos + wk->cg_jphos > g_state.bs2_floor[2])) {
+            wk->position_y = wk->xyz[1].disp.pos = g_state.bs2_floor[2];
             wk->mvxy.a[1].sp = 0;
             wk->routine_no[3] = num;
             ((PLW*)wk)->bs2_on_car = 1;

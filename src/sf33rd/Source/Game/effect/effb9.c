@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effb9.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -83,13 +84,13 @@ s32 effect_B9_init(WORK_Other* oya) {
     if (oya->wu.type) {
         ewk->wu.old_rno[0] = 2;
         ewk->wu.char_index = 2;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].position_x + bg_w.pos_offset;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
         ewk->wu.xyz[0].disp.pos += 0x50;
         ewk->wu.xyz[1].disp.pos = 0x90;
     } else {
         ewk->wu.old_rno[0] = 3;
-        ewk->wu.char_index = Round_num + 1;
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[ewk->wu.my_family - 1].position_x + bg_w.pos_offset;
+        ewk->wu.char_index = g_state.Round_num + 1;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
         ewk->wu.xyz[0].disp.pos += 0x70;
         ewk->wu.xyz[1].disp.pos = 0x90;
     }

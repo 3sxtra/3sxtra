@@ -15,7 +15,7 @@
  *                     Save_Replay_MC_Sub on cancel → exit
  *
  * Exit paths:
- *   - Cancel with Mode_Type==5 → Back_to_Mode_Select
+ *   - Cancel with g_state.Mode_Type==5 → Back_to_Mode_Select
  *   - Cancel otherwise → Exit_Replay_Save → Return_VS_Result_Sub (r_no[1]=16)
  *   Both routes set r_no[1] away from 17, detected by on_tick → ExitToLegacy.
  *
@@ -25,8 +25,9 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_X, Order, Order_Dir, Order_Timer */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_X, g_state.Order, g_state.Order_Dir, g_state.Order_Timer */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init, Setup_Save_Replay_2nd */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Setup_Save_Replay_1st, Save_Replay_MC_Sub */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Clear_Flash_Sub, Clear_Flash_Init */
@@ -59,15 +60,15 @@ static SaveReplayPhase s_phase = SR_PHASE_WAIT;
  *  on_enter — extracted from Save_Replay case 0
  *
  *  Delegates to Setup_Save_Replay_1st which handles all init:
- *  FadeOut, r_no[2]++, timer=5, Menu_Common_Init, Menu_Cursor_X[0]=0,
- *  Menu_Suicide setup, Setup_BG, Setup_File_Property, Clear_Flash_Init.
+ *  FadeOut, r_no[2]++, timer=5, Menu_Common_Init, g_state.Menu_Cursor_X[0]=0,
+ *  g_state.Menu_Suicide setup, Setup_BG, Setup_File_Property, Clear_Flash_Init.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void save_replay_enter(struct _TASK* task_ptr) {
     s_phase = SR_PHASE_WAIT;
 
     /* Clear_Flash_Sub + cursor sync — same as legacy Save_Replay prologue */
-    Menu_Cursor_X[1] = Menu_Cursor_X[0];
+    g_state.Menu_Cursor_X[1] = g_state.Menu_Cursor_X[0];
     Clear_Flash_Sub();
 
     /* Setup_Save_Replay_1st sets r_no[2] to 1 (via r_no[2]++),
@@ -94,7 +95,7 @@ static void save_replay_enter(struct _TASK* task_ptr) {
 
 static void save_replay_tick(struct _TASK* task_ptr) {
     /* Per-frame prologue — same as legacy Save_Replay */
-    Menu_Cursor_X[1] = Menu_Cursor_X[0];
+    g_state.Menu_Cursor_X[1] = g_state.Menu_Cursor_X[0];
     Clear_Flash_Sub();
 
     switch (s_phase) {
@@ -105,9 +106,9 @@ static void save_replay_tick(struct _TASK* task_ptr) {
             rmlui_replay_picker_open(1); /* mode 1 = save */
         }
         /* Set BG order — same as legacy case 1 */
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 0;
-        Order_Timer[0x4E] = 1;
+        g_state.Order[0x4E] = 2;
+        g_state.Order_Dir[0x4E] = 0;
+        g_state.Order_Timer[0x4E] = 1;
 
         /* Advance when r_no[2] reaches 2 (Setup_Save_Replay_2nd expects it) */
         if (task_ptr->r_no[2] >= 2) {
@@ -139,7 +140,7 @@ static void save_replay_tick(struct _TASK* task_ptr) {
         }
         if (pick_result != 1) {
             /* Done or cancelled — trigger cancel path */
-            IO_Result = 0x200;
+            g_state.IO_Result = 0x200;
             Save_Replay_MC_Sub(task_ptr, 0);
         }
         break;
@@ -148,7 +149,7 @@ static void save_replay_tick(struct _TASK* task_ptr) {
 
     /* ── Exit detection ── */
     /* Save_Replay_MC_Sub (cancel path) calls either:
-     *   - Back_to_Mode_Select (if Mode_Type==5): sets r_no to mode_select
+     *   - Back_to_Mode_Select (if g_state.Mode_Type==5): sets r_no to mode_select
      *   - Exit_Replay_Save: calls Return_VS_Result_Sub → sets r_no[1]=16
      * Either way, r_no[1] is no longer 17.  Hand off to legacy. */
     if (task_ptr->r_no[1] != 17) {

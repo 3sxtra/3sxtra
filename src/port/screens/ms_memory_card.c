@@ -20,18 +20,19 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
 #include "sf33rd/Source/Game/effect/eff64.h"       /* effect_64_init */
 #include "sf33rd/Source/Game/effect/eff66.h"       /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/io/vm_sub.h"          /* Setup_File_Property */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Memory_Card_Sub, Button_Exit_Check, etc. */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Save_Game_Data */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* save_w */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
@@ -68,41 +69,41 @@ static void memory_card_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Menu_Common_Init();
-    Menu_Cursor_Y[0] = 0;
-    Menu_Suicide[1] = 1;
-    Menu_Suicide[2] = 0;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Suicide[1] = 1;
+    g_state.Menu_Suicide[2] = 0;
 
     /* Kill/setup parent effect slots */
-    Order[0x4F] = 4;
-    Order_Timer[0x4F] = 1;
-    Order[0x4E] = 2;
-    Order_Dir[0x4E] = 4;
-    Order_Timer[0x4E] = 1;
+    g_state.Order[0x4F] = 4;
+    g_state.Order_Timer[0x4F] = 1;
+    g_state.Order[0x4E] = 2;
+    g_state.Order_Dir[0x4E] = 4;
+    g_state.Order_Timer[0x4E] = 1;
 
     /* Header bar + item labels — CPS3 only */
     if (use_rmlui && rmlui_menu_memory_card) {
         rmlui_memory_card_show();
     } else {
         effect_57_init(0x69, MENU_HEADER_SAVE_LOAD, 0, 0x3F, 2);
-        Order[0x69] = 1;
-        Order_Dir[0x69] = 8;
-        Order_Timer[0x69] = 1;
+        g_state.Order[0x69] = 1;
+        g_state.Order_Dir[0x69] = 8;
+        g_state.Order_Timer[0x69] = 1;
 
         for (ix = 0, unused_s3 = char_index = 0x15; ix < 4; ix++, unused_s2 = char_index++) {
             effect_61_init(0, ix + 0x50, 1, 2, char_index, ix, 0x7047);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
+            g_state.Order[ix + 0x50] = 1;
+            g_state.Order_Dir[ix + 0x50] = 4;
+            g_state.Order_Timer[ix + 0x50] = ix + 0x14;
         }
 
-        Menu_Cursor_Move = 4;
+        g_state.Menu_Cursor_Move = 4;
         effect_64_init(0x61, 1, 2, 0, 2, 0x7047, 0, 3, 0);
-        Order[0x61] = 1;
-        Order_Dir[0x61] = 4;
-        Order_Timer[0x61] = 0x18;
+        g_state.Order[0x61] = 1;
+        g_state.Order_Dir[0x61] = 4;
+        g_state.Order_Timer[0x61] = 0x18;
         effect_66_init(0x8A, 8, 2, 1, -1, -1, -0x7FF5);
-        Order[0x8A] = 3;
-        Order_Timer[0x8A] = 1;
+        g_state.Order[0x8A] = 3;
+        g_state.Order_Timer[0x8A] = 1;
         effect_04_init(2, 2, 2, 0x48);
     }
 
@@ -135,7 +136,7 @@ static void memory_card_tick(struct _TASK* task_ptr) {
     /* ── One-time post-wait-phase setup ── */
     if (!s_wait_done) {
         s_wait_done = true;
-        Menu_Suicide[3] = 0;
+        g_state.Menu_Suicide[3] = 0;
     }
 
     /* ── Determine which phase we're in ── */
@@ -151,7 +152,7 @@ static void memory_card_tick(struct _TASK* task_ptr) {
         Memory_Card_Sub(0);
         Button_Exit_Check(task_ptr, 0);
 
-        if (IO_Result == 0) {
+        if (g_state.IO_Result == 0) {
             Memory_Card_Sub(1);
             Button_Exit_Check(task_ptr, 0);
         }

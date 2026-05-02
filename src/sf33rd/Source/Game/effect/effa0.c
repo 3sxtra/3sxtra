@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effa0.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff45.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -17,7 +18,7 @@ const s16 Pos_Data_A0[4][3] = { { -52, 148, 69 }, { 140, 148, 69 }, { -52, 131, 
 static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_rno, s16 zero);
 
 void effect_A0_move(WORK_Other_CONN* ewk) {
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
@@ -44,8 +45,8 @@ s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_rno, s16 ze
     ewk->master_player = master_player;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_A0[pos_index][0];
-    ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_A0[pos_index][1];
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_A0[pos_index][0];
+    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_A0[pos_index][1];
     ewk->wu.position_z = Pos_Data_A0[pos_index][2];
     Convert_16_10_3(ewk, disp_target);
     Setup_A0_Sub(ewk, old_rno, zero);

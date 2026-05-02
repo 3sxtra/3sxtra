@@ -13,6 +13,7 @@
  * Access: --renderer classic
  */
 #include "common.h"
+#include "game_state.h"
 #include "port/renderer_plugin.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"

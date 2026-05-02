@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plpat19.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effi3.h"
 #include "sf33rd/Source/Game/effect/effk7.h"
@@ -44,7 +45,7 @@ static void Att_METAMORPHOSE(PLW* wk) {
         wk->metamorphose = 0;
         wk->metamor_over = 0;
 
-        if ((Bonus_Game_Flag != 20) && (effect_K7_init(wk) != -1)) {
+        if ((g_state.Bonus_Game_Flag != 20) && (effect_K7_init(wk) != -1)) {
             set_char_move_init(&wk->wu, 5, wk->as->char_ix);
             break;
         }
@@ -345,7 +346,7 @@ static void Att_AIRDASH(PLW* wk) {
 
         if (kabe_check3(wk) != 0) {
             wk->wu.rl_flag = (wk->wu.rl_flag + 1) & 1;
-            wk->wu.xyz[0].disp.pos = wk->wu.rl_flag ? bg_w.bgw[1].l_limit2 - 192 : bg_w.bgw[1].r_limit2 + 192;
+            wk->wu.xyz[0].disp.pos = wk->wu.rl_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
             set_char_move_init(&wk->wu, 5, 65);
             wk->wu.routine_no[3] = 5;
             wk->wu.cg_type = 0;
@@ -383,7 +384,7 @@ static void Att_AIRDASH(PLW* wk) {
 
         if (kabe_check3(wk)) {
             wk->wu.rl_flag = wk->wu.rl_flag + 1 & 1;
-            wk->wu.xyz[0].disp.pos = wk->wu.rl_flag ? bg_w.bgw[1].l_limit2 - 192 : bg_w.bgw[1].r_limit2 + 192;
+            wk->wu.xyz[0].disp.pos = wk->wu.rl_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
             set_char_move_init(&wk->wu, 5, 65);
             wk->wu.routine_no[3] = 5;
             wk->wu.cg_type = 0;
@@ -535,12 +536,12 @@ static u8 get_lever_dir(PLW* wk) {
 
     if (wk->wu.work_id == 1) {
         if (wk->py->flag == 0) {
-            num = wcp[wk->wu.id].lever_dir;
+            num = g_state.wcp[wk->wu.id].lever_dir;
         } else {
             num = 0;
         }
     } else {
-        num = wcp[((WORK_Other*)wk)->master_id & 1].lever_dir;
+        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].lever_dir;
     }
 
     return num;

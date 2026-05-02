@@ -8,13 +8,14 @@
  *
  * The top-level entry point is Game_Task(), called once per frame by the
  * task scheduler. It dispatches to Wait_Auto_Load, Loop_Demo, or Game()
- * based on G_No[0].
+ * based on g_state.G_No[0].
  *
  * Part of the game core module.
  * Originally from the PS2 game module.
  */
 
 #include "sf33rd/Source/Game/game.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "port/menu_task.h"
 #include "port/init_task.h"
@@ -149,7 +150,7 @@ s16 Ck_Coin();
 void Loop_Demo_Sub();
 void Before_Select_Sub();
 static void Set_Appear_Type_For_Mode() {
-    appear_type = Is_Training_Mode(Mode_Type) ? APPEAR_TYPE_NON_ANIMATED : APPEAR_TYPE_ANIMATED;
+    g_state.appear_type = Is_Training_Mode(g_state.Mode_Type) ? APPEAR_TYPE_NON_ANIMATED : APPEAR_TYPE_ANIMATED;
 }
 
 /**
@@ -168,10 +169,10 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
         No_Trans = 1;
     }
 
-    Play_Game = 0;
+    g_state.Play_Game = 0;
 
-    if (Game_pause != 0x81) {
-        system_timer += 1;
+    if (g_state.Game_pause != 0x81) {
+        g_state.system_timer += 1;
     }
 
     init_texcash_before_process();
@@ -179,7 +180,7 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
     seqsBeforeProcess();
 
     if (nowSoftReset() == 0) {
-        switch (G_No[0]) {
+        switch (g_state.G_No[0]) {
         case MAIN_STATE_WAIT_AUTO_LOAD: Wait_Auto_Load(task_ptr); break;
         case MAIN_STATE_LOOP_DEMO:     Loop_Demo(task_ptr);      break;
         case MAIN_STATE_GAME:          Game(task_ptr);            break;
@@ -199,7 +200,7 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
 /**
  * @brief Main game task — top-level per-frame entry point.
  *
- * Dispatches to one of three modes based on G_No[0]:
+ * Dispatches to one of three modes based on g_state.G_No[0]:
  *   0 = Wait_Auto_Load (idle while loading)
  *   1 = Loop_Demo (attract-mode demo loop)
  *   2 = Game (active gameplay)
@@ -224,27 +225,27 @@ void Game_Task(struct _TASK* task_ptr) {
 }
 
 /**
- * @brief Game state dispatcher — routes to Game00–Game12 based on G_No[1].
+ * @brief Game state dispatcher — routes to Game00–Game12 based on g_state.G_No[1].
  *
- * Also sets Play_Game flag (1=fight, 2=ending) for subsystems that need
+ * Also sets g_state.Play_Game flag (1=fight, 2=ending) for subsystems that need
  * to know whether active gameplay is in progress.
  */
 void Game(struct _TASK* task_ptr) {
     (void)task_ptr;
 
     // Safety bounds check
-    if (G_No[1] >= GAME_STATE_COUNT) {
-        I_Error("Game(): gs_G_No[1]=%d is out of bounds [0-%d)!", G_No[1], GAME_STATE_COUNT);
+    if (g_state.G_No[1] >= GAME_STATE_COUNT) {
+        I_Error("Game(): gs_G_No[1]=%d is out of bounds [0-%d)!", g_state.G_No[1], GAME_STATE_COUNT);
         return;
     }
 
-    if (G_No[1] == MODE_FIGHT || G_No[1] == MODE_STAFF_ROLL) {
-        Play_Game = 1;
-    } else if (G_No[1] == MODE_ENDING) {
-        Play_Game = 2;
+    if (g_state.G_No[1] == MODE_FIGHT || g_state.G_No[1] == MODE_STAFF_ROLL) {
+        g_state.Play_Game = 1;
+    } else if (g_state.G_No[1] == MODE_ENDING) {
+        g_state.Play_Game = 2;
     }
 
-    switch (G_No[1]) {
+    switch (g_state.G_No[1]) {
     case MODE_TITLE:      Game00(); break;
     case MODE_ATTRACT:    Game01(); break;
     case MODE_FIGHT:      Game02(); break;
@@ -264,11 +265,11 @@ void Game(struct _TASK* task_ptr) {
 
 /** @brief State 0: Title screen — logo display, copyright, transition to menu. */
 void Game00() {
-    if (G_No[2] >= 3) {
+    if (g_state.G_No[2] >= 3) {
         return;
     }
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0: Game0_0(); break;
     case 1: Game0_1(); break;
     case 2: Game0_2(); break;
@@ -290,13 +291,13 @@ void Game0_1() {
     Disp_Copyright();
     TITLE_Move(1);
 
-    if (Request_G_No) {
+    if (g_state.Request_G_No) {
         FSM_AdvanceSubState();
     }
 }
 
 void Game0_2() {
-    switch (G_No[3]) {
+    switch (g_state.G_No[3]) {
     case 0:
         Disp_Copyright();
         TITLE_Move(1);
@@ -307,7 +308,7 @@ void Game0_2() {
     case 1:
         if (Switch_Screen(1) != 0) {
             FSM_AdvanceSubSubState();
-            Cover_Timer = 23;
+            g_state.Cover_Timer = 23;
             return;
         }
 
@@ -345,11 +346,11 @@ void Game0_2() {
 
 /** @brief Check if the attract-mode demo timer has expired (1800 frames = 30 seconds). */
 void Check_Back_Demo() {
-    if (++G_Timer < DEMO_TIMEOUT_FRAMES) {
+    if (++g_state.G_Timer < DEMO_TIMEOUT_FRAMES) {
         return;
     }
 
-    if (G_No[1] == MODE_CHALLENGE || (G_No[2] == 2 && G_No[3] >= 2)) {
+    if (g_state.G_No[1] == MODE_CHALLENGE || (g_state.G_No[2] == 2 && g_state.G_No[3] >= 2)) {
         return;
     }
 
@@ -370,11 +371,11 @@ void Check_Back_Demo() {
 
 /** @brief State 12: Screen transition to character select (from menu). */
 void Game12() {
-    if (G_No[2] >= 3) {
+    if (g_state.G_No[2] >= 3) {
         return;
     }
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0: Game12_0(); break;
     case 1: Game12_1(); break;
     case 2: Game12_2(); break;
@@ -409,8 +410,8 @@ void Game12_2() {
 
     // Proceed to character select
     FSM_SetMode(MODE_ATTRACT);
-    Control_Time = CONTROL_TIME_DEFAULT;
-    Cover_Timer = 23;
+    g_state.Control_Time = CONTROL_TIME_DEFAULT;
+    g_state.Cover_Timer = 23;
     effect_work_init();
     cpExitTask(TASK_MENU);
 }
@@ -422,38 +423,38 @@ void Game01() {
     Setup_Play_Type();
     SelectTimer_Run();
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         /* Hide any leftover Phase 3 docs (win, continue, gameover, etc.)
          * The attract_overlay is excluded from hide-all and managed separately. */
         if (use_rmlui)
             rmlui_wrapper_hide_all_game_documents();
-        // The menu task resets Mode_Type to MODE_ARCADE between matches.
+        // The menu task resets g_state.Mode_Type to MODE_ARCADE between matches.
         // Restore it so all MODE_NETWORK-guarded paths (RNG seeding, Game2_0
         // initialization) work correctly for rematches.
         if (Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
-            Mode_Type = MODE_NETWORK;
+            g_state.Mode_Type = MODE_NETWORK;
         }
         Switch_Screen(1);
         FSM_AdvanceSubState();
-        S_No[0] = 0;
-        S_No[1] = 0;
-        S_No[2] = 0;
-        S_No[3] = 0;
+        g_state.S_No[0] = 0;
+        g_state.S_No[1] = 0;
+        g_state.S_No[2] = 0;
+        g_state.S_No[3] = 0;
         SsBgmHalfVolume(0);
 
-        if (Mode_Type == MODE_ARCADE) {
+        if (g_state.Mode_Type == MODE_ARCADE) {
             BGM_Request(53);
         } else {
             BGM_Request(66);
         }
 
-        Break_Into = 0;
-        Stop_Combo = 0;
+        g_state.Break_Into = 0;
+        g_state.Stop_Combo = 0;
 
-        if (Mode_Type != MODE_NETWORK) {
-            Random_ix32 = Interrupt_Timer;
-            Random_ix32_ex = Interrupt_Timer;
+        if (g_state.Mode_Type != MODE_NETWORK) {
+            g_state.Random_ix32 = Interrupt_Timer;
+            g_state.Random_ix32_ex = Interrupt_Timer;
         } else {
             Setup_Net_Random_ix();
             All_Clear_Timer();
@@ -473,7 +474,7 @@ void Game01() {
     case 2:
         if (Select_Player()) {
             FSM_AdvanceSubState();
-            Bonus_Game_Flag = 0;
+            g_state.Bonus_Game_Flag = 0;
             Switch_Screen_Init(0);
         }
 
@@ -484,47 +485,47 @@ void Game01() {
 
         if (Switch_Screen(0) != 0) {
             Game01_Sub();
-            Cover_Timer = 5;
+            g_state.Cover_Timer = 5;
             Set_Appear_Type_For_Mode();
             set_hitmark_color();
 
             if (Debug_w[DEBUG_MY_CHAR_PL1]) {
-                My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
+                g_state.My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
             }
 
             if (Debug_w[DEBUG_MY_CHAR_PL2]) {
-                My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
+                g_state.My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
             }
 
             Purge_texcash_of_list(3);
             Make_texcash_of_list(3);
 
-            if (Demo_Flag) {
+            if (g_state.Demo_Flag) {
                 FSM_SetMode(MODE_FIGHT);
-                E_No[0] = 4;
-                E_No[1] = 0;
-                E_No[2] = 0;
-                E_No[3] = 0;
+                g_state.E_No[0] = 4;
+                g_state.E_No[1] = 0;
+                g_state.E_No[2] = 0;
+                g_state.E_No[3] = 0;
             } else {
-                Demo_Time_Stop = 1;
-                plw[0].wu.pl_operator = 0;
-                Operator_Status[0] = 0;
-                plw[1].wu.pl_operator = 0;
-                Operator_Status[1] = 0;
+                g_state.Demo_Time_Stop = 1;
+                g_state.plw[0].wu.pl_operator = 0;
+                g_state.Operator_Status[0] = 0;
+                g_state.plw[1].wu.pl_operator = 0;
+                g_state.Operator_Status[1] = 0;
             }
 
-            if (plw[0].wu.pl_operator != 0) {
-                Sel_Arts_Complete[0] = -1;
+            if (g_state.plw[0].wu.pl_operator != 0) {
+                g_state.Sel_Arts_Complete[0] = -1;
             }
 
-            if (plw[1].wu.pl_operator != 0) {
-                Sel_Arts_Complete[1] = -1;
+            if (g_state.plw[1].wu.pl_operator != 0) {
+                g_state.Sel_Arts_Complete[1] = -1;
             }
 
-            if ((plw[0].wu.pl_operator != 0) && (plw[1].wu.pl_operator != 0)) {
-                Play_Type = 1;
+            if ((g_state.plw[0].wu.pl_operator != 0) && (g_state.plw[1].wu.pl_operator != 0)) {
+                g_state.Play_Type = 1;
             } else {
-                Play_Type = 0;
+                g_state.Play_Type = 0;
             }
         }
 
@@ -536,13 +537,13 @@ void Game01() {
 
 /** @brief State 2: Main fight — round setup, in-match gameplay, round transitions. */
 void Game02() {
-    Scene_Cut = Cut_Cut_Cut();
+    g_state.Scene_Cut = Cut_Cut_Cut();
 
-    if (G_No[2] >= 8) {
+    if (g_state.G_No[2] >= 8) {
         return;
     }
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0: Game2_0(); break;
     case 1: Game2_1(); break;
     case 2: Game2_2(); break;
@@ -568,18 +569,18 @@ void Game2_0() {
 
     System_all_clear_Level_B();
 
-    switch (Mode_Type) {
+    switch (g_state.Mode_Type) {
     case MODE_ARCADE:
-        Play_Mode = 0;
-        Replay_Status[0] = 0;
-        Replay_Status[1] = 0;
+        g_state.Play_Mode = 0;
+        g_state.Replay_Status[0] = 0;
+        g_state.Replay_Status[1] = 0;
         break;
 
     case MODE_VERSUS:
         for (ix = 0; ix < 2; ix++) {
             if (save_w[SAVEW_ARCADE].Partner_Type[ix]) {
-                plw[ix].wu.pl_operator = 0;
-                Operator_Status[ix] = 0;
+                g_state.plw[ix].wu.pl_operator = 0;
+                g_state.Operator_Status[ix] = 0;
             }
         }
 
@@ -587,14 +588,14 @@ void Game2_0() {
         /* fallthrough */
 
     case MODE_NETWORK:
-        Play_Mode = 1;
+        g_state.Play_Mode = 1;
         All_Clear_Random_ix();
         All_Clear_Timer();
         All_Clear_ETC();
         break;
 
     case MODE_REPLAY:
-        Play_Mode = 3;
+        g_state.Play_Mode = 3;
         All_Clear_Timer();
         break;
 
@@ -605,38 +606,38 @@ void Game2_0() {
 
     Check_Replay();
 
-    if (Demo_Flag == 0) {
-        Play_Mode = 0;
-        Replay_Status[0] = 0;
-        Replay_Status[1] = 0;
+    if (g_state.Demo_Flag == 0) {
+        g_state.Play_Mode = 0;
+        g_state.Replay_Status[0] = 0;
+        g_state.Replay_Status[1] = 0;
     }
 
-    Game_difficulty = 15;
-    Game_pause = 0;
-    Demo_Time_Stop = 0;
-    C_No[0] = 0;
-    C_No[1] = 0;
-    C_No[2] = 0;
-    C_No[3] = 0;
+    g_state.Game_difficulty = 15;
+    g_state.Game_pause = 0;
+    g_state.Demo_Time_Stop = 0;
+    g_state.C_No[0] = 0;
+    g_state.C_No[1] = 0;
+    g_state.C_No[2] = 0;
+    g_state.C_No[3] = 0;
     FSM_SetSubState(6);
-    G_Timer = 10;
-    Round_num = 0;
-    Keep_Grade[0] = 0;
-    Keep_Grade[1] = 0;
+    g_state.G_Timer = 10;
+    g_state.Round_num = 0;
+    g_state.Keep_Grade[0] = 0;
+    g_state.Keep_Grade[1] = 0;
 
-    if (Win_Record[0]) {
-        Keep_Grade[0] = grade_get_my_grade(0) + 1;
+    if (g_state.Win_Record[0]) {
+        g_state.Keep_Grade[0] = grade_get_my_grade(0) + 1;
     }
 
-    if (Win_Record[1]) {
-        Keep_Grade[1] = grade_get_my_grade(1) + 1;
+    if (g_state.Win_Record[1]) {
+        g_state.Keep_Grade[1] = grade_get_my_grade(1) + 1;
     }
 
-    Allow_a_battle_f = 0;
-    Time_in_Time = 60;
+    g_state.Allow_a_battle_f = 0;
+    g_state.Time_in_Time = 60;
     init_slow_flag();
     clear_hit_queue();
-    pcon_rno[0] = pcon_rno[1] = pcon_rno[2] = pcon_rno[3] = 0;
+    g_state.pcon_rno[0] = g_state.pcon_rno[1] = g_state.pcon_rno[2] = g_state.pcon_rno[3] = 0;
     ca_check_flag = 1;
     bg_work_clear();
     win_lose_work_clear();
@@ -647,20 +648,20 @@ void Game2_0() {
 void Game2_1() {
     mpp_w.inGame = true;
 
-    if (Game_pause != 0x81) {
-        Game_timer += 1;
+    if (g_state.Game_pause != 0x81) {
+        g_state.Game_timer += 1;
     }
 
     set_EXE_flag();
     ppgPurgeFromVRAM(5);
 
-    if (Disp_Cockpit) {
+    if (g_state.Disp_Cockpit) {
         Time_Control();
     }
 
     Player_control();
 
-    if (Disp_Cockpit) {
+    if (g_state.Disp_Cockpit) {
         vital_cont_main();
         combo_cont_main();
     }
@@ -672,7 +673,7 @@ void Game2_1() {
     reqPlayerDraw();
     Basic_Sub_Ex();
 
-    if (Disp_Cockpit) {
+    if (g_state.Disp_Cockpit) {
         if (!use_rmlui || !rmlui_hud_faces)
             player_face();
         if (!use_rmlui || !rmlui_hud_names)
@@ -706,33 +707,33 @@ void Game2_2() {
     SsBgmHalfVolume(0);
     All_Clear_Timer();
     Check_Replay();
-    Game_difficulty = 15;
-    Game_timer = 0;
-    Game_pause = 0;
-    Demo_Time_Stop = 0;
-    C_No[0] = 0;
-    C_No[1] = 0;
-    C_No[2] = 0;
-    C_No[3] = 0;
-    G_Timer = 10;
-    Round_num = 0;
-    Keep_Grade[0] = 0;
-    Keep_Grade[1] = 0;
+    g_state.Game_difficulty = 15;
+    g_state.Game_timer = 0;
+    g_state.Game_pause = 0;
+    g_state.Demo_Time_Stop = 0;
+    g_state.C_No[0] = 0;
+    g_state.C_No[1] = 0;
+    g_state.C_No[2] = 0;
+    g_state.C_No[3] = 0;
+    g_state.G_Timer = 10;
+    g_state.Round_num = 0;
+    g_state.Keep_Grade[0] = 0;
+    g_state.Keep_Grade[1] = 0;
 
-    if (Win_Record[0]) {
-        Keep_Grade[0] = grade_get_my_grade(0) + 1;
+    if (g_state.Win_Record[0]) {
+        g_state.Keep_Grade[0] = grade_get_my_grade(0) + 1;
     }
 
-    if (Win_Record[1]) {
-        Keep_Grade[1] = grade_get_my_grade(1) + 1;
+    if (g_state.Win_Record[1]) {
+        g_state.Keep_Grade[1] = grade_get_my_grade(1) + 1;
     }
 
-    Allow_a_battle_f = 0;
-    Time_in_Time = 60;
+    g_state.Allow_a_battle_f = 0;
+    g_state.Time_in_Time = 60;
     init_slow_flag();
     effect_work_quick_init();
     clear_hit_queue();
-    pcon_rno[0] = pcon_rno[1] = pcon_rno[2] = pcon_rno[3] = 0;
+    g_state.pcon_rno[0] = g_state.pcon_rno[1] = g_state.pcon_rno[2] = g_state.pcon_rno[3] = 0;
     ca_check_flag = 1;
     bg_work_clear();
     win_lose_work_clear();
@@ -742,12 +743,12 @@ void Game2_2() {
     TATE00();
 
     for (i = 0; i < 3; i++) {
-        if (stage_bgw_number[bg_w.stage][i] > 0) {
+        if (stage_bgw_number[g_state.bg_w.stage][i] > 0) {
             Bg_On_R(1 << i);
         }
     }
 
-    if (bg_w.stage == 7) {
+    if (g_state.bg_w.stage == 7) {
         Bg_On_R(4);
     }
 
@@ -757,7 +758,7 @@ void Game2_2() {
 void Game2_3() {
     Game2_1();
 
-    if (--G_Timer == 0) {
+    if (--g_state.G_Timer == 0) {
         FSM_SetSubState(1);
         Clear_Flash_No();
     }
@@ -770,26 +771,26 @@ void Game2_4() {
 void Game2_5() {
     BG_Draw_System();
 
-    switch (G_No[3]) {
+    switch (g_state.G_No[3]) {
     case 0:
         Switch_Screen(0);
         FSM_AdvanceSubSubState();
-        Stop_Update_Score = 0;
+        g_state.Stop_Update_Score = 0;
         vital_cont_init();
         count_cont_init(0);
         stngauge_cont_init();
         stngauge_work_clear();
         combo_cont_init();
         count_cont_init(1);
-        Score[0][2] = 0;
-        Score[1][2] = 0;
-        Suicide[0] = 1;
-        Game_pause = 0;
-        pcon_rno[0] = 0;
-        pcon_rno[1] = 0;
-        pcon_rno[2] = 0;
-        pcon_rno[3] = 0;
-        appear_type = APPEAR_TYPE_NON_ANIMATED;
+        g_state.Score[0][2] = 0;
+        g_state.Score[1][2] = 0;
+        g_state.Suicide[0] = 1;
+        g_state.Game_pause = 0;
+        g_state.pcon_rno[0] = 0;
+        g_state.pcon_rno[1] = 0;
+        g_state.pcon_rno[2] = 0;
+        g_state.pcon_rno[3] = 0;
+        g_state.appear_type = APPEAR_TYPE_NON_ANIMATED;
         erase_extra_plef_work();
         compel_bg_init_position();
         win_lose_work_clear();
@@ -799,7 +800,7 @@ void Game2_5() {
     default:
         Game2_1();
 
-        if (--G_Timer == 0) {
+        if (--g_state.G_Timer == 0) {
             FSM_SetSubState(1);
             Clear_Flash_No();
         }
@@ -834,27 +835,27 @@ void Game2_7() {
  * and win counters for both players.
  */
 void Game01_Sub() {
-    Disp_Cockpit = 0;
-    Stop_Update_Score = 0;
+    g_state.Disp_Cockpit = 0;
+    g_state.Stop_Update_Score = 0;
     vital_cont_init();
     // Initialize time limit from local settings once (synchronized for netplay)
     Time_Limit = CurrentSave()->Time_Limit;
     count_cont_init(0);
-    Score[0][1] = 0;
-    Score[0][2] = 0;
-    Score[1][1] = 0;
-    Score[1][2] = 0;
-    PL_Wins[0] = 0;
-    PL_Wins[1] = 0;
+    g_state.Score[0][1] = 0;
+    g_state.Score[0][2] = 0;
+    g_state.Score[1][1] = 0;
+    g_state.Score[1][2] = 0;
+    g_state.PL_Wins[0] = 0;
+    g_state.PL_Wins[1] = 0;
     combo_cont_init();
     Clear_Win_Type();
-    Lamp_No = 0;
+    g_state.Lamp_No = 0;
     set_kizetsu_status(0);
     set_kizetsu_status(1);
     set_super_arts_status(0);
     set_super_arts_status(1);
 
-    if (Demo_Flag && (sag_ikinari_max() != 0)) {
+    if (g_state.Demo_Flag && (sag_ikinari_max() != 0)) {
         spgauge_cont_init();
     } else {
         spgauge_cont_demo_init();
@@ -869,25 +870,25 @@ void Game03() {
     BG_Draw_System();
     move_effect_work(4);
     move_effect_work(5);
-    Play_Mode = 0;
-    Replay_Status[0] = 0;
-    Replay_Status[1] = 0;
+    g_state.Play_Mode = 0;
+    g_state.Replay_Status[0] = 0;
+    g_state.Replay_Status[1] = 0;
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         if (Winner_Scene() != 0) {
             /* Hide win screen before transitioning to next state */
             if (use_rmlui && rmlui_screen_winner)
                 rmlui_win_screen_hide();
-            switch (Mode_Type) {
+            switch (g_state.Mode_Type) {
             case MODE_VERSUS:
             case MODE_NETWORK:
                 FSM_AdvanceSubState();
                 Rep_Game_Infor[10].play_type = 1;
-                Rep_Game_Infor[10].winner = Winner_id;
+                Rep_Game_Infor[10].winner = g_state.Winner_id;
                 Switch_Screen_Init(0);
 
-                if (Country == COUNTRY_ASIA) {
+                if (g_state.Country == COUNTRY_ASIA) {
                     Rep_Game_Infor[10].play_type = 4;
                 }
 
@@ -901,23 +902,23 @@ void Game03() {
 
             default:
                 FSM_SetMode(MODE_CONTINUE);
-                E_No[0] = 9;
-                E_No[1] = 0;
-                E_No[2] = 0;
-                E_No[3] = 0;
+                g_state.E_No[0] = 9;
+                g_state.E_No[1] = 0;
+                g_state.E_No[2] = 0;
+                g_state.E_No[3] = 0;
 
-                if (Battle_Q[WINNER]) {
+                if (g_state.Battle_Q[g_state.WINNER]) {
                     FSM_SetMode(MODE_OPTIONS);
                     FSM_SetSubState(3);
                 }
 
-                Cover_Timer = 24;
+                g_state.Cover_Timer = 24;
 
-                if (Round_Operator[LOSER]) {
-                    E_Number[LOSER][0] = 1;
-                    E_Number[LOSER][1] = 0;
-                    E_Number[LOSER][2] = 0;
-                    E_Number[LOSER][3] = 0;
+                if (g_state.Round_Operator[g_state.LOSER]) {
+                    g_state.E_Number[g_state.LOSER][0] = 1;
+                    g_state.E_Number[g_state.LOSER][1] = 0;
+                    g_state.E_Number[g_state.LOSER][2] = 0;
+                    g_state.E_Number[g_state.LOSER][3] = 0;
                 }
 
                 break;
@@ -929,16 +930,16 @@ void Game03() {
     case 1:
         if (Switch_Screen(1) != 0) {
             FSM_AdvanceSubState();
-            E_No[0] = 1;
-            E_No[1] = 2;
-            E_No[2] = 2;
-            E_No[3] = 0;
-            Request_E_No = 0;
+            g_state.E_No[0] = 1;
+            g_state.E_No[1] = 2;
+            g_state.E_No[2] = 2;
+            g_state.E_No[3] = 0;
+            g_state.Request_E_No = 0;
             cpReadyTask(TASK_MENU, Menu_Task);
             MenuTask_SetSubPhase(MTSP_SA_CUT);
-            Cursor_Y_Pos[0][0] = 0;
-            Cursor_Y_Pos[1][0] = 0;
-            G_Timer = 4;
+            g_state.Cursor_Y_Pos[0][0] = 0;
+            g_state.Cursor_Y_Pos[1][0] = 0;
+            g_state.G_Timer = 4;
         }
 
         break;
@@ -946,8 +947,8 @@ void Game03() {
     case 2:
         Switch_Screen(1);
 
-        if (--G_Timer == 0) {
-            Cover_Timer = 10;
+        if (--g_state.G_Timer == 0) {
+            g_state.Cover_Timer = 10;
             FSM_SetMode(MODE_CHALLENGE);
         }
 
@@ -957,7 +958,7 @@ void Game03() {
         if (Switch_Screen(1) != 0) {
             FSM_AdvanceSubState();
             Saver2_Task_SetPhase(1);
-            G_Timer = 4;
+            g_state.G_Timer = 4;
         }
 
         break;
@@ -965,7 +966,7 @@ void Game03() {
     case 4:
         Switch_Screen(1);
 
-        if (--G_Timer == 0) {
+        if (--g_state.G_Timer == 0) {
             // Do nothing
         }
 
@@ -987,26 +988,26 @@ void Game04() {
     move_effect_work(4);
     move_effect_work(5);
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         if (Loser_Scene() != 0) {
             /* Hide win/loser screen before transitioning */
             if (use_rmlui && rmlui_screen_winner)
                 rmlui_win_screen_hide();
-            if (Mode_Type == 5) {
+            if (g_state.Mode_Type == 5) {
                 FSM_SetSubState(5);
                 cpReadyTask(TASK_MENU, Menu_Task);
                 MenuTask_SetPhase(MTP_SCREEN_DISPATCH);
             } else {
                 FSM_SetMode(MODE_RANKING);
-                E_No[0] = 7;
-                Cont_No[0] = 0;
-                E_Number[LOSER][0] = 1;
+                g_state.E_No[0] = 7;
+                g_state.Cont_No[0] = 0;
+                g_state.E_Number[g_state.LOSER][0] = 1;
 
                 for (i = 1; i < 4; i++) {
-                    E_No[i] = 0;
-                    Cont_No[i] = 0;
-                    E_Number[LOSER][i] = 0;
+                    g_state.E_No[i] = 0;
+                    g_state.Cont_No[i] = 0;
+                    g_state.E_Number[g_state.LOSER][i] = 0;
                 }
             }
         }
@@ -1027,19 +1028,19 @@ void Game05() {
     Basic_Sub();
     Setup_Play_Type();
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         FSM_AdvanceSubState();
-        SC_No[0] = 0;
-        SC_No[1] = 0;
-        SC_No[2] = 0;
-        SC_No[3] = 0;
+        g_state.SC_No[0] = 0;
+        g_state.SC_No[1] = 0;
+        g_state.SC_No[2] = 0;
+        g_state.SC_No[3] = 0;
 
         if (Check_Bonus_Stage()) {
-            SC_No[0] = 6;
+            g_state.SC_No[0] = 6;
         }
 
-        Stop_Combo = 0;
+        g_state.Stop_Combo = 0;
         init_slow_flag();
         pulpul_stop();
         break;
@@ -1056,30 +1057,30 @@ void Game05() {
         Next_CPU();
 
         if (Switch_Screen(0) != 0) {
-            Cover_Timer = 24;
+            g_state.Cover_Timer = 24;
             Purge_texcash_of_list(3);
             Make_texcash_of_list(3);
 
-            if (Bonus_Type == 0) {
+            if (g_state.Bonus_Type == 0) {
                 Game01_Sub();
             }
 
             BGM_Stop();
 
-            if (Bonus_Type == 0) {
+            if (g_state.Bonus_Type == 0) {
                 FSM_SetMode(MODE_FIGHT);
-                // G_No[2] zeroed by FSM_SetMode
-                E_No[0] = 4;
-                E_No[1] = 0;
-                E_No[2] = 0;
-                E_No[3] = 0;
-                Bonus_Game_Flag = 0;
+                // g_state.G_No[2] zeroed by FSM_SetMode
+                g_state.E_No[0] = 4;
+                g_state.E_No[1] = 0;
+                g_state.E_No[2] = 0;
+                g_state.E_No[3] = 0;
+                g_state.Bonus_Game_Flag = 0;
             } else {
                 FSM_SetMode(MODE_STAFF_ROLL);
-                E_No[0] = 4;
-                E_No[1] = 0;
-                E_No[2] = 0;
-                E_No[3] = 0;
+                g_state.E_No[0] = 4;
+                g_state.E_No[1] = 0;
+                g_state.E_No[2] = 0;
+                g_state.E_No[3] = 0;
             }
         }
 
@@ -1096,22 +1097,22 @@ void Game06() {
     BG_Draw_System();
     Basic_Sub_Ex();
 
-    if (!Break_Into) {
-        switch (G_No[2]) {
+    if (!g_state.Break_Into) {
+        switch (g_state.G_No[2]) {
         case 0:
             FSM_AdvanceSubState();
-            Game_pause = 0;
-            Stock_Com_Color[Player_id] = -1;
-            Stock_Com_Arts[Player_id] = -1;
-            Last_Player_id = -1;
-            Control_Time = CONTROL_TIME_DEFAULT;
-            E_No[0] = 8;
-            E_No[1] = 0;
-            E_No[2] = 0;
-            E_No[3] = 0;
+            g_state.Game_pause = 0;
+            g_state.Stock_Com_Color[g_state.Player_id] = -1;
+            g_state.Stock_Com_Arts[g_state.Player_id] = -1;
+            g_state.Last_Player_id = -1;
+            g_state.Control_Time = CONTROL_TIME_DEFAULT;
+            g_state.E_No[0] = 8;
+            g_state.E_No[1] = 0;
+            g_state.E_No[2] = 0;
+            g_state.E_No[3] = 0;
 
             for (xx = 0; xx < 4; xx++) {
-                GO_No[xx] = 0;
+                g_state.GO_No[xx] = 0;
             }
 
             make_texcash_work(13);
@@ -1122,7 +1123,7 @@ void Game06() {
                 /* Hide gameover screen once the game-over flow completes */
                 if (use_rmlui && rmlui_screen_gameover)
                     rmlui_gameover_hide();
-                G_Timer = 60;
+                g_state.G_Timer = 60;
 
                 if (Check_Disp_Ranking() != 0) {
                     FSM_AdvanceSubState();
@@ -1136,13 +1137,13 @@ void Game06() {
         case 2:
             if (Disp_Ranking() != 0) {
                 FSM_AdvanceSubState();
-                G_Timer = 1;
+                g_state.G_Timer = 1;
             }
 
             break;
 
         case 3:
-            if (--G_Timer == 0) {
+            if (--g_state.G_Timer == 0) {
                 FSM_AdvanceSubState();
                 Clear_Disp_Ranking(0);
                 Clear_Disp_Ranking(1);
@@ -1153,21 +1154,21 @@ void Game06() {
 
         case 4:
             if (Switch_Screen(1) != 0) {
-                Cover_Timer = 24;
-                Forbid_Break = 0;
+                g_state.Cover_Timer = 24;
+                g_state.Forbid_Break = 0;
                 Clear_Flash_No();
-                Clear_Personal_Data(LOSER);
-                grade_check_work_1st_init(LOSER, 0);
-                grade_check_work_1st_init(LOSER, 1);
+                Clear_Personal_Data(g_state.LOSER);
+                grade_check_work_1st_init(g_state.LOSER, 0);
+                grade_check_work_1st_init(g_state.LOSER, 1);
 
-                if (Request_Break[0] != 0 || Request_Break[1] != 0) {
+                if (g_state.Request_Break[0] != 0 || g_state.Request_Break[1] != 0) {
                     Request_Break_Sub(0);
                     Request_Break_Sub(1);
                     FSM_SetMode(MODE_ATTRACT);
-                    E_No[0] = 2;
-                    E_No[1] = 0;
-                    E_No[2] = 0;
-                    E_No[3] = 0;
+                    g_state.E_No[0] = 2;
+                    g_state.E_No[1] = 0;
+                    g_state.E_No[2] = 0;
+                    g_state.E_No[3] = 0;
                     break;
                 }
 
@@ -1177,15 +1178,15 @@ void Game06() {
 
                 if (CurrentSave()->Auto_Save) {
                     FSM_SetSubState(5);
-                    G_Timer = 4;
-                    Pause_ID = Player_id;
+                    g_state.G_Timer = 4;
+                    g_state.Pause_ID = g_state.Player_id;
                     cpReadyTask(TASK_MENU, Menu_Task);
                     System_all_clear_Level_B();
                     Menu_Init(MenuTask_GetTaskPtr());
                     MenuTask_GotoPhase(MTP_GOTO_GAME);
-                    Forbid_Reset = 1;
+                    g_state.Forbid_Reset = 1;
                     make_texcash_work(12);
-                    Unsubstantial_BG[0] = 1;
+                    g_state.Unsubstantial_BG[0] = 1;
                     Copy_Check_w();
                     cpExitTask(TASK_SAVER);
                 } else {
@@ -1196,11 +1197,11 @@ void Game06() {
             break;
 
         case 5:
-            if (G_No[3] == 0) {
+            if (g_state.G_No[3] == 0) {
                 FadeOut(1, 0xFF, 8);
 
-                if (--G_Timer == 0) {
-                    G_No[3] = 1;
+                if (--g_state.G_Timer == 0) {
+                    g_state.G_No[3] = 1;
                 }
             }
 
@@ -1212,19 +1213,19 @@ void Game06() {
             /* 0x63 is an arcade sentinel — deliberately out-of-bounds so Game()
                dispatch is a no-op while Loop_Demo takes over. Bypass FSM_SetMode
                to avoid the bounds check. */
-            G_No[1] = 0x63;
-            G_No[2] = 0;
-            G_No[3] = 0;
-            E_No[0] = 0;
-            E_No[1] = 0x63;
-            E_No[2] = 0;
-            E_No[3] = 0;
-            D_No[0] = 0;
-            D_No[1] = 0;
-            D_No[2] = 0;
-            D_No[3] = 0;
-            Get_Demo_Index = 0;
-            Combo_Demo_Flag = 0;
+            g_state.G_No[1] = 0x63;
+            g_state.G_No[2] = 0;
+            g_state.G_No[3] = 0;
+            g_state.E_No[0] = 0;
+            g_state.E_No[1] = 0x63;
+            g_state.E_No[2] = 0;
+            g_state.E_No[3] = 0;
+            g_state.D_No[0] = 0;
+            g_state.D_No[1] = 0;
+            g_state.D_No[2] = 0;
+            g_state.D_No[3] = 0;
+            g_state.Get_Demo_Index = 0;
+            g_state.Combo_Demo_Flag = 0;
             cpReadyTask(TASK_ENTRY, Entry_Task);
             Purge_mmtm_area(5);
             Make_texcash_of_list(5);
@@ -1237,9 +1238,9 @@ void Game06() {
 }
 
 void Request_Break_Sub(s16 PL_id) {
-    if ((Request_Break[PL_id] != 0) && (Ck_Break_Into(0, 0, PL_id) != 0)) {
-        plw[PL_id].wu.pl_operator = 1;
-        Operator_Status[PL_id] = 1;
+    if ((g_state.Request_Break[PL_id] != 0) && (Ck_Break_Into(0, 0, PL_id) != 0)) {
+        g_state.plw[PL_id].wu.pl_operator = 1;
+        g_state.Operator_Status[PL_id] = 1;
     }
 }
 
@@ -1247,17 +1248,17 @@ s32 Check_Disp_Ranking() {
     s16 rank_type = Disp_Rank_Sub(0);
 
     if (rank_type != -1) {
-        Rank_Type = rank_type;
-        Present_Rank[0] = *Get_Ranking_Slot(0, rank_type);
-        Present_Rank[1] = *Get_Ranking_Slot(1, rank_type);
+        g_state.Rank_Type = rank_type;
+        g_state.Present_Rank[0] = *Get_Ranking_Slot(0, rank_type);
+        g_state.Present_Rank[1] = *Get_Ranking_Slot(1, rank_type);
         return 1;
     }
 
     rank_type = Disp_Rank_Sub(1);
 
     if (rank_type != -1) {
-        Rank_Type = rank_type;
-        Present_Rank[1] = *Get_Ranking_Slot(1, rank_type);
+        g_state.Rank_Type = rank_type;
+        g_state.Present_Rank[1] = *Get_Ranking_Slot(1, rank_type);
         return 1;
     }
 
@@ -1265,19 +1266,19 @@ s32 Check_Disp_Ranking() {
 }
 
 s16 Disp_Rank_Sub(s16 PL_id) {
-    if (Request_Disp_Rank[PL_id][3] >= 0) {
+    if (g_state.Request_Disp_Rank[PL_id][3] >= 0) {
         return 15;
     }
 
-    if (Request_Disp_Rank[PL_id][2] >= 0) {
+    if (g_state.Request_Disp_Rank[PL_id][2] >= 0) {
         return 10;
     }
 
-    if (Request_Disp_Rank[PL_id][1] >= 0) {
+    if (g_state.Request_Disp_Rank[PL_id][1] >= 0) {
         return 5;
     }
 
-    if (Request_Disp_Rank[PL_id][0] >= 0) {
+    if (g_state.Request_Disp_Rank[PL_id][0] >= 0) {
         return 0;
     }
 
@@ -1285,7 +1286,7 @@ s16 Disp_Rank_Sub(s16 PL_id) {
 }
 
 s32 Disp_Ranking() {
-    switch (G_No[3]) {
+    switch (g_state.G_No[3]) {
     case 0:
         FSM_AdvanceSubSubState();
         Switch_Screen_Init(1);
@@ -1294,12 +1295,12 @@ s32 Disp_Ranking() {
 
     case 1:
         if (Switch_Screen(1) != 0) {
-            Cover_Timer = 24;
+            g_state.Cover_Timer = 24;
             FSM_AdvanceSubSubState();
-            D_No[0] = 1;
-            D_No[1] = 0;
-            D_No[2] = 0;
-            D_No[3] = 0;
+            g_state.D_No[0] = 1;
+            g_state.D_No[1] = 0;
+            g_state.D_No[2] = 0;
+            g_state.D_No[3] = 0;
             Clear_Personal_Data(0);
             grade_check_work_1st_init(0, 0);
             grade_check_work_1st_init(0, 1);
@@ -1314,7 +1315,7 @@ s32 Disp_Ranking() {
         Switch_Screen(1);
         Ranking();
 
-        if (--Cover_Timer == 0) {
+        if (--g_state.Cover_Timer == 0) {
             FSM_AdvanceSubSubState();
             Switch_Screen_Init(1);
         }
@@ -1326,7 +1327,7 @@ s32 Disp_Ranking() {
 
         if (Switch_Screen_Revival(1) != 0) {
             FSM_AdvanceSubSubState();
-            Forbid_Break = 0;
+            g_state.Forbid_Break = 0;
         }
 
         break;
@@ -1348,14 +1349,14 @@ void Game07() {
     BG_Draw_System();
     Basic_Sub();
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         if (Continue_Scene() != 0) {
             /* Hide continue screen before entering game-over */
             if (use_rmlui && rmlui_screen_continue)
                 rmlui_continue_hide();
             FSM_SetMode(MODE_GAME_OVER);
-            // G_No[2] zeroed by FSM_SetMode
+            // g_state.G_No[2] zeroed by FSM_SetMode
         }
 
         break;
@@ -1368,23 +1369,23 @@ void Game07() {
 void Game08() {
     BG_Draw_System();
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         Switch_Screen(0);
         FSM_SetSubState(1);
-        Game_pause = 0;
-        Final_Result_id = WINNER;
-        WGJ_Target = WINNER;
-        WGJ_Win = Win_Record[WINNER];
+        g_state.Game_pause = 0;
+        g_state.Final_Result_id = g_state.WINNER;
+        g_state.WGJ_Target = g_state.WINNER;
+        g_state.WGJ_Win = g_state.Win_Record[g_state.WINNER];
         grade_final_grade_bonus();
-        WGJ_Score = Continue_Coin[WINNER] + Score[WINNER][0];
+        g_state.WGJ_Score = g_state.Continue_Coin[g_state.WINNER] + g_state.Score[g_state.WINNER][0];
         Purge_mmtm_area(6);
         cpExitTask(TASK_MENU);
         cpExitTask(TASK_PAUSE);
         break;
 
     case 1:
-        if (Ending_main(End_PL) && (Request_Fade(9) != 0)) {
+        if (Ending_main(g_state.End_PL) && (Request_Fade(9) != 0)) {
             FSM_AdvanceSubState();
         }
 
@@ -1393,27 +1394,27 @@ void Game08() {
     case 2:
         if (Check_Fade_Complete_SP() != 0) {
             FSM_AdvanceSubState();
-            G_Timer = 10;
-            Suicide[4] = 1;
+            g_state.G_Timer = 10;
+            g_state.Suicide[4] = 1;
         }
 
         break;
 
     case 3:
-        if (--G_Timer == 0) {
+        if (--g_state.G_Timer == 0) {
             FSM_SetMode(MODE_GAME_OVER);
-            // G_No[2] zeroed by FSM_SetMode
-            E_No[0] = 8;
-            E_No[1] = 0;
-            E_No[2] = 0;
-            E_No[3] = 0;
+            // g_state.G_No[2] zeroed by FSM_SetMode
+            g_state.E_No[0] = 8;
+            g_state.E_No[1] = 0;
+            g_state.E_No[2] = 0;
+            g_state.E_No[3] = 0;
             Clear_Personal_Data(0);
             Clear_Personal_Data(1);
-            plw[0].wu.pl_operator = 0;
-            plw[1].wu.pl_operator = 0;
-            Operator_Status[0] = 0;
-            Operator_Status[1] = 0;
-            Last_Player_id = Player_Number = -1;
+            g_state.plw[0].wu.pl_operator = 0;
+            g_state.plw[1].wu.pl_operator = 0;
+            g_state.Operator_Status[0] = 0;
+            g_state.Operator_Status[1] = 0;
+            g_state.Last_Player_id = g_state.Player_Number = -1;
             Purge_mmtm_area(6);
             System_all_clear_Level_B();
         }
@@ -1426,40 +1427,40 @@ void Game08() {
 
 /** @brief State 9: Bonus stage — car/barrel smashing mini-game. */
 void Game09() {
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         BG_Draw_System();
         Switch_Screen(0);
         System_all_clear_Level_B();
-        Bonus_Game_Flag = Bonus_Type;
-        Game_difficulty = 15;
-        Game_timer = 0;
-        Game_pause = 0;
-        Demo_Time_Stop = 0;
-        C_No[0] = 0;
-        C_No[1] = 0;
-        C_No[2] = 0;
-        C_No[3] = 0;
+        g_state.Bonus_Game_Flag = g_state.Bonus_Type;
+        g_state.Game_difficulty = 15;
+        g_state.Game_timer = 0;
+        g_state.Game_pause = 0;
+        g_state.Demo_Time_Stop = 0;
+        g_state.C_No[0] = 0;
+        g_state.C_No[1] = 0;
+        g_state.C_No[2] = 0;
+        g_state.C_No[3] = 0;
         FSM_AdvanceSubState();
-        G_Timer = 19;
-        Round_num = 0;
-        Allow_a_battle_f = 0;
-        Time_in_Time = 60;
+        g_state.G_Timer = 19;
+        g_state.Round_num = 0;
+        g_state.Allow_a_battle_f = 0;
+        g_state.Time_in_Time = 60;
         init_slow_flag();
         clear_hit_queue();
-        pcon_rno[0] = pcon_rno[1] = pcon_rno[2] = pcon_rno[3] = 0;
+        g_state.pcon_rno[0] = g_state.pcon_rno[1] = g_state.pcon_rno[2] = g_state.pcon_rno[3] = 0;
         bbbs_com_initialize();
         ca_check_flag = 1;
-        Bonus_Game_Work = 20;
-        Bonus_Game_result = 0;
-        Bonus_Game_ex_result = 0;
+        g_state.Bonus_Game_Work = 20;
+        g_state.Bonus_Game_result = 0;
+        g_state.Bonus_Game_ex_result = 0;
         bg_work_clear();
         win_lose_work_clear();
 
-        if (Bonus_Game_Flag == 0x15) {
-            My_char[COM_id] = 12;
+        if (g_state.Bonus_Game_Flag == 0x15) {
+            g_state.My_char[g_state.COM_id] = 12;
         } else {
-            My_char[COM_id] = My_char[Player_id];
+            g_state.My_char[g_state.COM_id] = g_state.My_char[g_state.Player_id];
         }
 
         break;
@@ -1468,15 +1469,15 @@ void Game09() {
         BG_Draw_System();
         Switch_Screen(1);
 
-        if (--G_Timer == 0) {
-            if (Check_LDREQ_Queue_BG((u16)bg_w.stage) == 0) {
-                G_Timer = 1;
+        if (--g_state.G_Timer == 0) {
+            if (Check_LDREQ_Queue_BG((u16)g_state.bg_w.stage) == 0) {
+                g_state.G_Timer = 1;
             } else {
                 FSM_AdvanceSubState();
                 Clear_Flash_No();
 
-                if (Bonus_Type == 0x15) {
-                    makeup_bonus_game_level(COM_id);
+                if (g_state.Bonus_Type == 0x15) {
+                    makeup_bonus_game_level(g_state.COM_id);
                     effect_35_init(0x3C, 5);
                     effect_J2_init(0x78);
                     effect_35_init(0xB4, 7);
@@ -1500,7 +1501,7 @@ void Game09() {
 
         if (Switch_Screen_Revival(1) != 0) {
             FSM_AdvanceSubState();
-            Forbid_Break = 0;
+            g_state.Forbid_Break = 0;
         }
 
         break;
@@ -1508,8 +1509,8 @@ void Game09() {
     case 3:
         if (Bonus_Sub()) {
             FSM_AdvanceSubState();
-            Cover_Timer = 24;
-            Stop_Combo = 1;
+            g_state.Cover_Timer = 24;
+            g_state.Stop_Combo = 1;
             Switch_Screen_Init(0);
         }
 
@@ -1520,7 +1521,7 @@ void Game09() {
 
         if (Switch_Screen(0) != 0) {
             FSM_AdvanceSubState();
-            G_Timer = 3;
+            g_state.G_Timer = 3;
             SE_All_Off();
             Clear_Flash_No();
             effect_work_kill_mod_plcol();
@@ -1532,15 +1533,15 @@ void Game09() {
         Switch_Screen(0);
         Bonus_Sub();
 
-        if (--G_Timer == 0) {
-            Cover_Timer = 24;
-            Suicide[0] = 1;
+        if (--g_state.G_Timer == 0) {
+            g_state.Cover_Timer = 24;
+            g_state.Suicide[0] = 1;
             System_all_clear_Level_B();
             FSM_SetMode(MODE_TRAINING);
-            E_No[0] = 9;
-            E_No[1] = 0;
-            E_No[2] = 0;
-            E_No[3] = 0;
+            g_state.E_No[0] = 9;
+            g_state.E_No[1] = 0;
+            g_state.E_No[2] = 0;
+            g_state.E_No[3] = 0;
         }
 
         break;
@@ -1554,20 +1555,20 @@ s16 Bonus_Sub() {
     s16 x;
 
     mpp_w.inGame = true;
-    Scene_Cut = Cut_Cut_Cut();
-    Bonus_Game_Complete = 0;
+    g_state.Scene_Cut = Cut_Cut_Cut();
+    g_state.Bonus_Game_Complete = 0;
 
-    if (Game_pause != 0x81) {
-        Game_timer += 1;
+    if (g_state.Game_pause != 0x81) {
+        g_state.Game_timer += 1;
     }
 
     set_EXE_flag();
     Time_Control();
 
-    if (Bonus_Type == 0x15) {
-        Bonus_Game_Complete = Player_control_bonus();
+    if (g_state.Bonus_Type == 0x15) {
+        g_state.Bonus_Game_Complete = Player_control_bonus();
     } else {
-        Bonus_Game_Complete = Player_control_bonus2();
+        g_state.Bonus_Game_Complete = Player_control_bonus2();
     }
 
     TATE00();
@@ -1586,15 +1587,15 @@ void Game10() {
     Basic_Sub();
     Setup_Play_Type();
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         Switch_Screen(0);
         FSM_AdvanceSubState();
-        SC_No[0] = 0;
-        SC_No[1] = 0;
-        SC_No[2] = 0;
-        SC_No[3] = 0;
-        Stop_Combo = 0;
+        g_state.SC_No[0] = 0;
+        g_state.SC_No[1] = 0;
+        g_state.SC_No[2] = 0;
+        g_state.SC_No[3] = 0;
+        g_state.Stop_Combo = 0;
         init_slow_flag();
         break;
 
@@ -1610,16 +1611,16 @@ void Game10() {
         After_Bonus();
 
         if (Switch_Screen(0) != 0) {
-            Cover_Timer = 24;
+            g_state.Cover_Timer = 24;
             Game01_Sub();
             BGM_Stop();
             FSM_SetMode(MODE_FIGHT);
-            // G_No[2] zeroed by FSM_SetMode
-            E_No[0] = 4;
-            E_No[1] = 0;
-            E_No[2] = 0;
-            E_No[3] = 0;
-            Bonus_Game_Flag = 0;
+            // g_state.G_No[2] zeroed by FSM_SetMode
+            g_state.E_No[0] = 4;
+            g_state.E_No[1] = 0;
+            g_state.E_No[2] = 0;
+            g_state.E_No[3] = 0;
+            g_state.Bonus_Game_Flag = 0;
             Purge_texcash_of_list(3);
             Make_texcash_of_list(3);
         }
@@ -1636,16 +1637,16 @@ void Game11() {
     Basic_Sub();
     Setup_Play_Type();
 
-    switch (G_No[2]) {
+    switch (g_state.G_No[2]) {
     case 0:
         Switch_Screen(0);
         FSM_AdvanceSubState();
-        SC_No[0] = 0;
-        SC_No[1] = 0;
-        SC_No[2] = 0;
-        SC_No[3] = 0;
-        Stop_Combo = 0;
-        Bonus_Type = 0;
+        g_state.SC_No[0] = 0;
+        g_state.SC_No[1] = 0;
+        g_state.SC_No[2] = 0;
+        g_state.SC_No[3] = 0;
+        g_state.Stop_Combo = 0;
+        g_state.Bonus_Type = 0;
         init_slow_flag();
         break;
 
@@ -1661,26 +1662,26 @@ void Game11() {
         Next_Q();
 
         if (Switch_Screen(0) != 0) {
-            Cover_Timer = 24;
+            g_state.Cover_Timer = 24;
             Game01_Sub();
             BGM_Stop();
             Purge_texcash_of_list(3);
             Make_texcash_of_list(3);
 
-            if (Bonus_Type == 0) {
+            if (g_state.Bonus_Type == 0) {
                 FSM_SetMode(MODE_FIGHT);
-                // G_No[2] zeroed by FSM_SetMode
-                E_No[0] = 4;
-                E_No[1] = 0;
-                E_No[2] = 0;
-                E_No[3] = 0;
-                Bonus_Game_Flag = 0;
+                // g_state.G_No[2] zeroed by FSM_SetMode
+                g_state.E_No[0] = 4;
+                g_state.E_No[1] = 0;
+                g_state.E_No[2] = 0;
+                g_state.E_No[3] = 0;
+                g_state.Bonus_Game_Flag = 0;
             } else {
                 FSM_SetMode(MODE_STAFF_ROLL);
-                E_No[0] = 4;
-                E_No[1] = 0;
-                E_No[2] = 0;
-                E_No[3] = 0;
+                g_state.E_No[0] = 4;
+                g_state.E_No[1] = 0;
+                g_state.E_No[2] = 0;
+                g_state.E_No[3] = 0;
             }
         }
 
@@ -1688,12 +1689,12 @@ void Game11() {
 
     case 3:
         FSM_AdvanceSubState();
-        SC_No[0] = 0;
-        SC_No[1] = 0;
-        SC_No[2] = 0;
-        SC_No[3] = 0;
-        Stop_Combo = 0;
-        Bonus_Type = 0;
+        g_state.SC_No[0] = 0;
+        g_state.SC_No[1] = 0;
+        g_state.SC_No[2] = 0;
+        g_state.SC_No[3] = 0;
+        g_state.Stop_Combo = 0;
+        g_state.Bonus_Type = 0;
         init_slow_flag();
         Switch_Screen_Init(0);
         break;
@@ -1701,7 +1702,7 @@ void Game11() {
     case 4:
         if (Switch_Screen(0) != 0) {
             FSM_SetSubState(1);
-            Cover_Timer = 24;
+            g_state.Cover_Timer = 24;
         }
 
         break;
@@ -1722,38 +1723,38 @@ void Loop_Demo(struct _TASK* unused1) {
         return;
     }
 
-    switch (G_No[1]) {
+    switch (g_state.G_No[1]) {
     case 0:
         FSM_AdvanceDemoPhase();
-        D_No[0] = 0;
-        D_No[1] = 0;
-        D_No[2] = 0;
-        D_No[3] = 0;
-        E_No[1] = 99;
-        Demo_PL_Index = 0;
-        Demo_Stage_Index = 0;
-        Select_Demo_Index = 0;
+        g_state.D_No[0] = 0;
+        g_state.D_No[1] = 0;
+        g_state.D_No[2] = 0;
+        g_state.D_No[3] = 0;
+        g_state.E_No[1] = 99;
+        g_state.Demo_PL_Index = 0;
+        g_state.Demo_Stage_Index = 0;
+        g_state.Select_Demo_Index = 0;
         check_screen_L = 0;
         check_screen_S = 0;
-        Insert_Y = 23;
-        Demo_Flag = 0;
-        Play_Mode = 0;
-        Replay_Status[0] = 0;
-        Replay_Status[1] = 0;
-        Present_Mode = 0;
+        g_state.Insert_Y = 23;
+        g_state.Demo_Flag = 0;
+        g_state.Play_Mode = 0;
+        g_state.Replay_Status[0] = 0;
+        g_state.Replay_Status[1] = 0;
+        g_state.Present_Mode = 0;
         title_tex_flag = 0;
-        Reset_Bootrom = 0;
+        g_state.Reset_Bootrom = 0;
         break;
 
     case 1:
         Basic_Sub();
 
         if (CAPCOM_Logo() != 0) {
-            printf("[BOOT] Loop_Demo: CAPCOM_Logo done -> Title (G_No[1]=2)\n");
+            printf("[BOOT] Loop_Demo: CAPCOM_Logo done -> Title (g_state.G_No[1]=2)\n");
             Loop_Demo_Sub();
-            Insert_Y = 23;
-            E_No[1] = 2;
-            E_Timer = 1;
+            g_state.Insert_Y = 23;
+            g_state.E_No[1] = 2;
+            g_state.E_Timer = 1;
             return;
         }
 
@@ -1775,8 +1776,8 @@ void Loop_Demo(struct _TASK* unused1) {
                 rmlui_attract_overlay_show();
             }
             Loop_Demo_Sub();
-            Insert_Y = 17;
-            D_No[0] = 1;
+            g_state.Insert_Y = 17;
+            g_state.D_No[0] = 1;
             return;
         }
 
@@ -1790,8 +1791,8 @@ void Loop_Demo(struct _TASK* unused1) {
             }
             Switch_Screen(1);
             Loop_Demo_Sub();
-            Rank_Type = 0;
-            Demo_Type = 0;
+            g_state.Rank_Type = 0;
+            g_state.Demo_Type = 0;
             SsAllNoteOff();
             return;
         }
@@ -1816,9 +1817,9 @@ void Loop_Demo(struct _TASK* unused1) {
                 rmlui_attract_overlay_hide_logo();
             }
             Loop_Demo_Sub();
-            Demo_Type = 1;
-            Rank_Type = 5;
-            Demo_Type = 1;
+            g_state.Demo_Type = 1;
+            g_state.Rank_Type = 5;
+            g_state.Demo_Type = 1;
             SsAllNoteOff();
             return;
         }
@@ -1837,9 +1838,9 @@ void Loop_Demo(struct _TASK* unused1) {
             Loop_Demo_Sub();
             System_all_clear_Level_B();
             Purge_mmtm_area(6);
-            Game_pause = 0;
+            g_state.Game_pause = 0;
             FSM_SetDemoPhase(1);
-            E_No[1] = 99;
+            g_state.E_No[1] = 99;
             return;
         }
 
@@ -1848,7 +1849,7 @@ void Loop_Demo(struct _TASK* unused1) {
     default:
         Switch_Screen(1);
 
-        if (--Cover_Timer <= 0) {
+        if (--g_state.Cover_Timer <= 0) {
             Next_Demo_Loop();
         }
 
@@ -1859,36 +1860,36 @@ void Loop_Demo(struct _TASK* unused1) {
 void Next_Demo_Loop() {
     FSM_SetMainState(MAIN_STATE_LOOP_DEMO);
     FSM_SetMode(MODE_ATTRACT);
-    // G_No[2] zeroed by FSM_SetMode
-    D_No[0] = 0;
-    D_No[1] = 0;
-    D_No[2] = 0;
-    D_No[3] = 0;
-    E_No[0] = 0;
-    E_No[1] = 99;
-    E_No[2] = 0;
-    E_No[3] = 0;
-    Demo_PL_Index = 0;
-    Demo_Stage_Index = 0;
-    Select_Demo_Index = 0;
-    Demo_Flag = 0;
-    Present_Mode = 0;
-    Game_pause = 0;
-    Play_Mode = 0;
-    Replay_Status[0] = 0;
-    Replay_Status[1] = 0;
+    // g_state.G_No[2] zeroed by FSM_SetMode
+    g_state.D_No[0] = 0;
+    g_state.D_No[1] = 0;
+    g_state.D_No[2] = 0;
+    g_state.D_No[3] = 0;
+    g_state.E_No[0] = 0;
+    g_state.E_No[1] = 99;
+    g_state.E_No[2] = 0;
+    g_state.E_No[3] = 0;
+    g_state.Demo_PL_Index = 0;
+    g_state.Demo_Stage_Index = 0;
+    g_state.Select_Demo_Index = 0;
+    g_state.Demo_Flag = 0;
+    g_state.Present_Mode = 0;
+    g_state.Game_pause = 0;
+    g_state.Play_Mode = 0;
+    g_state.Replay_Status[0] = 0;
+    g_state.Replay_Status[1] = 0;
     System_all_clear_Level_B();
     Purge_mmtm_area(6);
 }
 
 void Loop_Demo_Sub() {
     FSM_AdvanceDemoPhase();
-    D_No[0] = 0;
-    D_No[1] = 0;
-    D_No[2] = 0;
-    D_No[3] = 0;
-    E_No[1] = 1;
-    Play_Game = 0;
+    g_state.D_No[0] = 0;
+    g_state.D_No[1] = 0;
+    g_state.D_No[2] = 0;
+    g_state.D_No[3] = 0;
+    g_state.E_No[1] = 1;
+    g_state.Play_Game = 0;
     pulpul_stop();
     pp_operator_check_flag(1);
 }
@@ -1896,49 +1897,49 @@ void Loop_Demo_Sub() {
 void Next_Title_Sub() {
     s16 ix;
 
-    if (G_No[1] != 99) {
+    if (g_state.G_No[1] != 99) {
         SsAllNoteOff();
     }
 
-    if (Demo_Flag == 0) {
+    if (g_state.Demo_Flag == 0) {
         SsRequest(106);
     }
     TexRelease(600);
     TexRelease_OP();
     System_all_clear_Level_B();
     Purge_mmtm_area(6);
-    G_Timer = 0;
+    g_state.G_Timer = 0;
 
     InitTask_ClearAllRNo();
     for (ix = 0; ix < 4; ix++) {
-        vm_w.r_no[ix] = 0;
-        G_No[ix] = 0;
-        E_No[ix] = 0;
-        D_No[ix] = 0;
+        g_state.vm_w.r_no[ix] = 0;
+        g_state.G_No[ix] = 0;
+        g_state.E_No[ix] = 0;
+        g_state.D_No[ix] = 0;
     }
 
     FSM_SetMainState(MAIN_STATE_GAME);
     FSM_SetSubState(2);        /* Skip Game0_0/Game0_1 (redundant title screen),
                             go directly to Game0_2 (fade-to-menu transition) */
-    G_No[3] = 2;        /* Skip Game0_2 cases 0-1 (they render texture 601
+    g_state.G_No[3] = 2;        /* Skip Game0_2 cases 0-1 (they render texture 601
                             which was never loaded since we skipped Game0_0) */
-    E_No[0] = 1;        /* Entry_01 will still run ... */
-    E_No[1] = 1;        /* ... pre-init its sub-state (what case 0 would set) ... */
-    E_No[2] = 3;        /* ... and skip to default → Exit_Title_Sub_Entry() immediately */
-    Break_Into = 0;     /* What Entry_01 case 0 would have set */
+    g_state.E_No[0] = 1;        /* Entry_01 will still run ... */
+    g_state.E_No[1] = 1;        /* ... pre-init its sub-state (what case 0 would set) ... */
+    g_state.E_No[2] = 3;        /* ... and skip to default → Exit_Title_Sub_Entry() immediately */
+    g_state.Break_Into = 0;     /* What Entry_01 case 0 would have set */
     title_tex_flag = 0; /* Title texture was never loaded */
     InitTask_SetPhase(ITP_RUNNING);
-    Demo_Flag = 1;
-    Game_pause = 0;
-    judge_flag = 0;
-    Pause_Down = 0;
-    Disp_Attack_Data = 0;
-    seraph_flag = 0;
-    End_Training = 0;
-    Forbid_Reset = 0;
-    Exec_Wipe = 0;
-    Present_Mode = 1;
-    Insert_Y = 23;
+    g_state.Demo_Flag = 1;
+    g_state.Game_pause = 0;
+    g_state.judge_flag = 0;
+    g_state.Pause_Down = 0;
+    g_state.Disp_Attack_Data = 0;
+    g_state.seraph_flag = 0;
+    g_state.End_Training = 0;
+    g_state.Forbid_Reset = 0;
+    g_state.Exec_Wipe = 0;
+    g_state.Present_Mode = 1;
+    g_state.Insert_Y = 23;
     /* Hide attract overlay on coin insert */
     if (use_rmlui && rmlui_screen_attract_overlay) {
         rmlui_attract_overlay_hide();
@@ -1965,25 +1966,25 @@ void Next_Title_Sub() {
 /**
  * @brief Time Control — manages the in-round countdown timer.
  *
- * Decrements Control_Time once per second (60 frames). Skipped during
+ * Decrements g_state.Control_Time once per second (60 frames). Skipped during
  * pauses, bonus games, and when the battle hasn't started yet.
  */
 void Time_Control() {
     count_cont_main();
 
-    if ((Allow_a_battle_f == 0) || (Demo_Time_Stop != 0) || (Bonus_Game_Flag != 0)) {
+    if ((g_state.Allow_a_battle_f == 0) || (g_state.Demo_Time_Stop != 0) || (g_state.Bonus_Game_Flag != 0)) {
         return;
     }
 
-    if (Game_pause == 0x81) {
+    if (g_state.Game_pause == 0x81) {
         return;
     }
 
-    if (Control_Time >= Limit_Time) {
-        Control_Time = Limit_Time;
-    } else if (--Time_in_Time == 0) {
-        Time_in_Time = 60;
-        Control_Time += 1;
+    if (g_state.Control_Time >= g_state.Limit_Time) {
+        g_state.Control_Time = g_state.Limit_Time;
+    } else if (--g_state.Time_in_Time == 0) {
+        g_state.Time_in_Time = 60;
+        g_state.Control_Time += 1;
     }
 }
 
@@ -1997,7 +1998,7 @@ void Time_Control() {
 s16 Ck_Coin() {
     s16 PL_id;
 
-    switch (G_No[3]) {
+    switch (g_state.G_No[3]) {
     case 0:
         PL_id = -1;
 
@@ -2013,12 +2014,12 @@ s16 Ck_Coin() {
 
         ToneDown(0xFF, 0);
         Request_LDREQ_Break();
-        G_No[3] = 1;
-        plw[PL_id].wu.pl_operator = 1;
-        Operator_Status[PL_id] = 1;
-        Champion = PL_id;
-        plw[PL_id ^ 1].wu.pl_operator = 0;
-        Operator_Status[PL_id ^ 1] = 0;
+        g_state.G_No[3] = 1;
+        g_state.plw[PL_id].wu.pl_operator = 1;
+        g_state.Operator_Status[PL_id] = 1;
+        g_state.Champion = PL_id;
+        g_state.plw[PL_id ^ 1].wu.pl_operator = 0;
+        g_state.Operator_Status[PL_id ^ 1] = 0;
         return 0;
 
     default:
@@ -2033,37 +2034,37 @@ s16 Ck_Coin() {
  * @brief Pre-select initialization — resets state before the character select screen.
  *
  * Clears control time, round level, rankings, fade flags, combo demos,
- * and randomizes the RNG seeds from system_timer.
+ * and randomizes the RNG seeds from g_state.system_timer.
  */
 void Before_Select_Sub() {
     s16 xx;
 
-    Request_G_No = 0;
-    Request_E_No = 0;
-    Allow_a_battle_f = 0;
-    Bonus_Type = 0;
+    g_state.Request_G_No = 0;
+    g_state.Request_E_No = 0;
+    g_state.Allow_a_battle_f = 0;
+    g_state.Bonus_Type = 0;
 
-    if (Demo_Flag == 0) {
-        Control_Time = 2048;
-        Round_Level = 7;
+    if (g_state.Demo_Flag == 0) {
+        g_state.Control_Time = 2048;
+        g_state.Round_Level = 7;
     } else {
-        Control_Time = CONTROL_TIME_DEFAULT;
+        g_state.Control_Time = CONTROL_TIME_DEFAULT;
     }
 
-    Super_Arts[0] = 0;
-    Super_Arts[1] = 0;
-    Exec_Wipe = 0;
-    Fade_Flag = 0;
-    Stock_Com_Color[0] = -1;
-    Stock_Com_Arts[0] = -1;
-    Stock_Com_Color[1] = -1;
-    Stock_Com_Arts[1] = -1;
-    Bonus_Game_Flag = 0;
-    Combo_Demo_Flag = 0;
-    paring_counter[0] = 0;
-    paring_bonus_r[0] = 0;
-    paring_counter[1] = 0;
-    paring_bonus_r[1] = 0;
+    g_state.Super_Arts[0] = 0;
+    g_state.Super_Arts[1] = 0;
+    g_state.Exec_Wipe = 0;
+    g_state.Fade_Flag = 0;
+    g_state.Stock_Com_Color[0] = -1;
+    g_state.Stock_Com_Arts[0] = -1;
+    g_state.Stock_Com_Color[1] = -1;
+    g_state.Stock_Com_Arts[1] = -1;
+    g_state.Bonus_Game_Flag = 0;
+    g_state.Combo_Demo_Flag = 0;
+    g_state.paring_counter[0] = 0;
+    g_state.paring_bonus_r[0] = 0;
+    g_state.paring_counter[1] = 0;
+    g_state.paring_bonus_r[1] = 0;
     Clear_Disp_Ranking(0);
     Clear_Disp_Ranking(1);
     Clear_Personal_Data(0);
@@ -2072,14 +2073,14 @@ void Before_Select_Sub() {
     Clear_Personal_Data(1);
     grade_check_work_1st_init(1, 0);
     grade_check_work_1st_init(1, 1);
-    Last_Player_id = Player_Number = -1;
-    Round_Level = 3;
-    Time_in_Time = 60;
+    g_state.Last_Player_id = g_state.Player_Number = -1;
+    g_state.Round_Level = 3;
+    g_state.Time_in_Time = 60;
 
-    if (Mode_Type != MODE_NETWORK) {
-        xx = system_timer;
-        Random_ix16 = xx & 0x3F;
-        Random_ix32 = xx & 0x7F;
+    if (g_state.Mode_Type != MODE_NETWORK) {
+        xx = g_state.system_timer;
+        g_state.Random_ix16 = xx & 0x3F;
+        g_state.Random_ix32 = xx & 0x7F;
     }
 }
 

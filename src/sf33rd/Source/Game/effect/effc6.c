@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effc6.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -26,11 +27,11 @@ void effect_C6_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             if (oya->wu.routine_no[0] >= 2) {
                 ewk->wu.routine_no[0]++;
 
-                if (plw[oya->master_id ^ 1].player_number == 16) {
+                if (g_state.plw[oya->master_id ^ 1].player_number == 16) {
                     set_char_move_init(&ewk->wu, 0, 19);
                 } else {
                     set_char_move_init(&ewk->wu, 0, 11);
@@ -46,7 +47,7 @@ void effect_C6_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 1) {

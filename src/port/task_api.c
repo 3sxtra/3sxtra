@@ -1,4 +1,5 @@
 #include "port/task_api.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/system/work_sys.h" /* extern struct _TASK task[11] */
 
 #include <assert.h>

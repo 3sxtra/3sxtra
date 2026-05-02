@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff17.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -12,9 +13,9 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 
 void effect_17_move(WORK_Other* ewk) {
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
-    } else if (Menu_Cursor_Y[0] == ewk->wu.type) {
+    } else if (g_state.Menu_Cursor_Y[0] == ewk->wu.type) {
         EFF17_Bowan(ewk);
     } else {
         ewk->wu.my_clear_level = 128;

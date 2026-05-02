@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/efff2.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -25,7 +26,7 @@ const s16 efff2_timer_tbl[16] = { 60, 0, 40, 90, 20, 10, 8, 130, 1, 34, 50, 70, 
 void effect_F2_move(WORK_Other* ewk) {
     s16 work;
 
-    if (ewk->wu.old_rno[6] < end_w.r_no_2) {
+    if (ewk->wu.old_rno[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[1] = 99;
     }
 
@@ -102,13 +103,13 @@ s32 effect_F2_init() {
         ewk->wu.work_id = 0x10;
         ewk->wu.cgromtype = 1;
         ewk->wu.type = i;
-        ewk->wu.old_rno[0] = end_w.r_no_2;
+        ewk->wu.old_rno[0] = g_state.end_w.r_no_2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.char_table[0] = (u32*)_end_char_table;
         ewk->wu.my_col_code = 0x12C;
         ewk->wu.my_family = *data_ptr++;
         ewk->wu.old_rno[6] = 0;
-        ewk->wu.old_rno[6] += end_w.r_no_2;
+        ewk->wu.old_rno[6] += g_state.end_w.r_no_2;
         ewk->wu.old_rno[4] = 19;
         ewk->wu.xyz[0].disp.pos = *data_ptr++;
         ewk->wu.xyz[1].disp.pos = *data_ptr++;

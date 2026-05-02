@@ -7,6 +7,7 @@
  * Documents are loaded from assets/ui/ and managed by name.
  */
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+#include "game_state.h"
 #include "port/config/config.h"
 #include "port/config/paths.h"
 #include "port/sdl/app/sdl_app.h"
@@ -860,7 +861,7 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
 
     // Route SDL events to the window context only (Phase 2 overlays use mouse).
     // Game context (Phase 3) is driven entirely by the CPS3 input system
-    // (gamepad → SDLPad → plsw → Check_Menu_Lever → MC_Move_Sub → IO_Result).
+    // (gamepad → SDLPad → plsw → Check_Menu_Lever → MC_Move_Sub → g_state.IO_Result).
     // Do NOT feed events to s_game_context — it would cause RmlUi's spatial
     // navigation to fight with the CPS3 state machine on screens with <button>
     // elements, and mouse clicks would hit at wrong coordinates (window vs 384×224).

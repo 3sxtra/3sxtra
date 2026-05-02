@@ -7,11 +7,12 @@
  * a subdued loser variant.
  *
  * Key globals (from workuser.h):
- *   Winner_id, WGJ_Score, WGJ_Win, Win_Record[], VS_Win_Record[],
- *   Continue_Coin[], Score[][3], My_char[], Mode_Type, Play_Type
+ *   g_state.Winner_id, g_state.WGJ_Score, g_state.WGJ_Win, g_state.Win_Record[], g_state.VS_Win_Record[],
+ *   g_state.Continue_Coin[], g_state.Score[][3], g_state.My_char[], g_state.Mode_Type, g_state.Play_Type
  */
 
 #include "port/sdl/rmlui/rmlui_win_screen.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -22,7 +23,7 @@ extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
 } // extern "C"
 
-// ─── Character name table (SF3:3S roster, index matches My_char) ───
+// ─── Character name table (SF3:3S roster, index matches g_state.My_char) ───
 // Index 0 = Gill (boss), then the standard roster order.
 static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
                                               "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
@@ -89,17 +90,17 @@ extern "C" void rmlui_win_screen_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("winner_name", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[Winner_id])); });
-    ctor.BindFunc("winner_score", [](Rml::Variant& v) { v = (int)WGJ_Score; });
-    ctor.BindFunc("winner_wins", [](Rml::Variant& v) { v = (int)WGJ_Win; });
+    ctor.BindFunc("winner_name", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[g_state.Winner_id])); });
+    ctor.BindFunc("winner_score", [](Rml::Variant& v) { v = (int)g_state.WGJ_Score; });
+    ctor.BindFunc("winner_wins", [](Rml::Variant& v) { v = (int)g_state.WGJ_Win; });
     ctor.BindFunc("is_loser", [](Rml::Variant& v) {
         v = false; // Updated per-frame via dirty check
     });
-    ctor.BindFunc("is_versus", [](Rml::Variant& v) { v = (bool)(Mode_Type == MODE_VERSUS); });
+    ctor.BindFunc("is_versus", [](Rml::Variant& v) { v = (bool)(g_state.Mode_Type == MODE_VERSUS); });
     ctor.BindFunc("streak_text", [](Rml::Variant& v) {
-        if (WGJ_Win > 1)
+        if (g_state.WGJ_Win > 1)
             v = Rml::String("2nd WIN+");
-        else if (WGJ_Win == 1)
+        else if (g_state.WGJ_Win == 1)
             v = Rml::String("1st WIN");
         else
             v = Rml::String("");
@@ -119,15 +120,15 @@ extern "C" void rmlui_win_screen_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("win"))
         return;
 
-    DIRTY_STR(winner_name, Rml::String(char_name(My_char[Winner_id])));
-    DIRTY_INT(winner_score, (int)WGJ_Score);
-    DIRTY_INT(winner_wins, (int)WGJ_Win);
-    DIRTY_BOOL(is_versus, Mode_Type == MODE_VERSUS);
+    DIRTY_STR(winner_name, Rml::String(char_name(g_state.My_char[g_state.Winner_id])));
+    DIRTY_INT(winner_score, (int)g_state.WGJ_Score);
+    DIRTY_INT(winner_wins, (int)g_state.WGJ_Win);
+    DIRTY_BOOL(is_versus, g_state.Mode_Type == MODE_VERSUS);
 
     Rml::String streak;
-    if (WGJ_Win > 1)
+    if (g_state.WGJ_Win > 1)
         streak = "2nd WIN+";
-    else if (WGJ_Win == 1)
+    else if (g_state.WGJ_Win == 1)
         streak = "1st WIN";
     else
         streak = "";

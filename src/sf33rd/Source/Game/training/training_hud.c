@@ -29,10 +29,10 @@ static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
 
     f32 ground_offset = 24.0f; // character Y=0 floor baseline offset from bottom of screen
 
-    f32 sx_l = (f32)(left - cam_x) * scr_sc;
-    f32 sx_r = (f32)(right - cam_x) * scr_sc;
-    f32 sy_t = 224.0f - (f32)(top - cam_y) * scr_sc - ground_offset;
-    f32 sy_b = 224.0f - (f32)(bottom - cam_y) * scr_sc - ground_offset;
+    f32 sx_l = (f32)(left - cam_x) * g_state.scr_sc;
+    f32 sx_r = (f32)(right - cam_x) * g_state.scr_sc;
+    f32 sy_t = 224.0f - (f32)(top - cam_y) * g_state.scr_sc - ground_offset;
+    f32 sy_b = 224.0f - (f32)(bottom - cam_y) * g_state.scr_sc - ground_offset;
 
     for (int i = 0; i < 4; i++) {
         q.v[i].z = -1.0f;
@@ -133,12 +133,12 @@ void training_hud_draw_hitboxes(PLW* player) {
 void training_hud_draw() {
     // Called each frame — hitboxes are still rendered via C (GPU quads).
     // Stun/life/meter text is now handled by the RmlUI HUD overlay.
-    if ((Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_TRIALS) && !show_training_menu) {
+    if ((g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_TRIALS) && !show_training_menu) {
         if (g_training_menu_settings.show_hitboxes || g_training_menu_settings.show_pushboxes ||
             g_training_menu_settings.show_hurtboxes || g_training_menu_settings.show_attackboxes ||
             g_training_menu_settings.show_throwboxes) {
-            training_hud_draw_hitboxes(&plw[0]);
-            training_hud_draw_hitboxes(&plw[1]);
+            training_hud_draw_hitboxes(&g_state.plw[0]);
+            training_hud_draw_hitboxes(&g_state.plw[1]);
         }
     }
 

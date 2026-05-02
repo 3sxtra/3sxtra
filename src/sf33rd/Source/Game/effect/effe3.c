@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effe3.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
@@ -19,7 +20,7 @@ void effect_E3_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if ((mwk->wu.E3_work_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
-            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS)) {
+            (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
@@ -30,11 +31,11 @@ void effect_E3_move(WORK_Other* ewk) {
 
         mwk->init_E3_flag = 0;
 
-        if (Mode_Type != MODE_NORMAL_TRAINING) {
+        if (g_state.Mode_Type != MODE_NORMAL_TRAINING) {
             break;
         }
 
-        if (mwk->wu.id == New_Challenger && Training[0].contents[0][0][0] != 4) {
+        if (mwk->wu.id == g_state.New_Challenger && Training[0].contents[0][0][0] != 4) {
             vib_sel[mwk->wu.id] = 0;
         }
 
@@ -58,7 +59,7 @@ void effect_E3_move(WORK_Other* ewk) {
         ewk->wu.vitality = 0;
         ewk->wu.dir_timer = 0;
 
-        if (mwk->wu.id == New_Challenger) {
+        if (mwk->wu.id == g_state.New_Challenger) {
             mwk->py->now.quantity.h = 0;
 
             if (ewk->wu.direction == 0) {
@@ -127,7 +128,7 @@ void effect_E3_move(WORK_Other* ewk) {
 
     case 1:
         if ((mwk->wu.E3_work_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
-            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS)) {
+            (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
@@ -139,7 +140,7 @@ void effect_E3_move(WORK_Other* ewk) {
             break;
         }
 
-        if (New_Challenger != mwk->wu.id) {
+        if (g_state.New_Challenger != mwk->wu.id) {
             break;
         }
 

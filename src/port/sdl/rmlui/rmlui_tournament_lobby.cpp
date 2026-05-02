@@ -8,6 +8,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_tournament_lobby.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_game_hud.h"
 #include "port/sdl/rmlui/rmlui_ingame_chat.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
@@ -850,7 +851,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
     if (s_chat_open) {
         u16 chat_trigger = 0;
         for (int i = 0; i < 2; i++)
-            chat_trigger |= (~PLsw[i][1] & PLsw[i][0]);
+            chat_trigger |= (~g_state.PLsw[i][1] & g_state.PLsw[i][0]);
         if (chat_trigger & 0x0200) {
             s_chat_open = false;
             s_is_typing = false;
@@ -891,7 +892,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
 
         u16 trigger = 0;
         for (int i = 0; i < 2; i++)
-            trigger |= (~PLsw[i][1] & PLsw[i][0]);
+            trigger |= (~g_state.PLsw[i][1] & g_state.PLsw[i][0]);
         if (trigger & 0x04) {
             if (s_proposal_cursor != 0) {
                 s_proposal_cursor = 0;
@@ -934,7 +935,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
     // --- Input Navigation ---
     u16 trigger = 0;
     for (int i = 0; i < 2; i++)
-        trigger |= (~PLsw[i][1] & PLsw[i][0]);
+        trigger |= (~g_state.PLsw[i][1] & g_state.PLsw[i][0]);
 
     if (trigger & 0x01) { // Up
         if (s_cursor_x == 0) {
@@ -1023,7 +1024,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
                 s_status_text = "Starting bracket...";
                 s_model_handle.DirtyVariable("status_text");
             } else if (s_cursor_y == 1 && s_is_host && s_tournament_started && !s_tournament_paused) {
-                // TO: Pause
+                // TO: g_state.Pause
                 AsyncTOAction(s_room_code.c_str(), 2, NULL, 0, NULL);
                 s_status_text = "Pausing tournament...";
                 s_model_handle.DirtyVariable("status_text");

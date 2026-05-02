@@ -10,10 +10,11 @@
  *   5. Blocking Training pause menu (6 items)
  *   6. Blocking Training Option (sub-menu within blocking)
  *
- * Key globals: Training[0..2], Menu_Cursor_Y[], Training_Index
+ * Key globals: Training[0..2], g_state.Menu_Cursor_Y[], g_state.Training_Index
  */
 
 #include "port/sdl/rmlui/rmlui_training_menus.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -45,8 +46,8 @@ extern "C" void rmlui_training_menus_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("tr_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
-    ctor.BindFunc("tr_index", [](Rml::Variant& v) { v = (int)Training_Index; });
+    ctor.BindFunc("tr_cursor", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
+    ctor.BindFunc("tr_index", [](Rml::Variant& v) { v = (int)g_state.Training_Index; });
 
     // Training Mode selector labels (4 items: string indices 0x35, 0x36, 66, 0x37)
     static const char* s_mode_labels[4] = { "NORMAL TRAINING", "PARRYING TRAINING", "TRIALS", "EXIT" };
@@ -76,12 +77,12 @@ extern "C" void rmlui_training_menus_update(void) {
         !rmlui_wrapper_is_game_document_visible("blocking_tr_option"))
         return;
 
-    int cur = (int)Menu_Cursor_Y[0];
+    int cur = (int)g_state.Menu_Cursor_Y[0];
     if (cur != s_cache.cursor) {
         s_cache.cursor = cur;
         s_model_handle.DirtyVariable("tr_cursor");
     }
-    int ti = (int)Training_Index;
+    int ti = (int)g_state.Training_Index;
     if (ti != s_cache.training_index) {
         s_cache.training_index = ti;
         s_model_handle.DirtyVariable("tr_index");

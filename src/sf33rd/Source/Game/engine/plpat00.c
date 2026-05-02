@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plpat00.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effi3.h"
 #include "sf33rd/Source/Game/engine/caldir.h"
@@ -100,7 +101,7 @@ static void Att_RESURRECTION(PLW* wk) {
         wk->wu.direction = 0;
         reset_mvxy_data(&wk->wu);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
-        round_slow_flag = false;
+        g_state.round_slow_flag = false;
         wk->resurrection_resv = 0;
         break;
 
@@ -209,11 +210,11 @@ static void Att_JYOUKA(PLW* wk) {
 
     switch (wk->wu.routine_no[3]) {
     case 0:
-        if (Bonus_Game_Flag == 20) {
+        if (g_state.Bonus_Game_Flag == 20) {
             wk->wu.routine_no[3] = 10;
             wk->wu.rl_flag = wk->wu.rl_waza;
             set_char_move_init(&wk->wu, 5, wk->as->char_ix);
-            x1 = bg_w.bgw[1].wxy[0].disp.pos;
+            x1 = g_state.bg_w.bgw[1].wxy[0].disp.pos;
             y1 = 80;
             cal_all_speed_data(&wk->wu, 20, x1, y1, 1, 2);
 
@@ -231,7 +232,7 @@ static void Att_JYOUKA(PLW* wk) {
         wk->wu.routine_no[3]++;
         wk->wu.rl_flag = wk->wu.rl_waza;
         set_char_move_init(&wk->wu, 5, (wk->as->char_ix));
-        x1 = bg_w.bgw[1].wxy[0].disp.pos;
+        x1 = g_state.bg_w.bgw[1].wxy[0].disp.pos;
         y1 = 40;
         cal_all_speed_data(&wk->wu, 20, x1, y1, 1, 1);
 

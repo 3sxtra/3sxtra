@@ -5,6 +5,7 @@
  */
 
 #include "training_state.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/lua_engine_bridge.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/plmain.h"
@@ -244,12 +245,11 @@ static void resolve_advantage(TrainingPlayerState* self, TrainingPlayerState* op
 
 void update_training_state(void) {
     g_training_state.is_in_match = true; // Assuming we're in match when this updates
-    g_training_state.frame_number++;
 
     // Map P1
-    update_player_state(&g_training_state.p1, &plw[0], &plw[1]);
+    update_player_state(&g_training_state.p1, &g_state.plw[0], &g_state.plw[1]);
     // Map P2
-    update_player_state(&g_training_state.p2, &plw[1], &plw[0]);
+    update_player_state(&g_training_state.p2, &g_state.plw[1], &g_state.plw[0]);
 
     // Calculate Advantage cross-states
     resolve_advantage(&g_training_state.p1, &g_training_state.p2, g_training_state.frame_number, "P1");
@@ -283,7 +283,7 @@ TrainingPlayerState* get_training_player(s16 id) {
 }
 
 void training_state_add_combo_hit(s16 target_id, s32 added_stun) {
-    if ((Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_TRIALS))
+    if ((g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_TRIALS))
         return;
 
     TrainingPlayerState* p = get_training_player(target_id);

@@ -4,10 +4,11 @@
  *
  * Replaces the CPS3 effect_61 labels + effect_64 value columns with an
  * HTML/CSS two-column table. The underlying Game_Option_Sub() input handler
- * still drives the values — the RmlUi document reads Convert_Buff each frame.
+ * still drives the values — the RmlUi document reads g_state.Convert_Buff each frame.
  */
 
 #include "port/sdl/rmlui/rmlui_game_option.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -15,14 +16,14 @@
 
 extern "C" {
 
-/* Game globals — Menu_Cursor_Y, IO_Result, Convert_Buff */
+/* Game globals — g_state.Menu_Cursor_Y, g_state.IO_Result, g_state.Convert_Buff */
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "structs.h"
 
 } // extern "C"
 
 // ─── Value display strings ──────────────────────────────────────
-// Each setting maps its raw Convert_Buff value to a display string
+// Each setting maps its raw g_state.Convert_Buff value to a display string
 
 static const char* difficulty_str(int v) {
     static const char* tbl[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
@@ -103,7 +104,7 @@ extern "C" void rmlui_game_option_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("game_opt_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("game_opt_cursor", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
 
     // Bind each row's label and formatted value
     for (int i = 0; i < 10; i++) {
@@ -120,23 +121,23 @@ extern "C" void rmlui_game_option_init(void) {
             snprintf(name, sizeof(name), "game_opt_value_%d", i);
             int idx = i;
             ctor.BindFunc(Rml::String(name), [idx](Rml::Variant& v) {
-                int raw = Convert_Buff[0][0][idx];
+                int raw = g_state.Convert_Buff[0][0][idx];
                 v = Rml::String(s_rows[idx].format(raw));
             });
         }
     }
 
-    // Event: select item → IO_Result
+    // Event: select item → g_state.IO_Result
     ctor.BindEventCallback("select_item", [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList& args) {
         if (!args.empty()) {
             int idx = args[0].Get<int>();
-            Menu_Cursor_Y[0] = (short)idx;
-            IO_Result = 0x100;
+            g_state.Menu_Cursor_Y[0] = (short)idx;
+            g_state.IO_Result = 0x100;
         }
     });
 
     ctor.BindEventCallback("cancel",
-                           [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) { IO_Result = 0x200; });
+                           [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) { g_state.IO_Result = 0x200; });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -152,14 +153,14 @@ extern "C" void rmlui_game_option_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("game_option"))
         return;
 
-    int cur = (int)Menu_Cursor_Y[0];
+    int cur = (int)g_state.Menu_Cursor_Y[0];
     if (cur != s_cache.cursor) {
         s_cache.cursor = cur;
         s_model_handle.DirtyVariable("game_opt_cursor");
     }
 
     for (int i = 0; i < 10; i++) {
-        int v = Convert_Buff[0][0][i];
+        int v = g_state.Convert_Buff[0][0][i];
         if (v != s_cache.values[i]) {
             s_cache.values[i] = v;
             char name[32];

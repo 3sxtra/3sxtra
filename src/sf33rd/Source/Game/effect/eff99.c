@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff99.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -66,18 +67,18 @@ const s8* Letter_Data_99[5][21] = {
 };
 
 void effect_99_move(WORK_Other_CONN* ewk) {
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
     switch (ewk->wu.type) {
     case 0:
-        Setup_Letter_99(ewk, ewk->wu.dir_step, Vital_Handicap[Present_Mode][ewk->master_id]);
+        Setup_Letter_99(ewk, ewk->wu.dir_step, g_state.Vital_Handicap[g_state.Present_Mode][ewk->master_id]);
         break;
 
     case 1:
-        Setup_Letter_99(ewk, ewk->wu.dir_step, VS_Stage);
+        Setup_Letter_99(ewk, ewk->wu.dir_step, g_state.VS_Stage);
         break;
     }
 
@@ -107,8 +108,8 @@ s32 effect_99_init(s16 id, s16 type, s16 char_offset, s16 letter_index, s16 pos_
     ewk->master_player = master_player;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_99[pos_index][0];
-    ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_99[pos_index][1];
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_99[pos_index][0];
+    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_99[pos_index][1];
     ewk->wu.position_z = Pos_Data_99[pos_index][2];
     return 0;
 }
@@ -162,5 +163,5 @@ static void Setup_Letter_99(WORK_Other_CONN* ewk, s16 letter_index, s16 disp_ind
 
     x = x * (ix + space) / 2;
 
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_99[ewk->master_priority][0] - x;
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_99[ewk->master_priority][0] - x;
 }

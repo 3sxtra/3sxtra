@@ -28,7 +28,7 @@ static s8* msgEndPL13_06[2] = {
     "   Ha ha ha ha ha ha ha ha!!                    ",
 };
 static s8* msgEndPL13_07[2] = {
-    "   Checking ID... Verified as                   ",
+    "   Checking g_state.ID... Verified as                   ",
     "   the legitimate successor...                  ",
 };
 static s8* msgEndPL13_08[2] = {

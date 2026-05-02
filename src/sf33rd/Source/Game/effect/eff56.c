@@ -4,15 +4,13 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff56.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-const u8* ci_pointer;
-u8 ci_col;
-u8 ci_timer;
 
 const u8 ci_color_tbl[26] = { 21, 2,  22, 2,  21, 2,  20, 2,  21, 2,  22, 2,  21,
                               2,  20, 2,  21, 2,  22, 2,  21, 2,  20, 2,  20, 255 };
@@ -23,30 +21,30 @@ void effect_56_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        if (Bonus_Game_Flag && bg_w.stage == 20) {
-            ci_pointer = bonus_ci_color_tbl;
-            ci_col = *ci_pointer++;
-            ci_timer = *ci_pointer++;
+        if (g_state.Bonus_Game_Flag && g_state.bg_w.stage == 20) {
+            g_state.ci_pointer = bonus_ci_color_tbl;
+            g_state.ci_col = *g_state.ci_pointer++;
+            g_state.ci_timer = *g_state.ci_pointer++;
         } else {
-            ci_pointer = ci_color_tbl;
-            ci_col = *ci_pointer++;
-            ci_timer = *ci_pointer++;
+            g_state.ci_pointer = ci_color_tbl;
+            g_state.ci_col = *g_state.ci_pointer++;
+            g_state.ci_timer = *g_state.ci_pointer++;
         }
 
         /* fallthrough */
 
     case 1:
         if (ewk->wu.type < 7) {
-            ci_set(ewk->wu.type, ci_col);
+            ci_set(ewk->wu.type, g_state.ci_col);
         } else {
-            nw_set(ewk->wu.type - 7, ci_col);
+            nw_set(ewk->wu.type - 7, g_state.ci_col);
         }
 
         break;
 
     default:
     case 2:
-        if (Message_Suicide[ewk->wu.charset_id]) {
+        if (g_state.Message_Suicide[ewk->wu.charset_id]) {
             push_effect_work(&ewk->wu);
             return;
         }
@@ -60,15 +58,15 @@ void effect_56_move(WORK_Other* ewk) {
         return;
     }
 
-    if (ci_timer > 1) {
-        ci_timer--;
+    if (g_state.ci_timer > 1) {
+        g_state.ci_timer--;
         return;
     }
 
-    ci_col = *ci_pointer++;
-    ci_timer = *ci_pointer++;
+    g_state.ci_col = *g_state.ci_pointer++;
+    g_state.ci_timer = *g_state.ci_pointer++;
 
-    if (ci_timer == 0xFF) {
+    if (g_state.ci_timer == 0xFF) {
         ewk->wu.routine_no[0]++;
     }
 }

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff50.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -25,7 +26,7 @@ void effect_50_move(WORK_Other* ewk) {
         sw = p1sw_0 & 3;
     }
 
-    if (Sel_Arts_Complete[ewk->master_id] < 0) {
+    if (g_state.Sel_Arts_Complete[ewk->master_id] < 0) {
         ewk->wu.routine_no[0] = 3;
         ewk->wu.dir_timer = 1;
         return;
@@ -35,7 +36,7 @@ void effect_50_move(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (Select_Arts[ewk->master_id] == 0) {
+        if (g_state.Select_Arts[ewk->master_id] == 0) {
             ewk->wu.routine_no[0]++;
             ewk->wu.disp_flag = 1;
         }
@@ -43,10 +44,10 @@ void effect_50_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (Sel_Arts_Complete[ewk->master_id]) {
+        if (g_state.Sel_Arts_Complete[ewk->master_id]) {
             ewk->wu.routine_no[0] = 3;
             ewk->wu.dir_timer = 5;
-        } else if (Moving_Plate[ewk->master_id] == ewk->wu.direction && ewk->wu.dm_vital == 0) {
+        } else if (g_state.Moving_Plate[ewk->master_id] == ewk->wu.direction && ewk->wu.dm_vital == 0) {
             ewk->wu.routine_no[0]++;
             ewk->wu.char_index++;
             ewk->wu.dmcal_m += 3;
@@ -93,8 +94,8 @@ void effect_50_move(WORK_Other* ewk) {
         return;
     }
 
-    ewk->wu.xyz[0].disp.pos = ewk->wu.dmcal_m + Plate_X[ewk->master_id][0];
-    ewk->wu.xyz[1].disp.pos = ewk->wu.dmcal_d + Plate_Y[ewk->master_id][0];
+    ewk->wu.xyz[0].disp.pos = ewk->wu.dmcal_m + g_state.Plate_X[ewk->master_id][0];
+    ewk->wu.xyz[1].disp.pos = ewk->wu.dmcal_d + g_state.Plate_Y[ewk->master_id][0];
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
     if (!rmlui_char_select_visible)
@@ -126,8 +127,8 @@ s32 effect_50_init(s16 PL_id, s16 Direction, s16 dm_vital) {
         Synchro_Address[ewk->master_id][ewk->wu.direction - 1] = ewk;
     }
 
-    ewk->wu.xyz[0].disp.pos = Plate_Pos_Data_79[Play_Type][ewk->master_id][0][0];
-    ewk->wu.xyz[1].disp.pos = Plate_Pos_Data_79[Play_Type][ewk->master_id][0][1];
+    ewk->wu.xyz[0].disp.pos = Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][0];
+    ewk->wu.xyz[1].disp.pos = Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][1];
 
     if (dm_vital == 1) {
         ewk->wu.char_index = 31;

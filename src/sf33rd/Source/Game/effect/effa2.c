@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effa2.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -21,17 +22,17 @@ const u8 hnc_color_tbl[88] = { 21, 2, 22, 1, 21, 2, 20, 18, 21, 2, 22, 1, 21, 2,
                                22, 1, 21, 2, 20, 4, 21, 2,  22, 1, 21, 2, 20, 4, 21, 2,  22, 1, 21, 2, 20, 255 };
 
 void effect_A2_move(WORK_Other* ewk) {
-    if (!(Game_pause & 0x80)) {
+    if (!(g_state.Game_pause & 0x80)) {
         hnc_end_timer++;
     }
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        Disp_PERFECT = 0;
+        g_state.Disp_PERFECT = 0;
         ewk->wu.routine_no[0]++;
 
     case 1:
-        if ((Game_pause & 0x80) != 0) {
+        if ((g_state.Game_pause & 0x80) != 0) {
             hnc_set(ewk->wu.direction, 20);
             return;
         }
@@ -52,7 +53,7 @@ void effect_A2_move(WORK_Other* ewk) {
         return;
 
     case 2:
-        if (Game_pause & 0x80) {
+        if (g_state.Game_pause & 0x80) {
             hnc_set(ewk->wu.direction, hnc_col);
             return;
         }
@@ -70,7 +71,7 @@ void effect_A2_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        if (Game_pause & 0x80) {
+        if (g_state.Game_pause & 0x80) {
             hnc_set(ewk->wu.direction, hnc_col);
             return;
         }
@@ -83,7 +84,7 @@ void effect_A2_move(WORK_Other* ewk) {
         break;
 
     case 4:
-        if (Game_pause & 0x80) {
+        if (g_state.Game_pause & 0x80) {
             hnc_wipeinit(hnc_col);
             return;
         }
@@ -99,7 +100,7 @@ void effect_A2_move(WORK_Other* ewk) {
         }
     }
 
-    if (!(Game_pause & 0x80)) {
+    if (!(g_state.Game_pause & 0x80)) {
         if (hnc_timer > 1) {
             hnc_timer--;
         } else {

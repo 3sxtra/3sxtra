@@ -10,6 +10,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "main.h"
 #include "port/menu_screen.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -39,7 +40,7 @@ s32 Play_Demo() {
     struct _TASK* tp = MenuTask_GetTaskPtr();
 
     if (!MenuScreen_IsActive()) {
-        Next_Demo = 0;
+        g_state.Next_Demo = 0;
         MenuScreen_Goto(MENU_SCREEN_DEMO);
     }
 
@@ -47,37 +48,37 @@ s32 Play_Demo() {
 
     if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
         MenuScreen_ExitToLegacy(tp);
-        Next_Demo = 1;
+        g_state.Next_Demo = 1;
     }
 
-    return Next_Demo;
+    return g_state.Next_Demo;
 }
 
 /** @brief Demo sub-sequence 0 — quick start: set up gameplay and run until timeout. */
 void Demo00() {
-    Play_Game = 1;
+    g_state.Play_Game = 1;
 
-    switch (D_No[1]) {
+    switch (g_state.D_No[1]) {
     case DEMO00_SETUP:
         Switch_Screen(1);
         Purge_texcash_of_list(3);
         Make_texcash_of_list(3);
-        D_No[1] += 1;
-        G_No[2] = 0;
-        Game_pause = 0;
-        Conclusion_Flag = 0;
-        appear_type = APPEAR_TYPE_ANIMATED;
-        Control_Time = 0x800;
-        Round_Level = 7;
-        Weak_PL = random_16() & 1;
+        g_state.D_No[1] += 1;
+        g_state.G_No[2] = 0;
+        g_state.Game_pause = 0;
+        g_state.Conclusion_Flag = 0;
+        g_state.appear_type = APPEAR_TYPE_ANIMATED;
+        g_state.Control_Time = 0x800;
+        g_state.Round_Level = 7;
+        g_state.Weak_PL = random_16() & 1;
         break;
 
     case DEMO00_COVER:
         Switch_Screen(1);
         Game02();
 
-        if (--Cover_Timer == 0) {
-            D_No[1] += 1;
+        if (--g_state.Cover_Timer == 0) {
+            g_state.D_No[1] += 1;
             Switch_Screen_Init(0);
             return;
         }
@@ -88,9 +89,9 @@ void Demo00() {
         Game02();
 
         if (Switch_Screen_Revival(0) != 0) {
-            D_No[1] += 1;
-            D_Timer = 1800;
-            Stop_SG = 0;
+            g_state.D_No[1] += 1;
+            g_state.D_Timer = 1800;
+            g_state.Stop_SG = 0;
             return;
         }
 
@@ -100,19 +101,19 @@ void Demo00() {
         Game02();
 
         if (Debug_w[DEBUG_TIME_STOP] == 9) {
-            D_Timer = 60;
+            g_state.D_Timer = 60;
         }
 
-        if (--D_Timer == 1) {
-            D_No[1] += 1;
-            Stop_Combo = 1;
+        if (--g_state.D_Timer == 1) {
+            g_state.D_No[1] += 1;
+            g_state.Stop_Combo = 1;
             return;
         }
 
-        if (Conclusion_Flag) {
-            D_No[1] += 1;
-            Stop_Combo = 1;
-            D_Timer = 90;
+        if (g_state.Conclusion_Flag) {
+            g_state.D_No[1] += 1;
+            g_state.Stop_Combo = 1;
+            g_state.D_Timer = 90;
             return;
         }
 
@@ -121,11 +122,11 @@ void Demo00() {
     case DEMO00_WIND_DOWN:
         Game02();
 
-        if (--D_Timer == 0) {
-            D_No[1] += 1;
-            Game_pause = 1;
-            Disappear_LOGO = 1;
-            D_Timer = 16;
+        if (--g_state.D_Timer == 0) {
+            g_state.D_No[1] += 1;
+            g_state.Game_pause = 1;
+            g_state.Disappear_LOGO = 1;
+            g_state.D_Timer = 16;
             return;
         }
 
@@ -134,8 +135,8 @@ void Demo00() {
     case DEMO00_PAUSE:
         Game02();
 
-        if (--D_Timer == 0) {
-            D_No[1] += 1;
+        if (--g_state.D_Timer == 0) {
+            g_state.D_No[1] += 1;
             Switch_Screen_Init(0);
             SsBgmFadeOut(0x800);
             return;
@@ -147,14 +148,14 @@ void Demo00() {
         Game02();
 
         if (Switch_Screen(0) != 0) {
-            D_No[1] += 1;
-            Demo_Flag = 0;
-            Present_Mode = 0;
-            Cover_Timer = 23;
+            g_state.D_No[1] += 1;
+            g_state.Demo_Flag = 0;
+            g_state.Present_Mode = 0;
+            g_state.Cover_Timer = 23;
             BGM_Stop();
 
-            if (++Select_Demo_Index > 3) {
-                Select_Demo_Index = 0;
+            if (++g_state.Select_Demo_Index > 3) {
+                g_state.Select_Demo_Index = 0;
                 return;
             }
         }
@@ -163,27 +164,27 @@ void Demo00() {
 
     default:
         Switch_Screen(1);
-        Next_Demo = 1;
+        g_state.Next_Demo = 1;
         break;
     }
 }
 
 /** @brief Demo sub-sequence 1 — full attract: character select then gameplay. */
 void Demo01() {
-    if (D_No[1] >= 2) {
-        Play_Game = 1;
+    if (g_state.D_No[1] >= 2) {
+        g_state.Play_Game = 1;
     }
 
-    switch (D_No[1]) {
+    switch (g_state.D_No[1]) {
     case DEMO01_SETUP:
         Switch_Screen(1);
-        D_No[1] += 1;
-        Game_pause = 0;
-        Demo_Time_Stop = 0;
+        g_state.D_No[1] += 1;
+        g_state.Game_pause = 0;
+        g_state.Demo_Time_Stop = 0;
         Before_Select_Sub();
         Setup_Select_Demo_PL();
         Setup_Demo_Arts();
-        Weak_PL = random_16() & 1;
+        g_state.Weak_PL = random_16() & 1;
         Clear_Break_Com(0);
         grade_check_work_1st_init(0, 0);
         grade_check_work_1st_init(0, 1);
@@ -196,9 +197,9 @@ void Demo01() {
     case DEMO01_SELECT:
         Game01();
 
-        if (Demo_Time_Stop) {
-            D_No[1] += 1;
-            G_No[2] = 0;
+        if (g_state.Demo_Time_Stop) {
+            g_state.D_No[1] += 1;
+            g_state.G_No[2] = 0;
             return;
         }
 
@@ -208,8 +209,8 @@ void Demo01() {
         Switch_Screen(1);
         Game02();
 
-        if (--Cover_Timer == 0) {
-            D_No[1] += 1;
+        if (--g_state.Cover_Timer == 0) {
+            g_state.D_No[1] += 1;
             Switch_Screen_Init(0);
             return;
         }
@@ -220,9 +221,9 @@ void Demo01() {
         Game02();
 
         if (Switch_Screen_Revival(0) != 0) {
-            D_No[1] += 1;
-            D_Timer = 1200;
-            Stop_SG = 0;
+            g_state.D_No[1] += 1;
+            g_state.D_Timer = 1200;
+            g_state.Stop_SG = 0;
             return;
         }
 
@@ -231,17 +232,17 @@ void Demo01() {
     case DEMO01_PLAY:
         Game02();
 
-        if (--D_Timer == 1) {
-            Stop_Combo = 1;
-            Disappear_LOGO = 1;
+        if (--g_state.D_Timer == 1) {
+            g_state.Stop_Combo = 1;
+            g_state.Disappear_LOGO = 1;
             return;
         }
 
-        if (!D_Timer) {
-            D_No[1] += 1;
-            D_Timer = 16;
-            Demo_Time_Stop = 1;
-            Game_pause = 1;
+        if (!g_state.D_Timer) {
+            g_state.D_No[1] += 1;
+            g_state.D_Timer = 16;
+            g_state.Demo_Time_Stop = 1;
+            g_state.Game_pause = 1;
             return;
         }
 
@@ -250,8 +251,8 @@ void Demo01() {
     case DEMO01_PAUSE:
         Game02();
 
-        if (--D_Timer == 0) {
-            D_No[1] += 1;
+        if (--g_state.D_Timer == 0) {
+            g_state.D_No[1] += 1;
             Switch_Screen_Init(0);
             SsBgmFadeOut(0x800);
             return;
@@ -263,8 +264,8 @@ void Demo01() {
         Game02();
 
         if (Switch_Screen(0) != 0) {
-            D_No[1] += 1;
-            Cover_Timer = 23;
+            g_state.D_No[1] += 1;
+            g_state.Cover_Timer = 23;
             BGM_Stop();
             return;
         }
@@ -272,7 +273,7 @@ void Demo01() {
         break;
 
     default:
-        Next_Demo = 1;
+        g_state.Next_Demo = 1;
         break;
     }
 }
@@ -284,18 +285,18 @@ const s8 Demo_PL_Data[4] = { 0, 1, 0, 1 };
 
 /** @brief Select demo characters from a predefined roster (with debug overrides). */
 void Setup_Demo_PL() {
-    if (Demo_PL_Index < 0 || Demo_PL_Index >= DEMO_PL_COUNT) {
-        Demo_PL_Index = 0;
+    if (g_state.Demo_PL_Index < 0 || g_state.Demo_PL_Index >= DEMO_PL_COUNT) {
+        g_state.Demo_PL_Index = 0;
     }
-    My_char[0] = Demo_PL_Play_Data[Demo_PL_Index][0];
-    My_char[1] = Demo_PL_Play_Data[Demo_PL_Index][1];
+    g_state.My_char[0] = Demo_PL_Play_Data[g_state.Demo_PL_Index][0];
+    g_state.My_char[1] = Demo_PL_Play_Data[g_state.Demo_PL_Index][1];
 
     if (Debug_w[DEBUG_MY_CHAR_PL1]) {
-        My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
+        g_state.My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
     }
 
     if (Debug_w[DEBUG_MY_CHAR_PL2]) {
-        My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
+        g_state.My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
     }
 
     init_omop();
@@ -303,38 +304,38 @@ void Setup_Demo_PL() {
 
 /** @brief Assign random super arts and default colors for demo players. */
 void Setup_Demo_Arts() {
-    Super_Arts[0] = Arts_Rnd_Demo_Data[random_16() & 7];
-    Super_Arts[1] = Arts_Rnd_Demo_Data[random_16() & 7];
-    Player_Color[0] = 0;
-    Player_Color[1] = 0;
+    g_state.Super_Arts[0] = Arts_Rnd_Demo_Data[random_16() & 7];
+    g_state.Super_Arts[1] = Arts_Rnd_Demo_Data[random_16() & 7];
+    g_state.Player_Color[0] = 0;
+    g_state.Player_Color[1] = 0;
 }
 
 /** @brief Select a demo stage from the predefined roster and advance the index. */
 void Setup_Demo_Stage() {
     s16 rnd = random_16() & 1;
 
-    if (Demo_Stage_Index < 0 || Demo_Stage_Index >= DEMO_STAGE_COUNT) {
-        Demo_Stage_Index = 0;
+    if (g_state.Demo_Stage_Index < 0 || g_state.Demo_Stage_Index >= DEMO_STAGE_COUNT) {
+        g_state.Demo_Stage_Index = 0;
     }
-    bg_w.area = 0;
-    bg_w.stage = Demo_Stage_Play_Data[Demo_Stage_Index][rnd];
-    Demo_Stage_Index += 1;
+    g_state.bg_w.area = 0;
+    g_state.bg_w.stage = Demo_Stage_Play_Data[g_state.Demo_Stage_Index][rnd];
+    g_state.Demo_Stage_Index += 1;
 
-    if (++Demo_PL_Index > 3) {
-        Demo_PL_Index = 0;
-        Demo_Stage_Index = 0;
+    if (++g_state.Demo_PL_Index > 3) {
+        g_state.Demo_PL_Index = 0;
+        g_state.Demo_Stage_Index = 0;
     }
 }
 
 /** @brief Configure which player is human-controlled in the current demo. */
 static void Setup_Select_Demo_PL() {
-    plw[0].wu.pl_operator = 0;
-    plw[1].wu.pl_operator = 0;
-    Operator_Status[0] = 0;
-    Operator_Status[1] = 0;
-    if (Select_Demo_Index < 0 || Select_Demo_Index >= DEMO_PL_COUNT) {
-        Select_Demo_Index = 0;
+    g_state.plw[0].wu.pl_operator = 0;
+    g_state.plw[1].wu.pl_operator = 0;
+    g_state.Operator_Status[0] = 0;
+    g_state.Operator_Status[1] = 0;
+    if (g_state.Select_Demo_Index < 0 || g_state.Select_Demo_Index >= DEMO_PL_COUNT) {
+        g_state.Select_Demo_Index = 0;
     }
-    plw[Demo_PL_Data[Select_Demo_Index]].wu.pl_operator = 1;
-    Operator_Status[Demo_PL_Data[Select_Demo_Index]] = 1;
+    g_state.plw[Demo_PL_Data[g_state.Select_Demo_Index]].wu.pl_operator = 1;
+    g_state.Operator_Status[Demo_PL_Data[g_state.Select_Demo_Index]] = 1;
 }

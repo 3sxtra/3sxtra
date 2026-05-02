@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/fsm.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/init3rd.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "main.h"
@@ -103,36 +104,36 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     Bg_TexInit();
     Scrscreen_Init();
     effect_work_init();
-    Max_vitality = MAX_VITALITY_DEFAULT;
-    reset_NG_flag = 0;
-    Break_Into = 0;
-    Forbid_Break = 0;
-    Extra_Break = 0;
-    Demo_Flag = 0;
-    Random_ix16 = 0;
-    Random_ix32 = 0;
-    test_flag = 0;
-    ixbfw_cut = 0;
-    PB_Music_Off = 0;
-    No_Death = 0;
-    Pause_Down = 0;
-    Disp_Attack_Data = 0;
-    seraph_flag = 0;
-    Request_Break[0] = 0;
-    Request_Break[1] = 0;
-    DE_X[0] = 2;
-    DE_X[1] = 0x1B;
+    g_state.Max_vitality = MAX_VITALITY_DEFAULT;
+    g_state.reset_NG_flag = 0;
+    g_state.Break_Into = 0;
+    g_state.Forbid_Break = 0;
+    g_state.Extra_Break = 0;
+    g_state.Demo_Flag = 0;
+    g_state.Random_ix16 = 0;
+    g_state.Random_ix32 = 0;
+    g_state.test_flag = 0;
+    g_state.ixbfw_cut = 0;
+    g_state.PB_Music_Off = 0;
+    g_state.No_Death = 0;
+    g_state.Pause_Down = 0;
+    g_state.Disp_Attack_Data = 0;
+    g_state.seraph_flag = 0;
+    g_state.Request_Break[0] = 0;
+    g_state.Request_Break[1] = 0;
+    g_state.DE_X[0] = 2;
+    g_state.DE_X[1] = 0x1B;
     No_Trans = 0;
-    Replay_Status[0] = 0;
-    Replay_Status[1] = 0;
-    Play_Game = 0;
-    Present_Mode = 1;
+    g_state.Replay_Status[0] = 0;
+    g_state.Replay_Status[1] = 0;
+    g_state.Play_Game = 0;
+    g_state.Present_Mode = 1;
 
     for (ix = 0; ix < 4; ix++) {
-        G_No[ix] = 0;
-        E_No[ix] = 0;
-        S_No[ix] = 0;
-        Unsubstantial_BG[ix] = 0;
+        g_state.G_No[ix] = 0;
+        g_state.E_No[ix] = 0;
+        g_state.S_No[ix] = 0;
+        g_state.Unsubstantial_BG[ix] = 0;
     }
 
     init_pulpul_work();
@@ -147,9 +148,9 @@ void Init_Task_1st(struct _TASK* task_ptr) {
                &save_w[SAVEW_BASE].extra_option.contents,
                sizeof(save_w[ix].extra_option.contents));
 
-        Direction_Working[ix] = 0;
-        Vital_Handicap[ix][0] = 7;
-        Vital_Handicap[ix][1] = 7;
+        g_state.Direction_Working[ix] = 0;
+        g_state.Vital_Handicap[ix][0] = 7;
+        g_state.Vital_Handicap[ix][1] = 7;
         permission_player[ix].cursor_infor[0].first_x = 1;
         permission_player[ix].cursor_infor[0].first_y = 0;
         permission_player[ix].cursor_infor[1].first_x = 5;
@@ -158,16 +159,16 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     }
 
     Copy_Check_w();
-    Direction_Working[2] = 1;
+    g_state.Direction_Working[2] = 1;
     save_w[SAVEW_TRAINING].Time_Limit = -1;
     save_w[SAVEW_EXTRA].Time_Limit = -1;
     Setup_Difficult_V();
     Setup_Limit_Time();
-    Reset_Bootrom = 1;
+    g_state.Reset_Bootrom = 1;
 
     cpReadyTask(TASK_RESET, Reset_Task);
 
-    Switch_Type = 0;
+    g_state.Switch_Type = 0;
     Reset_Status[0] = 0;
     Reset_Status[1] = 0;
     pulpul_stop();
@@ -175,21 +176,21 @@ void Init_Task_1st(struct _TASK* task_ptr) {
 }
 
 /**
- * @brief Set difficulty values based on the region (Country).
+ * @brief Set difficulty values based on the region (g_state.Country).
  *
- * Japan (Country==COUNTRY_JAPAN) uses difficulty row 0, all other regions use row 1.
+ * Japan (g_state.Country==COUNTRY_JAPAN) uses difficulty row 0, all other regions use row 1.
  */
 static void Setup_Difficult_V() {
     u8 country;
 
-    if (Country == COUNTRY_JAPAN) {
+    if (g_state.Country == COUNTRY_JAPAN) {
         country = 0;
     } else {
         country = 1;
     }
 
-    CC_Value[0] = Difficult_V_Data[country][0];
-    CC_Value[1] = Difficult_V_Data[country][1];
+    g_state.CC_Value[0] = Difficult_V_Data[country][0];
+    g_state.CC_Value[1] = Difficult_V_Data[country][1];
 }
 
 /**
@@ -204,7 +205,7 @@ void Init_Task_Aload(struct _TASK* task_ptr) {
     task_ptr->r_no[0] += 1;
     task_ptr->r_no[1] = 0;
     mpp_w.cutAnalogStickData = false;
-    Forbid_Reset = 1;
+    g_state.Forbid_Reset = 1;
 }
 
 /** @brief Warning/disclaimer screen sub-step — waits for Warning() to complete.
@@ -237,5 +238,5 @@ void Init_Task_End(struct _TASK* task_ptr) {
     }
 
     cpExitTask(TASK_INIT);
-    Forbid_Reset = 0;
+    g_state.Forbid_Reset = 0;
 }

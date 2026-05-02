@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effb1.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
@@ -43,7 +44,7 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
             ewk->wu.direction = ewk->num_of_conn;
             ewk->num_of_conn = 0;
             ewk->wu.dir_timer = 0;
-            ewk->wu.dir_step = Bonus_Game_result;
+            ewk->wu.dir_step = g_state.Bonus_Game_result;
 
             if (ewk->wu.kage_prio) {
                 ewk->wu.position_z = 8;
@@ -54,11 +55,11 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
             break;
 
         case 1:
-            if (Game_pause) {
+            if (g_state.Game_pause) {
                 break;
             }
 
-            if (EXE_flag) {
+            if (g_state.EXE_flag) {
                 break;
             }
 
@@ -85,21 +86,21 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[0] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
             break;
         }
 
-        if (ewk->wu.dir_step > Bonus_Game_result) {
+        if (ewk->wu.dir_step > g_state.Bonus_Game_result) {
             ewk->wu.routine_no[1] = 1;
         }
 
         switch (ewk->wu.routine_no[1]) {
         case 0:
-            if (Bonus_Game_result) {
-                for (i = 0; i < Bonus_Game_result; i++) {
+            if (g_state.Bonus_Game_result) {
+                for (i = 0; i < g_state.Bonus_Game_result; i++) {
                     if (!ewk->conn[i + 20].nx) {
                         ewk->conn[i + 20].nx = 1;
                     }
@@ -111,8 +112,8 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
             break;
 
         default:
-            if (ewk->wu.dir_step != Bonus_Game_result) {
-                for (i = Bonus_Game_result; i < ewk->wu.dir_step; i++) {
+            if (ewk->wu.dir_step != g_state.Bonus_Game_result) {
+                for (i = g_state.Bonus_Game_result; i < ewk->wu.dir_step; i++) {
                     if (ewk->conn[i + 20].nx != 2) {
                         ewk->conn[i + 20].nx = 2;
                         ewk->conn[i + 20].ny = 0;
@@ -124,7 +125,7 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
             break;
         }
 
-        ewk->wu.dir_step = Bonus_Game_result;
+        ewk->wu.dir_step = g_state.Bonus_Game_result;
         effB1_trans(&ewk->wu);
         break;
 
@@ -139,15 +140,15 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
 }
 
 static void effB1_trans(WORK* ewk) {
-    ewk->position_x = bg_w.bgw[2].wxy[0].disp.pos;
-    ewk->position_y = bg_w.bgw[2].wxy[1].disp.pos;
+    ewk->position_x = g_state.bg_w.bgw[2].wxy[0].disp.pos;
+    ewk->position_y = g_state.bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);
 }
 
 static void effB1_mark_change(WORK_Other_CONN* ewk) {
     s16 i;
 
-    for (i = 0; i < Bonus_Game_result; i++) {
+    for (i = 0; i < g_state.Bonus_Game_result; i++) {
         switch (ewk->conn[i + 20].ny) {
         default:
             if (--ewk->conn[i + 20].col > 0) {

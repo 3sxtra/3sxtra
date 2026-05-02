@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effe5.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effe7.h"
 #include "sf33rd/Source/Game/effect/effe8.h"
@@ -92,7 +93,7 @@ void effect_E5_move(WORK_Other* ewk) {
             goto jump;
         }
 
-        if ((ewk->wu.dir_old & 1 && EXE_flag == 0 && Game_pause == 0 && mwk->wu.hit_stop <= 0 &&
+        if ((ewk->wu.dir_old & 1 && g_state.EXE_flag == 0 && g_state.Game_pause == 0 && mwk->wu.hit_stop <= 0 &&
              --ewk->wu.direction == 0) ||
             (ewk->wu.dir_old & 2 &&
              (ewk->wu.routine_no[5] != mwk->wu.routine_no[1] || ewk->wu.routine_no[6] != mwk->wu.routine_no[2]) &&
@@ -103,7 +104,7 @@ void effect_E5_move(WORK_Other* ewk) {
             (ewk->wu.dir_old & 0x10 && mwk->wu.routine_no[1] != 4 && mwk->wu.routine_no[1] != 2) ||
             (ewk->wu.dir_old & 0x20 && ewk->wu.total_att_set != ((WORK*)mwk->wu.target_adrs)->kind_of_waza) ||
             (ewk->wu.dir_old & 0x40 && ewk->wu.total_paring != mwk->wu.kind_of_waza) ||
-            (ewk->wu.dir_old & 0x80 && pcon_dp_flag) || !mwk->image_setup_flag) {
+            (ewk->wu.dir_old & 0x80 && g_state.pcon_dp_flag) || !mwk->image_setup_flag) {
             mwk->image_setup_flag = 0;
         jump:
             ewk->wu.routine_no[0] = ewk->wu.routine_no[1] = ewk->wu.routine_no[2] = 0;
@@ -130,7 +131,7 @@ void effect_E5_move(WORK_Other* ewk) {
                 /* fallthrough */
 
             case 2:
-                if (EXE_flag == 0 && Game_pause == 0 && --ewk->wu.dir_step <= 0) {
+                if (g_state.EXE_flag == 0 && g_state.Game_pause == 0 && --ewk->wu.dir_step <= 0) {
                     effect_E7_init(ewk, mwk);
                     ewk->wu.routine_no[2] = 1;
                 }
@@ -280,8 +281,8 @@ void effect_e7_e8_init_union(WORK_Other* nwk, WORK_Other* ek, PLW* mk) {
 }
 
 void get_attdata_of_illusion(WORK_Other* ewk) {
-    ewk->wu.cg_hit_ix = zanzou_table[ewk->master_id][ewk->wu.type].hit_ix;
-    ewk->wu.cg_att_ix = zanzou_table[ewk->master_id][ewk->wu.type].renew;
+    ewk->wu.cg_hit_ix = g_state.zanzou_table[ewk->master_id][ewk->wu.type].hit_ix;
+    ewk->wu.cg_att_ix = g_state.zanzou_table[ewk->master_id][ewk->wu.type].renew;
     ewk->wu.xyz[0].disp.pos = ewk->wu.position_x;
     ewk->wu.xyz[1].disp.pos = ewk->wu.position_y;
     ewk->wu.xyz[2].disp.pos = ewk->wu.position_z;
@@ -299,7 +300,7 @@ void get_attdata_of_illusion(WORK_Other* ewk) {
     ewk->wu.att.piyo = 0;
     ewk->wu.att.hs_you = 0;
     ewk->wu.add_arts_point = 0;
-    ewk->wu.kind_of_waza = zanzou_table[ewk->master_id][ewk->wu.type].kowaza;
+    ewk->wu.kind_of_waza = g_state.zanzou_table[ewk->master_id][ewk->wu.type].kowaza;
     ewk->wu.at_koa = acatkoa_table[ewk->wu.kind_of_waza];
 
     if (ewk->wu.cg_hit_ix) {

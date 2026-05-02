@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff53.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff54.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -23,7 +24,7 @@ void effect_53_move(WORK_Other* ewk) {
         return;
     }
 
-    if (EXE_flag || Game_pause || !EXE_obroll) {
+    if (g_state.EXE_flag || g_state.Game_pause || !g_state.EXE_obroll) {
         return;
     }
 

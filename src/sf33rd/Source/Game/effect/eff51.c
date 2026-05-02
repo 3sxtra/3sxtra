@@ -10,6 +10,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff51.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -22,12 +23,12 @@
 static void Setup_Letter_51(WORK_Other_CONN* ewk);
 
 void effect_51_move(WORK_Other_CONN* ewk) {
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
-    if (Menu_Cursor_Y[0] == ewk->wu.type) {
+    if (g_state.Menu_Cursor_Y[0] == ewk->wu.type) {
         ewk->wu.my_clear_level = 0;
     } else {
         ewk->wu.my_clear_level = 128;
@@ -58,8 +59,8 @@ s32 effect_51_init(s16 letter_type, s16 cursor_index, s16 master_player) {
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     Setup_Letter_51(ewk);
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 112;
-    ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 187 - (ewk->wu.type * 18);
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 112;
+    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 187 - (ewk->wu.type * 18);
     ewk->wu.position_z = 68;
     ewk->wu.position_y -= 3;
     return 0;
@@ -67,7 +68,7 @@ s32 effect_51_init(s16 letter_type, s16 cursor_index, s16 master_player) {
 
 static void Setup_Letter_51(WORK_Other_CONN* ewk) {
     u8* ptr =
-        (u8*)Letter_Data_51[Menu_Page_Buff][ewk->wu.char_index][system_dir[1].contents[Menu_Page_Buff][ewk->wu.type]];
+        (u8*)Letter_Data_51[g_state.Menu_Page_Buff][ewk->wu.char_index][system_dir[1].contents[g_state.Menu_Page_Buff][ewk->wu.type]];
     s16 ix = 0;
     s16 x = 0;
 
@@ -84,8 +85,8 @@ static void Setup_Letter_51(WORK_Other_CONN* ewk) {
             continue;
         }
 
-        if (system_dir[1].contents[Menu_Page_Buff][ewk->wu.type] !=
-            Dir_Default_Data.contents[Menu_Page_Buff][ewk->wu.type]) {
+        if (system_dir[1].contents[g_state.Menu_Page_Buff][ewk->wu.type] !=
+            Dir_Default_Data.contents[g_state.Menu_Page_Buff][ewk->wu.type]) {
             ewk->conn[ix].col = 0x18;
         } else {
             ewk->conn[ix].col = 0;

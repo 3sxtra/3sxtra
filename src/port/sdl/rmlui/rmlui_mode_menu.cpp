@@ -8,6 +8,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_mode_menu.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -17,9 +18,6 @@ extern "C" {
 #include "types.h"
 
 /* Navigation globals from menu.c */
-extern s8 Menu_Cursor_Y[2];
-extern unsigned short IO_Result;
-extern u8 Connect_Status;
 
 } // extern "C"
 
@@ -71,17 +69,17 @@ extern "C" void rmlui_mode_menu_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("menu_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("menu_cursor", [](Rml::Variant& v) { v = (int)g_state.Menu_Cursor_Y[0]; });
     ctor.BindFunc("network_available", [](Rml::Variant& v) { v = (bool)(netplay_is_available() != 0); });
-    ctor.BindFunc("versus_available", [](Rml::Variant& v) { v = (bool)(Connect_Status != 0); });
+    ctor.BindFunc("versus_available", [](Rml::Variant& v) { v = (bool)(g_state.Connect_Status != 0); });
 
     // Event: user clicked a menu item → feed back into the CPS3 state machine
     ctor.BindEventCallback("select_item",
                            [](Rml::DataModelHandle /*model*/, Rml::Event& /*ev*/, const Rml::VariantList& args) {
                                if (!args.empty()) {
                                    int idx = args[0].Get<int>();
-                                   Menu_Cursor_Y[0] = (short)idx;
-                                   IO_Result = 0x100;
+                                   g_state.Menu_Cursor_Y[0] = (short)idx;
+                                   g_state.IO_Result = 0x100;
                                    SDL_Log("[RmlUi ModeMenu] Item selected: %d", idx);
                                }
                            });
@@ -99,9 +97,9 @@ extern "C" void rmlui_mode_menu_update(void) {
     // ⚡ Skip when document is hidden
     if (!rmlui_wrapper_is_game_document_visible("mode_menu"))
         return;
-    DIRTY_INT(menu_cursor, (int)Menu_Cursor_Y[0]);
+    DIRTY_INT(menu_cursor, (int)g_state.Menu_Cursor_Y[0]);
     DIRTY_BOOL(network_available, netplay_is_available() != 0);
-    DIRTY_BOOL(versus_available, Connect_Status != 0);
+    DIRTY_BOOL(versus_available, g_state.Connect_Status != 0);
 }
 
 // ─── Show / Hide ──────────────────────────────────────────────────

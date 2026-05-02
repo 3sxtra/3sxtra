@@ -12,6 +12,7 @@
  */
 
 #include "sf33rd/Source/Game/sound/sound3rd.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "common.h"
 #include "main.h"
@@ -715,7 +716,7 @@ static void bgm_volume_setup(s16 data) {
     bgm_vol_now = bhd + bgm_vol_mix;
 
     if (bgm_half_down) {
-        if (Country == COUNTRY_JAPAN) {
+        if (g_state.Country == COUNTRY_JAPAN) {
             bgm_vol_now /= 3;
         } else {
             bgm_vol_now = 0;
@@ -790,7 +791,7 @@ void SsAllNoteOff() {
 }
 
 /**
- * @brief Resolve a sound request ID and dispatch with stereo panning.
+ * @brief Resolve a sound request g_state.ID and dispatch with stereo panning.
  *
  * Looks up the CPS3 sound code in the lookup table, then routes through
  * ProcessSoundRequest() with the given pan offset.
@@ -846,7 +847,7 @@ void SsRequestPan(u16 reqNum, s16 start, s16 /* unused */, s32 /* unused */, s32
     ProcessSoundRequest(&rmcode, start);
 }
 
-/** @brief Resolve a sound request ID and dispatch (center pan). */
+/** @brief Resolve a sound request g_state.ID and dispatch (center pan). */
 void SsRequest(u16 ReqNumber) {
     SoundRequestData rmcode;
 
@@ -867,7 +868,7 @@ void SsRequest(u16 ReqNumber) {
                 return;
             }
         } else {
-            // Hard Fail: ID not found in lookup table
+            // Hard Fail: g_state.ID not found in lookup table
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING: %X", ReqNumber);
                 njWaitVSync_with_N();
@@ -900,7 +901,7 @@ void SsRequest_CC(u16 num) {
                 return;
             }
         } else {
-            // Hard Fail: ID not found in lookup table
+            // Hard Fail: g_state.ID not found in lookup table
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING: %X", num);
                 njWaitVSync_with_N();
@@ -930,7 +931,7 @@ void Standby_BGM(u16 num) {
             rmcode.port = lookup->port;
             rmcode.code = lookup->engine_code;
         } else {
-            // Hard Fail: ID not found in lookup table
+            // Hard Fail: g_state.ID not found in lookup table
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING: %X", num);
                 njWaitVSync_with_N();
@@ -986,7 +987,7 @@ void SsBgmFadeIn(u16 ReqNumber, u16 FadeSpeed) {
             rmcode.port = lookup->port;
             rmcode.code = lookup->engine_code;
         } else {
-            // Hard Fail: ID not found in lookup table
+            // Hard Fail: g_state.ID not found in lookup table
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING: %X", ReqNumber);
                 njWaitVSync_with_N();

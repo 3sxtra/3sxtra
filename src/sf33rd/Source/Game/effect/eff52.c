@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff52.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -38,7 +39,7 @@ void effect_52_move(WORK_Other* ewk) {
 }
 
 static void EFF52_WAIT(WORK_Other* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
     }
@@ -49,7 +50,7 @@ static void EFF52_SUDDENLY(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[6]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] != 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
             break;
         }
 
@@ -70,20 +71,20 @@ static void EFF52_SUDDENLY(WORK_Other* ewk) {
         ewk->wu.routine_no[6]++;
 
     case 2:
-        if (Select_Start[ewk->master_id] != 0) {
+        if (g_state.Select_Start[ewk->master_id] != 0) {
             break;
         }
 
-        Order[ewk->wu.dir_old] = 4;
+        g_state.Order[ewk->wu.dir_old] = 4;
         ewk->wu.routine_no[0] = 4;
         ewk->wu.routine_no[1] = 0;
-        Order_Timer[ewk->wu.dir_old] = 1;
+        g_state.Order_Timer[ewk->wu.dir_old] = 1;
         break;
     }
 }
 
 static void EFF52_SLIDE_IN(WORK_Other* ewk) {
-    if (Order[ewk->wu.dir_old] == 4) {
+    if (g_state.Order[ewk->wu.dir_old] == 4) {
         ewk->wu.routine_no[0] = 4;
         ewk->wu.routine_no[1] = 0;
         return;
@@ -91,7 +92,7 @@ static void EFF52_SLIDE_IN(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[6]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] == 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
             ewk->wu.routine_no[6]++;
             ewk->wu.disp_flag = 1;
             set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
@@ -106,13 +107,13 @@ static void EFF52_SLIDE_IN(WORK_Other* ewk) {
         if (0 < ewk->wu.mvxy.a[0].sp) {
             if (ewk->wu.hit_quake <= ewk->wu.xyz[0].disp.pos) {
                 ewk->wu.routine_no[0] = 0;
-                Order[ewk->wu.dir_old] = 0;
+                g_state.Order[ewk->wu.dir_old] = 0;
                 ewk->wu.routine_no[6] = 0;
                 ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
             }
         } else if (ewk->wu.hit_quake >= ewk->wu.xyz[0].disp.pos) {
             ewk->wu.routine_no[0] = 0;
-            Order[ewk->wu.dir_old] = 0;
+            g_state.Order[ewk->wu.dir_old] = 0;
             ewk->wu.routine_no[6] = 0;
             ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
         }
@@ -126,13 +127,13 @@ static void EFF52_SLIDE_OUT(WORK_Other* ewk) {
     case 0:
         if (ewk->wu.disp_flag == 0) {
             ewk->wu.routine_no[1] = 99;
-        } else if (--Order_Timer[ewk->wu.dir_old]) {
+        } else if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         } else {
             ewk->wu.routine_no[6]++;
         }
 
-        if (Order_Dir[ewk->wu.dir_old] == 4) {
+        if (g_state.Order_Dir[ewk->wu.dir_old] == 4) {
             ewk->wu.mvxy.a[0].sp = -0xF0000;
             ewk->wu.mvxy.d[0].sp = 0;
         } else {
@@ -162,7 +163,7 @@ static void EFF52_SLIDE_OUT(WORK_Other* ewk) {
 static void EFF52_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old] == 0) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 0;
         }
@@ -195,7 +196,7 @@ s32 effect_52_init(s16 PL_id, s16 dir_old) {
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.dir_old = dir_old;
-    ewk->wu.dir_timer = Order_Timer[dir_old];
+    ewk->wu.dir_timer = g_state.Order_Timer[dir_old];
     ewk->wu.rl_flag = PL_id;
     ewk->wu.position_z = 74;
     Setup_Char_52(ewk);
@@ -212,7 +213,7 @@ static void Setup_Char_52(WORK_Other* ewk) {
     }
 
     ewk->wu.char_index = 18;
-    ewk->wu.dir_step = ID_of_Face[Cursor_Y[ewk->master_id]][Cursor_X[ewk->master_id]];
+    ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
     ix = chkNameAkuma(ewk->wu.dir_step, 6);
     ewk->wu.dm_vital = Pattern_Data_52[ewk->wu.dir_step + ix][0];
     ewk->wu.direction = Pattern_Data_52[ewk->wu.dir_step + ix][1];

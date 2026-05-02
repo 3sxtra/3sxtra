@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff61.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
@@ -143,8 +144,8 @@ void effect_61_move(WORK_Other_CONN* ewk) {
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
 
     if (ewk->wu.char_index >= 37 && ewk->wu.char_index < 43) {
-        if (Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
-            if (Menu_Cursor_X[ewk->master_id]) {
+        if (g_state.Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
+            if (g_state.Menu_Cursor_X[ewk->master_id]) {
                 ewk->wu.my_clear_level = 0;
             } else {
                 ewk->wu.my_clear_level = 51;
@@ -153,7 +154,7 @@ void effect_61_move(WORK_Other_CONN* ewk) {
             ewk->wu.my_clear_level = 179;
         }
     } else if (ewk->wu.char_index >= 56 && ewk->wu.char_index < 59) {
-        if (Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
+        if (g_state.Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
             ewk->wu.my_bright_type = 0;
             ewk->wu.my_bright_level = 0;
             ewk->wu.my_clear_level = 0;
@@ -164,9 +165,9 @@ void effect_61_move(WORK_Other_CONN* ewk) {
         }
     } else if (ewk->wu.char_index == 67) {
         ewk->wu.my_clear_level = 0; /* title always full brightness */
-    } else if (Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
+    } else if (g_state.Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
         ewk->wu.my_clear_level = 0;
-    } else if (ewk->wu.char_index == 1 && Connect_Status == 0) {
+    } else if (ewk->wu.char_index == 1 && g_state.Connect_Status == 0) {
         ewk->wu.my_clear_level = 179;
     } else {
         ewk->wu.my_clear_level = 128;
@@ -183,32 +184,32 @@ void effect_61_move(WORK_Other_CONN* ewk) {
 }
 
 static void EFF61_WAIT(WORK_Other_CONN* ewk) {
-    if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
 static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk) {
-    if (Order[ewk->wu.dir_old] != 1) {
-        ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
+    if (g_state.Order[ewk->wu.dir_old] != 1) {
+        ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
         return;
     }
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.xyz[0].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][0] + 384;
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][0] + 384;
         ewk->wu.xyz[1].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][1];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][1];
         ewk->wu.position_z = 68;
-        ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][0];
+        ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][0];
         ewk->wu.mvxy.a[0].sp = -0x400000;
         ewk->wu.mvxy.d[0].sp = 0x50000;
         break;
@@ -221,13 +222,13 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk) {
             break;
         }
 
-        if (Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
-            Order[ewk->wu.dir_old] = 0;
+        if (g_state.Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
+            g_state.Order[ewk->wu.dir_old] = 0;
         }
 
         ewk->wu.routine_no[0] = 0;
         ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
-        Menu_Cursor_Move--;
+        g_state.Menu_Cursor_Move--;
         break;
     }
 }
@@ -237,16 +238,16 @@ void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */) {}
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (--Order_Timer[ewk->wu.dir_old]) {
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
             break;
         }
 
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.xyz[0].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][0];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][0];
         ewk->wu.xyz[1].disp.pos =
-            bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][1];
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_61[ewk->wu.char_index][1];
         ewk->wu.position_z = 68;
 
         if (ewk->wu.char_index >= 56 && ewk->wu.char_index < 59) {
@@ -257,13 +258,13 @@ static void EFF61_SUDDENLY(WORK_Other_CONN* ewk) {
 
     default:
         ewk->wu.routine_no[0] = 0;
-        Order[ewk->wu.dir_old] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
         break;
     }
 }
 
 s32 Check_Die_61(WORK_Other* ewk) {
-    return Menu_Suicide[ewk->master_player];
+    return g_state.Menu_Suicide[ewk->master_player];
 }
 
 s32 effect_61_init(s16 master, u8 dir_old, s16 sync_bg, s16 master_player, s16 char_ix, s16 cursor_index,

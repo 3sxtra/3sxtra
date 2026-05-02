@@ -123,9 +123,9 @@ static void Setup_Message(WORK_Other_CONN* ewk) {
     }
 
     get_message_conn_data(ewk, Message_Data[ewk->wu.dir_old].kind_cnt, 0, Message_Data[ewk->wu.dir_old].request + 0);
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Message_Data[ewk->wu.dir_old].pos_x;
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Message_Data[ewk->wu.dir_old].pos_x;
     ewk->wu.position_x -= Centering_Sub(ewk, 16);
-    ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Message_Data[ewk->wu.dir_old].pos_y;
+    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Message_Data[ewk->wu.dir_old].pos_y;
     ewk->wu.position_z = Message_Data[ewk->wu.dir_old].pos_z;
     Check_Pig_Pig(ewk);
 }
@@ -162,7 +162,7 @@ static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
     s16 ix;
 
     if (Debug_w[DEBUG_MESSAGE_TEST]) {
-        Convert_16_10_2(ewk, vm_w.Block_Size);
+        Convert_16_10_2(ewk, g_state.vm_w.Block_Size);
 
         for (ix = 0; ix < ewk->num_of_conn; ix++) {
             if (ewk->conn[ix].chr != 0x8020) {
@@ -189,7 +189,7 @@ static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
                 continue;
             }
 
-            ewk->conn[ix].chr = vm_w.Block_Size + 0x7F81;
+            ewk->conn[ix].chr = g_state.vm_w.Block_Size + 0x7F81;
             ewk->conn[ix].col = 0x17;
             return;
         }
@@ -198,7 +198,7 @@ static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
 
     case 23:
     case 25:
-        Convert_16_10_2(ewk, vm_w.Block_Size);
+        Convert_16_10_2(ewk, g_state.vm_w.Block_Size);
 
         for (ix = 0; ix < ewk->num_of_conn; ix++) {
             if (ewk->conn[ix].chr != 0x8020) {

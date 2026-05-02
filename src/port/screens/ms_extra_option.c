@@ -3,13 +3,13 @@
  * @brief Migrated Extra Option screen — Task 15.
  *
  * Replaces the Extra_Option() function in menu.c with MenuScreen registry
- * callbacks.  Extra Option is a 4-page settings menu (Page_Max=3) that uses
+ * callbacks.  Extra Option is a 4-page settings menu (g_state.Page_Max=3) that uses
  * the same Dir_Move_Sub / Setup_Next_Page infrastructure as Direction_Menu.
  *
  * Key differences from Direction_Menu:
  *   - Uses r_no[1]=14 (0xE) which triggers Ex_Move_Sub_LR in Dir_Move_Sub
  *     (instead of Dir_Move_Sub_LR for SysDir pages)
- *   - Page data comes from Ex_Page_Data[Menu_Page] instead of Page_Data[]
+ *   - Page data comes from Ex_Page_Data[g_state.Menu_Page] instead of Page_Data[]
  *   - Settings stored in CurrentSave()->extra_option.contents[][]
  *   - Exits via Return_Option_Mode_Sub (always returns to Option_Select)
  *   - Has a "Default" action on Page 0, Item 6 that resets all options
@@ -20,17 +20,18 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff45.h"           /* Message_Data */
 #include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"        /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/menu/ex_data.h"           /* Ex_Account_Data, Ex_Page_Data */
 #include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"     /* Dir_Move_Sub, Setup_Next_Page, etc. */
 #include "sf33rd/Source/Game/message/en/msgtable_en.h" /* msgExtraTbl */
 #include "sf33rd/Source/Game/sound/sound3rd.h"         /* SE_selected, SE_dir_selected, SE_cursor_move */
-#include "sf33rd/Source/Game/system/pause.h"           /* Pause_ID */
-#include "sf33rd/Source/Game/system/work_sys.h"        /* save_w, Present_Mode */
+#include "sf33rd/Source/Game/system/pause.h"           /* g_state.Pause_ID */
+#include "sf33rd/Source/Game/system/work_sys.h"        /* save_w, g_state.Present_Mode */
 #include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                                   /* struct _TASK */
 
@@ -42,7 +43,7 @@
  *  Extern data
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Menu_Page, Page_Max, Menu_Page_Buff, Menu_Max — declared in workuser.h */
+/* g_state.Menu_Page, g_state.Page_Max, g_state.Menu_Page_Buff, g_state.Menu_Max — declared in workuser.h */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -75,17 +76,17 @@ static void extra_option_enter(struct _TASK* task_ptr) {
     s_eo_phase = EO_PHASE_INIT;
     s_eo_page_setup_done = false;
 
-    Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
+    g_state.Menu_Cursor_Y[1] = g_state.Menu_Cursor_Y[0];
 
     FadeOut(1, 0xFF, 8);
     task_ptr->r_no[2] = 1; /* advance for Setup_Next_Page in first tick */
     task_ptr->r_no[3] = 0;
     task_ptr->timer = 0; /* 0 to bypass registry WAIT/FADE_IN */
-    Menu_Suicide[1] = 1;
-    Menu_Suicide[2] = 0;
-    Menu_Page = 0;
-    Page_Max = 3;
-    Menu_Page_Buff = Menu_Page;
+    g_state.Menu_Suicide[1] = 1;
+    g_state.Menu_Suicide[2] = 0;
+    g_state.Menu_Page = 0;
+    g_state.Page_Max = 3;
+    g_state.Menu_Page_Buff = g_state.Menu_Page;
     Message_Data->kind_req = 4;
 
     if (use_rmlui && rmlui_menu_extra_option)
@@ -104,7 +105,7 @@ static void extra_option_enter(struct _TASK* task_ptr) {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void extra_option_tick(struct _TASK* task_ptr) {
-    Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
+    g_state.Menu_Cursor_Y[1] = g_state.Menu_Cursor_Y[0];
 
     /* Ensure r_no[1] stays at 0xE for Dir_Move_Sub / Setup_Next_Page compat */
     task_ptr->r_no[1] = 14;
@@ -157,44 +158,44 @@ static void extra_option_tick(struct _TASK* task_ptr) {
 
     case EO_PHASE_ACTIVE: {
         /* Case 4: main input loop */
-        Pause_ID = 0;
+        g_state.Pause_ID = 0;
         Dir_Move_Sub(task_ptr, 0);
 
-        if (IO_Result == 0) {
-            Pause_ID = 1;
+        if (g_state.IO_Result == 0) {
+            g_state.Pause_ID = 1;
             Dir_Move_Sub(task_ptr, 1);
         }
 
-        if (Menu_Cursor_Y[1] != Menu_Cursor_Y[0]) {
+        if (g_state.Menu_Cursor_Y[1] != g_state.Menu_Cursor_Y[0]) {
             SE_cursor_move();
-            CurrentSave()->extra_option.contents[Menu_Page][Menu_Max] = 1;
+            CurrentSave()->extra_option.contents[g_state.Menu_Page][g_state.Menu_Max] = 1;
 
-            if (Menu_Cursor_Y[0] < Menu_Max) {
+            if (g_state.Menu_Cursor_Y[0] < g_state.Menu_Max) {
                 Message_Data->order = 1;
-                Message_Data->request = Ex_Account_Data[Menu_Page] + Menu_Cursor_Y[0];
+                Message_Data->request = Ex_Account_Data[g_state.Menu_Page] + g_state.Menu_Cursor_Y[0];
                 Message_Data->timer = 2;
 
-                if (msgExtraTbl[0]->msgNum[Menu_Cursor_Y[0] + (Menu_Page * 8)] == 1) {
+                if (msgExtraTbl[0]->msgNum[g_state.Menu_Cursor_Y[0] + (g_state.Menu_Page * 8)] == 1) {
                     Message_Data->pos_y = 54;
                 } else {
                     Message_Data->pos_y = 62;
                 }
             } else {
                 Message_Data->order = 1;
-                Message_Data->request = CurrentSave()->extra_option.contents[Menu_Page][Menu_Max] + 32;
+                Message_Data->request = CurrentSave()->extra_option.contents[g_state.Menu_Page][g_state.Menu_Max] + 32;
                 Message_Data->timer = 2;
                 Message_Data->pos_y = 54;
             }
         }
 
-        switch (IO_Result) {
+        switch (g_state.IO_Result) {
         case 0x200:
             /* Cancel: exit to Option_Select */
             if (use_rmlui && rmlui_menu_extra_option)
                 rmlui_extra_option_hide();
             Return_Option_Mode_Sub(task_ptr);
-            Order[115] = 4;
-            Order_Timer[115] = 4;
+            g_state.Order[115] = 4;
+            g_state.Order_Timer[115] = 4;
             save_w[4].extra_option = save_w[1].extra_option;
             save_w[5].extra_option = save_w[1].extra_option;
             SE_dir_selected();
@@ -207,8 +208,8 @@ static void extra_option_tick(struct _TASK* task_ptr) {
         case 0x800:
             /* L button: previous page */
             task_ptr->timer = 5;
-            if (--Menu_Page < 0) {
-                Menu_Page = Page_Max;
+            if (--g_state.Menu_Page < 0) {
+                g_state.Menu_Page = g_state.Page_Max;
             }
             SE_dir_selected();
             s_eo_phase = EO_PHASE_PAGE;
@@ -219,8 +220,8 @@ static void extra_option_tick(struct _TASK* task_ptr) {
         case 0x400:
             /* R button: next page */
             task_ptr->timer = 5;
-            if (++Menu_Page > Page_Max) {
-                Menu_Page = 0;
+            if (++g_state.Menu_Page > g_state.Page_Max) {
+                g_state.Menu_Page = 0;
             }
             SE_dir_selected();
             s_eo_phase = EO_PHASE_PAGE;
@@ -230,23 +231,23 @@ static void extra_option_tick(struct _TASK* task_ptr) {
         case 0x100:
             /* Confirm */
             /* Special case: Page 0, Item 6 = "Default" — reset all */
-            if (Menu_Page == 0 && Menu_Cursor_Y[0] == 6) {
+            if (g_state.Menu_Page == 0 && g_state.Menu_Cursor_Y[0] == 6) {
                 CurrentSave()->extra_option = save_w[0].extra_option;
                 SE_selected();
                 break;
             }
 
-            if (Menu_Cursor_Y[0] != Menu_Max) {
+            if (g_state.Menu_Cursor_Y[0] != g_state.Menu_Max) {
                 break;
             }
 
             /* On the page navigation item */
-            switch (CurrentSave()->extra_option.contents[Menu_Page][Menu_Max]) {
+            switch (CurrentSave()->extra_option.contents[g_state.Menu_Page][g_state.Menu_Max]) {
             case 0:
                 /* Prev page */
                 task_ptr->timer = 5;
-                if (--Menu_Page < 0) {
-                    Menu_Page = Page_Max;
+                if (--g_state.Menu_Page < 0) {
+                    g_state.Menu_Page = g_state.Page_Max;
                 }
                 s_eo_phase = EO_PHASE_PAGE;
                 s_eo_page_setup_done = false;
@@ -255,8 +256,8 @@ static void extra_option_tick(struct _TASK* task_ptr) {
             case 2:
                 /* Next page */
                 task_ptr->timer = 5;
-                if (++Menu_Page > Page_Max) {
-                    Menu_Page = 0;
+                if (++g_state.Menu_Page > g_state.Page_Max) {
+                    g_state.Menu_Page = 0;
                 }
                 s_eo_phase = EO_PHASE_PAGE;
                 s_eo_page_setup_done = false;
@@ -269,8 +270,8 @@ static void extra_option_tick(struct _TASK* task_ptr) {
                 Return_Option_Mode_Sub(task_ptr);
                 save_w[4].extra_option = save_w[1].extra_option;
                 save_w[5].extra_option = save_w[1].extra_option;
-                Order[115] = 4;
-                Order_Timer[115] = 4;
+                g_state.Order[115] = 4;
+                g_state.Order_Timer[115] = 4;
                 MenuScreen_ExitToLegacy(task_ptr);
                 break;
             }
@@ -330,8 +331,8 @@ void ms_extra_option_register(void) {
         .on_enter = extra_option_enter,
         .on_tick = extra_option_tick,
         .on_exit = extra_option_exit,
-        .cursor_max = 7,   /* varies per page via Menu_Max; 7 = safe default (page 0/1 max) */
-        .cancel_item = -1, /* cancel handled via IO_Result 0x200 */
+        .cursor_max = 7,   /* varies per page via g_state.Menu_Max; 7 = safe default (page 0/1 max) */
+        .cancel_item = -1, /* cancel handled via g_state.IO_Result 0x200 */
         .rmlui_show = extra_option_rmlui_show,
         .rmlui_hide = extra_option_rmlui_hide,
         .header_type = MENU_HEADER_EXTRA_OPTION,

@@ -20,11 +20,11 @@
 
 /** @brief Main handler for French Cafe, France stage. */
 void BG160() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg1602();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg1601();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bg1602_sync_common();
     zoom_ud_check();
     bg_pos_hosei2();

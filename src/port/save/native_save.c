@@ -11,6 +11,7 @@
  */
 
 #include "port/save/native_save.h"
+#include "game_state.h"
 #include "common.h"
 
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -330,8 +331,8 @@ int NativeSave_LoadOptions(void) {
     Copy_Save_w();
     Copy_Check_w();
 
-    X_Adjust = sw->Adjust_X;
-    Y_Adjust = sw->Adjust_Y;
+    g_state.X_Adjust = sw->Adjust_X;
+    g_state.Y_Adjust = sw->Adjust_Y;
 
     {
         u8 dw, dh;
@@ -460,7 +461,7 @@ int NativeSave_LoadDirection(void) {
     make_path(path, sizeof(path), "direction.ini");
 
     FILE* f = fopen(path, "r");
-    SystemDir* sd = &system_dir[Present_Mode];
+    SystemDir* sd = &system_dir[g_state.Present_Mode];
     s32 page;
 
     if (!f) {
@@ -481,7 +482,7 @@ int NativeSave_LoadDirection(void) {
         page += 1;
         for (; page < 10; page++) {
             for (int i = 0; i < 7; i++) {
-                system_dir[Present_Mode].contents[page][i] = system_dir->contents[page][i];
+                system_dir[g_state.Present_Mode].contents[page][i] = system_dir->contents[page][i];
             }
         }
     }
@@ -501,7 +502,7 @@ void NativeSave_SaveDirection(void) {
         return;
     }
 
-    SystemDir* sd = &system_dir[Present_Mode];
+    SystemDir* sd = &system_dir[g_state.Present_Mode];
 
     fprintf(f, "# 3SX Direction Config — auto-generated\n");
     fprintf(f, "# Each page has 7 values: per-character direction dipswitch settings\n");
@@ -714,7 +715,7 @@ int NativeSave_SaveReplay(const char* filename) {
     rw->mini_save_w.Battle_Number[1] = sw->Battle_Number[1];
     rw->mini_save_w.Damage_Level = sw->Damage_Level;
     memcpy(&rw->mini_save_w.extra_option, &sw->extra_option, sizeof(sw->extra_option));
-    memcpy(&rw->system_dir, &system_dir[Present_Mode], sizeof(rw->system_dir));
+    memcpy(&rw->system_dir, &system_dir[g_state.Present_Mode], sizeof(rw->system_dir));
 
     /* Write binary data */
     FILE* f = atomic_open_bin(bin_path, bin_tmp, sizeof(bin_tmp));

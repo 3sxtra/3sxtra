@@ -27,11 +27,12 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff45.h"  /* effect_45_init, Message_Data */
 #include "sf33rd/Source/Game/effect/eff57.h"  /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/effect.h" /* effect_work_init */
-#include "sf33rd/Source/Game/engine/workuser.h" /* Menu_Cursor_Y, Menu_Suicide, Order, Order_Dir, Order_Timer, plsw_00, plsw_01 */
+#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.Menu_Cursor_Y, g_state.Menu_Suicide, g_state.Order, g_state.Order_Dir, g_state.Order_Timer, g_state.plsw_00, g_state.plsw_01 */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* AT_JMP_COUNT */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
@@ -67,7 +68,7 @@ static LeaderboardPhase s_phase = LB_PHASE_INIT;
  *    Phase 4 (INIT): FadeOut, r_no[3]=0, timer=5, kill gateway items,
  *                    request blue BG via Message_Data->kind_req=4.
  *    Phase 5 (REBUILD): effect_work_init, Menu_Common_Init, clear cursors,
- *                       setup Order[0x4E] blue BG, effect_57 header banner.
+ *                       setup g_state.Order[0x4E] blue BG, effect_57 header banner.
  *    RmlUI leaderboard is shown during rebuild (auto-fetches page 0).
  * ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -79,8 +80,8 @@ static void leaderboard_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[2] = 5; /* advance past init */
     task_ptr->r_no[3] = 0;
     task_ptr->timer = 5;
-    Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
-    Menu_Suicide[1] = 0;
+    g_state.Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
+    g_state.Menu_Suicide[1] = 0;
     Message_Data->kind_req = 4; /* blue-BG background mode */
 
     /* ── Case 5: Destroy old effects, rebuild with blue BG ── */
@@ -88,11 +89,11 @@ static void leaderboard_enter(struct _TASK* task_ptr) {
 
     effect_work_init();
     Menu_Common_Init();
-    Menu_Cursor_Y[0] = 0;
-    Menu_Cursor_Y[1] = 0;
-    Order[0x4E] = 5;
-    Order_Timer[0x4E] = 1;
-    Order_Dir[0x4E] = 1;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Cursor_Y[1] = 0;
+    g_state.Order[0x4E] = 5;
+    g_state.Order_Timer[0x4E] = 1;
+    g_state.Order_Dir[0x4E] = 1;
 
     /* Blue background banner */
     effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
@@ -118,7 +119,7 @@ static void leaderboard_tick(struct _TASK* task_ptr) {
     /* Read edge-triggered input from both players */
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {
-        trigger |= (~plsw_01[i] & plsw_00[i]);
+        trigger |= (~g_state.plsw_01[i] & g_state.plsw_00[i]);
     }
 
     /* Left D-pad: previous page */
@@ -138,8 +139,8 @@ static void leaderboard_tick(struct _TASK* task_ptr) {
         rmlui_leaderboard_hide();
 
         /* Kill blue BG items and prepare for gateway re-entry */
-        Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1; /* kill blue BG items */
+        g_state.Menu_Suicide[0] = 0;
+        g_state.Menu_Suicide[1] = 1; /* kill blue BG items */
 
         /* Return to gateway: r_no[2]=0 causes Network_Lobby to re-init */
         task_ptr->r_no[2] = 0;

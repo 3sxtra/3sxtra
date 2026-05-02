@@ -7,6 +7,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/eff10.h"
 #include "sf33rd/Source/Game/effect/eff66.h"
@@ -39,7 +40,7 @@ void imgSelectGameButton() {
 void Setup_Win_Lose_OBJ() {
     s16 x[2];
 
-    if (WINNER == 0) {
+    if (g_state.WINNER == 0) {
         x[0] = 26;
         x[1] = 27;
     } else {
@@ -48,17 +49,17 @@ void Setup_Win_Lose_OBJ() {
     }
 
     effect_66_init(140, x[0], 0, 0, 71, 12, 0);
-    Order[140] = 3;
-    Order_Timer[140] = 1;
+    g_state.Order[140] = 3;
+    g_state.Order_Timer[140] = 1;
     effect_66_init(141, x[1], 0, 0, 71, 13, 0);
-    Order[141] = 3;
-    Order_Timer[141] = 1;
+    g_state.Order[141] = 3;
+    g_state.Order_Timer[141] = 1;
     effect_66_init(142, 26, 0, 0, 71, 14, 1);
-    Order[142] = 3;
-    Order_Timer[142] = 1;
+    g_state.Order[142] = 3;
+    g_state.Order_Timer[142] = 1;
     effect_66_init(143, 27, 0, 0, 71, 14, 01);
-    Order[143] = 3;
-    Order_Timer[143] = 1;
+    g_state.Order[143] = 3;
+    g_state.Order_Timer[143] = 1;
 }
 
 /* ---------- Setup_Button_Sub ---------- */
@@ -74,12 +75,12 @@ void Setup_Button_Sub(s16 x, s16 y, s16 master_player) {
     for (ix = 0; ix < 8; ix++, s1 = y += 2) {
         effect_10_init(0, 5, ix, ix, master_player, x, y);
         effect_10_init(1, 5, ix, ix, master_player, x + 22, y);
-        effect_10_init(0, 2, ix, Convert_Buff[1][0][ix], master_player, x + 3, y);
-        effect_10_init(1, 2, ix, Convert_Buff[1][1][ix], master_player, x + 25, y);
+        effect_10_init(0, 2, ix, g_state.Convert_Buff[1][0][ix], master_player, x + 3, y);
+        effect_10_init(1, 2, ix, g_state.Convert_Buff[1][1][ix], master_player, x + 25, y);
     }
 
-    effect_10_init(0, 3, 8, Convert_Buff[1][0][8], master_player, x, y);
-    effect_10_init(1, 3, 8, Convert_Buff[1][1][8], master_player, x + 22, y);
+    effect_10_init(0, 3, 8, g_state.Convert_Buff[1][0][8], master_player, x, y);
+    effect_10_init(1, 3, 8, g_state.Convert_Buff[1][1][8], master_player, x + 22, y);
     effect_10_init(0, 4, 9, 0, master_player, x, y + 2);
     effect_10_init(1, 4, 9, 0, master_player, x + 22, y + 2);
     effect_10_init(0, 0, 10, 2, master_player, x, y + 4);
@@ -94,7 +95,7 @@ void Flash_1P_or_2P(struct _TASK* task_ptr) {
     case 0:
         if (--task_ptr->free[0]) {
             if (!use_rmlui || !rmlui_screen_pause) {
-                if (Pause_ID == 0) {
+                if (g_state.Pause_ID == 0) {
                     SSPutStr2(20, 9, 9, "1P PAUSE");
                 } else {
                     SSPutStr2(20, 9, 9, "2P PAUSE");
@@ -121,12 +122,12 @@ void Flash_1P_or_2P(struct _TASK* task_ptr) {
 
 /** @brief Training display sub-routine — show current settings. */
 void Training_Disp_Sub(struct _TASK* task_ptr) {
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
         task_ptr->r_no[1] = 1;
-        Training_Index = 0;
+        g_state.Training_Index = 0;
         return;
     }
 
     task_ptr->r_no[1] = 2;
-    Training_Index = 1;
+    g_state.Training_Index = 1;
 }

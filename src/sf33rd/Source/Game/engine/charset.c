@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/charset.h"
+#include "game_state.h"
 #include "arcade/arcade_balance.h"
 #include "arcade/arcade_char_data.h"
 #include "common.h"
@@ -238,7 +239,7 @@ void exset_char_move_init(WORK* wk, s16 koc, s16 index) {
 
 /** @brief Advances the character animation Z-axis frame. */
 void char_move_z(WORK* wk) {
-    if (test_flag) {
+    if (g_state.test_flag) {
         wk->cg_next_ix = 0;
     }
 
@@ -850,8 +851,8 @@ static s32 comm_ps_y(WORK* wk, UNK11* ctc) {
         switch (ctc->koc) {
         case 0:
             // CPS3 compares to 21 here
-            if (bg_w.stage == 20 && ((PLW*)wk)->bs2_on_car && ctc->pat < bs2_floor[2]) {
-                wk->xyz[1].disp.pos = bs2_floor[2];
+            if (g_state.bg_w.stage == 20 && ((PLW*)wk)->bs2_on_car && ctc->pat < g_state.bs2_floor[2]) {
+                wk->xyz[1].disp.pos = g_state.bs2_floor[2];
             } else {
                 wk->xyz[1].disp.pos = ctc->pat;
             }
@@ -1060,7 +1061,7 @@ static s32 comm_hclr(WORK* wk, UNK11* /* unused */) {
 
 /** @brief Script command: IXFW — index forward jump. */
 static s32 comm_ixfw(WORK* wk, UNK11* ctc) {
-    if (test_flag == 0 || ixbfw_cut == 0) {
+    if (g_state.test_flag == 0 || g_state.ixbfw_cut == 0) {
         wk->cg_ix += (ctc->pat - 1) * wk->cgd_type;
     }
 
@@ -1069,7 +1070,7 @@ static s32 comm_ixfw(WORK* wk, UNK11* ctc) {
 
 /** @brief Script command: IXBW — index backward jump. */
 static s32 comm_ixbw(WORK* wk, UNK11* ctc) {
-    if ((test_flag == 0) || (ixbfw_cut == 0)) {
+    if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
         wk->cg_ix -= (ctc->pat + 1) * wk->cgd_type;
     }
 
@@ -1078,14 +1079,14 @@ static s32 comm_ixbw(WORK* wk, UNK11* ctc) {
 
 /** @brief Script command: QUAX — set quake X. */
 static s32 comm_quax(WORK* /* unused */, UNK11* ctc) {
-    bg_w.quake_x_index = ctc->koc;
+    g_state.bg_w.quake_x_index = ctc->koc;
     return 1;
 }
 
 /** @brief Script command: QUAY — set quake Y. */
 static s32 comm_quay(WORK* /* unused */, UNK11* ctc) {
-    bg_w.quake_y_index = ctc->koc;
-    pp_screen_quake(bg_w.quake_y_index);
+    g_state.bg_w.quake_y_index = ctc->koc;
+    pp_screen_quake(g_state.bg_w.quake_y_index);
     return 1;
 }
 
@@ -1103,7 +1104,7 @@ static s32 comm_if_s(WORK* wk, UNK11* ctc) {
     shdat = get_comm_if_shot(wk);
 
     if (wk->work_id == 1 && ((PLW*)wk)->player_number == 16 && ((PLW*)wk)->spmv_ng_flag & DIP_TAUNT_AFTER_KO_DISABLED &&
-        my_shdat == 0x440 && pcon_dp_flag) {
+        my_shdat == 0x440 && g_state.pcon_dp_flag) {
         shdat = 0;
     }
 
@@ -1117,7 +1118,7 @@ static s32 comm_if_s(WORK* wk, UNK11* ctc) {
 /** @brief Script command: RAPP — read attack parameter (punch). */
 static s32 comm_rapp(WORK* wk, UNK11* ctc) {
     if (wk->work_id == 1) {
-        if (wcp[wk->id].waza_flag[9]) {
+        if (g_state.wcp[wk->id].waza_flag[9]) {
             setup_comm_back(wk);
             set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 1);
             return 0;
@@ -1126,7 +1127,7 @@ static s32 comm_rapp(WORK* wk, UNK11* ctc) {
         return 1;
     }
 
-    if (wcp[((WORK_Other*)wk)->master_id & 1].waza_flag[9]) {
+    if (g_state.wcp[((WORK_Other*)wk)->master_id & 1].waza_flag[9]) {
         setup_comm_back(wk);
         set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 1);
         return 0;
@@ -1138,7 +1139,7 @@ static s32 comm_rapp(WORK* wk, UNK11* ctc) {
 /** @brief Script command: RAPK — read attack parameter (kick). */
 static s32 comm_rapk(WORK* wk, UNK11* ctc) {
     if (wk->work_id == 1) {
-        if (wcp[wk->id].waza_flag[11]) {
+        if (g_state.wcp[wk->id].waza_flag[11]) {
             setup_comm_back(wk);
             set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 1);
             return 0;
@@ -1147,7 +1148,7 @@ static s32 comm_rapk(WORK* wk, UNK11* ctc) {
         return 1;
     }
 
-    if (wcp[((WORK_Other*)wk)->master_id & 1].waza_flag[11]) {
+    if (g_state.wcp[((WORK_Other*)wk)->master_id & 1].waza_flag[11]) {
         setup_comm_back(wk);
         set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 1);
         return 0;
@@ -1198,7 +1199,7 @@ static s32 comm_a456(WORK* wk, UNK11* ctc) {
 static s32 comm_stop(PLW* wk, UNK11* ctc) {
     PLW* wk2;
 
-    if (test_flag == 0) {
+    if (g_state.test_flag == 0) {
         wk->wu.dm_stop = 0;
         wk->wu.hit_stop = ctc->koc;
         wk2 = (PLW*)wk->wu.target_adrs;
@@ -1213,7 +1214,7 @@ static s32 comm_stop(PLW* wk, UNK11* ctc) {
         setup_shell_hit_stop(&wk2->wu, ctc->ix, 0);
         wk->sa_stop_flag = 0;
         wk2->sa_stop_flag = 2;
-        wk2->just_sa_stop_timer = Game_timer;
+        wk2->just_sa_stop_timer = g_state.Game_timer;
     }
 
     return 1;
@@ -1234,7 +1235,7 @@ static s32 comm_ngme(WORK* wk, UNK11* /* unused */) {
     emwk->routine_no[2] = 1;
     emwk->routine_no[3] = 1;
 
-    if (test_flag) {
+    if (g_state.test_flag) {
         wk->cmyd.pat = 1;
     }
 
@@ -1250,7 +1251,7 @@ static s32 comm_ngem(WORK* wk, UNK11* /* unused */) {
     emwk->routine_no[2] = 2;
     emwk->routine_no[3] = 1;
 
-    if (test_flag) {
+    if (g_state.test_flag) {
         wk->cmyd.pat = 2;
     }
 
@@ -1351,7 +1352,7 @@ static s32 comm_sajp(WORK* wk, UNK11* ctc) {
     PLW* pwk;
 
     if (wk->work_id == 1) {
-        if (My_char[wk->id] != 18 && ((PLW*)wk)->sa->kind_of_arts == ctc->koc && ((PLW*)wk)->sa->ok == -1) {
+        if (g_state.My_char[wk->id] != 18 && ((PLW*)wk)->sa->kind_of_arts == ctc->koc && ((PLW*)wk)->sa->ok == -1) {
             return decord_if_jump(wk, ctc, ctc->ix);
         }
     } else {
@@ -1535,7 +1536,7 @@ static s32 comm_wclt2(WORK* wk, UNK11* ctc) {
 /** @brief Script command: RAPP2 — read attack param (punch, variant 2). */
 static s32 comm_rapp2(WORK* wk, UNK11* ctc) {
     if (wk->work_id == 1) {
-        if (wcp[wk->id].waza_flag[8]) {
+        if (g_state.wcp[wk->id].waza_flag[8]) {
             setup_comm_back(wk);
             set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 1);
             return 0;
@@ -1544,7 +1545,7 @@ static s32 comm_rapp2(WORK* wk, UNK11* ctc) {
         return 1;
     }
 
-    if (wcp[((WORK_Other*)wk)->master_id & 1].waza_flag[8]) {
+    if (g_state.wcp[((WORK_Other*)wk)->master_id & 1].waza_flag[8]) {
         setup_comm_back(wk);
         set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 1);
         return 0;
@@ -1556,7 +1557,7 @@ static s32 comm_rapp2(WORK* wk, UNK11* ctc) {
 /** @brief Script command: RAPK2 — read attack param (kick, variant 2). */
 static s32 comm_rapk2(WORK* wk, UNK11* ctc) {
     if (wk->work_id == 1) {
-        if (wcp[wk->id].waza_flag[10]) {
+        if (g_state.wcp[wk->id].waza_flag[10]) {
             setup_comm_back(wk);
             set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 1);
             return 0;
@@ -1565,7 +1566,7 @@ static s32 comm_rapk2(WORK* wk, UNK11* ctc) {
         return 1;
     }
 
-    if (wcp[((WORK_Other*)wk)->master_id & 1].waza_flag[10]) {
+    if (g_state.wcp[((WORK_Other*)wk)->master_id & 1].waza_flag[10]) {
         setup_comm_back(wk);
         set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 1);
         return 0;
@@ -1664,7 +1665,7 @@ static s32 comm_epcy(WORK* wk, UNK11* ctc) {
 static s32 comm_imgs(PLW* wk, UNK11* ctc) {
     PLW* tk;
 
-    if (test_flag == 0) {
+    if (g_state.test_flag == 0) {
         tk = (PLW*)wk->wu.target_adrs;
 
         switch (ctc->koc) {
@@ -1814,7 +1815,7 @@ static s32 comm_ccfl(PLW* wk, UNK11* /* unused */) {
 /** @brief Script command: MYHP — branch based on my HP level. */
 static s32 comm_myhp(WORK* wk, UNK11* ctc) {
     s16 num = 0;
-    s32 cmpvital = (Max_vitality * ctc->ix) / 100;
+    s32 cmpvital = (g_state.Max_vitality * ctc->ix) / 100;
 
     switch (ctc->koc) {
     case 1:
@@ -1850,7 +1851,7 @@ static s32 comm_myhp(WORK* wk, UNK11* ctc) {
 static s32 comm_emhp(WORK* wk, UNK11* ctc) {
     WORK* emwk = (WORK*)wk->target_adrs;
     s16 num = 0;
-    s32 cmpvital = (Max_vitality * ctc->ix) / 100;
+    s32 cmpvital = (g_state.Max_vitality * ctc->ix) / 100;
 
     switch (ctc->koc) {
     case 1:
@@ -2213,14 +2214,14 @@ static s32 comm_srlf(WORK* wk, UNK11* ctc) {
 /** @brief Script command: BGRLF — branch based on background RL flag. */
 static s32 comm_bgrlf(WORK* wk, UNK11* ctc) {
     if (wk->rl_flag) {
-        if (wk->position_x > bg_w.bgw[1].pos_x_work) {
+        if (wk->position_x > g_state.bg_w.bgw[1].pos_x_work) {
             return decord_if_jump(wk, ctc, ctc->pat);
         }
 
         return decord_if_jump(wk, ctc, ctc->ix);
     }
 
-    if (wk->position_x < bg_w.bgw[1].pos_x_work) {
+    if (wk->position_x < g_state.bg_w.bgw[1].pos_x_work) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -2431,9 +2432,9 @@ static u16 get_comm_if_lever(WORK* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
-        num = wcp[wk->id].sw_new & 0xF;
+        num = g_state.wcp[wk->id].sw_new & 0xF;
     } else {
-        num = wcp[((WORK_Other*)wk)->master_id & 1].sw_new & 0xF;
+        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].sw_new & 0xF;
     }
 
     return num;
@@ -2444,9 +2445,9 @@ static u16 get_comm_if_shot(WORK* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
-        num = wcp[wk->id].sw_new & 0x770;
+        num = g_state.wcp[wk->id].sw_new & 0x770;
     } else {
-        num = wcp[((WORK_Other*)wk)->master_id & 1].sw_new & 0x770;
+        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].sw_new & 0x770;
     }
 
     return num;
@@ -2457,16 +2458,16 @@ static u16 get_comm_if_shot_now_off(WORK* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
-        num = wcp[wk->id].sw_now & 0x770;
+        num = g_state.wcp[wk->id].sw_now & 0x770;
     } else {
-        num = wcp[((WORK_Other*)wk)->master_id & 1].sw_now & 0x770;
+        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].sw_now & 0x770;
     }
 
     if (wk->cg_cancel & 0x80) {
         if (wk->work_id == 1) {
-            num |= wcp[wk->id].sw_off & 0x770;
+            num |= g_state.wcp[wk->id].sw_off & 0x770;
         } else {
-            num |= wcp[((WORK_Other*)wk)->master_id & 1].sw_off & 0x770;
+            num |= g_state.wcp[((WORK_Other*)wk)->master_id & 1].sw_off & 0x770;
         }
     }
 
@@ -2478,9 +2479,9 @@ static u16 get_comm_if_shot_now(WORK* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
-        num = wcp[wk->id].sw_now & 0x770;
+        num = g_state.wcp[wk->id].sw_now & 0x770;
     } else {
-        num = wcp[((WORK_Other*)wk)->master_id & 1].sw_now & 0x770;
+        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].sw_now & 0x770;
     }
 
     return num;
@@ -2491,9 +2492,9 @@ static u16 get_comm_if_lvsh(WORK* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
-        num = wcp[wk->id].sw_new & 0x77F;
+        num = g_state.wcp[wk->id].sw_new & 0x77F;
     } else {
-        num = wcp[((WORK_Other*)wk)->master_id & 1].sw_new & 0x77F;
+        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].sw_new & 0x77F;
     }
 
     return num;
@@ -2505,12 +2506,12 @@ static u8 get_comm_djmp_lever_dir(PLW* wk) {
 
     if (wk->wu.work_id == 1) {
         if (wk->py->flag == 0) {
-            num = wcp[wk->wu.id].lever_dir;
+            num = g_state.wcp[wk->wu.id].lever_dir;
         } else {
             num = 0;
         }
     } else {
-        num = wcp[((WORK_Other*)wk)->master_id & 1].lever_dir;
+        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].lever_dir;
     }
 
     return num;
@@ -2732,7 +2733,7 @@ static u16 check_xcopy_filter_se_req(WORK* wk) {
             return voif;
         }
 
-        if (plw[HI_2_BYTES(WK_AS_PLW->spmv_ng_flag)].metamorphose == 0) {
+        if (g_state.plw[HI_2_BYTES(WK_AS_PLW->spmv_ng_flag)].metamorphose == 0) {
             return voif;
         }
 
@@ -2810,18 +2811,18 @@ void set_new_attnum(WORK* wk) {
 
     wk->renew_attack = wk->cg_att_ix;
 
-    att_req += 1;
-    att_req &= 0x7FFF;
+    g_state.att_req += 1;
+    g_state.att_req &= 0x7FFF;
 
-    if (att_req == 0) {
-        att_req += 1;
+    if (g_state.att_req == 0) {
+        g_state.att_req += 1;
     }
 
     aag_sw = 0;
 
     if (wk->cg_att_ix < 0) {
         wk->cg_att_ix = -wk->cg_att_ix;
-        wk->attack_num = att_req;
+        wk->attack_num = g_state.att_req;
         wk->att_hit_ok = 1;
         aag_sw = 1;
         wk->meoshi_hit_flag = 0;

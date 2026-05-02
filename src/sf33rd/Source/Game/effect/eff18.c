@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff18.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effb6.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -15,12 +16,12 @@ static void Setup_Pos_18(WORK_Other_CONN* ewk);
 static void Check_TenTen(WORK_Other_CONN* ewk);
 
 void effect_18_move(WORK_Other_CONN* ewk) {
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
-    if (Menu_Cursor_Y[0] == ewk->wu.type) {
+    if (g_state.Menu_Cursor_Y[0] == ewk->wu.type) {
         ewk->wu.my_clear_level = 0;
     } else {
         ewk->wu.my_clear_level = 128;
@@ -55,8 +56,8 @@ s32 effect_18_init(s16 disp_index, s16 cursor_id, s16 sync_bg, s16 master_player
 }
 
 static void Setup_Pos_18(WORK_Other_CONN* ewk) {
-    ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 143;
-    ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 199 - ewk->wu.type * 18;
+    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 143;
+    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 199 - ewk->wu.type * 18;
     ewk->wu.position_z = 68;
     Check_TenTen(ewk);
 }

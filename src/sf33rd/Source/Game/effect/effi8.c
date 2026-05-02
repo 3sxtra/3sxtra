@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effi8.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff03.h"
@@ -58,7 +59,7 @@ void effect_I8_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || Suicide[0] != 0) {
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -70,7 +71,7 @@ void effect_I8_move(WORK_Other* ewk) {
                 ewk->wu.hit_stop = -ewk->wu.hit_stop;
             }
 
-            if (EXE_flag == 0 && Game_pause == 0) {
+            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
                 effI8_main_process(ewk);
             }
 
@@ -193,7 +194,7 @@ static void effI8_main_process(WORK_Other* ewk) {
                 }
 
                 ewk->wu.xyz[1].disp.pos = mwk->wu.xyz[1].disp.pos + 136;
-                Bonus_Game_Work--;
+                g_state.Bonus_Game_Work--;
                 ewk->wu.disp_flag = 1;
                 ewk->wu.type = 1;
                 set_char_move_init(&ewk->wu, 0, 0x89);
@@ -230,7 +231,7 @@ static void effI8_main_process(WORK_Other* ewk) {
                 ewk->wu.mvxy.a[1].sp = 0x44000;
                 ewk->wu.mvxy.d[1].sp = -0x5000;
                 ewk->wu.hit_stop = 4;
-                Bonus_Game_result++;
+                g_state.Bonus_Game_result++;
 
                 if (ewk->wu.hf.hit.player & 0x80) {
                     Additinal_Score_DM((WORK_Other*)ewk->wu.target_adrs, 8);
@@ -259,7 +260,7 @@ static void effI8_main_process(WORK_Other* ewk) {
             ewk->wu.dir_timer = 8;
             ewk->wu.hit_stop = 2;
             Additinal_Score_DM((WORK_Other*)ewk->wu.target_adrs, 6);
-            Bonus_Game_ex_result++;
+            g_state.Bonus_Game_ex_result++;
         }
 
         ewk->wu.hit_work_id = ewk->wu.dmg_work_id = 0;
@@ -306,11 +307,11 @@ s32 check_ball_mizushibuki(s16 xx, s16 yy) {
     s16 iy;
     u16 ans;
 
-    if (bg_w.stage == 10) {
+    if (g_state.bg_w.stage == 10) {
         return 2;
     }
 
-    if (Bonus_Game_Flag != 21) {
+    if (g_state.Bonus_Game_Flag != 21) {
         return 0;
     }
 

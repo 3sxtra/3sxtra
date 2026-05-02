@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effh6.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -60,7 +61,7 @@ void effect_H6_move(WORK_Other* ewk) {
                 break;
             }
 
-            if (Suicide[4]) {
+            if (g_state.Suicide[4]) {
                 ewk->wu.routine_no[0] = 2;
             }
 
@@ -250,7 +251,7 @@ void effect_H6_move(WORK_Other* ewk) {
             break;
         }
 
-        if (Suicide[4]) {
+        if (g_state.Suicide[4]) {
             ewk->wu.routine_no[0] = 2;
         }
 

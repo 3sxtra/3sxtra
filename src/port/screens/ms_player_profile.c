@@ -8,11 +8,12 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/effect.h"   /* effect_work_init */
-#include "sf33rd/Source/Game/engine/workuser.h" /* plsw_00, plsw_01, Order */
+#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.plsw_00, g_state.plsw_01, g_state.Order */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
-#include "sf33rd/Source/Game/system/work_sys.h" /* Interface_Type, Decide_ID */
+#include "sf33rd/Source/Game/system/work_sys.h" /* Interface_Type, g_state.Decide_ID */
 #include "sf33rd/Source/Game/sound/sound3rd.h"  /* SE_selected */
 #include "sf33rd/Source/Game/ui/sc_sub.h"       /* FadeOut */
 #include "structs.h"                            /* struct _TASK */
@@ -31,7 +32,7 @@ static void profile_enter(struct _TASK* task_ptr) {
     effect_work_init();
     Menu_Common_Init();
 
-    Order[0x4E] = 5;
+    g_state.Order[0x4E] = 5;
 
     /* Blue background banner */
     effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
@@ -53,7 +54,7 @@ static void profile_tick(struct _TASK* task_ptr) {
     /* Read edge-triggered input from both players */
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {
-        trigger |= (~plsw_01[i] & plsw_00[i]);
+        trigger |= (~g_state.plsw_01[i] & g_state.plsw_00[i]);
     }
 
     int poll = rmlui_player_profile_poll(trigger);
@@ -61,12 +62,12 @@ static void profile_tick(struct _TASK* task_ptr) {
     if (poll == 0) {
         /* Replay downloaded and injected into Replay_w */
         rmlui_player_profile_hide();
-        Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1;
+        g_state.Menu_Suicide[0] = 0;
+        g_state.Menu_Suicide[1] = 1;
 
-        Decide_ID = 0;
+        g_state.Decide_ID = 0;
         if (Interface_Type[0] == 0) {
-            Decide_ID = 1;
+            g_state.Decide_ID = 1;
         }
 
         g_lobby_reenter_to_replay = true;

@@ -7,11 +7,12 @@
  * timer and "CONTINUE?" prompt.
  *
  * Key globals (from workuser.h):
- *   Continue_Count_Down[2], Continue_Count[2], Cont_No[4],
- *   LOSER, My_char[]
+ *   g_state.Continue_Count_Down[2], g_state.Continue_Count[2], g_state.Cont_No[4],
+ *   g_state.LOSER, g_state.My_char[]
  */
 
 #include "port/sdl/rmlui/rmlui_continue.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -22,7 +23,7 @@ extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
 } // extern "C"
 
-// ─── Character name table (SF3:3S roster, index matches My_char) ───
+// ─── Character name table (SF3:3S roster, index matches g_state.My_char) ───
 static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
                                               "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
                                               "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
@@ -85,9 +86,9 @@ extern "C" void rmlui_continue_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("continue_count", [](Rml::Variant& v) { v = (int)Continue_Count_Down[LOSER]; });
-    ctor.BindFunc("continue_active", [](Rml::Variant& v) { v = (bool)(Cont_No[0] < 2); });
-    ctor.BindFunc("loser_name", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[LOSER])); });
+    ctor.BindFunc("continue_count", [](Rml::Variant& v) { v = (int)g_state.Continue_Count_Down[g_state.LOSER]; });
+    ctor.BindFunc("continue_active", [](Rml::Variant& v) { v = (bool)(g_state.Cont_No[0] < 2); });
+    ctor.BindFunc("loser_name", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[g_state.LOSER])); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -103,9 +104,9 @@ extern "C" void rmlui_continue_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("continue"))
         return;
 
-    DIRTY_INT(continue_count, (int)Continue_Count_Down[LOSER]);
-    DIRTY_BOOL(continue_active, Cont_No[0] < 2);
-    DIRTY_STR(loser_name, Rml::String(char_name(My_char[LOSER])));
+    DIRTY_INT(continue_count, (int)g_state.Continue_Count_Down[g_state.LOSER]);
+    DIRTY_BOOL(continue_active, g_state.Cont_No[0] < 2);
+    DIRTY_STR(loser_name, Rml::String(char_name(g_state.My_char[g_state.LOSER])));
 }
 
 // ─── Show / Hide ─────────────────────────────────────────────────

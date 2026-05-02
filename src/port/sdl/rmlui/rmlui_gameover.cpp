@@ -7,10 +7,11 @@
  * "GAME OVER" red banner (phase 1) and then score/results (phase 2).
  *
  * Key globals (from workuser.h):
- *   Score[2][3], My_char[], Win_Record[], Player_id, Play_Type, GO_No[]
+ *   g_state.Score[2][3], g_state.My_char[], g_state.Win_Record[], g_state.Player_id, g_state.Play_Type, g_state.GO_No[]
  */
 
 #include "port/sdl/rmlui/rmlui_gameover.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -21,7 +22,7 @@ extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
 } // extern "C"
 
-// ─── Character name table (SF3:3S roster, index matches My_char) ───
+// ─── Character name table (SF3:3S roster, index matches g_state.My_char) ───
 static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
                                               "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
                                               "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
@@ -79,12 +80,12 @@ extern "C" void rmlui_gameover_init(void) {
         return;
 
     ctor.BindFunc("gameover_phase", [](Rml::Variant& v) { v = s_gameover_phase; });
-    ctor.BindFunc("gameover_score", [](Rml::Variant& v) { v = (int)Score[Player_id][Play_Type]; });
-    ctor.BindFunc("gameover_char", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[Player_id])); });
-    ctor.BindFunc("gameover_rounds_won", [](Rml::Variant& v) { v = (int)Win_Record[Player_id]; });
+    ctor.BindFunc("gameover_score", [](Rml::Variant& v) { v = (int)g_state.Score[g_state.Player_id][g_state.Play_Type]; });
+    ctor.BindFunc("gameover_char", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[g_state.Player_id])); });
+    ctor.BindFunc("gameover_rounds_won", [](Rml::Variant& v) { v = (int)g_state.Win_Record[g_state.Player_id]; });
     ctor.BindFunc("gameover_rounds_lost", [](Rml::Variant& v) {
         /* Opponent's wins = our losses */
-        v = (int)Win_Record[Player_id ^ 1];
+        v = (int)g_state.Win_Record[g_state.Player_id ^ 1];
     });
 
     s_model_handle = ctor.GetModelHandle();
@@ -102,10 +103,10 @@ extern "C" void rmlui_gameover_update(void) {
         return;
 
     DIRTY_INT(gameover_phase, s_gameover_phase);
-    DIRTY_INT(gameover_score, (int)Score[Player_id][Play_Type]);
-    DIRTY_STR(gameover_char, Rml::String(char_name(My_char[Player_id])));
-    DIRTY_INT(gameover_rounds_won, (int)Win_Record[Player_id]);
-    DIRTY_INT(gameover_rounds_lost, (int)Win_Record[Player_id ^ 1]);
+    DIRTY_INT(gameover_score, (int)g_state.Score[g_state.Player_id][g_state.Play_Type]);
+    DIRTY_STR(gameover_char, Rml::String(char_name(g_state.My_char[g_state.Player_id])));
+    DIRTY_INT(gameover_rounds_won, (int)g_state.Win_Record[g_state.Player_id]);
+    DIRTY_INT(gameover_rounds_lost, (int)g_state.Win_Record[g_state.Player_id ^ 1]);
 }
 
 // ─── Show / Hide ─────────────────────────────────────────────────

@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effi0.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -38,7 +39,7 @@ void effect_I0_move(WORK_Other* ewk) {
             return;
         }
 
-        if ((EXE_flag == 0) && (Game_pause == 0)) {
+        if ((g_state.EXE_flag == 0) && (g_state.Game_pause == 0)) {
             switch (ewk->wu.routine_no[1]) {
             case 0:
                 add_mvxy_speed(&ewk->wu);

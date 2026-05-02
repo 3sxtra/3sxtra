@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/efff9.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effb6.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -158,8 +159,8 @@ void effect_F9_move(WORK_Other* ewk) {
         ewk->wu.my_mts = 12;
         ewk->free = 0;
 
-        if (mes_already) {
-            get_message_conn_data((WORK_Other_CONN*)ewk, 2, ewk->master_player, mes_already);
+        if (g_state.mes_already) {
+            get_message_conn_data((WORK_Other_CONN*)ewk, 2, ewk->master_player, g_state.mes_already);
         }
 
         ewk->wu.old_rno[4] = ewk->free;
@@ -202,7 +203,7 @@ void effect_F9_move(WORK_Other* ewk) {
             } else {
                 ewk->wu.old_rno[5]++;
 
-                if (Country != COUNTRY_JAPAN && Country != COUNTRY_KOREA &&
+                if (g_state.Country != COUNTRY_JAPAN && g_state.Country != COUNTRY_KOREA &&
                     (ewk->wu.old_rno[5]++, ewk->wu.old_rno[4] < ewk->wu.old_rno[5])) {
                     ewk->wu.old_rno[5] = ewk->wu.old_rno[4];
                 }
@@ -239,7 +240,7 @@ void effect_F9_move(WORK_Other* ewk) {
 }
 
 void effect_F9_init(s16 END_PL_NO) {
-    mes_already = 0;
+    g_state.mes_already = 0;
     efff9_suicide = 0;
     efff9_txt_point = 0;
     keep_mes_no = 0;
@@ -280,7 +281,7 @@ s32 Rewrite_End_Message(u16 mes_no) {
     efff9_txt_scene_adrs = efff9_txt_no_adrs[mes_no];
     efff9_message = efff9_txt_scene_adrs[0];
     ewk->wu.old_rno[3] = efff9_txt_scene_adrs[1];
-    mes_already = efff9_message;
+    g_state.mes_already = efff9_message;
     return 0;
 }
 
@@ -301,6 +302,6 @@ static s32 Rewrite() {
     efff9_message = efff9_txt_scene_adrs[efff9_txt_point];
     ewk->wu.old_rno[3] = efff9_txt_scene_adrs[efff9_txt_point + 1];
     efff9_txt_point += 2;
-    mes_already = efff9_message;
+    g_state.mes_already = efff9_message;
     return 0;
 }

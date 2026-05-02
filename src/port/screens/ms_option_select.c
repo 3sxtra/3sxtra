@@ -21,21 +21,22 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/AcrSDK/common/pad.h"              /* SWK_UP, SWK_DOWN, etc. */
 #include "port/ui/native_imgui.h"                  /* NativeUI */
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
 #include "sf33rd/Source/Game/rendering/texgroup.h" /* checkSelObjFileLoaded */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Check_Change_Contents, Copy_Check_w */
-#include "sf33rd/Source/Game/system/work_sys.h"    /* X_Adjust_Buff, Y_Adjust_Buff, save_w */
+#include "sf33rd/Source/Game/system/work_sys.h"    /* g_state.X_Adjust_Buff, g_state.Y_Adjust_Buff, save_w */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 
@@ -93,24 +94,24 @@ static void option_select_enter(struct _TASK* task_ptr) {
     if (use_rmlui)
         rmlui_wrapper_hide_all_game_documents();
 
-    Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
-    Menu_Suicide[0] = 1;
-    Menu_Suicide[1] = 0;
-    Order[0x64] = 4;
-    Order_Timer[0x64] = 1;
+    g_state.Menu_Cursor_Y[0] = g_state.Cursor_Y_Pos[0][1];
+    g_state.Menu_Suicide[0] = 1;
+    g_state.Menu_Suicide[1] = 0;
+    g_state.Order[0x64] = 4;
+    g_state.Order_Timer[0x64] = 1;
 
     /* ── Option_Select case 0 specific setup ── */
     if (!use_rmlui || !rmlui_menu_option) {
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 0;
-        Order_Timer[0x4E] = 1;
+        g_state.Order[0x4E] = 2;
+        g_state.Order_Dir[0x4E] = 0;
+        g_state.Order_Timer[0x4E] = 1;
     }
 
     if (!use_rmlui || !rmlui_menu_option) {
         effect_57_init(0x4F, MENU_HEADER_OPTION_MENU, 0, 0x3F, 2);
-        Order[0x4F] = 1;
-        Order_Dir[0x4F] = 8;
-        Order_Timer[0x4F] = 1;
+        g_state.Order[0x4F] = 1;
+        g_state.Order_Dir[0x4F] = 8;
+        g_state.Order_Timer[0x4F] = 1;
     }
 
     /* ── Dynamic item count based on Extra_Option unlock ── */
@@ -121,7 +122,7 @@ static void option_select_enter(struct _TASK* task_ptr) {
             rmlui_option_menu_show();
         } else {
             effect_04_init(1, 4, 0, 0x48);
-            Menu_Cursor_Move = 7;
+            g_state.Menu_Cursor_Move = 7;
         }
         g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 6;
     } else {
@@ -130,7 +131,7 @@ static void option_select_enter(struct _TASK* task_ptr) {
             rmlui_option_menu_show();
         } else {
             effect_04_init(1, 1, 0, 0x48);
-            Menu_Cursor_Move = 8;
+            g_state.Menu_Cursor_Move = 8;
         }
         g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 7;
     }
@@ -176,7 +177,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
     if (!s_wait_done) {
         s_wait_done = true;
         checkSelObjFileLoaded();
-        Suicide[3] = 0;
+        g_state.Suicide[3] = 0;
     }
 
     /* ── Determine dynamic cursor_max ── */
@@ -196,10 +197,10 @@ static void option_select_tick(struct _TASK* task_ptr) {
     if (!use_rmlui || !rmlui_menu_option) {
         const int OPTION_UNLOCKED_GRAPHIC_START = 91;
         const int OPTION_LOCKED_GRAPHIC_START = 84;
-        NativeUI_SetFocusIndex(Menu_Cursor_Y[0]);
+        NativeUI_SetFocusIndex(g_state.Menu_Cursor_Y[0]);
         NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
         NativeUI_SetGraphicOffset(ix ? OPTION_UNLOCKED_GRAPHIC_START : OPTION_LOCKED_GRAPHIC_START);
-        NativeUI_SetMasterPlayer(1);    // Bind to Menu_Suicide[1] (which is ALIVE=0) since Menu_Suicide[0]=1 (DEAD)
+        NativeUI_SetMasterPlayer(1);    // Bind to g_state.Menu_Suicide[1] (which is ALIVE=0) since g_state.Menu_Suicide[0]=1 (DEAD)
         NativeUI_SetLetterType(0x70A7); // Use narrower font for option select
 
         NativeUI_Button("GAME OPTION");
@@ -219,20 +220,20 @@ static void option_select_tick(struct _TASK* task_ptr) {
     }
 
     /* ── Input dispatch ── */
-    if (IO_Result == 0x100 || IO_Result == 0x200) {
+    if (g_state.IO_Result == 0x100 || g_state.IO_Result == 0x200) {
         SE_selected();
 
         /* ── Cancel / last item (EXIT) → back to Mode Select ── */
-        if (Menu_Cursor_Y[0] == ix + 6 || IO_Result == 0x200) {
+        if (g_state.Menu_Cursor_Y[0] == ix + 6 || g_state.IO_Result == 0x200) {
             NativeUI_Clear();
-            Menu_Suicide[0] = 0;
-            Menu_Suicide[1] = 1;
+            g_state.Menu_Suicide[0] = 0;
+            g_state.Menu_Suicide[1] = 1;
             task_ptr->r_no[1] = 1; /* Mode_Select AT index */
             task_ptr->r_no[2] = 0;
             task_ptr->r_no[3] = 0;
             task_ptr->free[0] = 0;
-            Order[0x4F] = 4;
-            Order_Timer[0x4F] = 4;
+            g_state.Order[0x4F] = 4;
+            g_state.Order_Timer[0x4F] = 4;
 
             if (use_rmlui && rmlui_menu_option)
                 rmlui_option_menu_hide();
@@ -242,7 +243,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
                 if (CurrentSave()->Auto_Save) {
                     task_ptr->r_no[0] = 4; /* Disp_Auto_Save */
                     task_ptr->r_no[1] = 0;
-                    Forbid_Reset = 1;
+                    g_state.Forbid_Reset = 1;
                     Copy_Check_w();
                     /* Exit to legacy — Disp_Auto_Save will handle it */
                     s_cancel_exit = true;
@@ -256,13 +257,13 @@ static void option_select_tick(struct _TASK* task_ptr) {
         }
 
         /* ── FX OPTION item: ix + 5 (the item just before EXIT) ── */
-        if (Menu_Cursor_Y[0] == ix + 5) {
+        if (g_state.Menu_Cursor_Y[0] == ix + 5) {
             if (use_rmlui && rmlui_menu_option)
                 rmlui_option_menu_hide();
 
             /* Save the cursor position so we return exactly here */
-            Cursor_Y_Pos[0][1] = Menu_Cursor_Y[0];
-            Cursor_Y_Pos[1][1] = Menu_Cursor_Y[1];
+            g_state.Cursor_Y_Pos[0][1] = g_state.Menu_Cursor_Y[0];
+            g_state.Cursor_Y_Pos[1][1] = g_state.Menu_Cursor_Y[1];
             NativeUI_Clear();
 
             MenuScreen_Goto(MENU_SCREEN_FX_OPTION);
@@ -273,14 +274,14 @@ static void option_select_tick(struct _TASK* task_ptr) {
         task_ptr->free[0] = 0;
 
         /* Set up X/Y adjust buffers (replicated from legacy Option_Select case 3) */
-        X_Adjust_Buff[0] = X_Adjust;
-        X_Adjust_Buff[1] = X_Adjust;
-        X_Adjust_Buff[2] = X_Adjust;
-        Y_Adjust_Buff[0] = Y_Adjust;
-        Y_Adjust_Buff[1] = Y_Adjust;
-        Y_Adjust_Buff[2] = Y_Adjust;
+        g_state.X_Adjust_Buff[0] = g_state.X_Adjust;
+        g_state.X_Adjust_Buff[1] = g_state.X_Adjust;
+        g_state.X_Adjust_Buff[2] = g_state.X_Adjust;
+        g_state.Y_Adjust_Buff[0] = g_state.Y_Adjust;
+        g_state.Y_Adjust_Buff[1] = g_state.Y_Adjust;
+        g_state.Y_Adjust_Buff[2] = g_state.Y_Adjust;
 
-        /* Exit_Sub target: AT index = Menu_Cursor_Y[0] + 9
+        /* Exit_Sub target: AT index = g_state.Menu_Cursor_Y[0] + 9
          * Item 0 → AT 9 (Game_Option)
          * Item 1 → AT 10 (Button_Config)
          * Item 2 → AT 11 (System_Direction from Option)
@@ -288,7 +289,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
          * Item 4 → AT 13 (Memory_Card)
          * Item 5 → AT 14 (Extra_Option) — only when unlocked */
         s_exiting = true;
-        s_exit_target = Menu_Cursor_Y[0] + 9;
+        s_exit_target = g_state.Menu_Cursor_Y[0] + 9;
         NativeUI_Clear();
     }
 }

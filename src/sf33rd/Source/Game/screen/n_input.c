@@ -1,9 +1,10 @@
 /**
  * @file n_input.c
- * High Score Name Entry Screen
+ * High g_state.Score Name Entry Screen
  */
 
 #include "sf33rd/Source/Game/screen/n_input.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -358,18 +359,18 @@ static void ranking_state_check() {
     name_ptr->rank = -1;
 
     for (joui = 0; joui < 4; joui++) {
-        if (Rank_In[name_ptr->id][joui] >= 0) {
+        if (g_state.Rank_In[name_ptr->id][joui] >= 0) {
             break;
         }
     }
 
     for (j = joui + 1; j < 4; j++) {
-        if (Rank_In[name_ptr->id][j] >= 0 && Rank_In[name_ptr->id][joui] > Rank_In[name_ptr->id][j]) {
+        if (g_state.Rank_In[name_ptr->id][j] >= 0 && g_state.Rank_In[name_ptr->id][joui] > g_state.Rank_In[name_ptr->id][j]) {
             joui = j;
         }
     }
 
-    name_ptr->rank_in = name_ptr->rank = Rank_In[name_ptr->id][joui];
+    name_ptr->rank_in = name_ptr->rank = g_state.Rank_In[name_ptr->id][joui];
     name_ptr->rank_status = name_ptr->status = rank_stage_tbl[joui];
 }
 
@@ -524,7 +525,7 @@ static void current_sc_move2() {
 static void start_cut_check(s16 pl_id) {
     s16 i;
 
-    if (Naming_Cut[pl_id]) {
+    if (g_state.Naming_Cut[pl_id]) {
         if (name_ptr->r_no_0 < 6) {
             name_ptr->r_no_0 = 6;
         }

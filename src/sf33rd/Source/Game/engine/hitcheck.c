@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/hitcheck.h"
+#include "game_state.h"
 #include "bin2obj/exchange.h"
 #include "bin2obj/gauge.h"
 #include "common.h"
@@ -24,6 +25,9 @@
 #include "sf33rd/Source/Game/engine/pow_pow.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+
+u8 last_parry_red[2];
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 #include "sf33rd/Source/Game/training/trials.h"
@@ -66,7 +70,7 @@ void make_red_blocking_time(s16 id, s16 ix, s16 num) {
 
 /** @brief Main hit-check processing — runs catch checks, attack checks, and the hit queue. */
 void hit_check_main_process() {
-    aiuchi_flag = 0;
+    g_state.aiuchi_flag = 0;
 
     if (hpq_in > 1) {
         if (ca_check_flag) {
@@ -117,7 +121,7 @@ void check_result_extra() {
 
     assign1 = 0;
 
-    if (plw[0].wu.routine_no[1] == 1 && plw[0].wu.routine_no[3] == 0) {
+    if (g_state.plw[0].wu.routine_no[1] == 1 && g_state.plw[0].wu.routine_no[3] == 0) {
         assign1 = 1;
     }
 
@@ -125,45 +129,45 @@ void check_result_extra() {
 
     assign2 = 0;
 
-    if (plw[1].wu.routine_no[1] == 1 && plw[1].wu.routine_no[3] == 0) {
+    if (g_state.plw[1].wu.routine_no[1] == 1 && g_state.plw[1].wu.routine_no[3] == 0) {
         assign2 = 1;
     }
 
     p2state = assign2;
 
     if (p1state & p2state) {
-        dm1p = (WORK_Other*)plw[0].wu.dmg_adrs;
-        dm2p = (WORK_Other*)plw[1].wu.dmg_adrs;
+        dm1p = (WORK_Other*)g_state.plw[0].wu.dmg_adrs;
+        dm2p = (WORK_Other*)g_state.plw[1].wu.dmg_adrs;
 
         switch ((dm1p->wu.work_id == 1) + ((dm2p->wu.work_id == 1) * 2)) {
         case 3:
-            aiuchi_flag = 1;
+            g_state.aiuchi_flag = 1;
 
-            if ((hs1 = plw[0].wu.dm_stop) < 0) {
+            if ((hs1 = g_state.plw[0].wu.dm_stop) < 0) {
                 hs1 = -hs1;
             }
 
-            if ((hs2 = plw[1].wu.dm_stop) < 0) {
+            if ((hs2 = g_state.plw[1].wu.dm_stop) < 0) {
                 hs2 = -hs2;
             }
 
-            qua = plw[0].wu.dm_quake;
+            qua = g_state.plw[0].wu.dm_quake;
 
-            if (qua < plw[1].wu.dm_quake) {
-                qua = plw[1].wu.dm_quake;
+            if (qua < g_state.plw[1].wu.dm_quake) {
+                qua = g_state.plw[1].wu.dm_quake;
             }
 
             if (hs1 > hs2) {
-                plw[0].wu.hit_stop = plw[1].wu.hit_stop = hs1;
-                plw[0].wu.hit_quake = plw[1].wu.hit_quake = qua;
+                g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = hs1;
+                g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = qua;
             } else if (hs2) {
-                plw[0].wu.hit_stop = plw[1].wu.hit_stop = hs2;
-                plw[0].wu.hit_quake = plw[1].wu.hit_quake = qua;
+                g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = hs2;
+                g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = qua;
             }
 
-            plw[0].wu.dm_stop = plw[1].wu.dm_stop = 0;
-            plw[0].wu.dm_quake = plw[1].wu.dm_quake = 0;
-            plw[0].wu.dm_nodeathattack = plw[1].wu.dm_nodeathattack = 0;
+            g_state.plw[0].wu.dm_stop = g_state.plw[1].wu.dm_stop = 0;
+            g_state.plw[0].wu.dm_quake = g_state.plw[1].wu.dm_quake = 0;
+            g_state.plw[0].wu.dm_nodeathattack = g_state.plw[1].wu.dm_nodeathattack = 0;
         }
 
         return;
@@ -234,7 +238,7 @@ void set_caught_status(s16 ix) {
             }
         }
 
-        if (!(Game_timer & 1)) {
+        if (!(g_state.Game_timer & 1)) {
         one:
             hs[ix2].flag.results &= 0x111;
             hs[ix].flag.results &= 0x1011;
@@ -349,9 +353,9 @@ void set_caught_status(s16 ix) {
     as->wu.cmwk[0xF]++;
     ds->wu.dm_count_up++;
     hit_pattern_extdat_check(&as->wu);
-    paring_ctr_vs[Play_Type][ds->wu.id] = 0;
-    paring_counter[ds->wu.id] = 0;
-    paring_bonus_r[ds->wu.id] = 0;
+    g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
+    g_state.paring_counter[ds->wu.id] = 0;
+    g_state.paring_bonus_r[ds->wu.id] = 0;
     last_parry_red[ds->wu.id] = 0;
     pp_pulpara_hit(&as->wu);
     return;
@@ -578,9 +582,9 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
         ds->atemi_flag = 0;
     }
 
-    paring_ctr_vs[Play_Type][ds->wu.id] = 0;
-    paring_counter[ds->wu.id] = 0;
-    paring_bonus_r[ds->wu.id] = 0;
+    g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
+    g_state.paring_counter[ds->wu.id] = 0;
+    g_state.paring_bonus_r[ds->wu.id] = 0;
     last_parry_red[ds->wu.id] = 0;
     return;
 
@@ -690,15 +694,15 @@ void set_paring_status(PLW* as, PLW* ds) {
             remake_mvxy_PoGR(&as->wu);
         }
 
-        if (Bonus_Game_Flag == 0 && ds->spmv_ng_flag & 0x80) {
-            paring_bonus_r[ds->wu.id] = 1;
-            paring_ctr_vs[Play_Type][ds->wu.id]++;
+        if (g_state.Bonus_Game_Flag == 0 && ds->spmv_ng_flag & 0x80) {
+            g_state.paring_bonus_r[ds->wu.id] = 1;
+            g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id]++;
 
-            if (paring_ctr_vs[Play_Type][ds->wu.id] > 39) {
-                paring_ctr_vs[Play_Type][ds->wu.id] = 39;
+            if (g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] > 39) {
+                g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] = 39;
             }
 
-            paring_counter[ds->wu.id] = parisucc_pts[Play_Type][paring_ctr_vs[Play_Type][ds->wu.id] - 1];
+            g_state.paring_counter[ds->wu.id] = parisucc_pts[g_state.Play_Type][g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] - 1];
         }
 
         as->wu.cmwk[8]++;
@@ -848,7 +852,7 @@ s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
         curr_id = ((WORK_Other*)as)->master_id;
     }
 
-    if (!(plw[curr_id].spmv_ng_flag & DIP_CHIP_DAMAGE_ENABLED)) {
+    if (!(g_state.plw[curr_id].spmv_ng_flag & DIP_CHIP_DAMAGE_ENABLED)) {
         as->kezuri_pow = 0;
     }
 
@@ -862,7 +866,7 @@ s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
             }
 
             if (ds->dm_vital > ds->vital_new) {
-                if (as->no_death_attack || (plw[curr_id].spmv_ng_flag2 & DIP2_CHIP_DAMAGE_KO_DISABLED)) {
+                if (as->no_death_attack || (g_state.plw[curr_id].spmv_ng_flag2 & DIP2_CHIP_DAMAGE_KO_DISABLED)) {
                     ds->dm_vital = ds->vital_new;
                 } else {
                     ds->dm_guard_success = ds->routine_no[2];
@@ -1343,7 +1347,7 @@ static void add_combo_work_impl(PLW* as, PLW* ds) {
 
     ds->kizetsu_kow = ds->combo_type.new_dm = as->wu.kind_of_waza;
     kow = &ds->combo_type.kind_of[0][0][0];
-    cal = &calc_hit[ds->wu.id][0];
+    cal = &g_state.calc_hit[ds->wu.id][0];
     kow[as->wu.kind_of_waza]++;
     cal[(as->wu.kind_of_waza & 120) / 8]++;
     ds->combo_type.total++;
@@ -1647,7 +1651,7 @@ void attack_hit_check() {
                     }
 
                     if (lp2 == 10) {
-                        if (!(mad->att.dipsw & 64) || sad->kind_of_waza & 0x60 || pcon_dp_flag ||
+                        if (!(mad->att.dipsw & 64) || sad->kind_of_waza & 0x60 || g_state.pcon_dp_flag ||
                             sad->pat_status == 0x26) {
                             continue;
                         }

@@ -3,11 +3,12 @@
  * @brief RmlUi copyright text overlay data model.
  *
  * Replaces Disp_Copyright() which renders Capcom copyright text
- * using SSPutStrPro. Reads the Country variable to pick the right
+ * using SSPutStrPro. Reads the g_state.Country variable to pick the right
  * copyright string variant.
  */
 
 #include "port/sdl/rmlui/rmlui_copyright.h"
+#include "game_state.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -35,7 +36,7 @@ extern "C" void rmlui_copyright_init(void) {
         return;
 
     ctor.BindFunc("copyright_line1", [](Rml::Variant& v) {
-        switch (Country) {
+        switch (g_state.Country) {
         case 1:
         case 2:
         case 3:
@@ -54,7 +55,7 @@ extern "C" void rmlui_copyright_init(void) {
         }
     });
     ctor.BindFunc("copyright_line2", [](Rml::Variant& v) {
-        switch (Country) {
+        switch (g_state.Country) {
         case 4:
         case 5:
         case 6:
@@ -66,7 +67,7 @@ extern "C" void rmlui_copyright_init(void) {
         }
     });
     ctor.BindFunc("copyright_visible",
-                  [](Rml::Variant& v) { v = (bool)(Country >= 1 && Country <= 8 && Country != 0); });
+                  [](Rml::Variant& v) { v = (bool)(g_state.Country >= 1 && g_state.Country <= 8 && g_state.Country != 0); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -90,7 +91,7 @@ extern "C" void rmlui_copyright_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("copyright"))
         return;
 
-    int c = (int)Country;
+    int c = (int)g_state.Country;
     if (c != s_cache.country) {
         s_cache.country = c;
         s_model_handle.DirtyVariable("copyright_line1");

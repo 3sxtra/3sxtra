@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff10.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -51,18 +52,18 @@ void effect_10_move(WORK_Other* ewk) {
     s16 correct_index;
     s16 ix;
 
-    if (Game_pause == 0x81 && Pause_Down == 0) {
+    if (g_state.Game_pause == 0x81 && g_state.Pause_Down == 0) {
         return;
     }
 
-    if (Menu_Suicide[ewk->master_player]) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
         push_effect_work(&ewk->wu);
         return;
     }
 
     correct_index = 0;
 
-    if (ewk->master_priority != Menu_Cursor_Y[ewk->master_id]) {
+    if (ewk->master_priority != g_state.Menu_Cursor_Y[ewk->master_id]) {
         color = 9;
     } else {
         color = 5;
@@ -79,7 +80,7 @@ void effect_10_move(WORK_Other* ewk) {
     }
 
     if (Contents_Check_Data[ewk->wu.type] == 1) {
-        ix = Convert_Buff[1][ewk->master_id][ewk->master_priority];
+        ix = g_state.Convert_Buff[1][ewk->master_id][ewk->master_priority];
     } else {
         ix = ewk->wu.cg_type;
     }

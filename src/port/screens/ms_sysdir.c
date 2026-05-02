@@ -12,7 +12,7 @@
  *     returns via Return_Option_Mode_Sub.
  *
  * Direction_Menu (AT index 18) is the per-character dipswitch sub-page
- * system that uses Menu_Page/Page_Max/Setup_Next_Page() for multi-page
+ * system that uses g_state.Menu_Page/g_state.Page_Max/Setup_Next_Page() for multi-page
  * navigation.  It handles L/R page cycling, per-item value toggles via
  * Dir_Move_Sub, and exits back *   System_Direction: menu.c lines 2339–2466 (AT_Jmp_Tbl index 5/11)
  *   Direction_Menu:   menu.c lines 2469–2641 (AT_Jmp_Tbl index 18)
@@ -21,6 +21,7 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "port/ui/native_imgui.h"                      /* NativeUI */
 #include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
@@ -29,15 +30,15 @@
 #include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
 #include "sf33rd/Source/Game/effect/eff64.h"           /* effect_64_init */
 #include "sf33rd/Source/Game/effect/eff66.h"           /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, Convert_Buff, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"        /* g_state.Menu_Cursor_Y, g_state.Convert_Buff, etc. */
 #include "sf33rd/Source/Game/menu/dir_data.h"          /* Page_Data */
 #include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"     /* System_Dir_Move_Sub, Dir_Move_Sub, etc. */
 #include "sf33rd/Source/Game/message/en/msgtable_en.h" /* msgSysDirTbl */
 #include "sf33rd/Source/Game/sound/sound3rd.h"         /* SE_selected, SE_dir_selected, SE_cursor_move */
-#include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
+#include "sf33rd/Source/Game/system/reset.h"           /* g_state.Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"         /* Check_SysDir_Page */
-#include "sf33rd/Source/Game/system/sysdir.h"          /* system_dir, Direction_Working */
+#include "sf33rd/Source/Game/system/sysdir.h"          /* system_dir, g_state.Direction_Working */
 #include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                                   /* struct _TASK */
 
@@ -48,11 +49,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Extern data
  * ═══════════════════════════════════════════════════════════════════════════ */
-
-extern s8 Menu_Page;
-extern u8 Page_Max;
-extern s8 Menu_Page_Buff;
-extern s8 Menu_Max;
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  SYSTEM DIRECTION — Internal state
@@ -99,32 +95,32 @@ static void sysdir_enter(struct _TASK* task_ptr) {
         task_ptr->r_no[2] = 1; /* advance for Menu_Sub_case1 in WAIT phase */
         task_ptr->timer = 5;
         Menu_Common_Init();
-        Menu_Cursor_Y[0] = 0;
-        Menu_Suicide[1] = 1; /* kill Option items (master_player=1) */
-        Menu_Suicide[2] = 0; /* enable our items (master_player=2) */
-        Order[0x4F] = 4;
-        Order_Timer[0x4F] = 1;
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 2;
-        Order_Timer[0x4E] = 1;
+        g_state.Menu_Cursor_Y[0] = 0;
+        g_state.Menu_Suicide[1] = 1; /* kill Option items (master_player=1) */
+        g_state.Menu_Suicide[2] = 0; /* enable our items (master_player=2) */
+        g_state.Order[0x4F] = 4;
+        g_state.Order_Timer[0x4F] = 1;
+        g_state.Order[0x4E] = 2;
+        g_state.Order_Dir[0x4E] = 2;
+        g_state.Order_Timer[0x4E] = 1;
     } else {
         /* Mode_Select context: inherit BG from Mode_Select.
          * Menu_in_Sub does: FadeOut, r_no[2]+=1, timer=5, Menu_Common_Init,
-         * cursor restore from Cursor_Y_Pos, Menu_Suicide setup. */
+         * cursor restore from g_state.Cursor_Y_Pos, g_state.Menu_Suicide setup. */
         Menu_in_Sub(task_ptr);
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 3;
-        Order_Timer[0x4E] = 1;
+        g_state.Order[0x4E] = 2;
+        g_state.Order_Dir[0x4E] = 3;
+        g_state.Order_Timer[0x4E] = 1;
     }
 
-    Convert_Buff[3][0][0] = Direction_Working[1];
+    g_state.Convert_Buff[3][0][0] = g_state.Direction_Working[1];
 
     /* Orange/red header — gated when RmlUI active */
     if (!use_rmlui || !rmlui_menu_sysdir) {
         effect_57_init(0x6D, MENU_HEADER_SYSTEM_DIRECTION, 0, 0x3F, 2);
-        Order[0x6D] = 1;
-        Order_Dir[0x6D] = 8;
-        Order_Timer[0x6D] = 1;
+        g_state.Order[0x6D] = 1;
+        g_state.Order_Dir[0x6D] = 8;
+        g_state.Order_Timer[0x6D] = 1;
     }
 
     if (use_rmlui && rmlui_menu_sysdir) {
@@ -132,14 +128,14 @@ static void sysdir_enter(struct _TASK* task_ptr) {
     } else {
         effect_04_init(1, 3, 0, 0x48);
         effect_64_init(0x61U, 0, s_sysdir_from_option ? 2 : 1, 0xA, 0, 0x7047, 0xB, 3, 0);
-        Order[0x61] = 1;
-        Order_Dir[0x61] = 4;
-        Order_Timer[0x61] = 0x14;
+        g_state.Order[0x61] = 1;
+        g_state.Order_Dir[0x61] = 4;
+        g_state.Order_Timer[0x61] = 0x14;
 
-        Menu_Cursor_Move = 4;
+        g_state.Menu_Cursor_Move = 4;
     }
 
-    Page_Max = Check_SysDir_Page();
+    g_state.Page_Max = Check_SysDir_Page();
 
     /* Set r_no[1] for legacy helper compatibility (System_Dir_Move_Sub,
      * Exit_Sub, etc. check r_no[1] to differentiate SysDir vs Extra_Option) */
@@ -158,13 +154,13 @@ static void sysdir_tick(struct _TASK* task_ptr) {
     /* ── One-time post-wait-phase setup ── */
     if (!s_sysdir_wait_done) {
         s_sysdir_wait_done = true;
-        Suicide[3] = 0;
+        g_state.Suicide[3] = 0;
     }
 
     /* ── Handle multi-frame Exit_Sub exit to Direction_Menu sub-pages ── */
     if (s_sysdir_exiting) {
         /* Exit_Sub handles the multi-frame fade-out → sets r_no[1] to
-         * the Direction_Menu AT index (s_exit_target = Menu_Cursor_Y[0] + 0x11).
+         * the Direction_Menu AT index (s_exit_target = g_state.Menu_Cursor_Y[0] + 0x11).
          * Let it run until it changes r_no[1]. */
         Exit_Sub(task_ptr, 1, s_sysdir_exit_target);
         if (task_ptr->r_no[1] != (s_sysdir_from_option ? 11 : 5)) {
@@ -180,7 +176,7 @@ static void sysdir_tick(struct _TASK* task_ptr) {
     /* ── Input handling — same as legacy System_Direction case 3 ── */
     System_Dir_Move_Sub(0);
 
-    if (IO_Result == 0) {
+    if (g_state.IO_Result == 0) {
         System_Dir_Move_Sub(1);
     }
 
@@ -188,7 +184,7 @@ static void sysdir_tick(struct _TASK* task_ptr) {
     if (!use_rmlui || !rmlui_menu_sysdir) {
         const int SYSDIR_GRAPHIC_START_OFFSET = 42; // Base offset to reach string 43 (0x2B "PAGE 1")
 
-        NativeUI_SetFocusIndex(Menu_Cursor_Y[0]);
+        NativeUI_SetFocusIndex(g_state.Menu_Cursor_Y[0]);
         NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
         NativeUI_SetNextIndex(1); // Item 0 is handled natively by effect_64 combo box!
         NativeUI_SetGraphicOffset(SYSDIR_GRAPHIC_START_OFFSET);
@@ -201,19 +197,19 @@ static void sysdir_tick(struct _TASK* task_ptr) {
         NativeUI_End();
     }
 
-    switch (IO_Result) {
+    switch (g_state.IO_Result) {
     case 0x100:
-        if (Menu_Cursor_Y[0] == 0) {
+        if (g_state.Menu_Cursor_Y[0] == 0) {
             break;
         }
         /* fallthrough — confirm on non-first item behaves like cancel */
 
     case 0x200:
         SE_selected();
-        Order[0x6D] = 4;
-        Order_Timer[0x6D] = 4;
+        g_state.Order[0x6D] = 4;
+        g_state.Order_Timer[0x6D] = 4;
 
-        if (Menu_Cursor_Y[0] == 4 || IO_Result == 0x200) {
+        if (g_state.Menu_Cursor_Y[0] == 4 || g_state.IO_Result == 0x200) {
             NativeUI_Clear();
             if (s_sysdir_from_option) {
                 /* Return to Option_Select */
@@ -227,8 +223,8 @@ static void sysdir_tick(struct _TASK* task_ptr) {
                 /* Return to Mode_Select */
                 if (use_rmlui && rmlui_menu_sysdir)
                     rmlui_sysdir_hide();
-                Menu_Suicide[0] = 0;
-                Menu_Suicide[1] = 1;
+                g_state.Menu_Suicide[0] = 0;
+                g_state.Menu_Suicide[1] = 1;
                 task_ptr->r_no[1] = 1;
                 task_ptr->r_no[2] = 0;
                 task_ptr->r_no[3] = 0;
@@ -240,7 +236,7 @@ static void sysdir_tick(struct _TASK* task_ptr) {
 
         /* Navigate to Direction_Menu sub-page via Exit_Sub */
         s_sysdir_exiting = true;
-        s_sysdir_exit_target = Menu_Cursor_Y[0] + 0x11;
+        s_sysdir_exit_target = g_state.Menu_Cursor_Y[0] + 0x11;
         NativeUI_Clear();
         task_ptr->r_no[2] = 4; /* advance past case 3 for Exit_Sub */
         task_ptr->free[0] = 0;
@@ -277,7 +273,7 @@ static void sysdir_rmlui_hide(void) {
  *  DIRECTION MENU — Internal state
  *
  *  Direction_Menu is the per-character dipswitch sub-page view.
- *  It uses Menu_Page/Page_Max for multi-page navigation and
+ *  It uses g_state.Menu_Page/g_state.Page_Max for multi-page navigation and
  *  Setup_Next_Page() for page transitions.
  *
  *  Internal phases:
@@ -311,15 +307,15 @@ static void dirm_enter(struct _TASK* task_ptr) {
     s_dm_phase = DM_PHASE_INIT;
     s_dm_page_setup_done = false;
 
-    Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
+    g_state.Menu_Cursor_Y[1] = g_state.Menu_Cursor_Y[0];
 
     FadeOut(1, 0xFF, 8);
     task_ptr->r_no[2] = 1; /* advance for internal page phase */
     task_ptr->timer = 0;   /* 0 to bypass registry WAIT/FADE_IN */
-    Menu_Suicide[1] = 1;
-    Menu_Suicide[2] = 0;
-    Menu_Page = 0;
-    Menu_Page_Buff = Menu_Page;
+    g_state.Menu_Suicide[1] = 1;
+    g_state.Menu_Suicide[2] = 0;
+    g_state.Menu_Page = 0;
+    g_state.Menu_Page_Buff = g_state.Menu_Page;
     Message_Data->kind_req = 3;
 
     if (use_rmlui && rmlui_menu_sysdir) {
@@ -328,11 +324,11 @@ static void dirm_enter(struct _TASK* task_ptr) {
            In native, Setup_Next_Page calls effect_work_init() which destroys
            everything, then recreates 0x4E with palette 0x45. Since we skip
            effect_work_init() in RmlUI mode, do the swap explicitly. */
-        Order[0x6D] = 4; /* kill the orange SysDir overlay */
-        Order_Timer[0x6D] = 1;
-        Order[0x4E] = 5;
-        Order_Timer[0x4E] = 1;
-        Order_Dir[0x4E] = 3;
+        g_state.Order[0x6D] = 4; /* kill the orange SysDir overlay */
+        g_state.Order_Timer[0x6D] = 1;
+        g_state.Order[0x4E] = 5;
+        g_state.Order_Timer[0x4E] = 1;
+        g_state.Order_Dir[0x4E] = 3;
         effect_57_init(0x4E, 0, 0, 0x45, 0); /* green subpage BG */
     }
 
@@ -351,7 +347,7 @@ static void dirm_enter(struct _TASK* task_ptr) {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void dirm_tick(struct _TASK* task_ptr) {
-    Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
+    g_state.Menu_Cursor_Y[1] = g_state.Menu_Cursor_Y[0];
 
     /* ── Page setup on first tick (or after page change) ── */
     if (!s_dm_page_setup_done) {
@@ -364,11 +360,11 @@ static void dirm_tick(struct _TASK* task_ptr) {
             Setup_Next_Page(task_ptr, 0);
         } else {
             /* RmlUi mode: data setup only — no native effects to destroy */
-            Menu_Page_Buff = Menu_Page;
+            g_state.Menu_Page_Buff = g_state.Menu_Page;
             Menu_Common_Init();
-            Menu_Cursor_Y[0] = 0;
-            Menu_Max = Page_Data[Menu_Page];
-            system_dir[1].contents[Menu_Page][Menu_Max] = 1;
+            g_state.Menu_Cursor_Y[0] = 0;
+            g_state.Menu_Max = Page_Data[g_state.Menu_Page];
+            system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max] = 1;
         }
 
         s_dm_phase = DM_PHASE_TIMER;
@@ -387,11 +383,11 @@ static void dirm_tick(struct _TASK* task_ptr) {
         if (!use_rmlui || !rmlui_menu_sysdir) {
             Setup_Next_Page(task_ptr, 0);
         } else {
-            Menu_Page_Buff = Menu_Page;
+            g_state.Menu_Page_Buff = g_state.Menu_Page;
             Menu_Common_Init();
-            Menu_Cursor_Y[0] = 0;
-            Menu_Max = Page_Data[Menu_Page];
-            system_dir[1].contents[Menu_Page][Menu_Max] = 1;
+            g_state.Menu_Cursor_Y[0] = 0;
+            g_state.Menu_Max = Page_Data[g_state.Menu_Page];
+            system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max] = 1;
         }
         s_dm_phase = DM_PHASE_TIMER;
         break;
@@ -414,42 +410,42 @@ static void dirm_tick(struct _TASK* task_ptr) {
 
     case DM_PHASE_ACTIVE: {
         /* Case 4: main input loop */
-        Pause_ID = 0;
+        g_state.Pause_ID = 0;
         Dir_Move_Sub(task_ptr, 0);
-        if (IO_Result == 0) {
-            Pause_ID = 1;
+        if (g_state.IO_Result == 0) {
+            g_state.Pause_ID = 1;
             Dir_Move_Sub(task_ptr, 1);
         }
 
-        if (Menu_Cursor_Y[1] != Menu_Cursor_Y[0]) {
+        if (g_state.Menu_Cursor_Y[1] != g_state.Menu_Cursor_Y[0]) {
             SE_cursor_move();
-            system_dir[1].contents[Menu_Page][Menu_Max] = 1;
+            system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max] = 1;
 
-            if (Menu_Cursor_Y[0] < Menu_Max) {
+            if (g_state.Menu_Cursor_Y[0] < g_state.Menu_Max) {
                 Message_Data->order = 1;
-                Message_Data->request = Menu_Page * 0xC + Menu_Cursor_Y[0] * 2 + 1;
+                Message_Data->request = g_state.Menu_Page * 0xC + g_state.Menu_Cursor_Y[0] * 2 + 1;
                 Message_Data->timer = 2;
 
-                if (msgSysDirTbl[0]->msgNum[Menu_Page * 0xC + Menu_Cursor_Y[0] * 2 + 1] == 1) {
+                if (msgSysDirTbl[0]->msgNum[g_state.Menu_Page * 0xC + g_state.Menu_Cursor_Y[0] * 2 + 1] == 1) {
                     Message_Data->pos_y = 0x36;
                 } else {
                     Message_Data->pos_y = 0x3E;
                 }
             } else {
                 Message_Data->order = 1;
-                Message_Data->request = system_dir[1].contents[Menu_Page][Menu_Max] + 0x74;
+                Message_Data->request = system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max] + 0x74;
                 Message_Data->timer = 2;
                 Message_Data->pos_y = 0x36;
             }
         }
 
-        switch (IO_Result) {
+        switch (g_state.IO_Result) {
         case 0x200:
             /* Cancel: exit back to SysDir */
             s_dm_phase = DM_PHASE_EXIT;
-            Menu_Suicide[0] = 0;
-            Menu_Suicide[1] = 0;
-            Menu_Suicide[2] = 1;
+            g_state.Menu_Suicide[0] = 0;
+            g_state.Menu_Suicide[1] = 0;
+            g_state.Menu_Suicide[2] = 1;
             SE_dir_selected();
             if (use_rmlui && rmlui_menu_sysdir)
                 rmlui_sysdir_exit_subpage();
@@ -462,8 +458,8 @@ static void dirm_tick(struct _TASK* task_ptr) {
         case 0x800:
             /* L button: previous page */
             task_ptr->timer = 5;
-            if (--Menu_Page < 0) {
-                Menu_Page = (s8)Page_Max;
+            if (--g_state.Menu_Page < 0) {
+                g_state.Menu_Page = (s8)g_state.Page_Max;
             }
             SE_dir_selected();
             s_dm_phase = DM_PHASE_PAGE;
@@ -474,8 +470,8 @@ static void dirm_tick(struct _TASK* task_ptr) {
         case 0x400:
             /* R button: next page */
             task_ptr->timer = 5;
-            if (++Menu_Page > Page_Max) {
-                Menu_Page = 0;
+            if (++g_state.Menu_Page > g_state.Page_Max) {
+                g_state.Menu_Page = 0;
             }
             SE_dir_selected();
             s_dm_phase = DM_PHASE_PAGE;
@@ -484,14 +480,14 @@ static void dirm_tick(struct _TASK* task_ptr) {
 
         case 0x100:
             /* Confirm */
-            if (Menu_Cursor_Y[0] == Menu_Max) {
+            if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max) {
                 /* On the page navigation item */
-                switch (system_dir[1].contents[Menu_Page][Menu_Max]) {
+                switch (system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max]) {
                 case 0:
                     /* Prev page */
                     task_ptr->timer = 5;
-                    if (--Menu_Page < 0) {
-                        Menu_Page = (s8)Page_Max;
+                    if (--g_state.Menu_Page < 0) {
+                        g_state.Menu_Page = (s8)g_state.Page_Max;
                     }
                     s_dm_phase = DM_PHASE_PAGE;
                     s_dm_page_setup_done = false;
@@ -500,8 +496,8 @@ static void dirm_tick(struct _TASK* task_ptr) {
                 case 2:
                     /* Next page */
                     task_ptr->timer = 5;
-                    if (++Menu_Page > Page_Max) {
-                        Menu_Page = 0;
+                    if (++g_state.Menu_Page > g_state.Page_Max) {
+                        g_state.Menu_Page = 0;
                     }
                     s_dm_phase = DM_PHASE_PAGE;
                     s_dm_page_setup_done = false;
@@ -510,9 +506,9 @@ static void dirm_tick(struct _TASK* task_ptr) {
                 default:
                     /* Exit (page nav item = "Exit") */
                     s_dm_phase = DM_PHASE_EXIT;
-                    Menu_Suicide[0] = 0;
-                    Menu_Suicide[1] = 0;
-                    Menu_Suicide[2] = 1;
+                    g_state.Menu_Suicide[0] = 0;
+                    g_state.Menu_Suicide[1] = 0;
+                    g_state.Menu_Suicide[2] = 1;
                     task_ptr->r_no[2] = 5;
                     task_ptr->free[0] = 0;
                     break;
@@ -599,8 +595,8 @@ void ms_sysdir_register(void) {
         .on_enter = dirm_enter,
         .on_tick = dirm_tick,
         .on_exit = dirm_exit,
-        .cursor_max = 6,   /* varies per page via Menu_Max; 6 = safe default */
-        .cancel_item = -1, /* cancel handled via IO_Result 0x200 */
+        .cursor_max = 6,   /* varies per page via g_state.Menu_Max; 6 = safe default */
+        .cancel_item = -1, /* cancel handled via g_state.IO_Result 0x200 */
         .rmlui_show = dirm_rmlui_show,
         .rmlui_hide = dirm_rmlui_hide,
         .header_type = MENU_HEADER_MODE_MENU, /* subpage uses green BG */

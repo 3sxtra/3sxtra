@@ -1,9 +1,10 @@
 /**
  * @file effg0.c
- * Effect: Quake / Score Result Effect
+ * Effect: Quake / g_state.Score Result Effect
  */
 
 #include "sf33rd/Source/Game/effect/effg0.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -56,13 +57,13 @@ void effect_G0_move(WORK_Other* ewk) {
             if (ewk->wu.hit_quake >= ewk->wu.xyz[0].disp.pos) {
                 ewk->wu.routine_no[1]++;
                 ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
-                Order_Dir[ewk->wu.dir_old] = 0;
+                g_state.Order_Dir[ewk->wu.dir_old] = 0;
             }
 
             break;
 
         case 1:
-            switch (Order[ewk->wu.dir_old]) {
+            switch (g_state.Order[ewk->wu.dir_old]) {
             case 0:
                 break;
 
@@ -88,7 +89,7 @@ void effect_G0_move(WORK_Other* ewk) {
 }
 
 static void Check_Die_G0(WORK_Other_CONN* ewk) {
-    if (Suicide[2]) {
+    if (g_state.Suicide[2]) {
         ewk->wu.disp_flag = 0;
         ewk->wu.type = 0;
         ewk->wu.routine_no[0] = 2;
@@ -103,7 +104,7 @@ static void effG0_trans(WORK* ewk) {
     }
 
     ewk->position_x = ewk->xyz[0].disp.pos;
-    ewk->position_y = bg_w.bgw[ewk->my_family - 1].xy[1].disp.pos + ewk->xyz[1].disp.pos;
+    ewk->position_y = g_state.bg_w.bgw[ewk->my_family - 1].xy[1].disp.pos + ewk->xyz[1].disp.pos;
     sort_push_request3(ewk);
 }
 
@@ -141,7 +142,7 @@ static void Flash_G0(WORK_Other_CONN* ewk) {
         }
 
         if (--ewk->wu.vital_new == 0) {
-            Order[ewk->wu.dir_old] = 0;
+            g_state.Order[ewk->wu.dir_old] = 0;
             ewk->wu.routine_no[1] = 0;
             ewk->wu.routine_no[2] = 0;
             break;
@@ -204,13 +205,13 @@ s32 effect_G0_init(s16 arg_Order, s16 Time, u32 arg_Score, s16 Pos_Index) {
         ewk->conn[ix] = Result_Score[ix];
     }
 
-    if (Perfect_Flag) {
+    if (g_state.Perfect_Flag) {
         ix = 1;
     } else {
         ix = 0;
     }
 
-    ewk->wu.hit_quake = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Compute_Score_Pos_Data_G0[ix][Pos_Index][0];
+    ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Compute_Score_Pos_Data_G0[ix][Pos_Index][0];
     ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake + 416;
     ewk->wu.xyz[1].disp.pos = Compute_Score_Pos_Data_G0[ix][Pos_Index][1];
     ewk->wu.my_priority = ewk->wu.position_z = 5;

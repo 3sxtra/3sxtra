@@ -13,29 +13,30 @@
  *
  *   Generator              Index variable          Table              Wrap
  *   ──────────────────────  ─────────────────────   ────────────────   ────
- *   random_16()            Random_ix16             random_tbl_16[64]  0x3F
- *   random_32()            Random_ix32             random_tbl_32[128] 0x7F
- *   random_16_ex()         Random_ix16_ex          random_tbl_16_ex[16]  0xF
- *   random_32_ex()         Random_ix32_ex          random_tbl_32_ex[32]  0x1F
- *   random_16_com()        Random_ix16_com         random_tbl_16_com[64] 0x3F
- *   random_32_com()        Random_ix32_com         random_tbl_32_com[128] 0x7F
- *   random_16_ex_com()     Random_ix16_ex_com      random_tbl_16_ex_com[16] 0xF
- *   random_32_ex_com()     Random_ix32_ex_com      random_tbl_32_ex_com[32] 0x1F
- *   random_16_bg()         Random_ix16_bg          random_tbl_16_bg[64] 0x3F
+ *   random_16()            g_state.Random_ix16             random_tbl_16[64]  0x3F
+ *   random_32()            g_state.Random_ix32             random_tbl_32[128] 0x7F
+ *   random_16_ex()         g_state.Random_ix16_ex          random_tbl_16_ex[16]  0xF
+ *   random_32_ex()         g_state.Random_ix32_ex          random_tbl_32_ex[32]  0x1F
+ *   random_16_com()        g_state.Random_ix16_com         random_tbl_16_com[64] 0x3F
+ *   random_32_com()        g_state.Random_ix32_com         random_tbl_32_com[128] 0x7F
+ *   random_16_ex_com()     g_state.Random_ix16_ex_com      random_tbl_16_ex_com[16] 0xF
+ *   random_32_ex_com()     g_state.Random_ix32_ex_com      random_tbl_32_ex_com[32] 0x1F
+ *   random_16_bg()         g_state.Random_ix16_bg          random_tbl_16_bg[64] 0x3F
  *   (no random_32_bg)      —                       —                  —
  *
- * The "com" variants delegate to the main generators when Play_Mode == 0
+ * The "com" variants delegate to the main generators when g_state.Play_Mode == 0
  * (both players are human). The "bg" variant drives background animations.
  *
  * All 9 index variables are saved/loaded in GameState (game_state.h) and
  * checksummed during desync detection in save_state() (netplay.c).
  *
- * @see GameState in game_state.h — fields Random_ix16 through Random_ix16_bg
+ * @see GameState in game_state.h — fields g_state.Random_ix16 through g_state.Random_ix16_bg
  * @see save_state() in netplay.c — RNG indices are part of the checksum whitelist
- * @see setup_vs_mode() in netplay.c — Random_ix16/Random_ix32 zeroed at session start
+ * @see setup_vs_mode() in netplay.c — g_state.Random_ix16/g_state.Random_ix32 zeroed at session start
  */
 
 #include "sf33rd/Source/Game/engine/pls02.h"
+#include "game_state.h"
 #include "bin2obj/gauge.h"
 #include "common.h"
 #include "sf33rd/Source/Game/com/com_data.h"
@@ -334,8 +335,8 @@ void remake_mvxy_PoGR(WORK* wk) {
 
 /** @brief Checks player push-box collision and pushes them apart if needed. */
 void check_body_touch() {
-    PLW* p1w = &plw[0];
-    PLW* p2w = &plw[1];
+    PLW* p1w = &g_state.plw[0];
+    PLW* p2w = &g_state.plw[1];
     s16 meri;
 
     if (p1w->wu.h_hos->hos_box[0] != 0 && p2w->wu.h_hos->hos_box[0] != 0) {
@@ -345,7 +346,7 @@ void check_body_touch() {
             meri = meri_case_switch(meri);
 
             if (p1w->wu.old_pos[1] < 1 && p2w->wu.old_pos[1] < 1) {
-                if (ichikannkei) {
+                if (g_state.ichikannkei) {
                     goto one;
                 }
 
@@ -413,12 +414,12 @@ void check_body_touch2() {
     s16 dad2[4];
     s16 dad3[4];
 
-    if (plw->wu.pl_operator) {
-        hmw = &plw[0];
-        cmw = &plw[1];
+    if (g_state.plw->wu.pl_operator) {
+        hmw = &g_state.plw[0];
+        cmw = &g_state.plw[1];
     } else {
-        hmw = &plw[1];
-        cmw = &plw[0];
+        hmw = &g_state.plw[1];
+        cmw = &g_state.plw[0];
     }
 
     if (!saishin_bs2_on_car(hmw)) {
@@ -481,14 +482,14 @@ two:
 s32 check_be_car_object() {
     PLW* com;
 
-    if (pcon_rno[0] == 0) {
+    if (g_state.pcon_rno[0] == 0) {
         return 1;
     }
 
-    if (plw[0].wu.pl_operator) {
-        com = &plw[1];
+    if (g_state.plw[0].wu.pl_operator) {
+        com = &g_state.plw[1];
     } else {
-        com = &plw[0];
+        com = &g_state.plw[0];
     }
 
     if (com->wu.routine_no[0] <= 0) {
@@ -502,7 +503,7 @@ s32 check_be_car_object() {
 static s16 hoseishitemo_eenka(WORK* wk, s16 tx) {
     s16 rnum = 0;
 
-    if (wk->cg_jphos + cal_top_of_position_y(wk) > bs2_floor[2] || wk->mvxy.a[1].real.h < 0) {
+    if (wk->cg_jphos + cal_top_of_position_y(wk) > g_state.bs2_floor[2] || wk->mvxy.a[1].real.h < 0) {
         switch ((wk->xyz[0].disp.pos < tx) + (wk->rl_flag != 0) * 2) {
         case 1:
         case 2:
@@ -670,61 +671,61 @@ static inline s32 rng_next(s16* index, const s16* table, s16 mask) {
 
 /** @brief Returns a 32-entry pseudo-random number. @netplay_sync — index saved in GameState. */
 s32 random_32() {
-    return rng_next(&Random_ix32, random_tbl_32, 0x7F);
+    return rng_next(&g_state.Random_ix32, random_tbl_32, 0x7F);
 }
 
 /** @brief Returns a 16-entry pseudo-random number. @netplay_sync — index saved in GameState. */
 s32 random_16() {
-    return rng_next(&Random_ix16, random_tbl_16, 0x3F);
+    return rng_next(&g_state.Random_ix16, random_tbl_16, 0x3F);
 }
 
 /** @brief Returns a 32-entry extended pseudo-random number. @netplay_sync */
 static s32 random_32_ex() {
-    return rng_next(&Random_ix32_ex, random_tbl_32_ex, 0x1F);
+    return rng_next(&g_state.Random_ix32_ex, random_tbl_32_ex, 0x1F);
 }
 
 /** @brief Returns a 16-entry extended pseudo-random number. @netplay_sync */
 static s32 random_16_ex() {
-    return rng_next(&Random_ix16_ex, random_tbl_16_ex, 0xF);
+    return rng_next(&g_state.Random_ix16_ex, random_tbl_16_ex, 0xF);
 }
 
-/** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when Play_Mode==0.
+/** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when g_state.Play_Mode==0.
  */
 s32 random_32_com() {
-    if (Play_Mode == 0) {
+    if (g_state.Play_Mode == 0) {
         return random_32();
     }
-    return rng_next(&Random_ix32_com, random_tbl_32_com, 0x7F);
+    return rng_next(&g_state.Random_ix32_com, random_tbl_32_com, 0x7F);
 }
 
-/** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when Play_Mode==0.
+/** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when g_state.Play_Mode==0.
  */
 s32 random_16_com() {
-    if (Play_Mode == 0) {
+    if (g_state.Play_Mode == 0) {
         return random_16();
     }
-    return rng_next(&Random_ix16_com, random_tbl_16_com, 0x3F);
+    return rng_next(&g_state.Random_ix16_com, random_tbl_16_com, 0x3F);
 }
 
 /** @brief Returns a 32-entry extended COM-side pseudo-random. @netplay_sync */
 s32 random_32_ex_com() {
-    if (Play_Mode == 0) {
+    if (g_state.Play_Mode == 0) {
         return random_32_ex();
     }
-    return rng_next(&Random_ix32_ex_com, random_tbl_32_ex_com, 0x1F);
+    return rng_next(&g_state.Random_ix32_ex_com, random_tbl_32_ex_com, 0x1F);
 }
 
 /** @brief Returns a 16-entry extended COM-side pseudo-random. @netplay_sync */
 s32 random_16_ex_com() {
-    if (Play_Mode == 0) {
+    if (g_state.Play_Mode == 0) {
         return random_16_ex();
     }
-    return rng_next(&Random_ix16_ex_com, random_tbl_16_ex_com, 0xF);
+    return rng_next(&g_state.Random_ix16_ex_com, random_tbl_16_ex_com, 0xF);
 }
 
 /** @brief Returns a 16-entry background pseudo-random number. @netplay_sync — saved but not checksummed. */
 s32 random_16_bg() {
-    return rng_next(&Random_ix16_bg, random_tbl_16_bg, 0x3F);
+    return rng_next(&g_state.Random_ix16_bg, random_tbl_16_bg, 0x3F);
 }
 
 /** @brief Determines the guard direction between attacker and defender. */
@@ -812,18 +813,18 @@ void setup_vitality(WORK* wk, s16 pno) {
     if (wk->pl_operator) {
         ix = 2;
     } else {
-        ix = CC_Value[1] + CurrentSave()->Difficulty;
+        ix = g_state.CC_Value[1] + CurrentSave()->Difficulty;
     }
 
     wk->original_vitality = Com_Vital_Unit_Data[pno][CurrentSave()->Damage_Level][ix];
     wk->original_vitality += (s16)base_vital_omake[omop_vital_init[wk->id]];
     wk->dmcal_m = 32;
-    wk->dmcal_d = (wk->original_vitality << 5) / Max_vitality;
-    wk->vitality = wk->vital_new = wk->vital_old = Max_vitality;
+    wk->dmcal_d = (wk->original_vitality << 5) / g_state.Max_vitality;
+    wk->vitality = wk->vital_new = wk->vital_old = g_state.Max_vitality;
     wk->dm_vital = 0;
 
-    if (Mode_Type != MODE_ARCADE) {
-        wk->vital_new = wk->vital_new * (Vital_Handicap[Present_Mode][wk->id] + 1) / 8;
+    if (g_state.Mode_Type != MODE_ARCADE) {
+        wk->vital_new = wk->vital_new * (g_state.Vital_Handicap[g_state.Present_Mode][wk->id] + 1) / 8;
         wk->vital_old = wk->vital_new;
     }
 }
@@ -836,8 +837,8 @@ void cal_dm_vital_gauge_hosei(PLW* wk) {
         return;
     }
 
-    if (wk->wu.vital_new < (Max_vitality * 6) / 10) {
-        if (Max_vitality == 192) {
+    if (wk->wu.vital_new < (g_state.Max_vitality * 6) / 10) {
+        if (g_state.Max_vitality == 192) {
             cnjix = wk->wu.vital_new / 19;
         } else {
             cnjix = wk->wu.vital_new / 16;
@@ -932,7 +933,7 @@ void add_sp_arts_gauge_hit_dm(PLW* wk) {
 
         asag = cal_sa_gauge_waribiki(wk, asag);
 
-        if (emwk->wu.pl_operator == 0 && Break_Into_CPU == 1) {
+        if (emwk->wu.pl_operator == 0 && g_state.Break_Into_CPU == 1) {
             asag = (asag * 120) / 100;
         }
 
@@ -1038,7 +1039,7 @@ void add_sp_arts_gauge_nagenuke(PLW* wk) {
 
 /** @brief Clamps SA gauge to the maximum bit count. */
 void add_sp_arts_gauge_maxbit(PLW* wk) {
-    if (pcon_rno[0] != 1) {
+    if (g_state.pcon_rno[0] != 1) {
         return;
     }
 
@@ -1046,20 +1047,20 @@ void add_sp_arts_gauge_maxbit(PLW* wk) {
         return;
     }
 
-    if (sag_inc_timer[wk->wu.id]) {
-        sag_inc_timer[wk->wu.id]--;
+    if (g_state.sag_inc_timer[wk->wu.id]) {
+        g_state.sag_inc_timer[wk->wu.id]--;
         return;
     }
 
     if (!(wk->spmv_ng_flag2 & DIP2_SA_GAUGE_AUTOFILL_DISABLED)) {
-        sag_inc_timer[wk->wu.id] = 2;
+        g_state.sag_inc_timer[wk->wu.id] = 2;
         add_super_arts_gauge(wk->sa, wk->wu.id, wk->sa->gauge_len, wk->metamorphose);
         return;
     }
 
     if (!(wk->spmv_ng_flag2 & DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED)) {
-        if (sag_inc_timer[wk->wu.id]) {
-            sag_inc_timer[wk->wu.id]--;
+        if (g_state.sag_inc_timer[wk->wu.id]) {
+            g_state.sag_inc_timer[wk->wu.id]--;
             return;
         }
 
@@ -1069,16 +1070,16 @@ void add_sp_arts_gauge_maxbit(PLW* wk) {
 
 /** @brief Adds an amount to the Super Arts gauge. */
 void add_super_arts_gauge(SA_WORK* wk, s16 ix, s16 asag, u8 mf) {
-    if (!test_flag && !mf) {
+    if (!g_state.test_flag && !mf) {
         if ((wk->mp == -1) || (wk->ok == -1) || (wk->ex == -1)) {
             return;
         }
 
-        if (!pcon_dp_flag && !Bonus_Game_Flag && (sa_gauge_omake[omop_sa_gauge_ix[ix]] != 0) && (asag > 0) &&
+        if (!g_state.pcon_dp_flag && !g_state.Bonus_Game_Flag && (sa_gauge_omake[omop_sa_gauge_ix[ix]] != 0) && (asag > 0) &&
             (wk->store != wk->store_max)) {
             asag = asag * 0x78 / 100;
 
-            if (CurrentSave()->Battle_Number[Play_Type] == 0) {
+            if (CurrentSave()->Battle_Number[g_state.Play_Type] == 0) {
                 asag = asag * 0x96 / 100;
             }
 
@@ -1101,7 +1102,7 @@ void add_super_arts_gauge(SA_WORK* wk, s16 ix, s16 asag, u8 mf) {
                     wk->gauge.i = 0;
                 }
 
-                sa_gauge_flash[ix] |= 1;
+                g_state.sa_gauge_flash[ix] |= 1;
             }
         }
     }
@@ -1156,17 +1157,17 @@ void setup_lvdir_after_autodir(PLW* wk) {
 
 /** @brief Requests the death voice sound for both players. */
 void dead_voice_request() {
-    if (dead_voice_flag) {
-        if (plw[0].dead_flag) {
-            dead_voice_request2(&plw[0]);
+    if (g_state.dead_voice_flag) {
+        if (g_state.plw[0].dead_flag) {
+            dead_voice_request2(&g_state.plw[0]);
         }
 
-        if (plw[1].dead_flag) {
-            dead_voice_request2(&plw[1]);
+        if (g_state.plw[1].dead_flag) {
+            dead_voice_request2(&g_state.plw[1]);
         }
     }
 
-    dead_voice_flag = false;
+    g_state.dead_voice_flag = false;
 }
 
 /** @brief Requests the death voice sound for a specific player. */
@@ -1175,7 +1176,7 @@ static void dead_voice_request2(PLW* wk) {
     s16 secd2;
     s16 ks = 0;
 
-    if (wk->metamorphose != 0 && Country != COUNTRY_KOREA) {
+    if (wk->metamorphose != 0 && g_state.Country != COUNTRY_KOREA) {
         ks = 0x600;
     }
 

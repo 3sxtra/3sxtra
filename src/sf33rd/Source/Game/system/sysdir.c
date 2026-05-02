@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/system/sysdir.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -88,8 +89,8 @@ u32 sag_ikinari_max() {
 
 /** @brief Return non-zero if "use all super arts" is enabled in the current system direction. */
 u32 check_use_all_SA() {
-    if (Direction_Working[Present_Mode] != 0) {
-        return system_dir[Present_Mode].contents[9][0];
+    if (g_state.Direction_Working[g_state.Present_Mode] != 0) {
+        return system_dir[g_state.Present_Mode].contents[9][0];
     }
 
     return 0;
@@ -97,8 +98,8 @@ u32 check_use_all_SA() {
 
 /** @brief Return non-zero if super arts are disabled in the current system direction. */
 u32 check_without_SA() {
-    if (Direction_Working[Present_Mode] != 0) {
-        return system_dir[Present_Mode].contents[5][0] == 0;
+    if (g_state.Direction_Working[g_state.Present_Mode] != 0) {
+        return system_dir[g_state.Present_Mode].contents[5][0] == 0;
     }
 
     return 0;
@@ -113,15 +114,15 @@ void init_omop() {
     omop_spmv_ng_table2[0] |= DIP2_UNKNOWN_22;
     omop_spmv_ng_table2[0] |= DIP2_UNKNOWN_23;
 
-    if (Mode_Type == MODE_NETWORK) {
+    if (g_state.Mode_Type == MODE_NETWORK) {
         get_system_direction_parameter((SystemDir*)&Dir_Default_Data);
         get_extra_option_parameter((_EXTRA_OPTION*)&Game_Default_Data.extra_option);
-    } else if (Demo_Flag == 0) {
+    } else if (g_state.Demo_Flag == 0) {
         get_system_direction_parameter(&system_dir[0]);
         get_extra_option_parameter(&save_w->extra_option);
     } else {
-        if (Direction_Working[Present_Mode]) {
-            get_system_direction_parameter(&system_dir[Present_Mode]);
+        if (g_state.Direction_Working[g_state.Present_Mode]) {
+            get_system_direction_parameter(&system_dir[g_state.Present_Mode]);
         } else {
             get_system_direction_parameter(&system_dir[0]);
         }
@@ -129,12 +130,12 @@ void init_omop() {
         get_extra_option_parameter(&(CurrentSave()->extra_option));
     }
 
-    omop_spmv_ng_table[0] |= sysdir_base_move[My_char[0]];
-    omop_spmv_ng_table[1] |= sysdir_base_move[My_char[1]];
-    cmd_sel[0] = (omop_spmv_ng_table[0] & DIP2_ALL_SUPER_ARTS_AVAILABLE_DISABLED) == 0;
-    cmd_sel[1] = (omop_spmv_ng_table[1] & DIP2_ALL_SUPER_ARTS_AVAILABLE_DISABLED) == 0;
-    no_sa[0] = (omop_spmv_ng_table[0] & (DIP_UNKNOWN_30 | DIP_UNKNOWN_31)) != 0;
-    no_sa[1] = (omop_spmv_ng_table[1] & (DIP_UNKNOWN_30 | DIP_UNKNOWN_31)) != 0;
+    omop_spmv_ng_table[0] |= sysdir_base_move[g_state.My_char[0]];
+    omop_spmv_ng_table[1] |= sysdir_base_move[g_state.My_char[1]];
+    g_state.cmd_sel[0] = (omop_spmv_ng_table[0] & DIP2_ALL_SUPER_ARTS_AVAILABLE_DISABLED) == 0;
+    g_state.cmd_sel[1] = (omop_spmv_ng_table[1] & DIP2_ALL_SUPER_ARTS_AVAILABLE_DISABLED) == 0;
+    g_state.no_sa[0] = (omop_spmv_ng_table[0] & (DIP_UNKNOWN_30 | DIP_UNKNOWN_31)) != 0;
+    g_state.no_sa[1] = (omop_spmv_ng_table[1] & (DIP_UNKNOWN_30 | DIP_UNKNOWN_31)) != 0;
     vib_sel[0] = 1;
     vib_sel[1] = 1;
 }

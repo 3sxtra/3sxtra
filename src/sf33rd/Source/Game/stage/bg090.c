@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/stage/bg090.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
@@ -20,15 +21,15 @@
 
 /** @brief Main handler for Santos Harbor, Brazil stage. */
 void BG090() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg0902();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg0901();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bg_fam0900();
-    bgw_ptr = &bg_w.bgw[6];
+    bgw_ptr = &g_state.bg_w.bgw[6];
     bg_fam0900();
-    bgw_ptr = &bg_w.bgw[5];
+    bgw_ptr = &g_state.bg_w.bgw[5];
     bg_fam0900();
     zoom_ud_check();
     bg_pos_hosei2();
@@ -39,7 +40,7 @@ void BG090() {
 void bg0901() {
     void (*bg0901_jmp[3])() = { bg0901_init00, demo90_base, bg_move_common };
 
-    if (win_sp_flag) {
+    if (g_state.win_sp_flag) {
         jijii_win_bg2();
         return;
     }
@@ -61,7 +62,7 @@ void bg0901_init00() {
 void bg0902() {
     void (*bg0902_jmp[3])() = { bg0902_init00, demo90_base, bg_base_move_common };
 
-    if (win_sp_flag) {
+    if (g_state.win_sp_flag) {
         jijii_win_bg();
         return;
     }
@@ -84,7 +85,7 @@ void bg0902_init00() {
 
 /** @brief Background layer handler for Santos Harbor, Brazil. */
 void bg_fam0900() {
-    if (win_sp_flag) {
+    if (g_state.win_sp_flag) {
         jijii_win_bg2();
         sync_fam_set3(bgw_ptr->fam_no);
         return;
@@ -137,12 +138,12 @@ void bg_fam0900() {
 void bg090_demo_check() {
     s16 pos_w;
 
-    if ((plw->player_number != 9) && (plw[1].player_number != 9)) {
+    if ((g_state.plw->player_number != 9) && (g_state.plw[1].player_number != 9)) {
         bgw_ptr->r_no_0 = 2;
         return;
     }
 
-    if (bg_w.area != 0) {
+    if (g_state.bg_w.area != 0) {
         bgw_ptr->r_no_0 = 2;
         return;
     }
@@ -156,7 +157,7 @@ void bg090_demo_check() {
 void demo90_base() {
     s16 chk_pl;
 
-    if (EXE_flag || Game_pause) {
+    if (g_state.EXE_flag || g_state.Game_pause) {
         return;
     }
 
@@ -164,15 +165,15 @@ void demo90_base() {
     case 0:
         chk_pl = 0;
 
-        if (plw->player_number == 9 && plw[1].player_number == 9) {
-            if (Appear_hv[0]) {
+        if (g_state.plw->player_number == 9 && g_state.plw[1].player_number == 9) {
+            if (g_state.Appear_hv[0]) {
                 chk_pl = 1;
             }
-        } else if (plw[1].player_number == 9) {
+        } else if (g_state.plw[1].player_number == 9) {
             chk_pl = 1;
         }
 
-        if (Appear_free[chk_pl]) {
+        if (g_state.Appear_free[chk_pl]) {
             bgw_ptr->r_no_1++;
             break;
         }
@@ -192,7 +193,7 @@ void demo90_base() {
         break;
 
     case 2:
-        if (Appear_end == 2) {
+        if (g_state.Appear_end == 2) {
             bgw_ptr->r_no_0++;
             bgw_ptr->r_no_1 = 0;
             bgw_ptr->xy[1].cal = 0;
@@ -204,18 +205,18 @@ void demo90_base() {
 
 /** @brief Win animation background handler for Santos Harbor, Brazil. */
 void jijii_win_bg() {
-    if ((EXE_flag || Game_pause)) {
+    if ((g_state.EXE_flag || g_state.Game_pause)) {
         return;
     }
 
     switch (bgw_ptr->r_no_1) {
     case 0:
-        if (win_sp_flag == 2) {
+        if (g_state.win_sp_flag == 2) {
             bgw_ptr->xy[1].cal += 0xA0000;
             bgw_ptr->wxy[1].cal += 0xA0000;
             if (bgw_ptr->xy[1].disp.pos > 0xB0) {
                 bgw_ptr->r_no_1 += 1;
-                win_sp_flag = 3;
+                g_state.win_sp_flag = 3;
             }
         }
         /* fallthrough */
@@ -230,13 +231,13 @@ void jijii_win_bg2() {
     s16 zuu_work;
     s32 sp_work;
 
-    if ((EXE_flag || Game_pause)) {
+    if ((g_state.EXE_flag || g_state.Game_pause)) {
         return;
     }
 
-    switch (bg_w.bgw[1].r_no_1) {
+    switch (g_state.bg_w.bgw[1].r_no_1) {
     case 0:
-        if (win_sp_flag == 2) {
+        if (g_state.win_sp_flag == 2) {
             zuu_work = 0xA;
             sp_work = bgw_ptr->speed_y * zuu_work;
             bgw_ptr->xy[1].cal += sp_work;

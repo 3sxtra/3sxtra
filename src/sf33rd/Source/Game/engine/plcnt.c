@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plcnt.h"
+#include "game_state.h"
 #include "common.h"
 #include "constants.h"
 #include "main.h"
@@ -79,21 +80,14 @@ static s16 remake_sa_gauge_len(s16 ix, s16 gauge_len);
 void clear_super_arts_point(PLW* wk);
 static void set_scrrrl();
 
-// NOTE: rambod/ramhan are recalculated each frame by effk5.c from the effect state
+// NOTE: g_state.rambod/g_state.ramhan are recalculated each frame by effk5.c from the effect state
 // (which IS serialized in EffectState). These do not need GameState serialization.
-UNK_1 rambod[2];
-UNK_2 ramhan[2];
 
 // NOTE: omop_spmv_ng_table is computed once at match start from game settings by init_omop().
 // In netplay, both players should have identical settings. Not gameplay state, no serialization needed.
 u32 omop_spmv_ng_table[2];
 u32 omop_spmv_ng_table2[2];
-u16 vital_inc_timer;
-u16 vital_dec_timer;
-char cmd_sel[2];
 s8 vib_sel[2];
-s16 sag_inc_timer[2];
-char no_sa[2];
 
 static void plcnt_init();
 static void plcnt_move();
@@ -394,49 +388,49 @@ const s16** kizetsu_timer_table[9] = { tsuujyou_dageki,   hissatsu_dageki,   tsu
 void Player_control() {
     pulpul_scene = 1;
 
-    if (pcon_rno[0] + pcon_rno[1] != 0) {
-        if (Game_pause || EXE_flag) {
+    if (g_state.pcon_rno[0] + g_state.pcon_rno[1] != 0) {
+        if (g_state.Game_pause || g_state.EXE_flag) {
             goto end;
         } else {
-            if (!pcon_dp_flag) {
-                if (--vital_inc_timer > 50) {
-                    vital_inc_timer = 50;
+            if (!g_state.pcon_dp_flag) {
+                if (--g_state.vital_inc_timer > 50) {
+                    g_state.vital_inc_timer = 50;
                 }
 
-                if (--vital_dec_timer > 40) {
-                    vital_dec_timer = 40;
+                if (--g_state.vital_dec_timer > 40) {
+                    g_state.vital_dec_timer = 40;
                 }
             } else {
-                vital_inc_timer = 50;
-                vital_dec_timer = 40;
-                sag_inc_timer[0] = sag_inc_timer[1] = 20;
+                g_state.vital_inc_timer = 50;
+                g_state.vital_dec_timer = 40;
+                g_state.sag_inc_timer[0] = g_state.sag_inc_timer[1] = 20;
             }
         }
     }
 
-    players_timer++;
-    players_timer &= 0x7FFF;
+    g_state.players_timer++;
+    g_state.players_timer &= 0x7FFF;
     set_scrrrl();
-    player_main_process[pcon_rno[0]]();
+    player_main_process[g_state.pcon_rno[0]]();
     check_body_touch();
     check_damage_hosei();
-    set_quake(&plw[0]);
-    set_quake(&plw[1]);
+    set_quake(&g_state.plw[0]);
+    set_quake(&g_state.plw[1]);
 
-    if (!plw[0].zuru_flag && !plw[0].zettai_muteki_flag) {
-        hit_push_request(&plw[0].wu);
+    if (!g_state.plw[0].zuru_flag && !g_state.plw[0].zettai_muteki_flag) {
+        hit_push_request(&g_state.plw[0].wu);
     }
 
-    if (!plw[1].zuru_flag && !plw[1].zettai_muteki_flag) {
-        hit_push_request(&plw[1].wu);
+    if (!g_state.plw[1].zuru_flag && !g_state.plw[1].zettai_muteki_flag) {
+        hit_push_request(&g_state.plw[1].wu);
     }
 
-    add_next_position(&plw[0]);
-    add_next_position(&plw[1]);
+    add_next_position(&g_state.plw[0]);
+    add_next_position(&g_state.plw[1]);
     check_cg_zoom();
 
 end:
-    if (Game_pause != 0x81) {
+    if (g_state.Game_pause != 0x81) {
         store_player_after_image_data();
     }
 }
@@ -445,37 +439,37 @@ end:
 void reqPlayerDraw() {
     if (Debug_w[DEBUG_PLAYER_NO_DISP] == 0) {
         move_effect_work(6);
-        sort_push_request(&plw[0].wu);
-        sort_push_request(&plw[1].wu);
+        sort_push_request(&g_state.plw[0].wu);
+        sort_push_request(&g_state.plw[1].wu);
     }
 }
 
 /** @brief Initializes player control work for both sides at match start. */
 static void plcnt_init() {
-    plw[0].reserv_add_y = plw[1].reserv_add_y = 0;
-    appear_initalize[appear_type]();
+    g_state.plw[0].reserv_add_y = g_state.plw[1].reserv_add_y = 0;
+    appear_initalize[g_state.appear_type]();
     move_player_work();
 }
 
 /** @brief Initializes player appear state type 1 (standard entrance). */
 static void init_app_10000() {
-    switch (pcon_rno[1]) {
+    switch (g_state.pcon_rno[1]) {
     case 0:
         pli_0000();
-        pcon_rno[1] = 2;
-        pcon_dp_flag = false;
-        round_slow_flag = false;
-        dead_voice_flag = false;
-        another_bg[0] = another_bg[1] = 0;
-        plw[0].scr_pos_set_flag = plw[1].scr_pos_set_flag = 1;
+        g_state.pcon_rno[1] = 2;
+        g_state.pcon_dp_flag = false;
+        g_state.round_slow_flag = false;
+        g_state.dead_voice_flag = false;
+        g_state.another_bg[0] = g_state.another_bg[1] = 0;
+        g_state.plw[0].scr_pos_set_flag = g_state.plw[1].scr_pos_set_flag = 1;
 
-        if (Play_Type == 0) {
-            if (plw[0].wu.pl_operator) {
-                mpp_w.useChar[My_char[0]]++;
+        if (g_state.Play_Type == 0) {
+            if (g_state.plw[0].wu.pl_operator) {
+                mpp_w.useChar[g_state.My_char[0]]++;
             }
 
-            if (plw[1].wu.pl_operator) {
-                mpp_w.useChar[My_char[1]]++;
+            if (g_state.plw[1].wu.pl_operator) {
+                mpp_w.useChar[g_state.My_char[1]]++;
             }
         }
 
@@ -486,24 +480,24 @@ static void init_app_10000() {
         break;
 
     case 2:
-        pcon_rno[1] = 3;
+        g_state.pcon_rno[1] = 3;
 
-        if (plw[0].wu.pl_operator) {
-            paring_ctr_vs[0][0] = paring_ctr_ori[0];
+        if (g_state.plw[0].wu.pl_operator) {
+            g_state.paring_ctr_vs[0][0] = g_state.paring_ctr_ori[0];
         } else {
-            paring_ctr_vs[0][0] = 0;
+            g_state.paring_ctr_vs[0][0] = 0;
         }
 
-        if (plw[1].wu.pl_operator) {
-            paring_ctr_vs[0][1] = paring_ctr_ori[1];
+        if (g_state.plw[1].wu.pl_operator) {
+            g_state.paring_ctr_vs[0][1] = g_state.paring_ctr_ori[1];
         } else {
-            paring_ctr_vs[0][1] = 0;
+            g_state.paring_ctr_vs[0][1] = 0;
         }
 
         break;
 
     case 3:
-        pcon_rno[1] = 1;
+        g_state.pcon_rno[1] = 1;
         pli_0002();
         break;
     }
@@ -513,21 +507,21 @@ static void init_app_10000() {
 static void init_app_20000() {
     s16 i;
 
-    switch (pcon_rno[1]) {
+    switch (g_state.pcon_rno[1]) {
     case 0:
-        pcon_rno[1]++;
-        round_slow_flag = false;
-        dead_voice_flag = false;
-        pcon_dp_flag = false;
-        another_bg[0] = another_bg[1] = 0;
+        g_state.pcon_rno[1]++;
+        g_state.round_slow_flag = false;
+        g_state.dead_voice_flag = false;
+        g_state.pcon_dp_flag = false;
+        g_state.another_bg[0] = g_state.another_bg[1] = 0;
 
         for (i = 0; i < 8; i++) {
-            plw[0].wu.routine_no[i] = plw[1].wu.routine_no[i] = 0;
+            g_state.plw[0].wu.routine_no[i] = g_state.plw[1].wu.routine_no[i] = 0;
         }
 
         setup_any_data();
-        plw[0].do_not_move = plw[1].do_not_move = 0;
-        plw[0].scr_pos_set_flag = plw[1].scr_pos_set_flag = 1;
+        g_state.plw[0].do_not_move = g_state.plw[1].do_not_move = 0;
+        g_state.plw[0].scr_pos_set_flag = g_state.plw[1].scr_pos_set_flag = 1;
         break;
 
     case 1:
@@ -540,45 +534,45 @@ static void init_app_20000() {
 static void init_app_30000() {
     s16 i;
 
-    switch (pcon_rno[1]) {
+    switch (g_state.pcon_rno[1]) {
     case 0:
-        pcon_rno[1]++;
-        round_slow_flag = false;
-        dead_voice_flag = false;
+        g_state.pcon_rno[1]++;
+        g_state.round_slow_flag = false;
+        g_state.dead_voice_flag = false;
 
         for (i = 1; i < 8; i++) {
-            plw[0].wu.routine_no[i] = plw[1].wu.routine_no[i] = 0;
+            g_state.plw[0].wu.routine_no[i] = g_state.plw[1].wu.routine_no[i] = 0;
         }
 
-        plw[0].wu.routine_no[0] = plw[1].wu.routine_no[0] = 1;
-        another_bg[0] = another_bg[1] = 0;
-        plw[0].do_not_move = plw[1].do_not_move = 0;
-        K7_muriyari_metamor_rebirth(&plw[0]);
-        K7_muriyari_metamor_rebirth(&plw[1]);
+        g_state.plw[0].wu.routine_no[0] = g_state.plw[1].wu.routine_no[0] = 1;
+        g_state.another_bg[0] = g_state.another_bg[1] = 0;
+        g_state.plw[0].do_not_move = g_state.plw[1].do_not_move = 0;
+        K7_muriyari_metamor_rebirth(&g_state.plw[0]);
+        K7_muriyari_metamor_rebirth(&g_state.plw[1]);
         break;
 
     case 1:
-        if (plw[0].wu.routine_no[0] != 3 || plw[1].wu.routine_no[0] != 3) {
+        if (g_state.plw[0].wu.routine_no[0] != 3 || g_state.plw[1].wu.routine_no[0] != 3) {
             break;
         }
 
-        pcon_rno[0] = 2;
-        pcon_rno[1] = 3;
-        pcon_rno[2] = 1;
+        g_state.pcon_rno[0] = 2;
+        g_state.pcon_rno[1] = 3;
+        g_state.pcon_rno[2] = 1;
         setup_EJG_index();
-        effect_C9_init(plw, 0);
-        effect_C9_init(plw, 1);
-        effect_C9_init(plw, 2);
+        effect_C9_init(g_state.plw, 0);
+        effect_C9_init(g_state.plw, 1);
+        effect_C9_init(g_state.plw, 2);
         load_any_color(0x3F, 0);
         load_any_texture_patnum(0x71E0, 0xE, 0);
         effect_work_kill(4, 0xD9);
 
-        if (plw[0].player_number == 6) {
-            effect_33_init(&plw[0].wu);
+        if (g_state.plw[0].player_number == 6) {
+            effect_33_init(&g_state.plw[0].wu);
         }
 
-        if (plw[1].player_number == 6) {
-            effect_33_init(&plw[1].wu);
+        if (g_state.plw[1].player_number == 6) {
+            effect_33_init(&g_state.plw[1].wu);
         }
 
         break;
@@ -587,30 +581,30 @@ static void init_app_30000() {
 
 /** @brief Player init phase 0 — initial idle state setup. */
 static void pli_0000() {
-    pcon_rno[1]++;
-    round_slow_flag = false;
-    I_ZeroArray(plw);
+    g_state.pcon_rno[1]++;
+    g_state.round_slow_flag = false;
+    I_ZeroArray(g_state.plw);
     setup_base_and_other_data();
 }
 
 /** @brief Player init phase 1 — work data setup and state machine start. */
 static void pli_1000() {
-    if (plw[0].wu.routine_no[0] != 3) {
+    if (g_state.plw[0].wu.routine_no[0] != 3) {
         return;
     }
 
-    if (plw[1].wu.routine_no[0] != 3) {
+    if (g_state.plw[1].wu.routine_no[0] != 3) {
         return;
     }
 
-    if (!Allow_a_battle_f) {
+    if (!g_state.Allow_a_battle_f) {
         return;
     }
 
-    pcon_rno[0] = 1;
-    pcon_rno[1] = 0;
-    plw[0].wu.routine_no[0] = 4;
-    plw[1].wu.routine_no[0] = 4;
+    g_state.pcon_rno[0] = 1;
+    g_state.pcon_rno[1] = 0;
+    g_state.plw[0].wu.routine_no[0] = 4;
+    g_state.plw[1].wu.routine_no[0] = 4;
     ca_check_flag = 1;
 }
 
@@ -621,7 +615,7 @@ void pli_0002() {
 
 /** @brief Per-frame player movement and state update (the core player tick). */
 static void plcnt_move() {
-    if (Mode_Type == MODE_NORMAL_TRAINING) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING) {
         update_training_state();
     }
 
@@ -631,71 +625,71 @@ static void plcnt_move() {
 
 #if DEBUG
     if (DebugConfig_Get(DEBUG_PLAYER_1_INVINCIBLE)) {
-        plw[0].wu.dm_vital = 0;
+        g_state.plw[0].wu.dm_vital = 0;
     }
 
     if (DebugConfig_Get(DEBUG_PLAYER_2_INVINCIBLE)) {
-        plw[1].wu.dm_vital = 0;
+        g_state.plw[1].wu.dm_vital = 0;
     }
 
     if (DebugConfig_Get(DEBUG_PLAYER_1_NO_LIFE)) {
-        plw[0].wu.vital_new = 0;
+        g_state.plw[0].wu.vital_new = 0;
     }
 
     if (DebugConfig_Get(DEBUG_PLAYER_2_NO_LIFE)) {
-        plw[1].wu.vital_new = 0;
+        g_state.plw[1].wu.vital_new = 0;
     }
 #endif
 
-    if (No_Death) {
-        plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
+    if (g_state.No_Death) {
+        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
     }
 
-    if (Break_Into) {
-        plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
+    if (g_state.Break_Into) {
+        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
     }
 
-    if (Mode_Type == MODE_NORMAL_TRAINING && Training->contents[0][1][3] == 0) {
-        plw[0].wu.dm_nodeathattack = 1;
-        plw[1].wu.dm_nodeathattack = 1;
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING && Training->contents[0][1][3] == 0) {
+        g_state.plw[0].wu.dm_nodeathattack = 1;
+        g_state.plw[1].wu.dm_nodeathattack = 1;
     }
 
     move_player_work();
 
-    if (aiuchi_flag) {
-        subtract_dm_vital_aiuchi(&plw[0]);
-        subtract_dm_vital_aiuchi(&plw[1]);
+    if (g_state.aiuchi_flag) {
+        subtract_dm_vital_aiuchi(&g_state.plw[0]);
+        subtract_dm_vital_aiuchi(&g_state.plw[1]);
 
-        if ((plw[0].dead_flag != 0) && (plw[1].dead_flag != 0)) {
-            plw[0].wu.hit_stop = plw[1].wu.hit_stop = 2;
-            plw[0].wu.dm_stop = plw[1].wu.dm_stop = 0;
-            plw[0].wu.hit_quake = plw[1].wu.hit_quake = 4;
-            plw[0].wu.dm_quake = plw[1].wu.dm_quake = 0;
-        } else if ((plw[0].dead_flag != 0) || (plw[1].dead_flag != 0)) {
-            plw[0].wu.hit_stop = plw[1].wu.hit_stop = 4;
-            plw[0].wu.dm_stop = plw[1].wu.dm_stop = 0;
-            plw[0].wu.hit_quake = plw[1].wu.hit_quake = 8;
-            plw[0].wu.dm_quake = plw[1].wu.dm_quake = 0;
+        if ((g_state.plw[0].dead_flag != 0) && (g_state.plw[1].dead_flag != 0)) {
+            g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 2;
+            g_state.plw[0].wu.dm_stop = g_state.plw[1].wu.dm_stop = 0;
+            g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 4;
+            g_state.plw[0].wu.dm_quake = g_state.plw[1].wu.dm_quake = 0;
+        } else if ((g_state.plw[0].dead_flag != 0) || (g_state.plw[1].dead_flag != 0)) {
+            g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 4;
+            g_state.plw[0].wu.dm_stop = g_state.plw[1].wu.dm_stop = 0;
+            g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 8;
+            g_state.plw[0].wu.dm_quake = g_state.plw[1].wu.dm_quake = 0;
         }
     }
 
     settle_check();
 
-    if (pcon_rno[0] == 2) {
-        if (Round_Result & 0x980) {
-            if ((Round_Result & 0x800) && gouki_wins) {
+    if (g_state.pcon_rno[0] == 2) {
+        if (g_state.Round_Result & 0x980) {
+            if ((g_state.Round_Result & 0x800) && g_state.gouki_wins) {
                 effect_D3_init(1);
             } else {
                 effect_D3_init(0);
             }
         }
 
-        if ((plw[0].kezurijini_flag == 1) || (plw[1].kezurijini_flag == 1)) {
-            Round_Result |= 0x200;
+        if ((g_state.plw[0].kezurijini_flag == 1) || (g_state.plw[1].kezurijini_flag == 1)) {
+            g_state.Round_Result |= 0x200;
         }
 
-        if (Winner_id != Loser_id) {
-            grade_store_vitality(Winner_id + 0);
+        if (g_state.Winner_id != g_state.Loser_id) {
+            grade_store_vitality(g_state.Winner_id + 0);
         }
     }
 
@@ -704,54 +698,54 @@ static void plcnt_move() {
 
 /** @brief Handles player death/KO finalization. */
 static void plcnt_die() {
-    plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
-    settle_process[pcon_rno[1]]();
+    g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+    settle_process[g_state.pcon_rno[1]]();
     move_player_work();
 
-    if (pcon_rno[1] == 3) {
-        plw[0].scr_pos_set_flag = plw[1].scr_pos_set_flag = 0;
+    if (g_state.pcon_rno[1] == 3) {
+        g_state.plw[0].scr_pos_set_flag = g_state.plw[1].scr_pos_set_flag = 0;
     }
 }
 
 /** @brief Settle type 0: Processes a normal KO conclusion. */
 static void settle_type_00000() {
-    switch (pcon_rno[2]) {
+    switch (g_state.pcon_rno[2]) {
     case 0:
-        plw[Winner_id].wu.dir_timer = 60;
-        pcon_rno[2]++;
+        g_state.plw[g_state.Winner_id].wu.dir_timer = 60;
+        g_state.pcon_rno[2]++;
         /* fallthrough */
 
     case 1:
-        if (nekorobi_check(Loser_id)) {
-            pcon_rno[2]++;
-            plw[Winner_id].wkey_flag = 1;
+        if (nekorobi_check(g_state.Loser_id)) {
+            g_state.pcon_rno[2]++;
+            g_state.plw[g_state.Winner_id].wkey_flag = 1;
         }
 
-        if (--plw[Winner_id].wu.dir_timer == 0) {
-            plw[Winner_id].wkey_flag = 1;
+        if (--g_state.plw[g_state.Winner_id].wu.dir_timer == 0) {
+            g_state.plw[g_state.Winner_id].wkey_flag = 1;
         }
 
         break;
 
     case 2:
-        if (footwork_check(Winner_id)) {
-            grade_set_round_result(Winner_id + 0);
-            pcon_rno[2]++;
-            plw[Winner_id].wu.routine_no[2] = 40;
-            plw[Winner_id].wu.routine_no[3] = 0;
-            plw[Loser_id].wu.routine_no[1] = 0;
-            plw[Loser_id].wu.routine_no[2] = 41;
-            plw[Loser_id].wu.routine_no[3] = 0;
-            plw[0].wu.cg_type = plw[1].wu.cg_type = 0;
-            plw[0].image_setup_flag = plw[1].image_setup_flag = 0;
+        if (footwork_check(g_state.Winner_id)) {
+            grade_set_round_result(g_state.Winner_id + 0);
+            g_state.pcon_rno[2]++;
+            g_state.plw[g_state.Winner_id].wu.routine_no[2] = 40;
+            g_state.plw[g_state.Winner_id].wu.routine_no[3] = 0;
+            g_state.plw[g_state.Loser_id].wu.routine_no[1] = 0;
+            g_state.plw[g_state.Loser_id].wu.routine_no[2] = 41;
+            g_state.plw[g_state.Loser_id].wu.routine_no[3] = 0;
+            g_state.plw[0].wu.cg_type = g_state.plw[1].wu.cg_type = 0;
+            g_state.plw[0].image_setup_flag = g_state.plw[1].image_setup_flag = 0;
             complete_victory_pause();
         }
 
         break;
 
     case 3:
-        if (plw[Winner_id].wu.routine_no[3] == 9) {
-            pcon_rno[2]++;
+        if (g_state.plw[g_state.Winner_id].wu.routine_no[3] == 9) {
+            g_state.pcon_rno[2]++;
         }
 
         break;
@@ -760,34 +754,34 @@ static void settle_type_00000() {
 
 /** @brief Settle type 1: Processes a time-over conclusion. */
 static void settle_type_10000() {
-    switch (pcon_rno[2]) {
+    switch (g_state.pcon_rno[2]) {
     case 0:
         if (nekorobi_check(0) && nekorobi_check(1)) {
-            pcon_rno[2]++;
+            g_state.pcon_rno[2]++;
         }
 
         break;
 
     case 1:
         complete_victory_pause();
-        pcon_rno[2]++;
-        plw[0].image_setup_flag = plw[1].image_setup_flag = 0;
+        g_state.pcon_rno[2]++;
+        g_state.plw[0].image_setup_flag = g_state.plw[1].image_setup_flag = 0;
         break;
     }
 }
 
 /** @brief Settle type 2: Processes a double-KO conclusion. */
 static void settle_type_20000() {
-    switch (pcon_rno[2]) {
+    switch (g_state.pcon_rno[2]) {
     case 0:
-        plw[0].wkey_flag = plw[1].wkey_flag = 1;
-        plw[0].image_setup_flag = plw[1].image_setup_flag = 0;
-        pcon_rno[2]++;
+        g_state.plw[0].wkey_flag = g_state.plw[1].wkey_flag = 1;
+        g_state.plw[0].image_setup_flag = g_state.plw[1].image_setup_flag = 0;
+        g_state.pcon_rno[2]++;
         /* fallthrough */
 
     case 1:
         if (footwork_check(0) && footwork_check(1)) {
-            pcon_rno[2]++;
+            g_state.pcon_rno[2]++;
         }
 
         break;
@@ -795,23 +789,23 @@ static void settle_type_20000() {
     case 2:
         complete_victory_pause();
 
-        if (plw[0].wu.vital_new == plw[1].wu.vital_new) {
-            pcon_rno[2] = 4;
+        if (g_state.plw[0].wu.vital_new == g_state.plw[1].wu.vital_new) {
+            g_state.pcon_rno[2] = 4;
             return;
         }
 
-        grade_set_round_result(Winner_id + 0);
-        plw[Winner_id].wu.routine_no[2] = 40;
-        plw[Loser_id].wu.routine_no[2] = 41;
-        plw[0].wu.routine_no[1] = plw[1].wu.routine_no[1] = 0;
-        plw[0].wu.routine_no[3] = plw[1].wu.routine_no[3] = 0;
-        plw[0].wu.cg_type = plw[1].wu.cg_type = 0;
-        pcon_rno[2]++;
+        grade_set_round_result(g_state.Winner_id + 0);
+        g_state.plw[g_state.Winner_id].wu.routine_no[2] = 40;
+        g_state.plw[g_state.Loser_id].wu.routine_no[2] = 41;
+        g_state.plw[0].wu.routine_no[1] = g_state.plw[1].wu.routine_no[1] = 0;
+        g_state.plw[0].wu.routine_no[3] = g_state.plw[1].wu.routine_no[3] = 0;
+        g_state.plw[0].wu.cg_type = g_state.plw[1].wu.cg_type = 0;
+        g_state.pcon_rno[2]++;
         break;
 
     case 3:
-        if ((plw[0].wu.routine_no[3] == 9) && (plw[1].wu.routine_no[3] == 9)) {
-            pcon_rno[2]++;
+        if ((g_state.plw[0].wu.routine_no[3] == 9) && (g_state.plw[1].wu.routine_no[3] == 9)) {
+            g_state.pcon_rno[2]++;
         }
 
         break;
@@ -820,26 +814,26 @@ static void settle_type_20000() {
 
 /** @brief Settle type 3: Processes a draw-game conclusion. */
 static void settle_type_30000() {
-    switch (pcon_rno[2]) {
+    switch (g_state.pcon_rno[2]) {
     case 0:
         break;
 
     case 1:
-        if ((Event_Judge_Gals == -1) && Complete_Judgement) {
-            plw[Winner_id].wu.routine_no[2] = 40;
-            plw[Loser_id].wu.routine_no[2] = 41;
-            plw[0].wu.routine_no[3] = plw[1].wu.routine_no[3] = 0;
-            plw[0].wu.cg_type = plw[1].wu.cg_type = 0;
-            grade_set_round_result(Winner_id + 0);
+        if ((g_state.Event_Judge_Gals == -1) && g_state.Complete_Judgement) {
+            g_state.plw[g_state.Winner_id].wu.routine_no[2] = 40;
+            g_state.plw[g_state.Loser_id].wu.routine_no[2] = 41;
+            g_state.plw[0].wu.routine_no[3] = g_state.plw[1].wu.routine_no[3] = 0;
+            g_state.plw[0].wu.cg_type = g_state.plw[1].wu.cg_type = 0;
+            grade_set_round_result(g_state.Winner_id + 0);
             complete_victory_pause();
-            pcon_rno[2]++;
+            g_state.pcon_rno[2]++;
         }
 
         break;
 
     case 2:
-        if ((plw[0].wu.routine_no[3] == 9) && (plw[1].wu.routine_no[3] == 9)) {
-            pcon_rno[2]++;
+        if ((g_state.plw[0].wu.routine_no[3] == 9) && (g_state.plw[1].wu.routine_no[3] == 9)) {
+            g_state.pcon_rno[2]++;
         }
 
         break;
@@ -848,48 +842,48 @@ static void settle_type_30000() {
 
 /** @brief Settle type 4: Processes a complete victory (judgement gals) conclusion. */
 static void settle_type_40000() {
-    switch (pcon_rno[2]) {
+    switch (g_state.pcon_rno[2]) {
     case 0:
-        plw[Winner_id].wkey_flag = 1;
-        pcon_rno[2] += 1;
+        g_state.plw[g_state.Winner_id].wkey_flag = 1;
+        g_state.pcon_rno[2] += 1;
         /* fallthrough */
 
     case 1:
-        if (nekorobi_check(Loser_id) == 0) {
+        if (nekorobi_check(g_state.Loser_id) == 0) {
             break;
         }
 
-        pcon_rno[2] += 1;
+        g_state.pcon_rno[2] += 1;
         /* fallthrough */
 
     case 2:
-        if (footwork_check(Winner_id)) {
-            pcon_rno[2]++;
-            plw[Winner_id].wu.routine_no[2] = 40;
-            plw[Winner_id].wu.routine_no[3] = 0;
-            plw[Loser_id].wu.routine_no[1] = 0;
-            plw[Loser_id].wu.routine_no[2] = 41;
-            plw[Loser_id].wu.routine_no[3] = 0;
-            plw[Winner_id].wu.cg_type = 0;
-            grade_set_round_result(Winner_id + 0);
-            plw[0].image_setup_flag = plw[1].image_setup_flag = 0;
-            plw[Winner_id].wu.dir_timer = 60;
+        if (footwork_check(g_state.Winner_id)) {
+            g_state.pcon_rno[2]++;
+            g_state.plw[g_state.Winner_id].wu.routine_no[2] = 40;
+            g_state.plw[g_state.Winner_id].wu.routine_no[3] = 0;
+            g_state.plw[g_state.Loser_id].wu.routine_no[1] = 0;
+            g_state.plw[g_state.Loser_id].wu.routine_no[2] = 41;
+            g_state.plw[g_state.Loser_id].wu.routine_no[3] = 0;
+            g_state.plw[g_state.Winner_id].wu.cg_type = 0;
+            grade_set_round_result(g_state.Winner_id + 0);
+            g_state.plw[0].image_setup_flag = g_state.plw[1].image_setup_flag = 0;
+            g_state.plw[g_state.Winner_id].wu.dir_timer = 60;
             set_conclusion_slow();
         }
 
         break;
 
     case 3:
-        if (--plw[Winner_id].wu.dir_timer <= 0) {
+        if (--g_state.plw[g_state.Winner_id].wu.dir_timer <= 0) {
             complete_victory_pause();
-            pcon_rno[2] += 1;
+            g_state.pcon_rno[2] += 1;
         }
 
         break;
 
     case 4:
-        if (plw[Winner_id].wu.routine_no[3] == 9) {
-            pcon_rno[2] += 1;
+        if (g_state.plw[g_state.Winner_id].wu.routine_no[3] == 9) {
+            g_state.pcon_rno[2] += 1;
         }
 
         break;
@@ -898,22 +892,22 @@ static void settle_type_40000() {
 
 /** @brief Processes player work updates: movement, scroll, image data. */
 static void move_player_work() {
-    if (plw[0].reserv_add_y) {
-        plw[0].wu.xyz[1].disp.pos += plw[0].reserv_add_y;
-        plw[0].reserv_add_y = 0;
+    if (g_state.plw[0].reserv_add_y) {
+        g_state.plw[0].wu.xyz[1].disp.pos += g_state.plw[0].reserv_add_y;
+        g_state.plw[0].reserv_add_y = 0;
     }
 
-    if (plw[1].reserv_add_y) {
-        plw[1].wu.xyz[1].disp.pos += plw[1].reserv_add_y;
-        plw[1].reserv_add_y = 0;
+    if (g_state.plw[1].reserv_add_y) {
+        g_state.plw[1].wu.xyz[1].disp.pos += g_state.plw[1].reserv_add_y;
+        g_state.plw[1].reserv_add_y = 0;
     }
 
-    ichikannkei = check_work_position(&plw[0].wu, &plw[1].wu);
-    set_rl_waza(&plw[0]);
-    set_rl_waza(&plw[1]);
-    Timer_Freeze = 0;
+    g_state.ichikannkei = check_work_position(&g_state.plw[0].wu, &g_state.plw[1].wu);
+    set_rl_waza(&g_state.plw[0]);
+    set_rl_waza(&g_state.plw[1]);
+    g_state.Timer_Freeze = 0;
 
-    switch (plw[0].tsukami_f + (plw[1].tsukami_f * 2)) {
+    switch (g_state.plw[0].tsukami_f + (g_state.plw[1].tsukami_f * 2)) {
     case 1:
         move_P1_move_P2();
         break;
@@ -923,7 +917,7 @@ static void move_player_work() {
         break;
 
     default:
-        switch (plw[0].wu.pl_operator + (plw[1].wu.pl_operator * 2)) {
+        switch (g_state.plw[0].wu.pl_operator + (g_state.plw[1].wu.pl_operator * 2)) {
         case 1:
             move_P1_move_P2();
             break;
@@ -933,7 +927,7 @@ static void move_player_work() {
             break;
 
         default:
-            switch ((plw[0].wu.routine_no[1] == 4) + ((plw[1].wu.routine_no[1] == 4) * 2)) {
+            switch ((g_state.plw[0].wu.routine_no[1] == 4) + ((g_state.plw[1].wu.routine_no[1] == 4) * 2)) {
             case 1:
                 move_P1_move_P2();
                 break;
@@ -943,7 +937,7 @@ static void move_player_work() {
                 break;
 
             default:
-                if (Game_timer & 1) {
+                if (g_state.Game_timer & 1) {
                     move_P1_move_P2();
                     break;
                 }
@@ -961,39 +955,39 @@ static void move_player_work() {
 
 /** @brief Updates P1 first, then P2 (used for specific frame ordering). */
 static void move_P1_move_P2() {
-    if (plw[0].do_not_move == 0) {
-        Player_move(&plw[0], processed_lvbt(Convert_User_Setting(0)));
+    if (g_state.plw[0].do_not_move == 0) {
+        Player_move(&g_state.plw[0], processed_lvbt(Convert_User_Setting(0)));
     }
 
-    if (bg_app_stop == 0 && bg_app == 0 && set_field_hosei_flag(&plw[0], scrr, 1) != 0) {
-        set_field_hosei_flag(&plw[0], scrl, 0);
+    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
+        set_field_hosei_flag(&g_state.plw[0], g_state.scrl, 0);
     }
 
-    if (plw[1].do_not_move == 0) {
-        Player_move(&plw[1], processed_lvbt(Convert_User_Setting(1)));
+    if (g_state.plw[1].do_not_move == 0) {
+        Player_move(&g_state.plw[1], processed_lvbt(Convert_User_Setting(1)));
     }
 
-    if (bg_app_stop == 0 && bg_app == 0 && set_field_hosei_flag(&plw[1], scrr, 1) != 0) {
-        set_field_hosei_flag(&plw[1], scrl, 0);
+    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
+        set_field_hosei_flag(&g_state.plw[1], g_state.scrl, 0);
     }
 }
 
 /** @brief Updates P2 first, then P1 (used for specific frame ordering). */
 static void move_P2_move_P1() {
-    if (plw[1].do_not_move == 0) {
-        Player_move(&plw[1], processed_lvbt(Convert_User_Setting(1)));
+    if (g_state.plw[1].do_not_move == 0) {
+        Player_move(&g_state.plw[1], processed_lvbt(Convert_User_Setting(1)));
     }
 
-    if (bg_app_stop == 0 && bg_app == 0 && set_field_hosei_flag(&plw[1], scrr, 1) != 0) {
-        set_field_hosei_flag(&plw[1], scrl, 0);
+    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
+        set_field_hosei_flag(&g_state.plw[1], g_state.scrl, 0);
     }
 
-    if (plw[0].do_not_move == 0) {
-        Player_move(&plw[0], processed_lvbt(Convert_User_Setting(0)));
+    if (g_state.plw[0].do_not_move == 0) {
+        Player_move(&g_state.plw[0], processed_lvbt(Convert_User_Setting(0)));
     }
 
-    if (bg_app_stop == 0 && bg_app == 0 && set_field_hosei_flag(&plw[0], scrr, 1) != 0) {
-        set_field_hosei_flag(&plw[0], scrl, 0);
+    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
+        set_field_hosei_flag(&g_state.plw[0], g_state.scrl, 0);
     }
 }
 
@@ -1002,44 +996,44 @@ void store_player_after_image_data() {
     s16 i;
 
     for (i = 47; i > 0; i--) {
-        zanzou_table[0][i] = zanzou_table[0][i - 1];
-        zanzou_table[1][i] = zanzou_table[1][i - 1];
+        g_state.zanzou_table[0][i] = g_state.zanzou_table[0][i - 1];
+        g_state.zanzou_table[1][i] = g_state.zanzou_table[1][i - 1];
     }
 
     for (i = 0; i < 2; i++) {
-        zanzou_table[i]->pos_x = plw[i].wu.position_x;
-        zanzou_table[i]->pos_y = plw[i].wu.position_y;
-        zanzou_table[i]->pos_z = plw[i].wu.position_z;
-        zanzou_table[i]->cg_num = plw[i].wu.cg_number;
-        zanzou_table[i]->renew = plw[i].wu.renew_attack;
-        zanzou_table[i]->hit_ix = plw[i].wu.cg_hit_ix;
-        zanzou_table[i]->flip = plw[i].wu.rl_flag;
-        zanzou_table[i]->cg_flp = plw[i].wu.cg_flip;
-        zanzou_table[i]->kowaza = plw[i].wu.kind_of_waza;
+        g_state.zanzou_table[i]->pos_x = g_state.plw[i].wu.position_x;
+        g_state.zanzou_table[i]->pos_y = g_state.plw[i].wu.position_y;
+        g_state.zanzou_table[i]->pos_z = g_state.plw[i].wu.position_z;
+        g_state.zanzou_table[i]->cg_num = g_state.plw[i].wu.cg_number;
+        g_state.zanzou_table[i]->renew = g_state.plw[i].wu.renew_attack;
+        g_state.zanzou_table[i]->hit_ix = g_state.plw[i].wu.cg_hit_ix;
+        g_state.zanzou_table[i]->flip = g_state.plw[i].wu.rl_flag;
+        g_state.zanzou_table[i]->cg_flp = g_state.plw[i].wu.cg_flip;
+        g_state.zanzou_table[i]->kowaza = g_state.plw[i].wu.kind_of_waza;
     }
 }
 
 /** @brief Applies damage correction (hosei) based on difficulty and character. */
 static void check_damage_hosei() {
-    plw[0].muriyari_ugoku = plw[0].hosei_amari;
-    plw[1].muriyari_ugoku = plw[1].hosei_amari;
+    g_state.plw[0].muriyari_ugoku = g_state.plw[0].hosei_amari;
+    g_state.plw[1].muriyari_ugoku = g_state.plw[1].hosei_amari;
 
-    if (plw[0].tsukami_f && plw[1].tsukamare_f) {
-        check_damage_hosei_nage(&plw[0], &plw[1]);
-    } else if (plw[1].tsukami_f && plw[0].tsukamare_f) {
-        check_damage_hosei_nage(&plw[1], &plw[0]);
+    if (g_state.plw[0].tsukami_f && g_state.plw[1].tsukamare_f) {
+        check_damage_hosei_nage(&g_state.plw[0], &g_state.plw[1]);
+    } else if (g_state.plw[1].tsukami_f && g_state.plw[0].tsukamare_f) {
+        check_damage_hosei_nage(&g_state.plw[1], &g_state.plw[0]);
     } else {
-        switch ((plw[0].hosei_amari != 0) + ((plw[1].hosei_amari != 0) * 2)) {
+        switch ((g_state.plw[0].hosei_amari != 0) + ((g_state.plw[1].hosei_amari != 0) * 2)) {
         case 1:
-            check_damage_hosei_dageki(&plw[0], &plw[1]);
+            check_damage_hosei_dageki(&g_state.plw[0], &g_state.plw[1]);
             break;
         case 2:
-            check_damage_hosei_dageki(&plw[1], &plw[0]);
+            check_damage_hosei_dageki(&g_state.plw[1], &g_state.plw[0]);
             break;
         }
     }
 
-    plw[0].hosei_amari = plw[1].hosei_amari = 0;
+    g_state.plw[0].hosei_amari = g_state.plw[1].hosei_amari = 0;
 }
 
 /** @brief Applies throw damage correction based on difficulty and mode. */
@@ -1051,8 +1045,8 @@ static void check_damage_hosei_nage(PLW* as, PLW* ds) {
             return;
         }
 
-        if (bg_app_stop == 0 && bg_app == 0 && set_field_hosei_flag(as, scrr, 1) != 0) {
-            set_field_hosei_flag(as, scrl, 0);
+        if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(as, g_state.scrr, 1) != 0) {
+            set_field_hosei_flag(as, g_state.scrl, 0);
         }
 
         if (as->hosei_amari != 0) {
@@ -1075,25 +1069,25 @@ static void check_damage_hosei_dageki(PLW* w1, PLW* w2) {
 
 /** @brief Checks if the round timer has expired. */
 static s32 time_over_check() {
-    if ((will_die() != 0) && (round_timer == 0)) {
-        Winner_id = 0;
-        Loser_id = 1;
+    if ((will_die() != 0) && (g_state.round_timer == 0)) {
+        g_state.Winner_id = 0;
+        g_state.Loser_id = 1;
 
-        if (plw[0].wu.vital_new < plw[1].wu.vital_new) {
-            Winner_id = 1;
-            Loser_id = 0;
+        if (g_state.plw[0].wu.vital_new < g_state.plw[1].wu.vital_new) {
+            g_state.Winner_id = 1;
+            g_state.Loser_id = 0;
         }
 
-        Conclusion_Flag = 1;
-        Conclusion_Type = 2;
+        g_state.Conclusion_Flag = 1;
+        g_state.Conclusion_Type = 2;
         setup_settle_rno(2);
 
-        if (Demo_Flag) {
+        if (g_state.Demo_Flag) {
             request_center_message(2);
         }
 
-        plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
-        Round_Result |= 1;
+        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+        g_state.Round_Result |= 1;
         return 1;
     }
 
@@ -1102,11 +1096,11 @@ static s32 time_over_check() {
 
 /** @brief Returns 1 if either player's vitality has reached zero. */
 static s32 will_die() {
-    if (plw[0].wu.dm_vital > plw[0].wu.vital_new) {
+    if (g_state.plw[0].wu.dm_vital > g_state.plw[0].wu.vital_new) {
         return 0;
     }
 
-    if (plw[1].wu.dm_vital > plw[1].wu.vital_new) {
+    if (g_state.plw[1].wu.dm_vital > g_state.plw[1].wu.vital_new) {
         return 0;
     }
 
@@ -1115,44 +1109,44 @@ static s32 will_die() {
 
 /** @brief Sets up the settle routine number for a given KO type. */
 static void setup_settle_rno(s16 kos) {
-    pcon_rno[0] = 2;
-    pcon_rno[1] = kos;
-    pcon_rno[2] = 0;
+    g_state.pcon_rno[0] = 2;
+    g_state.pcon_rno[1] = kos;
+    g_state.pcon_rno[2] = 0;
     ca_check_flag = 0;
-    pcon_dp_flag = true;
+    g_state.pcon_dp_flag = true;
 }
 
 /** @brief Checks for round conclusion conditions (KO, time-over, draw). */
 static void settle_check() {
     while (1) {
-        switch ((plw[0].dead_flag) + (plw[1].dead_flag * 2)) {
+        switch ((g_state.plw[0].dead_flag) + (g_state.plw[1].dead_flag * 2)) {
         case 1:
-            Winner_id = 1;
-            Loser_id = 0;
+            g_state.Winner_id = 1;
+            g_state.Loser_id = 0;
             goto jump;
 
         case 2:
-            Winner_id = 0;
-            Loser_id = 1;
+            g_state.Winner_id = 0;
+            g_state.Loser_id = 1;
 
         jump:
-            if (check_sa_resurrection(&plw[Loser_id]) == 0) {
+            if (check_sa_resurrection(&g_state.plw[g_state.Loser_id]) == 0) {
                 setup_gouki_wins();
-                Round_Result |= plw[Loser_id].wu.dm_koa;
+                g_state.Round_Result |= g_state.plw[g_state.Loser_id].wu.dm_koa;
 
-                if ((Round_Result & 0x800) && gouki_wins) {
-                    Forbid_Break = -1;
-                    Shin_Gouki_BGM = 1;
+                if ((g_state.Round_Result & 0x800) && g_state.gouki_wins) {
+                    g_state.Forbid_Break = -1;
+                    g_state.Shin_Gouki_BGM = 1;
                     Control_Music_Fade(0x96);
                     setup_settle_rno(4);
                     break;
                 }
 
                 setup_settle_rno(0);
-                Conclusion_Flag = 1;
-                Conclusion_Type = 0;
+                g_state.Conclusion_Flag = 1;
+                g_state.Conclusion_Type = 0;
 
-                if (Demo_Flag) {
+                if (g_state.Demo_Flag) {
                     request_center_message(0);
                 }
             }
@@ -1160,12 +1154,12 @@ static void settle_check() {
             break;
 
         case 3:
-            if ((check_sa_resurrection(&plw[0]) == 0) && (check_sa_resurrection(&plw[1]) == 0)) {
-                Conclusion_Flag = 1;
-                Conclusion_Type = 1;
+            if ((check_sa_resurrection(&g_state.plw[0]) == 0) && (check_sa_resurrection(&g_state.plw[1]) == 0)) {
+                g_state.Conclusion_Flag = 1;
+                g_state.Conclusion_Type = 1;
                 setup_settle_rno(1);
 
-                if (Demo_Flag) {
+                if (g_state.Demo_Flag) {
                     request_center_message(1);
                 }
             } else {
@@ -1215,7 +1209,7 @@ s32 check_sa_type_rebirth(PLW* wk) {
 static s16 nekorobi_check(s8 ix) {
     s16 rnum = 0;
 
-    if ((plw[ix].wu.routine_no[1] == 1) && (plw[ix].wu.routine_no[2] == 0) && (plw[ix].wu.routine_no[3] > 2)) {
+    if ((g_state.plw[ix].wu.routine_no[1] == 1) && (g_state.plw[ix].wu.routine_no[2] == 0) && (g_state.plw[ix].wu.routine_no[3] > 2)) {
         rnum = 1;
     }
 
@@ -1226,7 +1220,7 @@ static s16 nekorobi_check(s8 ix) {
 static s16 footwork_check(s8 ix) {
     s16 rnum = 0;
 
-    if (plw[ix].wu.routine_no[1] == 0 && plw[ix].wu.routine_no[2] == 1) {
+    if (g_state.plw[ix].wu.routine_no[1] == 0 && g_state.plw[ix].wu.routine_no[2] == 1) {
         rnum = 1;
     }
 
@@ -1257,10 +1251,10 @@ void add_next_position(PLW* wk) {
 
 /** @brief Sets up Gouki's win conditions for the hidden boss encounter. */
 static void setup_gouki_wins() {
-    gouki_wins = 0;
+    g_state.gouki_wins = 0;
 
-    if (plw[Winner_id].player_number == 14) {
-        gouki_wins = 1;
+    if (g_state.plw[g_state.Winner_id].player_number == 14) {
+        g_state.gouki_wins = 1;
     }
 }
 
@@ -1282,53 +1276,53 @@ void setup_base_and_other_data() {
     make_texcash_work(3);
     make_texcash_work(4);
     make_texcash_work(6);
-    plw[0].wu.my_mts = 3;
-    plw[1].wu.my_mts = 4;
-    set_base_data(&plw[0], 0);
-    set_base_data(&plw[1], 1);
-    plw[0].sa = &super_arts[0];
-    plw[1].sa = &super_arts[1];
-    plw[0].py = &piyori_type[0];
-    plw[1].py = &piyori_type[1];
-    setup_other_data(&plw[0]);
-    setup_other_data(&plw[1]);
+    g_state.plw[0].wu.my_mts = 3;
+    g_state.plw[1].wu.my_mts = 4;
+    set_base_data(&g_state.plw[0], 0);
+    set_base_data(&g_state.plw[1], 1);
+    g_state.plw[0].sa = &g_state.super_arts[0];
+    g_state.plw[1].sa = &g_state.super_arts[1];
+    g_state.plw[0].py = &g_state.piyori_type[0];
+    g_state.plw[1].py = &g_state.piyori_type[1];
+    setup_other_data(&g_state.plw[0]);
+    setup_other_data(&g_state.plw[1]);
     effect_work_list_init(6, 0xC5);
-    plw[0].gill_ccch_go = plw[1].gill_ccch_go = 0;
-    effect_J7_init(&plw[0]);
-    effect_J7_init(&plw[1]);
-    effect_E5_init(&plw[0]);
-    effect_E5_init(&plw[1]);
+    g_state.plw[0].gill_ccch_go = g_state.plw[1].gill_ccch_go = 0;
+    effect_J7_init(&g_state.plw[0]);
+    effect_J7_init(&g_state.plw[1]);
+    effect_E5_init(&g_state.plw[0]);
+    effect_E5_init(&g_state.plw[1]);
 
-    if (plw[0].wu.my_priority == plw[1].wu.my_priority) {
-        plw[0].the_same_players = plw[1].the_same_players = 1;
+    if (g_state.plw[0].wu.my_priority == g_state.plw[1].wu.my_priority) {
+        g_state.plw[0].the_same_players = g_state.plw[1].the_same_players = 1;
     }
 
-    poison_flag[0] = 0;
-    poison_flag[1] = 0;
+    g_state.poison_flag[0] = 0;
+    g_state.poison_flag[1] = 0;
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
-        effect_E3_init(&plw[0]);
-        effect_E3_init(&plw[1]);
-        effect_E4_init(&plw[0]);
-        effect_E4_init(&plw[1]);
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+        effect_E3_init(&g_state.plw[0]);
+        effect_E3_init(&g_state.plw[1]);
+        effect_E4_init(&g_state.plw[0]);
+        effect_E4_init(&g_state.plw[1]);
     }
 }
 
 /** @brief Sets up miscellaneous per-character data (colors, weight, shadow). */
 static void setup_any_data() {
-    set_base_data_tiny(&plw[0]);
-    set_base_data_tiny(&plw[1]);
-    setup_other_data(&plw[0]);
-    setup_other_data(&plw[1]);
+    set_base_data_tiny(&g_state.plw[0]);
+    set_base_data_tiny(&g_state.plw[1]);
+    setup_other_data(&g_state.plw[0]);
+    setup_other_data(&g_state.plw[1]);
     effect_work_list_init(6, 0xC5);
-    plw[0].gill_ccch_go = plw[1].gill_ccch_go = 0;
-    effect_J7_init(&plw[0]);
-    effect_J7_init(&plw[1]);
-    effect_E5_init(&plw[0]);
-    effect_E5_init(&plw[1]);
+    g_state.plw[0].gill_ccch_go = g_state.plw[1].gill_ccch_go = 0;
+    effect_J7_init(&g_state.plw[0]);
+    effect_J7_init(&g_state.plw[1]);
+    effect_E5_init(&g_state.plw[0]);
+    effect_E5_init(&g_state.plw[1]);
 
-    if (plw[0].wu.my_priority == plw[1].wu.my_priority) {
-        plw[0].the_same_players = plw[1].the_same_players = 1;
+    if (g_state.plw[0].wu.my_priority == g_state.plw[1].wu.my_priority) {
+        g_state.plw[0].the_same_players = g_state.plw[1].the_same_players = 1;
     }
 }
 
@@ -1339,12 +1333,12 @@ static void set_base_data(PLW* wk, s16 ix) {
     wk->wu.blink_timing = ix;
     wk->wu.id = ix;
     wk->wu.work_id = 1;
-    wk->wu.pl_operator = Operator_Status[ix];
-    wk->wu.charset_id = plid_data[My_char[ix]];
+    wk->wu.pl_operator = g_state.Operator_Status[ix];
+    wk->wu.charset_id = plid_data[g_state.My_char[ix]];
     wk->wkey_flag = wk->dead_flag = 0;
     set_char_base_data(&wk->wu);
-    wk->wu.target_adrs = &plw[(ix + 1) & 1];
-    wk->player_number = My_char[ix];
+    wk->wu.target_adrs = &g_state.plw[(ix + 1) & 1];
+    wk->player_number = g_state.My_char[ix];
     wk->wu.hit_adrs = wk->wu.target_adrs;
     wk->wu.dmg_adrs = wk->wu.target_adrs;
     cmd_init(wk);
@@ -1380,8 +1374,8 @@ void set_base_data_metamorphose(PLW* wk, s16 dmid) {
 
 /** @brief Sets up compact base data for a reduced-data character variant. */
 static void set_base_data_tiny(PLW* wk) {
-    wk->wu.charset_id = plid_data[My_char[wk->wu.id]];
-    wk->player_number = My_char[wk->wu.id];
+    wk->wu.charset_id = plid_data[g_state.My_char[wk->wu.id]];
+    wk->player_number = g_state.My_char[wk->wu.id];
     set_char_base_data(&wk->wu);
 
     if (wk->wu.id) {
@@ -1433,21 +1427,21 @@ void clear_chainex_check(s16 ix) {
 
 /** @brief Sets the stun (kizetsu/piyo) status parameters for a player. */
 void set_kizetsu_status(s16 ix) {
-    s16 plnum = My_char[ix];
+    s16 plnum = g_state.My_char[ix];
 
-    piyori_type[ix].flag = 0;
-    piyori_type[ix].time = 0;
-    piyori_type[ix].now.timer = 0;
-    piyori_type[ix].store = 0;
-    piyori_type[ix].recover = pl_nr_piyo_tbl[plnum];
-    piyori_type[ix].genkai = pl_piyo_tbl[plnum] + stun_gauge_len_omake[omop_stun_gauge_len[ix]];
+    g_state.piyori_type[ix].flag = 0;
+    g_state.piyori_type[ix].time = 0;
+    g_state.piyori_type[ix].now.timer = 0;
+    g_state.piyori_type[ix].store = 0;
+    g_state.piyori_type[ix].recover = pl_nr_piyo_tbl[plnum];
+    g_state.piyori_type[ix].genkai = pl_piyo_tbl[plnum] + stun_gauge_len_omake[omop_stun_gauge_len[ix]];
 
-    if (piyori_type[ix].genkai < 56) {
-        piyori_type[ix].genkai = 56;
+    if (g_state.piyori_type[ix].genkai < 56) {
+        g_state.piyori_type[ix].genkai = 56;
     }
 
-    if (piyori_type[ix].genkai > 72) {
-        piyori_type[ix].genkai = 72;
+    if (g_state.piyori_type[ix].genkai > 72) {
+        g_state.piyori_type[ix].genkai = 72;
     }
 }
 
@@ -1464,31 +1458,31 @@ void clear_kizetsu_point(PLW* wk) {
 void set_super_arts_status(s16 ix) {
     const SA_DATA* saptr;
 
-    if (cmd_sel[ix] || no_sa[ix]) {
-        saptr = &super_arts_DATA[My_char[ix]][Super_Arts[ix]];
+    if (g_state.cmd_sel[ix] || g_state.no_sa[ix]) {
+        saptr = &super_arts_DATA[g_state.My_char[ix]][g_state.Super_Arts[ix]];
     } else {
-        saptr = &super_arts_data[My_char[ix]][Super_Arts[ix]];
+        saptr = &super_arts_data[g_state.My_char[ix]][g_state.Super_Arts[ix]];
     }
 
-    super_arts[ix].kind_of_arts = Super_Arts[ix];
-    super_arts[ix].nmsa_g_ix = saptr->nmsa_g_ix;
-    super_arts[ix].exsa_g_ix = saptr->exsa_g_ix;
-    super_arts[ix].exs2_g_ix = saptr->exs2_g_ix;
-    super_arts[ix].nmsa_a_ix = saptr->nmsa_a_ix;
-    super_arts[ix].exsa_a_ix = saptr->exsa_a_ix;
-    super_arts[ix].exs2_a_ix = saptr->exs2_a_ix;
-    super_arts[ix].ex4th_full = saptr->ex4th_full;
-    super_arts[ix].gauge_type = saptr->gauge_type;
-    super_arts[ix].gt2 = saptr->gauge_type;
-    super_arts[ix].gauge_len = remake_sa_gauge_len(ix, saptr->gauge_len);
-    super_arts[ix].store_max = remake_sa_store_max(ix, saptr->store_max);
-    super_arts[ix].dtm = saptr->dtm;
-    super_arts[ix].dtm_mul = 1;
-    super_arts[ix].store = 0;
-    super_arts[ix].gauge.s.h = 0;
-    super_arts[ix].gauge.s.l = -1;
-    super_arts[ix].sa_rno = 0;
-    super_arts[ix].ok = 0;
+    g_state.super_arts[ix].kind_of_arts = g_state.Super_Arts[ix];
+    g_state.super_arts[ix].nmsa_g_ix = saptr->nmsa_g_ix;
+    g_state.super_arts[ix].exsa_g_ix = saptr->exsa_g_ix;
+    g_state.super_arts[ix].exs2_g_ix = saptr->exs2_g_ix;
+    g_state.super_arts[ix].nmsa_a_ix = saptr->nmsa_a_ix;
+    g_state.super_arts[ix].exsa_a_ix = saptr->exsa_a_ix;
+    g_state.super_arts[ix].exs2_a_ix = saptr->exs2_a_ix;
+    g_state.super_arts[ix].ex4th_full = saptr->ex4th_full;
+    g_state.super_arts[ix].gauge_type = saptr->gauge_type;
+    g_state.super_arts[ix].gt2 = saptr->gauge_type;
+    g_state.super_arts[ix].gauge_len = remake_sa_gauge_len(ix, saptr->gauge_len);
+    g_state.super_arts[ix].store_max = remake_sa_store_max(ix, saptr->store_max);
+    g_state.super_arts[ix].dtm = saptr->dtm;
+    g_state.super_arts[ix].dtm_mul = 1;
+    g_state.super_arts[ix].store = 0;
+    g_state.super_arts[ix].gauge.s.h = 0;
+    g_state.super_arts[ix].gauge.s.l = -1;
+    g_state.super_arts[ix].sa_rno = 0;
+    g_state.super_arts[ix].ok = 0;
 }
 
 /** @brief Adjusts SA stock maximum based on character-specific rules. */
@@ -1525,25 +1519,25 @@ static s16 remake_sa_gauge_len(s16 ix, s16 gauge_len) {
 void set_super_arts_status_dc(s16 ix) {
     const SA_DATA* saptr;
 
-    if (cmd_sel[ix] || no_sa[ix]) {
-        saptr = &super_arts_DATA[My_char[ix]][Super_Arts[ix]];
+    if (g_state.cmd_sel[ix] || g_state.no_sa[ix]) {
+        saptr = &super_arts_DATA[g_state.My_char[ix]][g_state.Super_Arts[ix]];
     } else {
-        saptr = &super_arts_data[My_char[ix]][Super_Arts[ix]];
+        saptr = &super_arts_data[g_state.My_char[ix]][g_state.Super_Arts[ix]];
     }
 
-    super_arts[ix].kind_of_arts = Super_Arts[ix];
-    super_arts[ix].nmsa_g_ix = saptr->nmsa_g_ix;
-    super_arts[ix].exsa_g_ix = saptr->exsa_g_ix;
-    super_arts[ix].exs2_g_ix = saptr->exs2_g_ix;
-    super_arts[ix].nmsa_a_ix = saptr->nmsa_a_ix;
-    super_arts[ix].exsa_a_ix = saptr->exsa_a_ix;
-    super_arts[ix].exs2_a_ix = saptr->exs2_a_ix;
-    super_arts[ix].ex4th_full = saptr->ex4th_full;
-    super_arts[ix].gauge_type = saptr->gauge_type;
-    super_arts[ix].gauge_len = remake_sa_gauge_len(ix, saptr->gauge_len);
-    super_arts[ix].store_max = remake_sa_store_max(ix, saptr->store_max);
-    super_arts[ix].dtm = saptr->dtm;
-    super_arts[ix].dtm_mul = 1;
+    g_state.super_arts[ix].kind_of_arts = g_state.Super_Arts[ix];
+    g_state.super_arts[ix].nmsa_g_ix = saptr->nmsa_g_ix;
+    g_state.super_arts[ix].exsa_g_ix = saptr->exsa_g_ix;
+    g_state.super_arts[ix].exs2_g_ix = saptr->exs2_g_ix;
+    g_state.super_arts[ix].nmsa_a_ix = saptr->nmsa_a_ix;
+    g_state.super_arts[ix].exsa_a_ix = saptr->exsa_a_ix;
+    g_state.super_arts[ix].exs2_a_ix = saptr->exs2_a_ix;
+    g_state.super_arts[ix].ex4th_full = saptr->ex4th_full;
+    g_state.super_arts[ix].gauge_type = saptr->gauge_type;
+    g_state.super_arts[ix].gauge_len = remake_sa_gauge_len(ix, saptr->gauge_len);
+    g_state.super_arts[ix].store_max = remake_sa_store_max(ix, saptr->store_max);
+    g_state.super_arts[ix].dtm = saptr->dtm;
+    g_state.super_arts[ix].dtm_mul = 1;
 }
 
 /** @brief Clears a player's SA gauge and stock to zero. */
@@ -1566,37 +1560,37 @@ void clear_super_arts_point(PLW* wk) {
 s16 check_combo_end(s16 ix) {
     s16 rnum;
 
-    if (plw[ix].py->flag) {
+    if (g_state.plw[ix].py->flag) {
         return 1;
     }
 
-    if (plw[ix].tsukamare_f) {
+    if (g_state.plw[ix].tsukamare_f) {
         return 1;
     }
 
-    if (pcon_rno[0] == 2 && pcon_rno[1] == 0 && pcon_rno[2] == 2) {
+    if (g_state.pcon_rno[0] == 2 && g_state.pcon_rno[1] == 0 && g_state.pcon_rno[2] == 2) {
         return 0;
     }
 
-    if (plw[ix].wu.cg_ja.boix == 0 && plw[ix].wu.cg_ja.cuix == 0 && plw[ix].wu.pat_status == 38) {
+    if (g_state.plw[ix].wu.cg_ja.boix == 0 && g_state.plw[ix].wu.cg_ja.cuix == 0 && g_state.plw[ix].wu.pat_status == 38) {
         return 0;
     }
 
-    if (plw[ix].zuru_flag) {
+    if (g_state.plw[ix].zuru_flag) {
         return 0;
     }
 
-    if (plw[ix].wu.routine_no[1] != 1 && plw[ix].wu.routine_no[1] != 3) {
+    if (g_state.plw[ix].wu.routine_no[1] != 1 && g_state.plw[ix].wu.routine_no[1] != 3) {
         return 0;
     }
 
-    if (plw[ix].old_gdflag != plw[ix].guard_flag) {
-        if (plw[ix].guard_flag == 0) {
+    if (g_state.plw[ix].old_gdflag != g_state.plw[ix].guard_flag) {
+        if (g_state.plw[ix].guard_flag == 0) {
             rnum = 0;
         } else {
             rnum = 1;
         }
-    } else if (plw[ix].guard_flag == 0) {
+    } else if (g_state.plw[ix].guard_flag == 0) {
         rnum = 0;
     } else {
         rnum = 1;
@@ -1609,6 +1603,6 @@ s16 check_combo_end(s16 ix) {
 static void set_scrrrl() {
     s16 scrc = get_center_position();
 
-    scrr = scrc + 192;
-    scrl = scrc - 192;
+    g_state.scrr = scrc + 192;
+    g_state.scrl = scrc - 192;
 }

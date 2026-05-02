@@ -17,11 +17,11 @@
 
 /** @brief Main handler for Mosque, Russia stage. */
 void BG050() {
-    bgw_ptr = &bg_w.bgw[1];
+    bgw_ptr = &g_state.bg_w.bgw[1];
     bg0502();
-    bgw_ptr = &bg_w.bgw[0];
+    bgw_ptr = &g_state.bg_w.bgw[0];
     bg0501();
-    bgw_ptr = &bg_w.bgw[2];
+    bgw_ptr = &g_state.bg_w.bgw[2];
     bg050_sync_common();
     zoom_ud_check();
     bg_pos_hosei2();

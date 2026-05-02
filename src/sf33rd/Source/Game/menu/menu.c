@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/menu/menu.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/menu/menu_network.h"
 #include "sf33rd/Source/Game/menu/menu_save.h"
 #include "sf33rd/Source/Game/menu/menu_replay.h"
@@ -162,13 +163,13 @@ void Menu_Task(struct _TASK* task_ptr) {
         return;
     }
     if (Interface_Type[0] == 0 || Interface_Type[1] == 0) {
-        Connect_Status = 0;
+        g_state.Connect_Status = 0;
     } else {
-        Connect_Status = 1;
+        g_state.Connect_Status = 1;
     }
 
     Setup_Pad_or_Stick();
-    IO_Result = 0;
+    g_state.IO_Result = 0;
 
     if (task_ptr->r_no[0] >= MENU_JMP_COUNT) {
         return;
@@ -222,10 +223,10 @@ void Menu_Task(struct _TASK* task_ptr) {
 
 /** @brief Read controller type (pad vs. stick) for both players. */
 void Setup_Pad_or_Stick() {
-    plsw_00[0] = PLsw[0][0];
-    plsw_01[0] = PLsw[0][1];
-    plsw_00[1] = PLsw[1][0];
-    plsw_01[1] = PLsw[1][1];
+    g_state.plsw_00[0] = g_state.PLsw[0][0];
+    g_state.plsw_01[0] = g_state.PLsw[0][1];
+    g_state.plsw_00[1] = g_state.PLsw[1][0];
+    g_state.plsw_01[1] = g_state.PLsw[1][1];
 }
 
 /** @brief After-title state â€” dispatch to sub-menu by r_no[1]. */
@@ -278,7 +279,7 @@ void Menu_Init(struct _TASK* task_ptr) {
     s16 ix;
     s16 fade_on;
 
-    if (Pause_Type == 2) {
+    if (g_state.Pause_Type == 2) {
         task_ptr->r_no[1] = 4;
     } else {
         task_ptr->r_no[1] = 1;
@@ -286,13 +287,13 @@ void Menu_Init(struct _TASK* task_ptr) {
 
     task_ptr->r_no[2] = 0;
     task_ptr->r_no[3] = 0;
-    Menu_Cursor_Y[0] = 0;
-    Menu_Cursor_Y[1] = 0;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Cursor_Y[1] = 0;
 
     for (ix = 0; ix < 4; ix++) {
-        Menu_Suicide[ix] = 0;
-        Unsubstantial_BG[ix] = 0;
-        Cursor_Y_Pos[0][ix] = 0;
+        g_state.Menu_Suicide[ix] = 0;
+        g_state.Unsubstantial_BG[ix] = 0;
+        g_state.Cursor_Y_Pos[0][ix] = 0;
     }
 
     All_Clear_Suicide();
@@ -304,7 +305,7 @@ void Menu_Init(struct _TASK* task_ptr) {
         Setup_Virtual_BG(0, 0x200, 0);
         Setup_BG(1, 0x200, 0);
         Setup_BG(2, 0x200, 0);
-        base_y_pos = 0;
+        g_state.base_y_pos = 0;
 
         if (task_ptr->r_no[1] != 0x12) {
             fade_on = 0;
@@ -312,8 +313,8 @@ void Menu_Init(struct _TASK* task_ptr) {
             fade_on = 1;
         }
 
-        Order[0x4E] = 5;
-        Order_Timer[0x4E] = 1;
+        g_state.Order[0x4E] = 5;
+        g_state.Order_Timer[0x4E] = 1;
         effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, fade_on);
         load_any_texture_patnum(0x7F30, 0xC, 0);
     }
@@ -327,10 +328,10 @@ void Menu_Init(struct _TASK* task_ptr) {
 void Setup_VS_Mode(struct _TASK* task_ptr) {
     task_ptr->r_no[0] = 5;
     cpExitTask(TASK_SAVER);
-    plw[0].wu.pl_operator = 1;
-    plw[1].wu.pl_operator = 1;
-    Operator_Status[0] = 1;
-    Operator_Status[1] = 1;
+    g_state.plw[0].wu.pl_operator = 1;
+    g_state.plw[1].wu.pl_operator = 1;
+    g_state.Operator_Status[0] = 1;
+    g_state.Operator_Status[1] = 1;
     grade_check_work_1st_init(0, 0);
     grade_check_work_1st_init(0, 1);
     grade_check_work_1st_init(1, 0);
@@ -350,11 +351,11 @@ void Menu_in_Sub(struct _TASK* task_ptr) {
     if (use_rmlui)
         rmlui_wrapper_hide_all_game_documents();
 
-    Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
-    Menu_Suicide[0] = 1;
-    Menu_Suicide[1] = 0;
-    Order[0x64] = 4;
-    Order_Timer[0x64] = 1;
+    g_state.Menu_Cursor_Y[0] = g_state.Cursor_Y_Pos[0][1];
+    g_state.Menu_Suicide[0] = 1;
+    g_state.Menu_Suicide[1] = 0;
+    g_state.Order[0x64] = 4;
+    g_state.Order_Timer[0x64] = 1;
 }
 
 /* ── Popup draw helpers (called from lobby and font_test) ──────── */
@@ -407,13 +408,13 @@ s32 Setup_Final_Cursor_Pos(s8 cursor_x, s16 dir) {
         cursor_x = 0;
     }
 
-    if (vm_w.Connect[cursor_x]) {
+    if (g_state.vm_w.Connect[cursor_x]) {
         return cursor_x;
     }
 
     check_x[0] = cursor_x ^ 1;
 
-    if (vm_w.Connect[check_x[0]]) {
+    if (g_state.vm_w.Connect[check_x[0]]) {
         return check_x[0];
     }
 
@@ -429,28 +430,28 @@ s32 Setup_Final_Cursor_Pos(s8 cursor_x, s16 dir) {
         check_x[0] += next_dir;
 
         if (check_x[0] < 0) {
-            if (IO_Result == 0) {
+            if (g_state.IO_Result == 0) {
                 check_x[0] += 8;
             } else {
-                return Menu_Cursor_X[1];
+                return g_state.Menu_Cursor_X[1];
             }
         }
 
         if (check_x[0] > 7) {
-            if (IO_Result == 0) {
+            if (g_state.IO_Result == 0) {
                 check_x[0] -= 8;
             } else {
-                return Menu_Cursor_X[1];
+                return g_state.Menu_Cursor_X[1];
             }
         }
 
-        if (vm_w.Connect[check_x[0]]) {
+        if (g_state.vm_w.Connect[check_x[0]]) {
             return check_x[0];
         }
 
         check_x[1] = check_x[0] ^ 1;
 
-        if (vm_w.Connect[check_x[1]]) {
+        if (g_state.vm_w.Connect[check_x[1]]) {
             return check_x[1];
         }
     }
@@ -472,8 +473,8 @@ s32 Exit_Sub(struct _TASK* task_ptr, s16 cursor_ix, s16 next_routine) {
             task_ptr->r_no[2] = 0;
             task_ptr->r_no[3] = 0;
             task_ptr->free[0] = 0;
-            Cursor_Y_Pos[0][cursor_ix] = Menu_Cursor_Y[0];
-            Cursor_Y_Pos[1][cursor_ix] = Menu_Cursor_Y[1];
+            g_state.Cursor_Y_Pos[0][cursor_ix] = g_state.Menu_Cursor_Y[0];
+            g_state.Cursor_Y_Pos[1][cursor_ix] = g_state.Menu_Cursor_Y[1];
             pulpul_stop();
             return 1;
         }
@@ -490,11 +491,11 @@ void Menu_Common_Init() {
     s16 ix;
 
     for (ix = 0; ix < 2; ix++) {
-        Deley_Shot_No[ix] = 0;
-        Deley_Shot_Timer[ix] = Menu_Deley_Time[Deley_Shot_No[ix]];
+        g_state.Deley_Shot_No[ix] = 0;
+        g_state.Deley_Shot_Timer[ix] = Menu_Deley_Time[g_state.Deley_Shot_No[ix]];
     }
 
-    Menu_Cursor_Move = 0;
+    g_state.Menu_Cursor_Move = 0;
     r_no_plus = 0;
 }
 
@@ -504,13 +505,13 @@ u16 Check_Menu_Lever(u8 PL_id, s16 type) {
     u16 lever;
     u16 ix;
 
-    sw = ~plsw_01[PL_id] & plsw_00[PL_id];
+    sw = ~g_state.plsw_01[PL_id] & g_state.plsw_00[PL_id];
 
     if (type) {
-        sw = ~PLsw[PL_id][1] & PLsw[PL_id][0];
+        sw = ~g_state.PLsw[PL_id][1] & g_state.PLsw[PL_id][0];
     }
 
-    lever = plsw_00[PL_id] & SWK_DIRECTIONS;
+    lever = g_state.plsw_00[PL_id] & SWK_DIRECTIONS;
 
     if (sw & (SWK_ATTACKS | SWK_START)) {
         return sw;
@@ -523,14 +524,14 @@ u16 Check_Menu_Lever(u8 PL_id, s16 type) {
     }
 
     if (lever == 0) {
-        Deley_Shot_No[PL_id] = 0;
-        Deley_Shot_Timer[PL_id] = Menu_Deley_Time[Deley_Shot_No[PL_id]];
+        g_state.Deley_Shot_No[PL_id] = 0;
+        g_state.Deley_Shot_Timer[PL_id] = Menu_Deley_Time[g_state.Deley_Shot_No[PL_id]];
         return 0;
     }
 
-    if (--Deley_Shot_Timer[PL_id] == 0) {
-        if (++Deley_Shot_No[PL_id] > 2) {
-            Deley_Shot_No[PL_id] = 2;
+    if (--g_state.Deley_Shot_Timer[PL_id] == 0) {
+        if (++g_state.Deley_Shot_No[PL_id] > 2) {
+            g_state.Deley_Shot_No[PL_id] = 2;
         }
 
         if (lever & (SWK_UP | SWK_DOWN)) {
@@ -539,11 +540,11 @@ u16 Check_Menu_Lever(u8 PL_id, s16 type) {
             ix = 3;
         }
 
-        if (Deley_Shot_No[PL_id] + ix >= MENU_DELAY_COUNT) {
+        if (g_state.Deley_Shot_No[PL_id] + ix >= MENU_DELAY_COUNT) {
             return 0;
         }
 
-        Deley_Shot_Timer[PL_id] = Menu_Deley_Time[Deley_Shot_No[PL_id] + ix];
+        g_state.Deley_Shot_Timer[PL_id] = Menu_Deley_Time[g_state.Deley_Shot_No[PL_id] + ix];
         return lever;
     }
 
@@ -593,51 +594,51 @@ void bg_etc_write_ex(s16 type) {
     Family_Init();
     Scrn_Pos_Init();
     Zoomf_Init();
-    scr_sc = 1.0f;
-    bg_w.bg_opaque = 224;
-    bg_w.pos_offset = 192;
+    g_state.scr_sc = 1.0f;
+    g_state.bg_w.bg_opaque = 224;
+    g_state.bg_w.pos_offset = 192;
 
     for (i = 0; i < 7; i++) {
-        bg_w.bgw[i].pos_x_work = 0;
-        bg_w.bgw[i].pos_y_work = 0;
-        bg_w.bgw[i].zuubun = 0;
-        bg_w.bgw[i].xy[0].cal = 0;
-        bg_w.bgw[i].xy[1].cal = 0;
-        bg_w.bgw[i].wxy[0].cal = 0;
-        bg_w.bgw[i].wxy[1].cal = 0;
-        bg_w.bgw[i].hos_xy[0].cal = 0;
-        bg_w.bgw[i].hos_xy[1].cal = 0;
-        bg_w.bgw[i].rewrite_flag = 0;
-        bg_w.bgw[i].fam_no = i;
-        bg_w.bgw[i].speed_x = 0;
-        bg_w.bgw[i].speed_y = 0;
-        bg_w.bgw[i].r_no_1 = bg_w.bgw[i].r_no_2 = 0;
+        g_state.bg_w.bgw[i].pos_x_work = 0;
+        g_state.bg_w.bgw[i].pos_y_work = 0;
+        g_state.bg_w.bgw[i].zuubun = 0;
+        g_state.bg_w.bgw[i].xy[0].cal = 0;
+        g_state.bg_w.bgw[i].xy[1].cal = 0;
+        g_state.bg_w.bgw[i].wxy[0].cal = 0;
+        g_state.bg_w.bgw[i].wxy[1].cal = 0;
+        g_state.bg_w.bgw[i].hos_xy[0].cal = 0;
+        g_state.bg_w.bgw[i].hos_xy[1].cal = 0;
+        g_state.bg_w.bgw[i].rewrite_flag = 0;
+        g_state.bg_w.bgw[i].fam_no = i;
+        g_state.bg_w.bgw[i].speed_x = 0;
+        g_state.bg_w.bgw[i].speed_y = 0;
+        g_state.bg_w.bgw[i].r_no_1 = g_state.bg_w.bgw[i].r_no_2 = 0;
     }
 
-    bg_w.scr_stop = 0;
-    bg_w.frame_flag = 0;
-    bg_w.old_chase_flag = bg_w.chase_flag = 0;
-    bg_w.bg_f_x = 64;
-    bg_w.bg_f_y = 64;
-    bg_w.bg2_sp_x2 = bg_w.bg2_sp_x = 0;
-    bg_w.max_x = 8;
-    bg_w.quake_x_index = 0;
-    bg_w.quake_y_index = 0;
+    g_state.bg_w.scr_stop = 0;
+    g_state.bg_w.frame_flag = 0;
+    g_state.bg_w.old_chase_flag = g_state.bg_w.chase_flag = 0;
+    g_state.bg_w.bg_f_x = 64;
+    g_state.bg_w.bg_f_y = 64;
+    g_state.bg_w.bg2_sp_x2 = g_state.bg_w.bg2_sp_x = 0;
+    g_state.bg_w.max_x = 8;
+    g_state.bg_w.quake_x_index = 0;
+    g_state.bg_w.quake_y_index = 0;
 
     for (i = 0; i <= 0; i++) {
-        bg_w.bgw[i].hos_xy[0].cal = bg_w.bgw[i].wxy[0].cal = bg_w.bgw[i].xy[0].cal = bg_pos_tbl2[type][i][0];
-        bg_w.bgw[i].hos_xy[1].cal = bg_w.bgw[i].wxy[1].cal = bg_w.bgw[i].xy[1].cal = bg_pos_tbl2[type][i][1];
-        bg_w.bgw[i].pos_y_work = bg_w.bgw[i].xy[1].disp.pos;
-        bg_w.bgw[i].old_pos_x = bg_w.bgw[i].pos_x_work = bg_w.bgw[i].xy[0].disp.pos;
-        bg_w.bgw[i].speed_x = msp2[type][i][0];
-        bg_w.bgw[i].speed_y = msp2[type][i][1];
-        bg_w.bgw[i].rewrite_flag = 0;
-        bg_w.bgw[i].zuubun = 0;
-        bg_w.bgw[i].frame_deff = 64;
-        bg_w.bgw[i].max_x_limit = bg_w.bgw[i].speed_x * bg_w.max_x;
+        g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[0].cal = g_state.bg_w.bgw[i].xy[0].cal = bg_pos_tbl2[type][i][0];
+        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].wxy[1].cal = g_state.bg_w.bgw[i].xy[1].cal = bg_pos_tbl2[type][i][1];
+        g_state.bg_w.bgw[i].pos_y_work = g_state.bg_w.bgw[i].xy[1].disp.pos;
+        g_state.bg_w.bgw[i].old_pos_x = g_state.bg_w.bgw[i].pos_x_work = g_state.bg_w.bgw[i].xy[0].disp.pos;
+        g_state.bg_w.bgw[i].speed_x = msp2[type][i][0];
+        g_state.bg_w.bgw[i].speed_y = msp2[type][i][1];
+        g_state.bg_w.bgw[i].rewrite_flag = 0;
+        g_state.bg_w.bgw[i].zuubun = 0;
+        g_state.bg_w.bgw[i].frame_deff = 64;
+        g_state.bg_w.bgw[i].max_x_limit = g_state.bg_w.bgw[i].speed_x * g_state.bg_w.max_x;
     }
 
-    base_y_pos = 40;
+    g_state.base_y_pos = 40;
 }
 
 /** @brief Wait for save/load I/O completion before proceeding. */

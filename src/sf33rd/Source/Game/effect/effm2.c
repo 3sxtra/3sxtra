@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effm2.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -31,7 +32,7 @@ void effect_M2_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             if (ewk->wu.type) {
                 effm2_move2(ewk);
             } else {
@@ -122,17 +123,17 @@ static void effm2_move2(WORK_Other* ewk) {
         ewk->wu.kage_char = 3;
 
         if (oya_ptr->rl_flag) {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos - bg_w.pos_offset - 48;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - g_state.bg_w.pos_offset - 48;
 
-            if (oya_ptr->xyz[0].disp.pos > bg_w.bgw[1].wxy[0].disp.pos) {
+            if (oya_ptr->xyz[0].disp.pos > g_state.bg_w.bgw[1].wxy[0].disp.pos) {
                 cat_run_set2(ewk);
             } else {
                 cat_walk_set(ewk);
             }
         } else {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + bg_w.pos_offset + 48;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset + 48;
 
-            if (oya_ptr->xyz[0].disp.pos < bg_w.bgw[1].wxy[0].disp.pos) {
+            if (oya_ptr->xyz[0].disp.pos < g_state.bg_w.bgw[1].wxy[0].disp.pos) {
                 cat_run_set2(ewk);
             } else {
                 cat_walk_set(ewk);
@@ -180,10 +181,10 @@ s32 effect_M2_init(WORK* wk, u8 data) {
     s16 ix;
 
     if (data) {
-        if (Win_Record[wk->id] < 4) {
+        if (g_state.Win_Record[wk->id] < 4) {
             return 0;
         }
-    } else if (Win_Record[wk->id] < 3) {
+    } else if (g_state.Win_Record[wk->id] < 3) {
         return 0;
     }
 

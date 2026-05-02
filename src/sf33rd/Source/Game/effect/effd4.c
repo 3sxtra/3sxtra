@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effd4.h"
+#include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effg3.h"
@@ -78,7 +79,7 @@ void effect_D4_move(WORK_Other* ewk) {
             break;
         }
 
-        if (EXE_flag != 0 || Game_pause != 0) {
+        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
             break;
         }
 
@@ -206,7 +207,7 @@ s32 effect_D4_init(WORK* wk, u8 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if (Bonus_Game_Flag != 0) {
+    if (g_state.Bonus_Game_Flag != 0) {
         return 0;
     }
 

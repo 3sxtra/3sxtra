@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/effm0.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -39,7 +40,7 @@ void effect_M0_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (!EXE_flag && !Game_pause) {
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
             animal_control(ewk);
         }
 
@@ -58,8 +59,8 @@ void effect_M0_move(WORK_Other* ewk) {
 }
 
 static void animal_init(WORK_Other* ewk) {
-    s16 work_l = bg_w.bgw[1].wxy[0].disp.pos - bg_w.pos_offset;
-    s16 work_r = bg_w.bgw[1].wxy[0].disp.pos + bg_w.pos_offset;
+    s16 work_l = g_state.bg_w.bgw[1].wxy[0].disp.pos - g_state.bg_w.pos_offset;
+    s16 work_r = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset;
 
     switch (ewk->wu.type) {
     case 0:
@@ -87,10 +88,10 @@ static void animal_init(WORK_Other* ewk) {
         break;
 
     case 6:
-        if (plw->player_number == 7) {
-            ewk->wu.my_col_code = plw->wu.my_col_code;
+        if (g_state.plw->player_number == 7) {
+            ewk->wu.my_col_code = g_state.plw->wu.my_col_code;
         } else {
-            ewk->wu.my_col_code = plw[1].wu.my_col_code;
+            ewk->wu.my_col_code = g_state.plw[1].wu.my_col_code;
         }
 
         ewk->wu.kage_flag = 1;
@@ -216,7 +217,7 @@ static void animal_0002(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         set_char_move_init(&ewk->wu, 0, 47);
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos;
         ewk->wu.xyz[1].disp.pos = 32;
         ewk->wu.my_priority = ewk->wu.position_z = 27;
         break;
@@ -256,11 +257,11 @@ static void animal_0004(WORK_Other* ewk) {
         ewk->wu.my_priority = ewk->wu.position_z = 27;
 
         if (ewk->wu.rl_flag) {
-            ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos + 48;
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + 48;
             break;
         }
 
-        ewk->wu.xyz[0].disp.pos = bg_w.bgw[1].wxy[0].disp.pos - 48;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - 48;
         break;
 
     case 1:

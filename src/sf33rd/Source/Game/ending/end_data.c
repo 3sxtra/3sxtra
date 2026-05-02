@@ -4,11 +4,11 @@
  */
 
 #include "sf33rd/Source/Game/ending/end_data.h"
+#include "game_state.h"
 #include "common.h"
 
 // sbss
 
-END_W end_w;
 s16 e_line_step;
 s8 end_etc_flag;
 s8 ending_all_end;

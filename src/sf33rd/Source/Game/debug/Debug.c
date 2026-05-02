@@ -9,6 +9,7 @@
  * Part of the debug module.
  */
 #include "sf33rd/Source/Game/debug/Debug.h"
+#include "game_state.h"
 #include "common.h"
 #include "main.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
@@ -343,7 +344,7 @@ u16 Debug_Menu_Shot() {
 void Check_Check_Screen() {
     s16 ix;
 
-    if ((test_flag) || (Debug_w[DEBUG_YOSHIZUMI_EXP] != -16)) {
+    if ((g_state.test_flag) || (Debug_w[DEBUG_YOSHIZUMI_EXP] != -16)) {
         return;
     }
 
@@ -506,26 +507,26 @@ void Check_Pos_OBJ2(WORK_Other* ewk) {
 void Check_Pos_BG() {
     if ((Debug_w[DEBUG_YOSHIZUMI_EXP]) == 9) {
         if (p3sw_0 & 1) {
-            bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos += 1;
+            g_state.bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos += 1;
         }
 
         if (p3sw_0 & 2) {
-            bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos -= 1;
+            g_state.bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos -= 1;
         }
 
         if (p3sw_0 & 8) {
-            bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos += 1;
+            g_state.bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos += 1;
         }
 
         if (p3sw_0 & 4) {
-            bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos -= 1;
+            g_state.bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos -= 1;
         }
 
         flPrintColor(COLOR_YELLOW);
         flPrintL(39, 13, "BG POSITION:");
         flPrintL(51, 13, "%1X", Debug_w[DEBUG_BG_POSITION]);
-        flPrintL(48, 14, "%4X", bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos);
-        flPrintL(48, 15, "%4X", bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos);
+        flPrintL(48, 14, "%4X", g_state.bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos);
+        flPrintL(48, 15, "%4X", g_state.bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos);
     }
 }
 
@@ -582,13 +583,13 @@ void Disp_Mode(PLW* wk) {
             x = 1;
         }
 
-        flPrintL(x, offset_y + 16, "%3X", Control_Time);
+        flPrintL(x, offset_y + 16, "%3X", g_state.Control_Time);
 
-        if (CP_No[wk->wu.id][0] >= 0 && CP_No[wk->wu.id][0] < CPU_DATA_COUNT) {
-            flPrintL(x + 1, offset_y + 17, cpu_data[CP_No[wk->wu.id][0]]);
+        if (g_state.CP_No[wk->wu.id][0] >= 0 && g_state.CP_No[wk->wu.id][0] < CPU_DATA_COUNT) {
+            flPrintL(x + 1, offset_y + 17, cpu_data[g_state.CP_No[wk->wu.id][0]]);
         }
 
-        flPrintL(x, offset_y + 18, "%3d", Pattern_Index[wk->wu.id]);
+        flPrintL(x, offset_y + 18, "%3d", g_state.Pattern_Index[wk->wu.id]);
     }
 }
 
@@ -607,27 +608,27 @@ void Disp_Random() {
 
     if (Debug_w[DEBUG_DISP_RANDOM]) {
         flPrintColor(COLOR_YELLOW);
-        flPrintL(8, offset_y + 32, "%4X", Random_ix16_com);
-        flPrintL(8, offset_y + 33, "%4X", Random_ix32_com);
-        flPrintL(8, offset_y + 34, "%4X", Random_ix16_ex_com);
-        flPrintL(8, offset_y + 35, "%4X", Random_ix32_ex_com);
-        flPrintL(14, offset_y + 32, "%4X", Random_ix16);
-        flPrintL(14, offset_y + 33, "%4X", Random_ix32);
-        flPrintL(14, offset_y + 34, "%4X", Random_ix16_ex);
-        flPrintL(14, offset_y + 35, "%4X", Random_ix32_ex);
-        flPrintL(20, offset_y + 32, "%4X", plw[0].wu.position_x);
-        flPrintL(20, offset_y + 33, "%4X", plw[0].wu.position_y);
-        flPrintL(20, offset_y + 34, "%4X", plw[1].wu.position_x);
-        flPrintL(20, offset_y + 35, "%4X", plw[1].wu.position_y);
-        flPrintL(26, offset_y + 33, "%4X", players_timer);
-        flPrintL(26, offset_y + 34, "%4X", system_timer);
-        flPrintL(26, offset_y + 35, "%4X", Game_timer);
+        flPrintL(8, offset_y + 32, "%4X", g_state.Random_ix16_com);
+        flPrintL(8, offset_y + 33, "%4X", g_state.Random_ix32_com);
+        flPrintL(8, offset_y + 34, "%4X", g_state.Random_ix16_ex_com);
+        flPrintL(8, offset_y + 35, "%4X", g_state.Random_ix32_ex_com);
+        flPrintL(14, offset_y + 32, "%4X", g_state.Random_ix16);
+        flPrintL(14, offset_y + 33, "%4X", g_state.Random_ix32);
+        flPrintL(14, offset_y + 34, "%4X", g_state.Random_ix16_ex);
+        flPrintL(14, offset_y + 35, "%4X", g_state.Random_ix32_ex);
+        flPrintL(20, offset_y + 32, "%4X", g_state.plw[0].wu.position_x);
+        flPrintL(20, offset_y + 33, "%4X", g_state.plw[0].wu.position_y);
+        flPrintL(20, offset_y + 34, "%4X", g_state.plw[1].wu.position_x);
+        flPrintL(20, offset_y + 35, "%4X", g_state.plw[1].wu.position_y);
+        flPrintL(26, offset_y + 33, "%4X", g_state.players_timer);
+        flPrintL(26, offset_y + 34, "%4X", g_state.system_timer);
+        flPrintL(26, offset_y + 35, "%4X", g_state.Game_timer);
         flPrintL(32, offset_y + 32, "%4X", time_check[0]);
         flPrintL(32, offset_y + 33, "%4X", time_check[1]);
         flPrintL(32, offset_y + 34, "%4X", time_check[2]);
         flPrintL(32, offset_y + 35, "%4X", time_check[3]);
-        flPrintL(32, offset_y + 29, "%4X", bg_w.bgw[1].wxy[0].disp.pos);
-        flPrintL(32, offset_y + 30, "%4X", bg_w.bgw[1].xy[0].disp.pos);
+        flPrintL(32, offset_y + 29, "%4X", g_state.bg_w.bgw[1].wxy[0].disp.pos);
+        flPrintL(32, offset_y + 30, "%4X", g_state.bg_w.bgw[1].xy[0].disp.pos);
     }
 }
 

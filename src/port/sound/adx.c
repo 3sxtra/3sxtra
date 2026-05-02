@@ -7,6 +7,7 @@
  * handling, and a pre-allocated buffer pool to avoid heap churn.
  */
 #include "port/sound/adx.h"
+#include "game_state.h"
 #include "common.h"
 #include "port/io/afs.h"
 #include "port/sound/adx_decoder.h"
@@ -306,7 +307,7 @@ static void track_init(ADXTrack* track, int file_id, void* buf, size_t buf_size,
         fatal_error("One of file_id or buf must be valid.");
     }
 
-    // Try Modded BGM first if it's a file ID
+    // Try Modded BGM first if it's a file g_state.ID
     if (file_id != -1 && ModdedBGM_Play(file_id)) {
         track->is_modded = true;
         track->data = NULL;

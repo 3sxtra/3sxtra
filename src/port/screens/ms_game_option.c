@@ -11,7 +11,7 @@
  *   Item 10:  "Default" — resets all items to Game_Default_Data
  *   Item 11:  "Exit" — returns to Option_Select
  *
- * L/R value changes are live — they modify Convert_Buff[0] directly via
+ * L/R value changes are live — they modify g_state.Convert_Buff[0] directly via
  * Game_Option_Sub() / GO_Move_Sub_LR().  On exit (confirm or cancel),
  * values are committed via Save_Game_Data().  On "Default", values are
  * reset to Game_Default_Data and synced via Copy_Save_w().
@@ -23,16 +23,17 @@
  */
 
 #include "port/menu_screen.h"
+#include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
 #include "sf33rd/Source/Game/effect/eff64.h"       /* effect_64_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Game_Option_Sub, Exit_Sub, etc. */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Save_Game_Data, Copy_Save_w, Game_Default_Data */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* save_w */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
@@ -77,25 +78,25 @@ static void game_option_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Menu_Common_Init();
-    Menu_Cursor_Y[0] = 0;
-    Menu_Suicide[1] = 1;
-    Menu_Suicide[2] = 0;
-    Menu_Cursor_Y[0] = 0;
-    Menu_Cursor_Y[1] = 0;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Suicide[1] = 1;
+    g_state.Menu_Suicide[2] = 0;
+    g_state.Menu_Cursor_Y[0] = 0;
+    g_state.Menu_Cursor_Y[1] = 0;
 
     /* Kill/setup parent effect slots */
-    Order[0x4F] = 4;
-    Order_Timer[0x4F] = 1;
-    Order[0x4E] = 2;
-    Order_Dir[0x4E] = 2;
-    Order_Timer[0x4E] = 1;
+    g_state.Order[0x4F] = 4;
+    g_state.Order_Timer[0x4F] = 1;
+    g_state.Order[0x4E] = 2;
+    g_state.Order_Dir[0x4E] = 2;
+    g_state.Order_Timer[0x4E] = 1;
 
     /* Header bar — CPS3 only (skip when RmlUi active) */
     if (!use_rmlui || !rmlui_menu_game_option) {
         effect_57_init(0x6A, MENU_HEADER_GAME_OPTION, 0, 0x3F, 2);
-        Order[0x6A] = 1;
-        Order_Dir[0x6A] = 8;
-        Order_Timer[0x6A] = 1;
+        g_state.Order[0x6A] = 1;
+        g_state.Order_Dir[0x6A] = 8;
+        g_state.Order_Timer[0x6A] = 1;
     }
 
     /* Item labels and value indicators */
@@ -105,19 +106,19 @@ static void game_option_enter(struct _TASK* task_ptr) {
         /* 12 effect_61 item labels */
         for (ix = 0, unused_s3 = char_index = 0x19; ix < 0xC; ix++, unused_s2 = char_index++) {
             effect_61_init(0, ix + 0x50, 0, 2, char_index, ix, 0x70A7);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
+            g_state.Order[ix + 0x50] = 1;
+            g_state.Order_Dir[ix + 0x50] = 4;
+            g_state.Order_Timer[ix + 0x50] = ix + 0x14;
         }
 
         /* 10 effect_64 value sliders */
         for (ix = 0; ix < 0xA; ix++) {
             effect_64_init(ix + 0x5D, 0, 2, Setup_Index_64[ix], ix, 0x70A7, ix + 1, 0, 0);
-            Order[ix + 0x5D] = 1;
-            Order_Dir[ix + 0x5D] = 4;
-            Order_Timer[ix + 0x5D] = ix + 0x14;
+            g_state.Order[ix + 0x5D] = 1;
+            g_state.Order_Dir[ix + 0x5D] = 4;
+            g_state.Order_Timer[ix + 0x5D] = ix + 0x14;
         }
-        Menu_Cursor_Move = 0xA;
+        g_state.Menu_Cursor_Move = 0xA;
     }
 
     /* ── Set r_no[1] to 9 for Button_Exit_Check compatibility ──
@@ -147,7 +148,7 @@ static void game_option_tick(struct _TASK* task_ptr) {
     /* ── One-time post-wait-phase setup ── */
     if (!s_wait_done) {
         s_wait_done = true;
-        Suicide[3] = 0;
+        g_state.Suicide[3] = 0;
     }
 
     /* ── Preserve r_no[1]=9 for Button_Exit_Check routing ── */
@@ -164,7 +165,7 @@ static void game_option_tick(struct _TASK* task_ptr) {
      * Return_Option_Mode_Sub sets r_no[1]=7.
      * If r_no[1] is no longer 9, we know the exit path fired. */
     if (task_ptr->r_no[1] != 9) {
-        /* Button_Exit_Check already set r_no, free[], Menu_Suicide,
+        /* Button_Exit_Check already set r_no, free[], g_state.Menu_Suicide,
          * hid RmlUi, and killed effect 0x6A. Hand off to legacy. */
         MenuScreen_ExitToLegacy(task_ptr);
     }

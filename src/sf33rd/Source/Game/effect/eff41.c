@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/effect/eff41.h"
+#include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effd9.h"
@@ -57,10 +58,10 @@ void effect_41_move(WORK_Other* ewk) {
 
         switch (sa_sign_data[ewk->wu.type][3]) {
         case 1:
-            sa_gauge_flash[mwk->wu.id] |= 4;
+            g_state.sa_gauge_flash[mwk->wu.id] |= 4;
             break;
         case 2:
-            sa_gauge_flash[mwk->wu.id] |= 4;
+            g_state.sa_gauge_flash[mwk->wu.id] |= 4;
             break;
         }
 
@@ -74,7 +75,7 @@ void effect_41_move(WORK_Other* ewk) {
             break;
         }
 
-        if (EXE_flag == 0 && Game_pause == 0) {
+        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             if (ewk->wu.hit_stop) {
                 ewk->wu.hit_stop--;
             } else {
@@ -151,7 +152,7 @@ static void eff41_process_01(WORK_Other* ewk, PLW* mwk) {
         break;
 
     case 2:
-        ewk->wu.position_x = bg_w.bgw[1].position_x + bg_w.pos_offset;
+        ewk->wu.position_x = g_state.bg_w.bgw[1].position_x + g_state.bg_w.pos_offset;
         ewk->wu.position_y = mwk->wu.position_y + sa_sign_data[ewk->wu.type][1];
         break;
 
@@ -187,7 +188,7 @@ s32 effect_41_init(PLW* wk, u8 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if (test_flag) {
+    if (g_state.test_flag) {
         return 0;
     }
 
