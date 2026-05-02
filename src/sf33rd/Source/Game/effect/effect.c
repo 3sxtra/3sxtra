@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 s16 frwctr;
 s16 frwctr_min;
@@ -124,7 +124,7 @@ void effect_work_init() {
     WORK* c_addr;
     s16 i;
 
-    SDL_zeroa(frw);
+    I_ZeroArray(frw);
 
     for (i = 0; i < EFFECT_MAX; i++) {
         frwctr = (EFFECT_MAX - 1) - i;
@@ -289,7 +289,7 @@ void push_effect_work(WORK* wkhd) {
         break;
     }
 
-    SDL_zeroa(frw[qix]);
+    I_ZeroArray(frw[qix]);
 
     c_addr->before = c_addr->behind = -1;
     frwque[frwctr++] = qix;

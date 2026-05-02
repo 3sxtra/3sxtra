@@ -17,7 +17,7 @@
 #include "structs.h"
 
 #include "game_state.h"
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 typedef struct {
     s32 p16;
@@ -385,9 +385,9 @@ void make_texcash_work(s16 ix) {
             mts[ix].tpf = (TexturePoolFree*)adrs;
             adrs += sizeof(TexturePoolFree);
             mts[ix].tpu = (TexturePoolUsed*)adrs;
-            SDL_zerop(mts[ix].cpat);
-            SDL_zerop(mts[ix].tpf);
-            SDL_zerop(mts[ix].tpu);
+            I_ZeroPointer(mts[ix].cpat);
+            I_ZeroPointer(mts[ix].tpf);
+            I_ZeroPointer(mts[ix].tpu);
             init_texcash_2nd(ix);
         } else {
             memreq = mts[ix].mltnum16 * 8 + mts[ix].mltnum32 * 8;
@@ -444,9 +444,9 @@ static void clear_texcash_work(s16 ix) {
         }
 
         if (mts[ix].ext) {
-            SDL_zerop(mts[ix].cpat);
-            SDL_zerop(mts[ix].tpf);
-            SDL_zerop(mts[ix].tpu);
+            I_ZeroPointer(mts[ix].cpat);
+            I_ZeroPointer(mts[ix].tpf);
+            I_ZeroPointer(mts[ix].tpu);
             init_texcash_2nd(ix);
         }
 

@@ -26,7 +26,7 @@
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 // sbss
 Vertex scrDrawPos[4];

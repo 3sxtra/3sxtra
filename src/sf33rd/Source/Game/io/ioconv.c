@@ -199,7 +199,7 @@ void keyConvert() {
             // Log device info once per player per session
             static bool logged_device_info[2] = { false, false };
             if (!logged_device_info[i]) {
-                SDL_Log("P%d device_id=%d, is_keyboard=%d, is_joystick=%d", i + 1, device_id, is_keyboard, is_joystick);
+                I_Log("P%d device_id=%d, is_keyboard=%d, is_joystick=%d", i + 1, device_id, is_keyboard, is_joystick);
                 logged_device_info[i] = true;
             }
 

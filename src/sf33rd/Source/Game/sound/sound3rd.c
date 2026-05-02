@@ -37,7 +37,7 @@
 #include "sf33rd/Source/PS2/cseDataFiles/CSEData.h"
 #include "structs.h"
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 #define ADX_STM_WORK_SIZE 252388
 #define BGM_TABLE_SIZE 68
@@ -239,8 +239,8 @@ void Exit_sound_system() {
 
 /** @brief Clear the BGM execution + request work areas. */
 void Init_bgm_work() {
-    SDL_zero(bgm_exe);
-    SDL_zero(bgm_req);
+    I_ZeroStruct(bgm_exe);
+    I_ZeroStruct(bgm_req);
 }
 
 /** @brief Stop all BGM and SE output. */
@@ -677,14 +677,14 @@ void setupAlwaysSeamlessFlag(s16 flag) {
 /** @brief Queue a BGM file for ADX playback (seamless entry or direct start). */
 static void bgm_play_request(s32 filenum, s32 flag) {
     if (flag == 0) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+        I_LogDebug(
                      "BGM: EntryAfs (seamless segment) fnum=%d [Mod override: assets/bgm_mod/%d.ogg]",
                      filenum,
                      filenum);
         ADX_EntryAfs(filenum);
     } else {
         int fnum = bgm_table[sys_w.bgm_type][filenum].fnum;
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+        I_LogDebug(
                      "BGM: StartAfs bgm_code=%d → AFS fnum=%d (bgm_type=%d) [Mod override: assets/bgm_mod/%d.ogg]",
                      filenum,
                      fnum,

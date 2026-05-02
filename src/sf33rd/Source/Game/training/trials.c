@@ -4,7 +4,7 @@
 #include "sf33rd/Source/Game/training/training_hud.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 #include "structs.h"
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 #include <stdio.h> // for snprintf
 
 /* RmlUi Phase 3 bypass */

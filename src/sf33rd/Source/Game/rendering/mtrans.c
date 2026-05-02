@@ -29,7 +29,7 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 // ⚡ Opt5: SIMDe for portable SIMD intrinsics (SSE+FMA on x86, NEON on ARM)
 #include <simde/x86/fma.h>
@@ -913,7 +913,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             cp->cg.code = cc.code;
             cp->x16 = 0;
             cp->x32 = 0;
-            SDL_zero(cp->map);
+            I_ZeroStruct(cp->map);
             cc.parts.group = i;
 
             while (count--) {
@@ -1276,7 +1276,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             cp->cg.code = cc.code;
             cp->x16 = 0;
             cp->x32 = 0;
-            SDL_zero(cp->map);
+            I_ZeroStruct(cp->map);
             cc.parts.group = i;
 
             while (count--) {
@@ -1653,7 +1653,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             cp->cg.code = cc.code;
             cp->x16 = 0;
             cp->x32 = 0;
-            SDL_zero(cp->map);
+            I_ZeroStruct(cp->map);
             cc.parts.group = i;
 
             while (count--) {

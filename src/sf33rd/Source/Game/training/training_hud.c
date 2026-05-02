@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/training/trials.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "training_state.h"
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 #include <stdio.h>
 
 void training_hud_init() {

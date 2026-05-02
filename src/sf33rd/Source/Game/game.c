@@ -64,7 +64,7 @@
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/training/trials.h"
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -236,8 +236,7 @@ void Game(struct _TASK* task_ptr) {
 
     // Safety bounds check
     if (G_No[1] < 0 || G_No[1] >= GAME_STATE_COUNT) {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION, "Game(): gs_G_No[1]=%d is out of bounds [0-%d)!", G_No[1], GAME_STATE_COUNT);
+        I_Error( "Game(): gs_G_No[1]=%d is out of bounds [0-%d)!", G_No[1], GAME_STATE_COUNT);
         return;
     }
 

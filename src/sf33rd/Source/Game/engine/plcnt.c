@@ -51,7 +51,7 @@
 #include "sf33rd/Source/Game/debug/debug_config.h"
 #endif
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 static void pli_0000();
 static void pli_1000();
@@ -589,7 +589,7 @@ static void init_app_30000() {
 static void pli_0000() {
     pcon_rno[1]++;
     round_slow_flag = false;
-    SDL_zeroa(plw);
+    I_ZeroArray(plw);
     setup_base_and_other_data();
 }
 

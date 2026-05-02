@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 #define CHK_MOVE_COUNT 28
 
@@ -84,7 +84,7 @@ void cmd_init(PLW* pl) {
     cmd_id = pl->wu.id;
     pl->cp = &wcp[cmd_id];
 
-    SDL_zeroa(waza_work[cmd_id]);
+    I_ZeroArray(waza_work[cmd_id]);
 
     // ⚡ Bolt: bulk memset replaces nested per-element zeroing loops
     memset(wcp[cmd_id].waza_flag, 0, sizeof(wcp[cmd_id].waza_flag));

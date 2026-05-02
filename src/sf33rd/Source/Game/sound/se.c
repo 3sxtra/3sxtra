@@ -12,7 +12,7 @@
 
 #include "sf33rd/Source/Game/sound/se.h"
 #include "common.h"
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -61,7 +61,7 @@ void Stage_BGM(u16 Stage_Number, u16 Round_Number) {
         return;
     }
 
-    SDL_Log("[%s] Stage_BGM: stage=%u round=%u bgm_type=%d → code=%u",
+    I_Log("[%s] Stage_BGM: stage=%u round=%u bgm_type=%d → code=%u",
             ModdedBGM_GetGameStateString(),
             Stage_Number,
             Round_Number,

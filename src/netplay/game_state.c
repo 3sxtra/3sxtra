@@ -52,6 +52,8 @@ static State state_buffer[STATE_BUFFER_MAX];
 #include "gekkonet.h"
 #undef Game
 #include "sf33rd/utils/djb2_hash.h"
+#define XXH_INLINE_ALL
+#include "sf33rd/utils/xxhash.h"
 
 #include "main.h"
 #include <stdio.h>
@@ -65,10 +67,10 @@ static State state_buffer[STATE_BUFFER_MAX];
 #include <stdint.h>
 
 #if UINTPTR_MAX == 0xffffffff
-#define EXPECTED_GAME_STATE_SIZE 17800
+#define EXPECTED_GAME_STATE_SIZE 17228
 #define EXPECTED_TASK_SIZE 20
 #else
-#define EXPECTED_GAME_STATE_SIZE 19376
+#define EXPECTED_GAME_STATE_SIZE 18808
 #define EXPECTED_TASK_SIZE 32
 #endif
 
@@ -89,6 +91,10 @@ _Static_assert(sizeof(struct _TASK) == EXPECTED_TASK_SIZE,
 void GameState_Save(GameState* dst) {
     if (!dst)
         return;
+    
+    // Fill with sentinels to ensure padding bytes and uninitialized pointers are caught
+    SDL_memset(dst, 0xFF, sizeof(GameState));
+    
     GS_SAVE(Scene_Cut);
     GS_SAVE(Time_Over);
     GS_SAVE(round_timer);
@@ -748,11 +754,17 @@ void GameState_Save(GameState* dst) {
     GS_SAVE(X_Adjust);
     GS_SAVE(Y_Adjust);
 
-    GS_SAVE(BgMATRIX);
     GS_SAVE(vm_w);
     GS_SAVE(ck_ex_option);
     GS_SAVE(X_Adjust_Buff);
     GS_SAVE(Y_Adjust_Buff);
+    
+    dst->state_checksum = 0;
+    dst->state_checksum = (u32)XXH3_64bits(dst, sizeof(GameState));
+}
+
+void GameState_InitializeSentinels(void) {
+    // Placeholder for global sentinels if needed
 }
 
 #define GS_LOAD(member) SDL_memcpy(&member, &src->member, sizeof(member))
@@ -1419,11 +1431,13 @@ void GameState_Load(const GameState* src) {
     GS_LOAD(X_Adjust);
     GS_LOAD(Y_Adjust);
 
-    GS_LOAD(BgMATRIX);
     GS_LOAD(vm_w);
     GS_LOAD(ck_ex_option);
     GS_LOAD(X_Adjust_Buff);
     GS_LOAD(Y_Adjust_Buff);
+    
+    // We intentionally do not overwrite the current state_checksum field in the game globals.
+    // The checksum is verified by the rollback system.
 }
 
 #if DEBUG

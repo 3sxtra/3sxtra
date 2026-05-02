@@ -28,7 +28,7 @@
 #include "sf33rd/Source/Game/training/training_state.h"
 #include "sf33rd/Source/Game/training/trials.h"
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 #include "port/tracy_zones.h"
 
@@ -1905,7 +1905,7 @@ void clear_hit_queue() {
     memset(mkm_wk, 0, sizeof(mkm_wk));
     memset(q_hit_push, 0, sizeof(q_hit_push));
 
-    SDL_zeroa(hs);
+    I_ZeroArray(hs);
 }
 
 /** @brief Converts a raw damage attribute to a character-specific variant. */

@@ -18,7 +18,7 @@
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include <stdbool.h>
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 #include <string.h>
 
@@ -51,10 +51,10 @@ void combo_cont_init() {
         cmb_calc_now[i] = 0;
         cst_read[i] = 0;
         cst_write[i] = 0;
-        SDL_zero(plw[i].combo_type);
-        SDL_zero(plw[i].remake_power);
-        SDL_zeroa(calc_hit[i]);
-        SDL_zeroa(score_calc[i]);
+        I_ZeroStruct(plw[i].combo_type);
+        I_ZeroStruct(plw[i].remake_power);
+        I_ZeroArray(calc_hit[i]);
+        I_ZeroArray(score_calc[i]);
     }
 
     first_attack = 0;
@@ -62,7 +62,7 @@ void combo_cont_init() {
     sa_kind = 0;
     cmb_all_stock[0] = 0;
     last_hit_time = 0;
-    SDL_zero(cmst_buff);
+    I_ZeroStruct(cmst_buff);
 }
 
 /** @brief Per-frame combo window update — checks and displays combos for both sides. */
@@ -180,10 +180,10 @@ void check_and_set_combo(s8 PL) {
 
 /** @brief Clears all per-combo tracking variables for a player. */
 void combo_hensuu_clear(s8 PL) {
-    SDL_zero(plw[PL].combo_type);
+    I_ZeroStruct(plw[PL].combo_type);
     combo_rp_clear_check(PL);
-    SDL_zeroa(calc_hit[PL]);
-    SDL_zeroa(score_calc[PL]);
+    I_ZeroArray(calc_hit[PL]);
+    I_ZeroArray(score_calc[PL]);
     bonus_pts[PL] = 0;
     plw[PL].combo_type.total = 0;
     hit_num = 0;
@@ -194,7 +194,7 @@ void combo_hensuu_clear(s8 PL) {
 void combo_rp_clear_check(s8 PL) {
     if (plw[PL].wu.routine_no[1] != 1 || plw[PL].wu.routine_no[2] != 17 || plw[PL].wu.routine_no[3] == 0 ||
         plw[PL].wu.routine_no[3] == 3) {
-        SDL_zero(plw[PL].remake_power);
+        I_ZeroStruct(plw[PL].remake_power);
     }
 }
 

@@ -767,16 +767,16 @@ typedef struct GameState {
     END_W end_w;
 
     // work_sys
-    f32 scr_sc;
+    s32 scr_sc;
     s32 X_Adjust;
     s32 Y_Adjust;
 
     // Additional globals
-    MTX BgMATRIX[9];
     struct _VM_W vm_w;
     _EXTRA_OPTION ck_ex_option;
     s32 X_Adjust_Buff[3];
     s32 Y_Adjust_Buff[3];
+    u32 state_checksum;
 } GameState;
 
 typedef struct State {
@@ -786,6 +786,7 @@ typedef struct State {
 
 void GameState_Save(GameState* dst);
 void GameState_Load(const GameState* src);
+void GameState_InitializeSentinels(void);
 
 struct GekkoGameEvent;
 int Netplay_GetPlayerHandle(void);

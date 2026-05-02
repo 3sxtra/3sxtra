@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/engine/plmain.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/training/trials.h"
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 TrainingGameState g_training_state = { 0 };
 bool g_lua_dummy_active = false;
@@ -229,7 +229,7 @@ static void resolve_advantage(TrainingPlayerState* self, TrainingPlayerState* op
     if (self->opponent_idle_frame != 0 && self->is_idle && opponent->is_idle) {
         if (self->opponent_was_affected) {
             self->advantage_value = self->opponent_idle_frame - self->player_idle_frame;
-            // SDL_Log("%s ADVANTAGE RESOLVED: %+d (%s idle %d, opp idle %d)",
+            // I_Log("%s ADVANTAGE RESOLVED: %+d (%s idle %d, opp idle %d)",
             //         label,
             //         self->advantage_value,
             //         label,

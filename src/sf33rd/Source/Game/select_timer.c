@@ -16,7 +16,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "types.h"
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 #include <stdbool.h>
 
@@ -69,7 +69,7 @@ void SelectTimer_Init() {
 
 /** @brief Clear and stop the select timer. */
 void SelectTimer_Finish() {
-    SDL_zero(select_timer_state);
+    I_ZeroStruct(select_timer_state);
 }
 
 /**

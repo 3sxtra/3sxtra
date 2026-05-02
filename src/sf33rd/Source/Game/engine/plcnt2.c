@@ -19,7 +19,7 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 static void setup_bs_scrrrl_bs();
 static void setup_bs_scrrrl_bs2();
@@ -75,7 +75,7 @@ void plcnt_b_init() {
     switch (pcon_rno[1]) {
     case 0:
         pcon_rno[1] = 2;
-        SDL_zeroa(plw);
+        I_ZeroArray(plw);
         setup_base_and_other_data();
         pcon_dp_flag = false;
         round_slow_flag = false;

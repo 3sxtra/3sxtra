@@ -30,7 +30,7 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-#include <SDL3/SDL.h>
+#include "port/I_System.h"
 
 static void setup_damage_process_flags(PLW* wk);
 static void Damage_00000(PLW* wk);
@@ -910,7 +910,7 @@ static void Damage_25000(PLW* wk) {
         wk->py->time = kizetsu_timer_table[(wk->kizetsu_kow & 0xF8) / 8][(wk->kizetsu_kow & 7) / 2][random_16()];
         wk->zuru_timer = 0;
         wk->zuru_ix_counter = 0;
-        SDL_zero(wk->remake_power);
+        I_ZeroStruct(wk->remake_power);
         check_em_tk_power_off(wk, (PLW*)wk->wu.target_adrs);
         grade_add_em_stun((wk->wu.id + 1) & 1);
         break;
