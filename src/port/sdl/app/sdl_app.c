@@ -82,8 +82,6 @@
 #include "port/render_pass.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 
-extern bool mods_menu_shader_bypass_enabled;
-
 #include <stdbool.h>
 #include "port/tracy_gpu.h"
 #include "port/tracy_zones.h"
@@ -157,7 +155,8 @@ static GLint s_pt_loc_source = -1;
 static GLint s_pt_loc_source_size = -1;
 static GLint s_pt_loc_filter_type = -1;
 
-static uint32_t audio_buffer_size = 2048;
+// Forward-declare: defined later in this file (line ~578)
+extern bool mods_menu_shader_bypass_enabled;
 
 // --- FrameGraph Callbacks ---
 

@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/init3rd.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "main.h"
+#include "port/config/config.h"
 #include "port/save/native_save.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/demo/demo00.h"
@@ -205,13 +206,12 @@ void Init_Task_Aload(struct _TASK* task_ptr) {
     Forbid_Reset = 1;
 }
 
-/** @brief Warning/disclaimer screen sub-step — waits for Warning() to complete. */
+/** @brief Warning/disclaimer screen sub-step — waits for Warning() to complete.
+ *  Skipped entirely when skip-intro is enabled. */
 void Init_Task_2nd(struct _TASK* task_ptr) {
-    if (Warning() == 0) {
-        return;
+    if (Config_GetBool(CFG_KEY_SKIP_INTRO) || Warning() != 0) {
+        task_ptr->r_no[0] += 1;
     }
-
-    task_ptr->r_no[0] += 1;
 }
 
 /**

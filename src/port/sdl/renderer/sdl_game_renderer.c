@@ -16,6 +16,7 @@
 #include "port/sdl/renderer/gl_compat.h"
 #include "port/render_pass.h"
 #include "port/render_job.h"
+#include <assert.h>
 #include <string.h>
 
 /* ================================================================
@@ -295,6 +296,7 @@ void GameRendererVtable_Init(void) {
     case RENDERER_OPENGL:       /* FALLTHROUGH */
     default:                    g_game_renderer = &s_vtable_gl;      break;
     }
+    assert(g_game_renderer && "GameRendererVtable_Init: vtable not set");
 }
 
 /* ================================================================

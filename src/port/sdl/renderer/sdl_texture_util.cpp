@@ -18,6 +18,7 @@
 #include "port/sdl/renderer/gl_compat.h"
 #include <string.h>
 #include <unordered_map>
+#include <cassert>
 
 /* ================================================================
  *  GPU backend — metadata tracking
@@ -331,6 +332,7 @@ void TextureUtilVtable_Init(void) {
     case RENDERER_OPENGL:        /* FALLTHROUGH */
     default:                     g_texture_util = &s_vtable_gl;    break;
     }
+    assert(g_texture_util && "TextureUtilVtable_Init: vtable not set");
 }
 
 /* ================================================================

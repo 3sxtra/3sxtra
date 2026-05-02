@@ -13,6 +13,7 @@
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "types.h"
+#include <assert.h>
 
 /* ================================================================
  *  Static const vtable instances — one per backend group
@@ -70,6 +71,7 @@ void TextRendererVtable_Init(void) {
     case RENDERER_OPENGL:        /* FALLTHROUGH */
     default:                     g_text_renderer = &s_vtable_gl;  break;
     }
+    assert(g_text_renderer && "TextRendererVtable_Init: vtable not set");
 }
 
 /* ================================================================
