@@ -31,7 +31,7 @@
 #include "structs.h"
 
 #include "port/I_System.h"
-
+#include <string.h>
 // ⚡ Opt5: SIMDe for portable SIMD intrinsics (SSE+FMA on x86, NEON on ARM)
 #include <simde/x86/fma.h>
 

@@ -13,6 +13,7 @@
 #include "common.h"
 #include "main.h"
 #include "port/input_definition.h"
+#include "port/I_System.h"
 #include "port/sdl/input/control_mapping_bindings.h"
 #include "port/sdl/input/sdl_pad.h"
 #include "port/linux/gpio_lag_test.h"
