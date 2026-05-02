@@ -332,11 +332,16 @@ static const GameRendererVtable s_vtable_classic = {
  *  Global vtable pointer
  * ================================================================ */
 
+extern const GameRendererVtable s_vtable_sw;
+
 const GameRendererVtable* g_game_renderer = NULL;
 
 void GameRendererVtable_Init(void) {
     RendererBackend r = SDLApp_GetRenderer();
     switch (r) {
+#if CRS_VIDEO_DRIVER_SOFTWARE
+    case RENDERER_SOFTWARE:     g_game_renderer = &s_vtable_sw;      break;
+#endif
     case RENDERER_SDLGPU:       g_game_renderer = &s_vtable_gpu;     break;
     case RENDERER_SDL2D:        g_game_renderer = &s_vtable_sdl;     break;
     case RENDERER_SDL2D_CLASSIC: g_game_renderer = &s_vtable_classic; break;

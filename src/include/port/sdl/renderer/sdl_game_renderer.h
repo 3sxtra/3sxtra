@@ -59,6 +59,9 @@ void SDLGameRenderer_DrawSprite2(const Sprite2* sprite2);
 // `active_layers` is a bitmask array — sprite i is only drawn if active_layers[chip[i].id] != 0.
 void SDLGameRenderer_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
 
+// Software renderer specific
+const void* sdl_sw_get_canvas(int* out_width, int* out_height, int* out_pitch_bytes);
+
 // Returns the cached GL texture ID for a given texture+palette combination.
 // Used by ImGui to render game textures. Returns 0 if not found/invalid.
 unsigned int SDLGameRenderer_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);

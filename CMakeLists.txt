@@ -24,6 +24,11 @@ option(ENABLE_ARCADE_ROM       "Build with arcade ROM support (minizip-ng)"     
 option(ENABLE_GPIO_LAG_TEST    "GPIO input lag measurement (Pi4)"                 OFF)
 option(INSTALL_ASSETS          "Install assets via symlinks (OFF for CI release)" ON)
 
+# ARM / Software Renderer options
+option(CRS_SOFTWARE_RENDERER   "Build with software rasterizer backend"           OFF)
+option(CRS_RPI_DRM             "Build ARM standalone app using KMS/DRM & fbdev"   OFF)
+option(CRS_MISTER              "Build for MiSTer target (strips features, 16bpp)" OFF)
+
 # Set third-party directory based on platform
 # RPi4 uses a separate directory to avoid conflicts with Windows-built files.
 # Any platform can override via -DTHIRD_PARTY_DIR=<path> (e.g. third_party_linux).
@@ -265,6 +270,13 @@ file(GLOB_RECURSE GAME_SRC CONFIGURE_DEPENDS src/*.c src/*.cpp)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/win32/")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/linux/")
 
+if(NOT CRS_RPI_DRM AND NOT CRS_MISTER)
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/arm/")
+else()
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdl/app/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdl/rmlui/")
+endif()
+
 # --- Feature-toggle conditional source exclusions ---
 if(NOT ENABLE_NETPLAY)
     list(FILTER GAME_SRC EXCLUDE REGEX "src/netplay/")
@@ -449,6 +461,10 @@ target_compile_definitions(3sx PRIVATE
     $<$<BOOL:${ENABLE_LEADERBOARD}>:ENABLE_LEADERBOARD>
     $<$<BOOL:${ENABLE_RMLUI}>:RMLUI_SDL_VERSION_MAJOR=3>
     $<$<BOOL:${ENABLE_GPIO_LAG_TEST}>:ENABLE_GPIO_LAG_TEST>
+    $<$<BOOL:${CRS_SOFTWARE_RENDERER}>:CRS_VIDEO_DRIVER_SOFTWARE=1>
+    $<$<BOOL:${CRS_RPI_DRM}>:CRS_RPI_DRM=1>
+    $<$<BOOL:${CRS_MISTER}>:CRS_MISTER=1>
+    $<$<BOOL:${CRS_MISTER}>:CRS_SW_CANVAS_16BPP=1>
 )
 
 

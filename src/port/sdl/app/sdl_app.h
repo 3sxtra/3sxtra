@@ -18,7 +18,8 @@ typedef enum RendererBackend {
     RENDERER_OPENGL,
     RENDERER_SDLGPU,
     RENDERER_SDL2D,
-    RENDERER_SDL2D_CLASSIC
+    RENDERER_SDL2D_CLASSIC,
+    RENDERER_SOFTWARE
 } RendererBackend;
 
 // Returns true for any SDL2D variant (optimized or classic benchmark)
