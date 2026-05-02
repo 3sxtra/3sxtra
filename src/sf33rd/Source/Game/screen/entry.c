@@ -3,6 +3,7 @@
  * Manages all the screens
  */
 
+#include "sf33rd/Source/Game/fsm.h"
 #include "sf33rd/Source/Game/screen/entry.h"
 #include "common.h"
 #include "constants.h"
@@ -363,9 +364,7 @@ static void Entry_03_2nd() {
     case ENTRY_PL_CREDIT:
         if (Switch_Screen(1) != 0) {
             Cover_Timer = 23;
-            G_No[1] = 1;
-            G_No[2] = 0;
-            G_No[3] = 0;
+            FSM_SetMode(MODE_ATTRACT);
             E_No[0] = ENTRY_MID_GAME_ENTRY;
             E_No[1] = ENTRY_SUB_INIT;
             E_No[2] = 0;
@@ -431,9 +430,7 @@ static void Entry_04_2nd() {
         if (Switch_Screen(0) != 0) {
             E_No[2] += 1;
             Cover_Timer = 23;
-            G_No[1] = 1;
-            G_No[2] = 0;
-            G_No[3] = 0;
+            FSM_SetMode(MODE_ATTRACT);
 
             if (E_No[3] == 0xFF) {
                 E_Number[LOSER][0] = ENTRY_PL_CREDIT;
@@ -537,9 +534,7 @@ static void Entry_06_2nd() {
 
     default:
         Switch_Screen(1);
-        G_No[1] = 1;
-        G_No[2] = 0;
-        G_No[3] = 0;
+        FSM_SetMode(MODE_ATTRACT);
         E_No[0] = ENTRY_MID_GAME_ENTRY;
         E_No[1] = ENTRY_SUB_INIT;
         E_No[2] = 0;
@@ -596,9 +591,7 @@ static void Entry_07_2nd() {
     default:
         if (Switch_Screen(1) != 0) {
             Cover_Timer = 23;
-            G_No[1] = 1;
-            G_No[2] = 0;
-            G_No[3] = 0;
+            FSM_SetMode(MODE_ATTRACT);
             E_No[0] = ENTRY_MID_GAME_ENTRY;
             E_No[1] = ENTRY_SUB_INIT;
             E_No[2] = 0;
@@ -719,9 +712,7 @@ static void entry_end_2nd(s16 jump_index) {
     default:
         if (Switch_Screen(1) != 0) {
             Cover_Timer = 23;
-            G_No[1] = 1;
-            G_No[2] = 0;
-            G_No[3] = 0;
+            FSM_SetMode(MODE_ATTRACT);
             E_No[0] = ENTRY_MID_GAME_ENTRY;
             E_No[1] = ENTRY_SUB_INIT;
             E_No[2] = 0;

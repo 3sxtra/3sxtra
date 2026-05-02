@@ -47,6 +47,14 @@ void FSM_AdvanceSubState(void);
 /** @brief Advance to the next sub-sub-state (G_No[3]++) */
 void FSM_AdvanceSubSubState(void);
 
+/** @brief Set the Loop_Demo phase counter (G_No[1]) and zero sub-states.
+ *  Loop_Demo reuses G_No[1] as a sequential phase index (0–7),
+ *  distinct from the GameModeState enum used by Game(). */
+void FSM_SetDemoPhase(u8 phase);
+
+/** @brief Advance to the next Loop_Demo phase (G_No[1]++) and zero sub-states. */
+void FSM_AdvanceDemoPhase(void);
+
 #ifdef __cplusplus
 }
 #endif

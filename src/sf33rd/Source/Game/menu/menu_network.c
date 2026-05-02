@@ -1,3 +1,4 @@
+#include "sf33rd/Source/Game/fsm.h"
 #include "sf33rd/Source/Game/menu/menu_network.h"
 #include "sf33rd/Source/Game/menu/menu_network_constants.h"
 #include "sf33rd/Source/Game/menu/menu_input_constants.h"
@@ -1697,7 +1698,7 @@ void Menu_ReenterNetworkLobby(void) {
         D_No[ix] = 0;
     }
 
-    G_No[0] = GAME_STATE_MENU;
+    FSM_SetMainState(GAME_STATE_MENU);
     G_No[1] = GAME_MODE_MENU_IDLE; // Menu Idle State
     E_No[0] = 1;
     E_No[1] = 2;

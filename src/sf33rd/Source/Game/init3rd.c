@@ -10,6 +10,7 @@
  * Originally from the PS2 game module.
  */
 
+#include "sf33rd/Source/Game/fsm.h"
 #include "sf33rd/Source/Game/init3rd.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "main.h"
@@ -230,7 +231,7 @@ void Init_Task_End(struct _TASK* task_ptr) {
         cpReadyTask(TASK_GAME, Game_Task);
         task_ptr->r_no[0] += 1;
         task_ptr->r_no[1] = 0;
-        G_No[0] = 1;
+        FSM_SetMainState(MAIN_STATE_LOOP_DEMO);
         cpReadyTask(TASK_ENTRY, Entry_Task);
         cpReadyTask(TASK_DEBUG, Debug_Task);
     }

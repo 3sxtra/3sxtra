@@ -6,6 +6,7 @@
  * and selection confirmation.  Split from menu.c for maintainability.
  */
 
+#include "sf33rd/Source/Game/fsm.h"
 #include "common.h"
 #include "main.h"
 #include "netplay/netplay.h"
@@ -2473,7 +2474,7 @@ void Back_to_Mode_Select(struct _TASK* task_ptr) {
     s16 ix;
 
     FadeOut(1, FADE_OPAQUE, 8);
-    G_No[0] = 2;
+    FSM_SetMainState(MAIN_STATE_GAME);
     G_No[1] = 12;
     G_No[2] = 0;
     G_No[3] = 0;
