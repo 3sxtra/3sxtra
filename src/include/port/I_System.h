@@ -22,7 +22,7 @@ void I_MemCopy(void* dst, const void* src, size_t size);
  * @brief Helper macro to zero out a struct or array.
  */
 #define I_ZeroStruct(x) I_MemSet(&(x), 0, sizeof(x))
-#define I_ZeroArray(x)  I_MemSet((x), 0, sizeof(x))
+#define I_ZeroArray(x) I_MemSet((x), 0, sizeof(x))
 #define I_ZeroPointer(x) I_MemSet((x), 0, sizeof(*(x)))
 
 /**

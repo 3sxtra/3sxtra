@@ -11,7 +11,6 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-
 const u8 ci_color_tbl[26] = { 21, 2,  22, 2,  21, 2,  20, 2,  21, 2,  22, 2,  21,
                               2,  20, 2,  21, 2,  22, 2,  21, 2,  20, 2,  20, 255 };
 

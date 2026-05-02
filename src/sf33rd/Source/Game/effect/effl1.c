@@ -255,10 +255,10 @@ static void effL1_w_grade_init(WORK_Other_CONN* ewk) {
 static void effL1_k_grade_init(WORK_Other_CONN* ewk) {
     s16 i;
 
-    if (g_state.kakushi_op) {
-        ewk->wu.direction = g_state.judge_item[g_state.kakushi_ix][1].grade;
+    if (g_state.hidden_char_operator) {
+        ewk->wu.direction = g_state.judge_item[g_state.hidden_char_index][1].grade;
     } else {
-        ewk->wu.direction = g_state.judge_com[g_state.kakushi_ix].grade;
+        ewk->wu.direction = g_state.judge_com[g_state.hidden_char_index].grade;
     }
 
     ewk->num_of_conn = 2;
@@ -267,7 +267,7 @@ static void effL1_k_grade_init(WORK_Other_CONN* ewk) {
         ewk->conn[i] = gj_loser[i];
     }
 
-    ewk->conn[0].chr = gj_loser_face[g_state.My_char[g_state.kakushi_ix]];
+    ewk->conn[0].chr = gj_loser_face[g_state.My_char[g_state.hidden_char_index]];
     ewk->conn[1].chr += ewk->wu.direction;
     ewk->wu.position_x -= 384;
 }
@@ -320,10 +320,10 @@ static void effL1_w_graph_init(WORK_Other_CONN* ewk) {
 static void effL1_k_graph_init(WORK_Other_CONN* ewk) {
     s16 i;
 
-    if (g_state.kakushi_op) {
-        ewk->wu.direction = grade_get_my_point_percentage((s32)g_state.kakushi_ix, (s16)(ewk->wu.type - 16));
+    if (g_state.hidden_char_operator) {
+        ewk->wu.direction = grade_get_my_point_percentage((s32)g_state.hidden_char_index, (s16)(ewk->wu.type - 16));
     } else {
-        ewk->wu.direction = grade_get_cm_point_percentage((s32)g_state.kakushi_ix, (s16)(ewk->wu.type - 16));
+        ewk->wu.direction = grade_get_cm_point_percentage((s32)g_state.hidden_char_index, (s16)(ewk->wu.type - 16));
     }
 
     if (ewk->wu.direction) {

@@ -112,7 +112,8 @@ void set_rl_waza(PLW* wk) {
     while (1) {
         if (g_state.Bonus_Game_Flag == 20) {
             if (wk->wu.pl_operator != 0) {
-                if (wk->wu.xyz[0].disp.pos < g_state.bs2_hosei[0] || wk->wu.xyz[0].disp.pos > g_state.bs2_hosei[1]) {
+                if (wk->wu.xyz[0].disp.pos < g_state.bonus_stage2_offset[0] ||
+                    wk->wu.xyz[0].disp.pos > g_state.bonus_stage2_offset[1]) {
                     break;
                 }
 
@@ -169,7 +170,8 @@ s16 check_rl_on_car(PLW* wk) {
         wk->bs2_area_car = 1;
     }
 
-    if (wk->wu.xyz[0].disp.pos >= g_state.bs2_hosei[0] && !(wk->wu.xyz[0].disp.pos > g_state.bs2_hosei[1])) {
+    if (wk->wu.xyz[0].disp.pos >= g_state.bonus_stage2_offset[0] &&
+        !(wk->wu.xyz[0].disp.pos > g_state.bonus_stage2_offset[1])) {
         rnum = 1;
     }
 

@@ -43,8 +43,8 @@ static void ms_win_enter(struct _TASK* tp) {
     g_state.Replay_Status[0] = 0;
     g_state.Replay_Status[1] = 0;
 
-    tp->free[0] = 1; /* Match g_state.M_No[0] phases 1 to 5 */
-    tp->free[1] = 0; /* Matches g_state.M_No[1] */
+    tp->free[0] = 1; /* Match g_state.message_phase[0] phases 1 to 5 */
+    tp->free[1] = 0; /* Matches g_state.message_phase[1] */
 
     g_state.Game_pause = 0;
     BGM_Request(55);
@@ -80,7 +80,8 @@ static void ms_win_tick(struct _TASK* tp) {
         tp->free[0] += 1;
 
         /* g_state.Score/win globals — always compute, even in RmlUi mode */
-        g_state.WGJ_Score = g_state.Continue_Coin[g_state.Winner_id] + g_state.Score[g_state.Winner_id][g_state.Play_Type];
+        g_state.WGJ_Score =
+            g_state.Continue_Coin[g_state.Winner_id] + g_state.Score[g_state.Winner_id][g_state.Play_Type];
         g_state.WGJ_Win = g_state.Win_Record[g_state.Winner_id];
 
         if (use_rmlui && rmlui_screen_winner) {
@@ -197,8 +198,8 @@ static void ms_loser_enter(struct _TASK* tp) {
     g_state.Replay_Status[0] = 0;
     g_state.Replay_Status[1] = 0;
 
-    tp->free[0] = 1; /* Match g_state.M_No[0] */
-    tp->free[1] = 0; /* Match g_state.M_No[1] */
+    tp->free[0] = 1; /* Match g_state.message_phase[0] */
+    tp->free[1] = 0; /* Match g_state.message_phase[1] */
 
     g_state.Game_pause = 0;
     BGM_Request(55);

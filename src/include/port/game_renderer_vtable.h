@@ -58,7 +58,8 @@ typedef struct GameRendererVtable {
     /* ---- Overlays (3) ---- */
     void (*DrawOverlayQuad)(void* texture, float x, float y, float w, float h, float z);
     void (*DrawOverlayQuadEx)(void* texture, float x, float y, float w, float h, float z, int flip_x, int flip_y);
-    void (*DrawOverlaySubQuadEx)(void* texture, float x, float y, float w, float h, float u0, float v0, float u1, float v1, float z);
+    void (*DrawOverlaySubQuadEx)(void* texture, float x, float y, float w, float h, float u0, float v0, float u1,
+                                 float v1, float z);
 } GameRendererVtable;
 
 /** Active backend vtable — set once by GameRendererVtable_Init(). */

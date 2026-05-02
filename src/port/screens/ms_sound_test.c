@@ -226,7 +226,8 @@ static void sound_test_tick(struct _TASK* task_ptr) {
     }
 
     /* Item 6 (Exit) or Cancel — return to Option_Select */
-    if (g_state.IO_Result == 0x200 || ((g_state.Menu_Cursor_Y[0] == 6) && (g_state.IO_Result == 0x100 || g_state.IO_Result == 0x4000))) {
+    if (g_state.IO_Result == 0x200 ||
+        ((g_state.Menu_Cursor_Y[0] == 6) && (g_state.IO_Result == 0x100 || g_state.IO_Result == 0x4000))) {
         SE_selected();
         if (use_rmlui && rmlui_menu_sound)
             rmlui_sound_menu_hide();

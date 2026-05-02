@@ -22,6 +22,11 @@ typedef struct {
 
 void Snapshot_Init(void);
 void Snapshot_SaveFromState(int frame, const GameState* state, uint32_t checksum);
+
+/// Returns 0 on success, -1 on failure.
 int Snapshot_Get(int frame, GameState* out_state, uint32_t* out_checksum);
+
+/// Returns the number of valid (non-empty) entries currently in the ring.
+int Snapshot_GetValidCount(void);
 
 #endif

@@ -122,7 +122,8 @@ s32 effect_A9_init(s16 Char_Index, s16 Option, s16 Pos_Index, s16 Option2) {
     ewk->wu.char_index = Char_Index;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.xyz[0].disp.pos = g_state.Offset_BG_X[3] + g_state.bg_w.bgw[3].wxy[0].disp.pos + Position_Data_A9[Pos_Index][0];
+    ewk->wu.xyz[0].disp.pos =
+        g_state.Offset_BG_X[3] + g_state.bg_w.bgw[3].wxy[0].disp.pos + Position_Data_A9[Pos_Index][0];
     ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[3].wxy[1].disp.pos + Position_Data_A9[Pos_Index][1];
     ewk->wu.xyz[2].disp.pos = Position_Data_A9[Pos_Index][2];
     ewk->wu.vital_new = Position_Data_A9[Pos_Index][3];

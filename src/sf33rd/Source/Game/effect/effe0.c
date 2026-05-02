@@ -145,7 +145,8 @@ s32 effect_E0_init(s16 Direction, s16 dm_vital, s16 Pos_Type) {
     ewk->wu.direction = Direction;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.xyz[0].disp.pos = g_state.Offset_BG_X[3] + g_state.bg_w.bgw[3].wxy[0].disp.pos + Plate_Pos_Data_E0[Pos_Type][0];
+    ewk->wu.xyz[0].disp.pos =
+        g_state.Offset_BG_X[3] + g_state.bg_w.bgw[3].wxy[0].disp.pos + Plate_Pos_Data_E0[Pos_Type][0];
     ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[3].wxy[1].disp.pos + Plate_Pos_Data_E0[Pos_Type][1];
     ewk->wu.position_z = 17;
 

@@ -30,7 +30,7 @@ extern s16 old_cmb_flag[2];
 extern s8 cmb_stock[2];
 extern s8 first_attack;
 extern s8 rever_attack[2];
-extern s8 paring_attack[2];
+extern s8 parry_attack[2];
 extern s8 bonus_pts[2];
 extern s16 hit_num;
 extern u8 sa_kind;

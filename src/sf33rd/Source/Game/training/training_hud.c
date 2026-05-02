@@ -17,9 +17,6 @@ void training_hud_init() {
     // Basic setup if required
 }
 
-
-
-
 static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
     Quad q;
 

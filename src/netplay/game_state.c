@@ -89,12 +89,14 @@ _Static_assert(sizeof(struct _TASK) == EXPECTED_TASK_SIZE,
 #define GS_SAVE(member) SDL_memcpy(&dst->member, &member, sizeof(member))
 
 void GameState_Save(GameState* dst) {
-    if (!dst) return;
+    if (!dst)
+        return;
     SDL_memcpy(dst, &g_state, sizeof(GameState));
 }
 
 void GameState_Load(const GameState* src) {
-    if (!src) return;
+    if (!src)
+        return;
     SDL_memcpy(&g_state, src, sizeof(GameState));
 }
 
@@ -237,7 +239,10 @@ uint32_t save_current_state(void* buffer, int frame) {
     // This catches desyncs during character select, not only during gameplay.
     if (battle_start_frame < 0) {
         battle_start_frame = frame;
-        SDL_Log("[P%d] checksumming active from frame %d (g_state.G_No[1]=%d)", configuration.netplay.port, frame, g_state.G_No[1]);
+        SDL_Log("[P%d] checksumming active from frame %d (g_state.fsm[1]=%d)",
+                configuration.netplay.port,
+                frame,
+                g_state.fsm[1]);
     }
 
     const bool checksumming_active = battle_start_frame >= 0;
@@ -296,14 +301,28 @@ uint32_t save_current_state(void* buffer, int frame) {
             // Sweep remaining pointer-like values in PLW.
             // Use fixed uint64_t stride so both 32-bit and 64-bit platforms
             // scan the same bytes and produce identical checksums.
+            //
+            // Heuristic: zero any 8-byte word that looks like a pointer.
+            // On 64-bit: valid userspace addresses are > 0x1000 and typically
+            //   < 0x800000000000 (48-bit canonical on x86-64 and AArch64).
+            //   We also check that it's above 4GB to avoid false-matching
+            //   ordinary integer values packed in the struct.
+            // On 32-bit: pointers are 4 bytes, so a uint64_t spanning two
+            //   adjacent fields can't reliably detect them — skip the sweep
+            //   since sanitize_plw_pointers() already zeroed known pointers.
+#if UINTPTR_MAX > 0xFFFFFFFFULL
             uint64_t* words = (uint64_t*)&plw_scratch[p];
             const size_t count = sizeof(PLW) / sizeof(uint64_t);
             for (size_t i = 0; i < count; i++) {
                 uint64_t v = words[i];
-                if (v > 0x100000000ULL && (v >> 47) == 0) {
+                // Portable userspace pointer check: above 4GB (rules out
+                // small integers) and below 128TB (covers both x86-64
+                // canonical and ARM64 with PAC/MTE upper-bit metadata stripped)
+                if (v > 0x100000000ULL && v < 0x800000000000ULL) {
                     words[i] = 0;
                 }
             }
+#endif
         }
 
         // --- Build combined hash from PLW + whitelisted globals ---
@@ -345,7 +364,7 @@ uint32_t save_current_state(void* buffer, int frame) {
         h = djb2_update_mem(h, (const uint8_t*)&gs->Attack_Counter, sizeof(gs->Attack_Counter));
         h = djb2_update_mem(h, (const uint8_t*)&gs->Bullet_No, sizeof(gs->Bullet_No));
         h = djb2_update_mem(h, (const uint8_t*)&gs->Bullet_Counter, sizeof(gs->Bullet_Counter));
-        h = djb2_update_mem(h, (const uint8_t*)&gs->paring_counter, sizeof(gs->paring_counter));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->parry_counter, sizeof(gs->parry_counter));
 
         // Game flow
         h = djb2_update_mem(h, (const uint8_t*)&gs->Present_Mode, sizeof(gs->Present_Mode));
@@ -358,7 +377,7 @@ uint32_t save_current_state(void* buffer, int frame) {
 
         // Super gauge / stun
         h = djb2_update_mem(h, (const uint8_t*)&gs->super_arts, sizeof(gs->super_arts));
-        h = djb2_update_mem(h, (const uint8_t*)&gs->piyori_type, sizeof(gs->piyori_type));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->stun_type, sizeof(gs->stun_type));
         h = djb2_update_mem(h, (const uint8_t*)&gs->Max_vitality, sizeof(gs->Max_vitality));
 
 #if DEBUG

@@ -968,7 +968,8 @@ void sag_union_ps2(PLW* wk) {
                     addSAAttribute(&wk->wu.kind_of_waza, &wk->wu.at_koa);
                 }
 
-                if (g_state.My_char[wk->wu.id] == 10 || g_state.My_char[wk->wu.id] == 16 || g_state.My_char[wk->wu.id] == 18) {
+                if (g_state.My_char[wk->wu.id] == 10 || g_state.My_char[wk->wu.id] == 16 ||
+                    g_state.My_char[wk->wu.id] == 18) {
                     wk->wu.kind_of_waza |= 32;
                     wk->wu.at_koa = 128;
                 }

@@ -92,7 +92,7 @@ void Bg_TexInit() {
 void Bg_Close() {
     u32 i;
 
-    g_state.tokusyu_stage = 0;
+    g_state.special_stage = 0;
     g_state.rw_num = 0;
 
     for (i = 0; i < 3; i++) {
@@ -243,7 +243,7 @@ void Bg_Texture_Load2(u8 type) {
     bg_texture_type = 0x18; // select/etc screen (ramcnt type)
     (void)assign;
     g_state.ending_flag = 0;
-    g_state.tokusyu_stage = 0;
+    g_state.special_stage = 0;
     g_state.rw_num = 0;
 
     for (i = 0; i < 4; i++) {
@@ -339,7 +339,7 @@ void Bg_Texture_Load_Ending(s16 type) {
 
     switch (type) {
     case 14:
-        g_state.tokusyu_stage = 5;
+        g_state.special_stage = 5;
 
         for (i = 0; i < 4; i++) {
             for (j = 0; j < 4; j++) {
@@ -360,11 +360,11 @@ void Bg_Texture_Load_Ending(s16 type) {
         break;
 
     case 15:
-        g_state.tokusyu_stage = 6;
+        g_state.special_stage = 6;
         break;
 
     case 19:
-        g_state.tokusyu_stage = 7;
+        g_state.special_stage = 7;
         ppgSetupCurrentDataList(&ppgAkeList);
         ppgSetupPalChunk(NULL, loadAdrs, loadSize, 0, 0, 1);
         ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 0xE4, 1, 0, 0);
@@ -374,7 +374,7 @@ void Bg_Texture_Load_Ending(s16 type) {
         break;
 
     default:
-        g_state.tokusyu_stage = 7;
+        g_state.special_stage = 7;
         break;
     }
 

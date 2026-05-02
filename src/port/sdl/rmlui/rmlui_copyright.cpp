@@ -66,8 +66,9 @@ extern "C" void rmlui_copyright_init(void) {
             break;
         }
     });
-    ctor.BindFunc("copyright_visible",
-                  [](Rml::Variant& v) { v = (bool)(g_state.Country >= 1 && g_state.Country <= 8 && g_state.Country != 0); });
+    ctor.BindFunc("copyright_visible", [](Rml::Variant& v) {
+        v = (bool)(g_state.Country >= 1 && g_state.Country <= 8 && g_state.Country != 0);
+    });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;

@@ -618,15 +618,15 @@ void SF3_logo(u8 step) {
     /* RmlUi bypass: suppress original sprite logo when an RmlUi screen
      * provides its own logo. Two cases:
      *   1. Title screen (title_tex_flag set) — large animated logo
-     *   2. Attract demo fights (g_state.G_No[0]==1, g_state.G_No[1]>=3) — small in-match logo
+     *   2. Attract demo fights (g_state.fsm[0]==1, g_state.fsm[1]>=3) — small in-match logo
      *      replaced by attract_overlay.rml's logo_small.png */
-    if (use_rmlui &&
-        ((rmlui_screen_title && title_tex_flag) || (rmlui_screen_attract_overlay && g_state.G_No[0] == 1 && g_state.G_No[1] >= 3))) {
+    if (use_rmlui && ((rmlui_screen_title && title_tex_flag) ||
+                      (rmlui_screen_attract_overlay && g_state.fsm[0] == 1 && g_state.fsm[1] >= 3))) {
         /* Match native SF33rd_Logo timing:
          *   step 0-7  = logo building tile-by-tile  → HD logo stays hidden
          *   step == 8 = logo fully revealed          → show HD logo
          *   step > 8  = logo disappearing            → hide HD logo */
-        if (rmlui_screen_attract_overlay && g_state.G_No[0] == 1 && g_state.G_No[1] >= 3) {
+        if (rmlui_screen_attract_overlay && g_state.fsm[0] == 1 && g_state.fsm[1] >= 3) {
             if (step == 8)
                 rmlui_attract_overlay_show_logo();
             else if (step > 8)

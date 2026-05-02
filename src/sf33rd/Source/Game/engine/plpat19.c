@@ -346,7 +346,8 @@ static void Att_AIRDASH(PLW* wk) {
 
         if (kabe_check3(wk) != 0) {
             wk->wu.rl_flag = (wk->wu.rl_flag + 1) & 1;
-            wk->wu.xyz[0].disp.pos = wk->wu.rl_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
+            wk->wu.xyz[0].disp.pos =
+                wk->wu.rl_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
             set_char_move_init(&wk->wu, 5, 65);
             wk->wu.routine_no[3] = 5;
             wk->wu.cg_type = 0;
@@ -384,7 +385,8 @@ static void Att_AIRDASH(PLW* wk) {
 
         if (kabe_check3(wk)) {
             wk->wu.rl_flag = wk->wu.rl_flag + 1 & 1;
-            wk->wu.xyz[0].disp.pos = wk->wu.rl_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
+            wk->wu.xyz[0].disp.pos =
+                wk->wu.rl_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
             set_char_move_init(&wk->wu, 5, 65);
             wk->wu.routine_no[3] = 5;
             wk->wu.cg_type = 0;

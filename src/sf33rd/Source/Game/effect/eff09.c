@@ -170,7 +170,8 @@ static void eff09_1000(WORK_Other* ewk) {
             break;
         }
 
-        if (ewk->wu.old_rno[0] && !g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll && eff_hit_check(ewk, 0)) {
+        if (ewk->wu.old_rno[0] && !g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll &&
+            eff_hit_check(ewk, 0)) {
             ewk->wu.routine_no[1]++;
             set_char_move_init(&ewk->wu, 0, 65);
         }
@@ -267,8 +268,10 @@ static void eff09_2000(WORK_Other* ewk) {
                 effect_B4_init(ewk);
                 work = random_16();
                 work &= 7;
-                add_super_arts_gauge(
-                    g_state.plw[ewk->master_id].sa, g_state.plw[ewk->master_id].wu.id, 1, g_state.plw[ewk->master_id].metamorphose);
+                add_super_arts_gauge(g_state.plw[ewk->master_id].sa,
+                                     g_state.plw[ewk->master_id].wu.id,
+                                     1,
+                                     g_state.plw[ewk->master_id].metamorphose);
                 break;
             }
 

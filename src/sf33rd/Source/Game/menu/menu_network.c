@@ -562,8 +562,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        g_state.Menu_Suicide[0] = 1;                       /* kill gateway items (master_player=0) */
-        g_state.Menu_Suicide[1] = 0;                       /* enable lobby items (master_player=1) */
+        g_state.Menu_Suicide[0] = 1;               /* kill gateway items (master_player=0) */
+        g_state.Menu_Suicide[1] = 0;               /* enable lobby items (master_player=1) */
         Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
@@ -1308,8 +1308,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        g_state.Menu_Suicide[0] = 1;                       /* kill gateway items (master_player=0) */
-        g_state.Menu_Suicide[1] = 0;                       /* enable lobby items (master_player=1) */
+        g_state.Menu_Suicide[0] = 1;               /* kill gateway items (master_player=0) */
+        g_state.Menu_Suicide[1] = 0;               /* enable lobby items (master_player=1) */
         Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
@@ -1692,16 +1692,16 @@ void Menu_ReenterNetworkLobby(void) {
     s16 ix;
     InitTask_ClearAllRNo();
     for (ix = 0; ix < 4; ix++) {
-        g_state.G_No[ix] = 0;
-        g_state.E_No[ix] = 0;
-        g_state.D_No[ix] = 0;
+        g_state.fsm[ix] = 0;
+        g_state.entry_phase[ix] = 0;
+        g_state.demo_phase[ix] = 0;
     }
 
     FSM_SetMainState(GAME_STATE_MENU);
-    g_state.G_No[1] = GAME_MODE_MENU_IDLE; // Menu Idle State
-    g_state.E_No[0] = 1;
-    g_state.E_No[1] = 2;
-    g_state.E_No[2] = 2;
+    g_state.fsm[1] = GAME_MODE_MENU_IDLE; // Menu Idle State
+    g_state.entry_phase[0] = 1;
+    g_state.entry_phase[1] = 2;
+    g_state.entry_phase[2] = 2;
     g_state.Break_Into = 0;
 
     g_state.Demo_Flag = 1;
@@ -1746,7 +1746,7 @@ void Menu_ReenterNetworkLobby(void) {
 
     // TASK_INIT must be DEACTIVATED here.  Its r_no[0] is zeroed above,
     // and Init_Task dispatches r_no[0]==0 → Init_Task_1st() which performs
-    // a full cold-boot init (clears g_state.G_No[], resets textures, creates
+    // a full cold-boot init (clears g_state.fsm[], resets textures, creates
     // TASK_RESET).  Leaving condition=1 causes the entire game state to be
     // clobbered on the next frame, freezing the lobby.
     InitTask_Deactivate();

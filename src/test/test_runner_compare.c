@@ -145,7 +145,7 @@ static void compare_main_values(SDL_IOStream* io) {
         const s16 vital_new_cps3 = read_s16(io, plw_offset + WORK_VITAL_NEW_OFFSET);
         stop_if(vital_new_3sx != vital_new_cps3);
 
-        const s16 stun_3sx = g_state.piyori_type[i].now.quantity.h;
+        const s16 stun_3sx = g_state.stun_type[i].now.quantity.h;
         const s16 stun_cps3 = read_s16(io, PIYORI_TYPE_OFFSET + i * sizeof(PiyoriType) + offsetof(PiyoriType, now));
         stop_if(stun_3sx != stun_cps3);
 
@@ -186,12 +186,12 @@ static void compare_service_values(SDL_IOStream* io, bool compare_characters, Ui
 
     for (int i = 0; i < 4; i++) {
         const u16 c_no_cps3 = read_u16(io, C_NO_OFFSET + i * sizeof(u16));
-        stop_if(g_state.C_No[i] != c_no_cps3);
+        stop_if(g_state.manage_phase[i] != c_no_cps3);
 
         const u16 g_no_cps3 = read_u16(io, G_NO_OFFSET + i * sizeof(u16));
 
         if (i != 0) {
-            stop_if(g_state.G_No[i] != g_no_cps3);
+            stop_if(g_state.fsm[i] != g_no_cps3);
         }
     }
 
@@ -314,7 +314,7 @@ void compare_values(SDL_IOStream* io, Uint64 frame) {
     // compare_waza_work(io);
     // compare_wcp(io);
 
-    const bool compare_characters = g_state.G_No[1] == 2 && g_state.G_No[2] == 1;
+    const bool compare_characters = g_state.fsm[1] == 2 && g_state.fsm[2] == 1;
     compare_service_values(io, compare_characters, frame);
 
     if (compare_characters) {

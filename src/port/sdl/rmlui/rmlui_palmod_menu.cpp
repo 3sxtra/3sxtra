@@ -508,13 +508,15 @@ static void apply_remix_preview() {
 
     // Apply for each active target
     if (s_remix_target_p1) {
-        int start = (s_remix_scope == 1) ? ((s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)g_state.Player_Color[0]) : 0;
+        int start =
+            (s_remix_scope == 1) ? ((s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)g_state.Player_Color[0]) : 0;
         int end = (s_remix_scope == 1) ? start : 15;
         apply_to_range(start, end);
     }
     if (s_remix_target_p2) {
-        int start =
-            (s_remix_scope == 1) ? 16 + ((s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)g_state.Player_Color[1]) : 16;
+        int start = (s_remix_scope == 1)
+                        ? 16 + ((s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)g_state.Player_Color[1])
+                        : 16;
         int end = (s_remix_scope == 1) ? start : 31;
         apply_to_range(start, end);
     }

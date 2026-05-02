@@ -74,9 +74,10 @@ static void tty_enter_graphics() {
             drm_tty_saved_mode = mode;
 
             if (ioctl(fd, KDSETMODE, KD_GRAPHICS) != 0) {
-                fprintf(
-                    stderr, "[arm_display_drm] KDSETMODE KD_GRAPHICS on %s failed: %s\n", candidates[i], strerror(errno)
-                );
+                fprintf(stderr,
+                        "[arm_display_drm] KDSETMODE KD_GRAPHICS on %s failed: %s\n",
+                        candidates[i],
+                        strerror(errno));
             }
 
             return;
@@ -453,8 +454,7 @@ bool arm_display_drm_init() {
     drm_front_index = 0;
     drm_flip_pending = false;
     ArmDisplay_ComputePresentRect(
-        (int)drm_mode.hdisplay, (int)drm_mode.vdisplay, &drm_lb_x, &drm_lb_y, &drm_lb_w, &drm_lb_h
-    );
+        (int)drm_mode.hdisplay, (int)drm_mode.vdisplay, &drm_lb_x, &drm_lb_y, &drm_lb_w, &drm_lb_h);
 
     set_dpms_on();
     return true;
@@ -468,16 +468,14 @@ void arm_display_drm_shutdown() {
     wait_for_flip();
 
     if (drm_saved_crtc != NULL) {
-        drmModeSetCrtc(
-            drm_fd,
-            drm_saved_crtc->crtc_id,
-            drm_saved_crtc->buffer_id,
-            drm_saved_crtc->x,
-            drm_saved_crtc->y,
-            &drm_connector_id,
-            1,
-            &drm_saved_crtc->mode
-        );
+        drmModeSetCrtc(drm_fd,
+                       drm_saved_crtc->crtc_id,
+                       drm_saved_crtc->buffer_id,
+                       drm_saved_crtc->x,
+                       drm_saved_crtc->y,
+                       &drm_connector_id,
+                       1,
+                       &drm_saved_crtc->mode);
         drmModeFreeCrtc(drm_saved_crtc);
         drm_saved_crtc = NULL;
     }
@@ -510,11 +508,9 @@ void arm_display_drm_present(const uint32_t* argb_pixels, int src_w, int src_h) 
 
     if (!wait_for_flip()) {
         if (!set_current_mode_fb(drm_buffers[drm_front_index].fb_id)) {
-            fprintf(
-                stderr,
-                "[arm_display_drm] failed to restore current scanout after flip wait failure: %s\n",
-                strerror(errno)
-            );
+            fprintf(stderr,
+                    "[arm_display_drm] failed to restore current scanout after flip wait failure: %s\n",
+                    strerror(errno));
         }
     }
 

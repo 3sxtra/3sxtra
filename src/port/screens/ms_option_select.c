@@ -200,7 +200,8 @@ static void option_select_tick(struct _TASK* task_ptr) {
         NativeUI_SetFocusIndex(g_state.Menu_Cursor_Y[0]);
         NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
         NativeUI_SetGraphicOffset(ix ? OPTION_UNLOCKED_GRAPHIC_START : OPTION_LOCKED_GRAPHIC_START);
-        NativeUI_SetMasterPlayer(1);    // Bind to g_state.Menu_Suicide[1] (which is ALIVE=0) since g_state.Menu_Suicide[0]=1 (DEAD)
+        NativeUI_SetMasterPlayer(
+            1); // Bind to g_state.Menu_Suicide[1] (which is ALIVE=0) since g_state.Menu_Suicide[0]=1 (DEAD)
         NativeUI_SetLetterType(0x70A7); // Use narrower font for option select
 
         NativeUI_Button("GAME OPTION");

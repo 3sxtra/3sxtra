@@ -19,9 +19,8 @@ typedef struct TextRendererVtable {
     void (*Shutdown)(void);
 
     /* ---- Drawing (2) ---- */
-    void (*DrawText)(const char* text, float x, float y, float scale,
-                     float r, float g, float b,
-                     float target_width, float target_height);
+    void (*DrawText)(const char* text, float x, float y, float scale, float r, float g, float b, float target_width,
+                     float target_height);
     void (*Flush)(void);
 
     /* ---- Configuration (4) ---- */
@@ -31,8 +30,7 @@ typedef struct TextRendererVtable {
     void (*SetBackgroundPadding)(float px);
 
     /* ---- Debug (1) — GL-only, NULL for other backends ---- */
-    void (*DrawDebugChars)(const void* buffer, int count, float scale,
-                           float target_width, float target_height);
+    void (*DrawDebugChars)(const void* buffer, int count, float scale, float target_width, float target_height);
 } TextRendererVtable;
 
 /** Active text-renderer vtable — set once by TextRendererVtable_Init(). */

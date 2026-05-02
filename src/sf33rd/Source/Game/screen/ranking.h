@@ -8,8 +8,8 @@ extern RANK_DATA Present_Data[2];
 extern RANK_DATA Ranking_Data[20];
 
 s32 Ranking();
-void Ranking_01();
-void Ranking_00();
+void Ranking_Display();
+void Ranking_ScoreEntry();
 void Ranking_00_1st();
 void Ranking_00_2nd();
 void Ranking_00_3rd();

@@ -231,12 +231,14 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
 
             if (system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max] + MSG_DIR_PAGE_OFFSET;
+                Message_Data->request =
+                    system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max] + MSG_DIR_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else {
             if (system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] < 0) {
-                system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] = Dir_Menu_Max_Data[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]];
+                system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] =
+                    Dir_Menu_Max_Data[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]];
             }
         }
 
@@ -259,11 +261,13 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
 
             if (system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max] + MSG_DIR_PAGE_OFFSET;
+                Message_Data->request =
+                    system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Max] + MSG_DIR_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else {
-            if (system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] > Dir_Menu_Max_Data[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]]) {
+            if (system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] >
+                Dir_Menu_Max_Data[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]]) {
                 system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] = 0;
             }
         }
@@ -278,7 +282,8 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
         } else {
             system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] += 1;
 
-            if (system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] > Dir_Menu_Max_Data[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]]) {
+            if (system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] >
+                Dir_Menu_Max_Data[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]]) {
                 system_dir[1].contents[g_state.Menu_Page][g_state.Menu_Cursor_Y[0]] = 0;
             }
         }
@@ -342,7 +347,8 @@ void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
             effect_66_init(EFF_SLOT_DIR_ROW1, EFF_SPRITE_DIR_DIFF, 2, 0, MENU_Z_LABEL_LIST, ORDERDIR_SUB_LABEL, 0);
             g_state.Order[EFF_SLOT_DIR_ROW1] = 3;
             g_state.Order_Timer[EFF_SLOT_DIR_ROW1] = 1;
-            effect_66_init(EFF_SLOT_DIR_ROW2, EFF_SPRITE_DIR_ROUND, 2, 0, MENU_Z_PAGE_NUM, (s16)g_state.Menu_Page + 1, 0);
+            effect_66_init(
+                EFF_SLOT_DIR_ROW2, EFF_SPRITE_DIR_ROUND, 2, 0, MENU_Z_PAGE_NUM, (s16)g_state.Menu_Page + 1, 0);
             g_state.Order[EFF_SLOT_DIR_ROW2] = 3;
             g_state.Order_Timer[EFF_SLOT_DIR_ROW2] = 1;
         }
@@ -585,8 +591,8 @@ void Load_Replay_Sub(struct _TASK* task_ptr) {
         break;
 
     case 5:
-        if ((Check_PL_Load() != 0) && (Check_LDREQ_Queue_BG((u16)g_state.bg_w.stage) != 0) && (adx_now_playend() != 0) &&
-            (sndCheckVTransStatus(0) != 0)) {
+        if ((Check_PL_Load() != 0) && (Check_LDREQ_Queue_BG((u16)g_state.bg_w.stage) != 0) &&
+            (adx_now_playend() != 0) && (sndCheckVTransStatus(0) != 0)) {
             task_ptr->r_no[3] += 1;
             Switch_Screen_Init(0);
             init_omop();
@@ -596,19 +602,19 @@ void Load_Replay_Sub(struct _TASK* task_ptr) {
 
     case 6:
         if (Switch_Screen(0) != 0) {
-            Game01_Sub();
+            Game_ResetMatchState();
             g_state.Cover_Timer = 5;
             g_state.appear_type = APPEAR_TYPE_ANIMATED;
             set_hitmark_color();
             Purge_texcash_of_list(3);
             Make_texcash_of_list(3);
-            g_state.G_No[1] = 2;
-            g_state.G_No[2] = 0;
-            g_state.G_No[3] = 0;
-            g_state.E_No[0] = 4;
-            g_state.E_No[1] = 0;
-            g_state.E_No[2] = 0;
-            g_state.E_No[3] = 0;
+            g_state.fsm[1] = 2;
+            g_state.fsm[2] = 0;
+            g_state.fsm[3] = 0;
+            g_state.entry_phase[0] = 4;
+            g_state.entry_phase[1] = 0;
+            g_state.entry_phase[2] = 0;
+            g_state.entry_phase[3] = 0;
 
             if (g_state.plw->wu.pl_operator != 0) {
                 g_state.Sel_Arts_Complete[0] = -1;
@@ -706,7 +712,8 @@ u16 GO_Move_Sub_LR(u16 sw, s16 cursor_id) {
         g_state.Convert_Buff[0][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] -= 1;
 
         if (g_state.Convert_Buff[0][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] < 0) {
-            g_state.Convert_Buff[0][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] = Game_Option_Index_Data[g_state.Menu_Cursor_Y[cursor_id]];
+            g_state.Convert_Buff[0][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] =
+                Game_Option_Index_Data[g_state.Menu_Cursor_Y[cursor_id]];
         }
 
         SE_dir_cursor_move();
@@ -715,7 +722,8 @@ u16 GO_Move_Sub_LR(u16 sw, s16 cursor_id) {
     case SWK_RIGHT:
         g_state.Convert_Buff[0][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] += 1;
 
-        if (g_state.Convert_Buff[0][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] > Game_Option_Index_Data[g_state.Menu_Cursor_Y[cursor_id]]) {
+        if (g_state.Convert_Buff[0][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] >
+            Game_Option_Index_Data[g_state.Menu_Cursor_Y[cursor_id]]) {
             g_state.Convert_Buff[0][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] = 0;
         }
 
@@ -792,7 +800,8 @@ void Button_Move_Sub_LR(u16 sw, s16 cursor_id) {
             g_state.Convert_Buff[1][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] = 0;
         }
 
-        if ((g_state.Menu_Cursor_Y[cursor_id] == 8) && (g_state.Convert_Buff[1][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] == 1)) {
+        if ((g_state.Menu_Cursor_Y[cursor_id] == 8) &&
+            (g_state.Convert_Buff[1][cursor_id][g_state.Menu_Cursor_Y[cursor_id]] == 1)) {
             pp_vib_on(cursor_id);
         }
 
@@ -2132,7 +2141,8 @@ s32 Pause_1st_Sub(struct _TASK* task_ptr) {
     }
 
     if (sw & SWK_START) {
-        if (((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING) || (g_state.Mode_Type == MODE_TRIALS)) &&
+        if (((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING) ||
+             (g_state.Mode_Type == MODE_TRIALS)) &&
             (Check_Pause_Term_Tr(g_state.Pause_ID ^ 1) != 0) && g_state.plw[g_state.Pause_ID ^ 1].wu.pl_operator &&
             (Interface_Type[g_state.Pause_ID ^ 1] == 0)) {
             g_state.Pause_ID = g_state.Pause_ID ^ 1;
@@ -2400,7 +2410,8 @@ void Dummy_Move_Sub_LR(u16 sw, s16 id, s16 type, s16 cursor_id) {
             Training[2].contents[id][type][g_state.Menu_Cursor_Y[cursor_id]] = max;
         }
 
-        if (Interface_Type[g_state.Champion ^ 1] == 0 && id == 0 && type == 0 && g_state.Menu_Cursor_Y[cursor_id] == 0 &&
+        if (Interface_Type[g_state.Champion ^ 1] == 0 && id == 0 && type == 0 &&
+            g_state.Menu_Cursor_Y[cursor_id] == 0 &&
             Training[2].contents[id][type][g_state.Menu_Cursor_Y[cursor_id]] == 4) {
             Training[2].contents[id][type][g_state.Menu_Cursor_Y[cursor_id]] = 3;
         }
@@ -2415,7 +2426,8 @@ void Dummy_Move_Sub_LR(u16 sw, s16 id, s16 type, s16 cursor_id) {
             Training[2].contents[id][type][g_state.Menu_Cursor_Y[cursor_id]] = 0;
         }
 
-        if (Interface_Type[g_state.Champion ^ 1] == 0 && id == 0 && type == 0 && g_state.Menu_Cursor_Y[cursor_id] == 0 &&
+        if (Interface_Type[g_state.Champion ^ 1] == 0 && id == 0 && type == 0 &&
+            g_state.Menu_Cursor_Y[cursor_id] == 0 &&
             Training[2].contents[id][type][g_state.Menu_Cursor_Y[cursor_id]] == 4) {
             Training[2].contents[id][type][g_state.Menu_Cursor_Y[cursor_id]] = 0;
         }
@@ -2424,7 +2436,8 @@ void Dummy_Move_Sub_LR(u16 sw, s16 id, s16 type, s16 cursor_id) {
         break;
 
     default:
-        if (Interface_Type[g_state.Champion ^ 1] == 0 && id == 0 && type == 0 && g_state.Menu_Cursor_Y[cursor_id] == 0 &&
+        if (Interface_Type[g_state.Champion ^ 1] == 0 && id == 0 && type == 0 &&
+            g_state.Menu_Cursor_Y[cursor_id] == 0 &&
             Training[2].contents[id][type][g_state.Menu_Cursor_Y[cursor_id]] == 4) {
             Training[2].contents[id][type][g_state.Menu_Cursor_Y[cursor_id]] = 0;
         }
@@ -2476,13 +2489,13 @@ void Back_to_Mode_Select(struct _TASK* task_ptr) {
 
     FadeOut(1, FADE_OPAQUE, 8);
     FSM_SetMainState(MAIN_STATE_GAME);
-    g_state.G_No[1] = 12;
-    g_state.G_No[2] = 0;
-    g_state.G_No[3] = 0;
-    g_state.E_No[0] = 1;
-    g_state.E_No[1] = 2;
-    g_state.E_No[2] = 2;
-    g_state.E_No[3] = 0;
+    g_state.fsm[1] = 12;
+    g_state.fsm[2] = 0;
+    g_state.fsm[3] = 0;
+    g_state.entry_phase[0] = 1;
+    g_state.entry_phase[1] = 2;
+    g_state.entry_phase[2] = 2;
+    g_state.entry_phase[3] = 0;
     System_all_clear_Level_B();
     MenuScreen_ExitToLegacy(task_ptr);
     Menu_Init(task_ptr);
@@ -2518,10 +2531,12 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
                 break;
             }
 
-            if (save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Cursor_Y[0]] != last_pos) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Cursor_Y[0]] !=
+                last_pos) {
                 Message_Data->order = 1;
                 Message_Data->request =
-                    save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Max] + MSG_EX_PAGE_OFFSET;
+                    save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Max] +
+                    MSG_EX_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else if (save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Cursor_Y[0]] < 0) {
@@ -2549,10 +2564,12 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
                 save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Cursor_Y[0]] = 2;
             }
 
-            if (save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Cursor_Y[0]] != last_pos) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Cursor_Y[0]] !=
+                last_pos) {
                 Message_Data->order = 1;
                 Message_Data->request =
-                    save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Max] + MSG_EX_PAGE_OFFSET;
+                    save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Max] +
+                    MSG_EX_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else if (save_w[SAVEW_ARCADE].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Cursor_Y[0]] >

@@ -57,9 +57,9 @@ const s16 end_e_pos[10][2] = { { 256, 768 }, { 768, 0 }, { 768, 768 }, { 256, 0 
 void end_14000(s16 pl_num) {
     switch (g_state.end_w.r_no_1) {
     case 0:
-        g_state.nosekae = 0;
-        g_state.g_kakikae[0] = 0;
-        g_state.g_kakikae[1] = 0;
+        g_state.palette_swap = 0;
+        g_state.bg_rewrite[0] = 0;
+        g_state.bg_rewrite[1] = 0;
         g_state.g_number[0] = 0;
         g_state.g_number[1] = 0;
         gxy.xy[1].disp.pos = 0;
@@ -148,7 +148,7 @@ static void end_e00_0000() {
             bgw_ptr->r_no_1++;
             effect_E6_init(0x19);
             gxy.xy[1].disp.pos = bgw_ptr->xy[1].disp.pos;
-            g_state.nosekae = 1;
+            g_state.palette_swap = 1;
             *scr_bcm = ending_map_tbl[20][0];
         }
 
@@ -173,7 +173,7 @@ static void end_e00_0000() {
         bgw_ptr->r_no_1++;
         bgw_ptr->free = 7;
         bgw_ptr->l_limit = 0;
-        g_state.g_kakikae[0] = 1;
+        g_state.bg_rewrite[0] = 1;
         /* fallthrough */
 
     case 5:
@@ -269,7 +269,7 @@ static void end_e00_1000() {
         bgw_ptr->abs_y = 128;
         bgw_ptr->free = 8;
         bgw_ptr->l_limit = 0;
-        g_state.g_kakikae[1] = 1;
+        g_state.bg_rewrite[1] = 1;
         g_state.g_number[1] = 0;
         Rewrite_End_Message(2);
         break;
@@ -342,7 +342,7 @@ static void end_e00_2000() {
         break;
 
     case 4:
-        g_state.g_kakikae[1] = 0;
+        g_state.bg_rewrite[1] = 0;
         g_state.g_number[1] = 0;
         break;
     }
@@ -533,7 +533,7 @@ static void end_e00_7000() {
     case 0:
         overwrite_panel(0xFFFFFFFF, 0x17);
         bgw_ptr->r_no_1++;
-        g_state.nosekae = 2;
+        g_state.palette_swap = 2;
         *scr_bcm = ending_map_tbl[20][1];
         bgw_ptr->xy[0].disp.pos = end_e_pos[g_state.end_w.r_no_2][0];
         bgw_ptr->xy[1].disp.pos = end_e_pos[g_state.end_w.r_no_2][1];

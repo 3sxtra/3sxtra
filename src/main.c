@@ -663,17 +663,17 @@ static const struct {
     const char* name;
     size_t len;
 } task_slot_names[TASK_SLOT_COUNT] = {
-    { "Task:Init", 9 },    // 0 - TASK_INIT
-    { "Task:Entry", 10 },  // 1 - TASK_ENTRY
-    { "Task:Reset", 10 },  // 2 - TASK_RESET
-    { "Task:Menu", 9 },    // 3 - TASK_MENU
-    { "Task:g_state.Pause", 10 },  // 4 - TASK_PAUSE
-    { "Task:Game", 9 },    // 5 - TASK_GAME
-    { "Task:Saver", 10 },  // 6 - TASK_SAVER
-    { "Task:Slot7", 10 },  // 7 - unused
-    { "Task:Slot8", 10 },  // 8 - unused
-    { "Task:Debug", 10 },  // 9 - TASK_DEBUG
-    { "Task:Slot10", 11 }, // 10 - unused
+    { "Task:Init", 9 },           // 0 - TASK_INIT
+    { "Task:Entry", 10 },         // 1 - TASK_ENTRY
+    { "Task:Reset", 10 },         // 2 - TASK_RESET
+    { "Task:Menu", 9 },           // 3 - TASK_MENU
+    { "Task:g_state.Pause", 10 }, // 4 - TASK_PAUSE
+    { "Task:Game", 9 },           // 5 - TASK_GAME
+    { "Task:Saver", 10 },         // 6 - TASK_SAVER
+    { "Task:Slot7", 10 },         // 7 - unused
+    { "Task:Slot8", 10 },         // 8 - unused
+    { "Task:Debug", 10 },         // 9 - TASK_DEBUG
+    { "Task:Slot10", 11 },        // 10 - unused
 };
 
 void cpLoopTask() {

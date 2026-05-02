@@ -184,7 +184,7 @@ void Clear_Personal_Data(s16 PL_id) {
     g_state.Last_My_char2[PL_id] = -1;
     g_state.Last_Selected_EM[PL_id] = 1;
     g_state.Select_Start[PL_id] = 0;
-    g_state.paring_ctr_vs[0][PL_id] = 0;
+    g_state.parry_ctr_vs[0][PL_id] = 0;
     g_state.Straight_Counter[PL_id] = 0;
     g_state.Straight_Flag[PL_id] = 0;
     g_state.SC_Personal_Time[PL_id] = 481;
@@ -424,7 +424,8 @@ void cpRevivalTask() {
 
 /** @brief Check whether the menu task is active or in the correct training sub-state. */
 s32 Check_Menu_Task() {
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
         if (MenuTask_GetPhase() == MTP_IN_GAME && MenuTask_GetSubPhase() == MTSP_IN_GAME_ACTIVE) {
             return 1;
         }
@@ -618,15 +619,15 @@ void System_all_clear_Level_B() {
     SelectTimer_Finish();
 }
 
-/** @brief Decrement g_state.C_Timer, skipping to zero if a player presses a button; returns remaining time. */
+/** @brief Decrement g_state.manage_timer, skipping to zero if a player presses a button; returns remaining time. */
 s16 Cut_Cut_C_Timer() {
-    g_state.C_Timer--;
+    g_state.manage_timer--;
 
     if (!Cut_Cut_Cut()) {
-        return g_state.C_Timer;
+        return g_state.manage_timer;
     }
 
-    return g_state.C_Timer = 0;
+    return g_state.manage_timer = 0;
 }
 
 /** @brief Set rendering priority order slot 56 to priority 7 for one frame. */
@@ -785,7 +786,8 @@ void All_Clear_Timer() {
     g_state.players_timer = 0;
 }
 
-/** @brief Clear miscellaneous message tracking state (g_state.old_mes_no2/3, g_state.old_mes_no_pl, g_state.mes_already). */
+/** @brief Clear miscellaneous message tracking state (g_state.old_mes_no2/3, g_state.old_mes_no_pl,
+ * g_state.mes_already). */
 void All_Clear_ETC() {
     g_state.old_mes_no2 = 0;
     g_state.old_mes_no3 = 0;

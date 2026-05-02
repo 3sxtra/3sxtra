@@ -32,11 +32,7 @@
 // overdrawn by a later fullscreen solid.
 #define CRS_SW_DEDUP_FS_SOLIDS 1
 
-typedef enum SWPaletteType {
-    SW_PALETTE_NONE = 0,
-    SW_PALETTE_4 = 4,
-    SW_PALETTE_8 = 8
-} SWPaletteType;
+typedef enum SWPaletteType { SW_PALETTE_NONE = 0, SW_PALETTE_4 = 4, SW_PALETTE_8 = 8 } SWPaletteType;
 
 typedef struct SWTexture {
     const void* pixels;
@@ -76,7 +72,7 @@ typedef struct SWQuad {
     SWPosition positions[4];
     SWTexCoord tex_coords[4];
     float z;
-    uint32_t index;     // Stable sort key / dead flag
+    uint32_t index; // Stable sort key / dead flag
     uint32_t modulate;
     SWTextureSpec texture_spec;
 } SWQuad;
@@ -150,8 +146,10 @@ static uint32_t float_to_sortable_u32(float f) {
 }
 
 static int clamp_i(int v, int lo, int hi) {
-    if (v < lo) return lo;
-    if (v > hi) return hi;
+    if (v < lo)
+        return lo;
+    if (v > hi)
+        return hi;
     return v;
 }
 
@@ -247,13 +245,19 @@ static void quick_sort_idx(uint16_t* idx, int lo, int hi, const uint64_t* keys) 
     while (hi - lo > 16) {
         int mid = lo + (hi - lo) / 2;
         if (keys[idx[lo]] > keys[idx[mid]]) {
-            uint16_t t = idx[lo]; idx[lo] = idx[mid]; idx[mid] = t;
+            uint16_t t = idx[lo];
+            idx[lo] = idx[mid];
+            idx[mid] = t;
         }
         if (keys[idx[lo]] > keys[idx[hi]]) {
-            uint16_t t = idx[lo]; idx[lo] = idx[hi]; idx[hi] = t;
+            uint16_t t = idx[lo];
+            idx[lo] = idx[hi];
+            idx[hi] = t;
         }
         if (keys[idx[mid]] > keys[idx[hi]]) {
-            uint16_t t = idx[mid]; idx[mid] = idx[hi]; idx[hi] = t;
+            uint16_t t = idx[mid];
+            idx[mid] = idx[hi];
+            idx[hi] = t;
         }
         const uint16_t pivot_i = idx[mid];
         const uint64_t pivot_k = keys[pivot_i];
@@ -263,11 +267,16 @@ static void quick_sort_idx(uint16_t* idx, int lo, int hi, const uint64_t* keys) 
         for (;;) {
             while (keys[idx[++i]] < pivot_k) {}
             while (keys[idx[--j]] > pivot_k) {}
-            if (i >= j) break;
-            uint16_t t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+            if (i >= j)
+                break;
+            uint16_t t = idx[i];
+            idx[i] = idx[j];
+            idx[j] = t;
         }
         {
-            uint16_t t = idx[i]; idx[i] = idx[hi - 1]; idx[hi - 1] = t;
+            uint16_t t = idx[i];
+            idx[i] = idx[hi - 1];
+            idx[hi - 1] = t;
         }
         if (i - lo < hi - i) {
             quick_sort_idx(idx, lo, i - 1, keys);
@@ -287,10 +296,12 @@ static int sort_cap = 0;
 
 static void sort_quads_fast() {
     const int n = (int)arrlen(quads);
-    if (n <= 1) return;
+    if (n <= 1)
+        return;
     if (n > sort_cap) {
         int new_cap = sort_cap ? sort_cap : 256;
-        while (new_cap < n) new_cap *= 2;
+        while (new_cap < n)
+            new_cap *= 2;
         sort_idx = (uint16_t*)realloc(sort_idx, new_cap * sizeof(uint16_t));
         sort_scratch = (SWQuad*)realloc(sort_scratch, new_cap * sizeof(SWQuad));
         sort_keys64 = (uint64_t*)realloc(sort_keys64, new_cap * sizeof(uint64_t));
@@ -302,7 +313,8 @@ static void sort_quads_fast() {
         sort_idx[i] = (uint16_t)i;
     }
     quick_sort_idx(sort_idx, 0, n - 1, sort_keys64);
-    for (int i = 0; i < n; i++) sort_scratch[i] = quads[sort_idx[i]];
+    for (int i = 0; i < n; i++)
+        sort_scratch[i] = quads[sort_idx[i]];
     memcpy(quads, sort_scratch, n * sizeof(SWQuad));
 }
 
@@ -310,8 +322,10 @@ static void sort_quads_fast() {
 #define SW_QUAD_DEAD UINT32_MAX
 
 static bool quad_is_opaque_fullscreen_solid(const SWQuad* q) {
-    if (q->texture_spec.texture_index >= 0) return false;
-    if ((q->modulate >> 24) != 0xFFu) return false;
+    if (q->texture_spec.texture_index >= 0)
+        return false;
+    if ((q->modulate >> 24) != 0xFFu)
+        return false;
     const float fx0 = q->positions[0].x;
     const float fy0 = q->positions[0].y;
     const float fx1 = q->positions[3].x;
@@ -325,14 +339,18 @@ static bool quad_is_opaque_fullscreen_solid(const SWQuad* q) {
 
 static int dedup_fs_solids() {
     const int n = (int)arrlen(quads);
-    if (n < 2) return 0;
+    if (n < 2)
+        return 0;
     int hits = 0;
     for (int i = 0; i + 1 < n; i++) {
         const SWQuad* cur = &quads[i];
         const SWQuad* nxt = &quads[i + 1];
-        if (cur->modulate != nxt->modulate) continue;
-        if (!quad_is_opaque_fullscreen_solid(cur)) continue;
-        if (!quad_is_opaque_fullscreen_solid(nxt)) continue;
+        if (cur->modulate != nxt->modulate)
+            continue;
+        if (!quad_is_opaque_fullscreen_solid(cur))
+            continue;
+        if (!quad_is_opaque_fullscreen_solid(nxt))
+            continue;
         quads[i].index = SW_QUAD_DEAD;
         hits++;
     }
@@ -351,10 +369,14 @@ static QuadExtents quad_extents(const SWQuad* q, int band_y0, int band_y1) {
     float fy1 = q->positions[0].y;
 
     for (int i = 1; i < 4; i++) {
-        if (q->positions[i].x < fx0) fx0 = q->positions[i].x;
-        if (q->positions[i].x > fx1) fx1 = q->positions[i].x;
-        if (q->positions[i].y < fy0) fy0 = q->positions[i].y;
-        if (q->positions[i].y > fy1) fy1 = q->positions[i].y;
+        if (q->positions[i].x < fx0)
+            fx0 = q->positions[i].x;
+        if (q->positions[i].x > fx1)
+            fx1 = q->positions[i].x;
+        if (q->positions[i].y < fy0)
+            fy0 = q->positions[i].y;
+        if (q->positions[i].y > fy1)
+            fy1 = q->positions[i].y;
     }
 
     const int ux0 = round_nearest(fx0);
@@ -380,7 +402,8 @@ static QuadExtents quad_extents(const SWQuad* q, int band_y0, int band_y1) {
 
 static void rasterize_solid(const SWQuad* q, RBCtx* ctx) {
     const QuadExtents e = quad_extents(q, ctx->band_y0, ctx->band_y1);
-    if (e.x1 <= e.x0 || e.y1 <= e.y0) return;
+    if (e.x1 <= e.x0 || e.y1 <= e.y0)
+        return;
 
     for (int y = e.y0; y < e.y1; y++) {
         sw_fill_solid_row(canvas + y * CANVAS_PITCH + e.x0, q->modulate, e.x1 - e.x0);
@@ -392,7 +415,8 @@ static void rasterize_solid(const SWQuad* q, RBCtx* ctx) {
 // -----------------------------------------------------------------------------
 
 static uint32_t sw_modulate_pixel_local(uint32_t src, uint32_t modulate) {
-    if (modulate == 0xFFFFFFFFu) return src;
+    if (modulate == 0xFFFFFFFFu)
+        return src;
     const uint32_t sa = (src >> 24) & 0xFF;
     const uint32_t sr = (src >> 16) & 0xFF;
     const uint32_t sg = (src >> 8) & 0xFF;
@@ -410,8 +434,10 @@ static uint32_t sw_modulate_pixel_local(uint32_t src, uint32_t modulate) {
 
 static SWCanvasPixel sw_blend_argb_onto_canvas_local(uint32_t src, SWCanvasPixel dst_px) {
     const uint32_t sa = (src >> 24) & 0xFF;
-    if (sa == 0xFF) return sw_argb_to_canvas(src);
-    if (sa == 0x00) return dst_px;
+    if (sa == 0xFF)
+        return sw_argb_to_canvas(src);
+    if (sa == 0x00)
+        return dst_px;
     const uint32_t ia = 255 - sa;
     const uint32_t sr = (src >> 16) & 0xFF;
     const uint32_t sg = (src >> 8) & 0xFF;
@@ -437,7 +463,9 @@ static bool rasterize_parallelogram(const SWQuad* q, RBCtx* ctx) {
             const float yi = q->positions[idx[i]].y, yj = q->positions[idx[j]].y;
             const float xi = q->positions[idx[i]].x, xj = q->positions[idx[j]].x;
             if (yj < yi || (yj == yi && xj < xi)) {
-                const int tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
+                const int tmp = idx[i];
+                idx[i] = idx[j];
+                idx[j] = tmp;
             }
         }
     }
@@ -448,7 +476,8 @@ static bool rasterize_parallelogram(const SWQuad* q, RBCtx* ctx) {
     const float blx = q->positions[bl].x, bly = q->positions[bl].y;
     const float brx = q->positions[br].x, bry = q->positions[br].y;
 
-    if (!nearly_equalf(pry, ply, edge_eps) || !nearly_equalf(bry, bly, edge_eps) || bly <= ply) return false;
+    if (!nearly_equalf(pry, ply, edge_eps) || !nearly_equalf(bry, bly, edge_eps) || bly <= ply)
+        return false;
 
     const float e1x = prx - plx;
     const float e2x = blx - plx;
@@ -456,12 +485,16 @@ static bool rasterize_parallelogram(const SWQuad* q, RBCtx* ctx) {
     const float expected_brx = prx + e2x;
     const float expected_bry = pry + e2y;
 
-    if (e1x <= edge_eps) return false;
-    if (!nearly_equalf(brx, expected_brx, edge_eps) || !nearly_equalf(bry, expected_bry, edge_eps)) return false;
+    if (e1x <= edge_eps)
+        return false;
+    if (!nearly_equalf(brx, expected_brx, edge_eps) || !nearly_equalf(bry, expected_bry, edge_eps))
+        return false;
 
     const SWTexture* tex = &textures[q->texture_spec.texture_index];
-    if (tex->pixels == NULL && tex->converted == NULL) return false;
-    if (tex->palette_type == SW_PALETTE_NONE && tex->converted == NULL) return false;
+    if (tex->pixels == NULL && tex->converted == NULL)
+        return false;
+    if (tex->palette_type == SW_PALETTE_NONE && tex->converted == NULL)
+        return false;
 
     const SWPalette* pal = (q->texture_spec.palette_index >= 0) ? &palettes[q->texture_spec.palette_index] : NULL;
 
@@ -478,11 +511,13 @@ static bool rasterize_parallelogram(const SWQuad* q, RBCtx* ctx) {
 
     const float du_tex = (trs - tls) / e1x;
     const uint32_t du_fx = (uint32_t)(du_tex * 65536.0f);
-    if (du_tex <= 0.0f) return false;
+    if (du_tex <= 0.0f)
+        return false;
 
     int y0 = clamp_i(round_nearest(ply), ctx->band_y0, ctx->band_y1);
     int y1 = clamp_i(round_nearest(bly), ctx->band_y0, ctx->band_y1);
-    if (y0 >= y1) return false;
+    if (y0 >= y1)
+        return false;
 
     for (int y = y0; y < y1; y++) {
         const float v_frac = ((float)y + 0.5f - ply) / e2y;
@@ -493,7 +528,8 @@ static bool rasterize_parallelogram(const SWQuad* q, RBCtx* ctx) {
 
         int x0 = clamp_i(round_nearest(left_edge_x), 0, CANVAS_W);
         int x1 = clamp_i(round_nearest(right_edge_x), 0, CANVAS_W);
-        if (x0 >= x1) continue;
+        if (x0 >= x1)
+            continue;
 
         const int count = x1 - x0;
         const float left_clip = (float)x0 + 0.5f - left_edge_x;
@@ -512,7 +548,8 @@ static bool rasterize_parallelogram(const SWQuad* q, RBCtx* ctx) {
 
             while (remaining > 0) {
                 int chunk = (du_fx == 0) ? remaining : (int)((u_mask_fx - u_cur) / du_fx) + 1;
-                if (chunk > remaining) chunk = remaining;
+                if (chunk > remaining)
+                    chunk = remaining;
                 sw_blit_scaled_indexed8_row(d, idx_row, pal->colors, u_cur, du_fx, q->modulate, chunk);
                 d += chunk;
                 remaining -= chunk;
@@ -526,7 +563,8 @@ static bool rasterize_parallelogram(const SWQuad* q, RBCtx* ctx) {
 
             while (remaining > 0) {
                 int chunk = (du_fx == 0) ? remaining : (int)((u_mask_fx - u_cur) / du_fx) + 1;
-                if (chunk > remaining) chunk = remaining;
+                if (chunk > remaining)
+                    chunk = remaining;
                 sw_blit_scaled_indexed4_row(d, packed_base, pal->colors, u_cur, du_fx, q->modulate, chunk);
                 d += chunk;
                 remaining -= chunk;
@@ -540,7 +578,8 @@ static bool rasterize_parallelogram(const SWQuad* q, RBCtx* ctx) {
 
             while (remaining > 0) {
                 int chunk = (du_fx == 0) ? remaining : (int)((u_mask_fx - u_cur) / du_fx) + 1;
-                if (chunk > remaining) chunk = remaining;
+                if (chunk > remaining)
+                    chunk = remaining;
                 sw_blit_scaled_direct_row(d, src_row, u_cur, du_fx, q->modulate, chunk);
                 d += chunk;
                 remaining -= chunk;
@@ -565,7 +604,8 @@ static uint32_t sample_texture_argb(const SWTexture* tex, const SWPalette* pal, 
     return tex->converted[ty * tex->width + tx];
 }
 
-static void rasterize_textured_triangle(const SWQuad* q, RBCtx* ctx, int i0, int i1, int i2, const SWTexture* tex, const SWPalette* pal) {
+static void rasterize_textured_triangle(const SWQuad* q, RBCtx* ctx, int i0, int i1, int i2, const SWTexture* tex,
+                                        const SWPalette* pal) {
     float x0 = q->positions[i0].x, y0 = q->positions[i0].y;
     float x1 = q->positions[i1].x, y1 = q->positions[i1].y;
     float x2 = q->positions[i2].x, y2 = q->positions[i2].y;
@@ -574,13 +614,22 @@ static void rasterize_textured_triangle(const SWQuad* q, RBCtx* ctx, int i0, int
     float s2 = q->tex_coords[i2].s, t2 = q->tex_coords[i2].t;
 
     float area = edge_functionf(x0, y0, x1, y1, x2, y2);
-    if (area == 0.0f) return;
+    if (area == 0.0f)
+        return;
     if (area < 0.0f) {
         float tmp;
-        tmp = x1; x1 = x2; x2 = tmp;
-        tmp = y1; y1 = y2; y2 = tmp;
-        tmp = s1; s1 = s2; s2 = tmp;
-        tmp = t1; t1 = t2; t2 = tmp;
+        tmp = x1;
+        x1 = x2;
+        x2 = tmp;
+        tmp = y1;
+        y1 = y2;
+        y2 = tmp;
+        tmp = s1;
+        s1 = s2;
+        s2 = tmp;
+        tmp = t1;
+        t1 = t2;
+        t2 = tmp;
         area = -area;
     }
 
@@ -589,7 +638,8 @@ static void rasterize_textured_triangle(const SWQuad* q, RBCtx* ctx, int i0, int
     const int min_y = clamp_i(floor_to_int(min3f(y0, y1, y2)), ctx->band_y0, ctx->band_y1);
     const int max_y = clamp_i(ceil_to_int(max3f(y0, y1, y2)), ctx->band_y0, ctx->band_y1);
 
-    if (min_x >= max_x || min_y >= max_y) return;
+    if (min_x >= max_x || min_y >= max_y)
+        return;
 
     const float inv_area = 1.0f / area;
     const bool tl01 = is_top_left_edge(x0, y0, x1, y1);
@@ -605,7 +655,9 @@ static void rasterize_textured_triangle(const SWQuad* q, RBCtx* ctx, int i0, int
             const float e12 = edge_functionf(x1, y1, x2, y2, px, py);
             const float e20 = edge_functionf(x2, y2, x0, y0, px, py);
 
-            if (e01 < 0.0f || (e01 == 0.0f && !tl01) || e12 < 0.0f || (e12 == 0.0f && !tl12) || e20 < 0.0f || (e20 == 0.0f && !tl20)) continue;
+            if (e01 < 0.0f || (e01 == 0.0f && !tl01) || e12 < 0.0f || (e12 == 0.0f && !tl12) || e20 < 0.0f ||
+                (e20 == 0.0f && !tl20))
+                continue;
 
             const float w0 = e12 * inv_area;
             const float w1 = e20 * inv_area;
@@ -621,8 +673,10 @@ static void rasterize_textured_triangle(const SWQuad* q, RBCtx* ctx, int i0, int
 
 static void rasterize_triangles(const SWQuad* q, RBCtx* ctx) {
     const SWTexture* tex = &textures[q->texture_spec.texture_index];
-    if (tex->pixels == NULL && tex->converted == NULL) return;
-    if (tex->palette_type == SW_PALETTE_NONE && tex->converted == NULL) return;
+    if (tex->pixels == NULL && tex->converted == NULL)
+        return;
+    if (tex->palette_type == SW_PALETTE_NONE && tex->converted == NULL)
+        return;
 
     const SWPalette* pal = (q->texture_spec.palette_index >= 0) ? &palettes[q->texture_spec.palette_index] : NULL;
 
@@ -643,21 +697,25 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                                     nearly_equalf(p0y, p2y, edge_eps) && nearly_equalf(p1y, p3y, edge_eps);
 
         if (!row_major_aabb && !col_major_aabb) {
-            if (rasterize_parallelogram(q, ctx)) return;
+            if (rasterize_parallelogram(q, ctx))
+                return;
             rasterize_triangles(q, ctx);
             return;
         }
     }
 
     const QuadExtents e = quad_extents(q, ctx->band_y0, ctx->band_y1);
-    if (e.x1 <= e.x0 || e.y1 <= e.y0) return;
+    if (e.x1 <= e.x0 || e.y1 <= e.y0)
+        return;
 
     const int dst_w = e.x1 - e.x0;
     const int dst_h = e.y1 - e.y0;
 
     const SWTexture* tex = &textures[q->texture_spec.texture_index];
-    if (tex->pixels == NULL && tex->converted == NULL) return;
-    if (tex->palette_type == SW_PALETTE_NONE && tex->converted == NULL) return;
+    if (tex->pixels == NULL && tex->converted == NULL)
+        return;
+    if (tex->palette_type == SW_PALETTE_NONE && tex->converted == NULL)
+        return;
 
     const float s0 = q->tex_coords[0].s * tex->width;
     const float t0 = q->tex_coords[0].t * tex->height;
@@ -727,13 +785,18 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                         int chunk = (src + 1 > remaining) ? remaining : src + 1;
 #if defined(CRS_SW_CANVAS_16BPP)
                         if (q->modulate == 0xFFFFFFFFu) {
-                            if (ckey_ok) sw_blit_indexed8_row_rev_ckey_565(d, idx_row + src, ckey_pal_u32_hoisted, chunk);
-                            else sw_blit_indexed8_row_rev_565(d, idx_row + src, pal->colors, pal->colors565, chunk);
-                        } else sw_blit_indexed8_row_rev(d, idx_row + src, pal->colors, q->modulate, chunk);
+                            if (ckey_ok)
+                                sw_blit_indexed8_row_rev_ckey_565(d, idx_row + src, ckey_pal_u32_hoisted, chunk);
+                            else
+                                sw_blit_indexed8_row_rev_565(d, idx_row + src, pal->colors, pal->colors565, chunk);
+                        } else
+                            sw_blit_indexed8_row_rev(d, idx_row + src, pal->colors, q->modulate, chunk);
 #else
                         sw_blit_indexed8_row_rev(d, idx_row + src, pal->colors, q->modulate, chunk);
 #endif
-                        d += chunk; remaining -= chunk; src = tex_w - 1;
+                        d += chunk;
+                        remaining -= chunk;
+                        src = tex_w - 1;
                     }
                 } else {
                     uint32_t u_cur = u_scaled_rev;
@@ -741,14 +804,19 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                     SWCanvasPixel* d = drow;
                     while (remaining > 0) {
                         int chunk = (du_fx == 0) ? remaining : (int)(u_cur / du_fx) + 1;
-                        if (chunk > remaining) chunk = remaining;
+                        if (chunk > remaining)
+                            chunk = remaining;
 #if defined(CRS_SW_CANVAS_16BPP) && CRS_SW_SCALED_CKEY
-                        if (ckey_ok && q->modulate == 0xFFFFFFFFu) sw_blit_scaled_indexed8_row_rev_ckey_565(d, idx_row, pal->colors565, u_cur, du_fx, chunk);
-                        else sw_blit_scaled_indexed8_row_rev(d, idx_row, pal->colors, u_cur, du_fx, q->modulate, chunk);
+                        if (ckey_ok && q->modulate == 0xFFFFFFFFu)
+                            sw_blit_scaled_indexed8_row_rev_ckey_565(d, idx_row, pal->colors565, u_cur, du_fx, chunk);
+                        else
+                            sw_blit_scaled_indexed8_row_rev(d, idx_row, pal->colors, u_cur, du_fx, q->modulate, chunk);
 #else
                         sw_blit_scaled_indexed8_row_rev(d, idx_row, pal->colors, u_cur, du_fx, q->modulate, chunk);
 #endif
-                        d += chunk; remaining -= chunk; u_cur = (u_cur - (uint32_t)chunk * du_fx) & u_mask_fx;
+                        d += chunk;
+                        remaining -= chunk;
+                        u_cur = (u_cur - (uint32_t)chunk * du_fx) & u_mask_fx;
                     }
                 }
             } else if (unscaled) {
@@ -758,13 +826,18 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                     int chunk = (tex_w - src > remaining) ? remaining : tex_w - src;
 #if defined(CRS_SW_CANVAS_16BPP)
                     if (q->modulate == 0xFFFFFFFFu) {
-                        if (ckey_ok) sw_blit_indexed8_row_ckey_565(d, idx_row + src, ckey_pal_u32_hoisted, chunk);
-                        else sw_blit_indexed8_row_565(d, idx_row + src, pal->colors, pal->colors565, chunk);
-                    } else sw_blit_indexed8_row(d, idx_row + src, pal->colors, q->modulate, chunk, 'a');
+                        if (ckey_ok)
+                            sw_blit_indexed8_row_ckey_565(d, idx_row + src, ckey_pal_u32_hoisted, chunk);
+                        else
+                            sw_blit_indexed8_row_565(d, idx_row + src, pal->colors, pal->colors565, chunk);
+                    } else
+                        sw_blit_indexed8_row(d, idx_row + src, pal->colors, q->modulate, chunk, 'a');
 #else
                     sw_blit_indexed8_row(d, idx_row + src, pal->colors, q->modulate, chunk, 'a');
 #endif
-                    d += chunk; remaining -= chunk; src = 0;
+                    d += chunk;
+                    remaining -= chunk;
+                    src = 0;
                 }
             } else {
                 uint32_t u_cur = u_scaled_fwd;
@@ -772,14 +845,19 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                 SWCanvasPixel* d = drow;
                 while (remaining > 0) {
                     int chunk = (du_fx == 0) ? remaining : (int)((u_mask_fx - u_cur) / du_fx) + 1;
-                    if (chunk > remaining) chunk = remaining;
+                    if (chunk > remaining)
+                        chunk = remaining;
 #if defined(CRS_SW_CANVAS_16BPP) && CRS_SW_SCALED_CKEY
-                    if (ckey_ok && q->modulate == 0xFFFFFFFFu) sw_blit_scaled_indexed8_row_ckey_565(d, idx_row, pal->colors565, u_cur, du_fx, chunk);
-                    else sw_blit_scaled_indexed8_row(d, idx_row, pal->colors, u_cur, du_fx, q->modulate, chunk);
+                    if (ckey_ok && q->modulate == 0xFFFFFFFFu)
+                        sw_blit_scaled_indexed8_row_ckey_565(d, idx_row, pal->colors565, u_cur, du_fx, chunk);
+                    else
+                        sw_blit_scaled_indexed8_row(d, idx_row, pal->colors, u_cur, du_fx, q->modulate, chunk);
 #else
                     sw_blit_scaled_indexed8_row(d, idx_row, pal->colors, u_cur, du_fx, q->modulate, chunk);
 #endif
-                    d += chunk; remaining -= chunk; u_cur = (u_cur + (uint32_t)chunk * du_fx) & u_mask_fx;
+                    d += chunk;
+                    remaining -= chunk;
+                    u_cur = (u_cur + (uint32_t)chunk * du_fx) & u_mask_fx;
                 }
             }
         } else if (tex->palette_type == SW_PALETTE_4) {
@@ -792,13 +870,18 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                         int chunk = (src + 1 > remaining) ? remaining : src + 1;
 #if defined(CRS_SW_CANVAS_16BPP)
                         if (q->modulate == 0xFFFFFFFFu) {
-                            if (ckey_ok) sw_blit_indexed4_row_rev_ckey_565(d, packed_base, pal->colors565, chunk, src);
-                            else sw_blit_indexed4_row_rev_565(d, packed_base, pal->colors, pal->colors565, chunk, src);
-                        } else sw_blit_indexed4_row_rev(d, packed_base, pal->colors, q->modulate, chunk, src);
+                            if (ckey_ok)
+                                sw_blit_indexed4_row_rev_ckey_565(d, packed_base, pal->colors565, chunk, src);
+                            else
+                                sw_blit_indexed4_row_rev_565(d, packed_base, pal->colors, pal->colors565, chunk, src);
+                        } else
+                            sw_blit_indexed4_row_rev(d, packed_base, pal->colors, q->modulate, chunk, src);
 #else
                         sw_blit_indexed4_row_rev(d, packed_base, pal->colors, q->modulate, chunk, src);
 #endif
-                        d += chunk; remaining -= chunk; src = tex_w - 1;
+                        d += chunk;
+                        remaining -= chunk;
+                        src = tex_w - 1;
                     }
                 } else {
                     uint32_t u_cur = u_scaled_rev;
@@ -806,9 +889,12 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                     SWCanvasPixel* d = drow;
                     while (remaining > 0) {
                         int chunk = (du_fx == 0) ? remaining : (int)(u_cur / du_fx) + 1;
-                        if (chunk > remaining) chunk = remaining;
+                        if (chunk > remaining)
+                            chunk = remaining;
                         sw_blit_scaled_indexed4_row_rev(d, packed_base, pal->colors, u_cur, du_fx, q->modulate, chunk);
-                        d += chunk; remaining -= chunk; u_cur = (u_cur - (uint32_t)chunk * du_fx) & u_mask_fx;
+                        d += chunk;
+                        remaining -= chunk;
+                        u_cur = (u_cur - (uint32_t)chunk * du_fx) & u_mask_fx;
                     }
                 }
             } else if (unscaled) {
@@ -819,13 +905,19 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                     const int x_lsb = src & 1;
 #if defined(CRS_SW_CANVAS_16BPP)
                     if (q->modulate == 0xFFFFFFFFu) {
-                        if (ckey_ok) sw_blit_indexed4_row_ckey_565(d, packed_base + (src >> 1), pal->colors565, chunk, x_lsb);
-                        else sw_blit_indexed4_row_565(d, packed_base + (src >> 1), pal->colors, pal->colors565, chunk, x_lsb);
-                    } else sw_blit_indexed4_row(d, packed_base + (src >> 1), pal->colors, q->modulate, chunk, x_lsb);
+                        if (ckey_ok)
+                            sw_blit_indexed4_row_ckey_565(d, packed_base + (src >> 1), pal->colors565, chunk, x_lsb);
+                        else
+                            sw_blit_indexed4_row_565(
+                                d, packed_base + (src >> 1), pal->colors, pal->colors565, chunk, x_lsb);
+                    } else
+                        sw_blit_indexed4_row(d, packed_base + (src >> 1), pal->colors, q->modulate, chunk, x_lsb);
 #else
                     sw_blit_indexed4_row(d, packed_base + (src >> 1), pal->colors, q->modulate, chunk, x_lsb);
 #endif
-                    d += chunk; remaining -= chunk; src = 0;
+                    d += chunk;
+                    remaining -= chunk;
+                    src = 0;
                 }
             } else {
                 uint32_t u_cur = u_scaled_fwd;
@@ -833,9 +925,12 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                 SWCanvasPixel* d = drow;
                 while (remaining > 0) {
                     int chunk = (du_fx == 0) ? remaining : (int)((u_mask_fx - u_cur) / du_fx) + 1;
-                    if (chunk > remaining) chunk = remaining;
+                    if (chunk > remaining)
+                        chunk = remaining;
                     sw_blit_scaled_indexed4_row(d, packed_base, pal->colors, u_cur, du_fx, q->modulate, chunk);
-                    d += chunk; remaining -= chunk; u_cur = (u_cur + (uint32_t)chunk * du_fx) & u_mask_fx;
+                    d += chunk;
+                    remaining -= chunk;
+                    u_cur = (u_cur + (uint32_t)chunk * du_fx) & u_mask_fx;
                 }
             }
         } else {
@@ -847,7 +942,9 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                     while (remaining > 0) {
                         int chunk = (src + 1 > remaining) ? remaining : src + 1;
                         sw_blit_direct_row_rev(d, src_row + src, q->modulate, chunk);
-                        d += chunk; remaining -= chunk; src = tex_w - 1;
+                        d += chunk;
+                        remaining -= chunk;
+                        src = tex_w - 1;
                     }
                 } else {
                     uint32_t u_cur = u_scaled_rev;
@@ -855,9 +952,12 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                     SWCanvasPixel* d = drow;
                     while (remaining > 0) {
                         int chunk = (du_fx == 0) ? remaining : (int)(u_cur / du_fx) + 1;
-                        if (chunk > remaining) chunk = remaining;
+                        if (chunk > remaining)
+                            chunk = remaining;
                         sw_blit_scaled_direct_row_rev(d, src_row, u_cur, du_fx, q->modulate, chunk);
-                        d += chunk; remaining -= chunk; u_cur = (u_cur - (uint32_t)chunk * du_fx) & u_mask_fx;
+                        d += chunk;
+                        remaining -= chunk;
+                        u_cur = (u_cur - (uint32_t)chunk * du_fx) & u_mask_fx;
                     }
                 }
             } else if (unscaled) {
@@ -866,7 +966,9 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                 while (remaining > 0) {
                     int chunk = (tex_w - src > remaining) ? remaining : tex_w - src;
                     sw_blit_direct_row(d, src_row + src, q->modulate, chunk);
-                    d += chunk; remaining -= chunk; src = 0;
+                    d += chunk;
+                    remaining -= chunk;
+                    src = 0;
                 }
             } else {
                 uint32_t u_cur = u_scaled_fwd;
@@ -874,9 +976,12 @@ static void rasterize_textured(const SWQuad* q, RBCtx* ctx) {
                 SWCanvasPixel* d = drow;
                 while (remaining > 0) {
                     int chunk = (du_fx == 0) ? remaining : (int)((u_mask_fx - u_cur) / du_fx) + 1;
-                    if (chunk > remaining) chunk = remaining;
+                    if (chunk > remaining)
+                        chunk = remaining;
                     sw_blit_scaled_direct_row(d, src_row, u_cur, du_fx, q->modulate, chunk);
-                    d += chunk; remaining -= chunk; u_cur = (u_cur + (uint32_t)chunk * du_fx) & u_mask_fx;
+                    d += chunk;
+                    remaining -= chunk;
+                    u_cur = (u_cur + (uint32_t)chunk * du_fx) & u_mask_fx;
                 }
             }
         }
@@ -896,10 +1001,13 @@ static void render_band(RBCtx* ctx) {
     for (int i = 0; i < n; i++) {
         const SWQuad* q = &quads[i];
 #if CRS_SW_DEDUP_FS_SOLIDS
-        if (q->index == SW_QUAD_DEAD) continue;
+        if (q->index == SW_QUAD_DEAD)
+            continue;
 #endif
-        if (q->texture_spec.texture_index < 0) rasterize_solid(q, ctx);
-        else rasterize_textured(q, ctx);
+        if (q->texture_spec.texture_index < 0)
+            rasterize_solid(q, ctx);
+        else
+            rasterize_textured(q, ctx);
     }
 }
 
@@ -911,7 +1019,8 @@ static void sw_create_texture(unsigned int th) {
     const int texture_index = LO_16_BITS(th) - 1;
     const FLTexture* fl_texture = &flTexture[texture_index];
     const void* pixels = texture_source_pixels(fl_texture);
-    if (!pixels) return;
+    if (!pixels)
+        return;
 
     SWTexture* slot = &textures[texture_index];
     if (slot->converted) {
@@ -932,7 +1041,9 @@ static void sw_create_texture(unsigned int th) {
             const uint8_t* px = (const uint8_t*)pixels;
             const int n = (int)fl_texture->width * (int)fl_texture->height;
             uint8_t m = 0;
-            for (int i = 0; i < n; i++) if (px[i] > m) m = px[i];
+            for (int i = 0; i < n; i++)
+                if (px[i] > m)
+                    m = px[i];
             slot->max_index = m;
         }
         break;
@@ -942,9 +1053,11 @@ static void sw_create_texture(unsigned int th) {
     case SCE_GS_PSMCT16: {
         slot->palette_type = SW_PALETTE_NONE;
         const int count = fl_texture->width * fl_texture->height;
-        if (count <= 0) break;
+        if (count <= 0)
+            break;
         slot->converted = malloc(sizeof(uint32_t) * (size_t)count);
-        if (slot->converted) sw_convert_psmct16_to_argb(slot->converted, pixels, count);
+        if (slot->converted)
+            sw_convert_psmct16_to_argb(slot->converted, pixels, count);
         break;
     }
     default:
@@ -965,26 +1078,35 @@ static void sw_create_palette(unsigned int ph) {
     const int palette_index = HI_16_BITS(ph) - 1;
     const FLTexture* fl_palette = &flPalette[palette_index];
     const void* pixels = texture_source_pixels(fl_palette);
-    if (!pixels) return;
+    if (!pixels)
+        return;
 
     const int color_count = fl_palette->width * fl_palette->height;
     SWPalette* slot = &palettes[palette_index];
     slot->count = (uint16_t)color_count;
 
     switch (fl_palette->format) {
-    case SCE_GS_PSMCT32: sw_convert_psmct32_to_argb(slot->colors, pixels, color_count); break;
-    case SCE_GS_PSMCT16: sw_convert_psmct16_to_argb(slot->colors, pixels, color_count); break;
-    default: fatal_error("Unhandled pixel format: %d", fl_palette->format); break;
+    case SCE_GS_PSMCT32:
+        sw_convert_psmct32_to_argb(slot->colors, pixels, color_count);
+        break;
+    case SCE_GS_PSMCT16:
+        sw_convert_psmct16_to_argb(slot->colors, pixels, color_count);
+        break;
+    default:
+        fatal_error("Unhandled pixel format: %d", fl_palette->format);
+        break;
     }
 
 #if defined(CRS_SW_CANVAS_16BPP)
-    for (int i = 0; i < 256; i++) slot->colors565[i] = sw_argb_to_canvas(slot->colors[i]);
+    for (int i = 0; i < 256; i++)
+        slot->colors565[i] = sw_argb_to_canvas(slot->colors[i]);
 #endif
 
     uint8_t ckey = 0;
     if ((slot->colors[0] >> 24) == 0x00u) {
         for (int i = 1; i < 256; i++) {
-            if ((slot->colors[i] >> 24) != 0xFFu) break;
+            if ((slot->colors[i] >> 24) != 0xFFu)
+                break;
             ckey = (uint8_t)i;
         }
     }
@@ -1014,7 +1136,8 @@ static void sw_set_texture(unsigned int th) {
 // -----------------------------------------------------------------------------
 
 static void sw_draw_textured_quad(const Sprite* sprite, unsigned int color) {
-    if (arrlen(quads) >= QUADS_MAX) return;
+    if (arrlen(quads) >= QUADS_MAX)
+        return;
     SWQuad* quad = arraddnptr(quads, 1);
     for (int i = 0; i < 4; i++) {
         quad->positions[i].x = sprite->v[i].x;
@@ -1029,13 +1152,18 @@ static void sw_draw_textured_quad(const Sprite* sprite, unsigned int color) {
 }
 
 static void sw_draw_sprite(const Sprite* sprite, unsigned int color) {
-    if (arrlen(quads) >= QUADS_MAX) return;
+    if (arrlen(quads) >= QUADS_MAX)
+        return;
     SWQuad* quad = arraddnptr(quads, 1);
-    quad->positions[0].x = sprite->v[0].x; quad->positions[0].y = sprite->v[0].y;
-    quad->positions[3].x = sprite->v[3].x; quad->positions[3].y = sprite->v[3].y;
+    quad->positions[0].x = sprite->v[0].x;
+    quad->positions[0].y = sprite->v[0].y;
+    quad->positions[3].x = sprite->v[3].x;
+    quad->positions[3].y = sprite->v[3].y;
     quad_infer_positions(quad);
-    quad->tex_coords[0].s = sprite->t[0].s; quad->tex_coords[0].t = sprite->t[0].t;
-    quad->tex_coords[3].s = sprite->t[3].s; quad->tex_coords[3].t = sprite->t[3].t;
+    quad->tex_coords[0].s = sprite->t[0].s;
+    quad->tex_coords[0].t = sprite->t[0].t;
+    quad->tex_coords[3].s = sprite->t[3].s;
+    quad->tex_coords[3].t = sprite->t[3].t;
     quad_infer_tex_coords(quad);
     quad->z = flPS2ConvScreenFZ(sprite->v[0].z);
     quad->index = (uint32_t)arrlen(quads);
@@ -1044,13 +1172,18 @@ static void sw_draw_sprite(const Sprite* sprite, unsigned int color) {
 }
 
 static void sw_draw_sprite2(const Sprite2* sprite2) {
-    if (arrlen(quads) >= QUADS_MAX) return;
+    if (arrlen(quads) >= QUADS_MAX)
+        return;
     SWQuad* quad = arraddnptr(quads, 1);
-    quad->positions[0].x = sprite2->v[0].x; quad->positions[0].y = sprite2->v[0].y;
-    quad->positions[3].x = sprite2->v[1].x; quad->positions[3].y = sprite2->v[1].y;
+    quad->positions[0].x = sprite2->v[0].x;
+    quad->positions[0].y = sprite2->v[0].y;
+    quad->positions[3].x = sprite2->v[1].x;
+    quad->positions[3].y = sprite2->v[1].y;
     quad_infer_positions(quad);
-    quad->tex_coords[0].s = sprite2->t[0].s; quad->tex_coords[0].t = sprite2->t[0].t;
-    quad->tex_coords[3].s = sprite2->t[1].s; quad->tex_coords[3].t = sprite2->t[1].t;
+    quad->tex_coords[0].s = sprite2->t[0].s;
+    quad->tex_coords[0].t = sprite2->t[0].t;
+    quad->tex_coords[3].s = sprite2->t[1].s;
+    quad->tex_coords[3].t = sprite2->t[1].t;
     quad_infer_tex_coords(quad);
     quad->z = flPS2ConvScreenFZ(sprite2->v[0].z);
     quad->index = (uint32_t)arrlen(quads);
@@ -1059,7 +1192,8 @@ static void sw_draw_sprite2(const Sprite2* sprite2) {
 }
 
 static void sw_draw_solid_quad(const Quad* quad, unsigned int color) {
-    if (arrlen(quads) >= QUADS_MAX) return;
+    if (arrlen(quads) >= QUADS_MAX)
+        return;
     SWQuad* _quad = arraddnptr(quads, 1);
     for (int i = 0; i < 4; i++) {
         _quad->positions[i].x = quad->v[i].x;
@@ -1072,7 +1206,9 @@ static void sw_draw_solid_quad(const Quad* quad, unsigned int color) {
 }
 
 static void sw_flush_sprite2_batch(Sprite2* chips, const unsigned char* active_layers, int count) {
-    (void)chips; (void)active_layers; (void)count;
+    (void)chips;
+    (void)active_layers;
+    (void)count;
 }
 
 // -----------------------------------------------------------------------------
@@ -1083,10 +1219,12 @@ static void sw_init(void) {
     arrsetcap(quads, QUADS_MAX);
     const size_t canvas_bytes = sizeof(SWCanvasPixel) * CANVAS_PITCH * CANVAS_H;
     canvas = malloc(canvas_bytes);
-    if (!canvas) fatal_error("Failed to allocate software canvas");
+    if (!canvas)
+        fatal_error("Failed to allocate software canvas");
 
     const SWCanvasPixel clear_px = sw_argb_to_canvas(0xFF000000u);
-    for (size_t i = 0; i < (size_t)CANVAS_PITCH * CANVAS_H; i++) canvas[i] = clear_px;
+    for (size_t i = 0; i < (size_t)CANVAS_PITCH * CANVAS_H; i++)
+        canvas[i] = clear_px;
     latest_texture_spec = (SWTextureSpec) { -1, -1 };
 }
 
@@ -1097,8 +1235,10 @@ static void sw_shutdown(void) {
             textures[i].converted = NULL;
         }
     }
-    arrfree(quads); quads = NULL;
-    free(canvas); canvas = NULL;
+    arrfree(quads);
+    quads = NULL;
+    free(canvas);
+    canvas = NULL;
 }
 
 static void sw_begin_frame(void) {
@@ -1116,14 +1256,19 @@ static void sw_render_frame(void) {
 }
 
 static void sw_execute_pass(int pass_index, int vp_x, int vp_y, int vp_w, int vp_h) {
-    (void)pass_index; (void)vp_x; (void)vp_y; (void)vp_w; (void)vp_h;
+    (void)pass_index;
+    (void)vp_x;
+    (void)vp_y;
+    (void)vp_w;
+    (void)vp_h;
 }
 
-static void sw_end_frame(void) {
-}
+static void sw_end_frame(void) {}
 
 static void* sw_create_transient_rt(int width, int height) {
-    (void)width; (void)height; return NULL;
+    (void)width;
+    (void)height;
+    return NULL;
 }
 
 static void sw_destroy_transient_rt(void* handle) {
@@ -1139,18 +1284,32 @@ static void sw_set_blend_mode(RendererBlendMode mode) {
 }
 
 static unsigned int sw_get_cached_gl_texture(unsigned int texture_handle, unsigned int palette_handle) {
-    (void)texture_handle; (void)palette_handle; return 0;
+    (void)texture_handle;
+    (void)palette_handle;
+    return 0;
 }
 
-static void sw_dump_textures(void) {
-}
+static void sw_dump_textures(void) {}
 
 static void sw_draw_overlay_quad(void* texture, float x, float y, float w, float h, float z) {
-    (void)texture; (void)x; (void)y; (void)w; (void)h; (void)z;
+    (void)texture;
+    (void)x;
+    (void)y;
+    (void)w;
+    (void)h;
+    (void)z;
 }
 
-static void sw_draw_overlay_quad_ex(void* texture, float x, float y, float w, float h, float z, int flip_x, int flip_y) {
-    (void)texture; (void)x; (void)y; (void)w; (void)h; (void)z; (void)flip_x; (void)flip_y;
+static void sw_draw_overlay_quad_ex(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                    int flip_y) {
+    (void)texture;
+    (void)x;
+    (void)y;
+    (void)w;
+    (void)h;
+    (void)z;
+    (void)flip_x;
+    (void)flip_y;
 }
 
 // -----------------------------------------------------------------------------
@@ -1193,9 +1352,12 @@ const GameRendererVtable s_vtable_sw = {
 };
 
 const SWCanvasPixel* sdl_sw_get_canvas(int* out_width, int* out_height, int* out_pitch_bytes) {
-    if (out_width) *out_width = CANVAS_W;
-    if (out_height) *out_height = CANVAS_H;
-    if (out_pitch_bytes) *out_pitch_bytes = CANVAS_PITCH * (int)sizeof(SWCanvasPixel);
+    if (out_width)
+        *out_width = CANVAS_W;
+    if (out_height)
+        *out_height = CANVAS_H;
+    if (out_pitch_bytes)
+        *out_pitch_bytes = CANVAS_PITCH * (int)sizeof(SWCanvasPixel);
     return canvas;
 }
 

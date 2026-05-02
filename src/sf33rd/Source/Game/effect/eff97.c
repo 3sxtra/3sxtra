@@ -29,7 +29,8 @@ void effect_97_move(WORK_Other* ewk) {
         if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
-            if (g_state.plw[ewk->master_id].wu.routine_no[2] == 1 && g_state.plw[ewk->master_id].wu.routine_no[3] == 0) {
+            if (g_state.plw[ewk->master_id].wu.routine_no[2] == 1 &&
+                g_state.plw[ewk->master_id].wu.routine_no[3] == 0) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.old_rno[0] = 16;
             }

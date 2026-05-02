@@ -8,7 +8,6 @@
 #include "common.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
-
 const s8 slow_timer_to_flag[32] = { 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
                                     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 };
 

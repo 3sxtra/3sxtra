@@ -198,11 +198,12 @@ s16 Select_Player() {
 
 /** @brief Mirror input in training mode so the champion’s inputs control both sides. */
 static void Switch_Work() {
-    if (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS) {
+    if (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
+        g_state.Mode_Type != MODE_TRIALS) {
         return;
     }
 
-    switch (g_state.S_No[3]) {
+    switch (g_state.select_phase[3]) {
     case 0:
         if (g_state.Champion) {
             p1sw_0 = 0;
@@ -213,7 +214,7 @@ static void Switch_Work() {
         break;
 
     case 1:
-        g_state.S_No[3]++;
+        g_state.select_phase[3]++;
         Default_Training_Data(0);
         g_state.Record_Data_Tr = 0;
         Training_Disp_Work_Clear();
@@ -244,7 +245,7 @@ static void Switch_Work() {
 /** @brief Top-level select-screen controller — run status, face, OBJ, player-select, and exit phases. */
 static void Sel_PL_Control() {
     Setup_Select_Status();
-    switch (g_state.S_No[0]) {
+    switch (g_state.select_phase[0]) {
     case SEL_PL_CONT_1ST:
         Sel_PL_Cont_1st();
         break;
@@ -272,7 +273,7 @@ static void Sel_PL_Cont_1st() {
     s16 xx;
 
     Switch_Screen(1);
-    g_state.S_No[0]++;
+    g_state.select_phase[0]++;
     All_Clear_Suicide();
     SsBgmHalfVolume(0);
     g_state.Face_No[0] = 0;
@@ -363,7 +364,7 @@ static void Check_Use_Gill() {
 static void Sel_PL_Cont_2nd() {
     Switch_Screen(1);
     Switch_Screen_Init(1);
-    g_state.S_No[0]++;
+    g_state.select_phase[0]++;
     g_state.Request_E_No = 1;
     Clear_Flash_No();
 }
@@ -374,10 +375,10 @@ static void Sel_PL_Cont_3rd() {
         return;
     }
 
-    g_state.S_No[0]++;
+    g_state.select_phase[0]++;
     g_state.Forbid_Break = 0;
 
-    if (g_state.G_No[1] != 1) {
+    if (g_state.fsm[1] != 1) {
         // This is a comparison to zero in the decomp. Might be a programmer error
         g_state.Demo_Flag = 0;
     }
@@ -943,8 +944,9 @@ static void PL_Sel_2nd() {
             g_state.Cursor_Timer[g_state.ID2] = 40;
             Go_Away_Red_Lines();
 
-            if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
-                g_state.S_No[3] = 1;
+            if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+                g_state.Mode_Type == MODE_TRIALS) {
+                g_state.select_phase[3] = 1;
                 break;
             }
 
@@ -1061,8 +1063,8 @@ static void Sel_PL_1st() {
         g_state.Select_Start[g_state.ID] = 3;
         g_state.Select_Arts[g_state.ID] = 3;
         g_state.Stop_Cursor[g_state.ID] = 1;
-        g_state.paring_ctr_vs[0][g_state.ID] = 0;
-        g_state.paring_ctr_vs[1][g_state.ID] = 0;
+        g_state.parry_ctr_vs[0][g_state.ID] = 0;
+        g_state.parry_ctr_vs[1][g_state.ID] = 0;
         return;
     }
 
@@ -1120,8 +1122,8 @@ static void Sel_PL_3rd() {
     g_state.SP_No[g_state.ID][0]++;
     g_state.Stop_Cursor[g_state.ID] = 1;
     g_state.Auto_No[g_state.ID] = 0;
-    g_state.paring_ctr_vs[0][g_state.ID] = 0;
-    g_state.paring_ctr_vs[1][g_state.ID] = 0;
+    g_state.parry_ctr_vs[0][g_state.ID] = 0;
+    g_state.parry_ctr_vs[1][g_state.ID] = 0;
 
     if (g_state.Continue_Coin[g_state.ID] == 0) {
         Clear_Break_Com(g_state.ID);
@@ -1223,8 +1225,9 @@ static void Sel_PL_5th() {
 
     g_state.SP_No[g_state.ID][0]++;
 
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
-        g_state.S_No[3] = 1;
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
+        g_state.select_phase[3] = 1;
     }
 
     if (g_state.plw[0].wu.pl_operator == 0 || g_state.plw[1].wu.pl_operator == 0) {
@@ -1356,7 +1359,8 @@ static void Sel_PL_Sub_CR(s16 PL_id) {
 
             break;
         }
-    } while (!permission_player[g_state.Present_Mode].ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
+    } while (!permission_player[g_state.Present_Mode]
+                  .ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
 }
 
 /** @brief Move cursor left on the face grid, wrapping rows. */
@@ -1393,7 +1397,8 @@ static void Sel_PL_Sub_CL(s16 PL_id) {
 
             break;
         }
-    } while (!permission_player[g_state.Present_Mode].ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
+    } while (!permission_player[g_state.Present_Mode]
+                  .ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
 }
 
 /** @brief Move cursor up on the face grid, wrapping columns. */
@@ -1425,7 +1430,8 @@ static void Sel_PL_Sub_CU(s16 PL_id) {
 
             break;
         }
-    } while (!permission_player[g_state.Present_Mode].ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
+    } while (!permission_player[g_state.Present_Mode]
+                  .ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
 }
 
 /** @brief Move cursor down on the face grid, wrapping columns. */
@@ -1457,7 +1463,8 @@ static void Sel_PL_Sub_CD(s16 PL_id) {
 
             break;
         }
-    } while (!permission_player[g_state.Present_Mode].ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
+    } while (!permission_player[g_state.Present_Mode]
+                  .ok[Face_Cursor_Data[g_state.Cursor_Y[PL_id]][g_state.Cursor_X[PL_id]]]);
 }
 
 /** @brief Auto-repeat logic for held directions on the character grid (accelerating repeat). */
@@ -1630,7 +1637,8 @@ static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
         return;
     }
 
-    if (g_state.Plate_Disposal_No[PL_id][0] != 0 || g_state.Plate_Disposal_No[PL_id][1] != 0 || g_state.Plate_Disposal_No[PL_id][2] != 0) {
+    if (g_state.Plate_Disposal_No[PL_id][0] != 0 || g_state.Plate_Disposal_No[PL_id][1] != 0 ||
+        g_state.Plate_Disposal_No[PL_id][2] != 0) {
         return;
     }
 
@@ -1725,10 +1733,10 @@ static void Exit_1st() {
     }
 
     if (g_state.Demo_Flag) {
-        g_state.E_No[0] = 3;
-        g_state.E_No[1] = 0;
-        g_state.E_No[2] = 0;
-        g_state.E_No[3] = 0;
+        g_state.entry_phase[0] = 3;
+        g_state.entry_phase[1] = 0;
+        g_state.entry_phase[2] = 0;
+        g_state.entry_phase[3] = 0;
     }
 }
 
@@ -1736,7 +1744,7 @@ static void Exit_1st() {
 static void Exit_2nd() {
     s16 xx;
 
-    g_state.S_No[1] = 0;
+    g_state.select_phase[1] = 0;
 
     if (g_state.Select_Status[0] == 3) {
         g_state.Exit_No = 3;
@@ -1765,7 +1773,7 @@ static void Exit_2nd() {
     g_state.Time_Stop = 2;
 
     for (xx = 0; xx < 4; xx++) {
-        g_state.SC_No[xx] = 0;
+        g_state.next_cpu_phase[xx] = 0;
     }
 }
 
@@ -1776,7 +1784,7 @@ static void Exit_3rd() {
     }
 
     g_state.Exit_No++;
-    g_state.S_No[1] = 0;
+    g_state.select_phase[1] = 0;
     g_state.Suicide[3] = 1;
 
     if (g_state.VS_Index[g_state.Player_id] >= 9) {
@@ -1931,11 +1939,11 @@ static void Handicap_2nd() {
 
 /** @brief Handicap phase 3 — fade BGM and return to exit phase 1 when timer expires. */
 static void Handicap_3rd() {
-    if (g_state.S_Timer == 9) {
+    if (g_state.select_timer_legacy == 9) {
         SsBgmFadeOut(0x1000);
     }
 
-    if ((g_state.S_Timer -= 1) == 0) {
+    if ((g_state.select_timer_legacy -= 1) == 0) {
         g_state.Exit_No = 1;
     }
 }
@@ -2063,7 +2071,7 @@ static void Handicap_3() {
 static void Handicap_4() {
     if (g_state.SP_No[0][2] > 0 && g_state.SP_No[1][2] > 0) {
         g_state.Exit_No = 9;
-        g_state.S_Timer = 60;
+        g_state.select_timer_legacy = 60;
     }
 }
 

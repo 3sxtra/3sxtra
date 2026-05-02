@@ -483,15 +483,15 @@ static void init_app_10000() {
         g_state.pcon_rno[1] = 3;
 
         if (g_state.plw[0].wu.pl_operator) {
-            g_state.paring_ctr_vs[0][0] = g_state.paring_ctr_ori[0];
+            g_state.parry_ctr_vs[0][0] = g_state.parry_ctr_ori[0];
         } else {
-            g_state.paring_ctr_vs[0][0] = 0;
+            g_state.parry_ctr_vs[0][0] = 0;
         }
 
         if (g_state.plw[1].wu.pl_operator) {
-            g_state.paring_ctr_vs[0][1] = g_state.paring_ctr_ori[1];
+            g_state.parry_ctr_vs[0][1] = g_state.parry_ctr_ori[1];
         } else {
-            g_state.paring_ctr_vs[0][1] = 0;
+            g_state.parry_ctr_vs[0][1] = 0;
         }
 
         break;
@@ -656,7 +656,7 @@ static void plcnt_move() {
 
     move_player_work();
 
-    if (g_state.aiuchi_flag) {
+    if (g_state.mutual_trade_flag) {
         subtract_dm_vital_aiuchi(&g_state.plw[0]);
         subtract_dm_vital_aiuchi(&g_state.plw[1]);
 
@@ -902,7 +902,7 @@ static void move_player_work() {
         g_state.plw[1].reserv_add_y = 0;
     }
 
-    g_state.ichikannkei = check_work_position(&g_state.plw[0].wu, &g_state.plw[1].wu);
+    g_state.positional_relation = check_work_position(&g_state.plw[0].wu, &g_state.plw[1].wu);
     set_rl_waza(&g_state.plw[0]);
     set_rl_waza(&g_state.plw[1]);
     g_state.Timer_Freeze = 0;
@@ -959,7 +959,8 @@ static void move_P1_move_P2() {
         Player_move(&g_state.plw[0], processed_lvbt(Convert_User_Setting(0)));
     }
 
-    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
+    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 &&
+        set_field_hosei_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
         set_field_hosei_flag(&g_state.plw[0], g_state.scrl, 0);
     }
 
@@ -967,7 +968,8 @@ static void move_P1_move_P2() {
         Player_move(&g_state.plw[1], processed_lvbt(Convert_User_Setting(1)));
     }
 
-    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
+    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 &&
+        set_field_hosei_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
         set_field_hosei_flag(&g_state.plw[1], g_state.scrl, 0);
     }
 }
@@ -978,7 +980,8 @@ static void move_P2_move_P1() {
         Player_move(&g_state.plw[1], processed_lvbt(Convert_User_Setting(1)));
     }
 
-    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
+    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 &&
+        set_field_hosei_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
         set_field_hosei_flag(&g_state.plw[1], g_state.scrl, 0);
     }
 
@@ -986,7 +989,8 @@ static void move_P2_move_P1() {
         Player_move(&g_state.plw[0], processed_lvbt(Convert_User_Setting(0)));
     }
 
-    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
+    if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 &&
+        set_field_hosei_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
         set_field_hosei_flag(&g_state.plw[0], g_state.scrl, 0);
     }
 }
@@ -1209,7 +1213,8 @@ s32 check_sa_type_rebirth(PLW* wk) {
 static s16 nekorobi_check(s8 ix) {
     s16 rnum = 0;
 
-    if ((g_state.plw[ix].wu.routine_no[1] == 1) && (g_state.plw[ix].wu.routine_no[2] == 0) && (g_state.plw[ix].wu.routine_no[3] > 2)) {
+    if ((g_state.plw[ix].wu.routine_no[1] == 1) && (g_state.plw[ix].wu.routine_no[2] == 0) &&
+        (g_state.plw[ix].wu.routine_no[3] > 2)) {
         rnum = 1;
     }
 
@@ -1282,8 +1287,8 @@ void setup_base_and_other_data() {
     set_base_data(&g_state.plw[1], 1);
     g_state.plw[0].sa = &g_state.super_arts[0];
     g_state.plw[1].sa = &g_state.super_arts[1];
-    g_state.plw[0].py = &g_state.piyori_type[0];
-    g_state.plw[1].py = &g_state.piyori_type[1];
+    g_state.plw[0].py = &g_state.stun_type[0];
+    g_state.plw[1].py = &g_state.stun_type[1];
     setup_other_data(&g_state.plw[0]);
     setup_other_data(&g_state.plw[1]);
     effect_work_list_init(6, 0xC5);
@@ -1300,7 +1305,8 @@ void setup_base_and_other_data() {
     g_state.poison_flag[0] = 0;
     g_state.poison_flag[1] = 0;
 
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
         effect_E3_init(&g_state.plw[0]);
         effect_E3_init(&g_state.plw[1]);
         effect_E4_init(&g_state.plw[0]);
@@ -1429,19 +1435,19 @@ void clear_chainex_check(s16 ix) {
 void set_kizetsu_status(s16 ix) {
     s16 plnum = g_state.My_char[ix];
 
-    g_state.piyori_type[ix].flag = 0;
-    g_state.piyori_type[ix].time = 0;
-    g_state.piyori_type[ix].now.timer = 0;
-    g_state.piyori_type[ix].store = 0;
-    g_state.piyori_type[ix].recover = pl_nr_piyo_tbl[plnum];
-    g_state.piyori_type[ix].genkai = pl_piyo_tbl[plnum] + stun_gauge_len_omake[omop_stun_gauge_len[ix]];
+    g_state.stun_type[ix].flag = 0;
+    g_state.stun_type[ix].time = 0;
+    g_state.stun_type[ix].now.timer = 0;
+    g_state.stun_type[ix].store = 0;
+    g_state.stun_type[ix].recover = pl_nr_piyo_tbl[plnum];
+    g_state.stun_type[ix].genkai = pl_piyo_tbl[plnum] + stun_gauge_len_omake[omop_stun_gauge_len[ix]];
 
-    if (g_state.piyori_type[ix].genkai < 56) {
-        g_state.piyori_type[ix].genkai = 56;
+    if (g_state.stun_type[ix].genkai < 56) {
+        g_state.stun_type[ix].genkai = 56;
     }
 
-    if (g_state.piyori_type[ix].genkai > 72) {
-        g_state.piyori_type[ix].genkai = 72;
+    if (g_state.stun_type[ix].genkai > 72) {
+        g_state.stun_type[ix].genkai = 72;
     }
 }
 
@@ -1572,7 +1578,8 @@ s16 check_combo_end(s16 ix) {
         return 0;
     }
 
-    if (g_state.plw[ix].wu.cg_ja.boix == 0 && g_state.plw[ix].wu.cg_ja.cuix == 0 && g_state.plw[ix].wu.pat_status == 38) {
+    if (g_state.plw[ix].wu.cg_ja.boix == 0 && g_state.plw[ix].wu.cg_ja.cuix == 0 &&
+        g_state.plw[ix].wu.pat_status == 38) {
         return 0;
     }
 

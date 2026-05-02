@@ -172,7 +172,7 @@ static s32 Setup_Next_Disposal() {
         return 1;
     }
 
-    if ((g_state.G_No[0] == 1) || ((g_state.G_No[0] == 2) && (g_state.G_No[1] == 0))) {
+    if ((g_state.fsm[0] == 1) || ((g_state.fsm[0] == 2) && (g_state.fsm[1] == 0))) {
         return 1;
     }
 

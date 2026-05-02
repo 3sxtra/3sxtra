@@ -173,10 +173,10 @@ void Reset_Replay(struct _TASK* task_ptr) {
 
         task_ptr->r_no[1]++;
         task_ptr->timer = 2;
-        g_state.G_No[2] = GAME_SUBMODE_REPLAY;
-        g_state.G_No[3] = 0;
+        g_state.fsm[2] = GAME_SUBMODE_REPLAY;
+        g_state.fsm[3] = 0;
         g_state.seraph_flag = 0;
-        g_state.G_Timer = 10;
+        g_state.fsm_timer = 10;
         g_state.Cover_Timer = 5;
         effect_work_kill_mod_plcol();
         move_effect_work(6);

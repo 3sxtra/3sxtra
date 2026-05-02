@@ -115,7 +115,7 @@ static void finish_round(void) {
 void TestRunner_Prologue() {
     p1sw_buff = 0;
     p2sw_buff = 0;
-    in_battle = (g_state.C_No[0] == 2);
+    in_battle = (g_state.manage_phase[0] == 2);
 
     if (!initialized) {
         ReplayGame_Parse(&game);
@@ -136,7 +136,7 @@ void TestRunner_Prologue() {
     }
 
     case PHASE_MENU:
-        if (g_state.G_No[1] == 1 && g_state.G_No[2] == 2) {
+        if (g_state.fsm[1] == 1 && g_state.fsm[2] == 2) {
             /* Even though we move cursor manually later, setting g_state.Last_My_char2
              * is required for g_state.Last_Super_Arts to take effect. */
             g_state.Last_My_char2[0] = game.characters[0];
@@ -204,7 +204,7 @@ void TestRunner_Prologue() {
         break;
 
     case PHASE_GAME_TRANSITION:
-        if (g_state.G_No[1] == 2) {
+        if (g_state.fsm[1] == 2) {
             phase = PHASE_GAME;
         } else {
             // Mash buttons to skip the VS animation
@@ -215,7 +215,7 @@ void TestRunner_Prologue() {
         goto play_frame;
 
     case PHASE_ROUND_TRANSITION:
-        if (g_state.G_No[1] != 2) {
+        if (g_state.fsm[1] != 2) {
             // Wait for the next round to start
             break;
         }

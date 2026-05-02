@@ -317,7 +317,8 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 #define COLCD_LOG_ENTRY(colcd_val, mode_val)                                                                           \
     do {                                                                                                               \
         if (colcd_log && wk->cg_number != 0) {                                                                         \
-            u64 key = ((u64)g_state.bg_w.stage << 32) | ((u64)wk->cg_number << 16) | (u64)((colcd_val) & 0x1FF) | 1ULL;        \
+            u64 key =                                                                                                  \
+                ((u64)g_state.bg_w.stage << 32) | ((u64)wk->cg_number << 16) | (u64)((colcd_val) & 0x1FF) | 1ULL;      \
             u32 slot = (u32)((key * 0x9E3779B97F4A7C15ULL) >> 50);                                                     \
             int colcd_i;                                                                                               \
             for (colcd_i = 0; colcd_i < 16; colcd_i++) {                                                               \
@@ -326,7 +327,12 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
                     break;                                                                                             \
                 if (seen[idx] == 0) {                                                                                  \
                     seen[idx] = key;                                                                                   \
-                    fprintf(colcd_log, "%d,%u,%d,%d\n", g_state.bg_w.stage, wk->cg_number, (colcd_val) & 0x1FF, (mode_val));   \
+                    fprintf(colcd_log,                                                                                 \
+                            "%d,%u,%d,%d\n",                                                                           \
+                            g_state.bg_w.stage,                                                                        \
+                            wk->cg_number,                                                                             \
+                            (colcd_val) & 0x1FF,                                                                       \
+                            (mode_val));                                                                               \
                     fflush(colcd_log);                                                                                 \
                     break;                                                                                             \
                 }                                                                                                      \

@@ -23,9 +23,9 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/effect/eff45.h"       /* effect_45_init, Message_Data */
-#include "sf33rd/Source/Game/effect/eff66.h"       /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.plsw_00, g_state.plsw_01, g_state.Forbid_Reset, g_state.Menu_Suicide, g_state.Order/Timer */
+#include "sf33rd/Source/Game/effect/eff45.h" /* effect_45_init, Message_Data */
+#include "sf33rd/Source/Game/effect/eff66.h" /* effect_66_init */
+#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.plsw_00, g_state.plsw_01, g_state.Forbid_Reset, g_state.Menu_Suicide, g_state.Order/Timer */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_in_Sub, Menu_Sub_case1 */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Setup_BG */

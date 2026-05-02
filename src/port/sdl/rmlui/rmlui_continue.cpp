@@ -7,7 +7,7 @@
  * timer and "CONTINUE?" prompt.
  *
  * Key globals (from workuser.h):
- *   g_state.Continue_Count_Down[2], g_state.Continue_Count[2], g_state.Cont_No[4],
+ *   g_state.Continue_Count_Down[2], g_state.Continue_Count[2], g_state.continue_phase[4],
  *   g_state.LOSER, g_state.My_char[]
  */
 
@@ -87,7 +87,7 @@ extern "C" void rmlui_continue_init(void) {
         return;
 
     ctor.BindFunc("continue_count", [](Rml::Variant& v) { v = (int)g_state.Continue_Count_Down[g_state.LOSER]; });
-    ctor.BindFunc("continue_active", [](Rml::Variant& v) { v = (bool)(g_state.Cont_No[0] < 2); });
+    ctor.BindFunc("continue_active", [](Rml::Variant& v) { v = (bool)(g_state.continue_phase[0] < 2); });
     ctor.BindFunc("loser_name", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[g_state.LOSER])); });
 
     s_model_handle = ctor.GetModelHandle();
@@ -105,7 +105,7 @@ extern "C" void rmlui_continue_update(void) {
         return;
 
     DIRTY_INT(continue_count, (int)g_state.Continue_Count_Down[g_state.LOSER]);
-    DIRTY_BOOL(continue_active, g_state.Cont_No[0] < 2);
+    DIRTY_BOOL(continue_active, g_state.continue_phase[0] < 2);
     DIRTY_STR(loser_name, Rml::String(char_name(g_state.My_char[g_state.LOSER])));
 }
 

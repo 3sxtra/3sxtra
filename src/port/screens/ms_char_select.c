@@ -6,7 +6,7 @@
  * MENU_SCREEN_CHAR_SELECT.
  *
  * The character select screen was originally driven by Select_Player()
- * in sel_pl.c, called synchronously from Game01().  This file provides
+ * in sel_pl.c, called synchronously from Game_CharSelect().  This file provides
  * the MenuScreen lifecycle layer so Select_Player() can delegate to
  * the registry, following the same thin-wrapper pattern used by
  * Continue_Scene() (continue.c) and Play_Demo() (demo02.c).

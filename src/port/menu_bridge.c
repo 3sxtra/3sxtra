@@ -203,8 +203,8 @@ void MenuBridge_PostTick(void) {
     g_bridge_state->allow_battle = g_state.Allow_a_battle_f;
 
     // Export Navigation State
-    memcpy(g_bridge_state->nav_G_No, g_state.G_No, 4);
-    memcpy(g_bridge_state->nav_S_No, g_state.S_No, 4);
+    memcpy(g_bridge_state->nav_fsm, g_state.fsm, 4);
+    memcpy(g_bridge_state->nav_select_phase, g_state.select_phase, 4);
 
     g_bridge_state->nav_Play_Type = g_state.Play_Type;
     g_bridge_state->nav_Play_Game = g_state.Play_Game;
@@ -247,7 +247,7 @@ void MenuBridge_PostTick(void) {
     g_bridge_state->nav_Cursor_SA[1] = (int8_t)g_state.Arts_Y[1];
 
     // Screen sub-state (for FIGHT banner detection)
-    memcpy(g_bridge_state->nav_C_No, g_state.C_No, 4);
+    memcpy(g_bridge_state->nav_manage_phase, g_state.manage_phase, 4);
 
     // Game state for parity testing
     g_bridge_state->game_timer = g_state.Game_timer;
@@ -273,17 +273,19 @@ void MenuBridge_PostTick(void) {
     g_bridge_state->rng_32_ex = g_state.Random_ix32_ex;
 
     // Extended game state for parity testing
-    g_bridge_state->p1_action =
-        ((uint32_t)(uint16_t)g_state.plw[0].wu.routine_no[0]) | ((uint32_t)(uint16_t)g_state.plw[0].wu.routine_no[1] << 16);
-    g_bridge_state->p2_action =
-        ((uint32_t)(uint16_t)g_state.plw[1].wu.routine_no[0]) | ((uint32_t)(uint16_t)g_state.plw[1].wu.routine_no[1] << 16);
+    g_bridge_state->p1_action = ((uint32_t)(uint16_t)g_state.plw[0].wu.routine_no[0]) |
+                                ((uint32_t)(uint16_t)g_state.plw[0].wu.routine_no[1] << 16);
+    g_bridge_state->p2_action = ((uint32_t)(uint16_t)g_state.plw[1].wu.routine_no[0]) |
+                                ((uint32_t)(uint16_t)g_state.plw[1].wu.routine_no[1] << 16);
     g_bridge_state->p1_animation = g_state.plw[0].wu.cg_number;
     g_bridge_state->p2_animation = g_state.plw[1].wu.cg_number;
     g_bridge_state->p1_posture = g_state.plw[0].guard_flag;
     g_bridge_state->p2_posture = g_state.plw[1].guard_flag;
     g_bridge_state->p1_freeze =
-        (uint8_t)(g_state.plw[0].wu.hit_stop > 255 ? 255 : (g_state.plw[0].wu.hit_stop < 0 ? 0 : g_state.plw[0].wu.hit_stop));
+        (uint8_t)(g_state.plw[0].wu.hit_stop > 255 ? 255
+                                                   : (g_state.plw[0].wu.hit_stop < 0 ? 0 : g_state.plw[0].wu.hit_stop));
     g_bridge_state->p2_freeze =
-        (uint8_t)(g_state.plw[1].wu.hit_stop > 255 ? 255 : (g_state.plw[1].wu.hit_stop < 0 ? 0 : g_state.plw[1].wu.hit_stop));
+        (uint8_t)(g_state.plw[1].wu.hit_stop > 255 ? 255
+                                                   : (g_state.plw[1].wu.hit_stop < 0 ? 0 : g_state.plw[1].wu.hit_stop));
     g_bridge_state->is_in_match = g_state.Allow_a_battle_f;
 }

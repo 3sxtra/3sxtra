@@ -96,7 +96,7 @@ s16 Next_CPU() {
     SEL_CPU_X = 0;
     g_state.Scene_Cut = Cut_Cut_Cut();
 
-    switch (g_state.SC_No[0]) {
+    switch (g_state.next_cpu_phase[0]) {
     case 0:
         Next_CPU_1st();
         break;
@@ -150,7 +150,7 @@ s16 Next_CPU() {
 static void Next_CPU_1st() {
     u16 Rnd;
 
-    g_state.SC_No[0]++;
+    g_state.next_cpu_phase[0]++;
     g_state.Target_BG_X[3] = g_state.bg_w.bgw[3].wxy[0].disp.pos + 458;
     g_state.Offset_BG_X[3] = 0;
     Start_X = g_state.bg_w.bgw[3].wxy[0].disp.pos;
@@ -181,7 +181,7 @@ static void Next_CPU_1st() {
 
     g_state.Moving_Plate[g_state.Player_id] = 0;
 
-    if (g_state.G_No[1] == 5) {
+    if (g_state.fsm[1] == 5) {
         BGM_Request(57);
         g_state.Order[56] = 3;
         g_state.Order_Timer[56] = 1;
@@ -206,7 +206,7 @@ static void Next_CPU_2nd() {
 
 /** @brief Phase 3 — player picks CPU opponent from EM list, queue load, handle boss speech path. */
 static void Next_CPU_3rd() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
         if (g_state.Player_id) {
             Sel_CPU_Sub(1, ~p2sw_1 & p2sw_0, p2sw_0);
@@ -218,8 +218,8 @@ static void Next_CPU_3rd() {
             break;
         }
 
-        g_state.SC_No[1]++;
-        g_state.SC_No[2] = 0;
+        g_state.next_cpu_phase[1]++;
+        g_state.next_cpu_phase[2] = 0;
 
         if (Debug_w[DEBUG_MY_CHAR_PL1]) {
             g_state.My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
@@ -241,69 +241,69 @@ static void Next_CPU_3rd() {
         }
 
         if (g_state.VS_Index[g_state.Player_id] < 8) {
-            g_state.S_Timer = 50;
+            g_state.select_timer_legacy = 50;
             break;
         }
 
-        g_state.SC_No[1] = 2;
-        g_state.S_Timer = 100;
+        g_state.next_cpu_phase[1] = 2;
+        g_state.select_timer_legacy = 100;
         break;
 
     case 1:
-        switch (g_state.SC_No[2]) {
+        switch (g_state.next_cpu_phase[2]) {
         case 0:
-            if (g_state.S_Timer < 10) {
-                g_state.S_Timer = 9;
-                g_state.SC_No[2]++;
+            if (g_state.select_timer_legacy < 10) {
+                g_state.select_timer_legacy = 9;
+                g_state.next_cpu_phase[2]++;
                 SsBgmFadeOut(0x1000);
             }
 
             break;
         }
 
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[0]++;
-            g_state.SC_No[1] = 0;
-            g_state.SC_No[2] = 0;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[0]++;
+            g_state.next_cpu_phase[1] = 0;
+            g_state.next_cpu_phase[2] = 0;
         }
 
         break;
 
     case 2:
-        if ((g_state.S_Timer -= 1) < 71) {
+        if ((g_state.select_timer_legacy -= 1) < 71) {
             if (Check_EM_Speech() == 0) {
-                g_state.SC_No[1]++;
+                g_state.next_cpu_phase[1]++;
             } else {
-                g_state.SC_No[0] = 4;
-                g_state.SC_No[1] = 0;
+                g_state.next_cpu_phase[0] = 4;
+                g_state.next_cpu_phase[1] = 0;
             }
 
-            g_state.SC_No[2] = 0;
+            g_state.next_cpu_phase[2] = 0;
             break;
         }
 
         break;
 
     case 3:
-        switch (g_state.SC_No[2]) {
+        switch (g_state.next_cpu_phase[2]) {
         case 0:
             if (g_state.Scene_Cut) {
-                g_state.S_Timer = 9;
+                g_state.select_timer_legacy = 9;
             }
 
-            if (g_state.S_Timer < 10) {
-                g_state.S_Timer = 9;
-                g_state.SC_No[2]++;
+            if (g_state.select_timer_legacy < 10) {
+                g_state.select_timer_legacy = 9;
+                g_state.next_cpu_phase[2]++;
                 SsBgmFadeOut(0x1000U);
             }
 
             break;
         }
 
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[0]++;
-            g_state.SC_No[1] = 0;
-            g_state.SC_No[2] = 0;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[0]++;
+            g_state.next_cpu_phase[1] = 0;
+            g_state.next_cpu_phase[2] = 0;
         }
 
         break;
@@ -312,7 +312,7 @@ static void Next_CPU_3rd() {
 
 /** @brief Phase 4 — fade-in VS screen, then route to load-wait or bonus. */
 static void Next_CPU_4th() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
         FadeInit();
         /* NOTE: Do NOT call rmlui_char_select_hide() here.
@@ -333,19 +333,19 @@ static void Next_CPU_4th() {
 
     default:
         if (g_state.Scene_Cut) {
-            g_state.S_Timer = 1;
+            g_state.select_timer_legacy = 1;
         }
 
-        if ((g_state.S_Timer -= 1) != 0) {
+        if ((g_state.select_timer_legacy -= 1) != 0) {
             break;
         }
 
-        if (g_state.G_No[1] == 5 || g_state.G_No[1] == 10) {
-            g_state.SC_No[0] = 10;
+        if (g_state.fsm[1] == 5 || g_state.fsm[1] == 10) {
+            g_state.next_cpu_phase[0] = 10;
             break;
         }
 
-        g_state.SC_No[0] = 6;
+        g_state.next_cpu_phase[0] = 6;
         break;
     }
 }
@@ -355,11 +355,11 @@ extern bool mods_menu_fast_pre_game;
 /** @brief Phase 4.0 — init fade, set up VS BG/objects, start BGM 51. */
 static void Next_CPU_4th_0_Sub() {
     FadeIn(0, 4, 8);
-    g_state.SC_No[1]++;
+    g_state.next_cpu_phase[1]++;
     g_state.Forbid_Break = 0;
     g_state.bgPalCodeOffset[0] = 144;
     BGM_Request(51);
-    g_state.S_Timer = mods_menu_fast_pre_game ? 1 : 178;
+    g_state.select_timer_legacy = mods_menu_fast_pre_game ? 1 : 178;
     g_state.Exit_Timer = 2;
     g_state.bg_w.bgw[0].wxy[0].disp.pos += 512;
     g_state.bg_w.bgw[1].wxy[1].disp.pos = 512;
@@ -377,36 +377,36 @@ static void Next_CPU_4th_1_Sub() {
     FadeIn(0, 4, 8);
 
     if ((g_state.Exit_Timer -= 1) == 0) {
-        g_state.SC_No[1]++;
+        g_state.next_cpu_phase[1]++;
     }
 }
 
 /** @brief Phase 4.2 — count down while still fading in. */
 static void Next_CPU_4th_2_Sub() {
-    g_state.S_Timer--;
+    g_state.select_timer_legacy--;
 
     if (!FadeIn(0, 4, 8)) {
         return;
     }
 
-    g_state.SC_No[1]++;
+    g_state.next_cpu_phase[1]++;
 
-    if (g_state.S_Timer < 0) {
-        g_state.S_Timer = 1;
+    if (g_state.select_timer_legacy < 0) {
+        g_state.select_timer_legacy = 1;
     }
 }
 
 /** @brief Phase 5 — screen-switch sequence for boss intros, then proceed to load-wait. */
 static void Next_CPU_5th() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
-        g_state.SC_No[1]++;
+        g_state.next_cpu_phase[1]++;
         Switch_Screen_Init(1);
         break;
 
     case 1:
         if (Switch_Screen(1) != 0) {
-            g_state.SC_No[1]++;
+            g_state.next_cpu_phase[1]++;
             g_state.Cover_Timer = 9;
         }
 
@@ -414,7 +414,7 @@ static void Next_CPU_5th() {
 
     case 2:
         Switch_Screen(1);
-        g_state.SC_No[1]++;
+        g_state.next_cpu_phase[1]++;
         g_state.bgPalCodeOffset[0] = 144;
         g_state.bg_w.bgw[0].wxy[0].disp.pos += 512;
         g_state.bg_w.bgw[1].wxy[1].disp.pos = 512;
@@ -439,7 +439,7 @@ static void Next_CPU_5th() {
         Switch_Screen(1);
 
         if ((g_state.Cover_Timer -= 1) == 0) {
-            g_state.SC_No[1]++;
+            g_state.next_cpu_phase[1]++;
             Switch_Screen_Init(1);
         }
 
@@ -447,7 +447,7 @@ static void Next_CPU_5th() {
 
     case 4:
         if (Switch_Screen_Revival(1) != 0) {
-            g_state.SC_No[1]++;
+            g_state.next_cpu_phase[1]++;
             g_state.Forbid_Break = 0;
         }
 
@@ -455,35 +455,35 @@ static void Next_CPU_5th() {
 
     case 5:
         if ((g_state.Next_Step & 0x80) != 0) {
-            g_state.SC_No[1]++;
-            g_state.S_Timer = 8;
+            g_state.next_cpu_phase[1]++;
+            g_state.select_timer_legacy = 8;
             SsBgmFadeOut(0x1000);
         }
 
         break;
 
     case 6:
-        if (!(g_state.S_Timer -= 1)) {
+        if (!(g_state.select_timer_legacy -= 1)) {
             FadeInit();
             FadeIn(0, 4, 8);
-            g_state.SC_No[1]++;
+            g_state.next_cpu_phase[1]++;
             g_state.Forbid_Break = 0;
             g_state.Suicide[3] = 1;
             effect_43_init(1, 0);
             BGM_Request(0x33);
-            g_state.S_Timer = mods_menu_fast_pre_game ? 1 : 0xb2;
+            g_state.select_timer_legacy = mods_menu_fast_pre_game ? 1 : 0xb2;
         }
 
         break;
 
     case 7:
-        g_state.S_Timer--;
+        g_state.select_timer_legacy--;
 
         if (FadeIn(0, 4, 8)) {
-            g_state.SC_No[1]++;
+            g_state.next_cpu_phase[1]++;
 
-            if (g_state.S_Timer < 0) {
-                g_state.S_Timer = 1;
+            if (g_state.select_timer_legacy < 0) {
+                g_state.select_timer_legacy = 1;
             }
 
             g_state.Introduce_Boss[g_state.Player_id][g_state.VS_Index[g_state.Player_id] - 8] |= 1;
@@ -493,11 +493,11 @@ static void Next_CPU_5th() {
 
     default:
         if (g_state.Scene_Cut) {
-            g_state.S_Timer = 1;
+            g_state.select_timer_legacy = 1;
         }
 
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[0] = 10;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[0] = 10;
         }
 
         break;
@@ -543,7 +543,7 @@ static void Wait_Load_Complete() {
 
     SEL_CPU_X = 1;
     init_omop();
-    g_state.SC_No[0] = 5;
+    g_state.next_cpu_phase[0] = 5;
 }
 
 /** @brief Wait for loads then signal exit with code 2 (post-VS path). */
@@ -554,7 +554,7 @@ static void Wait_Load_Complete2() {
 
     SEL_CPU_X = 2;
     init_omop();
-    g_state.SC_No[0] = 10;
+    g_state.next_cpu_phase[0] = 10;
 }
 
 /** @brief Wait for loads then signal exit with code 2 (bonus-end path). */
@@ -565,7 +565,7 @@ static void Wait_Load_Complete3() {
 
     SEL_CPU_X = 2;
     init_omop();
-    g_state.SC_No[0] = 7;
+    g_state.next_cpu_phase[0] = 7;
 }
 
 /** @brief After-bonus dispatcher — rebuild BG, run next-CPU phases, return exit flag. */
@@ -577,7 +577,7 @@ s32 After_Bonus() {
     SEL_CPU_X = 0;
     g_state.Scene_Cut = Cut_Cut_Cut();
 
-    switch (g_state.SC_No[0]) {
+    switch (g_state.next_cpu_phase[0]) {
     case 0:
         After_Bonus_1st();
         break;
@@ -618,7 +618,7 @@ s32 After_Bonus() {
 /** @brief After-bonus phase 1 — clear screen, set up virtual BG and scroll layers. */
 static void After_Bonus_1st() {
     Switch_Screen(0);
-    g_state.SC_No[0]++;
+    g_state.next_cpu_phase[0]++;
     g_state.Cover_Timer = 23;
     All_Clear_Suicide();
     System_all_clear_Level_B();
@@ -633,13 +633,13 @@ static void After_Bonus_1st() {
 
 /** @brief After-bonus phase 2 — purge texcache, screen switch, start BGM, and re-enable break. */
 static void After_Bonus_2nd() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
         Switch_Screen(0);
         Purge_mmtm_area(7);
         Purge_com_player_from_mm();
         Make_texcash_of_list(7);
-        g_state.SC_No[1]++;
+        g_state.next_cpu_phase[1]++;
         effect_76_init(55);
         g_state.Order[55] = 3;
         g_state.Order_Timer[55] = 1;
@@ -652,7 +652,7 @@ static void After_Bonus_2nd() {
         Switch_Screen(1);
 
         if ((g_state.Cover_Timer -= 1) == 0) {
-            g_state.SC_No[1]++;
+            g_state.next_cpu_phase[1]++;
             Clear_Flash_No();
             Switch_Screen_Init(1);
         }
@@ -661,9 +661,9 @@ static void After_Bonus_2nd() {
 
     case 2:
         if (Switch_Screen_Revival(1) != 0) {
-            g_state.SC_No[0]++;
-            g_state.SC_No[1] = 0;
-            g_state.S_Timer = 30;
+            g_state.next_cpu_phase[0]++;
+            g_state.next_cpu_phase[1] = 0;
+            g_state.select_timer_legacy = 30;
             BGM_Request(57);
             g_state.Forbid_Break = 0;
             g_state.Ignore_Entry[g_state.LOSER] = 0;
@@ -681,7 +681,7 @@ s16 Select_CPU_First() {
 
     SEL_CPU_X = 0;
 
-    switch (g_state.SC_No[0]) {
+    switch (g_state.next_cpu_phase[0]) {
     case 0:
         Select_CPU_1st();
         break;
@@ -704,7 +704,7 @@ s16 Select_CPU_First() {
 
 /** @brief Select_CPU phase 1 — build EM list, set up BG, spawn objects. */
 static void Select_CPU_1st() {
-    g_state.SC_No[0]++;
+    g_state.next_cpu_phase[0]++;
     g_state.Sel_EM_Complete[g_state.Player_id] = 0;
     g_state.Temporary_EM[g_state.Player_id] = g_state.Last_Selected_EM[g_state.Player_id];
     g_state.Select_Timer = 0x20;
@@ -744,9 +744,9 @@ static void Select_CPU_1st() {
 static void Select_CPU_2nd() {
     u16 Rnd;
 
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
-        g_state.SC_No[1]++;
+        g_state.next_cpu_phase[1]++;
         g_state.Order[g_state.Aborigine + 13] = 5;
         g_state.Order_Timer[g_state.Aborigine + 13] = 1;
         g_state.Order[g_state.Aborigine + 31] = 5;
@@ -773,15 +773,15 @@ static void NC_Cut_Sub() {
     Check_Auto_Cut();
 
     if (g_state.Next_Step) {
-        g_state.SC_No[0]++;
-        g_state.SC_No[1] = 0;
+        g_state.next_cpu_phase[0]++;
+        g_state.next_cpu_phase[1] = 0;
         g_state.Time_Stop = 0;
     }
 }
 
 /** @brief Select_CPU phase 3 — process player/demo input, commit opponent, load assets. */
 static void Select_CPU_3rd() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
         if (g_state.Demo_Flag == 0) {
             if (g_state.Player_id) {
@@ -799,7 +799,7 @@ static void Select_CPU_3rd() {
             break;
         }
 
-        g_state.SC_No[1]++;
+        g_state.next_cpu_phase[1]++;
 
         if (Debug_w[DEBUG_MY_CHAR_PL1]) {
             g_state.My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
@@ -821,27 +821,27 @@ static void Select_CPU_3rd() {
         }
 
         if (g_state.VS_Index[g_state.Player_id] < 8) {
-            g_state.S_Timer = 50;
+            g_state.select_timer_legacy = 50;
         } else {
-            g_state.SC_No[1] = 2;
-            g_state.S_Timer = 100;
+            g_state.next_cpu_phase[1] = 2;
+            g_state.select_timer_legacy = 100;
         }
 
         break;
 
     case 1:
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[1] = 4;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[1] = 4;
         }
 
         break;
 
     case 2:
-        if ((g_state.S_Timer -= 1) < 51) {
+        if ((g_state.select_timer_legacy -= 1) < 51) {
             if (Check_LDREQ_Queue_Direct(9)) {
-                g_state.SC_No[1]++;
+                g_state.next_cpu_phase[1]++;
             } else {
-                g_state.S_Timer = 1;
+                g_state.select_timer_legacy = 1;
             }
         }
 
@@ -849,17 +849,17 @@ static void Select_CPU_3rd() {
 
     case 3:
         if (g_state.Scene_Cut) {
-            g_state.S_Timer = 1;
+            g_state.select_timer_legacy = 1;
         }
 
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[1]++;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[1]++;
         }
 
         break;
 
     case 4:
-        g_state.SC_No[1] = 6;
+        g_state.next_cpu_phase[1] = 6;
         g_state.Order[g_state.Player_id + 11] = 4;
         g_state.Order_Timer[g_state.Player_id + 11] = 5;
         effect_38_init(g_state.COM_id, g_state.COM_id + 11, g_state.My_char[g_state.COM_id], 1, 2);
@@ -880,7 +880,7 @@ static void Select_CPU_3rd() {
         g_state.Offset_BG_X[3] = 0;
 
         if (8 <= g_state.VS_Index[g_state.Player_id] && Check_EM_Speech()) {
-            g_state.SC_No[1] = 5;
+            g_state.next_cpu_phase[1] = 5;
             g_state.Order[67] = 1;
             g_state.Order_Timer[67] = 10;
             g_state.Order_Dir[67] = 8;
@@ -900,8 +900,8 @@ static void Select_CPU_3rd() {
 
     case 5:
         if (g_state.Next_Step & 0x80) {
-            g_state.SC_No[1] = 7;
-            g_state.S_Timer = 20;
+            g_state.next_cpu_phase[1] = 7;
+            g_state.select_timer_legacy = 20;
             g_state.Introduce_Boss[g_state.Player_id][g_state.VS_Index[g_state.Player_id] - 8] = 1;
         }
 
@@ -909,32 +909,32 @@ static void Select_CPU_3rd() {
 
     case 6:
         if (g_state.Next_Step & 1) {
-            g_state.SC_No[1]++;
-            g_state.S_Timer = 20;
+            g_state.next_cpu_phase[1]++;
+            g_state.select_timer_legacy = 20;
         }
 
         break;
 
     case 7:
-        switch (g_state.SC_No[2]) {
+        switch (g_state.next_cpu_phase[2]) {
         case 0:
             if (g_state.Scene_Cut) {
-                g_state.S_Timer = 9;
+                g_state.select_timer_legacy = 9;
             }
 
-            if (g_state.S_Timer < 10) {
-                g_state.S_Timer = 9;
-                g_state.SC_No[2]++;
+            if (g_state.select_timer_legacy < 10) {
+                g_state.select_timer_legacy = 9;
+                g_state.next_cpu_phase[2]++;
                 SsBgmFadeOut(0x1000);
             }
 
             break;
         }
 
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[0]++;
-            g_state.SC_No[1] = 0;
-            g_state.SC_No[2] = 0;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[0]++;
+            g_state.next_cpu_phase[1] = 0;
+            g_state.next_cpu_phase[2] = 0;
         }
 
         break;
@@ -952,7 +952,7 @@ static void Select_CPU_4th() {
 static void Next_Bonus_1st() {
     u16 Rnd;
 
-    g_state.SC_No[0]++;
+    g_state.next_cpu_phase[0]++;
     g_state.Target_BG_X[3] = g_state.bg_w.bgw[3].wxy[0].disp.pos + 458;
     g_state.Offset_BG_X[3] = 0;
     Start_X = g_state.bg_w.bgw[3].wxy[0].disp.pos;
@@ -974,39 +974,39 @@ static void Next_Bonus_1st() {
 
 /** @brief Bonus phase 2 — auto-cut and timer countdown before transition. */
 static void Next_Bonus_2nd() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
         Check_Auto_Cut();
 
         if (g_state.Next_Step) {
-            g_state.SC_No[1]++;
-            g_state.SC_No[2] = 0;
-            g_state.S_Timer = 90;
+            g_state.next_cpu_phase[1]++;
+            g_state.next_cpu_phase[2] = 0;
+            g_state.select_timer_legacy = 90;
             effect_58_init(6, 5, 160);
         }
 
         break;
 
     case 1:
-        switch (g_state.SC_No[2]) {
+        switch (g_state.next_cpu_phase[2]) {
         case 0:
             if (g_state.Scene_Cut) {
-                g_state.S_Timer = 9;
+                g_state.select_timer_legacy = 9;
             }
 
-            if (g_state.S_Timer < 10) {
-                g_state.S_Timer = 9;
-                g_state.SC_No[2]++;
+            if (g_state.select_timer_legacy < 10) {
+                g_state.select_timer_legacy = 9;
+                g_state.next_cpu_phase[2]++;
                 SsBgmFadeOut(0x1000);
             }
 
             break;
         }
 
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[0]++;
-            g_state.SC_No[1] = 0;
-            g_state.SC_No[2] = 0;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[0]++;
+            g_state.next_cpu_phase[1] = 0;
+            g_state.next_cpu_phase[2] = 0;
         }
 
         break;
@@ -1015,7 +1015,7 @@ static void Next_Bonus_2nd() {
 
 /** @brief Bonus phase 3 — fade-in VS screen for the bonus stage. */
 static void Next_Bonus_3rd() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
         g_state.My_char[g_state.COM_id] = g_state.Bonus_Type;
         Next_CPU_4th_0_Sub();
@@ -1031,16 +1031,16 @@ static void Next_Bonus_3rd() {
 
     default:
         if (g_state.Scene_Cut) {
-            g_state.S_Timer = 1;
+            g_state.select_timer_legacy = 1;
         }
 
-        if ((g_state.S_Timer -= 1) == 0) {
+        if ((g_state.select_timer_legacy -= 1) == 0) {
             if (Check_PL_Load() == 0) {
-                g_state.S_Timer = 1;
+                g_state.select_timer_legacy = 1;
                 break;
             }
 
-            g_state.SC_No[0] = 11;
+            g_state.next_cpu_phase[0] = 11;
         }
 
         break;
@@ -1061,7 +1061,7 @@ s16 Next_Q() {
     SEL_CPU_X = 0;
     g_state.Scene_Cut = Cut_Cut_Cut();
 
-    switch (g_state.SC_No[0]) {
+    switch (g_state.next_cpu_phase[0]) {
     case 0:
         Next_Q_1st();
         break;
@@ -1104,16 +1104,16 @@ static void Next_Q_1st() {
 
 /** @brief Next_Q phase 2 — screen switch, set up VS objects, and wait for screen revival. */
 static void Next_Q_2nd() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
-        g_state.SC_No[1]++;
+        g_state.next_cpu_phase[1]++;
         /* fallthrough */
 
     case 1:
         Switch_Screen(0);
 
         if ((g_state.Cover_Timer -= 1) == 5) {
-            g_state.SC_No[1]++;
+            g_state.next_cpu_phase[1]++;
             effect_work_quick_init();
             g_state.bg_w.bgw[0].wxy[0].disp.pos += 512;
             Setup_BG(0, g_state.bg_w.bgw[0].wxy[0].disp.pos, g_state.bg_w.bgw[0].wxy[1].disp.pos);
@@ -1126,7 +1126,7 @@ static void Next_Q_2nd() {
         Switch_Screen(0);
 
         if ((g_state.Cover_Timer -= 1) == 0) {
-            g_state.SC_No[1]++;
+            g_state.next_cpu_phase[1]++;
             Clear_Flash_No();
             Switch_Screen_Init(1);
         }
@@ -1135,9 +1135,9 @@ static void Next_Q_2nd() {
 
     case 3:
         if (Switch_Screen_Revival(1U) != 0) {
-            g_state.SC_No[0]++;
-            g_state.SC_No[1] = 0;
-            g_state.S_Timer = 10;
+            g_state.next_cpu_phase[0]++;
+            g_state.next_cpu_phase[1] = 0;
+            g_state.select_timer_legacy = 10;
             g_state.Forbid_Break = 0;
             g_state.Ignore_Entry[g_state.LOSER] = 0;
         }
@@ -1148,10 +1148,10 @@ static void Next_Q_2nd() {
 
 /** @brief Next_Q phase 3 — fade-in with BGM, then count down before exit. */
 static void Next_Q_3rd() {
-    switch (g_state.SC_No[1]) {
+    switch (g_state.next_cpu_phase[1]) {
     case 0:
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[1]++;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[1]++;
         }
 
         break;
@@ -1159,12 +1159,12 @@ static void Next_Q_3rd() {
     case 1:
         FadeInit();
         FadeIn(0, 4, 8);
-        g_state.SC_No[1]++;
+        g_state.next_cpu_phase[1]++;
         g_state.Forbid_Break = 0;
         effect_43_init(1, 0);
         g_state.bgPalCodeOffset[0] = 144;
         BGM_Request(51);
-        g_state.S_Timer = mods_menu_fast_pre_game ? 1 : 180;
+        g_state.select_timer_legacy = mods_menu_fast_pre_game ? 1 : 180;
         effect_58_init(15, 5, 0);
         return;
 
@@ -1174,11 +1174,11 @@ static void Next_Q_3rd() {
 
     default:
         if (g_state.Scene_Cut) {
-            g_state.S_Timer = 1;
+            g_state.select_timer_legacy = 1;
         }
 
-        if ((g_state.S_Timer -= 1) == 0) {
-            g_state.SC_No[0]++;
+        if ((g_state.select_timer_legacy -= 1) == 0) {
+            g_state.next_cpu_phase[0]++;
         }
 
         break;
@@ -1254,14 +1254,16 @@ static void Setup_EM_List() {
         g_state.EM_Candidate[g_state.Player_id][1][9] = 0;
     }
 
-    g_state.EM_List[g_state.Player_id][0] = g_state.EM_Candidate[g_state.Player_id][0][g_state.VS_Index[g_state.Player_id]];
-    g_state.EM_List[g_state.Player_id][1] = g_state.EM_Candidate[g_state.Player_id][1][g_state.VS_Index[g_state.Player_id]];
+    g_state.EM_List[g_state.Player_id][0] =
+        g_state.EM_Candidate[g_state.Player_id][0][g_state.VS_Index[g_state.Player_id]];
+    g_state.EM_List[g_state.Player_id][1] =
+        g_state.EM_Candidate[g_state.Player_id][1][g_state.VS_Index[g_state.Player_id]];
 }
 
 /** @brief Set COM character, stage, super-arts, and colour; queue BG load. */
 static void Setup_Next_Fighter() {
-    g_state.paring_counter[g_state.COM_id] = 0;
-    g_state.paring_bonus_r[g_state.COM_id] = 0;
+    g_state.parry_counter[g_state.COM_id] = 0;
+    g_state.parry_bonus_r[g_state.COM_id] = 0;
     g_state.My_char[g_state.COM_id] = g_state.EM_id;
 
     if (g_state.EM_id == 17) {

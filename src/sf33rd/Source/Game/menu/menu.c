@@ -626,8 +626,10 @@ void bg_etc_write_ex(s16 type) {
     g_state.bg_w.quake_y_index = 0;
 
     for (i = 0; i <= 0; i++) {
-        g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[0].cal = g_state.bg_w.bgw[i].xy[0].cal = bg_pos_tbl2[type][i][0];
-        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].wxy[1].cal = g_state.bg_w.bgw[i].xy[1].cal = bg_pos_tbl2[type][i][1];
+        g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[0].cal = g_state.bg_w.bgw[i].xy[0].cal =
+            bg_pos_tbl2[type][i][0];
+        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].wxy[1].cal = g_state.bg_w.bgw[i].xy[1].cal =
+            bg_pos_tbl2[type][i][1];
         g_state.bg_w.bgw[i].pos_y_work = g_state.bg_w.bgw[i].xy[1].disp.pos;
         g_state.bg_w.bgw[i].old_pos_x = g_state.bg_w.bgw[i].pos_x_work = g_state.bg_w.bgw[i].xy[0].disp.pos;
         g_state.bg_w.bgw[i].speed_x = msp2[type][i][0];

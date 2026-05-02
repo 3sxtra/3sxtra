@@ -242,16 +242,16 @@ void Reset_Training(struct _TASK* task_ptr) {
         move_effect_work(6);
 
         for (ix = 0; ix < 4; ix++) {
-            g_state.C_No[ix] = 0;
+            g_state.manage_phase[ix] = 0;
         }
 
-        g_state.C_No[0] = 1;
-        g_state.G_No[2] = GAME_SUBMODE_TRAINING;
-        g_state.G_No[3] = 0;
+        g_state.manage_phase[0] = 1;
+        g_state.fsm[2] = GAME_SUBMODE_TRAINING;
+        g_state.fsm[3] = 0;
         g_state.seraph_flag = 0;
-        g_state.BGM_No[0] = 1;
+        g_state.BGmessage_phase[0] = 1;
         g_state.BGM_Timer[0] = 1;
-        g_state.G_Timer = TRAINING_RESET_G_TIMER;
+        g_state.fsm_timer = TRAINING_RESET_G_TIMER;
         g_state.Cover_Timer = TRAINING_RESET_COVER_TIMER;
         g_state.Suicide[0] = 1;
         g_state.Suicide[6] = 1;
@@ -841,9 +841,9 @@ void Character_Change(struct _TASK* task_ptr) {
             if (Switch_Screen(0) != 0) {
                 task_ptr->r_no[2]++;
                 g_state.Cover_Timer = TRAINING_COVER_TIMER;
-                g_state.G_No[1] = GAME_MODE_IN_GAME;
-                g_state.G_No[2] = 0;
-                g_state.G_No[3] = 0;
+                g_state.fsm[1] = GAME_MODE_IN_GAME;
+                g_state.fsm[2] = 0;
+                g_state.fsm[3] = 0;
 
                 for (ix = 0; ix < 2; ix++) {
                     g_state.Sel_PL_Complete[ix] = 0;

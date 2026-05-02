@@ -835,7 +835,8 @@ void Damage_1st(PLW* wk) {
         g_state.CP_No[wk->wu.id][1] = Get_Up_Data[wk->player_number][emLevelRemake(Lv, 4, 0)][Rnd] + 1;
         g_state.CP_No[wk->wu.id][2] = 0;
 
-        if (Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1] - 1][g_state.Area_Number[wk->wu.id]] == -1) {
+        if (Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1] - 1]
+                                    [g_state.Area_Number[wk->wu.id]] == -1) {
             g_state.CP_No[wk->wu.id][1] = Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1]][4];
         }
 
@@ -962,8 +963,10 @@ void Damage_6th(PLW* wk) {
         }
 
         if (wk->wu.cg_type == 12) {
-            if (Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1] - 1][g_state.Area_Number[wk->wu.id]] == -1) {
-                g_state.CP_No[wk->wu.id][1] = Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1]][4];
+            if (Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1] - 1]
+                                        [g_state.Area_Number[wk->wu.id]] == -1) {
+                g_state.CP_No[wk->wu.id][1] =
+                    Get_Up_Action_Check_Data[wk->player_number][g_state.CP_No[wk->wu.id][1]][4];
             }
 
             g_state.CP_No[wk->wu.id][2]++;
@@ -991,7 +994,8 @@ void Damage_6th(PLW* wk) {
 
                 if (g_state.plw[wk->wu.id].sa->ok &&
                     Arts_Super_Name_Data[wk->player_number][g_state.plw[wk->wu.id].sa->kind_of_arts] != -1) {
-                    g_state.CP_Index[wk->wu.id][0] = Arts_Super_Name_Data[wk->player_number][g_state.plw[wk->wu.id].sa->kind_of_arts];
+                    g_state.CP_Index[wk->wu.id][0] =
+                        Arts_Super_Name_Data[wk->player_number][g_state.plw[wk->wu.id].sa->kind_of_arts];
                 }
             }
         }

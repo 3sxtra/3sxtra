@@ -369,11 +369,17 @@ void SDLGameRendererGL_ExecutePass(int pass_index, int viewport_x, int viewport_
 
     if (g_render_passes.passes[pass_index].framebuffer) {
         // Assume framebuffer is a GLTransientRenderTarget*
-        struct { GLuint fbo; GLuint tex; }* rt = g_render_passes.passes[pass_index].framebuffer;
+        struct {
+            GLuint fbo;
+            GLuint tex;
+        }* rt = g_render_passes.passes[pass_index].framebuffer;
         glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
         if (g_render_passes.passes[pass_index].clear_color) {
             uint32_t cv = g_render_passes.passes[pass_index].clear_color_value;
-            glClearColor(((cv >> 24) & 0xFF)/255.0f, ((cv >> 16) & 0xFF)/255.0f, ((cv >> 8) & 0xFF)/255.0f, (cv & 0xFF)/255.0f);
+            glClearColor(((cv >> 24) & 0xFF) / 255.0f,
+                         ((cv >> 16) & 0xFF) / 255.0f,
+                         ((cv >> 8) & 0xFF) / 255.0f,
+                         (cv & 0xFF) / 255.0f);
             glClear(GL_COLOR_BUFFER_BIT | (g_render_passes.passes[pass_index].clear_depth ? GL_DEPTH_BUFFER_BIT : 0));
         }
     } else {
@@ -913,4 +919,3 @@ void SDLGameRendererGL_DrawOverlaySubQuadEx(void* texture, float x, float y, flo
     /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
     push_render_task(gl_texture_id, sdl_vertices, z, -1, 0);
 }
-

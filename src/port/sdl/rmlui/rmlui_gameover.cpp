@@ -7,7 +7,8 @@
  * "GAME OVER" red banner (phase 1) and then score/results (phase 2).
  *
  * Key globals (from workuser.h):
- *   g_state.Score[2][3], g_state.My_char[], g_state.Win_Record[], g_state.Player_id, g_state.Play_Type, g_state.GO_No[]
+ *   g_state.Score[2][3], g_state.My_char[], g_state.Win_Record[], g_state.Player_id, g_state.Play_Type,
+ * g_state.gameover_phase[]
  */
 
 #include "port/sdl/rmlui/rmlui_gameover.h"
@@ -80,8 +81,10 @@ extern "C" void rmlui_gameover_init(void) {
         return;
 
     ctor.BindFunc("gameover_phase", [](Rml::Variant& v) { v = s_gameover_phase; });
-    ctor.BindFunc("gameover_score", [](Rml::Variant& v) { v = (int)g_state.Score[g_state.Player_id][g_state.Play_Type]; });
-    ctor.BindFunc("gameover_char", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[g_state.Player_id])); });
+    ctor.BindFunc("gameover_score",
+                  [](Rml::Variant& v) { v = (int)g_state.Score[g_state.Player_id][g_state.Play_Type]; });
+    ctor.BindFunc("gameover_char",
+                  [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[g_state.Player_id])); });
     ctor.BindFunc("gameover_rounds_won", [](Rml::Variant& v) { v = (int)g_state.Win_Record[g_state.Player_id]; });
     ctor.BindFunc("gameover_rounds_lost", [](Rml::Variant& v) {
         /* Opponent's wins = our losses */

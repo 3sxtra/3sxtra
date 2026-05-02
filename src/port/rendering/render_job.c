@@ -18,26 +18,26 @@
 /* ─── Constants ──────────────────────────────────────────────────────── */
 
 #define MAX_WORKERS 4
-#define MAX_JOBS    16
+#define MAX_JOBS 16
 
 /* ─── Internal State ─────────────────────────────────────────────────── */
 
 typedef struct {
     /* Job queue (main thread writes, workers read) */
-    RenderJob   jobs[MAX_JOBS];
-    int         job_count;        /* total jobs in current batch */
-    int         next_job;         /* index of next unclaimed job */
-    int         completed_count;  /* jobs finished so far */
+    RenderJob jobs[MAX_JOBS];
+    int job_count;       /* total jobs in current batch */
+    int next_job;        /* index of next unclaimed job */
+    int completed_count; /* jobs finished so far */
 
     /* Thread pool */
     SDL_Thread* workers[MAX_WORKERS];
-    int         worker_count;
-    bool        shutdown;         /* signal workers to exit */
+    int worker_count;
+    bool shutdown; /* signal workers to exit */
 
     /* Synchronization */
-    SDL_Mutex*     mutex;
-    SDL_Condition* work_available;  /* signaled when new jobs arrive */
-    SDL_Condition* all_done;        /* signaled when all jobs complete */
+    SDL_Mutex* mutex;
+    SDL_Condition* work_available; /* signaled when new jobs arrive */
+    SDL_Condition* all_done;       /* signaled when all jobs complete */
 } JobQueue;
 
 static JobQueue s_queue;
@@ -106,7 +106,8 @@ void RenderJobQueue_Init(int worker_count) {
 }
 
 void RenderJobQueue_Shutdown(void) {
-    if (s_queue.worker_count == 0) return;
+    if (s_queue.worker_count == 0)
+        return;
 
     SDL_LockMutex(s_queue.mutex);
     s_queue.shutdown = true;
@@ -127,7 +128,8 @@ void RenderJobQueue_Shutdown(void) {
 }
 
 void RenderJobQueue_Submit(const RenderJob* jobs, int count) {
-    if (count <= 0) return;
+    if (count <= 0)
+        return;
 
     /* Fallback: if no workers, run synchronously */
     if (s_queue.worker_count == 0) {
@@ -135,7 +137,8 @@ void RenderJobQueue_Submit(const RenderJob* jobs, int count) {
         return;
     }
 
-    if (count > MAX_JOBS) count = MAX_JOBS;
+    if (count > MAX_JOBS)
+        count = MAX_JOBS;
 
     SDL_LockMutex(s_queue.mutex);
     memcpy(s_queue.jobs, jobs, count * sizeof(RenderJob));
@@ -147,7 +150,8 @@ void RenderJobQueue_Submit(const RenderJob* jobs, int count) {
 }
 
 void RenderJobQueue_WaitAll(void) {
-    if (s_queue.worker_count == 0) return; /* sync mode — already done */
+    if (s_queue.worker_count == 0)
+        return; /* sync mode — already done */
 
     SDL_LockMutex(s_queue.mutex);
     while (s_queue.completed_count < s_queue.job_count) {

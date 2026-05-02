@@ -941,8 +941,8 @@ void SDLGameRendererClassic_DumpTextures(void) {
 
 /* ─── Overlay Sprite Enqueue (Classic) ──────────────────────────────── */
 
-void SDLGameRendererClassic_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z,
-                                              int flip_x, int flip_y) {
+void SDLGameRendererClassic_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                              int flip_y) {
     SDL_Texture* sdl_tex = (SDL_Texture*)texture;
     if (cl_render_task_count >= RENDER_TASK_MAX || sdl_tex == NULL)
         return;
@@ -968,8 +968,8 @@ void SDLGameRendererClassic_DrawOverlayQuadEx(void* texture, float x, float y, f
     cl_render_tasks[cl_render_task_count - 1].z = z;
 }
 
-void SDLGameRendererClassic_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0,
-                                                 float v0, float u1, float v1, float z) {
+void SDLGameRendererClassic_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,
+                                                 float u1, float v1, float z) {
     SDL_Texture* sdl_tex = (SDL_Texture*)texture;
     if (cl_render_task_count >= RENDER_TASK_MAX || sdl_tex == NULL)
         return;
@@ -992,4 +992,3 @@ void SDLGameRendererClassic_DrawOverlaySubQuadEx(void* texture, float x, float y
 void SDLGameRendererClassic_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z) {
     SDLGameRendererClassic_DrawOverlayQuadEx(texture, x, y, w, h, z, 0, 0);
 }
-

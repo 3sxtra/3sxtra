@@ -38,7 +38,7 @@ const RANK_DATA Score_Ranking_Table[20];
 
 #include "port/menu_task.h"
 
-/** @brief Ranking_00 sub-states via g_state.D_No[1]. */
+/** @brief Ranking_Init sub-states via g_state.demo_phase[1]. */
 enum Ranking00State {
     R00_INIT_TEXCACHE = 0,
     R00_LAYOUT_ENTRIES = 1,
@@ -49,7 +49,7 @@ enum Ranking00State {
     R00_STATE_COUNT
 };
 
-/** @brief Ranking_01 sub-states via g_state.D_No[1]. */
+/** @brief Ranking_Display sub-states via g_state.demo_phase[1]. */
 enum Ranking01State {
     R01_INIT_SCREEN = 0,
     R01_LAYOUT_ENTRIES = 1,
@@ -59,7 +59,7 @@ enum Ranking01State {
     R01_STATE_COUNT
 };
 
-/** @brief Ranking_01_5th fade sub-states via g_state.D_No[2]. */
+/** @brief Ranking_01_5th fade sub-states via g_state.demo_phase[2]. */
 enum Ranking01FadeState {
     R01F_FADEOUT_INIT = 0,
     R01F_SCREEN_WAIT = 1,
@@ -90,10 +90,10 @@ s32 Ranking() {
 }
 
 /** @brief Ranking table 00 dispatcher — used when arriving from gameplay (post-credit entry). */
-void Ranking_00() {
+void Ranking_ScoreEntry() {
     g_state.Ranking_X = 0;
 
-    switch (g_state.D_No[1]) {
+    switch (g_state.demo_phase[1]) {
     case R00_INIT_TEXCACHE:
         Ranking_00_1st();
         break;
@@ -117,21 +117,21 @@ void Ranking_00() {
     }
 }
 
-/** @brief Ranking_00 phase 1 — build tex-cache, init demo type, and prepare BG/effects. */
+/** @brief Ranking_Init phase 1 — build tex-cache, init demo type, and prepare BG/effects. */
 void Ranking_00_1st() {
     make_texcash_work(14);
-    g_state.D_No[1]++;
+    g_state.demo_phase[1]++;
     g_state.Demo_Type = 0;
     g_state.Flash_Sign[0] = 1;
     Ranking_Sub();
 }
 
-/** @brief Ranking_00 phase 2 — layout all rank entries (names, scores, faces, grades). */
+/** @brief Ranking_Init phase 2 — layout all rank entries (names, scores, faces, grades). */
 void Ranking_00_2nd() {
     s16 Char_Index;
 
-    g_state.D_No[1]++;
-    g_state.D_Timer = 1;
+    g_state.demo_phase[1]++;
+    g_state.demo_timer_global = 1;
     g_state.Rank_X = 0;
     g_state.Flash_Rank_Time = 0;
     g_state.Rank_Pos_X = g_state.bg_w.bgw[0].xy[0].disp.pos - 104;
@@ -142,9 +142,12 @@ void Ranking_00_2nd() {
         g_state.Order_Timer[85] = 1;
         g_state.Order_Dir[85] = (u8)g_state.Rank_Type;
         effect_76_init(85);
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 128, g_state.bg_w.bgw[0].xy[1].disp.pos + 80, 180, 10, 35, 5, 0);
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 120, g_state.bg_w.bgw[0].xy[1].disp.pos + 40, 180, 13, 35, 5, 0);
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos - 144, g_state.bg_w.bgw[0].xy[1].disp.pos + 68, 180, 7, 30, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos + 128, g_state.bg_w.bgw[0].xy[1].disp.pos + 80, 180, 10, 35, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos + 120, g_state.bg_w.bgw[0].xy[1].disp.pos + 40, 180, 13, 35, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos - 144, g_state.bg_w.bgw[0].xy[1].disp.pos + 68, 180, 7, 30, 5, 0);
         g_state.base_y_pos = 40;
         switch (g_state.Rank_Type) {
         case 10:
@@ -163,7 +166,14 @@ void Ranking_00_2nd() {
             break;
         }
 
-        effect_67_init(0, g_state.bg_w.bgw[0].xy[0].disp.pos - 136, g_state.bg_w.bgw[0].xy[1].disp.pos + 60, 180, Char_Index, 10, 6, 1);
+        effect_67_init(0,
+                       g_state.bg_w.bgw[0].xy[0].disp.pos - 136,
+                       g_state.bg_w.bgw[0].xy[1].disp.pos + 60,
+                       180,
+                       Char_Index,
+                       10,
+                       6,
+                       1);
         g_state.Rank_Pos_X = g_state.bg_w.bgw[0].xy[0].disp.pos - 72;
         g_state.Rank_Pos_Y = g_state.bg_w.bgw[0].xy[1].disp.pos + 120;
         g_state.Rank_Pos_X += 16;
@@ -188,9 +198,11 @@ void Ranking_00_2nd() {
             Setup_Wins2(5);
         }
     } else {
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos - 143, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 4, 30, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos - 143, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 4, 30, 5, 0);
         for (g_state.Rank = g_state.Rank_Type; g_state.Rank < (g_state.Rank_Type + 5); g_state.Rank++) {
-            if ((g_state.Present_Rank[0] == (g_state.Rank - g_state.Rank_Type)) || (g_state.Present_Rank[1] == (g_state.Rank - g_state.Rank_Type))) {
+            if ((g_state.Present_Rank[0] == (g_state.Rank - g_state.Rank_Type)) ||
+                (g_state.Present_Rank[1] == (g_state.Rank - g_state.Rank_Type))) {
                 g_state.Flash_Rank_Interval = 1;
             } else {
                 g_state.Flash_Rank_Interval = 0;
@@ -215,72 +227,78 @@ void Ranking_00_2nd() {
         }
 
         if ((g_state.Present_Rank[0] < 5) || (g_state.Present_Rank[1] < 5)) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
         } else {
-            g_state.D_No[1] = R00_DELAY_CLEAR;
+            g_state.demo_phase[1] = R00_DELAY_CLEAR;
         }
     }
 
     switch (g_state.Rank_Type) {
     case 0:
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 0, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 0, 10, 5, 0);
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 168, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 5, 20, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos + 0, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 0, 10, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos + 168, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 5, 20, 5, 0);
         return;
     case 5:
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 0, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 2, 10, 5, 0);
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 168, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 5, 20, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos + 0, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 2, 10, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos + 168, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 5, 20, 5, 0);
         return;
     case 10:
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 1, 10, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 1, 10, 5, 0);
         return;
     case 15:
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 3, 10, 5, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 3, 10, 5, 0);
     }
 }
 
-/** @brief Ranking_00 phase 3 — wait for the g_state.Flash_Sign ready flag. */
+/** @brief Ranking_Init phase 3 — wait for the g_state.Flash_Sign ready flag. */
 void Ranking_00_3rd() {
     if (g_state.Flash_Sign[0] == 1) {
-        g_state.D_No[1]++;
-        g_state.D_Timer = 1;
+        g_state.demo_phase[1]++;
+        g_state.demo_timer_global = 1;
     }
 }
 
-/** @brief Ranking_00 phase 4 — countdown timer, then toggle flash sign flags. */
+/** @brief Ranking_Init phase 4 — countdown timer, then toggle flash sign flags. */
 void Ranking_00_4th() {
-    if (!(--g_state.D_Timer)) {
-        g_state.D_No[1]++;
-        g_state.D_Timer = 30;
+    if (!(--g_state.demo_timer_global)) {
+        g_state.demo_phase[1]++;
+        g_state.demo_timer_global = 30;
         g_state.Flash_Sign[0] = 0;
         g_state.Flash_Sign[1] = 1;
     }
 }
 
-/** @brief Ranking_00 phase 5 — delay then clear the flash sign. */
+/** @brief Ranking_Init phase 5 — delay then clear the flash sign. */
 void Ranking_00_5th() {
-    if (--g_state.D_Timer == 0) {
-        g_state.D_No[1]++;
-        g_state.D_Timer = 300;
+    if (--g_state.demo_timer_global == 0) {
+        g_state.demo_phase[1]++;
+        g_state.demo_timer_global = 300;
         g_state.Flash_Sign[1] = 0;
     }
 }
 
-/** @brief Ranking_00 phase 6 — final display timer and BGM fade-out, then signal exit. */
+/** @brief Ranking_Init phase 6 — final display timer and BGM fade-out, then signal exit. */
 void Ranking_00_6th() {
-    if (--g_state.D_Timer == 0) {
-        g_state.D_Timer = 1;
+    if (--g_state.demo_timer_global == 0) {
+        g_state.demo_timer_global = 1;
         g_state.Ranking_X = 1;
         return;
     }
 
-    if (g_state.D_Timer == 60) {
+    if (g_state.demo_timer_global == 60) {
         SsBgmFadeOut(546);
     }
 }
 
 /** @brief Ranking table 01 dispatcher — used from demo/attract-mode sequence. */
-void Ranking_01() {
-    switch (g_state.D_No[1]) {
+void Ranking_Display() {
+    switch (g_state.demo_phase[1]) {
     case R01_INIT_SCREEN:
         Ranking_01_1st();
         break;
@@ -301,14 +319,14 @@ void Ranking_01() {
     }
 }
 
-/** @brief Ranking_01 phase 1 — switch screen, start BGM, purge resources, build texcache. */
+/** @brief Ranking_Display phase 1 — switch screen, start BGM, purge resources, build texcache. */
 void Ranking_01_1st() {
     Switch_Screen(1);
     BGM_Request(57);
     Purge_mmtm_area(4);
     Make_texcash_of_list(2);
     make_texcash_work(14);
-    g_state.D_No[1]++;
+    g_state.demo_phase[1]++;
     g_state.Suicide[0] = 0;
     g_state.Present_Rank[0] = 99;
     g_state.Present_Rank[1] = 99;
@@ -316,13 +334,13 @@ void Ranking_01_1st() {
     effect_58_init(1, 1, -1);
 }
 
-/** @brief Ranking_01 phase 2 — lay out all rank entries and champion card, queue demo load. */
+/** @brief Ranking_Display phase 2 — lay out all rank entries and champion card, queue demo load. */
 void Ranking_01_2nd() {
     s16 Char_Index;
 
     Switch_Screen(1);
-    g_state.D_No[1]++;
-    g_state.D_Timer = 420;
+    g_state.demo_phase[1]++;
+    g_state.demo_timer_global = 420;
     g_state.Rank_X = 0;
     g_state.Flash_Rank_Time = 0;
     g_state.Rank_Pos_X = g_state.bg_w.bgw[0].xy[0].disp.pos - 104;
@@ -330,13 +348,16 @@ void Ranking_01_2nd() {
     Setup_Ranking_Obj();
     Setup_Score_Obj();
     if (g_state.Rank_Type == 0) {
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 168, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 5, 20, 0, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos + 168, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 5, 20, 0, 0);
     } else {
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 168, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 5, 20, 0, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos + 168, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 5, 20, 0, 0);
     }
 
     for (g_state.Rank = g_state.Rank_Type; g_state.Rank < (g_state.Rank_Type + 5); g_state.Rank++) {
-        if ((g_state.Present_Rank[0] == (g_state.Rank - g_state.Rank_Type)) || (g_state.Present_Rank[1] == (g_state.Rank - g_state.Rank_Type))) {
+        if ((g_state.Present_Rank[0] == (g_state.Rank - g_state.Rank_Type)) ||
+            (g_state.Present_Rank[1] == (g_state.Rank - g_state.Rank_Type))) {
             g_state.Flash_Rank_Interval = 1;
         } else {
             g_state.Flash_Rank_Interval = 0;
@@ -363,9 +384,12 @@ void Ranking_01_2nd() {
     g_state.Order_Timer[85] = 180;
     g_state.Order_Dir[85] = g_state.Rank_Type + 10;
     effect_76_init(85);
-    effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 512, g_state.bg_w.bgw[0].xy[1].disp.pos + 80, 180, 10, 35, 0, 0);
-    effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 504, g_state.bg_w.bgw[0].xy[1].disp.pos + 40, 180, 13, 35, 0, 0);
-    effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos + 240, g_state.bg_w.bgw[0].xy[1].disp.pos + 68, 180, 7, 30, 0, 0);
+    effect_67_init(
+        24, g_state.bg_w.bgw[0].xy[0].disp.pos + 512, g_state.bg_w.bgw[0].xy[1].disp.pos + 80, 180, 10, 35, 0, 0);
+    effect_67_init(
+        24, g_state.bg_w.bgw[0].xy[0].disp.pos + 504, g_state.bg_w.bgw[0].xy[1].disp.pos + 40, 180, 13, 35, 0, 0);
+    effect_67_init(
+        24, g_state.bg_w.bgw[0].xy[0].disp.pos + 240, g_state.bg_w.bgw[0].xy[1].disp.pos + 68, 180, 7, 30, 0, 0);
     g_state.base_y_pos = 40;
     switch (g_state.Rank_Type) {
     case 0:
@@ -383,7 +407,14 @@ void Ranking_01_2nd() {
         }
         break;
     }
-    effect_67_init(0, g_state.bg_w.bgw[0].xy[0].disp.pos + 248, g_state.bg_w.bgw[0].xy[1].disp.pos + 60, 180, Char_Index, 10, 2, 1);
+    effect_67_init(0,
+                   g_state.bg_w.bgw[0].xy[0].disp.pos + 248,
+                   g_state.bg_w.bgw[0].xy[1].disp.pos + 60,
+                   180,
+                   Char_Index,
+                   10,
+                   2,
+                   1);
     g_state.Rank_Pos_X = g_state.bg_w.bgw[0].xy[0].disp.pos + 312;
     g_state.Rank_Pos_Y = g_state.bg_w.bgw[0].xy[1].disp.pos + 120;
     g_state.Rank_Pos_X += 16;
@@ -410,12 +441,12 @@ void Ranking_01_2nd() {
 
     g_state.Rank -= 10;
     if ((g_state.Present_Rank[0] < 5) || (g_state.Present_Rank[1] < 5)) {
-        g_state.D_No[1]++;
+        g_state.demo_phase[1]++;
     } else {
-        g_state.D_No[1] = R01_FADE_EXIT;
+        g_state.demo_phase[1] = R01_FADE_EXIT;
     }
 
-    if (g_state.G_No[1] < 6) {
+    if (g_state.fsm[1] < 6) {
         Setup_Demo_PL();
         Setup_Demo_Arts();
         Setup_Demo_Stage();
@@ -425,20 +456,20 @@ void Ranking_01_2nd() {
     }
 }
 
-/** @brief Ranking_01 phase 4 — countdown delay before exit sequence. */
+/** @brief Ranking_Display phase 4 — countdown delay before exit sequence. */
 void Ranking_01_4th() {
-    if (!(--g_state.D_Timer)) {
-        g_state.D_No[1]++;
-        g_state.D_Timer = 240;
+    if (!(--g_state.demo_timer_global)) {
+        g_state.demo_phase[1]++;
+        g_state.demo_timer_global = 240;
     }
 }
 
-/** @brief Ranking_01 phase 5 — fade-out and transition to next demo/game. */
+/** @brief Ranking_Display phase 5 — fade-out and transition to next demo/game. */
 void Ranking_01_5th() {
-    switch (g_state.D_No[2]) {
+    switch (g_state.demo_phase[2]) {
     case R01F_FADEOUT_INIT:
-        if (!(--g_state.D_Timer)) {
-            g_state.D_No[2] += 1;
+        if (!(--g_state.demo_timer_global)) {
+            g_state.demo_phase[2] += 1;
             if ((g_state.Demo_Flag == 0) && (g_state.Demo_Type == 0)) {
                 Clear_Personal_Data(0);
                 Clear_Personal_Data(1);
@@ -451,8 +482,8 @@ void Ranking_01_5th() {
 
     case R01F_SCREEN_WAIT:
         if (Switch_Screen(0) != 0) {
-            g_state.D_No[2] += 1;
-            Game01_Sub();
+            g_state.demo_phase[2] += 1;
+            Game_ResetMatchState();
             g_state.Cover_Timer = 24;
             return;
         }
@@ -627,7 +658,8 @@ static void render_wins_digits(s16 y, s16 digit_offset, s16 mid_nudge) {
     } else {
         g_state.Rank_Pos_X += 16;
         if (Digit[1]) {
-            effect_67_init(26, g_state.Rank_Pos_X + mid_nudge, g_state.Rank_Pos_Y, 180, Digit[1] + digit_offset, 10, y, 0);
+            effect_67_init(
+                26, g_state.Rank_Pos_X + mid_nudge, g_state.Rank_Pos_Y, 180, Digit[1] + digit_offset, 10, y, 0);
         }
 
         g_state.Rank_Pos_X += 16;
@@ -659,19 +691,24 @@ void Setup_Wins2(s16 y) {
 
 /** @brief Spawn the RANKING header label as an effect object. */
 void Setup_Ranking_Obj() {
-    effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos - 143, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 4, 30, 0, 0);
+    effect_67_init(
+        24, g_state.bg_w.bgw[0].xy[0].disp.pos - 143, g_state.bg_w.bgw[0].xy[1].disp.pos + 32, 180, 4, 30, 0, 0);
 }
 
 /** @brief Spawn SCORE/WINS header labels depending on g_state.Rank_Type. */
 void Setup_Score_Obj() {
     if (g_state.Rank_Type == 0) {
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos - 0, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 0, 10, 1, 0);
-        effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos - 384, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 1, 10, 1, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos - 0, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 0, 10, 1, 0);
+        effect_67_init(
+            24, g_state.bg_w.bgw[0].xy[0].disp.pos - 384, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 1, 10, 1, 0);
         return;
     }
 
-    effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos - 0, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 2, 10, 1, 0);
-    effect_67_init(24, g_state.bg_w.bgw[0].xy[0].disp.pos - 384, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 3, 10, 1, 0);
+    effect_67_init(
+        24, g_state.bg_w.bgw[0].xy[0].disp.pos - 0, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 2, 10, 1, 0);
+    effect_67_init(
+        24, g_state.bg_w.bgw[0].xy[0].disp.pos - 384, g_state.bg_w.bgw[0].xy[1].disp.pos + 200, 180, 3, 10, 1, 0);
 }
 
 /** @brief Initialise all save-data ranking slots from the default Score_Ranking_Table. */

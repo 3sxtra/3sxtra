@@ -197,9 +197,11 @@ void player_face() {
     }
 
     if (grade_tmp < GRADE_GOLD_THRESHOLD) {
-        scfont_sqput((g_state.Champion * 41) + 1, 1, 27, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
+        scfont_sqput(
+            (g_state.Champion * 41) + 1, 1, 27, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
     } else {
-        scfont_sqput((g_state.Champion * 41) + 1, 1, 28, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
+        scfont_sqput(
+            (g_state.Champion * 41) + 1, 1, 28, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
     }
 }
 

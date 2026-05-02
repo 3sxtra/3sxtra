@@ -142,8 +142,8 @@ SDL_Texture* SDLGameRendererClassic_GetCanvas(void);
 void SDLGameRendererClassic_DrawOverlayQuad(void* texture, float x, float y, float w, float h, float z);
 void SDLGameRendererClassic_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
                                               int flip_y);
-void SDLGameRendererClassic_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0,
-                                                 float v0, float u1, float v1, float z);
+void SDLGameRendererClassic_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,
+                                                 float u1, float v1, float z);
 
 #ifdef __cplusplus
 }

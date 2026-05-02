@@ -19,7 +19,6 @@ static u16 effb8_normal_or_senyou();
 static u16 effb8_sel_1_by_8();
 static void wk_set(WORK_Other_CONN* ewk);
 
-
 void effect_B8_move(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:

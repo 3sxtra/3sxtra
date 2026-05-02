@@ -126,7 +126,7 @@ typedef struct GameState {
     u8 Play_Type;
     s16 Sel_PL_Complete[2];
     s8 New_Challenger;
-    u8 S_No[4];
+    u8 select_phase[4];
     s8 Select_Start[2];
 
     // ======================================================================
@@ -237,11 +237,11 @@ typedef struct GameState {
     s8 BGM_Vol;
     u8 Used_char[2];
     s8 Break_Com[2][20];
-    s8 aiuchi_flag;
-    u8 paring_counter[2];
-    u8 paring_bonus_r[2];
-    u8 paring_ctr_vs[2][2];
-    u8 paring_ctr_ori[2];
+    s8 mutual_trade_flag;
+    u8 parry_counter[2];
+    u8 parry_bonus_r[2];
+    u8 parry_ctr_vs[2][2];
+    u8 parry_ctr_ori[2];
     u8 Attack_Count_Buff[2][4];
     u8 Attack_Count_Index[2];
     u8 CC_Value[2];
@@ -295,12 +295,12 @@ typedef struct GameState {
     u8 Stage_Time_Finish[2];
     u8 Bonus_Type;
     s8 Completion_Bonus[2][2];
-    s8 ichikannkei;
+    s8 positional_relation;
     u8 Plate_Disposal_No[2][3];
     u8 SO_No[2];
     u8 Disp_Command_Name[2][3];
-    u8 SC_No[4];
-    u8 BGM_No[2];
+    u8 next_cpu_phase[4];
+    u8 BGmessage_phase[2];
     u8 BGM_Timer[2];
     u8 EM_List[2][2];
     s8 Sel_EM_Complete[2];
@@ -308,7 +308,7 @@ typedef struct GameState {
     s8 OK_Moving_SA_Plate[2];
     u8 Battle_Q[2];
     u8 EM_History[2][10];
-    u8 GO_No[4];
+    u8 gameover_phase[4];
     u8 Aborigine;
     u8 Continue_Count_Down[2];
     u8 WGJ_Target;
@@ -323,16 +323,16 @@ typedef struct GameState {
     u8 Reset_Timer[2];
     u8 bbbs_type;
     u8 Straight_Flag[2];
-    u8 kakushi_ix;
-    u8 kakushi_op;
+    u8 hidden_char_index;
+    u8 hidden_char_operator;
     u8 RO_backup[2];
     u8 PT_backup;
     u8 E_Number[2][4];
-    u8 E_No[4];
-    u8 C_No[4];
-    u8 G_No[4];
-    u8 D_No[4];
-    u8 M_No[4];
+    u8 entry_phase[4];
+    u8 manage_phase[4];
+    u8 fsm[4];
+    u8 demo_phase[4];
+    u8 message_phase[4];
     u8 Exit_No;
     u8 SP_No[2][4];
     u8 Face_No[2];
@@ -358,7 +358,7 @@ typedef struct GameState {
     u8 Stop_Update_Score;
     u8 test_flag;
     u8 ixbfw_cut;
-    u8 Cont_No[4];
+    u8 continue_phase[4];
     u8 PL_Wins[2];
     u8 Fade_R_No0;
     u8 Fade_R_No1;
@@ -415,15 +415,15 @@ typedef struct GameState {
     s16 Round_Level;
     u16 Round_Result;
     u16 Fade_Number;
-    s16 G_Timer;
-    s16 D_Timer;
+    s16 fsm_timer;
+    s16 demo_timer_global;
     s16 Rank_Pos_X;
     s16 Rank_Pos_Y;
-    s16 E_Timer;
+    s16 entry_timer;
     s16 F_Timer[2];
     s16 ENTRY_X;
-    s16 C_Timer;
-    s16 S_Timer;
+    s16 manage_timer;
+    s16 select_timer_legacy;
     s16 Flash_Complete[2];
     s16 Sel_Arts_Complete[2];
     s16 Arts_Y[2];
@@ -448,7 +448,7 @@ typedef struct GameState {
     // ======================================================================
     s16 Random_ix16; ///< @netplay_sync Main 16-entry RNG index — checksummed
     s16 Random_ix32; ///< @netplay_sync Main 32-entry RNG index — checksummed
-    s16 M_Timer;
+    s16 message_timer;
     s16 VS_Tech[2];
     u16 Guard_Type[2];
     s16 Separate_Area[2][3];
@@ -501,7 +501,7 @@ typedef struct GameState {
     s16 Bonus_Game_ex_result;
     s16 Stock_Com_Color[2];
     s16 bs2_floor[3];
-    s16 bs2_hosei[3];
+    s16 bonus_stage2_offset[3];
     s16 bs2_current_damage;
     u16 Win_Record[2];
     u16 Stock_Win_Record[2];
@@ -548,7 +548,7 @@ typedef struct GameState {
     PLW plw[2]; ///< @netplay_sync The two player structs — checksummed
     ZanzouTableEntry zanzou_table[2][48];
     SA_WORK super_arts[2]; ///< @netplay_sync Super gauge state — checksummed
-    PiyoriType piyori_type[2];
+    PiyoriType stun_type[2];
     AppearanceType appear_type;
     s16 pcon_rno[4];
     bool round_slow_flag;
@@ -580,7 +580,7 @@ typedef struct GameState {
     s8 cmb_stock[2];
     s8 first_attack;
     s8 rever_attack[2];
-    s8 paring_attack[2];
+    s8 parry_attack[2];
     s8 bonus_pts[2];
     s16 hit_num;
     u8 sa_kind;
@@ -603,7 +603,7 @@ typedef struct GameState {
     u16 Screen_Switch_Buffer;
     u8 rw_num;
     u8 rw_bg_flag[4];
-    u8 tokusyu_stage;
+    u8 special_stage;
     s32 rw_gbix[13];
     s8 stage_flash;
     s8 stage_ftimer;
@@ -696,15 +696,15 @@ typedef struct GameState {
 
     // bg_data
 
-    s16 y_sitei_pos;
-    u8 y_sitei_flag;
+    s16 y_fixed_pos;
+    u8 y_fixed_flag;
     u8 c_number;
-    u8 c_kakikae;
+    u8 char_rewrite;
     u8 g_number[2];
-    u8 g_kakikae[2];
-    u8 nosekae;
-    s16 scrn_adgjust_y;
-    s16 scrn_adgjust_x;
+    u8 bg_rewrite[2];
+    u8 palette_swap;
+    s16 screen_adjust_y;
+    s16 screen_adjust_x;
     u16 zoom_add;
     s16 ls_cnt1;
     s8 bg_app;
@@ -790,7 +790,6 @@ typedef struct State {
 
 void GameState_Save(GameState* dst);
 void GameState_Load(const GameState* src);
-void GameState_InitializeSentinels(void);
 
 struct GekkoGameEvent;
 int Netplay_GetPlayerHandle(void);

@@ -110,9 +110,8 @@ void ArmDisplay_GetResolution(int* out_width, int* out_height) {
     }
 }
 
-void ArmDisplay_ComputePresentRect(
-    int out_width, int out_height, int* out_x, int* out_y, int* out_present_width, int* out_present_height
-) {
+void ArmDisplay_ComputePresentRect(int out_width, int out_height, int* out_x, int* out_y, int* out_present_width,
+                                   int* out_present_height) {
     int present_x = 0;
     int present_y = 0;
     int present_w = out_width;

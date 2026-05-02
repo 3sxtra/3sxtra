@@ -33,9 +33,9 @@ typedef void (*RenderJobFn)(int pass_index, void* userdata);
 
 /** @brief A single dispatchable render job. */
 typedef struct RenderJob {
-    int pass_index;       /**< Which render pass this job records */
-    RenderJobFn fn;       /**< Recording function to execute */
-    void* userdata;       /**< Opaque context (e.g., per-pass state pointer) */
+    int pass_index; /**< Which render pass this job records */
+    RenderJobFn fn; /**< Recording function to execute */
+    void* userdata; /**< Opaque context (e.g., per-pass state pointer) */
 } RenderJob;
 
 /**

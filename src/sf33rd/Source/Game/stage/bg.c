@@ -139,7 +139,7 @@ void scr_trans(u8 bgnm) {
         curDataList = &ppgBgList[bgnm];
     }
 
-    switch (g_state.tokusyu_stage) {
+    switch (g_state.special_stage) {
     case 1:
         for (y = yy[0]; y < yy[1]; y += 128) {
             for (x = xx[0]; x < xx[1]; x += 128) {
@@ -403,10 +403,10 @@ void scr_trans(u8 bgnm) {
             for (x = xx[0]; x < xx[1]; x += 128) {
                 global_index_real = global_index + (((y >> 7) << 3) + (x >> 7));
 
-                if (g_state.nosekae != 0) {
+                if (g_state.palette_swap != 0) {
                     for (i = 0; i < 16; i++) {
                         if (g_state.gouki_end_gbix[i] == global_index_real) {
-                            global_index_real = gouki_end_nosekae[g_state.nosekae - 1][i];
+                            global_index_real = gouki_end_nosekae[g_state.palette_swap - 1][i];
 
                             if (ppgCheckTextureNumber(0, global_index_real) == 0) {
                                 if (ppgCheckTextureNumber(&ppgRwBgTex, global_index_real)) {
@@ -422,7 +422,7 @@ void scr_trans(u8 bgnm) {
                 }
 
                 if (bgnm == 0) {
-                    if (g_state.g_kakikae[0]) {
+                    if (g_state.bg_rewrite[0]) {
                         for (i = 0; i < 12; i++) {
                             if (global_index_real == g_state.rw_dat[i].rwgbix) {
                                 global_index_real = g_state.rw_dat[i].rwd_ptr[g_state.g_number[0]];
@@ -440,7 +440,7 @@ void scr_trans(u8 bgnm) {
                         }
                     }
 
-                    if (g_state.g_kakikae[1]) {
+                    if (g_state.bg_rewrite[1]) {
                         for (i = 12; i < 20; i++) {
                             if (global_index_real == g_state.rw_dat[i].rwgbix) {
                                 global_index_real = g_state.rw_dat[i].rwd_ptr[g_state.g_number[1]];
@@ -473,7 +473,7 @@ void scr_trans(u8 bgnm) {
                 global_index_real = global_index + (((y >> 7) << 3) + (x >> 7));
 
                 if (bgnm == 0) {
-                    switch (g_state.c_kakikae) {
+                    switch (g_state.char_rewrite) {
                     case 1:
                         for (i = 0; i < 8; i++) {
                             if (global_index_real == g_state.rw_dat[i].rwgbix) {
@@ -754,8 +754,8 @@ void Pause_Family_On() {
 void Zoomf_Init() {
     g_state.zoom_add = 64;
     g_state.scr_sc = 1.0f;
-    g_state.scrn_adgjust_x = 0;
-    g_state.scrn_adgjust_y = 0;
+    g_state.screen_adjust_x = 0;
+    g_state.screen_adjust_y = 0;
 }
 
 /** @brief Set the zoom value for the stage frame. */
@@ -814,14 +814,14 @@ void Frame_Adgjust(u16 pos_x, u16 pos_y) {
         buff *= pos_x;
         buff >>= 6;
         buff &= 0x1FF;
-        g_state.scrn_adgjust_x = -buff;
+        g_state.screen_adjust_x = -buff;
     } else {
         buff = 0x40;
         buff -= g_state.zoom_add;
         buff *= pos_x;
         buff >>= 6;
         buff &= 0x1FF;
-        g_state.scrn_adgjust_x = buff;
+        g_state.screen_adjust_x = buff;
     }
 
     if (g_state.zoom_add >= 0x40) {
@@ -830,10 +830,10 @@ void Frame_Adgjust(u16 pos_x, u16 pos_y) {
         buff *= pos_y + 0x15;
         buff >>= 6;
         buff &= 0x1FF;
-        g_state.scrn_adgjust_y = -buff;
+        g_state.screen_adjust_y = -buff;
 
-        if (g_state.scrn_adgjust_y == -0x14) {
-            g_state.scrn_adgjust_y += 1;
+        if (g_state.screen_adjust_y == -0x14) {
+            g_state.screen_adjust_y += 1;
         }
     } else {
         buff = 0x40;
@@ -841,10 +841,10 @@ void Frame_Adgjust(u16 pos_x, u16 pos_y) {
         buff *= pos_y + 0x15;
         buff >>= 6;
         buff &= 0x1FF;
-        g_state.scrn_adgjust_y = buff;
+        g_state.screen_adjust_y = buff;
 
-        if (g_state.scrn_adgjust_y == -0x14) {
-            g_state.scrn_adgjust_y += 1;
+        if (g_state.screen_adjust_y == -0x14) {
+            g_state.screen_adjust_y += 1;
         }
     }
 }
@@ -947,10 +947,10 @@ void Irl_Scrn() {
     s8 i;
 
     for (i = 0; i < 8; i++) {
-        g_state.bg_prm[i].bg_h_shift = g_state.scrn_adgjust_x + g_state.bg_pos[i].scr_x_buff.word_pos.h;
-        g_state.end_prm[i].bg_h_shift = g_state.scrn_adgjust_x + g_state.fm_pos[i].family_x_buff.word_pos.h;
-        g_state.bg_prm[i].bg_v_shift = g_state.bg_pos[i].scr_y_buff.word_pos.h - g_state.scrn_adgjust_y;
-        g_state.end_prm[i].bg_v_shift = g_state.fm_pos[i].family_y_buff.word_pos.h - g_state.scrn_adgjust_y;
+        g_state.bg_prm[i].bg_h_shift = g_state.screen_adjust_x + g_state.bg_pos[i].scr_x_buff.word_pos.h;
+        g_state.end_prm[i].bg_h_shift = g_state.screen_adjust_x + g_state.fm_pos[i].family_x_buff.word_pos.h;
+        g_state.bg_prm[i].bg_v_shift = g_state.bg_pos[i].scr_y_buff.word_pos.h - g_state.screen_adjust_y;
+        g_state.end_prm[i].bg_v_shift = g_state.fm_pos[i].family_y_buff.word_pos.h - g_state.screen_adjust_y;
     }
 }
 

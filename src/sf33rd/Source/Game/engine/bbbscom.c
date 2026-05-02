@@ -29,7 +29,8 @@ void bbbs_com_execute(PLW* wk) {
         g_state.Bonus_Stage_Tix = 0;
         g_state.Bonus_Stage_RNO[0] = 1;
 
-        if ((wk->wu.dir_timer = bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].timer)) {
+        if ((wk->wu.dir_timer =
+                 bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].timer)) {
             g_state.Bonus_Stage_RNO[1] = 1;
         } else {
             g_state.Bonus_Stage_RNO[1] = 2;
@@ -63,7 +64,8 @@ void bbbs_com_execute(PLW* wk) {
                 break;
             }
 
-            if ((wk->wu.dir_timer = bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].timer)) {
+            if ((wk->wu.dir_timer =
+                     bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].timer)) {
                 if (bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].kosuu) {
                     g_state.Bonus_Stage_RNO[1] = 1;
                     break;
@@ -99,8 +101,12 @@ void bbbs_com_execute(PLW* wk) {
             wk->wu.cmwk[5] = bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].kosuu;
             wk->wu.mvxy.d[0].sp = 0;
             wk->wu.mvxy.a[0].sp = 0;
-            wk->wu.mvxy.a[1].sp = bbbs_jump_level[bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].jmplv][0];
-            wk->wu.mvxy.d[1].sp = bbbs_jump_level[bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].jmplv][1];
+            wk->wu.mvxy.a[1].sp =
+                bbbs_jump_level[bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].jmplv]
+                               [0];
+            wk->wu.mvxy.d[1].sp =
+                bbbs_jump_level[bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].jmplv]
+                               [1];
             break;
 
         case 3:

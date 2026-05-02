@@ -365,7 +365,8 @@ static void ranking_state_check() {
     }
 
     for (j = joui + 1; j < 4; j++) {
-        if (g_state.Rank_In[name_ptr->id][j] >= 0 && g_state.Rank_In[name_ptr->id][joui] > g_state.Rank_In[name_ptr->id][j]) {
+        if (g_state.Rank_In[name_ptr->id][j] >= 0 &&
+            g_state.Rank_In[name_ptr->id][joui] > g_state.Rank_In[name_ptr->id][j]) {
             joui = j;
         }
     }

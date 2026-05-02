@@ -5,7 +5,7 @@
  * Replaces CPS3's SSPutStr calls in Disp_00_0() with an RmlUi overlay
  * showing "PRESS START BUTTON" with a CSS blink animation.
  * The blinking is handled entirely by CSS @keyframes — no need to
- * mirror the g_state.E_No[1] timer-based blink cycle from Entry_00().
+ * mirror the g_state.entry_phase[1] timer-based blink cycle from Entry_00().
  */
 
 #include "port/sdl/rmlui/rmlui_title_screen.h"
@@ -17,7 +17,7 @@
 
 extern "C" {
 
-/* Game state globals — g_state.G_No[4] for 2P prompt visibility */
+/* Game state globals — g_state.fsm[4] for 2P prompt visibility */
 #include "sf33rd/Source/Game/engine/workuser.h"
 
 } // extern "C"
@@ -41,7 +41,7 @@ extern "C" void rmlui_title_screen_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("show_2p_prompt", [](Rml::Variant& v) { v = (g_state.G_No[1] == 3 || g_state.G_No[1] == 5); });
+    ctor.BindFunc("show_2p_prompt", [](Rml::Variant& v) { v = (g_state.fsm[1] == 3 || g_state.fsm[1] == 5); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -57,7 +57,7 @@ extern "C" void rmlui_title_screen_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("title"))
         return;
 
-    bool show = (g_state.G_No[1] == 3 || g_state.G_No[1] == 5);
+    bool show = (g_state.fsm[1] == 3 || g_state.fsm[1] == 5);
     if (show != s_cache.show_2p) {
         s_cache.show_2p = show;
         s_model_handle.DirtyVariable("show_2p_prompt");

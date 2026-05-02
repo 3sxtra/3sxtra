@@ -20,7 +20,8 @@ void effect_E3_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if ((mwk->wu.E3_work_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
-            (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS)) {
+            (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
+             g_state.Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
@@ -128,7 +129,8 @@ void effect_E3_move(WORK_Other* ewk) {
 
     case 1:
         if ((mwk->wu.E3_work_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
-            (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS)) {
+            (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
+             g_state.Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }

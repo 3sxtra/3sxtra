@@ -39,7 +39,6 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-
 /* === Named Constants === */
 /* APPEAR_TYPE_COUNT is provided by the AppearTypeId enum in appear_registry.h */
 #define SMOKE_CHECK_COUNT 22   /**< Entries in smoke_check[] */
@@ -239,7 +238,8 @@ void Appear_04000(PLW* wk) {
             g_state.app_counter[wk->wu.id] = 0x1C;
 
             if (wk->wu.id) {
-                cal_all_speed_data(&wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 0, 1);
+                cal_all_speed_data(
+                    &wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 0, 1);
                 return;
             }
 
@@ -303,7 +303,8 @@ void Appear_05000(PLW* wk) {
             g_state.appear_work[wk->wu.id] = 0x1B;
 
             if (wk->wu.id) {
-                cal_all_speed_data(&wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x60, 0, 2, 0);
+                cal_all_speed_data(
+                    &wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x60, 0, 2, 0);
                 return;
             }
 
@@ -1062,9 +1063,11 @@ void Appear_18000(PLW* wk) {
                 g_state.appear_work[wk->wu.id] = 0x1F;
 
                 if (wk->wu.id) {
-                    cal_delta_speed(&wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 0, 1);
+                    cal_delta_speed(
+                        &wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 0, 1);
                 } else {
-                    cal_delta_speed(&wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0, 0, 1);
+                    cal_delta_speed(
+                        &wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0, 0, 1);
                 }
             }
 
@@ -1136,9 +1139,11 @@ void Appear_19000(PLW* wk) {
             g_state.appear_work[wk->wu.id] = 0x20;
 
             if (wk->wu.id) {
-                cal_all_speed_data(&wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 1, 1);
+                cal_all_speed_data(
+                    &wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 1, 1);
             } else {
-                cal_all_speed_data(&wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0, 1, 1);
+                cal_all_speed_data(
+                    &wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0, 1, 1);
             }
 
             if (wk->wu.id == 0) {
@@ -1347,9 +1352,11 @@ void Appear_26000(PLW* wk) {
             g_state.appear_work[wk->wu.id] = 0x14;
 
             if (wk->wu.id) {
-                cal_all_speed_data(&wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 88, 0, 0, 1);
+                cal_all_speed_data(
+                    &wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 88, 0, 0, 1);
             } else {
-                cal_all_speed_data(&wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 88, 0, 0, 1);
+                cal_all_speed_data(
+                    &wk->wu, g_state.appear_work[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 88, 0, 0, 1);
             }
         }
 
@@ -1546,9 +1553,11 @@ void Appear_29000(PLW* wk) {
                 g_state.app_counter[wk->wu.id] = 0x20;
 
                 if (wk->wu.id) {
-                    cal_initial_speed(&wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0);
+                    cal_initial_speed(
+                        &wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0);
                 } else {
-                    cal_initial_speed(&wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0);
+                    cal_initial_speed(
+                        &wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0);
                 }
             }
         }
@@ -1830,9 +1839,11 @@ void Appear_36000(PLW* wk) {
             g_state.app_counter[wk->wu.id] = 0x16;
 
             if (wk->wu.id) {
-                cal_all_speed_data(&wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 2, 0);
+                cal_all_speed_data(
+                    &wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 2, 0);
             } else {
-                cal_all_speed_data(&wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0, 2, 0);
+                cal_all_speed_data(
+                    &wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0, 2, 0);
             }
         }
 
@@ -1931,9 +1942,11 @@ void Appear_37000(PLW* wk) {
             g_state.app_counter[wk->wu.id] = 0x2a;
 
             if (wk->wu.id) {
-                cal_all_speed_data(&wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 0, 0);
+                cal_all_speed_data(
+                    &wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work + 0x58, 0, 0, 0);
             } else {
-                cal_all_speed_data(&wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0, 0, 0);
+                cal_all_speed_data(
+                    &wk->wu, g_state.app_counter[wk->wu.id], g_state.bg_w.bgw[1].pos_x_work - 0x58, 0, 0, 0);
             }
 
             wk->wu.next_z = wk->wu.my_priority;

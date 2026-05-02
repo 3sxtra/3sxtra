@@ -36,8 +36,8 @@ static inline SWCanvasPixel sw_argb_to_canvas(uint32_t argb) {
 static inline uint32_t sw_canvas_to_argb(SWCanvasPixel px) {
 #if defined(CRS_SW_CANVAS_16BPP)
     uint32_t r = (px >> 11) & 0x1Fu;
-    uint32_t g = (px >> 5)  & 0x3Fu;
-    uint32_t b =  px        & 0x1Fu;
+    uint32_t g = (px >> 5) & 0x3Fu;
+    uint32_t b = px & 0x1Fu;
     r = (r << 3) | (r >> 2);
     g = (g << 2) | (g >> 4);
     b = (b << 3) | (b >> 2);
@@ -83,8 +83,8 @@ void sw_blit_indexed4_row_rev_ckey_565(uint16_t* dst, const uint8_t* packed, con
                                        int start_nibble);
 
 // Scaled 8bpp colour-key fast path.
-void sw_blit_scaled_indexed8_row_ckey_565(uint16_t* dst, const uint8_t* idx_row, const uint16_t* pal565,
-                                          uint32_t u_fx, uint32_t du_fx, int count);
+void sw_blit_scaled_indexed8_row_ckey_565(uint16_t* dst, const uint8_t* idx_row, const uint16_t* pal565, uint32_t u_fx,
+                                          uint32_t du_fx, int count);
 void sw_blit_scaled_indexed8_row_rev_ckey_565(uint16_t* dst, const uint8_t* idx_row, const uint16_t* pal565,
                                               uint32_t u_fx, uint32_t du_fx, int count);
 #endif
@@ -107,8 +107,8 @@ void sw_blit_indexed8_row_rev(SWCanvasPixel* dst, const uint8_t* idx_last, const
                               int count);
 void sw_blit_scaled_indexed8_row_rev(SWCanvasPixel* dst, const uint8_t* idx_row, const uint32_t* pal, uint32_t u_fx,
                                      uint32_t du_fx, uint32_t modulate, int count);
-void sw_blit_scaled_indexed4_row_rev(SWCanvasPixel* dst, const uint8_t* packed_row, const uint32_t* pal16, uint32_t u_fx,
-                                     uint32_t du_fx, uint32_t modulate, int count);
+void sw_blit_scaled_indexed4_row_rev(SWCanvasPixel* dst, const uint8_t* packed_row, const uint32_t* pal16,
+                                     uint32_t u_fx, uint32_t du_fx, uint32_t modulate, int count);
 void sw_blit_scaled_direct_row_rev(SWCanvasPixel* dst, const uint32_t* src_row, uint32_t u_fx, uint32_t du_fx,
                                    uint32_t modulate, int count);
 void sw_blit_indexed4_row_rev(SWCanvasPixel* dst, const uint8_t* packed, const uint32_t* pal16, uint32_t modulate,

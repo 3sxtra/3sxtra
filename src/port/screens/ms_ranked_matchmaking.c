@@ -36,9 +36,9 @@ static void ranked_matchmaking_enter(struct _TASK* task_ptr) {
 
     Netplay_EnterLobby();
 
-    g_state.Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
-    g_state.Menu_Suicide[1] = 0;        /* enable our items (master_player=1) */
-    Message_Data->kind_req = 4; /* NET_BG_MODE_BLUE */
+    g_state.Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
+    g_state.Menu_Suicide[1] = 0; /* enable our items (master_player=1) */
+    Message_Data->kind_req = 4;  /* NET_BG_MODE_BLUE */
 
     effect_work_init();
     Menu_Common_Init();

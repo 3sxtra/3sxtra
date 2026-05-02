@@ -31,8 +31,8 @@ extern u8 GAME_OVER_X;
 static void Setup_Result_OBJ(void);
 
 static void ms_gameover_enter(struct _TASK* tp) {
-    tp->free[0] = 0; /* Match g_state.GO_No[0] phase */
-    tp->free[1] = 0; /* Match g_state.GO_No[1] phase */
+    tp->free[0] = 0; /* Match g_state.gameover_phase[0] phase */
+    tp->free[1] = 0; /* Match g_state.gameover_phase[1] phase */
 
     /* Same as GameOver_1st case 0 */
     g_state.Unsubstantial_BG[3] = 1;
@@ -60,8 +60,8 @@ static void ms_gameover_enter(struct _TASK* tp) {
             spawn_effect_76(0x38, 3, 1);
         }
         /* g_state.Break_Com skip means we go straight to exit after some time */
-        tp->free[1] = 0xFF; /* Marker to skip to phase transition logic */
-        g_state.G_Timer = 420;      /* ~7 seconds at 60fps */
+        tp->free[1] = 0xFF;      /* Marker to skip to phase transition logic */
+        g_state.fsm_timer = 420; /* ~7 seconds at 60fps */
     } else {
         tp->free[1] = 1; /* Go to wait for g_state.Next_Step */
     }
@@ -74,15 +74,15 @@ static void ms_gameover_tick(struct _TASK* tp) {
         case 1:
             if (g_state.Next_Step) {
                 tp->free[1] = 2;
-                g_state.G_Timer = 420; /* ~7 seconds at 60fps */
+                g_state.fsm_timer = 420; /* ~7 seconds at 60fps */
             }
             break;
 
         case 2:
             if (g_state.Scene_Cut) {
-                g_state.G_Timer = 1;
+                g_state.fsm_timer = 1;
             }
-            if (--g_state.G_Timer <= 0) {
+            if (--g_state.fsm_timer <= 0) {
                 tp->free[0] = 1; /* advance to phase 2 */
                 tp->free[1] = 0;
             }
@@ -91,9 +91,9 @@ static void ms_gameover_tick(struct _TASK* tp) {
         case 0xFF:
             /* We hit the g_state.Break_Com[g_state.WINNER][0] early exit in on_enter */
             if (g_state.Scene_Cut) {
-                g_state.G_Timer = 1;
+                g_state.fsm_timer = 1;
             }
-            if (--g_state.G_Timer <= 0) {
+            if (--g_state.fsm_timer <= 0) {
                 tp->free[0] = 1; /* advance */
                 tp->free[1] = 0;
             }
@@ -150,7 +150,7 @@ static void ms_gameover_tick(struct _TASK* tp) {
 
                 if ((g_state.E_Number[0][0] != 2) && (g_state.E_Number[1][0] != 2)) {
                     tp->free[1] = 6;
-                    g_state.G_Timer = 60;
+                    g_state.fsm_timer = 60;
                 } else {
                     tp->free[1] = 5;
                 }
@@ -160,22 +160,22 @@ static void ms_gameover_tick(struct _TASK* tp) {
         case 5:
             if ((g_state.E_Number[0][0] != 2) && (g_state.E_Number[1][0] != 2)) {
                 tp->free[1] = 6;
-                g_state.G_Timer = 60;
+                g_state.fsm_timer = 60;
             }
             break;
 
         case 6:
-            if (--g_state.G_Timer <= 0) {
+            if (--g_state.fsm_timer <= 0) {
                 tp->free[1] = 7;
-                g_state.G_Timer = g_state.Result_Timer[g_state.Player_id];
+                g_state.fsm_timer = g_state.Result_Timer[g_state.Player_id];
             }
             break;
 
         case 7:
             if (g_state.Scene_Cut) {
-                g_state.G_Timer = 1;
+                g_state.fsm_timer = 1;
             }
-            if (--g_state.G_Timer <= 0) {
+            if (--g_state.fsm_timer <= 0) {
                 tp->free[0] = 2;
                 SsBgmFadeOut(0x222);
                 MenuScreen_RequestFadeOut(); /* FADE_OUT -> EXIT */

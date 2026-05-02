@@ -28,7 +28,8 @@ void effect_91_move(WORK_Other* ewk) {
         return;
     }
 
-    if ((ewk->wu.type == 1 && !Debug_w[DEBUG_CPU_REPLAY_TEST]) && (g_state.Round_Operator[0] == 0 || g_state.Round_Operator[1] == 0)) {
+    if ((ewk->wu.type == 1 && !Debug_w[DEBUG_CPU_REPLAY_TEST]) &&
+        (g_state.Round_Operator[0] == 0 || g_state.Round_Operator[1] == 0)) {
         ewk->wu.my_clear_level = 205;
         sort_push_request4(&ewk->wu);
         return;
@@ -69,8 +70,10 @@ s32 effect_91_init(s16 master_id, s16 type, s16 target_bg, s16 char_ix, s16 char
     ewk->master_player = master_player;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF91_Pos_Data[master_id][ewk->wu.type][0];
-    ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + EFF91_Pos_Data[master_id][ewk->wu.type][1];
+    ewk->wu.position_x =
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF91_Pos_Data[master_id][ewk->wu.type][0];
+    ewk->wu.position_y =
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + EFF91_Pos_Data[master_id][ewk->wu.type][1];
     ewk->wu.position_z = 68;
     set_char_move_init2(&ewk->wu, 0, char_ix, char_ix2 + 1, 0);
     return 0;

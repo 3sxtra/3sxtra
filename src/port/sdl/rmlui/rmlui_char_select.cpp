@@ -261,8 +261,10 @@ extern "C" void rmlui_char_select_init(void) {
     });
 
     ctor.BindFunc("sel_sa_banner_visible", [](Rml::Variant& v) {
-        bool p1_picking = (g_state.Sel_PL_Complete[0] != 0 && g_state.Sel_Arts_Complete[0] == 0 && g_state.Exit_No == 0);
-        bool p2_picking = (g_state.Sel_PL_Complete[1] != 0 && g_state.Sel_Arts_Complete[1] == 0 && g_state.Exit_No == 0);
+        bool p1_picking =
+            (g_state.Sel_PL_Complete[0] != 0 && g_state.Sel_Arts_Complete[0] == 0 && g_state.Exit_No == 0);
+        bool p2_picking =
+            (g_state.Sel_PL_Complete[1] != 0 && g_state.Sel_Arts_Complete[1] == 0 && g_state.Exit_No == 0);
         v = (bool)(p1_picking || p2_picking);
     });
 
@@ -271,7 +273,7 @@ extern "C" void rmlui_char_select_init(void) {
     ctor.BindFunc("sel_timer_visible", [](Rml::Variant& v) {
         if (g_state.Exit_No != 0) {
             v = false;
-        } else if (g_state.G_No[1] == 5) { // Stage Select Screen
+        } else if (g_state.fsm[1] == 5) { // Stage Select Screen
             v = (bool)(g_state.Sel_EM_Complete[g_state.Player_id] == 0);
         } else {
             v = true;
@@ -321,7 +323,8 @@ extern "C" void rmlui_char_select_init(void) {
         // Visible when player has picked a character but hasn't finished the SA pick
         v = (bool)(g_state.Sel_PL_Complete[1] != 0 && g_state.Sel_Arts_Complete[1] == 0);
     });
-    ctor.BindFunc("sel_p2_sa_active", [](Rml::Variant& v) { v = (bool)(g_state.Sel_Arts_Complete[1] == 0 && g_state.Exit_No == 0); });
+    ctor.BindFunc("sel_p2_sa_active",
+                  [](Rml::Variant& v) { v = (bool)(g_state.Sel_Arts_Complete[1] == 0 && g_state.Exit_No == 0); });
     ctor.BindFunc("sel_p2_sa_current_name", [](Rml::Variant& v) {
         int char_idx = g_state.My_char[1];
         int sa_idx = g_state.Arts_Y[1];
@@ -390,8 +393,12 @@ extern "C" void rmlui_char_select_init(void) {
         int id = g_state.EM_List[g_state.Player_id][1];
         v = Rml::String(char_name(id));
     });
-    ctor.BindFunc("stg_sel_top", [](Rml::Variant& v) { v = (bool)(g_state.Exit_No != 0 && g_state.Temporary_EM[g_state.Player_id] == 1); });
-    ctor.BindFunc("stg_sel_bot", [](Rml::Variant& v) { v = (bool)(g_state.Exit_No != 0 && g_state.Temporary_EM[g_state.Player_id] == 2); });
+    ctor.BindFunc("stg_sel_top", [](Rml::Variant& v) {
+        v = (bool)(g_state.Exit_No != 0 && g_state.Temporary_EM[g_state.Player_id] == 1);
+    });
+    ctor.BindFunc("stg_sel_bot", [](Rml::Variant& v) {
+        v = (bool)(g_state.Exit_No != 0 && g_state.Temporary_EM[g_state.Player_id] == 2);
+    });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;

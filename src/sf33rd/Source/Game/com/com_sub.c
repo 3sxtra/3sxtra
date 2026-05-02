@@ -587,7 +587,8 @@ void Walk(PLW* wk, u16 Lever, s16 Time, s16 unused) {
                 g_state.Passive_Flag[wk->wu.id] = 0;
             }
         } else {
-            if ((g_state.Timer_01[wk->wu.id] != (s16)wk->wu.rl_flag) || (wk->micchaku_flag != 0) || (wk->hos_em_flag != 0)) {
+            if ((g_state.Timer_01[wk->wu.id] != (s16)wk->wu.rl_flag) || (wk->micchaku_flag != 0) ||
+                (wk->hos_em_flag != 0)) {
                 Next_Be_Free(wk);
             }
             g_state.Lever_Buff[wk->wu.id] = g_state.Free_Lever[wk->wu.id];
@@ -1017,7 +1018,8 @@ void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 arg_Term_No) {
                 return;
 
             case 8:
-                if ((g_state.plw[wk->wu.id].sa->kind_of_arts == 2) && (g_state.plw[wk->wu.id].wu.vital_new <= (g_state.Max_vitality / 2))) {
+                if ((g_state.plw[wk->wu.id].sa->kind_of_arts == 2) &&
+                    (g_state.plw[wk->wu.id].wu.vital_new <= (g_state.Max_vitality / 2))) {
                     break;
                 }
                 g_state.CP_Index[wk->wu.id][0]++;
@@ -4796,7 +4798,8 @@ s32 Select_Passive(PLW* wk) {
         g_state.Pattern_Index[wk->wu.id] = (u16)Debug_w[DEBUG_PASSIVE_NO] - 1;
     }
 
-    if ((g_state.VS_Tech[wk->wu.id] == 0x19) || (g_state.VS_Tech[wk->wu.id] == 0x13) || (g_state.Timer_00[wk->wu.id] == 0)) {
+    if ((g_state.VS_Tech[wk->wu.id] == 0x19) || (g_state.VS_Tech[wk->wu.id] == 0x13) ||
+        (g_state.Timer_00[wk->wu.id] == 0)) {
         g_state.CP_No[wk->wu.id][0] = 6;
         g_state.CP_Index[wk->wu.id][0] = 0;
         g_state.CP_Index[wk->wu.id][1] = 0;
@@ -5397,7 +5400,8 @@ void Guard_or_Jump_VS_Shell(PLW* wk, WORK_Other* tmw, s16 xx) {
             }
             /* fallthrough */
         default:
-            g_state.Pattern_Index[wk->wu.id] = Decide_Shell_Reaction(wk, tmw, Shell_Change_Data_For_Reaction[tmw->wu.type]);
+            g_state.Pattern_Index[wk->wu.id] =
+                Decide_Shell_Reaction(wk, tmw, Shell_Change_Data_For_Reaction[tmw->wu.type]);
             break;
         }
     }

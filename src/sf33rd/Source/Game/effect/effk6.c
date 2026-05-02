@@ -244,12 +244,13 @@ static void EFFK6_MOVE(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dir_step != g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
+        if (ewk->wu.dir_step !=
+            g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
             ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
-            ewk->wu.xyz[0].disp.pos =
-                g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_PosK6(ewk, ewk->wu.dir_step, 0, g_state.Play_Type);
-            ewk->wu.xyz[1].disp.pos =
-                g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_PosK6(ewk, ewk->wu.dir_step, 1, g_state.Play_Type);
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                      Get_PosK6(ewk, ewk->wu.dir_step, 0, g_state.Play_Type);
+            ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                                      Get_PosK6(ewk, ewk->wu.dir_step, 1, g_state.Play_Type);
 
             if (ewk->wu.direction == 19) {
                 set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, (ewk->wu.dir_step) + 1, 0);
@@ -296,15 +297,19 @@ static void Setup_1st_PosK6(WORK_Other* ewk, s16 Who, s16 Play_Style) {
     if (ewk->master_id) {
         ewk->wu.mvxy.a[0].sp = -0xF0000;
         ewk->wu.mvxy.d[0].sp = 0;
-        ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_PosK6(ewk, Who, 0, Play_Style);
+        ewk->wu.hit_quake =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_PosK6(ewk, Who, 0, Play_Style);
         ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake + 256;
-        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_PosK6(ewk, Who, 1, Play_Style);
+        ewk->wu.xyz[1].disp.pos =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_PosK6(ewk, Who, 1, Play_Style);
     } else {
         ewk->wu.mvxy.a[0].sp = 0xF0000;
         ewk->wu.mvxy.d[0].sp = 0;
-        ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_PosK6(ewk, Who, 0, Play_Style);
+        ewk->wu.hit_quake =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_PosK6(ewk, Who, 0, Play_Style);
         ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake - 256;
-        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_PosK6(ewk, Who, 1, Play_Style);
+        ewk->wu.xyz[1].disp.pos =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_PosK6(ewk, Who, 1, Play_Style);
     }
 }
 
@@ -405,7 +410,8 @@ static s16 Setup_K6_Index(WORK_Other* ewk) {
 }
 
 s32 chkNameSuv(s32 plnum, s32 rnum) {
-    if (plnum == 20 && (g_state.Country == COUNTRY_EUROPE || g_state.Country == COUNTRY_USA || g_state.Country == COUNTRY_ASIA)) {
+    if (plnum == 20 &&
+        (g_state.Country == COUNTRY_EUROPE || g_state.Country == COUNTRY_USA || g_state.Country == COUNTRY_ASIA)) {
         return rnum;
     }
 

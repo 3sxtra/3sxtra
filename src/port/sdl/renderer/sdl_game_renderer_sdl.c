@@ -1101,49 +1101,49 @@ void SDLGameRendererSDL_ExecutePass(int pass_index, int viewport_x, int viewport
     float scale_y = (float)viewport_h / (224.0f * g_resolution_scale);
     SDL_SetRenderScale(renderer, scale_x, scale_y);
 
-        for (int i = 0; i < render_task_count; i++) {
-            const int idx = render_task_order[i];
-            if (task_th[idx] != 0xFFFFFFFF)
-                continue;
+    for (int i = 0; i < render_task_count; i++) {
+        const int idx = render_task_order[i];
+        if (task_th[idx] != 0xFFFFFFFF)
+            continue;
 
-            if (backgrounds_only && task_z[idx] >= 0.1f)
-                continue;
-            if (!backgrounds_only && task_z[idx] < 0.1f)
-                continue;
+        if (backgrounds_only && task_z[idx] >= 0.1f)
+            continue;
+        if (!backgrounds_only && task_z[idx] < 0.1f)
+            continue;
 
-            SDL_Texture* draw_texture = task_texture[idx];
-            if (!draw_texture)
-                continue;
+        SDL_Texture* draw_texture = task_texture[idx];
+        if (!draw_texture)
+            continue;
 
-            SDL_BlendMode sdl_blend;
-            if (task_blend[idx] == RENDERER_BLEND_ADD)
-                sdl_blend = SDL_BLENDMODE_ADD;
-            else if (task_blend[idx] == RENDERER_BLEND_MULTIPLY)
-                sdl_blend = SDL_BLENDMODE_MUL;
-            else
-                sdl_blend = SDL_BLENDMODE_BLEND;
+        SDL_BlendMode sdl_blend;
+        if (task_blend[idx] == RENDERER_BLEND_ADD)
+            sdl_blend = SDL_BLENDMODE_ADD;
+        else if (task_blend[idx] == RENDERER_BLEND_MULTIPLY)
+            sdl_blend = SDL_BLENDMODE_MUL;
+        else
+            sdl_blend = SDL_BLENDMODE_BLEND;
 
-            SDL_SetTextureBlendMode(draw_texture, sdl_blend);
+        SDL_SetTextureBlendMode(draw_texture, sdl_blend);
 
-            if (task_is_rect[idx]) {
-                SDL_SetTextureColorModFloat(
-                    draw_texture, task_verts[idx][0].color.r, task_verts[idx][0].color.g, task_verts[idx][0].color.b);
-                SDL_SetTextureAlphaModFloat(draw_texture, task_verts[idx][0].color.a);
+        if (task_is_rect[idx]) {
+            SDL_SetTextureColorModFloat(
+                draw_texture, task_verts[idx][0].color.r, task_verts[idx][0].color.g, task_verts[idx][0].color.b);
+            SDL_SetTextureAlphaModFloat(draw_texture, task_verts[idx][0].color.a);
 
-                if (task_flip[idx] != SDL_FLIP_NONE) {
-                    SDL_RenderTextureRotated(
-                        renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx], 0.0, NULL, task_flip[idx]);
-                } else {
-                    SDL_RenderTexture(renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx]);
-                }
-
-                SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
-                SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
+            if (task_flip[idx] != SDL_FLIP_NONE) {
+                SDL_RenderTextureRotated(
+                    renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx], 0.0, NULL, task_flip[idx]);
             } else {
-                int indices[6] = { 0, 1, 2, 1, 3, 2 };
-                SDL_RenderGeometry(renderer, draw_texture, task_verts[idx], 4, indices, 6);
+                SDL_RenderTexture(renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx]);
             }
+
+            SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
+            SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
+        } else {
+            int indices[6] = { 0, 1, 2, 1, 3, 2 };
+            SDL_RenderGeometry(renderer, draw_texture, task_verts[idx], 4, indices, 6);
         }
+    }
 
     SDL_SetRenderScale(renderer, 1.0f, 1.0f);
     TRACE_ZONE_END();
@@ -1870,8 +1870,8 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
  * in normal z-sorted rendering.  Uses sentinel task_th = 0xFFFFFFFF to prevent
  * the deferred texture resolution in RenderFrame from overwriting the pointer.
  */
-void SDLGameRendererSDL_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z,
-                                          int flip_x, int flip_y) {
+void SDLGameRendererSDL_DrawOverlayQuadEx(void* texture, float x, float y, float w, float h, float z, int flip_x,
+                                          int flip_y) {
     SDL_Texture* sdl_tex = (SDL_Texture*)texture;
     if (render_task_count >= RENDER_TASK_MAX || sdl_tex == NULL)
         return;
@@ -1936,8 +1936,8 @@ void SDLGameRendererSDL_DrawOverlayQuadEx(void* texture, float x, float y, float
     render_task_count++;
 }
 
-void SDLGameRendererSDL_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0,
-                                             float v0, float u1, float v1, float z) {
+void SDLGameRendererSDL_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,
+                                             float u1, float v1, float z) {
     SDL_Texture* sdl_tex = (SDL_Texture*)texture;
     if (render_task_count >= RENDER_TASK_MAX || sdl_tex == NULL)
         return;
@@ -2004,17 +2004,20 @@ void SDLGameRendererSDL_DrawOverlayQuad(void* texture, float x, float y, float w
 
 void* SDLGameRendererSDL_CreateTransientRenderTarget(int width, int height) {
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
-    if (!renderer) return NULL;
+    if (!renderer)
+        return NULL;
 
     SDL_Texture* tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
     if (!tex) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "SDLGameRendererSDL: Failed to create transient target: %s", SDL_GetError());
+        SDL_LogError(
+            SDL_LOG_CATEGORY_RENDER, "SDLGameRendererSDL: Failed to create transient target: %s", SDL_GetError());
     }
     return tex;
 }
 
 void SDLGameRendererSDL_DestroyTransientRenderTarget(void* handle) {
-    if (!handle) return;
+    if (!handle)
+        return;
     SDL_Texture* tex = (SDL_Texture*)handle;
     SDL_DestroyTexture(tex);
 }

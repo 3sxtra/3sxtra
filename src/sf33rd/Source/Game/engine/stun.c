@@ -17,7 +17,6 @@
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include <stdbool.h>
 
-
 /** @brief Initializes the stun gauge display state for both players. */
 void stngauge_cont_init() {
     u8 i;
@@ -28,7 +27,7 @@ void stngauge_cont_init() {
         g_state.sdat[i].osflag = 0;
         g_state.sdat[i].g_or_s = 0;
         g_state.sdat[i].stimer = 2;
-        g_state.sdat[i].slen = (g_state.piyori_type[i].genkai / 8);
+        g_state.sdat[i].slen = (g_state.stun_type[i].genkai / 8);
         g_state.sdat[i].proccess_dead = 0;
 
         if (omop_st_bar_disp[i]) {
@@ -80,7 +79,7 @@ void stngauge_control(u8 pl) {
             g_state.sdat[pl].sflag = 1;
 
             if (g_state.sdat[pl].osflag == 0) {
-                g_state.sdat[pl].cstn = g_state.piyori_type[pl].genkai;
+                g_state.sdat[pl].cstn = g_state.stun_type[pl].genkai;
             }
 
             if (!g_state.EXE_flag && !g_state.Game_pause) {

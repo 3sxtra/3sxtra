@@ -263,8 +263,8 @@ static void vs_result_tick(struct _TASK* task_ptr) {
         if (--task_ptr->timer <= 0) {
             /* Timeout — server didn't respond. Continue playing VS. */
             Setup_VS_Mode(task_ptr);
-            g_state.G_No[1] = 12;
-            g_state.G_No[2] = 1;
+            g_state.fsm[1] = 12;
+            g_state.fsm[2] = 1;
             g_state.Mode_Type = MODE_VERSUS;
             MenuScreen_ExitToLegacy(task_ptr);
             break;

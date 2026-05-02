@@ -51,7 +51,7 @@ typedef enum {
 /* Demo00() — quick-start attract gameplay (demo02.c) */
 typedef enum {
     DEMO00_SETUP = 0,     /* texcash, Game_pause, random Weak_PL */
-    DEMO00_COVER = 1,     /* Switch_Screen + Game02, cover timer */
+    DEMO00_COVER = 1,     /* Switch_Screen + Game_Fight, cover timer */
     DEMO00_REVEAL = 2,    /* Switch_Screen_Revival               */
     DEMO00_PLAY = 3,      /* main gameplay timer / Conclusion    */
     DEMO00_WIND_DOWN = 4, /* post-conclusion timer               */
@@ -62,8 +62,8 @@ typedef enum {
 /* Demo01() — full attract: char select → gameplay (demo02.c) */
 typedef enum {
     DEMO01_SETUP = 0,   /* Before_Select_Sub, char/arts setup */
-    DEMO01_SELECT = 1,  /* Game01 char select, Demo_Time_Stop */
-    DEMO01_COVER = 2,   /* Switch_Screen + Game02             */
+    DEMO01_SELECT = 1,  /* Game_CharSelect char select, Demo_Time_Stop */
+    DEMO01_COVER = 2,   /* Switch_Screen + Game_Fight              */
     DEMO01_REVEAL = 3,  /* Switch_Screen_Revival              */
     DEMO01_PLAY = 4,    /* main gameplay timer                */
     DEMO01_PAUSE = 5,   /* countdown, SsBgmFadeOut            */

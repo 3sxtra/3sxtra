@@ -136,8 +136,8 @@ extern "C" void rmlui_game_option_init(void) {
         }
     });
 
-    ctor.BindEventCallback("cancel",
-                           [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) { g_state.IO_Result = 0x200; });
+    ctor.BindEventCallback(
+        "cancel", [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) { g_state.IO_Result = 0x200; });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;

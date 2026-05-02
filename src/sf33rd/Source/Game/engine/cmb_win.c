@@ -46,7 +46,7 @@ void combo_cont_init() {
         g_state.old_cmb_flag[i] = 0;
         g_state.cmb_stock[i] = 0;
         g_state.rever_attack[i] = 0;
-        g_state.paring_attack[i] = 0;
+        g_state.parry_attack[i] = 0;
         g_state.bonus_pts[i] = 0;
         g_state.sarts_finish_flag[i] = 0;
         g_state.cmb_calc_now[i] = 0;
@@ -193,8 +193,8 @@ void combo_hensuu_clear(s8 PL) {
 
 /** @brief Checks if the combo display timer has expired and clears. */
 void combo_rp_clear_check(s8 PL) {
-    if (g_state.plw[PL].wu.routine_no[1] != 1 || g_state.plw[PL].wu.routine_no[2] != 17 || g_state.plw[PL].wu.routine_no[3] == 0 ||
-        g_state.plw[PL].wu.routine_no[3] == 3) {
+    if (g_state.plw[PL].wu.routine_no[1] != 1 || g_state.plw[PL].wu.routine_no[2] != 17 ||
+        g_state.plw[PL].wu.routine_no[3] == 0 || g_state.plw[PL].wu.routine_no[3] == 3) {
         I_ZeroStruct(g_state.plw[PL].remake_power);
     }
 }
@@ -275,9 +275,9 @@ void reversal_attack_pts_check(s8 PL) {
 s32 paring_check(s8 PL) {
     s8 PLS;
 
-    if (g_state.paring_bonus_r[PL]) {
-        g_state.paring_bonus_r[PL] = 0;
-        g_state.paring_attack[PL] = 1;
+    if (g_state.parry_bonus_r[PL]) {
+        g_state.parry_bonus_r[PL] = 0;
+        g_state.parry_attack[PL] = 1;
 
         if (PL == 0) {
             PLS = 1;
@@ -322,7 +322,8 @@ void hit_combo_check(s8 PL) {
 
 /** @brief Returns 1 if the current hit was an arts (special) finish blow. */
 s32 arts_finish_check(s8 PL) {
-    if (g_state.Conclusion_Flag && g_state.Conclusion_Type == 0 && g_state.Loser_id == PL && g_state.sarts_finish_flag[PL]) {
+    if (g_state.Conclusion_Flag && g_state.Conclusion_Type == 0 && g_state.Loser_id == PL &&
+        g_state.sarts_finish_flag[PL]) {
         return 1;
     }
 
@@ -331,7 +332,8 @@ s32 arts_finish_check(s8 PL) {
 
 /** @brief Returns 1 if arts_finish_check2 detects an arts finish (variant). */
 s32 arts_finish_check2(u8 PL) {
-    if (g_state.Conclusion_Flag && g_state.Conclusion_Type == 0 && g_state.Loser_id == PL && (g_state.plw[PL].combo_type.new_dm & 0x3F) >= 32) {
+    if (g_state.Conclusion_Flag && g_state.Conclusion_Type == 0 && g_state.Loser_id == PL &&
+        (g_state.plw[PL].combo_type.new_dm & 0x3F) >= 32) {
         return 1;
     }
 
@@ -444,7 +446,7 @@ void combo_window_push(s8 PL, s8 KIND) {
             break;
 
         case 6:
-            score = g_state.paring_counter[PLS] * 100;
+            score = g_state.parry_counter[PLS] * 100;
             break;
         }
 
@@ -512,7 +514,7 @@ void combo_window_push(s8 PL, s8 KIND) {
             break;
 
         case 6:
-            score = g_state.paring_counter[PLS] * 100;
+            score = g_state.parry_counter[PLS] * 100;
             break;
         }
 

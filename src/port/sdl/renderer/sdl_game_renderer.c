@@ -44,7 +44,7 @@ void RenderGraph_Compile(void) {
 
     // 2. Automated Pass Culling based on Lifespans (Dead-Code Elimination)
     // Keep track of which transient textures are needed by active subsequent passes
-    bool transient_needed[TRANSIENT_TEXTURE_COUNT] = {false};
+    bool transient_needed[TRANSIENT_TEXTURE_COUNT] = { false };
 
     // Iterate backwards to propagate dependencies from end of frame to beginning
     for (int i = g_render_passes.count - 1; i >= 0; i--) {
@@ -55,9 +55,9 @@ void RenderGraph_Compile(void) {
         bool is_needed = true; // Assume needed unless proven otherwise
 
         // If this pass outputs to a transient texture, check if any later pass needs it
-        if (g_render_passes.passes[i].transient_output >= 0 && 
+        if (g_render_passes.passes[i].transient_output >= 0 &&
             g_render_passes.passes[i].transient_output < TRANSIENT_TEXTURE_COUNT) {
-            
+
             if (!transient_needed[g_render_passes.passes[i].transient_output]) {
                 // No later pass needs this output! We can cull this pass safely.
                 is_needed = false;
@@ -89,11 +89,13 @@ void RenderGraph_Compile(void) {
     }
 
     for (int i = 0; i < g_render_passes.count; i++) {
-        if (g_render_passes.passes[i].skip_this_frame) continue;
+        if (g_render_passes.passes[i].skip_this_frame)
+            continue;
 
         int out = g_render_passes.passes[i].transient_output;
         if (out >= 0 && out < TRANSIENT_TEXTURE_COUNT) {
-            if (first_write[out] < 0) first_write[out] = i;
+            if (first_write[out] < 0)
+                first_write[out] = i;
         }
         for (int j = 0; j < 4; j++) {
             int in_id = g_render_passes.passes[i].transient_inputs[j];
@@ -106,12 +108,15 @@ void RenderGraph_Compile(void) {
     // Try to alias: if texture A's lifespan ends before texture B's begins,
     // B can reuse A's backing texture.
     for (int a = 0; a < TRANSIENT_TEXTURE_COUNT; a++) {
-        if (first_write[a] < 0) continue; // A not used this frame
+        if (first_write[a] < 0)
+            continue; // A not used this frame
         int a_end = (last_read[a] >= 0) ? last_read[a] : first_write[a];
 
         for (int b = a + 1; b < TRANSIENT_TEXTURE_COUNT; b++) {
-            if (first_write[b] < 0) continue; // B not used this frame
-            if (s_transient_alias[b] != b) continue; // B already aliased
+            if (first_write[b] < 0)
+                continue; // B not used this frame
+            if (s_transient_alias[b] != b)
+                continue; // B already aliased
 
             int b_start = first_write[b];
             // A's lifespan [first_write[a], a_end] must not overlap B's [b_start, ...]
@@ -211,118 +216,117 @@ void RendererCaps_Detect(void) {
  * ================================================================ */
 
 static const GameRendererVtable s_vtable_gl = {
-    .Init            = SDLGameRendererGL_Init,
-    .Shutdown        = SDLGameRendererGL_Shutdown,
-    .BeginFrame      = SDLGameRendererGL_BeginFrame,
-    .RenderFrame     = SDLGameRendererGL_RenderFrame,
-    .ExecutePass     = SDLGameRendererGL_ExecutePass,
-    .EndFrame        = SDLGameRendererGL_EndFrame,
-    .CreateTexture   = SDLGameRendererGL_CreateTexture,
-    .DestroyTexture  = SDLGameRendererGL_DestroyTexture,
-    .UnlockTexture   = SDLGameRendererGL_UnlockTexture,
-    .CreatePalette   = SDLGameRendererGL_CreatePalette,
-    .DestroyPalette  = SDLGameRendererGL_DestroyPalette,
-    .UnlockPalette   = SDLGameRendererGL_UnlockPalette,
-    .SetTexture      = SDLGameRendererGL_SetTexture,
+    .Init = SDLGameRendererGL_Init,
+    .Shutdown = SDLGameRendererGL_Shutdown,
+    .BeginFrame = SDLGameRendererGL_BeginFrame,
+    .RenderFrame = SDLGameRendererGL_RenderFrame,
+    .ExecutePass = SDLGameRendererGL_ExecutePass,
+    .EndFrame = SDLGameRendererGL_EndFrame,
+    .CreateTexture = SDLGameRendererGL_CreateTexture,
+    .DestroyTexture = SDLGameRendererGL_DestroyTexture,
+    .UnlockTexture = SDLGameRendererGL_UnlockTexture,
+    .CreatePalette = SDLGameRendererGL_CreatePalette,
+    .DestroyPalette = SDLGameRendererGL_DestroyPalette,
+    .UnlockPalette = SDLGameRendererGL_UnlockPalette,
+    .SetTexture = SDLGameRendererGL_SetTexture,
     .CreateTransientRenderTarget = SDLGameRendererGL_CreateTransientRenderTarget,
     .DestroyTransientRenderTarget = SDLGameRendererGL_DestroyTransientRenderTarget,
     .BindTransientRenderTarget = SDLGameRendererGL_BindTransientRenderTarget,
-    .SetBlendMode    = SDLGameRendererGL_SetBlendMode,
+    .SetBlendMode = SDLGameRendererGL_SetBlendMode,
     .DrawTexturedQuad = SDLGameRendererGL_DrawTexturedQuad,
-    .DrawSolidQuad   = SDLGameRendererGL_DrawSolidQuad,
-    .DrawSprite      = SDLGameRendererGL_DrawSprite,
-    .DrawSprite2     = SDLGameRendererGL_DrawSprite2,
+    .DrawSolidQuad = SDLGameRendererGL_DrawSolidQuad,
+    .DrawSprite = SDLGameRendererGL_DrawSprite,
+    .DrawSprite2 = SDLGameRendererGL_DrawSprite2,
     .FlushSprite2Batch = SDLGameRendererGL_FlushSprite2Batch,
     .GetCachedGLTexture = SDLGameRendererGL_GetCachedGLTexture,
-    .DumpTextures    = SDLGameRendererGL_DumpTextures,
+    .DumpTextures = SDLGameRendererGL_DumpTextures,
     .DrawOverlayQuad = SDLGameRendererGL_DrawOverlayQuad,
     .DrawOverlayQuadEx = SDLGameRendererGL_DrawOverlayQuadEx,
     .DrawOverlaySubQuadEx = SDLGameRendererGL_DrawOverlaySubQuadEx,
 };
 
 static const GameRendererVtable s_vtable_gpu = {
-    .Init            = SDLGameRendererGPU_Init,
-    .Shutdown        = SDLGameRendererGPU_Shutdown,
-    .BeginFrame      = SDLGameRendererGPU_BeginFrame,
-    .RenderFrame     = SDLGameRendererGPU_RenderFrame,
-    .ExecutePass     = SDLGameRendererGPU_ExecutePass,
-    .EndFrame        = SDLGameRendererGPU_EndFrame,
-    .CreateTexture   = SDLGameRendererGPU_CreateTexture,
-    .DestroyTexture  = SDLGameRendererGPU_DestroyTexture,
-    .UnlockTexture   = SDLGameRendererGPU_UnlockTexture,
-    .CreatePalette   = SDLGameRendererGPU_CreatePalette,
-    .DestroyPalette  = SDLGameRendererGPU_DestroyPalette,
-    .UnlockPalette   = SDLGameRendererGPU_UnlockPalette,
-    .SetTexture      = SDLGameRendererGPU_SetTexture,
+    .Init = SDLGameRendererGPU_Init,
+    .Shutdown = SDLGameRendererGPU_Shutdown,
+    .BeginFrame = SDLGameRendererGPU_BeginFrame,
+    .RenderFrame = SDLGameRendererGPU_RenderFrame,
+    .ExecutePass = SDLGameRendererGPU_ExecutePass,
+    .EndFrame = SDLGameRendererGPU_EndFrame,
+    .CreateTexture = SDLGameRendererGPU_CreateTexture,
+    .DestroyTexture = SDLGameRendererGPU_DestroyTexture,
+    .UnlockTexture = SDLGameRendererGPU_UnlockTexture,
+    .CreatePalette = SDLGameRendererGPU_CreatePalette,
+    .DestroyPalette = SDLGameRendererGPU_DestroyPalette,
+    .UnlockPalette = SDLGameRendererGPU_UnlockPalette,
+    .SetTexture = SDLGameRendererGPU_SetTexture,
     .CreateTransientRenderTarget = SDLGameRendererGPU_CreateTransientRenderTarget,
     .DestroyTransientRenderTarget = SDLGameRendererGPU_DestroyTransientRenderTarget,
     .BindTransientRenderTarget = SDLGameRendererGPU_BindTransientRenderTarget,
-    .SetBlendMode    = SDLGameRendererGPU_SetBlendMode,
+    .SetBlendMode = SDLGameRendererGPU_SetBlendMode,
     .DrawTexturedQuad = SDLGameRendererGPU_DrawTexturedQuad,
-    .DrawSolidQuad   = SDLGameRendererGPU_DrawSolidQuad,
-    .DrawSprite      = SDLGameRendererGPU_DrawSprite,
-    .DrawSprite2     = SDLGameRendererGPU_DrawSprite2,
+    .DrawSolidQuad = SDLGameRendererGPU_DrawSolidQuad,
+    .DrawSprite = SDLGameRendererGPU_DrawSprite,
+    .DrawSprite2 = SDLGameRendererGPU_DrawSprite2,
     .FlushSprite2Batch = SDLGameRendererGPU_FlushSprite2Batch,
     .GetCachedGLTexture = SDLGameRendererGPU_GetCachedGLTexture,
-    .DumpTextures    = SDLGameRendererGPU_DumpTextures,
+    .DumpTextures = SDLGameRendererGPU_DumpTextures,
     .DrawOverlayQuad = SDLGameRendererGPU_DrawOverlayQuad,
     .DrawOverlayQuadEx = SDLGameRendererGPU_DrawOverlayQuadEx,
     .DrawOverlaySubQuadEx = SDLGameRendererGPU_DrawOverlaySubQuadEx,
 };
 
 static const GameRendererVtable s_vtable_sdl = {
-    .Init            = SDLGameRendererSDL_Init,
-    .Shutdown        = SDLGameRendererSDL_Shutdown,
-    .BeginFrame      = SDLGameRendererSDL_BeginFrame,
-    .RenderFrame     = SDLGameRendererSDL_RenderFrame,
-    .ExecutePass     = SDLGameRendererSDL_ExecutePass,
-    .EndFrame        = SDLGameRendererSDL_EndFrame,
-    .CreateTexture   = SDLGameRendererSDL_CreateTexture,
-    .DestroyTexture  = SDLGameRendererSDL_DestroyTexture,
-    .UnlockTexture   = SDLGameRendererSDL_UnlockTexture,
-    .CreatePalette   = SDLGameRendererSDL_CreatePalette,
-    .DestroyPalette  = SDLGameRendererSDL_DestroyPalette,
-    .UnlockPalette   = SDLGameRendererSDL_UnlockPalette,
-    .SetTexture      = SDLGameRendererSDL_SetTexture,
+    .Init = SDLGameRendererSDL_Init,
+    .Shutdown = SDLGameRendererSDL_Shutdown,
+    .BeginFrame = SDLGameRendererSDL_BeginFrame,
+    .RenderFrame = SDLGameRendererSDL_RenderFrame,
+    .ExecutePass = SDLGameRendererSDL_ExecutePass,
+    .EndFrame = SDLGameRendererSDL_EndFrame,
+    .CreateTexture = SDLGameRendererSDL_CreateTexture,
+    .DestroyTexture = SDLGameRendererSDL_DestroyTexture,
+    .UnlockTexture = SDLGameRendererSDL_UnlockTexture,
+    .CreatePalette = SDLGameRendererSDL_CreatePalette,
+    .DestroyPalette = SDLGameRendererSDL_DestroyPalette,
+    .UnlockPalette = SDLGameRendererSDL_UnlockPalette,
+    .SetTexture = SDLGameRendererSDL_SetTexture,
     .CreateTransientRenderTarget = SDLGameRendererSDL_CreateTransientRenderTarget,
     .DestroyTransientRenderTarget = SDLGameRendererSDL_DestroyTransientRenderTarget,
     .BindTransientRenderTarget = SDLGameRendererSDL_BindTransientRenderTarget,
-    .SetBlendMode    = SDLGameRendererSDL_SetBlendMode,
+    .SetBlendMode = SDLGameRendererSDL_SetBlendMode,
     .DrawTexturedQuad = SDLGameRendererSDL_DrawTexturedQuad,
-    .DrawSolidQuad   = SDLGameRendererSDL_DrawSolidQuad,
-    .DrawSprite      = SDLGameRendererSDL_DrawSprite,
-    .DrawSprite2     = SDLGameRendererSDL_DrawSprite2,
+    .DrawSolidQuad = SDLGameRendererSDL_DrawSolidQuad,
+    .DrawSprite = SDLGameRendererSDL_DrawSprite,
+    .DrawSprite2 = SDLGameRendererSDL_DrawSprite2,
     .FlushSprite2Batch = SDLGameRendererSDL_FlushSprite2Batch,
     .GetCachedGLTexture = SDLGameRendererSDL_GetCachedGLTexture,
-    .DumpTextures    = SDLGameRendererSDL_DumpTextures,
+    .DumpTextures = SDLGameRendererSDL_DumpTextures,
     .DrawOverlayQuad = SDLGameRendererSDL_DrawOverlayQuad,
     .DrawOverlayQuadEx = SDLGameRendererSDL_DrawOverlayQuadEx,
     .DrawOverlaySubQuadEx = SDLGameRendererSDL_DrawOverlaySubQuadEx,
 };
 
-
 static const GameRendererVtable s_vtable_classic = {
-    .Init            = SDLGameRendererClassic_Init,
-    .Shutdown        = SDLGameRendererClassic_Shutdown,
-    .BeginFrame      = SDLGameRendererClassic_BeginFrame,
-    .RenderFrame     = SDLGameRendererClassic_RenderFrame,
-    .ExecutePass     = NULL,
-    .EndFrame        = SDLGameRendererClassic_EndFrame,
-    .CreateTexture   = SDLGameRendererClassic_CreateTexture,
-    .DestroyTexture  = SDLGameRendererClassic_DestroyTexture,
-    .UnlockTexture   = SDLGameRendererClassic_UnlockTexture,
-    .CreatePalette   = SDLGameRendererClassic_CreatePalette,
-    .DestroyPalette  = SDLGameRendererClassic_DestroyPalette,
-    .UnlockPalette   = SDLGameRendererClassic_UnlockPalette,
-    .SetTexture      = SDLGameRendererClassic_SetTexture,
-    .SetBlendMode    = SDLGameRendererClassic_SetBlendMode,
+    .Init = SDLGameRendererClassic_Init,
+    .Shutdown = SDLGameRendererClassic_Shutdown,
+    .BeginFrame = SDLGameRendererClassic_BeginFrame,
+    .RenderFrame = SDLGameRendererClassic_RenderFrame,
+    .ExecutePass = NULL,
+    .EndFrame = SDLGameRendererClassic_EndFrame,
+    .CreateTexture = SDLGameRendererClassic_CreateTexture,
+    .DestroyTexture = SDLGameRendererClassic_DestroyTexture,
+    .UnlockTexture = SDLGameRendererClassic_UnlockTexture,
+    .CreatePalette = SDLGameRendererClassic_CreatePalette,
+    .DestroyPalette = SDLGameRendererClassic_DestroyPalette,
+    .UnlockPalette = SDLGameRendererClassic_UnlockPalette,
+    .SetTexture = SDLGameRendererClassic_SetTexture,
+    .SetBlendMode = SDLGameRendererClassic_SetBlendMode,
     .DrawTexturedQuad = SDLGameRendererClassic_DrawTexturedQuad,
-    .DrawSolidQuad   = SDLGameRendererClassic_DrawSolidQuad,
-    .DrawSprite      = SDLGameRendererClassic_DrawSprite,
-    .DrawSprite2     = SDLGameRendererClassic_DrawSprite2,
+    .DrawSolidQuad = SDLGameRendererClassic_DrawSolidQuad,
+    .DrawSprite = SDLGameRendererClassic_DrawSprite,
+    .DrawSprite2 = SDLGameRendererClassic_DrawSprite2,
     .FlushSprite2Batch = SDLGameRendererClassic_FlushSprite2Batch,
     .GetCachedGLTexture = SDLGameRendererClassic_GetCachedGLTexture,
-    .DumpTextures    = SDLGameRendererClassic_DumpTextures,
+    .DumpTextures = SDLGameRendererClassic_DumpTextures,
     .DrawOverlayQuad = SDLGameRendererClassic_DrawOverlayQuad,
     .DrawOverlayQuadEx = SDLGameRendererClassic_DrawOverlayQuadEx,
     .DrawOverlaySubQuadEx = SDLGameRendererClassic_DrawOverlaySubQuadEx,
@@ -340,13 +344,23 @@ void GameRendererVtable_Init(void) {
     RendererBackend r = SDLApp_GetRenderer();
     switch (r) {
 #if CRS_VIDEO_DRIVER_SOFTWARE
-    case RENDERER_SOFTWARE:     g_game_renderer = &s_vtable_sw;      break;
+    case RENDERER_SOFTWARE:
+        g_game_renderer = &s_vtable_sw;
+        break;
 #endif
-    case RENDERER_SDLGPU:       g_game_renderer = &s_vtable_gpu;     break;
-    case RENDERER_SDL2D:        g_game_renderer = &s_vtable_sdl;     break;
-    case RENDERER_SDL2D_CLASSIC: g_game_renderer = &s_vtable_classic; break;
-    case RENDERER_OPENGL:       /* FALLTHROUGH */
-    default:                    g_game_renderer = &s_vtable_gl;      break;
+    case RENDERER_SDLGPU:
+        g_game_renderer = &s_vtable_gpu;
+        break;
+    case RENDERER_SDL2D:
+        g_game_renderer = &s_vtable_sdl;
+        break;
+    case RENDERER_SDL2D_CLASSIC:
+        g_game_renderer = &s_vtable_classic;
+        break;
+    case RENDERER_OPENGL: /* FALLTHROUGH */
+    default:
+        g_game_renderer = &s_vtable_gl;
+        break;
     }
     assert(g_game_renderer && "GameRendererVtable_Init: vtable not set");
 }
@@ -359,23 +373,24 @@ void SDLGameRenderer_Init() {
     GameRendererVtable_Init();
     RendererCaps_Detect();
     TextureUtilVtable_Init();
-    
+
     // Initialize RenderGraph passes
     g_render_passes.count = 5;
-    for(int i = 0; i < g_render_passes.count; i++) {
+    for (int i = 0; i < g_render_passes.count; i++) {
         g_render_passes.passes[i].transient_output = -1;
-        for(int j = 0; j < 4; j++) g_render_passes.passes[i].transient_inputs[j] = -1;
+        for (int j = 0; j < 4; j++)
+            g_render_passes.passes[i].transient_inputs[j] = -1;
         g_render_passes.passes[i].execute_callback = NULL;
         g_render_passes.passes[i].user_data = NULL;
     }
 
     g_render_passes.passes[0].name = "CPS3 Canvas";
     g_render_passes.passes[0].force_execute = true;
-    
+
     g_render_passes.passes[1].name = "HD Backgrounds";
     g_render_passes.passes[1].force_execute = false;
     g_render_passes.passes[1].transient_output = TRANSIENT_TEXTURE_COMPOSITION;
-    
+
     g_render_passes.passes[2].name = "HD Foregrounds";
     g_render_passes.passes[2].force_execute = false;
 
@@ -408,8 +423,10 @@ void SDLGameRenderer_BeginFrame() {
 }
 
 TransientTexture* SDLGameRenderer_GetTransientTexture(TransientTextureID id, int width, int height) {
-    if (id < 0 || id >= TRANSIENT_TEXTURE_COUNT) return NULL;
-    if (!g_game_renderer || !g_game_renderer->CreateTransientRenderTarget) return NULL;
+    if (id < 0 || id >= TRANSIENT_TEXTURE_COUNT)
+        return NULL;
+    if (!g_game_renderer || !g_game_renderer->CreateTransientRenderTarget)
+        return NULL;
 
     // Phase 2: Check alias map — if this texture shares another's backing, redirect
     int backing_id = s_transient_alias[id];
@@ -430,7 +447,8 @@ TransientTexture* SDLGameRenderer_GetTransientTexture(TransientTextureID id, int
 }
 
 void SDLGameRenderer_DestroyTransientTextures(void) {
-    if (!g_game_renderer || !g_game_renderer->DestroyTransientRenderTarget) return;
+    if (!g_game_renderer || !g_game_renderer->DestroyTransientRenderTarget)
+        return;
     for (int i = 0; i < TRANSIENT_TEXTURE_COUNT; i++) {
         if (s_transient_textures[i].backend_handle != NULL) {
             g_game_renderer->DestroyTransientRenderTarget(s_transient_textures[i].backend_handle);

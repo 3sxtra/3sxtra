@@ -15,6 +15,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 
 #include "port/I_System.h"
+#include <string.h>
 
 // sbss
 
@@ -323,7 +324,8 @@ void makeup_final_grade(s16 ix, s16 pt) {
 
 /** @brief Awards bonus score based on the player's final grade. */
 void grade_final_grade_bonus() {
-    u32 bonus_point = grade_t_table[g_state.judge_final[g_state.WGJ_Target][g_state.Final_Play_Type[g_state.WGJ_Target]].grade][1];
+    u32 bonus_point =
+        grade_t_table[g_state.judge_final[g_state.WGJ_Target][g_state.Final_Play_Type[g_state.WGJ_Target]].grade][1];
     bonus_point *= 0x64;
     g_state.Score[g_state.WGJ_Target][g_state.Final_Play_Type[g_state.WGJ_Target]] += bonus_point;
 }
@@ -415,8 +417,9 @@ void grade_makeup_judgement_gals() {
         g_state.judge_gals[i].defence_total = get_defence_total(i, 0);
         g_state.judge_gals[i].tech_pts_total = get_tech_pts_total(i);
         g_state.judge_gals[i].ex_point_total = get_ex_point_total(i, 0);
-        g_state.judge_gals[i].grade = get_grade_ix(g_state.judge_gals[i].offence_total + g_state.judge_gals[i].defence_total +
-                                           g_state.judge_gals[i].tech_pts_total + g_state.judge_gals[i].ex_point_total);
+        g_state.judge_gals[i].grade =
+            get_grade_ix(g_state.judge_gals[i].offence_total + g_state.judge_gals[i].defence_total +
+                         g_state.judge_gals[i].tech_pts_total + g_state.judge_gals[i].ex_point_total);
     }
 }
 
@@ -460,8 +463,10 @@ void grade_makeup_stage_parameter(s16 ix) {
         }
     }
 
-    point = g_state.judge_item[ix][g_state.Play_Type].offence_total + g_state.judge_item[ix][g_state.Play_Type].defence_total +
-            g_state.judge_item[ix][g_state.Play_Type].tech_pts_total + g_state.judge_item[ix][g_state.Play_Type].ex_point_total;
+    point = g_state.judge_item[ix][g_state.Play_Type].offence_total +
+            g_state.judge_item[ix][g_state.Play_Type].defence_total +
+            g_state.judge_item[ix][g_state.Play_Type].tech_pts_total +
+            g_state.judge_item[ix][g_state.Play_Type].ex_point_total;
     grade = get_grade_ix(point);
 
     if (g_state.Play_Type == 0) {
@@ -475,12 +480,16 @@ void grade_makeup_stage_parameter(s16 ix) {
             if ((qc = rannyuu_Q_check((ix + 1) & 1))) {
                 g_state.judge_final[ix][g_state.Play_Type].vs_cpu_result[15] = point;
                 g_state.judge_final[ix][g_state.Play_Type].vs_cpu_grade[15] = grade;
-                g_state.judge_final[ix][g_state.Play_Type].vs_cpu_player[15] = g_state.judge_final[ix][g_state.Play_Type].vcr_ix;
+                g_state.judge_final[ix][g_state.Play_Type].vs_cpu_player[15] =
+                    g_state.judge_final[ix][g_state.Play_Type].vcr_ix;
             } else {
                 plnum = old_my_char_check(g_state.My_char[(ix + 1) & 1], 0);
-                g_state.judge_final[ix][g_state.Play_Type].vs_cpu_result[g_state.judge_final[ix][g_state.Play_Type].vcr_ix] = point;
-                g_state.judge_final[ix][g_state.Play_Type].vs_cpu_grade[g_state.judge_final[ix][g_state.Play_Type].vcr_ix] = grade;
-                g_state.judge_final[ix][g_state.Play_Type].vs_cpu_player[g_state.judge_final[ix][g_state.Play_Type].vcr_ix] = plnum;
+                g_state.judge_final[ix][g_state.Play_Type]
+                    .vs_cpu_result[g_state.judge_final[ix][g_state.Play_Type].vcr_ix] = point;
+                g_state.judge_final[ix][g_state.Play_Type]
+                    .vs_cpu_grade[g_state.judge_final[ix][g_state.Play_Type].vcr_ix] = grade;
+                g_state.judge_final[ix][g_state.Play_Type]
+                    .vs_cpu_player[g_state.judge_final[ix][g_state.Play_Type].vcr_ix] = plnum;
                 g_state.judge_final[ix][g_state.Play_Type].vcr_ix += 1;
             }
 
@@ -528,12 +537,17 @@ void grade_makeup_stage_para_com(s16 ix) {
         g_state.judge_com[ix].round = 1;
     }
 
-    g_state.judge_com[ix].offence_total = g_state.judge_item[ix][g_state.Play_Type].offence_total / g_state.judge_com[ix].round;
-    g_state.judge_com[ix].defence_total = g_state.judge_item[ix][g_state.Play_Type].defence_total / g_state.judge_com[ix].round;
-    g_state.judge_com[ix].tech_pts_total = g_state.judge_item[ix][g_state.Play_Type].tech_pts_total / g_state.judge_com[ix].round;
-    g_state.judge_com[ix].ex_point_total = g_state.judge_item[ix][g_state.Play_Type].ex_point_total / g_state.judge_com[ix].round;
-    g_state.judge_com[ix].grade = get_grade_ix(g_state.judge_com[ix].offence_total + g_state.judge_com[ix].defence_total +
-                                       g_state.judge_com[ix].tech_pts_total + g_state.judge_com[ix].ex_point_total);
+    g_state.judge_com[ix].offence_total =
+        g_state.judge_item[ix][g_state.Play_Type].offence_total / g_state.judge_com[ix].round;
+    g_state.judge_com[ix].defence_total =
+        g_state.judge_item[ix][g_state.Play_Type].defence_total / g_state.judge_com[ix].round;
+    g_state.judge_com[ix].tech_pts_total =
+        g_state.judge_item[ix][g_state.Play_Type].tech_pts_total / g_state.judge_com[ix].round;
+    g_state.judge_com[ix].ex_point_total =
+        g_state.judge_item[ix][g_state.Play_Type].ex_point_total / g_state.judge_com[ix].round;
+    g_state.judge_com[ix].grade =
+        get_grade_ix(g_state.judge_com[ix].offence_total + g_state.judge_com[ix].defence_total +
+                     g_state.judge_com[ix].tech_pts_total + g_state.judge_com[ix].ex_point_total);
 }
 
 /** @brief Builds grading parameters for the bonus stage. */
@@ -541,7 +555,8 @@ void grade_makeup_bonus_parameter(s16 ix) {
     if (g_state.Round_Operator[ix] != 0) {
         switch (g_state.bg_w.stage) {
         case 21:
-            g_state.judge_final[ix][g_state.Play_Type].vs_cpu_grade[13] = (g_state.Bonus_Game_result == 20) + (g_state.Bonus_Game_ex_result == 20) * 2;
+            g_state.judge_final[ix][g_state.Play_Type].vs_cpu_grade[13] =
+                (g_state.Bonus_Game_result == 20) + (g_state.Bonus_Game_ex_result == 20) * 2;
             break;
 
         case 20:
@@ -561,8 +576,10 @@ s16 get_offence_total(s16 ix) {
 
     ix2 = (ix + 1) & 1;
     point = point2 = 0;
-    num2 = g_state.judge_item[ix2][g_state.Play_Type].guard_succ + g_state.judge_item[ix2][g_state.Play_Type].nml_blocking +
-           g_state.judge_item[ix2][g_state.Play_Type].rpd_blocking + g_state.judge_item[ix2][g_state.Play_Type].grd_blocking +
+    num2 = g_state.judge_item[ix2][g_state.Play_Type].guard_succ +
+           g_state.judge_item[ix2][g_state.Play_Type].nml_blocking +
+           g_state.judge_item[ix2][g_state.Play_Type].rpd_blocking +
+           g_state.judge_item[ix2][g_state.Play_Type].grd_blocking +
            g_state.judge_item[ix][g_state.Play_Type].clean_hits;
 
     if (num2 != 0) {
@@ -585,7 +602,8 @@ s16 get_offence_total(s16 ix) {
     point2 = (point2 * num) / 100;
 
     if (g_state.judge_item[ix2][g_state.Play_Type].grd_mcnt) {
-        num = (g_state.judge_item[ix2][g_state.Play_Type].grd_miss * 100) / g_state.judge_item[ix2][g_state.Play_Type].grd_mcnt;
+        num = (g_state.judge_item[ix2][g_state.Play_Type].grd_miss * 100) /
+              g_state.judge_item[ix2][g_state.Play_Type].grd_mcnt;
     } else {
         num = 0;
     }
@@ -614,7 +632,9 @@ s16 get_defence_total(s16 ix, s16 wf) {
     ix2 = (ix + 1) & 1;
 
     if (g_state.judge_item[ix2][g_state.Play_Type].att_renew) {
-        point2 = ((g_state.judge_item[ix2][g_state.Play_Type].att_renew - g_state.judge_item[ix2][g_state.Play_Type].clean_hits) * 100) /
+        point2 = ((g_state.judge_item[ix2][g_state.Play_Type].att_renew -
+                   g_state.judge_item[ix2][g_state.Play_Type].clean_hits) *
+                  100) /
                  g_state.judge_item[ix2][g_state.Play_Type].att_renew;
     } else {
         point2 = 0;
@@ -623,7 +643,8 @@ s16 get_defence_total(s16 ix, s16 wf) {
     g_state.last_judge_dada[ix][3] = remake_2_10(point2, 3);
 
     num += grade_table_lookup(grade_t_bougyoritsu2, 13, point2);
-    point2 = g_state.judge_item[ix][g_state.Play_Type].clean_hits + g_state.judge_item[ix2][g_state.Play_Type].guard_succ;
+    point2 =
+        g_state.judge_item[ix][g_state.Play_Type].clean_hits + g_state.judge_item[ix2][g_state.Play_Type].guard_succ;
 
     if (g_state.judge_item[ix][g_state.Play_Type].att_renew) {
         point2 = (point2 * 100) / g_state.judge_item[ix][g_state.Play_Type].att_renew;

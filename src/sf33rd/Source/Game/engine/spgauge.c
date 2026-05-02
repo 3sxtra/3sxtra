@@ -249,7 +249,8 @@ static void spgauge_control(s8 Spg_Num) {
         g_state.spg_dat[Spg_Num].ex_flag = 1;
         g_state.spg_dat[Spg_Num].timer = 16;
         g_state.sa_gauge_flash[Spg_Num] &= ~2;
-    } else if (g_state.sast_now[Spg_Num] == 0 && g_state.spg_dat[Spg_Num].flag2 == 0 && g_state.sa_gauge_flash[Spg_Num] != 0) {
+    } else if (g_state.sast_now[Spg_Num] == 0 && g_state.spg_dat[Spg_Num].flag2 == 0 &&
+               g_state.sa_gauge_flash[Spg_Num] != 0) {
         spgauge_sound_request(Spg_Num);
 
         if (g_state.super_arts[Spg_Num].gt2 == 1) {
@@ -260,8 +261,8 @@ static void spgauge_control(s8 Spg_Num) {
             g_state.time_flag[Spg_Num] = 0;
         }
 
-        if (g_state.plw[Spg_Num].sa->store == g_state.plw[Spg_Num].sa->store_max && g_state.spg_dat[Spg_Num].max_old == 0 &&
-            g_state.spg_dat[Spg_Num].max == 0) {
+        if (g_state.plw[Spg_Num].sa->store == g_state.plw[Spg_Num].sa->store_max &&
+            g_state.spg_dat[Spg_Num].max_old == 0 && g_state.spg_dat[Spg_Num].max == 0) {
             g_state.spg_dat[Spg_Num].max = 1;
         } else {
             g_state.spg_dat[Spg_Num].max = 0;
@@ -304,11 +305,14 @@ static void spgauge_control(s8 Spg_Num) {
         sast_control(Spg_Num);
     }
 
-    if ((g_state.plw[Spg_Num].sa->ex != 0 || g_state.spg_dat[Spg_Num].ex_flag == 1 || g_state.spg_dat[Spg_Num].sa_flag == 1) && !g_state.Game_pause) {
+    if ((g_state.plw[Spg_Num].sa->ex != 0 || g_state.spg_dat[Spg_Num].ex_flag == 1 ||
+         g_state.spg_dat[Spg_Num].sa_flag == 1) &&
+        !g_state.Game_pause) {
         sagauge_color_chenge(Spg_Num);
     }
 
-    if (g_state.spg_dat[Spg_Num].current_spg != g_state.plw[Spg_Num].sa->gauge.s.h || g_state.spg_dat[Spg_Num].max != 0) {
+    if (g_state.spg_dat[Spg_Num].current_spg != g_state.plw[Spg_Num].sa->gauge.s.h ||
+        g_state.spg_dat[Spg_Num].max != 0) {
         if (g_state.spg_dat[Spg_Num].max) {
             g_state.spg_dat[Spg_Num].current_spg = g_state.spg_dat[Spg_Num].spg_dotlen;
         } else {
@@ -697,7 +701,8 @@ static void sast_control(s8 Stpl_Num) {
         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
         sa_waku_trans(Stpl_Num, col);
 
-        if (g_state.max2[Stpl_Num] == 0 && g_state.spg_dat[Stpl_Num].max_old == 0 && g_state.spg_dat[Stpl_Num].sa_mukou == 0) {
+        if (g_state.max2[Stpl_Num] == 0 && g_state.spg_dat[Stpl_Num].max_old == 0 &&
+            g_state.spg_dat[Stpl_Num].sa_mukou == 0) {
             sa_gauge_trans(Stpl_Num);
         }
 
@@ -751,8 +756,9 @@ static void sast_color_chenge(s8 Stpl_Num) {
 
 /** @brief General SA color change handler (delegates to gauge or stock). */
 static void sa_color_chenge(s8 Stpl_Num) {
-    g_state.spg_dat[Stpl_Num].spgcol_number = g_state.spg_dat[Stpl_Num].kind ? spg_player_colors[Stpl_Num][SPG_COL_FILLED]
-                                                             : spg_player_colors[Stpl_Num][SPG_COL_DEFAULT];
+    g_state.spg_dat[Stpl_Num].spgcol_number = g_state.spg_dat[Stpl_Num].kind
+                                                  ? spg_player_colors[Stpl_Num][SPG_COL_FILLED]
+                                                  : spg_player_colors[Stpl_Num][SPG_COL_DEFAULT];
 }
 
 /** @brief Cycles colors for the SA gauge bar fill sprites. */
@@ -770,10 +776,15 @@ static void sagauge_color_chenge(s8 Stpl_Num) {
     g_state.spg_dat[Stpl_Num].gauge_flash_time = 2;
 
     if (Stpl_Num == 0) {
-        sq_paint_chenge(6, 26, g_state.spg_dat[0].spg_len, 1, sagauge_colchg_tbl[g_state.spg_dat[0].gauge_flash_col][0]);
-    } else if (g_state.spg_dat[1].max == 1 || g_state.spg_dat[1].max_old == 1 || g_state.spg_dat[1].spg_level == g_state.spg_dat[1].spg_maxlevel) {
         sq_paint_chenge(
-            42 - g_state.spg_dat[1].spg_len, 26, g_state.spg_dat[1].mass_len, 1, sagauge_colchg_tbl[g_state.spg_dat[1].gauge_flash_col][1]);
+            6, 26, g_state.spg_dat[0].spg_len, 1, sagauge_colchg_tbl[g_state.spg_dat[0].gauge_flash_col][0]);
+    } else if (g_state.spg_dat[1].max == 1 || g_state.spg_dat[1].max_old == 1 ||
+               g_state.spg_dat[1].spg_level == g_state.spg_dat[1].spg_maxlevel) {
+        sq_paint_chenge(42 - g_state.spg_dat[1].spg_len,
+                        26,
+                        g_state.spg_dat[1].mass_len,
+                        1,
+                        sagauge_colchg_tbl[g_state.spg_dat[1].gauge_flash_col][1]);
         sq_paint_chenge(42 - g_state.spg_dat[1].spg_len + g_state.spg_dat[1].mass_len,
                         26,
                         g_state.spg_dat[1].mchar,
@@ -785,8 +796,11 @@ static void sagauge_color_chenge(s8 Stpl_Num) {
                         1,
                         sagauge_colchg_tbl[g_state.spg_dat[1].gauge_flash_col][1]);
     } else {
-        sq_paint_chenge(
-            42 - g_state.spg_dat[1].spg_len, 26, g_state.spg_dat[1].spg_len, 1, sagauge_colchg_tbl[g_state.spg_dat[1].gauge_flash_col][1]);
+        sq_paint_chenge(42 - g_state.spg_dat[1].spg_len,
+                        26,
+                        g_state.spg_dat[1].spg_len,
+                        1,
+                        sagauge_colchg_tbl[g_state.spg_dat[1].gauge_flash_col][1]);
     }
 
     if (g_state.spg_dat[Stpl_Num].gauge_flash_col == 3) {
@@ -805,7 +819,10 @@ static void sa_moji_trans(s8 Stpl_Num, s8 Kind, s8 OnOff) {
         if (OnOff) {
             g_state.spg_dat[Stpl_Num].current_spg = g_state.spg_dat[Stpl_Num].spg_dotlen;
             sa_gauge_trans(Stpl_Num);
-            max_mark_write(Stpl_Num, g_state.spg_dat[Stpl_Num].spg_len, g_state.spg_dat[Stpl_Num].mchar, g_state.spg_dat[Stpl_Num].mass_len);
+            max_mark_write(Stpl_Num,
+                           g_state.spg_dat[Stpl_Num].spg_len,
+                           g_state.spg_dat[Stpl_Num].mchar,
+                           g_state.spg_dat[Stpl_Num].mass_len);
             break;
         }
 
@@ -873,8 +890,12 @@ static void sa_gauge_trans(s8 pl_kind) {
                             11);
             }
         } else {
-            scfont_put2(
-                (&g_state.spg_dat[pl_kind].spgptbl_ptr[g_state.spg_number])[16 - len], 26, g_state.spg_dat[pl_kind].spgcol_number, 0, 8, 11);
+            scfont_put2((&g_state.spg_dat[pl_kind].spgptbl_ptr[g_state.spg_number])[16 - len],
+                        26,
+                        g_state.spg_dat[pl_kind].spgcol_number,
+                        0,
+                        8,
+                        11);
         }
 
         g_state.spg_number++;

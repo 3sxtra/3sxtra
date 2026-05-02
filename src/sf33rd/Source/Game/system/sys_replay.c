@@ -62,7 +62,8 @@ void Check_Replay() {
         g_state.Condense_Buff[1] = 0xFFFF;
         memset(&Replay_w, 0, sizeof(Replay_w));
 
-        if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+        if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+            g_state.Mode_Type == MODE_TRIALS) {
             for (ix = 0; ix < 0x1C1E; ix++) {
                 Replay_w.io_unit.key_buff[0][ix] = 0xF000;
                 Replay_w.io_unit.key_buff[1][ix] = 0xF000;

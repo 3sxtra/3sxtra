@@ -124,7 +124,8 @@ static void EFF64_SLIDE_IN(WORK_Other_CONN* ewk) {
         ewk->wu.xyz[1].disp.pos =
             g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_64[ewk->wu.dir_step][1];
         ewk->wu.position_z = 70;
-        ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_64[ewk->wu.dir_step][0];
+        ewk->wu.hit_quake =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_64[ewk->wu.dir_step][0];
         ewk->wu.mvxy.a[0].sp = -0x400000;
         ewk->wu.mvxy.d[0].sp = 0x50000;
         break;

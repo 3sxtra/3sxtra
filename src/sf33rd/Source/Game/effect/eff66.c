@@ -109,7 +109,8 @@ static void EFF66_SLIDE_IN(WORK_Other* ewk) {
         ewk->wu.xyz[1].disp.pos =
             g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_66[ewk->wu.type - 7][1];
         ewk->wu.position_z = Slide_Pos_Data_66[ewk->wu.type - 7][2];
-        ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_66[ewk->wu.type - 7][0];
+        ewk->wu.hit_quake =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_66[ewk->wu.type - 7][0];
         ewk->wu.mvxy.a[0].sp = -0x400000;
         ewk->wu.mvxy.d[0].sp = 0x50000;
         set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
@@ -212,8 +213,10 @@ static void Setup_Pos_66(WORK_Other* ewk) {
 
     ewk->wu.routine_no[1]++;
     ewk->wu.disp_flag = ewk->wu.rl_waza;
-    ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Suddenly_Pos_Data_66[ewk->wu.type][0];
-    ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Suddenly_Pos_Data_66[ewk->wu.type][1];
+    ewk->wu.xyz[0].disp.pos =
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Suddenly_Pos_Data_66[ewk->wu.type][0];
+    ewk->wu.xyz[1].disp.pos =
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Suddenly_Pos_Data_66[ewk->wu.type][1];
     ewk->wu.position_z = Suddenly_Pos_Data_66[ewk->wu.type][2];
 
     if (ewk->master_priority & 0x4000) {

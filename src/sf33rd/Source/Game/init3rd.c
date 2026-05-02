@@ -130,9 +130,9 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     g_state.Present_Mode = 1;
 
     for (ix = 0; ix < 4; ix++) {
-        g_state.G_No[ix] = 0;
-        g_state.E_No[ix] = 0;
-        g_state.S_No[ix] = 0;
+        g_state.fsm[ix] = 0;
+        g_state.entry_phase[ix] = 0;
+        g_state.select_phase[ix] = 0;
         g_state.Unsubstantial_BG[ix] = 0;
     }
 

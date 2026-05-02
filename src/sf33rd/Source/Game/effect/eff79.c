@@ -249,8 +249,8 @@ void effect_79_move(WORK_Other* ewk) {
                 ewk->wu.routine_no[1]++;
                 g_state.Sel_Arts_Complete[ewk->master_id] |= 0x8000;
 
-                if (ewk->wu.xyz[0].disp.pos ==
-                    g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[1][ewk->master_id][0][0]) {
+                if (ewk->wu.xyz[0].disp.pos == g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                                   Plate_Pos_Data_79[1][ewk->master_id][0][0]) {
                     ewk->wu.routine_no[0] = 8;
                 }
             }
@@ -675,20 +675,20 @@ s32 effect_79_init(s16 pl_id, s16 plate_id, s16 pos_id, s16 time, s16 Target_BG)
         g_state.Disp_Command_Name[ewk->master_id][plate_id] = 0;
     }
 
-    g_state.Plate_X[ewk->master_id][0] =
-        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][0];
-    g_state.Plate_Y[ewk->master_id][0] =
-        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][1];
+    g_state.Plate_X[ewk->master_id][0] = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                         Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][0];
+    g_state.Plate_Y[ewk->master_id][0] = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                                         Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][1];
     return 0;
 }
 
 static void Setup_Pos_79(WORK_Other* ewk) {
     if (ewk->master_priority) {
         ewk->wu.routine_no[0] = 3;
-        ewk->wu.xyz[0].disp.pos =
-            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][0];
-        ewk->wu.xyz[1].disp.pos =
-            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][1];
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                  Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][0];
+        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                                  Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][1];
         ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
                             Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->master_priority][0];
         ewk->wu.direction = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +

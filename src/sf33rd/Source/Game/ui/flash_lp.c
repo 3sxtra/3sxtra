@@ -32,7 +32,8 @@ void Flash_Lamp() {
     u8 mark;
     u8 color;
 
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
         return;
     }
 

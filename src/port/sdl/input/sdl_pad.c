@@ -182,8 +182,10 @@ static void handle_gamepad_added_event(SDL_GamepadDeviceEvent* event) {
                 const char* rt = strstr(mapping, "righttrigger:b");
 
                 // If triggers are mapped as buttons, record their indices
-                if (lt) trigger_btn_index[i][0] = atoi(lt + 13);
-                if (rt) trigger_btn_index[i][1] = atoi(rt + 13);
+                if (lt)
+                    trigger_btn_index[i][0] = atoi(lt + 13);
+                if (rt)
+                    trigger_btn_index[i][1] = atoi(rt + 13);
 
                 // If triggers are NOT mapped at all (no axis or button binding),
                 // find the highest button index already used in the mapping.
@@ -198,14 +200,19 @@ static void handle_gamepad_added_event(SDL_GamepadDeviceEvent* event) {
                     const char* p = mapping;
                     while ((p = strstr(p, ":b")) != NULL) {
                         int btn_idx = atoi(p + 2);
-                        if (btn_idx > max_btn) max_btn = btn_idx;
+                        if (btn_idx > max_btn)
+                            max_btn = btn_idx;
                         p += 2;
                     }
                     if (max_btn >= 0) {
-                        if (lt_missing) trigger_btn_index[i][0] = max_btn + 1;
-                        if (rt_missing) trigger_btn_index[i][1] = max_btn + 2;
+                        if (lt_missing)
+                            trigger_btn_index[i][0] = max_btn + 1;
+                        if (rt_missing)
+                            trigger_btn_index[i][1] = max_btn + 2;
                         SDL_Log("Inferred trigger buttons: L2=b%d R2=b%d (from max mapped b%d)",
-                                trigger_btn_index[i][0], trigger_btn_index[i][1], max_btn);
+                                trigger_btn_index[i][0],
+                                trigger_btn_index[i][1],
+                                max_btn);
                     }
                 }
                 SDL_free(mapping);
@@ -612,8 +619,10 @@ void SDLPad_GetButtonState(int id, SDLPad_ButtonState* state) {
     if (input_sources[id].type == SDLPAD_INPUT_GAMEPAD && input_sources[id].gamepad.gamepad) {
         Sint16 lt = SDL_GetGamepadAxis(input_sources[id].gamepad.gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
         Sint16 rt = SDL_GetGamepadAxis(input_sources[id].gamepad.gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
-        if (lt > state->left_trigger)  state->left_trigger = lt;
-        if (rt > state->right_trigger) state->right_trigger = rt;
+        if (lt > state->left_trigger)
+            state->left_trigger = lt;
+        if (rt > state->right_trigger)
+            state->right_trigger = rt;
     }
 }
 

@@ -24,7 +24,6 @@ const s16 fight_col_move_tbl[18] = { 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1
 
 // sbss
 
-
 // Forward decls
 
 static s32 b3_Break_Into_check(WORK_Other* ewk);

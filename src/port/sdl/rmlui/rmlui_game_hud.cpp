@@ -21,10 +21,10 @@
 
 /* ─── Real game headers — all types come from here ─── */
 extern "C" {
-#include "sf33rd/Source/Game/effect/eff76.h"   /* chkNameAkuma */
+#include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
 #include "sf33rd/Source/Game/engine/cmb_win.h" /* CMST_BUFF, g_state.cmst_buff[2][5], g_state.cmb_stock[2], g_state.cst_read[2] */
-#include "sf33rd/Source/Game/engine/plcnt.h"   /* g_state.piyori_type[2] (PiyoriType), g_state.plw[2] */
-#include "sf33rd/Source/Game/engine/spgauge.h" /* SPG_DAT, g_state.spg_dat[2] — SA gauge */
+#include "sf33rd/Source/Game/engine/plcnt.h"    /* g_state.stun_type[2] (PiyoriType), g_state.plw[2] */
+#include "sf33rd/Source/Game/engine/spgauge.h"  /* SPG_DAT, g_state.spg_dat[2] — SA gauge */
 #include "sf33rd/Source/Game/engine/workuser.h" /* PLW, g_state.Super_Arts, g_state.My_char, g_state.Win_Record, g_state.Max_vitality, g_state.Mode_Type … (pulls structs.h) */
 #include "sf33rd/Source/Game/training/training_state.h" /* g_training_state — combo stun */
 
@@ -238,8 +238,8 @@ extern "C" void rmlui_game_hud_init(void) {
     // ── Stun ──
     ctor.BindFunc("p1_stun", [](Rml::Variant& v) { v = (int)g_state.sdat[0].cstn; });
     ctor.BindFunc("p2_stun", [](Rml::Variant& v) { v = (int)g_state.sdat[1].cstn; });
-    ctor.BindFunc("p1_stun_max", [](Rml::Variant& v) { v = (int)g_state.piyori_type[0].genkai; });
-    ctor.BindFunc("p2_stun_max", [](Rml::Variant& v) { v = (int)g_state.piyori_type[1].genkai; });
+    ctor.BindFunc("p1_stun_max", [](Rml::Variant& v) { v = (int)g_state.stun_type[0].genkai; });
+    ctor.BindFunc("p2_stun_max", [](Rml::Variant& v) { v = (int)g_state.stun_type[1].genkai; });
     ctor.BindFunc("p1_stun_active", [](Rml::Variant& v) { v = (bool)(g_state.sdat[0].sflag != 0); });
     ctor.BindFunc("p2_stun_active", [](Rml::Variant& v) { v = (bool)(g_state.sdat[1].sflag != 0); });
 
@@ -259,32 +259,36 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("p1_sa_active", [](Rml::Variant& v) { v = (bool)(g_state.spg_dat[0].sa_flag != 0); });
     ctor.BindFunc("p2_sa_active", [](Rml::Variant& v) { v = (bool)(g_state.spg_dat[1].sa_flag != 0); });
     ctor.BindFunc("p1_sa_max", [](Rml::Variant& v) {
-        v = (bool)(g_state.spg_dat[0].spg_maxlevel > 0 && g_state.spg_dat[0].spg_level >= g_state.spg_dat[0].spg_maxlevel);
+        v = (bool)(g_state.spg_dat[0].spg_maxlevel > 0 &&
+                   g_state.spg_dat[0].spg_level >= g_state.spg_dat[0].spg_maxlevel);
     });
     ctor.BindFunc("p2_sa_max", [](Rml::Variant& v) {
-        v = (bool)(g_state.spg_dat[1].spg_maxlevel > 0 && g_state.spg_dat[1].spg_level >= g_state.spg_dat[1].spg_maxlevel);
+        v = (bool)(g_state.spg_dat[1].spg_maxlevel > 0 &&
+                   g_state.spg_dat[1].spg_level >= g_state.spg_dat[1].spg_maxlevel);
     });
     // Pre-computed SA fill percentage (0-100) for all stocks combined
     ctor.BindFunc("p1_sa_pct", [](Rml::Variant& v) {
         int dotlen = g_state.spg_dat[0].spg_dotlen > 0 ? g_state.spg_dat[0].spg_dotlen : 1;
         int max_stocks = g_state.spg_dat[0].spg_maxlevel > 0 ? g_state.spg_dat[0].spg_maxlevel : 1;
-        int pct = (g_state.spg_dat[0].spg_level * dotlen + g_state.spg_dat[0].current_spg) * 100 / (max_stocks * dotlen);
+        int pct =
+            (g_state.spg_dat[0].spg_level * dotlen + g_state.spg_dat[0].current_spg) * 100 / (max_stocks * dotlen);
         v = (pct > 100) ? 100 : pct;
     });
     ctor.BindFunc("p2_sa_pct", [](Rml::Variant& v) {
         int dotlen = g_state.spg_dat[1].spg_dotlen > 0 ? g_state.spg_dat[1].spg_dotlen : 1;
         int max_stocks = g_state.spg_dat[1].spg_maxlevel > 0 ? g_state.spg_dat[1].spg_maxlevel : 1;
-        int pct = (g_state.spg_dat[1].spg_level * dotlen + g_state.spg_dat[1].current_spg) * 100 / (max_stocks * dotlen);
+        int pct =
+            (g_state.spg_dat[1].spg_level * dotlen + g_state.spg_dat[1].current_spg) * 100 / (max_stocks * dotlen);
         v = (pct > 100) ? 100 : pct;
     });
     ctor.BindFunc("p1_stun_width", [](Rml::Variant& v) {
         char b[32];
-        snprintf(b, sizeof(b), "%ddp", g_state.piyori_type[0].genkai);
+        snprintf(b, sizeof(b), "%ddp", g_state.stun_type[0].genkai);
         v = Rml::String(b);
     });
     ctor.BindFunc("p2_stun_width", [](Rml::Variant& v) {
         char b[32];
-        snprintf(b, sizeof(b), "%ddp", g_state.piyori_type[1].genkai);
+        snprintf(b, sizeof(b), "%ddp", g_state.stun_type[1].genkai);
         v = Rml::String(b);
     });
     ctor.BindFunc("p1_sa_width", [](Rml::Variant& v) {
@@ -313,25 +317,32 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("p2_combo_active", [](Rml::Variant& v) { v = (bool)(g_state.cmb_stock[1] > 0); });
 
     // ── Combo Points ──
-    ctor.BindFunc("p1_combo_pts",
-                  [](Rml::Variant& v) { v = (g_state.cmb_stock[0] > 0) ? (int)g_state.cmst_buff[0][g_state.cst_read[0]].pts : 0; });
-    ctor.BindFunc("p2_combo_pts",
-                  [](Rml::Variant& v) { v = (g_state.cmb_stock[1] > 0) ? (int)g_state.cmst_buff[1][g_state.cst_read[1]].pts : 0; });
-    ctor.BindFunc("p1_combo_pts_flag",
-                  [](Rml::Variant& v) { v = (bool)(g_state.cmb_stock[0] > 0 && g_state.cmst_buff[0][g_state.cst_read[0]].pts_flag); });
-    ctor.BindFunc("p2_combo_pts_flag",
-                  [](Rml::Variant& v) { v = (bool)(g_state.cmb_stock[1] > 0 && g_state.cmst_buff[1][g_state.cst_read[1]].pts_flag); });
+    ctor.BindFunc("p1_combo_pts", [](Rml::Variant& v) {
+        v = (g_state.cmb_stock[0] > 0) ? (int)g_state.cmst_buff[0][g_state.cst_read[0]].pts : 0;
+    });
+    ctor.BindFunc("p2_combo_pts", [](Rml::Variant& v) {
+        v = (g_state.cmb_stock[1] > 0) ? (int)g_state.cmst_buff[1][g_state.cst_read[1]].pts : 0;
+    });
+    ctor.BindFunc("p1_combo_pts_flag", [](Rml::Variant& v) {
+        v = (bool)(g_state.cmb_stock[0] > 0 && g_state.cmst_buff[0][g_state.cst_read[0]].pts_flag);
+    });
+    ctor.BindFunc("p2_combo_pts_flag", [](Rml::Variant& v) {
+        v = (bool)(g_state.cmb_stock[1] > 0 && g_state.cmst_buff[1][g_state.cst_read[1]].pts_flag);
+    });
 
     // ── Names & Wins ──
     ctor.BindFunc("p1_name", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[0])); });
     ctor.BindFunc("p2_name", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[1])); });
-    ctor.BindFunc("p1_wins",
-                  [](Rml::Variant& v) { v = (int)((g_state.Mode_Type == MODE_VERSUS) ? g_state.VS_Win_Record[0] : g_state.Win_Record[0]); });
-    ctor.BindFunc("p2_wins",
-                  [](Rml::Variant& v) { v = (int)((g_state.Mode_Type == MODE_VERSUS) ? g_state.VS_Win_Record[1] : g_state.Win_Record[1]); });
+    ctor.BindFunc("p1_wins", [](Rml::Variant& v) {
+        v = (int)((g_state.Mode_Type == MODE_VERSUS) ? g_state.VS_Win_Record[0] : g_state.Win_Record[0]);
+    });
+    ctor.BindFunc("p2_wins", [](Rml::Variant& v) {
+        v = (int)((g_state.Mode_Type == MODE_VERSUS) ? g_state.VS_Win_Record[1] : g_state.Win_Record[1]);
+    });
 
     // ── Round results (per-round bubbles) ──
-    ctor.BindFunc("rounds_to_win", [](Rml::Variant& v) { v = (int)(CurrentSave()->Battle_Number[g_state.Play_Type] + 1); });
+    ctor.BindFunc("rounds_to_win",
+                  [](Rml::Variant& v) { v = (int)(CurrentSave()->Battle_Number[g_state.Play_Type] + 1); });
     ctor.BindFunc("p1_round_wins", [](Rml::Variant& v) { v = (int)g_state.PL_Wins[0]; });
     ctor.BindFunc("p2_round_wins", [](Rml::Variant& v) { v = (int)g_state.PL_Wins[1]; });
     // Per-round result type (int 0-7)
@@ -354,8 +365,10 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("p2_r3_lbl", [](Rml::Variant& v) { v = Rml::String(win_type_label(g_state.flash_win_type[1][3])); });
 
     // ── g_state.Score ──
-    ctor.BindFunc("p1_score", [](Rml::Variant& v) { v = (int)(g_state.Score[0][g_state.Play_Type] + g_state.Continue_Coin[0]); });
-    ctor.BindFunc("p2_score", [](Rml::Variant& v) { v = (int)(g_state.Score[1][g_state.Play_Type] + g_state.Continue_Coin[1]); });
+    ctor.BindFunc("p1_score",
+                  [](Rml::Variant& v) { v = (int)(g_state.Score[0][g_state.Play_Type] + g_state.Continue_Coin[0]); });
+    ctor.BindFunc("p2_score",
+                  [](Rml::Variant& v) { v = (int)(g_state.Score[1][g_state.Play_Type] + g_state.Continue_Coin[1]); });
 
     // ── Operator status (human vs CPU) ──
     ctor.BindFunc("p1_is_human", [](Rml::Variant& v) { v = (bool)(g_state.Operator_Status[0] != 0); });
@@ -375,10 +388,10 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("p2_sa_index", [](Rml::Variant& v) { v = (int)g_state.Super_Arts[1]; });
 
     // ── Parry Counter ──
-    // g_state.paring_ctr_vs[g_state.Play_Type][id] is the actual consecutive-parry count.
+    // g_state.parry_ctr_vs[g_state.Play_Type][id] is the actual consecutive-parry count.
     // Indices are swapped because parry combos display on the opponent's side.
-    ctor.BindFunc("p1_parry_count", [](Rml::Variant& v) { v = (int)g_state.paring_ctr_vs[g_state.Play_Type][1]; });
-    ctor.BindFunc("p2_parry_count", [](Rml::Variant& v) { v = (int)g_state.paring_ctr_vs[g_state.Play_Type][0]; });
+    ctor.BindFunc("p1_parry_count", [](Rml::Variant& v) { v = (int)g_state.parry_ctr_vs[g_state.Play_Type][1]; });
+    ctor.BindFunc("p2_parry_count", [](Rml::Variant& v) { v = (int)g_state.parry_ctr_vs[g_state.Play_Type][0]; });
     // Red parry flag (swapped same as parry count — shows on opponent's side)
     ctor.BindFunc("p1_parry_red", [](Rml::Variant& v) { v = (bool)(last_parry_red[1] != 0); });
     ctor.BindFunc("p2_parry_red", [](Rml::Variant& v) { v = (bool)(last_parry_red[0] != 0); });
@@ -391,15 +404,18 @@ extern "C" void rmlui_game_hud_init(void) {
     // ── Training Stun Counter ──
     ctor.BindFunc("p1_combo_stun", [](Rml::Variant& v) { v = (int)g_training_state.p1.combo_stun; });
     ctor.BindFunc("p2_combo_stun", [](Rml::Variant& v) { v = (int)g_training_state.p2.combo_stun; });
-    ctor.BindFunc("training_stun_active",
-                  [](Rml::Variant& v) { v = (bool)(g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_TRIALS); });
+    ctor.BindFunc("training_stun_active", [](Rml::Variant& v) {
+        v = (bool)(g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_TRIALS);
+    });
 
     // ── Match Banner ──
     ctor.BindFunc("match_ft", [](Rml::Variant& v) { v = (int)g_match_ft; });
-    ctor.BindFunc("match_p1_wins",
-                  [](Rml::Variant& v) { v = (int)((g_state.Mode_Type == MODE_VERSUS) ? g_state.VS_Win_Record[0] : g_state.Win_Record[0]); });
-    ctor.BindFunc("match_p2_wins",
-                  [](Rml::Variant& v) { v = (int)((g_state.Mode_Type == MODE_VERSUS) ? g_state.VS_Win_Record[1] : g_state.Win_Record[1]); });
+    ctor.BindFunc("match_p1_wins", [](Rml::Variant& v) {
+        v = (int)((g_state.Mode_Type == MODE_VERSUS) ? g_state.VS_Win_Record[0] : g_state.Win_Record[0]);
+    });
+    ctor.BindFunc("match_p2_wins", [](Rml::Variant& v) {
+        v = (int)((g_state.Mode_Type == MODE_VERSUS) ? g_state.VS_Win_Record[1] : g_state.Win_Record[1]);
+    });
     ctor.BindFunc("match_p1_name", [](Rml::Variant& v) { v = Rml::String(g_match_p1_name); });
     ctor.BindFunc("match_p2_name", [](Rml::Variant& v) { v = Rml::String(g_match_p2_name); });
     ctor.BindFunc("match_p1_country", [](Rml::Variant& v) { v = Rml::String(g_match_p1_country); });
@@ -447,8 +463,8 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_BOOL(cockpit_visible, g_state.Disp_Cockpit != 0);
     DIRTY_INT(p1_stun, (int)g_state.sdat[0].cstn);
     DIRTY_INT(p2_stun, (int)g_state.sdat[1].cstn);
-    DIRTY_INT(p1_stun_max, (int)g_state.piyori_type[0].genkai);
-    DIRTY_INT(p2_stun_max, (int)g_state.piyori_type[1].genkai);
+    DIRTY_INT(p1_stun_max, (int)g_state.stun_type[0].genkai);
+    DIRTY_INT(p2_stun_max, (int)g_state.stun_type[1].genkai);
     DIRTY_BOOL(p1_stun_active, g_state.sdat[0].sflag != 0);
     DIRTY_BOOL(p2_stun_active, g_state.sdat[1].sflag != 0);
     DIRTY_INT(p1_sa_stocks, (int)g_state.spg_dat[0].spg_level);
@@ -459,8 +475,10 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_INT(p2_sa_fill_max, (int)g_state.spg_dat[1].spg_dotlen);
     DIRTY_BOOL(p1_sa_active, g_state.spg_dat[0].sa_flag != 0);
     DIRTY_BOOL(p2_sa_active, g_state.spg_dat[1].sa_flag != 0);
-    DIRTY_BOOL(p1_sa_max, g_state.spg_dat[0].spg_maxlevel > 0 && g_state.spg_dat[0].spg_level >= g_state.spg_dat[0].spg_maxlevel);
-    DIRTY_BOOL(p2_sa_max, g_state.spg_dat[1].spg_maxlevel > 0 && g_state.spg_dat[1].spg_level >= g_state.spg_dat[1].spg_maxlevel);
+    DIRTY_BOOL(p1_sa_max,
+               g_state.spg_dat[0].spg_maxlevel > 0 && g_state.spg_dat[0].spg_level >= g_state.spg_dat[0].spg_maxlevel);
+    DIRTY_BOOL(p2_sa_max,
+               g_state.spg_dat[1].spg_maxlevel > 0 && g_state.spg_dat[1].spg_level >= g_state.spg_dat[1].spg_maxlevel);
     DIRTY_INT(p1_sa_stocks_max, (int)g_state.spg_dat[0].spg_maxlevel);
     DIRTY_INT(p2_sa_stocks_max, (int)g_state.spg_dat[1].spg_maxlevel);
     { // SA fill percentage (0-100) for all stocks combined
@@ -476,9 +494,9 @@ extern "C" void rmlui_game_hud_update(void) {
     }
 
     char dwb[32];
-    snprintf(dwb, sizeof(dwb), "%ddp", g_state.piyori_type[0].genkai);
+    snprintf(dwb, sizeof(dwb), "%ddp", g_state.stun_type[0].genkai);
     DIRTY_STR(p1_stun_width, Rml::String(dwb));
-    snprintf(dwb, sizeof(dwb), "%ddp", g_state.piyori_type[1].genkai);
+    snprintf(dwb, sizeof(dwb), "%ddp", g_state.stun_type[1].genkai);
     DIRTY_STR(p2_stun_width, Rml::String(dwb));
     snprintf(dwb, sizeof(dwb), "%ddp", g_state.spg_dat[0].spg_dotlen);
     DIRTY_STR(p1_sa_width, Rml::String(dwb));
@@ -487,7 +505,9 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_BOOL(p1_combo_active, g_state.cmb_stock[0] > 0);
     DIRTY_BOOL(p2_combo_active, g_state.cmb_stock[1] > 0);
     if (g_state.cmb_stock[0] > 0) {
-        DIRTY_INT(p1_combo_count, g_state.cmst_buff[0][g_state.cst_read[0]].hit_hi * 10 + g_state.cmst_buff[0][g_state.cst_read[0]].hit_low);
+        DIRTY_INT(p1_combo_count,
+                  g_state.cmst_buff[0][g_state.cst_read[0]].hit_hi * 10 +
+                      g_state.cmst_buff[0][g_state.cst_read[0]].hit_low);
         DIRTY_INT(p1_combo_kind, (int)g_state.cmst_buff[0][g_state.cst_read[0]].kind);
         DIRTY_INT(p1_combo_pts, (int)g_state.cmst_buff[0][g_state.cst_read[0]].pts);
         DIRTY_BOOL(p1_combo_pts_flag, g_state.cmst_buff[0][g_state.cst_read[0]].pts_flag != 0);
@@ -496,7 +516,9 @@ extern "C" void rmlui_game_hud_update(void) {
         DIRTY_BOOL(p1_combo_pts_flag, false);
     }
     if (g_state.cmb_stock[1] > 0) {
-        DIRTY_INT(p2_combo_count, g_state.cmst_buff[1][g_state.cst_read[1]].hit_hi * 10 + g_state.cmst_buff[1][g_state.cst_read[1]].hit_low);
+        DIRTY_INT(p2_combo_count,
+                  g_state.cmst_buff[1][g_state.cst_read[1]].hit_hi * 10 +
+                      g_state.cmst_buff[1][g_state.cst_read[1]].hit_low);
         DIRTY_INT(p2_combo_kind, (int)g_state.cmst_buff[1][g_state.cst_read[1]].kind);
         DIRTY_INT(p2_combo_pts, (int)g_state.cmst_buff[1][g_state.cst_read[1]].pts);
         DIRTY_BOOL(p2_combo_pts_flag, g_state.cmst_buff[1][g_state.cst_read[1]].pts_flag != 0);
@@ -520,8 +542,8 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_BOOL(p2_is_human, g_state.Operator_Status[1] != 0);
 
     // ── Parry counter ──
-    DIRTY_INT(p1_parry_count, (int)g_state.paring_ctr_vs[g_state.Play_Type][1]);
-    DIRTY_INT(p2_parry_count, (int)g_state.paring_ctr_vs[g_state.Play_Type][0]);
+    DIRTY_INT(p1_parry_count, (int)g_state.parry_ctr_vs[g_state.Play_Type][1]);
+    DIRTY_INT(p2_parry_count, (int)g_state.parry_ctr_vs[g_state.Play_Type][0]);
     DIRTY_BOOL(p1_parry_red, (bool)(last_parry_red[1] != 0));
     DIRTY_BOOL(p2_parry_red, (bool)(last_parry_red[0] != 0));
 

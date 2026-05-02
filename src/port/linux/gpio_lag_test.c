@@ -207,7 +207,8 @@ void GpioLagTest_UpdateFrameTracking(void) {
 
     /* Check if game state reacted to the input (routine_no changed) */
     if (s_tracking && !s_result_ready) {
-        if (g_state.plw[0].wu.routine_no[0] != s_initial_routine_0 || g_state.plw[0].wu.routine_no[1] != s_initial_routine_1) {
+        if (g_state.plw[0].wu.routine_no[0] != s_initial_routine_0 ||
+            g_state.plw[0].wu.routine_no[1] != s_initial_routine_1) {
 
             s_active_frame = g_state.system_timer;
             s_active_ticks = SDL_GetPerformanceCounter();

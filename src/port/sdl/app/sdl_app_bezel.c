@@ -159,7 +159,7 @@ static void update_character_tracking(void) {
     int p2 = g_state.My_char[1];
 
     /* Only show character-specific bezels during actual gameplay states.
-     * g_state.G_No[0]==2 = active game.  g_state.G_No[1] state map:
+     * g_state.fsm[0]==2 = active game.  g_state.fsm[1] state map:
      *   0  = title screen         — common bezels
      *   1  = character select     — common bezels
      *   2  = pre-round setup      — character bezels ✓
@@ -174,7 +174,7 @@ static void update_character_tracking(void) {
      *   11 = next Q select        — character bezels ✓
      *   12 = menu idle            — common bezels
      */
-    bool in_gameplay = (g_state.G_No[0] == 2 && g_state.G_No[1] >= 2 && g_state.G_No[1] <= 11 && g_state.G_No[1] != 9);
+    bool in_gameplay = (g_state.fsm[0] == 2 && g_state.fsm[1] >= 2 && g_state.fsm[1] <= 11 && g_state.fsm[1] != 9);
 
     if (!in_gameplay) {
         p1 = -1;

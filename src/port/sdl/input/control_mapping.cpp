@@ -340,18 +340,18 @@ static const struct {
     const char* action;
     InputID input_id;
 } default_gamepad_mappings[] = {
-    { "Up",            INPUT_ID_DPAD_UP },
-    { "Down",          INPUT_ID_DPAD_DOWN },
-    { "Left",          INPUT_ID_DPAD_LEFT },
-    { "Right",         INPUT_ID_DPAD_RIGHT },
-    { "Light Punch",   INPUT_ID_BUTTON_WEST },         // □ / X
-    { "Medium Punch",  INPUT_ID_BUTTON_NORTH },        // △ / Y
-    { "Hard Punch",    INPUT_ID_RIGHT_SHOULDER },      // R1 / RB
-    { "Light Kick",    INPUT_ID_BUTTON_SOUTH },        // × / A
-    { "Medium Kick",   INPUT_ID_BUTTON_EAST },         // ○ / B
-    { "Hard Kick",     INPUT_ID_RIGHT_TRIGGER },       // R2 / RT
-    { "Start",         INPUT_ID_START },
-    { "Select",        INPUT_ID_BACK },
+    { "Up", INPUT_ID_DPAD_UP },
+    { "Down", INPUT_ID_DPAD_DOWN },
+    { "Left", INPUT_ID_DPAD_LEFT },
+    { "Right", INPUT_ID_DPAD_RIGHT },
+    { "Light Punch", INPUT_ID_BUTTON_WEST },   // □ / X
+    { "Medium Punch", INPUT_ID_BUTTON_NORTH }, // △ / Y
+    { "Hard Punch", INPUT_ID_RIGHT_SHOULDER }, // R1 / RB
+    { "Light Kick", INPUT_ID_BUTTON_SOUTH },   // × / A
+    { "Medium Kick", INPUT_ID_BUTTON_EAST },   // ○ / B
+    { "Hard Kick", INPUT_ID_RIGHT_TRIGGER },   // R2 / RT
+    { "Start", INPUT_ID_START },
+    { "Select", INPUT_ID_BACK },
 };
 
 // Automatically assign available gamepads to P1 and P2

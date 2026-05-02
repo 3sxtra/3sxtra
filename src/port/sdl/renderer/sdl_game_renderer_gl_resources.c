@@ -1159,7 +1159,8 @@ typedef struct GLTransientRenderTarget {
 
 void* SDLGameRendererGL_CreateTransientRenderTarget(int width, int height) {
     GLTransientRenderTarget* rt = SDL_malloc(sizeof(GLTransientRenderTarget));
-    if (!rt) return NULL;
+    if (!rt)
+        return NULL;
 
     glGenFramebuffers(1, &rt->fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
@@ -1181,10 +1182,13 @@ void* SDLGameRendererGL_CreateTransientRenderTarget(int width, int height) {
 }
 
 void SDLGameRendererGL_DestroyTransientRenderTarget(void* handle) {
-    if (!handle) return;
+    if (!handle)
+        return;
     GLTransientRenderTarget* rt = (GLTransientRenderTarget*)handle;
-    if (rt->texture) glDeleteTextures(1, &rt->texture);
-    if (rt->fbo) glDeleteFramebuffers(1, &rt->fbo);
+    if (rt->texture)
+        glDeleteTextures(1, &rt->texture);
+    if (rt->fbo)
+        glDeleteFramebuffers(1, &rt->fbo);
     SDL_free(rt);
 }
 

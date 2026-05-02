@@ -211,7 +211,8 @@ s32 effect_G0_init(s16 arg_Order, s16 Time, u32 arg_Score, s16 Pos_Index) {
         ix = 0;
     }
 
-    ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Compute_Score_Pos_Data_G0[ix][Pos_Index][0];
+    ewk->wu.hit_quake =
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Compute_Score_Pos_Data_G0[ix][Pos_Index][0];
     ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake + 416;
     ewk->wu.xyz[1].disp.pos = Compute_Score_Pos_Data_G0[ix][Pos_Index][1];
     ewk->wu.my_priority = ewk->wu.position_z = 5;

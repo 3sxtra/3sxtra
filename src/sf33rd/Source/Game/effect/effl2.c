@@ -28,7 +28,7 @@ void effect_L2_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (g_state.Allow_a_battle_f == 0 && g_state.Conclusion_Flag == 1 && *g_state.C_No >= 2) {
+        if (g_state.Allow_a_battle_f == 0 && g_state.Conclusion_Flag == 1 && *g_state.manage_phase >= 2) {
             if (!(g_state.Complete_Victory == 0) && g_state.Conclusion_Flag) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.old_rno[0] = 0;

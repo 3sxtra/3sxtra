@@ -117,15 +117,15 @@ void plcnt_b_init() {
         g_state.pcon_rno[1] = 3;
 
         if (g_state.plw[0].wu.pl_operator) {
-            g_state.paring_ctr_vs[0][0] = g_state.paring_ctr_ori[0];
+            g_state.parry_ctr_vs[0][0] = g_state.parry_ctr_ori[0];
         } else {
-            g_state.paring_ctr_vs[0][0] = 0;
+            g_state.parry_ctr_vs[0][0] = 0;
         }
 
         if (g_state.plw[1].wu.pl_operator) {
-            g_state.paring_ctr_vs[0][1] = g_state.paring_ctr_ori[1];
+            g_state.parry_ctr_vs[0][1] = g_state.parry_ctr_ori[1];
         } else {
-            g_state.paring_ctr_vs[0][1] = 0;
+            g_state.parry_ctr_vs[0][1] = 0;
         }
 
         break;
@@ -151,7 +151,7 @@ static void plcnt_b_move() {
 
     move_player_work_bonus();
 
-    if (g_state.aiuchi_flag) {
+    if (g_state.mutual_trade_flag) {
         subtract_dm_vital_aiuchi(&g_state.plw[0]);
         subtract_dm_vital_aiuchi(&g_state.plw[1]);
 
@@ -267,7 +267,7 @@ static void setup_bs_scrrrl_bs2() {
 
 /** @brief Processes player work updates for bonus stage (movement, scroll). */
 void move_player_work_bonus() {
-    g_state.ichikannkei = check_work_position(&g_state.plw->wu, &g_state.plw[1].wu);
+    g_state.positional_relation = check_work_position(&g_state.plw->wu, &g_state.plw[1].wu);
     set_rl_waza(&g_state.plw[0]);
     set_rl_waza(&g_state.plw[1]);
     g_state.Timer_Freeze = 0;
@@ -329,7 +329,8 @@ void check_damage_hosei_bonus() {
 
     switch ((g_state.plw[0].hosei_amari != 0) + ((g_state.plw[1].hosei_amari != 0) * 2)) {
     case 1:
-        if ((!g_state.plw[0].tsukami_f || g_state.plw[0].kind_of_catch != 1) && (g_state.plw[0].tsukamare_f | g_state.plw[0].dm_hos_flag) == 0) {
+        if ((!g_state.plw[0].tsukami_f || g_state.plw[0].kind_of_catch != 1) &&
+            (g_state.plw[0].tsukamare_f | g_state.plw[0].dm_hos_flag) == 0) {
             break;
         }
 
@@ -339,7 +340,8 @@ void check_damage_hosei_bonus() {
         break;
 
     case 2:
-        if ((!g_state.plw[1].tsukami_f || g_state.plw[1].kind_of_catch != 1) && (g_state.plw[1].tsukamare_f | g_state.plw[1].dm_hos_flag) == 0) {
+        if ((!g_state.plw[1].tsukami_f || g_state.plw[1].kind_of_catch != 1) &&
+            (g_state.plw[1].tsukamare_f | g_state.plw[1].dm_hos_flag) == 0) {
             break;
         }
 

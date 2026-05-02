@@ -176,7 +176,8 @@ void add_y_sub2(WORK* wk) {
 
 /** @brief Check whether the current round needs no-display mode. */
 s32 obr_no_disp_check() {
-    if (g_state.aku_flag | g_state.akebono_flag | g_state.sa_pa_flag | g_state.seraph_flag | ModdedStage_IsAnimationsDisabled()) {
+    if (g_state.aku_flag | g_state.akebono_flag | g_state.sa_pa_flag | g_state.seraph_flag |
+        ModdedStage_IsAnimationsDisabled()) {
         return 1;
     }
 

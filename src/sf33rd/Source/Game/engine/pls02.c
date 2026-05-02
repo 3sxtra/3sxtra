@@ -346,7 +346,7 @@ void check_body_touch() {
             meri = meri_case_switch(meri);
 
             if (p1w->wu.old_pos[1] < 1 && p2w->wu.old_pos[1] < 1) {
-                if (g_state.ichikannkei) {
+                if (g_state.positional_relation) {
                     goto one;
                 }
 
@@ -689,7 +689,8 @@ static s32 random_16_ex() {
     return rng_next(&g_state.Random_ix16_ex, random_tbl_16_ex, 0xF);
 }
 
-/** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when g_state.Play_Mode==0.
+/** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when
+ * g_state.Play_Mode==0.
  */
 s32 random_32_com() {
     if (g_state.Play_Mode == 0) {
@@ -698,7 +699,8 @@ s32 random_32_com() {
     return rng_next(&g_state.Random_ix32_com, random_tbl_32_com, 0x7F);
 }
 
-/** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when g_state.Play_Mode==0.
+/** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when
+ * g_state.Play_Mode==0.
  */
 s32 random_16_com() {
     if (g_state.Play_Mode == 0) {
@@ -1075,8 +1077,8 @@ void add_super_arts_gauge(SA_WORK* wk, s16 ix, s16 asag, u8 mf) {
             return;
         }
 
-        if (!g_state.pcon_dp_flag && !g_state.Bonus_Game_Flag && (sa_gauge_omake[omop_sa_gauge_ix[ix]] != 0) && (asag > 0) &&
-            (wk->store != wk->store_max)) {
+        if (!g_state.pcon_dp_flag && !g_state.Bonus_Game_Flag && (sa_gauge_omake[omop_sa_gauge_ix[ix]] != 0) &&
+            (asag > 0) && (wk->store != wk->store_max)) {
             asag = asag * 0x78 / 100;
 
             if (CurrentSave()->Battle_Number[g_state.Play_Type] == 0) {

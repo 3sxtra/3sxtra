@@ -21,40 +21,40 @@
  * ================================================================ */
 
 static const TextRendererVtable s_vtable_gl = {
-    .Init                = SDLTextRendererGL_Init,
-    .Shutdown            = SDLTextRendererGL_Shutdown,
-    .DrawText            = SDLTextRendererGL_DrawText,
-    .Flush               = SDLTextRendererGL_Flush,
-    .SetYOffset          = SDLTextRendererGL_SetYOffset,
+    .Init = SDLTextRendererGL_Init,
+    .Shutdown = SDLTextRendererGL_Shutdown,
+    .DrawText = SDLTextRendererGL_DrawText,
+    .Flush = SDLTextRendererGL_Flush,
+    .SetYOffset = SDLTextRendererGL_SetYOffset,
     .SetBackgroundEnabled = SDLTextRendererGL_SetBackgroundEnabled,
-    .SetBackgroundColor  = SDLTextRendererGL_SetBackgroundColor,
+    .SetBackgroundColor = SDLTextRendererGL_SetBackgroundColor,
     .SetBackgroundPadding = SDLTextRendererGL_SetBackgroundPadding,
-    .DrawDebugChars      = SDLTextRendererGL_DrawDebugChars,
+    .DrawDebugChars = SDLTextRendererGL_DrawDebugChars,
 };
 
 static const TextRendererVtable s_vtable_gpu = {
-    .Init                = SDLTextRendererGPU_Init,
-    .Shutdown            = SDLTextRendererGPU_Shutdown,
-    .DrawText            = SDLTextRendererGPU_DrawText,
-    .Flush               = SDLTextRendererGPU_Flush,
-    .SetYOffset          = SDLTextRendererGPU_SetYOffset,
+    .Init = SDLTextRendererGPU_Init,
+    .Shutdown = SDLTextRendererGPU_Shutdown,
+    .DrawText = SDLTextRendererGPU_DrawText,
+    .Flush = SDLTextRendererGPU_Flush,
+    .SetYOffset = SDLTextRendererGPU_SetYOffset,
     .SetBackgroundEnabled = SDLTextRendererGPU_SetBackgroundEnabled,
-    .SetBackgroundColor  = SDLTextRendererGPU_SetBackgroundColor,
+    .SetBackgroundColor = SDLTextRendererGPU_SetBackgroundColor,
     .SetBackgroundPadding = SDLTextRendererGPU_SetBackgroundPadding,
-    .DrawDebugChars      = NULL,
+    .DrawDebugChars = NULL,
 };
 
 /* SDL2D and SDL2D Classic share the same text renderer */
 static const TextRendererVtable s_vtable_sdl = {
-    .Init                = SDLTextRendererSDL_Init,
-    .Shutdown            = SDLTextRendererSDL_Shutdown,
-    .DrawText            = SDLTextRendererSDL_DrawText,
-    .Flush               = SDLTextRendererSDL_Flush,
-    .SetYOffset          = SDLTextRendererSDL_SetYOffset,
+    .Init = SDLTextRendererSDL_Init,
+    .Shutdown = SDLTextRendererSDL_Shutdown,
+    .DrawText = SDLTextRendererSDL_DrawText,
+    .Flush = SDLTextRendererSDL_Flush,
+    .SetYOffset = SDLTextRendererSDL_SetYOffset,
     .SetBackgroundEnabled = SDLTextRendererSDL_SetBackgroundEnabled,
-    .SetBackgroundColor  = SDLTextRendererSDL_SetBackgroundColor,
+    .SetBackgroundColor = SDLTextRendererSDL_SetBackgroundColor,
     .SetBackgroundPadding = SDLTextRendererSDL_SetBackgroundPadding,
-    .DrawDebugChars      = NULL,
+    .DrawDebugChars = NULL,
 };
 
 /* ================================================================
@@ -66,11 +66,17 @@ const TextRendererVtable* g_text_renderer = NULL;
 void TextRendererVtable_Init(void) {
     RendererBackend r = SDLApp_GetRenderer();
     switch (r) {
-    case RENDERER_SDLGPU:        g_text_renderer = &s_vtable_gpu; break;
-    case RENDERER_SDL2D:         /* FALLTHROUGH */
-    case RENDERER_SDL2D_CLASSIC: g_text_renderer = &s_vtable_sdl; break;
-    case RENDERER_OPENGL:        /* FALLTHROUGH */
-    default:                     g_text_renderer = &s_vtable_gl;  break;
+    case RENDERER_SDLGPU:
+        g_text_renderer = &s_vtable_gpu;
+        break;
+    case RENDERER_SDL2D: /* FALLTHROUGH */
+    case RENDERER_SDL2D_CLASSIC:
+        g_text_renderer = &s_vtable_sdl;
+        break;
+    case RENDERER_OPENGL: /* FALLTHROUGH */
+    default:
+        g_text_renderer = &s_vtable_gl;
+        break;
     }
     assert(g_text_renderer && "TextRendererVtable_Init: vtable not set");
 }

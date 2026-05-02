@@ -163,5 +163,6 @@ static void Setup_Letter_99(WORK_Other_CONN* ewk, s16 letter_index, s16 disp_ind
 
     x = x * (ix + space) / 2;
 
-    ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_99[ewk->master_priority][0] - x;
+    ewk->wu.position_x =
+        g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_99[ewk->master_priority][0] - x;
 }

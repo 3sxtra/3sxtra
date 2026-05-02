@@ -82,10 +82,12 @@ static void EFF38_SLIDE_IN(WORK_Other* ewk) {
         if (g_state.Order[ewk->wu.dir_old] != 1) {
             if (ewk->master_id == 0) {
                 ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 128;
-                ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 32;
+                ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new =
+                    g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 32;
             } else {
                 ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 128;
-                ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos - 32;
+                ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new =
+                    g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos - 32;
             }
 
             g_state.Order[ewk->wu.dir_old] = 1;
@@ -201,9 +203,11 @@ static void EFF38_SHIFT(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
 
         if (ewk->master_id == 0) {
-            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                EFF38_Base_XY[ewk->master_id][1][0] +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][0];
-            ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + EFF38_Base_XY[ewk->master_id][1][1] +
+            ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                                EFF38_Base_XY[ewk->master_id][1][1] +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][1];
             ewk->wu.mvxy.a[0].sp = -0x60000;
             ewk->wu.mvxy.a[1].sp = 0x30000;
@@ -325,7 +329,8 @@ static void EFF38_MOVE(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dir_step != g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
+        if (ewk->wu.dir_step !=
+            g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
             ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
             ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
                                       EFF38_Base_XY[ewk->master_id][g_state.Play_Type][0] +
@@ -400,13 +405,15 @@ s32 effect_38_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Play_Status, s16 T
         ewk->wu.mvxy.d[1].sp = 0;
 
         if (Play_Status == 0) {
-            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][0][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                EFF38_Base_XY[ewk->master_id][0][0] +
                                 EFF38_Correct_Data[ewk->master_id][0][ewk->wu.dir_step][0];
             ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                                           EFF38_Base_XY[ewk->master_id][0][1] +
                                                           EFF38_Correct_Data[ewk->master_id][0][ewk->wu.dir_step][1];
         } else {
-            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                EFF38_Base_XY[ewk->master_id][1][0] +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][0];
             ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                                           EFF38_Base_XY[ewk->master_id][1][1] +
@@ -424,13 +431,15 @@ s32 effect_38_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Play_Status, s16 T
         ewk->wu.mvxy.d[1].sp = 0;
 
         if (Play_Status == 0) {
-            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][0][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                EFF38_Base_XY[ewk->master_id][0][0] +
                                 EFF38_Correct_Data[ewk->master_id][0][ewk->wu.dir_step][0];
             ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                                           EFF38_Base_XY[ewk->master_id][0][1] +
                                                           EFF38_Correct_Data[ewk->master_id][0][ewk->wu.dir_step][1];
         } else {
-            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF38_Base_XY[ewk->master_id][1][0] +
+            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                EFF38_Base_XY[ewk->master_id][1][0] +
                                 EFF38_Correct_Data[ewk->master_id][1][ewk->wu.dir_step][0];
             ewk->wu.xyz[1].disp.pos = ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                                           EFF38_Base_XY[ewk->master_id][1][1] +

@@ -85,22 +85,22 @@ s16 opening_demo() {
     /* When skip-intro is enabled, bypass the cinematic and zoom sequence,
        jumping straight to the static title screen. We must set zoom to 1.0 (0x40)
        so the logo isn't drawn invisibly small. */
-    if (Config_GetBool(CFG_KEY_SKIP_INTRO) && g_state.D_No[3] < 3) {
+    if (Config_GetBool(CFG_KEY_SKIP_INTRO) && g_state.demo_phase[3] < 3) {
         TITLE_Init();
         Zoom_Value_Set(0x40); // Fixes the invisible logo bug!
-        g_state.D_No[3] = 3;
+        g_state.demo_phase[3] = 3;
         op_timer0 = 300;
     }
 
-    switch (g_state.D_No[3]) {
+    switch (g_state.demo_phase[3]) {
     case 0:
-        g_state.D_No[3] += 1;
+        g_state.demo_phase[3] += 1;
         OPBG_Init();
         break;
 
     case 1:
         if (OPBG_Move(0)) {
-            g_state.D_No[3] += 1;
+            g_state.demo_phase[3] += 1;
             reset_dma_group(0x8C40);
             purge_texcash_work(9);
             TexRelease_OP();
@@ -116,7 +116,7 @@ s16 opening_demo() {
         /* Wait for TITLE_Move(0) zoom sequence (op_w.r_no_0 goes from 0 to 3) to complete.
            This ensures the logo fully lands without relying on the buggy FadeIn() effect. */
         if (op_w.r_no_0 >= 3) {
-            g_state.D_No[3] += 1;
+            g_state.demo_phase[3] += 1;
             op_timer0 = 300;
         }
 
@@ -125,7 +125,7 @@ s16 opening_demo() {
     case 3:
         if (!g_state.Game_pause) {
             if (--op_timer0 == 0) {
-                g_state.D_No[3] = 99;
+                g_state.demo_phase[3] = 99;
             }
         }
 
@@ -376,7 +376,8 @@ void OPBG_Trans() {
                 }
             }
 
-            flPrintL(46, k * 5 + 20, "%04x , %04x", g_state.bg_w.bgw[k].wxy[0].disp.pos, g_state.bg_w.bgw[k].xy[1].disp.pos);
+            flPrintL(
+                46, k * 5 + 20, "%04x , %04x", g_state.bg_w.bgw[k].wxy[0].disp.pos, g_state.bg_w.bgw[k].xy[1].disp.pos);
         }
     }
 }

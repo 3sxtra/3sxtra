@@ -384,7 +384,8 @@ static void Catch_07000(PLW* wk) {
 
 /** @brief Checks if the running-catch can continue based on distance. */
 static s32 cat07_running_check(WORK* wk) {
-    if (wk->xyz[0].disp.pos < (g_state.bg_w.bgw[1].l_limit2 - 64) || wk->xyz[0].disp.pos > (g_state.bg_w.bgw[1].r_limit2 + 64)) {
+    if (wk->xyz[0].disp.pos < (g_state.bg_w.bgw[1].l_limit2 - 64) ||
+        wk->xyz[0].disp.pos > (g_state.bg_w.bgw[1].r_limit2 + 64)) {
         char_move_cmja(wk);
         setup_mvxy_data(wk, wk->mvxy.index);
         wk->mvxy.index++;

@@ -33,6 +33,7 @@ u8 last_parry_red[2];
 #include "sf33rd/Source/Game/training/trials.h"
 
 #include "port/I_System.h"
+#include <string.h>
 
 #include "port/tracy_zones.h"
 
@@ -70,7 +71,7 @@ void make_red_blocking_time(s16 id, s16 ix, s16 num) {
 
 /** @brief Main hit-check processing — runs catch checks, attack checks, and the hit queue. */
 void hit_check_main_process() {
-    g_state.aiuchi_flag = 0;
+    g_state.mutual_trade_flag = 0;
 
     if (hpq_in > 1) {
         if (ca_check_flag) {
@@ -141,7 +142,7 @@ void check_result_extra() {
 
         switch ((dm1p->wu.work_id == 1) + ((dm2p->wu.work_id == 1) * 2)) {
         case 3:
-            g_state.aiuchi_flag = 1;
+            g_state.mutual_trade_flag = 1;
 
             if ((hs1 = g_state.plw[0].wu.dm_stop) < 0) {
                 hs1 = -hs1;
@@ -353,9 +354,9 @@ void set_caught_status(s16 ix) {
     as->wu.cmwk[0xF]++;
     ds->wu.dm_count_up++;
     hit_pattern_extdat_check(&as->wu);
-    g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
-    g_state.paring_counter[ds->wu.id] = 0;
-    g_state.paring_bonus_r[ds->wu.id] = 0;
+    g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
+    g_state.parry_counter[ds->wu.id] = 0;
+    g_state.parry_bonus_r[ds->wu.id] = 0;
     last_parry_red[ds->wu.id] = 0;
     pp_pulpara_hit(&as->wu);
     return;
@@ -582,9 +583,9 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
         ds->atemi_flag = 0;
     }
 
-    g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
-    g_state.paring_counter[ds->wu.id] = 0;
-    g_state.paring_bonus_r[ds->wu.id] = 0;
+    g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
+    g_state.parry_counter[ds->wu.id] = 0;
+    g_state.parry_bonus_r[ds->wu.id] = 0;
     last_parry_red[ds->wu.id] = 0;
     return;
 
@@ -695,14 +696,15 @@ void set_paring_status(PLW* as, PLW* ds) {
         }
 
         if (g_state.Bonus_Game_Flag == 0 && ds->spmv_ng_flag & 0x80) {
-            g_state.paring_bonus_r[ds->wu.id] = 1;
-            g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id]++;
+            g_state.parry_bonus_r[ds->wu.id] = 1;
+            g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id]++;
 
-            if (g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] > 39) {
-                g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] = 39;
+            if (g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] > 39) {
+                g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] = 39;
             }
 
-            g_state.paring_counter[ds->wu.id] = parisucc_pts[g_state.Play_Type][g_state.paring_ctr_vs[g_state.Play_Type][ds->wu.id] - 1];
+            g_state.parry_counter[ds->wu.id] =
+                parisucc_pts[g_state.Play_Type][g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] - 1];
         }
 
         as->wu.cmwk[8]++;

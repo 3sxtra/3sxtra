@@ -184,7 +184,7 @@ static void training_mode_tick(struct _TASK* task_ptr) {
     }
 
     Setup_VS_Mode(task_ptr);
-    g_state.G_No[2] += 1;
+    g_state.fsm[2] += 1;
     task_ptr->r_no[0] = 5;
     cpExitTask(TASK_SAVER);
     g_state.Champion = PL_id;

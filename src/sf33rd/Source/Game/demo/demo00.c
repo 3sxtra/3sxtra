@@ -53,10 +53,10 @@ f32 picon_level;
 s32 Warning() {
     g_state.Next_Demo = 0;
 
-    switch (g_state.D_No[1]) {
+    switch (g_state.demo_phase[1]) {
     case WARN_INIT:
-        g_state.D_No[1] = WARN_FADE_IN;
-        g_state.D_Timer = 120;
+        g_state.demo_phase[1] = WARN_FADE_IN;
+        g_state.demo_timer_global = 120;
         FadeInit();
         g_state.Next_Demo = 0;
         break;
@@ -66,36 +66,36 @@ s32 Warning() {
         g_state.Next_Demo = 0;
 
         if (FadeIn(1, 8, 8) != 0) {
-            g_state.D_No[1] += 1;
-            g_state.D_Timer = 120;
+            g_state.demo_phase[1] += 1;
+            g_state.demo_timer_global = 120;
         }
 
         break;
 
     case WARN_DISPLAY:
         if (((p1sw_0 & 0x4FF0) | (p2sw_0 & 0x4FF0)) != 0) {
-            g_state.D_Timer = 2;
-            g_state.D_No[1] = WARN_SKIP_WAIT;
+            g_state.demo_timer_global = 2;
+            g_state.demo_phase[1] = WARN_SKIP_WAIT;
             FadeInit();
         }
 
         Put_Warning(1);
         g_state.Next_Demo = 0;
 
-        if (!--g_state.D_Timer) {
-            g_state.D_No[1] += 1;
-            g_state.D_Timer = 180;
+        if (!--g_state.demo_timer_global) {
+            g_state.demo_phase[1] += 1;
+            g_state.demo_timer_global = 180;
         }
 
         break;
 
     case WARN_SKIP_WAIT:
         if (((p1sw_0 & 0x4FF0) | (p2sw_0 & 0x4FF0)) != 0) {
-            g_state.D_Timer = 1;
+            g_state.demo_timer_global = 1;
         }
 
-        if (!--g_state.D_Timer) {
-            g_state.D_No[1] += 1;
+        if (!--g_state.demo_timer_global) {
+            g_state.demo_phase[1] += 1;
             FadeInit();
         }
 
@@ -108,13 +108,13 @@ s32 Warning() {
         g_state.Next_Demo = 0;
 
         if (FadeOut(1, 8, 8) != 0) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
         }
 
         break;
 
     default:
-        g_state.D_No[1] = WARN_INIT;
+        g_state.demo_phase[1] = WARN_INIT;
         TexRelease(590);
         g_state.Next_Demo = 1;
         break;
@@ -141,15 +141,15 @@ s32 CAPCOM_Logo() {
     ppgSetupCurrentDataList(&ppgCapLogoList);
     g_state.Next_Demo = 0;
 
-    switch (g_state.D_No[1]) {
+    switch (g_state.demo_phase[1]) {
     case CAPLOGO_INIT:
-        g_state.D_No[1] += 1;
+        g_state.demo_phase[1] += 1;
         checkAdxFileLoaded();
         checkSelObjFileLoaded();
         break;
 
     case CAPLOGO_LOAD_BGM:
-        g_state.D_No[1] += 1;
+        g_state.demo_phase[1] += 1;
         Standby_BGM(67);
         CAPLOGO_Init();
         Push_LDREQ_Queue_Direct(0x16, 2);
@@ -158,15 +158,15 @@ s32 CAPCOM_Logo() {
 
     case CAPLOGO_WAIT_LOAD:
         if (Check_LDREQ_Clear() != 0) {
-            g_state.D_No[1] += 1;
-            g_state.D_Timer = 10;
+            g_state.demo_phase[1] += 1;
+            g_state.demo_timer_global = 10;
         }
 
         break;
 
     case CAPLOGO_PRE_ANIM:
-        if (--g_state.D_Timer == 0) {
-            g_state.D_No[1] += 1;
+        if (--g_state.demo_timer_global == 0) {
+            g_state.demo_phase[1] += 1;
             op_timer0 = 0;
             Go_BGM();
         }
@@ -175,7 +175,7 @@ s32 CAPCOM_Logo() {
 
     case CAPLOGO_ANIMATE:
         if (!CAPLOGO_Move(0)) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
             Push_LDREQ_Queue_Direct(0x17, 2);
             FadeInit();
         }
@@ -186,8 +186,8 @@ s32 CAPCOM_Logo() {
         CAPLOGO_Move(1);
 
         if (FadeIn(1, 6, 8) != 0) {
-            g_state.D_No[1] += 1;
-            g_state.D_Timer = 256;
+            g_state.demo_phase[1] += 1;
+            g_state.demo_timer_global = 256;
             Push_LDREQ_Queue_Direct(0x18, 2);
         }
 
@@ -196,8 +196,8 @@ s32 CAPCOM_Logo() {
     case CAPLOGO_HOLD:
         CAPLOGO_Move(1);
 
-        if (--g_state.D_Timer == 0) {
-            g_state.D_No[1] += 1;
+        if (--g_state.demo_timer_global == 0) {
+            g_state.demo_phase[1] += 1;
             FadeInit();
         }
 
@@ -207,7 +207,7 @@ s32 CAPCOM_Logo() {
         CAPLOGO_Move(1);
 
         if (FadeOut(1, 6, 8) != 0) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
         }
 
         break;

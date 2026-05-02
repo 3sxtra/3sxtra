@@ -56,7 +56,7 @@ typedef struct {
 /** @brief Z-depth key for stable quad sorting. */
 typedef struct {
     float z;
-    int original_index; /* quad index in per-pass submission order */
+    int original_index;    /* quad index in per-pass submission order */
     int global_quad_index; /* global vertex array index (vertex_count / 4) */
     RendererBlendMode blend_mode;
 } QuadSortKey;
@@ -79,24 +79,24 @@ typedef struct GPUVertex {
  */
 typedef struct PassRecordingState {
     /* Geometry tracking */
-    unsigned int quad_count;            /* quads submitted to this pass */
+    unsigned int quad_count; /* quads submitted to this pass */
 
     /* Sort keys — per-pass arrays (owned, not aliased) */
-    QuadSortKey  sort_keys[MAX_QUADS];
+    QuadSortKey sort_keys[MAX_QUADS];
     SDL_GPUTexture* overlay_tex[MAX_QUADS]; /* per-quad overlay texture */
 
     /* Render state snapshot at recording time */
     RendererBlendMode blend_mode;
 
     /* Texture binding cache (current active texture for this pass) */
-    int    tex_layer;
-    float  tex_uv_sx;
-    float  tex_uv_sy;
-    float  tex_palette_idx;
+    int tex_layer;
+    float tex_uv_sx;
+    float tex_uv_sy;
+    float tex_palette_idx;
     unsigned int last_set_texture_handle;
 
     /* Z-ordering diagnostics */
-    int   sort_inversions;
+    int sort_inversions;
     float last_submitted_z;
 } PassRecordingState;
 
@@ -120,7 +120,6 @@ extern SDL_GPUBuffer* index_buffer;
 extern SDL_GPUTransferBuffer* transfer_buffers[VERTEX_TRANSFER_BUFFER_COUNT];
 extern SDL_GPUTransferBuffer* index_transfer_buffer;
 extern int current_transfer_idx;
-
 
 /* Compute / texture staging */
 extern SDL_GPUTransferBuffer* s_compute_staging_buffer;

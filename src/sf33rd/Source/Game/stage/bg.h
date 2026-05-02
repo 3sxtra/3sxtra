@@ -104,7 +104,7 @@ extern u8 bg_priority[4];
 
 extern u8 rw_num;
 extern u8 rw_bg_flag[4];
-extern u8 tokusyu_stage;
+extern u8 special_stage;
 extern s32 rw_gbix[13];
 extern s8 stage_flash;
 extern s8 stage_ftimer;

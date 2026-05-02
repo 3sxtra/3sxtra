@@ -260,7 +260,7 @@ void Disp_Auto_Save2(struct _TASK* task_ptr) {
 
 void DAS2_4th(struct _TASK* task_ptr) {
     /* NativeSave_SaveOptions() is synchronous, so always proceed */
-    g_state.G_No[2] = GAME_SUBMODE_SAVE;
+    g_state.fsm[2] = GAME_SUBMODE_SAVE;
     cpExitTask(TASK_MENU);
     Task_Activate(TASK_ENTRY);
 }

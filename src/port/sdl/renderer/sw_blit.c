@@ -82,14 +82,14 @@ static inline SWCanvasPixel blend_argb_onto_canvas(uint32_t src, SWCanvasPixel d
     // RGB565 blend with 5-bit alpha.
     const uint32_t src_565 = (uint32_t)sw_argb_to_canvas(src);
     const uint32_t dst_565 = (uint32_t)dst_px;
-    const uint32_t sa_5 = sa >> 3;          // 0..31
-    const uint32_t ia_5 = 32u - sa_5;       // 1..32
+    const uint32_t sa_5 = sa >> 3;    // 0..31
+    const uint32_t ia_5 = 32u - sa_5; // 1..32
     const uint32_t s_rb = src_565 & 0xF81Fu;
-    const uint32_t s_g  = src_565 & 0x07E0u;
+    const uint32_t s_g = src_565 & 0x07E0u;
     const uint32_t d_rb = dst_565 & 0xF81Fu;
-    const uint32_t d_g  = dst_565 & 0x07E0u;
+    const uint32_t d_g = dst_565 & 0x07E0u;
     const uint32_t rb = ((s_rb * sa_5 + d_rb * ia_5) >> 5) & 0xF81Fu;
-    const uint32_t g  = ((s_g  * sa_5 + d_g  * ia_5) >> 5) & 0x07E0u;
+    const uint32_t g = ((s_g * sa_5 + d_g * ia_5) >> 5) & 0x07E0u;
     return (SWCanvasPixel)(rb | g);
 #else
     const uint32_t dst_argb = sw_canvas_to_argb(dst_px);
@@ -101,16 +101,24 @@ static inline SWCanvasPixel blend_argb_onto_canvas(uint32_t src, SWCanvasPixel d
 // Helper to write a single pixel with opaque-or-blend.
 static inline void blit_pixel_opaque_or_blend(SWCanvasPixel* dst, uint32_t argb) {
     const uint32_t a = (argb >> 24) & 0xFF;
-    if (a == 0x00) return;
-    if (a == 0xFF) { *dst = sw_argb_to_canvas(argb); return; }
+    if (a == 0x00)
+        return;
+    if (a == 0xFF) {
+        *dst = sw_argb_to_canvas(argb);
+        return;
+    }
     *dst = blend_argb_onto_canvas(argb, *dst);
 }
 
 #if defined(CRS_SW_CANVAS_16BPP)
 static inline void blit_pixel_565(uint16_t* dst, uint32_t argb, uint16_t px565) {
     const uint32_t a = (argb >> 24) & 0xFF;
-    if (a == 0x00) return;
-    if (a == 0xFF) { *dst = px565; return; }
+    if (a == 0x00)
+        return;
+    if (a == 0xFF) {
+        *dst = px565;
+        return;
+    }
     *dst = (uint16_t)blend_argb_onto_canvas(argb, *dst);
 }
 #endif
@@ -128,10 +136,22 @@ void sw_fill_solid_row(SWCanvasPixel* dst, uint32_t argb, int count) {
 #if defined(__GNUC__) || defined(__clang__)
         for (; i + 16 <= count; i += 16) {
             __builtin_prefetch(dst + i + 32, 1);
-            dst[i + 0]  = px; dst[i + 1]  = px; dst[i + 2]  = px; dst[i + 3]  = px;
-            dst[i + 4]  = px; dst[i + 5]  = px; dst[i + 6]  = px; dst[i + 7]  = px;
-            dst[i + 8]  = px; dst[i + 9]  = px; dst[i + 10] = px; dst[i + 11] = px;
-            dst[i + 12] = px; dst[i + 13] = px; dst[i + 14] = px; dst[i + 15] = px;
+            dst[i + 0] = px;
+            dst[i + 1] = px;
+            dst[i + 2] = px;
+            dst[i + 3] = px;
+            dst[i + 4] = px;
+            dst[i + 5] = px;
+            dst[i + 6] = px;
+            dst[i + 7] = px;
+            dst[i + 8] = px;
+            dst[i + 9] = px;
+            dst[i + 10] = px;
+            dst[i + 11] = px;
+            dst[i + 12] = px;
+            dst[i + 13] = px;
+            dst[i + 14] = px;
+            dst[i + 15] = px;
         }
 #endif
         for (; i < count; i++) {
@@ -149,22 +169,22 @@ void sw_fill_solid_row(SWCanvasPixel* dst, uint32_t argb, int count) {
     const uint32_t sa_5 = a >> 3;
     const uint32_t ia_5 = 32u - sa_5;
     const uint32_t s_rb_a = (src_565 & 0xF81Fu) * sa_5;
-    const uint32_t s_g_a  = (src_565 & 0x07E0u) * sa_5;
+    const uint32_t s_g_a = (src_565 & 0x07E0u) * sa_5;
     int i = 0;
     for (; i + 2 <= count; i += 2) {
         const uint32_t d0 = (uint32_t)dst[i + 0];
         const uint32_t d1 = (uint32_t)dst[i + 1];
         const uint32_t rb0 = ((s_rb_a + (d0 & 0xF81Fu) * ia_5) >> 5) & 0xF81Fu;
-        const uint32_t g0  = ((s_g_a  + (d0 & 0x07E0u) * ia_5) >> 5) & 0x07E0u;
+        const uint32_t g0 = ((s_g_a + (d0 & 0x07E0u) * ia_5) >> 5) & 0x07E0u;
         const uint32_t rb1 = ((s_rb_a + (d1 & 0xF81Fu) * ia_5) >> 5) & 0xF81Fu;
-        const uint32_t g1  = ((s_g_a  + (d1 & 0x07E0u) * ia_5) >> 5) & 0x07E0u;
+        const uint32_t g1 = ((s_g_a + (d1 & 0x07E0u) * ia_5) >> 5) & 0x07E0u;
         dst[i + 0] = (SWCanvasPixel)(rb0 | g0);
         dst[i + 1] = (SWCanvasPixel)(rb1 | g1);
     }
     for (; i < count; i++) {
         const uint32_t d = (uint32_t)dst[i];
         const uint32_t rb = ((s_rb_a + (d & 0xF81Fu) * ia_5) >> 5) & 0xF81Fu;
-        const uint32_t g  = ((s_g_a  + (d & 0x07E0u) * ia_5) >> 5) & 0x07E0u;
+        const uint32_t g = ((s_g_a + (d & 0x07E0u) * ia_5) >> 5) & 0x07E0u;
         dst[i] = (SWCanvasPixel)(rb | g);
     }
 #else
@@ -346,8 +366,8 @@ void sw_blit_scaled_indexed8_row_rev(SWCanvasPixel* dst, const uint8_t* idx_row,
     }
 }
 
-void sw_blit_scaled_indexed4_row_rev(SWCanvasPixel* dst, const uint8_t* packed_row, const uint32_t* pal16, uint32_t u_fx,
-                                     uint32_t du_fx, uint32_t modulate, int count) {
+void sw_blit_scaled_indexed4_row_rev(SWCanvasPixel* dst, const uint8_t* packed_row, const uint32_t* pal16,
+                                     uint32_t u_fx, uint32_t du_fx, uint32_t modulate, int count) {
     for (int i = 0; i < count; i++) {
         const int n = (int)(u_fx >> 16);
         const uint8_t byte = packed_row[n >> 1];

@@ -36,7 +36,7 @@ void effect_D8_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING)) &&
-            (ewk->master_id == g_state.New_Challenger) && (g_state.S_No[3] < 2)) {
+            (ewk->master_id == g_state.New_Challenger) && (g_state.select_phase[3] < 2)) {
             return;
         }
 
@@ -57,7 +57,8 @@ void effect_D8_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        if ((ewk->wu.vital_new != g_state.Cursor_X[ewk->master_id]) || (ewk->wu.vital_old != g_state.Cursor_Y[ewk->master_id])) {
+        if ((ewk->wu.vital_new != g_state.Cursor_X[ewk->master_id]) ||
+            (ewk->wu.vital_old != g_state.Cursor_Y[ewk->master_id])) {
             ewk->wu.vital_new = g_state.Cursor_X[ewk->master_id];
             ewk->wu.vital_old = g_state.Cursor_Y[ewk->master_id];
 

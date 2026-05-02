@@ -17,7 +17,6 @@
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include <stdbool.h>
 
-
 /** @brief Initializes the vitality bar display state for both players. */
 void vital_cont_init() {
     u8 i;
@@ -55,7 +54,8 @@ void vital_cont_main() {
 /** @brief Updates a single player's vitality bar animation and color state. */
 void vital_control(u8 pl) {
     if (g_state.plw[pl].wu.vital_new < 0xA1) {
-        if ((g_state.vit[pl].cyerw == g_state.plw[pl].wu.vital_new) && (g_state.vit[pl].cred == g_state.plw[pl].wu.vital_new) &&
+        if ((g_state.vit[pl].cyerw == g_state.plw[pl].wu.vital_new) &&
+            (g_state.vit[pl].cred == g_state.plw[pl].wu.vital_new) &&
             (g_state.vit[pl].ored != (g_state.plw[pl].wu.vital_new + 1))) {
             if (No_Trans == 0) {
                 if (!use_rmlui || !rmlui_hud_health)

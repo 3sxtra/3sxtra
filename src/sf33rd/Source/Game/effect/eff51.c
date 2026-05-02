@@ -67,8 +67,8 @@ s32 effect_51_init(s16 letter_type, s16 cursor_index, s16 master_player) {
 }
 
 static void Setup_Letter_51(WORK_Other_CONN* ewk) {
-    u8* ptr =
-        (u8*)Letter_Data_51[g_state.Menu_Page_Buff][ewk->wu.char_index][system_dir[1].contents[g_state.Menu_Page_Buff][ewk->wu.type]];
+    u8* ptr = (u8*)Letter_Data_51[g_state.Menu_Page_Buff][ewk->wu.char_index]
+                                 [system_dir[1].contents[g_state.Menu_Page_Buff][ewk->wu.type]];
     s16 ix = 0;
     s16 x = 0;
 

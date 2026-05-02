@@ -59,7 +59,8 @@ void effect_16_move(WORK_Other* ewk) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 1;
             ewk->wu.old_cgnum = 0;
-            ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk, g_state.Continue_Coin[ewk->wu.type] + g_state.Score[ewk->wu.type][0]);
+            ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk,
+                                           g_state.Continue_Coin[ewk->wu.type] + g_state.Score[ewk->wu.type][0]);
             ewk->wu.direction = ewk->free;
             ewk->free = 0;
             ewk->wu.dir_timer = 0;
@@ -98,7 +99,8 @@ void effect_16_move(WORK_Other* ewk) {
             break;
         }
 
-        ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk, g_state.Continue_Coin[ewk->wu.type] + g_state.Score[ewk->wu.type][0]);
+        ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk,
+                                       g_state.Continue_Coin[ewk->wu.type] + g_state.Score[ewk->wu.type][0]);
         eff16_trans(&ewk->wu);
         break;
 

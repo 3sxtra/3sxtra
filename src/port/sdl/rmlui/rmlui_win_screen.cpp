@@ -90,7 +90,8 @@ extern "C" void rmlui_win_screen_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("winner_name", [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[g_state.Winner_id])); });
+    ctor.BindFunc("winner_name",
+                  [](Rml::Variant& v) { v = Rml::String(char_name(g_state.My_char[g_state.Winner_id])); });
     ctor.BindFunc("winner_score", [](Rml::Variant& v) { v = (int)g_state.WGJ_Score; });
     ctor.BindFunc("winner_wins", [](Rml::Variant& v) { v = (int)g_state.WGJ_Win; });
     ctor.BindFunc("is_loser", [](Rml::Variant& v) {

@@ -49,7 +49,8 @@ void Stage_BGM(u16 Stage_Number, u16 Round_Number) {
         return;
     }
 
-    if (g_state.Mode_Type == MODE_ARCADE && g_state.Play_Type == 0 && g_state.My_char[g_state.COM_id] == 17 && g_state.Bonus_Game_Flag == 0) {
+    if (g_state.Mode_Type == MODE_ARCADE && g_state.Play_Type == 0 && g_state.My_char[g_state.COM_id] == 17 &&
+        g_state.Bonus_Game_Flag == 0) {
         code = BGM_Stage_Data[17] + bgm_selector[sys_w.bgm_type][Round_Number & 7];
     } else {
         code = BGM_Stage_Data[Stage_Number] + bgm_selector[sys_w.bgm_type][Round_Number & 7];
@@ -63,11 +64,11 @@ void Stage_BGM(u16 Stage_Number, u16 Round_Number) {
     }
 
     I_Log("[%s] Stage_BGM: stage=%u round=%u bgm_type=%d → code=%u",
-            ModdedBGM_GetGameStateString(),
-            Stage_Number,
-            Round_Number,
-            sys_w.bgm_type,
-            code);
+          ModdedBGM_GetGameStateString(),
+          Stage_Number,
+          Round_Number,
+          sys_w.bgm_type,
+          code);
     SsRequest(code);
 }
 

@@ -1051,7 +1051,8 @@ void check_13() {
     }
 
     if ((chk_pl->old_lvbt & CMD_LEVER_MASK) != (chk_pl->new_lvbt & CMD_LEVER_MASK) && (chk_pl->sw_lever) == 2) {
-        g_state.wcp[cmd_id].waza_flag[waza_type[cmd_id]] = 16 - ukemi_time_tbl[g_state.wcp[cmd_id].waza_flag[waza_type[cmd_id]]];
+        g_state.wcp[cmd_id].waza_flag[waza_type[cmd_id]] =
+            16 - ukemi_time_tbl[g_state.wcp[cmd_id].waza_flag[waza_type[cmd_id]]];
         waza_ptr->free3 = 16;
         chk_pl->waza_no = waza_type[cmd_id];
     }
@@ -1059,7 +1060,8 @@ void check_13() {
     sw_w = (chk_pl->sw_now | chk_pl->old_now) & CMD_BTN_PUNCHES;
 
     if (sw_w == CMD_BTN_PUNCHES) {
-        g_state.wcp[cmd_id].waza_flag[waza_type[cmd_id]] = 16 - ukemi_time_tbl[g_state.wcp[cmd_id].waza_flag[waza_type[cmd_id]]];
+        g_state.wcp[cmd_id].waza_flag[waza_type[cmd_id]] =
+            16 - ukemi_time_tbl[g_state.wcp[cmd_id].waza_flag[waza_type[cmd_id]]];
         waza_ptr->free3 = 16;
         chk_pl->waza_no = waza_type[cmd_id];
     }

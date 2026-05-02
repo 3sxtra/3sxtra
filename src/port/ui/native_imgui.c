@@ -13,7 +13,7 @@
 #include <string.h>
 
 #define UI_MAX_ELEMENTS 22
-#define UI_SLOT_MIN 105  // Must be strictly < 128 (EFFECT_MAX). avoids 0x64 (100)
+#define UI_SLOT_MIN 105 // Must be strictly < 128 (EFFECT_MAX). avoids 0x64 (100)
 #define UI_SLOT_MAX 126
 
 typedef struct {
@@ -95,8 +95,9 @@ static uint32_t HashId(const char* label) {
 
 // Effect Slot Allocator
 static int AllocSlot(uint32_t id_hash, bool* out_is_new) {
-    if (out_is_new) *out_is_new = false;
-    
+    if (out_is_new)
+        *out_is_new = false;
+
     // Check if it already exists
     for (int i = 0; i < UI_MAX_ELEMENTS; i++) {
         if (s_elements[i].id_hash == id_hash) {
@@ -114,7 +115,8 @@ static int AllocSlot(uint32_t id_hash, bool* out_is_new) {
                 return -1; // Out of memory/slots gracefully!
             }
             s_elements[i].last_frame_seen = s_frame_counter;
-            if (out_is_new) *out_is_new = true;
+            if (out_is_new)
+                *out_is_new = true;
             return s_elements[i].effect_slot;
         }
     }
@@ -140,7 +142,8 @@ void NativeUI_Clear(void) {
     memset(s_elements, 0, sizeof(s_elements));
     s_frame_counter = 0;
     s_focus_index = 0;
-    // Do NOT wipe g_state.Menu_Cursor_Y[0] here. It destroys state for dispatch targets right after calling NativeUI_Clear.
+    // Do NOT wipe g_state.Menu_Cursor_Y[0] here. It destroys state for dispatch targets right after calling
+    // NativeUI_Clear.
     s_scroll_current_offset = 0;
     s_in_scroll_list = false;
     s_graphic_offset = 0;
@@ -164,7 +167,7 @@ void NativeUI_End(void) {
     for (int i = 0; i < UI_MAX_ELEMENTS; i++) {
         if (s_elements[i].id_hash != 0 && s_elements[i].last_frame_seen != s_frame_counter) {
             int slot = s_elements[i].effect_slot;
-            
+
             // JUDGE PETROV FIX: Hunt down and explicitly kill the CPS3 task
             // instead of spamming g_state.Suicide[0]=1 and risking collateral damage.
             for (int k = 0; k < EFFECT_MAX; k++) {
@@ -173,7 +176,7 @@ void NativeUI_End(void) {
                     push_effect_work((WORK*)w);
                 }
             }
-            
+
             g_state.Order[slot] = 0;
             s_elements[i].id_hash = 0;
         }
@@ -181,8 +184,10 @@ void NativeUI_End(void) {
 
     // Safety wrap focus and Sync Legacy Cursor Memory so eff61.c legacy loops know the focus!
     if (s_max_index > 0) {
-        if (s_focus_index < 0) s_focus_index = s_max_index - 1;
-        if (s_focus_index >= s_max_index) s_focus_index = 0;
+        if (s_focus_index < 0)
+            s_focus_index = s_max_index - 1;
+        if (s_focus_index >= s_max_index)
+            s_focus_index = 0;
     }
     g_state.Menu_Cursor_Y[0] = s_focus_index;
 }
@@ -203,7 +208,7 @@ static void AdvanceLayout(int width, int height) {
 void NativeUI_BeginScrollList(int visible_elements) {
     s_scroll_max_visible = visible_elements;
     s_in_scroll_list = true;
-    
+
     // Automatically shift sliding focus bracket based on target cursor
     if (s_focus_index < s_scroll_current_offset) {
         s_scroll_current_offset = s_focus_index;
@@ -246,14 +251,14 @@ void NativeUI_Header(int header_type) {
 
 bool NativeUI_ButtonEx(const char* label, bool disabled) {
     int my_index = s_current_index++;
-    
+
     // Auto-skip disabled elements using the directional delta
     if (s_focus_index == my_index && disabled) {
         s_focus_index += (s_focus_delta != 0) ? s_focus_delta : 1;
     }
 
     bool is_focused = (s_focus_index == my_index) && !disabled;
-    
+
     // Visually occlude the element if it scrolled out of layout bounds
     bool is_visible = true;
     if (s_in_scroll_list) {
@@ -261,36 +266,36 @@ bool NativeUI_ButtonEx(const char* label, bool disabled) {
             is_visible = false;
         }
     }
-    
+
     if (!is_visible) {
-        // Pure Logical Processing: Do NOT allocate visual hashing or layout bounds to prevent 
+        // Pure Logical Processing: Do NOT allocate visual hashing or layout bounds to prevent
         // exhausting the 128-element memory cache! The GC will naturally sweep it.
         return false;
     }
-    
+
     uint32_t hash = HashId(label);
-    
+
     bool is_new = false;
     int slot = AllocSlot(hash, &is_new);
-    
-    if (slot != -1 && is_new) { 
+
+    if (slot != -1 && is_new) {
         g_state.Order[slot] = 1;
         g_state.Order_Dir[slot] = 4;
         int visual_index = my_index - s_scroll_current_offset;
         g_state.Order_Timer[slot] = visual_index + 7; // Use visual offset for animation sequence
-        
+
         int graphic_index = my_index + s_graphic_offset;
         // Arg 5 (char_ix) dictates absolute graphic string and Y layout from Slide_Pos_Data_61.
         // Arg 6 (cursor_index) connects to g_state.Menu_Cursor_Y[0] for dynamic highlighting.
-        effect_61_init(0, slot, 0, s_master_player, graphic_index, my_index, s_letter_type); 
+        effect_61_init(0, slot, 0, s_master_player, graphic_index, my_index, s_letter_type);
     }
-    
+
     NativeUI_Label(label);
 
     if (is_focused && s_confirm_pressed) {
         return true;
     }
-    
+
     return false;
 }
 
@@ -299,7 +304,7 @@ bool NativeUI_Button(const char* label) {
 }
 
 void NativeUI_Label(const char* label) {
-    AdvanceLayout(0, 16); 
+    AdvanceLayout(0, 16);
 }
 
 void NativeUI_ProcessInput(uint16_t pad_input, uint16_t io_result) {
@@ -307,26 +312,30 @@ void NativeUI_ProcessInput(uint16_t pad_input, uint16_t io_result) {
     if (pad_input & 0x01) { // UP
         s_focus_delta = -s_grid_columns;
         s_focus_index += s_focus_delta;
-        if (s_focus_index < 0) s_focus_index = s_max_index - 1;
+        if (s_focus_index < 0)
+            s_focus_index = s_max_index - 1;
     }
     if (pad_input & 0x02) { // DOWN
         s_focus_delta = s_grid_columns;
         s_focus_index += s_focus_delta;
-        if (s_focus_index >= s_max_index) s_focus_index = 0;
+        if (s_focus_index >= s_max_index)
+            s_focus_index = 0;
     }
-    if (s_grid_columns > 1) { // Left/Right enabled for Grids
+    if (s_grid_columns > 1) {   // Left/Right enabled for Grids
         if (pad_input & 0x04) { // LEFT
             s_focus_delta = -1;
             s_focus_index += s_focus_delta;
-            if (s_focus_index < 0) s_focus_index = s_max_index - 1;
+            if (s_focus_index < 0)
+                s_focus_index = s_max_index - 1;
         }
         if (pad_input & 0x08) { // RIGHT
             s_focus_delta = 1;
             s_focus_index += s_focus_delta;
-            if (s_focus_index >= s_max_index) s_focus_index = 0;
+            if (s_focus_index >= s_max_index)
+                s_focus_index = 0;
         }
     }
-    
+
     // Set confirmed state securely frame-over-frame
     s_confirm_pressed = (io_result == 0x100);
 }

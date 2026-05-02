@@ -298,8 +298,10 @@ static void Setup_Pos_76(WORK_Other* ewk) {
         break;
 
     case 0x41:
-        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[0].wxy[0].disp.pos + Bust_Pos_Data_76[g_state.My_char[g_state.Final_Result_id]][0];
-        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[0].wxy[1].disp.pos + Bust_Pos_Data_76[g_state.My_char[g_state.Final_Result_id]][1];
+        ewk->wu.xyz[0].disp.pos =
+            g_state.bg_w.bgw[0].wxy[0].disp.pos + Bust_Pos_Data_76[g_state.My_char[g_state.Final_Result_id]][0];
+        ewk->wu.xyz[1].disp.pos =
+            g_state.bg_w.bgw[0].wxy[1].disp.pos + Bust_Pos_Data_76[g_state.My_char[g_state.Final_Result_id]][1];
         ewk->wu.position_z = 72;
         break;
 
@@ -308,7 +310,8 @@ static void Setup_Pos_76(WORK_Other* ewk) {
     case 0x3D:
     case 0x3E:
     case 0x3F:
-        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + 458 + Pos_Cont_Data_76[ewk->wu.dir_old - 0x3B][0];
+        ewk->wu.xyz[0].disp.pos =
+            g_state.bg_w.bgw[1].wxy[0].disp.pos + 458 + Pos_Cont_Data_76[ewk->wu.dir_old - 0x3B][0];
         ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[1].wxy[1].disp.pos + Pos_Cont_Data_76[ewk->wu.dir_old - 0x3B][1];
         ewk->wu.position_z = Pos_Cont_Data_76[ewk->wu.dir_old - 0x3B][2];
         break;
@@ -373,7 +376,8 @@ static void Setup_Pos_76(WORK_Other* ewk) {
         ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
                                   Name_Cover_Pos_Data[g_state.Champion][1][g_state.My_char[g_state.Champion] + ix][0];
         ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
-                                  Name_Cover_Pos_Data[g_state.Champion][1][g_state.My_char[g_state.Champion] + ix][1] - 2;
+                                  Name_Cover_Pos_Data[g_state.Champion][1][g_state.My_char[g_state.Champion] + ix][1] -
+                                  2;
         ewk->wu.position_z = 69;
 
         if (g_state.Champion == 0) {
@@ -427,8 +431,8 @@ static void Setup_Pos_76(WORK_Other* ewk) {
 
         ewk->wu.my_mts = 14;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-        ewk->wu.hit_quake =
-            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Compute_Pos_Data_76[ix][g_state.Order_Dir[ewk->wu.dir_old]][0];
+        ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                            Compute_Pos_Data_76[ix][g_state.Order_Dir[ewk->wu.dir_old]][0];
         ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake + 0x1A0;
         ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
                                   Compute_Pos_Data_76[ix][g_state.Order_Dir[ewk->wu.dir_old]][1] + g_state.base_y_pos;
@@ -630,7 +634,8 @@ void Setup_Color_L1(WORK_Other* ewk) {
 }
 
 s32 chkNameAkuma(s32 plnum, s32 rnum) {
-    if ((plnum == 14) && ((g_state.Country == COUNTRY_EUROPE) || (g_state.Country == COUNTRY_USA) || (g_state.Country == COUNTRY_ASIA))) {
+    if ((plnum == 14) && ((g_state.Country == COUNTRY_EUROPE) || (g_state.Country == COUNTRY_USA) ||
+                          (g_state.Country == COUNTRY_ASIA))) {
         return rnum;
     }
 

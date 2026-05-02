@@ -12,9 +12,9 @@ extern "C" {
  * @brief C-compatible version of GPUTextureMetadata.
  */
 typedef struct GPUTextureMetadataC {
-    void* texture;      // SDL_GPUTexture*
+    void* texture; // SDL_GPUTexture*
     int w, h;
-    uint32_t* pixels;   // cached pixels for staging upload
+    uint32_t* pixels; // cached pixels for staging upload
 } GPUTextureMetadataC;
 
 /**

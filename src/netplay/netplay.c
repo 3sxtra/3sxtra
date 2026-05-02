@@ -148,7 +148,7 @@ static void clean_input_buffers() {
  *  - Task/state machine routing numbers (g_state.G_No, g_state.C_No, g_state.SC_No, g_state.E_No)
  *  - Mode and play type (MODE_NETWORK, g_state.Play_Mode)
  *  - Game settings (Time_Limit, Battle_Number, Damage_Level, etc.)
- *  - Timers (g_state.Game_timer, g_state.Control_Time, g_state.E_Timer, g_state.G_Timer, etc.)
+ *  - Timers (g_state.Game_timer, g_state.Control_Time, g_state.entry_timer, g_state.fsm_timer, etc.)
  *  - RNG indices (g_state.Random_ix16, g_state.Random_ix32)
  *  - Button config (Pad_Infor forced to identity, g_state.Check_Buff/g_state.Convert_Buff zeroed)
  *  - Background state (g_state.bg_pos, g_state.fm_pos, g_state.bg_prm, g_state.Screen_Switch)
@@ -167,7 +167,7 @@ static void setup_vs_mode() {
     //
     // We only zero player/combat state — NOT engine globals (g_state.G_No, g_state.Country,
     // task routing, etc.) because step_game() runs during TRANSITIONING
-    // to advance the game state machine (g_state.G_No[1]: 12→1).
+    // to advance the game state machine (g_state.fsm[1]: 12→1).
     // ====================================================================
     SDL_zeroa(g_state.plw);
     SDL_zeroa(g_state.zanzou_table);
@@ -210,12 +210,12 @@ static void setup_vs_mode() {
     // for rollback, every restore to an early frame would replay garbage.
     System_all_clear_Level_B();
 
-    g_state.G_No[0] = 2;
-    g_state.E_No[0] = 1;
+    g_state.fsm[0] = 2;
+    g_state.entry_phase[0] = 1;
     g_state.Demo_Flag = 1;
 
-    g_state.G_No[1] = 12;
-    g_state.G_No[2] = 1;
+    g_state.fsm[1] = 12;
+    g_state.fsm[2] = 1;
     g_state.Mode_Type = MODE_NETWORK;
     g_state.Present_Mode = MODE_NETWORK;
     g_state.Play_Mode = 0;
@@ -234,7 +234,8 @@ static void setup_vs_mode() {
     save_w[MODE_NETWORK].Handicap = 0;
     save_w[MODE_NETWORK].GuardCheck = 0;
 
-    g_state.E_Timer = 0; // g_state.E_Timer can have different values depending on when the session was initiated
+    g_state.entry_timer =
+        0; // g_state.entry_timer can have different values depending on when the session was initiated
 
     g_state.Deley_Shot_No[0] = 0;
     g_state.Deley_Shot_No[1] = 0;
@@ -311,7 +312,7 @@ static void setup_vs_mode() {
     g_state.Game_timer = 0;
     g_state.Control_Time = 0;
     g_state.players_timer = 0;
-    g_state.G_Timer = 0;
+    g_state.fsm_timer = 0;
 
     // Per-player globals that can hold stale values from the previous
     // game session or differ based on who connected first.
@@ -321,13 +322,13 @@ static void setup_vs_mode() {
     g_state.Stop_SG = 0;
     g_state.Exec_Wipe = 0;
     g_state.Gap_Timer = 0;
-    SDL_zeroa(g_state.E_No);
+    SDL_zeroa(g_state.entry_phase);
 
     // State machine routing numbers evolve per-player during character select.
     // Each peer advances g_state.C_No/g_state.SC_No from its own perspective, causing them to
     // diverge before battle. Zero them so both peers start identical.
-    SDL_zeroa(g_state.C_No);
-    SDL_zeroa(g_state.SC_No);
+    SDL_zeroa(g_state.manage_phase);
+    SDL_zeroa(g_state.next_cpu_phase);
 
     // ====================================================================
     // PHASE 3: Zero checksummed globals not covered above.
@@ -373,7 +374,7 @@ static void setup_vs_mode() {
     SDL_zeroa(g_state.Attack_Counter);
     SDL_zeroa(g_state.Bullet_No);
     SDL_zeroa(g_state.Bullet_Counter);
-    SDL_zeroa(g_state.paring_counter);
+    SDL_zeroa(g_state.parry_counter);
 
     // Game flow
     g_state.VS_Stage = 0;
@@ -384,7 +385,7 @@ static void setup_vs_mode() {
     g_state.EXE_flag = 0;
 
     // Stun gauge / vitality
-    SDL_zeroa(g_state.piyori_type);
+    SDL_zeroa(g_state.stun_type);
     g_state.Max_vitality = 160; // MAX_VITALITY_DEFAULT — must not be 0 (setup_vitality divides by it)
 
     clean_input_buffers();
@@ -531,7 +532,7 @@ static u16 recall_input(int player, int frame) {
 }
 
 static bool game_ready_to_run_character_select() {
-    return g_state.G_No[1] == 1;
+    return g_state.fsm[1] == 1;
 }
 
 static bool need_to_catch_up() {
@@ -740,7 +741,7 @@ static void update_network_stats() {
 
 static void run_netplay() {
     // Apply dynamic tuning once when battle starts
-    if (!dynamic_delay_applied && g_state.G_No[1] == 2) {
+    if (!dynamic_delay_applied && g_state.fsm[1] == 2) {
         if (ping_sample_count > 0) {
             float avg = ping_sum / ping_sample_count;
             float jitter_avg = jitter_sum / ping_sample_count;
@@ -972,7 +973,7 @@ void Netplay_Run() {
         if (game_ready_to_run_character_select()) {
             transition_ready_frames += 1;
             if (transition_ready_frames == 1)
-                printf("[netplay] character select reached (g_state.G_No[1]=%d)\n", g_state.G_No[1]);
+                printf("[netplay] character select reached (g_state.fsm[1]=%d)\n", g_state.fsm[1]);
         } else {
             transition_ready_frames = 0;
             // Keep both peers in a deterministic pre-session state by

@@ -55,16 +55,16 @@ s32 Play_Demo() {
 }
 
 /** @brief Demo sub-sequence 0 — quick start: set up gameplay and run until timeout. */
-void Demo00() {
+void Demo_QuickStart() {
     g_state.Play_Game = 1;
 
-    switch (g_state.D_No[1]) {
+    switch (g_state.demo_phase[1]) {
     case DEMO00_SETUP:
         Switch_Screen(1);
         Purge_texcash_of_list(3);
         Make_texcash_of_list(3);
-        g_state.D_No[1] += 1;
-        g_state.G_No[2] = 0;
+        g_state.demo_phase[1] += 1;
+        g_state.fsm[2] = 0;
         g_state.Game_pause = 0;
         g_state.Conclusion_Flag = 0;
         g_state.appear_type = APPEAR_TYPE_ANIMATED;
@@ -75,10 +75,10 @@ void Demo00() {
 
     case DEMO00_COVER:
         Switch_Screen(1);
-        Game02();
+        Game_Fight();
 
         if (--g_state.Cover_Timer == 0) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
             Switch_Screen_Init(0);
             return;
         }
@@ -86,11 +86,11 @@ void Demo00() {
         break;
 
     case DEMO00_REVEAL:
-        Game02();
+        Game_Fight();
 
         if (Switch_Screen_Revival(0) != 0) {
-            g_state.D_No[1] += 1;
-            g_state.D_Timer = 1800;
+            g_state.demo_phase[1] += 1;
+            g_state.demo_timer_global = 1800;
             g_state.Stop_SG = 0;
             return;
         }
@@ -98,45 +98,45 @@ void Demo00() {
         break;
 
     case DEMO00_PLAY:
-        Game02();
+        Game_Fight();
 
         if (Debug_w[DEBUG_TIME_STOP] == 9) {
-            g_state.D_Timer = 60;
+            g_state.demo_timer_global = 60;
         }
 
-        if (--g_state.D_Timer == 1) {
-            g_state.D_No[1] += 1;
+        if (--g_state.demo_timer_global == 1) {
+            g_state.demo_phase[1] += 1;
             g_state.Stop_Combo = 1;
             return;
         }
 
         if (g_state.Conclusion_Flag) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
             g_state.Stop_Combo = 1;
-            g_state.D_Timer = 90;
+            g_state.demo_timer_global = 90;
             return;
         }
 
         break;
 
     case DEMO00_WIND_DOWN:
-        Game02();
+        Game_Fight();
 
-        if (--g_state.D_Timer == 0) {
-            g_state.D_No[1] += 1;
+        if (--g_state.demo_timer_global == 0) {
+            g_state.demo_phase[1] += 1;
             g_state.Game_pause = 1;
             g_state.Disappear_LOGO = 1;
-            g_state.D_Timer = 16;
+            g_state.demo_timer_global = 16;
             return;
         }
 
         break;
 
     case DEMO00_PAUSE:
-        Game02();
+        Game_Fight();
 
-        if (--g_state.D_Timer == 0) {
-            g_state.D_No[1] += 1;
+        if (--g_state.demo_timer_global == 0) {
+            g_state.demo_phase[1] += 1;
             Switch_Screen_Init(0);
             SsBgmFadeOut(0x800);
             return;
@@ -145,10 +145,10 @@ void Demo00() {
         break;
 
     case DEMO00_FADE_OUT:
-        Game02();
+        Game_Fight();
 
         if (Switch_Screen(0) != 0) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
             g_state.Demo_Flag = 0;
             g_state.Present_Mode = 0;
             g_state.Cover_Timer = 23;
@@ -170,15 +170,15 @@ void Demo00() {
 }
 
 /** @brief Demo sub-sequence 1 — full attract: character select then gameplay. */
-void Demo01() {
-    if (g_state.D_No[1] >= 2) {
+void Demo_FullAttract() {
+    if (g_state.demo_phase[1] >= 2) {
         g_state.Play_Game = 1;
     }
 
-    switch (g_state.D_No[1]) {
+    switch (g_state.demo_phase[1]) {
     case DEMO01_SETUP:
         Switch_Screen(1);
-        g_state.D_No[1] += 1;
+        g_state.demo_phase[1] += 1;
         g_state.Game_pause = 0;
         g_state.Demo_Time_Stop = 0;
         Before_Select_Sub();
@@ -191,15 +191,15 @@ void Demo01() {
         Clear_Break_Com(1);
         grade_check_work_1st_init(1, 0);
         grade_check_work_1st_init(1, 1);
-        Game01();
+        Game_CharSelect();
         break;
 
     case DEMO01_SELECT:
-        Game01();
+        Game_CharSelect();
 
         if (g_state.Demo_Time_Stop) {
-            g_state.D_No[1] += 1;
-            g_state.G_No[2] = 0;
+            g_state.demo_phase[1] += 1;
+            g_state.fsm[2] = 0;
             return;
         }
 
@@ -207,10 +207,10 @@ void Demo01() {
 
     case DEMO01_COVER:
         Switch_Screen(1);
-        Game02();
+        Game_Fight();
 
         if (--g_state.Cover_Timer == 0) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
             Switch_Screen_Init(0);
             return;
         }
@@ -218,11 +218,11 @@ void Demo01() {
         break;
 
     case DEMO01_REVEAL:
-        Game02();
+        Game_Fight();
 
         if (Switch_Screen_Revival(0) != 0) {
-            g_state.D_No[1] += 1;
-            g_state.D_Timer = 1200;
+            g_state.demo_phase[1] += 1;
+            g_state.demo_timer_global = 1200;
             g_state.Stop_SG = 0;
             return;
         }
@@ -230,17 +230,17 @@ void Demo01() {
         break;
 
     case DEMO01_PLAY:
-        Game02();
+        Game_Fight();
 
-        if (--g_state.D_Timer == 1) {
+        if (--g_state.demo_timer_global == 1) {
             g_state.Stop_Combo = 1;
             g_state.Disappear_LOGO = 1;
             return;
         }
 
-        if (!g_state.D_Timer) {
-            g_state.D_No[1] += 1;
-            g_state.D_Timer = 16;
+        if (!g_state.demo_timer_global) {
+            g_state.demo_phase[1] += 1;
+            g_state.demo_timer_global = 16;
             g_state.Demo_Time_Stop = 1;
             g_state.Game_pause = 1;
             return;
@@ -249,10 +249,10 @@ void Demo01() {
         break;
 
     case DEMO01_PAUSE:
-        Game02();
+        Game_Fight();
 
-        if (--g_state.D_Timer == 0) {
-            g_state.D_No[1] += 1;
+        if (--g_state.demo_timer_global == 0) {
+            g_state.demo_phase[1] += 1;
             Switch_Screen_Init(0);
             SsBgmFadeOut(0x800);
             return;
@@ -261,10 +261,10 @@ void Demo01() {
         break;
 
     case DEMO01_FADE_OUT:
-        Game02();
+        Game_Fight();
 
         if (Switch_Screen(0) != 0) {
-            g_state.D_No[1] += 1;
+            g_state.demo_phase[1] += 1;
             g_state.Cover_Timer = 23;
             BGM_Stop();
             return;

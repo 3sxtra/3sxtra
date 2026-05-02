@@ -5,13 +5,13 @@
  * Implements the on_enter, on_tick, and on_exit callbacks for
  * MENU_SCREEN_RANKING.
  *
- * Two ranking flows exist, selected by g_state.D_No[0] at the time Ranking() is
+ * Two ranking flows exist, selected by g_state.demo_phase[0] at the time Ranking() is
  * called:
- *   g_state.D_No[0]==0  →  Ranking_01 path (attract-mode ranking)
- *   g_state.D_No[0]==1  →  Ranking_00 path (post-game ranking)
+ *   g_state.demo_phase[0]==0  →  Ranking_Display path (attract-mode ranking)
+ *   g_state.demo_phase[0]==1  →  Ranking_ScoreEntry path (post-game ranking)
  *
- * The callbacks delegate to the existing Ranking_00() / Ranking_01()
- * dispatchers which manage their own phase state via g_state.D_No[]. The
+ * The callbacks delegate to the existing Ranking_ScoreEntry() / Ranking_Display()
+ * dispatchers which manage their own phase state via g_state.demo_phase[]. The
  * MenuScreen layer only handles the lifecycle gate (enter→active→exit).
  */
 
@@ -28,13 +28,13 @@ static void ms_ranking_enter(struct _TASK* tp) {
 
 static void ms_ranking_tick(struct _TASK* tp) {
     /*
-     * Delegate to the legacy dispatchers. They manage their own g_state.D_No[]
+     * Delegate to the legacy dispatchers. They manage their own g_state.demo_phase[]
      * state and set g_state.Ranking_X = 1 when complete.
      */
-    if (g_state.D_No[0] == 1) {
-        Ranking_00();
+    if (g_state.demo_phase[0] == 1) {
+        Ranking_ScoreEntry();
     } else {
-        Ranking_01();
+        Ranking_Display();
     }
 
     /* When the legacy code signals completion, request exit */

@@ -21,7 +21,7 @@ void Bg_Kakikae_Set() {
 
     switch (g_state.bg_w.stage) {
     case 3:
-        g_state.tokusyu_stage = 1;
+        g_state.special_stage = 1;
         g_state.stage_flash = 0;
         g_state.stage_ftimer = 0;
         g_state.rw_dat->rwd_ptr = g_state.rw_dat->brw_ptr = (s16*)rw30;
@@ -46,14 +46,14 @@ void Bg_Kakikae_Set() {
         break;
 
     case 10:
-        g_state.tokusyu_stage = 2;
+        g_state.special_stage = 2;
         g_state.yang_ix = 0;
         g_state.yang_ix_plus = 0;
         g_state.yang_timer = 4;
         break;
 
     case 19:
-        g_state.tokusyu_stage = 3;
+        g_state.special_stage = 3;
         g_state.stage_flash = 0;
         g_state.stage_ftimer = 2;
         g_state.rw_dat->rwd_ptr = g_state.rw_dat->brw_ptr = (s16*)rw190;
@@ -75,9 +75,9 @@ void Bg_Kakikae_Set() {
 
     default:
         if (g_state.bg_w.stage == 7) {
-            g_state.tokusyu_stage = 4;
+            g_state.special_stage = 4;
         } else {
-            g_state.tokusyu_stage = 0;
+            g_state.special_stage = 0;
         }
 
         g_state.rw_num = 0;

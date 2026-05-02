@@ -44,8 +44,10 @@ extern "C" void rmlui_pause_overlay_init(void) {
 
     ctor.BindFunc("pause_player", [](Rml::Variant& v) { v = (int)g_state.Pause_ID; });
     ctor.BindFunc("pause_visible", [](Rml::Variant& v) { v = (bool)(g_state.Pause_Down != 0); });
-    ctor.BindFunc("pause_label", [](Rml::Variant& v) { v = Rml::String(g_state.Pause_ID == 0 ? "1P PAUSE" : "2P PAUSE"); });
-    ctor.BindFunc("ctrl_disconnected", [](Rml::Variant& v) { v = (bool)(g_state.Pause_Down != 0 && g_state.Pause_Type == 2); });
+    ctor.BindFunc("pause_label",
+                  [](Rml::Variant& v) { v = Rml::String(g_state.Pause_ID == 0 ? "1P PAUSE" : "2P PAUSE"); });
+    ctor.BindFunc("ctrl_disconnected",
+                  [](Rml::Variant& v) { v = (bool)(g_state.Pause_Down != 0 && g_state.Pause_Type == 2); });
     ctor.BindFunc("disconnect_port", [](Rml::Variant& v) { v = (int)(g_state.Pause_ID + 1); });
 
     s_model_handle = ctor.GetModelHandle();

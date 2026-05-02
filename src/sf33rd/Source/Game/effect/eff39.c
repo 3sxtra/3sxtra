@@ -88,7 +88,8 @@ static void EFF39_SLIDE_IN(WORK_Other* ewk) {
         if (ewk->master_id) {
             ewk->wu.mvxy.a[0].sp = -0xF0000;
             ewk->wu.mvxy.d[0].sp = 0;
-            ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 0);
+            ewk->wu.hit_quake =
+                g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 0);
             ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake + 256;
             ewk->wu.xyz[1].disp.pos =
                 g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_Pos39(ewk, ewk->wu.dir_step, 1);
@@ -214,7 +215,8 @@ static void EFF39_MOVE(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dir_step != g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
+        if (ewk->wu.dir_step !=
+            g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
             ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
             ewk->wu.dir_step += chkNameAkuma(ewk->wu.dir_step, 9);
             ewk->wu.xyz[0].disp.pos =

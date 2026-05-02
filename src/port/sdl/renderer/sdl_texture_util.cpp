@@ -173,11 +173,15 @@ static void texutil_gpu_free(void* texture_id) {
 static void texutil_gpu_get_size(void* texture_id, int* w, int* h) {
     GPUTextureMetadata* meta = get_gpu_metadata(texture_id);
     if (meta) {
-        if (w) *w = meta->w;
-        if (h) *h = meta->h;
+        if (w)
+            *w = meta->w;
+        if (h)
+            *h = meta->h;
     } else {
-        if (w) *w = 0;
-        if (h) *h = 0;
+        if (w)
+            *w = 0;
+        if (h)
+            *h = 0;
     }
 }
 
@@ -221,8 +225,10 @@ static void texutil_sdl2d_get_size(void* texture_id, int* w, int* h) {
     if (w || h) {
         float fw, fh;
         SDL_GetTextureSize(tex, &fw, &fh);
-        if (w) *w = (int)fw;
-        if (h) *h = (int)fh;
+        if (w)
+            *w = (int)fw;
+        if (h)
+            *h = (int)fh;
     }
 }
 
@@ -273,17 +279,23 @@ static void texutil_gl_get_size(void* texture_id, int* w, int* h) {
     GLuint id = (GLuint)(intptr_t)texture_id;
     if (g_renderer_caps.has_get_tex_level_param) {
         glBindTexture(GL_TEXTURE_2D, id);
-        if (w) glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, w);
-        if (h) glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, h);
+        if (w)
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, w);
+        if (h)
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, h);
     } else {
         /* GLES doesn't have glGetTexLevelParameteriv — use cached sizes */
         auto it = s_gles_texture_sizes.find(id);
         if (it != s_gles_texture_sizes.end()) {
-            if (w) *w = it->second.first;
-            if (h) *h = it->second.second;
+            if (w)
+                *w = it->second.first;
+            if (h)
+                *h = it->second.second;
         } else {
-            if (w) *w = 0;
-            if (h) *h = 0;
+            if (w)
+                *w = 0;
+            if (h)
+                *h = 0;
         }
     }
 }
@@ -298,23 +310,23 @@ static void texutil_gl_shutdown(void) {
 
 static const TextureUtilVtable s_vtable_gpu = {
     .LoadFromSurface = texutil_gpu_load_from_surface,
-    .Free            = texutil_gpu_free,
-    .GetSize         = texutil_gpu_get_size,
-    .Shutdown        = texutil_gpu_shutdown,
+    .Free = texutil_gpu_free,
+    .GetSize = texutil_gpu_get_size,
+    .Shutdown = texutil_gpu_shutdown,
 };
 
 static const TextureUtilVtable s_vtable_sdl2d = {
     .LoadFromSurface = texutil_sdl2d_load_from_surface,
-    .Free            = texutil_sdl2d_free,
-    .GetSize         = texutil_sdl2d_get_size,
-    .Shutdown        = texutil_sdl2d_shutdown,
+    .Free = texutil_sdl2d_free,
+    .GetSize = texutil_sdl2d_get_size,
+    .Shutdown = texutil_sdl2d_shutdown,
 };
 
 static const TextureUtilVtable s_vtable_gl = {
     .LoadFromSurface = texutil_gl_load_from_surface,
-    .Free            = texutil_gl_free,
-    .GetSize         = texutil_gl_get_size,
-    .Shutdown        = texutil_gl_shutdown,
+    .Free = texutil_gl_free,
+    .GetSize = texutil_gl_get_size,
+    .Shutdown = texutil_gl_shutdown,
 };
 
 /* ================================================================
@@ -326,11 +338,17 @@ const TextureUtilVtable* g_texture_util = NULL;
 void TextureUtilVtable_Init(void) {
     RendererBackend r = SDLApp_GetRenderer();
     switch (r) {
-    case RENDERER_SDLGPU:        g_texture_util = &s_vtable_gpu;   break;
-    case RENDERER_SDL2D:         /* FALLTHROUGH */
-    case RENDERER_SDL2D_CLASSIC: g_texture_util = &s_vtable_sdl2d; break;
-    case RENDERER_OPENGL:        /* FALLTHROUGH */
-    default:                     g_texture_util = &s_vtable_gl;    break;
+    case RENDERER_SDLGPU:
+        g_texture_util = &s_vtable_gpu;
+        break;
+    case RENDERER_SDL2D: /* FALLTHROUGH */
+    case RENDERER_SDL2D_CLASSIC:
+        g_texture_util = &s_vtable_sdl2d;
+        break;
+    case RENDERER_OPENGL: /* FALLTHROUGH */
+    default:
+        g_texture_util = &s_vtable_gl;
+        break;
     }
     assert(g_texture_util && "TextureUtilVtable_Init: vtable not set");
 }
@@ -371,8 +389,10 @@ extern "C" void* TextureUtil_LoadScaled(const char* filename, float scale) {
     if (scale < 1.0f && scale > 0.0f && converted->w > 1 && converted->h > 1) {
         int new_w = (int)(converted->w * scale + 0.5f);
         int new_h = (int)(converted->h * scale + 0.5f);
-        if (new_w < 1) new_w = 1;
-        if (new_h < 1) new_h = 1;
+        if (new_w < 1)
+            new_w = 1;
+        if (new_h < 1)
+            new_h = 1;
 
         SDL_Surface* scaled = SDL_CreateSurface(new_w, new_h, SDL_PIXELFORMAT_RGBA32);
         if (scaled != NULL) {
@@ -395,8 +415,10 @@ extern "C" void TextureUtil_Free(void* texture_id) {
 
 extern "C" void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
     if (!texture_id) {
-        if (w) *w = 0;
-        if (h) *h = 0;
+        if (w)
+            *w = 0;
+        if (h)
+            *h = 0;
         return;
     }
     g_texture_util->GetSize(texture_id, w, h);
@@ -404,7 +426,8 @@ extern "C" void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
 
 extern "C" bool TextureUtil_GetGPUMetadata(void* texture_id, GPUTextureMetadataC* out_meta) {
     GPUTextureMetadata* meta = get_gpu_metadata(texture_id);
-    if (!meta) return false;
+    if (!meta)
+        return false;
     out_meta->texture = (void*)meta->texture;
     out_meta->w = meta->w;
     out_meta->h = meta->h;

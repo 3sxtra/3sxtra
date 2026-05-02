@@ -31,12 +31,12 @@ extern "C" {
 #pragma pack(push, 1)
 typedef struct MenuBridgeState {
     /* === NAVIGATION STATE === */
-    uint8_t nav_G_No[4];       /* Main game state: [major, sub1, sub2, sub3] */
-    uint8_t nav_S_No[4];       /* Selection state machine */
-    uint8_t nav_Play_Type;     /* 0=Arcade, 1=Versus, 2=Training */
-    uint8_t nav_Play_Game;     /* 0=in menus, 1-2=in gameplay */
-    uint8_t nav_My_char[2];    /* COMMITTED selected characters [P1, P2] */
-    uint8_t nav_Super_Arts[2]; /* Selected super arts [P1, P2] */
+    uint8_t nav_fsm[4];          /* Main game state: [major, sub1, sub2, sub3] */
+    uint8_t nav_select_phase[4]; /* Selection state machine */
+    uint8_t nav_Play_Type;       /* 0=Arcade, 1=Versus, 2=Training */
+    uint8_t nav_Play_Game;       /* 0=in menus, 1-2=in gameplay */
+    uint8_t nav_My_char[2];      /* COMMITTED selected characters [P1, P2] */
+    uint8_t nav_Super_Arts[2];   /* Selected super arts [P1, P2] */
 
     /* Real-time cursor feedback */
     int8_t nav_Cursor_X[2];    /* Grid X */
@@ -59,8 +59,8 @@ typedef struct MenuBridgeState {
     /* SA cursor position (0=SA1, 1=SA2, 2=SA3) — populated from Arts_Y[] */
     int8_t nav_Cursor_SA[2];
 
-    /* Screen sub-state (for FIGHT banner detection: C_No[0]==1, C_No[1]==4) */
-    uint8_t nav_C_No[4];
+    /* Screen sub-state (for FIGHT banner detection: manage_phase[0]==1, manage_phase[1]==4) */
+    uint8_t nav_manage_phase[4];
 
     /* Step-mode control (for frame-precise replay injection) */
     uint8_t step_mode_active; /* 1=game waits for step_requested each frame */
@@ -68,7 +68,7 @@ typedef struct MenuBridgeState {
     uint8_t selfplay_active;  /* 1=inject P2 inputs during gameplay too */
 
     /* === FORCE MATCH INJECTION === */
-    uint8_t force_match_active; /* 1=Python requests immediate Jump to Game2_0 */
+    uint8_t force_match_active; /* 1=Python requests immediate Jump to Game_Fight_Sub0 */
     uint8_t fm_p1_char;
     uint8_t fm_p2_char;
     uint8_t fm_p1_sa;

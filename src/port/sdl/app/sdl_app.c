@@ -164,7 +164,11 @@ static void App_RenderCompositionPass_GL(int pass_index, void* user_data, int vp
     int tex_w = 384 * g_resolution_scale;
     int tex_h = 224 * g_resolution_scale;
     TransientTexture* comp_tex = SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_COMPOSITION, tex_w, tex_h);
-    GLuint comp_fbo = ((struct { GLuint fbo; GLuint texture; }*)comp_tex->backend_handle)->fbo;
+    GLuint comp_fbo = ((struct {
+                           GLuint fbo;
+                           GLuint texture;
+                       }*)comp_tex->backend_handle)
+                          ->fbo;
 
     // 1. Bind Composition FBO
     glBindFramebuffer(GL_FRAMEBUFFER, comp_fbo);
@@ -209,7 +213,7 @@ static void App_RenderCompositionPass_GL(int pass_index, void* user_data, int vp
 static void App_RenderLibrashaderPass_GL(int pass_index, void* user_data, int vp_x, int vp_y, int vp_w, int vp_h) {
     int tex_w = 384 * g_resolution_scale;
     int tex_h = 224 * g_resolution_scale;
-    
+
     // We bind backbuffer before calling Librashader
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(vp_x, vp_y, vp_w, vp_h);
@@ -219,10 +223,14 @@ static void App_RenderLibrashaderPass_GL(int pass_index, void* user_data, int vp
     // If composition ran, we use TRANSIENT_TEXTURE_COMPOSITION, otherwise cps3_canvas_texture directly
     bool modded_active_lr = ModdedStage_IsActiveForCurrentStage();
     GLuint source_tex = cps3_canvas_texture;
-    
+
     if (modded_active_lr && !mods_menu_shader_bypass_enabled) {
         TransientTexture* comp_tex = SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_COMPOSITION, tex_w, tex_h);
-        source_tex = ((struct { GLuint fbo; GLuint texture; }*)comp_tex->backend_handle)->texture;
+        source_tex = ((struct {
+                          GLuint fbo;
+                          GLuint texture;
+                      }*)comp_tex->backend_handle)
+                         ->texture;
     }
 
     if (modded_active_lr && mods_menu_shader_bypass_enabled) {
@@ -234,7 +242,10 @@ static void App_RenderLibrashaderPass_GL(int pass_index, void* user_data, int vp
                               (void*)(intptr_t)source_tex,
                               384, // FORCE native resolution width
                               224, // FORCE native resolution height
-                              vp_x, vp_y, vp_w, vp_h);
+                              vp_x,
+                              vp_y,
+                              vp_w,
+                              vp_h);
 
     if (modded_active_lr && mods_menu_shader_bypass_enabled) {
         glDisable(GL_BLEND);
@@ -308,7 +319,7 @@ static void App_RenderLibrashaderPass_GPU(int pass_index, void* user_data, int v
     SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
     SDL_GPUTexture* canvas = SDLGameRendererGPU_GetCanvasTexture();
     SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
-    
+
     // Clear swapchain to black for letterbox bars
     SDL_GPUColorTargetInfo clear_target;
     SDL_zero(clear_target);
@@ -317,7 +328,8 @@ static void App_RenderLibrashaderPass_GPU(int pass_index, void* user_data, int v
     clear_target.store_op = SDL_GPU_STOREOP_STORE;
     clear_target.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
     SDL_GPURenderPass* clear_pass = SDL_BeginGPURenderPass(cb, &clear_target, 1, NULL);
-    if (clear_pass) SDL_EndGPURenderPass(clear_pass);
+    if (clear_pass)
+        SDL_EndGPURenderPass(clear_pass);
 
     TransientTexture* lr_tex = SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_LIBRASHADER, vp_w, vp_h);
     SDL_GPUTexture* lr_gpu_tex = (SDL_GPUTexture*)lr_tex->backend_handle;
@@ -332,15 +344,19 @@ static void App_RenderLibrashaderPass_GPU(int pass_index, void* user_data, int v
                                           swapchain,
                                           384, // FORCE native resolution width
                                           224, // FORCE native resolution height
-                                          vp_w, vp_h, win_w, win_h,
-                                          vp_x, vp_y);
+                                          vp_w,
+                                          vp_h,
+                                          win_w,
+                                          win_h,
+                                          vp_x,
+                                          vp_y);
 }
 
 static void App_RenderBlitPass_GPU(int pass_index, void* user_data, int vp_x, int vp_y, int vp_w, int vp_h) {
     SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
     SDL_GPUTexture* canvas = SDLGameRendererGPU_GetCanvasTexture();
     SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
-    
+
     bool modded_active = ModdedStage_IsActiveForCurrentStage();
     if (modded_active) {
         // Clear swapchain to black for letterbox bars
@@ -351,7 +367,8 @@ static void App_RenderBlitPass_GPU(int pass_index, void* user_data, int vp_x, in
         clear_target.store_op = SDL_GPU_STOREOP_STORE;
         clear_target.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
         SDL_GPURenderPass* clear_pass = SDL_BeginGPURenderPass(cb, &clear_target, 1, NULL);
-        if (clear_pass) SDL_EndGPURenderPass(clear_pass);
+        if (clear_pass)
+            SDL_EndGPURenderPass(clear_pass);
 
         SDLGameRenderer_ExecutePass(1, vp_x, vp_y, vp_w, vp_h);
         SDLGameRenderer_ExecutePass(2, vp_x, vp_y, vp_w, vp_h);
@@ -397,7 +414,8 @@ static void App_UpdateRenderGraph(RendererBackend backend) {
         if (lr_active && !skip_librashader) {
             if (modded_active && !mods_menu_shader_bypass_enabled) {
                 // Need composition + librashader
-                TransientTexture* comp_tex = SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_COMPOSITION, tex_w, tex_h);
+                TransientTexture* comp_tex =
+                    SDLGameRenderer_GetTransientTexture(TRANSIENT_TEXTURE_COMPOSITION, tex_w, tex_h);
                 g_render_passes.passes[1].framebuffer = comp_tex->backend_handle;
                 g_render_passes.passes[3].skip_this_frame = false;
                 g_render_passes.passes[3].execute_callback = App_RenderCompositionPass_GL;
@@ -1650,7 +1668,7 @@ void SDLApp_EndFrame() {
         if (SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager()) {
             // Update passes for Librashader
         }
-        
+
         // Execute FrameGraph dynamically!
         App_UpdateRenderGraph(RENDERER_OPENGL);
         RenderGraph_Execute((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h);

@@ -678,14 +678,14 @@ static s16 remake_x_mvstep(s16 mvstep) {
 
 /** @brief Set or release a fixed vertical position for the camera. */
 void Bg_Y_Sitei(u8 on_off, s16 pos) {
-    g_state.y_sitei_flag = on_off;
+    g_state.y_fixed_flag = on_off;
 
     if (on_off == 0) {
-        g_state.y_sitei_pos = 0;
+        g_state.y_fixed_pos = 0;
         return;
     }
 
-    g_state.y_sitei_pos = pos;
+    g_state.y_fixed_pos = pos;
 }
 
 /** @brief Check and apply base vertical scroll boundaries. */
@@ -693,8 +693,8 @@ void bg_base_y_move_check() {
     s32 pos_w, kake;
     s16 hi_pos;
 
-    if (g_state.y_sitei_flag == 1) {
-        hi_pos = g_state.y_sitei_pos;
+    if (g_state.y_fixed_flag == 1) {
+        hi_pos = g_state.y_fixed_pos;
     } else {
         if (g_state.bg_stop)
             goto end;
@@ -803,7 +803,7 @@ void zoom_ud_check() {
 
     work2 = g_state.zoom_request_flag & ZOOM_LEVEL_MASK;
     g_state.bg_w.frame_deff = ZOOM_FRAME_DEFAULT - g_state.zoom_request_level;
-    work = (~(g_state.zoom_req_flag_old) & (g_state.zoom_request_flag)&ZOOM_LEVEL_MASK);
+    work = (~(g_state.zoom_req_flag_old) & (g_state.zoom_request_flag) & ZOOM_LEVEL_MASK);
 
     if (work && !g_state.bg_w.frame_flag) {
         g_state.bg_w.frame_flag = 1;
@@ -1138,10 +1138,10 @@ void bg_initialize() {
     g_state.bg_w.bg_index = bg_index_tbl[g_state.bg_w.stage][g_state.bg_w.area];
     g_state.bg_w.scno = use_scr[g_state.bg_w.bg_index];
     g_state.bg_w.scrno = use_real_scr[g_state.bg_w.bg_index];
-    g_state.y_sitei_flag = 0;
-    g_state.y_sitei_pos = 0;
+    g_state.y_fixed_flag = 0;
+    g_state.y_fixed_pos = 0;
 
-    if (g_state.G_No[0] != 2 || g_state.G_No[1] != 2 || g_state.G_No[2] != 2) {
+    if (g_state.fsm[0] != 2 || g_state.fsm[1] != 2 || g_state.fsm[2] != 2) {
         Bg_Texture_Load_EX();
     }
 
@@ -1236,8 +1236,9 @@ void bg_etc_write(s16 type) {
     for (i = 0; i < 7; i++) {
         g_state.bg_w.bgw[i].pos_x_work = 0;
         g_state.bg_w.bgw[i].pos_y_work = 0;
-        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[1].cal = g_state.bg_w.bgw[i].wxy[0].cal =
-            g_state.bg_w.bgw[i].xy[1].cal = g_state.bg_w.bgw[i].xy[0].cal = g_state.bg_w.bgw[i].zuubun = 0;
+        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[1].cal =
+            g_state.bg_w.bgw[i].wxy[0].cal = g_state.bg_w.bgw[i].xy[1].cal = g_state.bg_w.bgw[i].xy[0].cal =
+                g_state.bg_w.bgw[i].zuubun = 0;
         g_state.bg_w.bgw[i].rewrite_flag = 0;
         g_state.bg_w.bgw[i].fam_no = i;
         g_state.bg_w.bgw[i].speed_y = g_state.bg_w.bgw[i].speed_x = 0;
@@ -1255,8 +1256,10 @@ void bg_etc_write(s16 type) {
     g_state.bg_w.quake_y_index = 0;
 
     for (i = 0; i < g_state.bg_w.scno; i++) {
-        g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[0].cal = g_state.bg_w.bgw[i].xy[0].cal = bg_pos_tbl2[type][i][0];
-        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].wxy[1].cal = g_state.bg_w.bgw[i].xy[1].cal = bg_pos_tbl2[type][i][1];
+        g_state.bg_w.bgw[i].hos_xy[0].cal = g_state.bg_w.bgw[i].wxy[0].cal = g_state.bg_w.bgw[i].xy[0].cal =
+            bg_pos_tbl2[type][i][0];
+        g_state.bg_w.bgw[i].hos_xy[1].cal = g_state.bg_w.bgw[i].wxy[1].cal = g_state.bg_w.bgw[i].xy[1].cal =
+            bg_pos_tbl2[type][i][1];
         g_state.bg_w.bgw[i].pos_y_work = g_state.bg_w.bgw[i].xy[1].disp.pos;
         g_state.bg_w.bgw[i].old_pos_x = g_state.bg_w.bgw[i].pos_x_work = g_state.bg_w.bgw[i].xy[0].disp.pos;
         g_state.bg_w.bgw[i].speed_x = msp2[type][i][0];

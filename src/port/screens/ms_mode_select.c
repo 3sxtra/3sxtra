@@ -87,10 +87,10 @@ static void mode_select_enter(struct _TASK* task_ptr) {
     g_state.Present_Mode = 1;
 
     if (!Task_IsActive(TASK_ENTRY)) {
-        g_state.E_No[0] = 1;
-        g_state.E_No[1] = 2;
-        g_state.E_No[2] = 2;
-        g_state.E_No[3] = 0;
+        g_state.entry_phase[0] = 1;
+        g_state.entry_phase[1] = 2;
+        g_state.entry_phase[2] = 2;
+        g_state.entry_phase[3] = 0;
         cpReadyTask(TASK_ENTRY, Entry_Task);
     }
 
@@ -194,7 +194,7 @@ static void mode_select_tick(struct _TASK* task_ptr) {
         NativeUI_Header(MENU_HEADER_MODE_MENU);
 
         if (NativeUI_Button("ARCADE")) {
-            g_state.G_No[2] += 1;
+            g_state.fsm[2] += 1;
             g_state.Mode_Type = MODE_ARCADE;
             task_ptr->r_no[0] = 5;
             cpExitTask(TASK_SAVER);
@@ -205,8 +205,8 @@ static void mode_select_tick(struct _TASK* task_ptr) {
 
         if (NativeUI_ButtonEx("VS MODE", g_state.Connect_Status == 0)) {
             Setup_VS_Mode(task_ptr);
-            g_state.G_No[1] = 12;
-            g_state.G_No[2] = 1;
+            g_state.fsm[1] = 12;
+            g_state.fsm[2] = 1;
             g_state.Mode_Type = MODE_VERSUS;
             cpExitTask(TASK_MENU);
             NativeUI_Clear();

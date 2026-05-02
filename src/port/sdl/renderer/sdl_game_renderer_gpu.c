@@ -45,7 +45,6 @@ SDL_GPUTransferBuffer* transfer_buffers[VERTEX_TRANSFER_BUFFER_COUNT] = { NULL }
 SDL_GPUTransferBuffer* index_transfer_buffer = NULL;
 int current_transfer_idx = 0;
 
-
 SDL_GPUTransferBuffer* s_compute_staging_buffer = NULL;
 u8* s_compute_staging_ptr = NULL;
 size_t s_compute_staging_offset = 0;
@@ -187,7 +186,10 @@ void SDLGameRendererGPU_BeginFrame(void) {
     s_compute_staging_offset = 0;
 
     vertex_count = 0;
-    for (int p = 0; p < 8; p++) { memset(&pass_state[p], 0, sizeof(PassRecordingState)); pass_state[p].last_submitted_z = -1e30f; }
+    for (int p = 0; p < 8; p++) {
+        memset(&pass_state[p], 0, sizeof(PassRecordingState));
+        pass_state[p].last_submitted_z = -1e30f;
+    }
     s_sort_inversions = 0;
     s_last_submitted_z = -1e30f;
     texture_count = 0;
@@ -251,7 +253,8 @@ static void stable_sort_quads(int p) {
             quad_order[p][i] = i;
         }
 
-        radix_sort_render_task_indices(quad_order[p], quad_z_values[p], pass_state[p].quad_count, radix_keys[p], radix_scratch[p]);
+        radix_sort_render_task_indices(
+            quad_order[p], quad_z_values[p], pass_state[p].quad_count, radix_keys[p], radix_scratch[p]);
 
         for (unsigned int i = 0; i < pass_state[p].quad_count; i++) {
             quad_sort_temp[p][i] = pass_state[p].sort_keys[quad_order[p][i]];
@@ -291,7 +294,7 @@ void SDLGameRendererGPU_RenderFrame(void) {
         int sort_job_count = 0;
         for (int p = 0; p < 3; p++) {
             if (pass_state[p].quad_count > 1) {
-                sort_jobs[sort_job_count++] = (RenderJob){ .pass_index = p, .fn = sort_pass_job, .userdata = NULL };
+                sort_jobs[sort_job_count++] = (RenderJob) { .pass_index = p, .fn = sort_pass_job, .userdata = NULL };
             }
         }
         if (sort_job_count > 0) {
@@ -543,7 +546,9 @@ void SDLGameRendererGPU_RenderFrame(void) {
 
                             if (overlay_changed) {
                                 current_overlay = this_overlay;
-                                tex_bindings[2].texture = current_overlay ? current_overlay : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
+                                tex_bindings[2].texture =
+                                    current_overlay ? current_overlay
+                                                    : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
                                 tex_bindings[2].sampler = sampler;
                                 SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
                             }
@@ -575,9 +580,10 @@ void SDLGameRendererGPU_ExecutePass(int pass_index, int viewport_x, int viewport
         // Optional: clear to black if it's the composition pass, but the pass properties should control this
         color_target.load_op = g_render_passes.passes[p].clear_color ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD;
         uint32_t cv = g_render_passes.passes[p].clear_color_value;
-        color_target.clear_color = (SDL_FColor){ 
-            ((cv >> 24) & 0xFF)/255.0f, ((cv >> 16) & 0xFF)/255.0f, ((cv >> 8) & 0xFF)/255.0f, (cv & 0xFF)/255.0f 
-        };
+        color_target.clear_color = (SDL_FColor) { ((cv >> 24) & 0xFF) / 255.0f,
+                                                  ((cv >> 16) & 0xFF) / 255.0f,
+                                                  ((cv >> 8) & 0xFF) / 255.0f,
+                                                  (cv & 0xFF) / 255.0f };
     } else {
         color_target.texture = s_swapchain_texture;
         color_target.load_op = SDL_GPU_LOADOP_LOAD;
@@ -630,7 +636,8 @@ void SDLGameRendererGPU_ExecutePass(int pass_index, int viewport_x, int viewport
 
         // Compute index buffer offset: pass 0's quads come first, then pass 1, then pass 2
         unsigned int pass_index_offset = pass_state[0].quad_count;
-        if (p == 2) pass_index_offset += pass_state[1].quad_count;
+        if (p == 2)
+            pass_index_offset += pass_state[1].quad_count;
 
         unsigned int draw_start = 0;
         SDL_GPUTexture* current_overlay = (SDL_GPUTexture*)-1;
@@ -652,7 +659,8 @@ void SDLGameRendererGPU_ExecutePass(int pass_index, int viewport_x, int viewport
             if (qi == pass_state[p].quad_count || blend_changed || overlay_changed) {
                 unsigned int segment_quads = qi - draw_start;
                 if (segment_quads > 0 && current_overlay != NULL && current_overlay != (SDL_GPUTexture*)-1) {
-                    SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1, (pass_index_offset + draw_start) * 6, 0, 0);
+                    SDL_DrawGPUIndexedPrimitives(
+                        pass, segment_quads * 6, 1, (pass_index_offset + draw_start) * 6, 0, 0);
                 }
 
                 if (qi < pass_state[p].quad_count) {
@@ -663,7 +671,9 @@ void SDLGameRendererGPU_ExecutePass(int pass_index, int viewport_x, int viewport
 
                     if (overlay_changed) {
                         current_overlay = this_overlay;
-                        tex_bindings[2].texture = current_overlay ? current_overlay : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
+                        tex_bindings[2].texture = current_overlay
+                                                      ? current_overlay
+                                                      : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
                         tex_bindings[2].sampler = sampler;
                         SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
                     }
@@ -1235,8 +1245,8 @@ void SDLGameRendererGPU_DrawOverlayQuadEx(void* texture, float x, float y, float
     if (!TextureUtil_GetGPUMetadata(texture, &meta))
         return;
     if (meta.w > 512 || meta.h > 512) {
-        SDLGameRendererGPU_QueueDeferredBlit((SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, z, flip_x,
-                                             flip_y);
+        SDLGameRendererGPU_QueueDeferredBlit(
+            (SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, z, flip_x, flip_y);
     } else {
         SDLGameRendererGPU_DrawOverlaySpriteEx(meta.pixels, meta.w, meta.h, x, y, w, h, z, flip_x, flip_y);
     }
@@ -1248,8 +1258,8 @@ void SDLGameRendererGPU_DrawOverlaySubQuadEx(void* texture, float x, float y, fl
     if (!TextureUtil_GetGPUMetadata(texture, &meta))
         return;
     if (meta.w > 512 || meta.h > 512) {
-        SDLGameRendererGPU_QueueDeferredSubBlit((SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, u0, v0, u1,
-                                                v1, z);
+        SDLGameRendererGPU_QueueDeferredSubBlit(
+            (SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, u0, v0, u1, v1, z);
     } else {
         SDLGameRendererGPU_DrawOverlaySubSprite(meta.pixels, meta.w, meta.h, x, y, w, h, u0, v0, u1, v1, z);
     }
@@ -1260,7 +1270,8 @@ void SDLGameRendererGPU_DrawOverlaySubQuadEx(void* texture, float x, float y, fl
 // ==============================================================================
 
 void* SDLGameRendererGPU_CreateTransientRenderTarget(int width, int height) {
-    if (!device || !gpu_window) return NULL;
+    if (!device || !gpu_window)
+        return NULL;
 
     SDL_GPUTextureCreateInfo tex_info;
     SDL_zero(tex_info);
@@ -1271,13 +1282,14 @@ void* SDLGameRendererGPU_CreateTransientRenderTarget(int width, int height) {
     tex_info.layer_count_or_depth = 1;
     tex_info.num_levels = 1;
     tex_info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
-    
+
     SDL_GPUTexture* tex = SDL_CreateGPUTexture(device, &tex_info);
     return tex;
 }
 
 void SDLGameRendererGPU_DestroyTransientRenderTarget(void* handle) {
-    if (!handle || !device) return;
+    if (!handle || !device)
+        return;
     SDL_GPUTexture* tex = (SDL_GPUTexture*)handle;
     SDL_ReleaseGPUTexture(device, tex);
 }

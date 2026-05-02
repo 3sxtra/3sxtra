@@ -144,8 +144,8 @@ static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         offset_x = ewk->master_id * 192;
-        ewk->wu.xyz[0].disp.pos =
-            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_23[ewk->wu.dir_step][0] + 384 + offset_x;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                  Slide_Pos_Data_23[ewk->wu.dir_step][0] + 384 + offset_x;
         ewk->wu.xyz[1].disp.pos =
             g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Slide_Pos_Data_23[ewk->wu.dir_step][1];
         ewk->wu.position_z = 68;

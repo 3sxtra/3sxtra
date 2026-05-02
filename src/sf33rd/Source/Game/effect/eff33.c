@@ -35,7 +35,8 @@ void effect_33_move(WORK_Other* ewk) {
         suzi_sync_pos_set(ewk);
         sort_push_request(&ewk->wu);
 
-        if (g_state.EXE_flag || g_state.Game_pause || g_state.pcon_rno[2] != 1 || g_state.Event_Judge_Gals != -1 || !g_state.Complete_Judgement) {
+        if (g_state.EXE_flag || g_state.Game_pause || g_state.pcon_rno[2] != 1 || g_state.Event_Judge_Gals != -1 ||
+            !g_state.Complete_Judgement) {
             break;
         }
 

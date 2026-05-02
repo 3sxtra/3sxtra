@@ -45,50 +45,50 @@
 #include "sf33rd/Source/Game/ui/count.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-static void Game_Manage_1st();
+static void Manage_MatchInit();
 static void Clear_1Stage_Work();
-static void Game_Manage_2nd();
-static void Game_Manage_2_0();
-static void Game_Manage_2_1();
-static void Game_Manage_2_2();
-static void Game_Manage_2_3();
-static void Game_Manage_2_4();
-static void Game_Manage_3rd();
+static void Manage_PreRound();
+static void Manage_PreRound_Phase0();
+static void Manage_PreRound_Phase1();
+static void Manage_PreRound_Phase2();
+static void Manage_PreRound_Phase3();
+static void Manage_PreRound_Phase4();
+static void Manage_DemoConclusion();
 static void setFinishType();
-static void Game_Manage_4th();
-static void Game_Manage_5th();
-static void Game_Manage_5_0();
-static void Game_Manage_5_1();
-static void Game_Manage_5_2();
-static void Game_Manage_5_3();
-static void Game_Manage_5_4();
-static void Game_Manage_5_5();
-static void Game_Manage_5_6();
-static void Game_Manage_5_7();
-static void Game_Manage_6th();
-static void Game_Manage_7th();
-static void Game_Manage_7_0();
-static void Game_Manage_7_1();
-static void Game_Manage_7_2();
+static void Manage_RoundConclusion();
+static void Manage_JudgementGals();
+static void Manage_JudgementGals_Phase0();
+static void Manage_JudgementGals_Phase1();
+static void Manage_JudgementGals_Phase2();
+static void Manage_JudgementGals_Phase3();
+static void Manage_JudgementGals_Phase4();
+static void Manage_JudgementGals_Phase5();
+static void Manage_JudgementGals_Phase6();
+static void Manage_JudgementGals_Phase7();
+static void Manage_PostRoundGrade();
+static void Manage_VictorySequence();
+static void Manage_VictorySequence_Phase0();
+static void Manage_VictorySequence_Phase1();
+static void Manage_VictorySequence_Phase2();
 static s32 Check_Disp_Combo();
-static void Game_Manage_7_3();
-static void Game_Manage_7_4();
-static void Game_Manage_7_5();
-static void Game_Manage_7_6();
-static void Game_Manage_7_7();
-static void Game_Manage_7_8();
-static void Game_Manage_7_9();
-static void Game_Manage_8th();
-static void Game_Manage_8_0();
-static void Game_Manage_8_1();
-static void Game_Manage_81_0();
-static void Game_Manage_81_1();
-static void Game_Manage_81_2();
-static void Game_Manage_81_3();
-static void Game_Manage_8_2();
-static void Game_Manage_8_3();
-static void Game_Manage_9th();
-static void Game_Manage_10th();
+static void Manage_VictorySequence_Phase3();
+static void Manage_VictorySequence_Phase4();
+static void Manage_VictorySequence_Phase5();
+static void Manage_VictorySequence_Phase6();
+static void Manage_VictorySequence_Phase7();
+static void Manage_VictorySequence_Phase8();
+static void Manage_VictorySequence_Phase9();
+static void Manage_MatchResult();
+static void Manage_MatchResult_Phase0();
+static void Manage_MatchResult_Phase1();
+static void Manage_MatchResult_Sub0();
+static void Manage_MatchResult_Sub1();
+static void Manage_MatchResult_Sub2();
+static void Manage_MatchResult_Sub3();
+static void Manage_MatchResult_Phase2();
+static void Manage_MatchResult_Phase3();
+static void Manage_NextRound();
+static void Manage_PostMatch();
 static void Check_Naming(s16 PL_id);
 static s32 Check_Ending();
 static s32 Check_Ending_Sub();
@@ -120,16 +120,16 @@ static void Judge_Winner();
 static s32 Check_Disp_Winner();
 static void Check_Fade_Out_BGM(s16 Time);
 static s32 Check_BI_Grade(s16 PL_id);
-static void Game_Manage_11th();
-static void Game_Manage_12th();
-static void Game_Manage_12_0();
-static void Game_Manage_12_1();
-static void Game_Manage_12_2();
-static void Game_Manage_12_3();
-static void Game_Manage_12_4();
-static void Game_Manage_12_5();
-static void Game_Manage_12_7();
-static void Game_Manage_12_8();
+static void Manage_BonusStageInit();
+static void Manage_BonusStageResult();
+static void Manage_BonusStageResult_Phase0();
+static void Manage_BonusStageResult_Phase1();
+static void Manage_BonusStageResult_Phase2();
+static void Manage_BonusStageResult_Phase3();
+static void Manage_BonusStageResult_Phase4();
+static void Manage_BonusStageResult_Phase5();
+static void Manage_BonusStageResult_Phase7();
+static void Manage_BonusStageResult_Phase8();
 static u8 Check_Bonus_Perfect();
 static void Disp_Bonus_Perfect();
 static void Flash_Bonus_Perfect();
@@ -137,7 +137,7 @@ static u32 Setup_Final_Score(s16 Type);
 static s32 Bonus_Cut_Sub();
 static s16 Check_Time_Over();
 void complete_victory_pause();
-static void Game_Manage_13th();
+static void Manage_TrainingReset();
 
 u8 Disp_Bonus_Contents;
 s8 MANAGE_X;
@@ -148,7 +148,7 @@ const u8 BIC_SA_Data[2][4] = { { 3, 5, 7, 9 }, { 1, 1, 1, 1 } };
 
 const u32 Ball_Perfect_PTS[2][5] = { { 20000, 30000, 50000, 80000, 120000 }, { 10000, 20000, 40000, 80000, 160000 } };
 
-/** @brief Main match management dispatcher — routes to the current management phase via g_state.C_No[0]. */
+/** @brief Main match management dispatcher — routes to the current management phase via g_state.manage_phase[0]. */
 s32 Game_Management() {
     if (g_state.Break_Into) {
         return 0;
@@ -156,45 +156,45 @@ s32 Game_Management() {
 
     MANAGE_X = 0;
 
-    switch (g_state.C_No[0]) {
+    switch (g_state.manage_phase[0]) {
     case 0:
-        Game_Manage_1st();
+        Manage_MatchInit();
         break;
     case 1:
-        Game_Manage_2nd();
+        Manage_PreRound();
         break;
     case 2:
-        Game_Manage_3rd();
+        Manage_DemoConclusion();
         break;
     case 3:
-        Game_Manage_4th();
+        Manage_RoundConclusion();
         break;
     case 4:
-        Game_Manage_5th();
+        Manage_JudgementGals();
         break;
     case 5:
-        Game_Manage_6th();
+        Manage_PostRoundGrade();
         break;
     case 6:
-        Game_Manage_7th();
+        Manage_VictorySequence();
         break;
     case 7:
-        Game_Manage_8th();
+        Manage_MatchResult();
         break;
     case 8:
-        Game_Manage_9th();
+        Manage_NextRound();
         break;
     case 9:
-        Game_Manage_10th();
+        Manage_PostMatch();
         break;
     case 10:
-        Game_Manage_11th();
+        Manage_BonusStageInit();
         break;
     case 11:
-        Game_Manage_12th();
+        Manage_BonusStageResult();
         break;
     case 12:
-        Game_Manage_13th();
+        Manage_TrainingReset();
         break;
     default:
         break;
@@ -206,20 +206,20 @@ s32 Game_Management() {
 }
 
 /** @brief Phase 1: Match initialization — clears work, starts appear sequence, sets up operators. */
-static void Game_Manage_1st() {
+static void Manage_MatchInit() {
     Switch_Screen(0);
     g_state.EXE_obroll = 0;
 
     if (g_state.bg_w.stage == 21 || g_state.bg_w.stage == 20) {
-        g_state.C_No[0] = 11;
+        g_state.manage_phase[0] = 11;
     } else {
-        g_state.C_No[0] = 1;
+        g_state.manage_phase[0] = 1;
     }
 
     appear_work_clear();
     g_state.win_sp_flag = 0;
-    g_state.BGM_No[1] = 0;
-    g_state.BGM_No[0] = 0;
+    g_state.BGmessage_phase[1] = 0;
+    g_state.BGmessage_phase[0] = 0;
     g_state.Appear_Q = 0;
     Clear_1Stage_Work();
     All_Clear_Suicide();
@@ -241,7 +241,7 @@ static void Game_Manage_1st() {
 
     if (g_state.Play_Type == 0) {
         g_state.Control_Time = g_state.SC_Personal_Time[g_state.Player_id];
-        g_state.paring_ctr_ori[g_state.Player_id] = g_state.paring_ctr_vs[0][g_state.Player_id] = 0;
+        g_state.parry_ctr_ori[g_state.Player_id] = g_state.parry_ctr_vs[0][g_state.Player_id] = 0;
         g_state.Stage_Stock_Score[g_state.Player_id] = g_state.Score[g_state.Player_id][0];
         g_state.Request_Disp_Rank[g_state.COM_id][0] = -1;
         g_state.Request_Disp_Rank[g_state.COM_id][1] = -1;
@@ -264,7 +264,8 @@ static void Game_Manage_1st() {
     grade_check_work_stage_init(0);
     grade_check_work_stage_init(1);
 
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
         cpReadyTask(TASK_MENU, Menu_Task);
         MenuTask_SetPhase(MTP_IN_GAME);
         g_state.plw[g_state.New_Challenger].wu.pl_operator = 0;
@@ -299,22 +300,22 @@ static void Clear_1Stage_Work() {
 }
 
 /** @brief Phase 2 dispatcher: pre-round setup (screen switch, round init, appear wait). */
-static void Game_Manage_2nd() {
-    switch (g_state.C_No[1]) {
+static void Manage_PreRound() {
+    switch (g_state.manage_phase[1]) {
     case 0:
-        Game_Manage_2_0();
+        Manage_PreRound_Phase0();
         break;
     case 1:
-        Game_Manage_2_1();
+        Manage_PreRound_Phase1();
         break;
     case 2:
-        Game_Manage_2_2();
+        Manage_PreRound_Phase2();
         break;
     case 3:
-        Game_Manage_2_3();
+        Manage_PreRound_Phase3();
         break;
     case 4:
-        Game_Manage_2_4();
+        Manage_PreRound_Phase4();
         break;
     default:
         break;
@@ -322,13 +323,13 @@ static void Game_Manage_2nd() {
 }
 
 /** @brief Phase 2.0: Wait for cover timer and seek time before round start. */
-static void Game_Manage_2_0() {
+static void Manage_PreRound_Phase0() {
     Switch_Screen(0);
     g_state.request_message = 0;
     g_state.SA_shadow_on = 0;
 
     if (g_state.Demo_Flag == 0) {
-        g_state.C_No[1] = 2;
+        g_state.manage_phase[1] = 2;
         return;
     }
 
@@ -341,7 +342,7 @@ static void Game_Manage_2_0() {
         return;
     }
 
-    g_state.C_No[1]++;
+    g_state.manage_phase[1]++;
     Switch_Screen_Init(0);
 }
 
@@ -398,26 +399,27 @@ s32 Wait_Seek_Time() {
 }
 
 /** @brief Phase 2.1: Wait for screen revival and training menu readiness. */
-static void Game_Manage_2_1() {
-    switch (g_state.C_No[2]) {
+static void Manage_PreRound_Phase1() {
+    switch (g_state.manage_phase[2]) {
     case 0:
         if (!Switch_Screen_Revival(0)) {
             break;
         }
 
-        if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
-            g_state.C_No[2]++;
+        if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+            g_state.Mode_Type == MODE_TRIALS) {
+            g_state.manage_phase[2]++;
             break;
         }
 
-        g_state.C_No[1]++;
+        g_state.manage_phase[1]++;
 
         break;
 
     case 1:
         if (MenuTask_GetPhase() == MTP_TRAINING) {
-            g_state.C_No[1]++;
-            g_state.C_No[2] = 0;
+            g_state.manage_phase[1]++;
+            g_state.manage_phase[2] = 0;
         }
 
         break;
@@ -425,7 +427,7 @@ static void Game_Manage_2_1() {
 }
 
 /** @brief Phase 2.2: Initialize round state — clear suicides, reset flags, init grade work. */
-static void Game_Manage_2_2() {
+static void Manage_PreRound_Phase2() {
     s16 ix;
 
     g_state.Suicide[0] = 0;
@@ -439,7 +441,7 @@ static void Game_Manage_2_2() {
         return;
     }
 
-    g_state.C_No[1]++;
+    g_state.manage_phase[1]++;
     g_state.Forbid_Break = 0;
     g_state.Extra_Break = 0;
     g_state.Complete_Victory = 0;
@@ -469,7 +471,7 @@ static void Game_Manage_2_2() {
 }
 
 /** @brief Phase 2.3: Wait for character appear animations to complete. */
-static void Game_Manage_2_3() {
+static void Manage_PreRound_Phase3() {
     if (g_state.Appear_end < 2) {
         return;
     }
@@ -489,7 +491,7 @@ static void Game_Manage_2_3() {
         return;
     }
 
-    g_state.C_No[1]++;
+    g_state.manage_phase[1]++;
 
     if (Is_Training_Mode(g_state.Mode_Type)) {
         g_state.Next_Step = 1;
@@ -499,16 +501,16 @@ static void Game_Manage_2_3() {
 }
 
 /** @brief Phase 2.4: Cockpit fade-in, then transition to fighting phase. */
-static void Game_Manage_2_4() {
-    switch (g_state.C_No[2]) {
+static void Manage_PreRound_Phase4() {
+    switch (g_state.manage_phase[2]) {
     case 0:
         if (g_state.Round_num) {
-            g_state.C_No[2] = 3;
+            g_state.manage_phase[2] = 3;
             return;
         }
 
-        g_state.C_No[2]++;
-        g_state.C_Timer = 3;
+        g_state.manage_phase[2]++;
+        g_state.manage_timer = 3;
         g_state.Forbid_Break = 1;
         FadeInit();
         FadeOut(0, 0xFF, 8);
@@ -533,15 +535,15 @@ static void Game_Manage_2_4() {
     case 1:
         FadeOut(0, 0xFF, 8);
 
-        if (--g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
+        if (--g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
             Clear_Flash_No();
         }
 
         break;
 
     case 2:
-        g_state.C_No[2]++;
+        g_state.manage_phase[2]++;
         g_state.Forbid_Break = 0;
         break;
 
@@ -550,15 +552,16 @@ static void Game_Manage_2_4() {
             break;
         }
 
-        g_state.C_No[0]++;
-        g_state.C_No[1] = 0;
-        g_state.C_No[2] = 0;
+        g_state.manage_phase[0]++;
+        g_state.manage_phase[1] = 0;
+        g_state.manage_phase[2] = 0;
         g_state.Allow_a_battle_f = 1;
         g_state.vital_inc_timer = 50;
         g_state.vital_dec_timer = 40;
         g_state.sag_inc_timer[0] = g_state.sag_inc_timer[1] = 0;
 
-        if (g_state.Play_Type == 0 && (g_state.EM_id == 0 || (g_state.My_char[g_state.Player_id] == 0 && g_state.EM_id == 1)) &&
+        if (g_state.Play_Type == 0 &&
+            (g_state.EM_id == 0 || (g_state.My_char[g_state.Player_id] == 0 && g_state.EM_id == 1)) &&
             !(g_state.Introduce_Boss[g_state.Player_id][1] & 0x80)) {
             g_state.Introduce_Boss[g_state.Player_id][1] |= 128;
             Check_Stage_BGM();
@@ -573,7 +576,7 @@ static void Game_Manage_2_4() {
 }
 
 /** @brief Phase 3: Check for round conclusion during demo playback. */
-static void Game_Manage_3rd() {
+static void Manage_DemoConclusion() {
     if (g_state.Demo_Flag == 0) {
         return;
     }
@@ -582,7 +585,7 @@ static void Game_Manage_3rd() {
         return;
     }
 
-    g_state.C_No[0]++;
+    g_state.manage_phase[0]++;
     g_state.Forbid_Break = -1;
     g_state.Allow_a_battle_f = 0;
     g_state.count_end = 1;
@@ -591,8 +594,10 @@ static void Game_Manage_3rd() {
 
 /** @brief Determines finish type and updates break-in term data. */
 static void setFinishType() {
-    if (g_state.Play_Type == 0 && g_state.Mode_Type == MODE_ARCADE && g_state.PL_Wins[g_state.Winner_id] >= CurrentSave()->Battle_Number[g_state.Play_Type] &&
-        g_state.VS_Index[g_state.Winner_id] > 8 && g_state.plw[g_state.Winner_id].wu.pl_operator != 0 && g_state.E_Number[g_state.Loser_id][0] != 2) {
+    if (g_state.Play_Type == 0 && g_state.Mode_Type == MODE_ARCADE &&
+        g_state.PL_Wins[g_state.Winner_id] >= CurrentSave()->Battle_Number[g_state.Play_Type] &&
+        g_state.VS_Index[g_state.Winner_id] > 8 && g_state.plw[g_state.Winner_id].wu.pl_operator != 0 &&
+        g_state.E_Number[g_state.Loser_id][0] != 2) {
         g_state.E_Number[g_state.Loser_id][0] = 99;
     }
 
@@ -600,10 +605,10 @@ static void setFinishType() {
 }
 
 /** @brief Phase 4: Process round conclusion — KO, draw, or time-over routing. */
-static void Game_Manage_4th() {
+static void Manage_RoundConclusion() {
     switch (g_state.Conclusion_Type) {
     case 0:
-        g_state.C_No[0] = 6;
+        g_state.manage_phase[0] = 6;
         Setup_Win_Mark();
         Check_Perfect(g_state.Winner_id);
         setFinishType();
@@ -618,11 +623,11 @@ static void Game_Manage_4th() {
         SsRequest(139);
 
         if (Judge_Next_Disposal()) {
-            g_state.C_No[0] = 4;
+            g_state.manage_phase[0] = 4;
             break;
         }
 
-        g_state.C_No[0] = 5;
+        g_state.manage_phase[0] = 5;
         g_state.Round_Result |= 1024;
         setFinishType();
         g_state.win_type[0][g_state.PL_Wins[0]] = 5;
@@ -652,7 +657,7 @@ static void Game_Manage_4th() {
 
         if (g_state.plw[0].wu.vital_new != g_state.plw[1].wu.vital_new || g_state.Mode_Type == MODE_NORMAL_TRAINING ||
             g_state.Mode_Type == MODE_PARRY_TRAINING) {
-            g_state.C_No[0] = 6;
+            g_state.manage_phase[0] = 6;
             g_state.Round_Result |= 1;
             setFinishType();
             g_state.win_type[g_state.Winner_id][g_state.PL_Wins[g_state.Winner_id]] = 1;
@@ -664,69 +669,69 @@ static void Game_Manage_4th() {
             break;
         }
 
-        g_state.C_No[0] = 4;
+        g_state.manage_phase[0] = 4;
         break;
     }
 }
 
 /** @brief Phase 5 dispatcher: complete victory (judgement gals) sequence. */
-static void Game_Manage_5th() {
-    switch (g_state.C_No[1]) {
+static void Manage_JudgementGals() {
+    switch (g_state.manage_phase[1]) {
     case 0:
-        Game_Manage_5_0();
+        Manage_JudgementGals_Phase0();
         break;
     case 1:
-        Game_Manage_5_1();
+        Manage_JudgementGals_Phase1();
         break;
     case 2:
-        Game_Manage_5_2();
+        Manage_JudgementGals_Phase2();
         break;
     case 3:
-        Game_Manage_5_3();
+        Manage_JudgementGals_Phase3();
         break;
     case 4:
-        Game_Manage_5_4();
+        Manage_JudgementGals_Phase4();
         break;
     case 5:
-        Game_Manage_5_5();
+        Manage_JudgementGals_Phase5();
         break;
     case 6:
-        Game_Manage_5_6();
+        Manage_JudgementGals_Phase6();
         break;
     case 7:
-        Game_Manage_5_7();
+        Manage_JudgementGals_Phase7();
         break;
     default:
         break;
     }
 }
 
-static void Game_Manage_5_0() {
+static void Manage_JudgementGals_Phase0() {
     if (g_state.Complete_Victory) {
-        g_state.C_No[1]++;
-        g_state.C_Timer = 30;
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 30;
         g_state.Event_Judge_Gals = 0;
     }
 }
 
-static void Game_Manage_5_1() {
-    if (Button_Cut_EX(&g_state.C_Timer, 10)) {
-        g_state.C_No[1]++;
+static void Manage_JudgementGals_Phase1() {
+    if (Button_Cut_EX(&g_state.manage_timer, 10)) {
+        g_state.manage_phase[1]++;
         request_center_message(3);
         SsRequest(154);
     }
 }
 
-static void Game_Manage_5_2() {
+static void Manage_JudgementGals_Phase2() {
     if (!g_state.request_message) {
-        g_state.C_No[1]++;
-        g_state.C_Timer = 30;
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 30;
     }
 }
 
-static void Game_Manage_5_3() {
-    if (Button_Cut_EX(&g_state.C_Timer, 10)) {
-        g_state.C_No[1]++;
+static void Manage_JudgementGals_Phase3() {
+    if (Button_Cut_EX(&g_state.manage_timer, 10)) {
+        g_state.manage_phase[1]++;
         Judge_Winner();
         chkComWins();
         g_state.Stop_Combo = 1;
@@ -735,9 +740,9 @@ static void Game_Manage_5_3() {
     }
 }
 
-static void Game_Manage_5_4() {
+static void Manage_JudgementGals_Phase4() {
     if (Switch_Screen(0)) {
-        g_state.C_No[1]++;
+        g_state.manage_phase[1]++;
         g_state.Cover_Timer = 5;
         g_state.Suicide[6] = 1;
         g_state.judge_flag = 1;
@@ -751,11 +756,11 @@ static void Game_Manage_5_4() {
     }
 }
 
-static void Game_Manage_5_5() {
+static void Manage_JudgementGals_Phase5() {
     Switch_Screen(0);
 
     if (--g_state.Cover_Timer == 0) {
-        g_state.C_No[1]++;
+        g_state.manage_phase[1]++;
         g_state.pcon_rno[1] = 3;
         g_state.pcon_rno[2] = 1;
         Clear_Flash_No();
@@ -763,29 +768,29 @@ static void Game_Manage_5_5() {
     }
 }
 
-static void Game_Manage_5_6() {
+static void Manage_JudgementGals_Phase6() {
     if (Switch_Screen_Revival(0)) {
-        g_state.C_No[1]++;
-        g_state.C_Timer = 60;
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 60;
         g_state.Stop_SG = 0;
-        g_state.BGM_No[0] = 3;
+        g_state.BGmessage_phase[0] = 3;
         g_state.BGM_Timer[0] = 1;
     }
 }
 
-static void Game_Manage_5_7() {
-    if (--g_state.C_Timer != 0) {
+static void Manage_JudgementGals_Phase7() {
+    if (--g_state.manage_timer != 0) {
         return;
     }
 
     if (Wait_Seek_Time() == 0) {
-        g_state.C_Timer = 1;
+        g_state.manage_timer = 1;
         return;
     }
 
-    g_state.C_No[0] = 6;
-    g_state.C_No[1] = 7;
-    g_state.C_Timer = 30;
+    g_state.manage_phase[0] = 6;
+    g_state.manage_phase[1] = 7;
+    g_state.manage_timer = 30;
     g_state.Fade_Half_Flag = 1;
     g_state.Complete_Judgement = 1;
     g_state.Round_Result |= 0x8000;
@@ -798,21 +803,21 @@ static void Game_Manage_5_7() {
 }
 
 /** @brief Phase 6: Post-round cleanup — grade calculation, advance to next round or training end. */
-static void Game_Manage_6th() {
-    switch (g_state.C_No[1]) {
+static void Manage_PostRoundGrade() {
+    switch (g_state.manage_phase[1]) {
     case 0:
         if (!g_state.Complete_Victory) {
             break;
         }
 
-        g_state.C_No[1]++;
-        g_state.C_Timer = 60;
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 60;
         g_state.pcon_rno[1] = 3;
         g_state.pcon_rno[2] = 0;
         grade_makeup_round_para_dko();
 
-        if (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS &&
-            omop_cockpit) {
+        if (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
+            g_state.Mode_Type != MODE_TRIALS && omop_cockpit) {
             effect_58_init(6, 1, g_state.Winner_id + 100);
             effect_92_init(0, g_state.PL_Wins[0] - 1);
             effect_92_init(1, g_state.PL_Wins[1] - 1);
@@ -822,18 +827,19 @@ static void Game_Manage_6th() {
         break;
 
     case 1:
-        if (--g_state.C_Timer != 0) {
+        if (--g_state.manage_timer != 0) {
             break;
         }
 
-        if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
-            g_state.C_No[0] = 12;
+        if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+            g_state.Mode_Type == MODE_TRIALS) {
+            g_state.manage_phase[0] = 12;
             g_state.End_Training = 1;
             break;
         }
 
-        g_state.C_No[0] = 7;
-        g_state.C_No[1] = 0;
+        g_state.manage_phase[0] = 7;
+        g_state.manage_phase[1] = 0;
         g_state.Round_num++;
         Quick_Entry();
         break;
@@ -841,83 +847,83 @@ static void Game_Manage_6th() {
 }
 
 /** @brief Phase 7 dispatcher: win presentation, winner display, perfect announcement. */
-static void Game_Manage_7th() {
-    switch (g_state.C_No[1]) {
+static void Manage_VictorySequence() {
+    switch (g_state.manage_phase[1]) {
     case 0:
-        Game_Manage_7_0();
+        Manage_VictorySequence_Phase0();
         break;
     case 1:
-        Game_Manage_7_1();
+        Manage_VictorySequence_Phase1();
         break;
     case 2:
-        Game_Manage_7_2();
+        Manage_VictorySequence_Phase2();
         break;
     case 3:
-        Game_Manage_7_3();
+        Manage_VictorySequence_Phase3();
         break;
     case 4:
-        Game_Manage_7_4();
+        Manage_VictorySequence_Phase4();
         break;
     case 5:
-        Game_Manage_7_5();
+        Manage_VictorySequence_Phase5();
         break;
     case 6:
-        Game_Manage_7_6();
+        Manage_VictorySequence_Phase6();
         break;
     case 7:
-        Game_Manage_7_7();
+        Manage_VictorySequence_Phase7();
         break;
     case 8:
-        Game_Manage_7_8();
+        Manage_VictorySequence_Phase8();
         break;
     case 9:
-        Game_Manage_7_9();
+        Manage_VictorySequence_Phase9();
         break;
     default:
         break;
     }
 }
 
-static void Game_Manage_7_0() {
+static void Manage_VictorySequence_Phase0() {
     if (!g_state.Complete_Victory) {
         return;
     }
 
-    g_state.C_No[1]++;
-    g_state.C_Timer = 1;
+    g_state.manage_phase[1]++;
+    g_state.manage_timer = 1;
     grade_makeup_round_parameter(g_state.Winner_id);
 
-    if (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS &&
-        omop_cockpit) {
+    if (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
+        g_state.Mode_Type != MODE_TRIALS && omop_cockpit) {
         effect_58_init(6, 1, g_state.Winner_id + 100);
         effect_92_init(g_state.Winner_id, g_state.PL_Wins[g_state.Winner_id] - 1);
     }
 }
 
-static void Game_Manage_7_1() {
-    if (--g_state.C_Timer == 0) {
-        g_state.C_No[1]++;
-        g_state.C_Timer = 10;
+static void Manage_VictorySequence_Phase1() {
+    if (--g_state.manage_timer == 0) {
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 10;
     }
 }
 
-static void Game_Manage_7_2() {
-    if (!Button_Cut_EX(&g_state.C_Timer, 0x7FFF)) {
+static void Manage_VictorySequence_Phase2() {
+    if (!Button_Cut_EX(&g_state.manage_timer, 0x7FFF)) {
         return;
     }
 
     if (Check_Disp_Combo()) {
-        g_state.C_Timer = 1;
+        g_state.manage_timer = 1;
         return;
     }
 
-    g_state.C_No[1]++;
+    g_state.manage_phase[1]++;
 
     if (Check_Disp_Winner() == 0) {
-        g_state.C_Timer = 50;
+        g_state.manage_timer = 50;
     } else {
         Disp_Winner();
-        g_state.C_Timer = 90;
+        g_state.manage_timer = 90;
     }
 
     if (g_state.Round_Operator[g_state.Winner_id] == 0 && g_state.Perfect_Flag == 0) {
@@ -937,106 +943,107 @@ static s32 Check_Disp_Combo() {
     return 0;
 }
 
-static void Game_Manage_7_3() {
+static void Manage_VictorySequence_Phase3() {
     if (g_state.Play_Type == 0 && g_state.Perfect_Flag == 0) {
-        if (--g_state.C_Timer) {
+        if (--g_state.manage_timer) {
             return;
         }
     } else {
-        if (--g_state.C_Timer) {
+        if (--g_state.manage_timer) {
             return;
         }
     }
 
     g_state.Message_Suicide[1] = 1;
 
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
-        g_state.C_No[0] = 12;
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
+        g_state.manage_phase[0] = 12;
         g_state.End_Training = 1;
         return;
     }
 
     if (g_state.Perfect_Flag) {
-        g_state.C_No[1]++;
-        g_state.C_Timer = 10;
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 10;
         return;
     }
 
-    g_state.C_No[0]++;
-    g_state.C_No[1] = 0;
+    g_state.manage_phase[0]++;
+    g_state.manage_phase[1] = 0;
     g_state.Event_Judge_Gals = -1;
 }
 
-static void Game_Manage_7_4() {
-    if (--g_state.C_Timer == 0) {
-        g_state.C_No[1]++;
+static void Manage_VictorySequence_Phase4() {
+    if (--g_state.manage_timer == 0) {
+        g_state.manage_phase[1]++;
         request_center_message(4);
         effect_58_init(6, 1, 155);
         effect_58_init(6, 60, 156);
     }
 }
 
-static void Game_Manage_7_5() {
+static void Manage_VictorySequence_Phase5() {
     if (!g_state.request_message) {
-        g_state.C_No[1]++;
-        g_state.C_Timer = 6;
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 6;
         g_state.Event_Judge_Gals = -1;
     }
 }
 
-static void Game_Manage_7_6() {
+static void Manage_VictorySequence_Phase6() {
     if (g_state.Scene_Cut) {
-        g_state.C_Timer = 1;
+        g_state.manage_timer = 1;
     }
 
-    if (--g_state.C_Timer == 0) {
-        g_state.C_No[0]++;
-        g_state.C_No[1] = 0;
+    if (--g_state.manage_timer == 0) {
+        g_state.manage_phase[0]++;
+        g_state.manage_phase[1] = 0;
     }
 }
 
-static void Game_Manage_7_7() {
-    if (--g_state.C_Timer == 0) {
-        g_state.C_No[1]++;
+static void Manage_VictorySequence_Phase7() {
+    if (--g_state.manage_timer == 0) {
+        g_state.manage_phase[1]++;
         g_state.Event_Judge_Gals = 3;
     }
 }
 
-static void Game_Manage_7_8() {
+static void Manage_VictorySequence_Phase8() {
     if (g_state.Event_Judge_Gals == 0) {
-        g_state.C_No[1]++;
-        g_state.C_Timer = 30;
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 30;
         Ck_Win_Record();
     }
 }
 
-static void Game_Manage_7_9() {
-    if (--g_state.C_Timer == 0) {
-        g_state.C_No[1] = 0;
+static void Manage_VictorySequence_Phase9() {
+    if (--g_state.manage_timer == 0) {
+        g_state.manage_phase[1] = 0;
     }
 }
 
 /** @brief Phase 8 dispatcher: post-match score tallying and bonus display. */
-static void Game_Manage_8th() {
-    switch (g_state.C_No[1]) {
+static void Manage_MatchResult() {
+    switch (g_state.manage_phase[1]) {
     case 0:
-        Game_Manage_8_0();
+        Manage_MatchResult_Phase0();
         break;
     case 1:
-        Game_Manage_8_1();
+        Manage_MatchResult_Phase1();
         break;
     case 2:
-        Game_Manage_8_2();
+        Manage_MatchResult_Phase2();
         break;
     case 3:
-        Game_Manage_8_3();
+        Manage_MatchResult_Phase3();
         break;
     default:
         break;
     }
 }
 
-static void Game_Manage_8_0() {
+static void Manage_MatchResult_Phase0() {
     g_state.Round_num++;
     Quick_Entry();
     g_state.Stop_Update_Score = 1;
@@ -1045,7 +1052,7 @@ static void Game_Manage_8_0() {
         Pool_Score(g_state.Winner_id);
 
         if (g_state.PL_Wins[g_state.Winner_id] >= CurrentSave()->Battle_Number[g_state.Play_Type] + 1) {
-            g_state.C_No[1]++;
+            g_state.manage_phase[1]++;
             Additional_Bonus(g_state.WINNER);
             grade_makeup_stage_parameter(g_state.WINNER);
             grade_makeup_stage_parameter(g_state.LOSER);
@@ -1053,13 +1060,13 @@ static void Game_Manage_8_0() {
             return;
         }
 
-        g_state.C_No[1] = 3;
-        g_state.C_Timer = 1;
+        g_state.manage_phase[1] = 3;
+        g_state.manage_timer = 1;
         return;
     }
 
-    g_state.C_No[1] = 3;
-    g_state.C_Timer = 30;
+    g_state.manage_phase[1] = 3;
+    g_state.manage_timer = 30;
 
     if (g_state.PL_Wins[g_state.Winner_id] >= CurrentSave()->Battle_Number[g_state.Play_Type] + 1) {
         grade_makeup_stage_parameter(g_state.WINNER);
@@ -1067,33 +1074,33 @@ static void Game_Manage_8_0() {
     }
 }
 
-static void Game_Manage_8_1() {
-    switch (g_state.C_No[2]) {
+static void Manage_MatchResult_Phase1() {
+    switch (g_state.manage_phase[2]) {
     case 0:
-        Game_Manage_81_0();
+        Manage_MatchResult_Sub0();
         break;
     case 1:
-        Game_Manage_81_1();
+        Manage_MatchResult_Sub1();
         break;
     case 2:
-        Game_Manage_81_2();
+        Manage_MatchResult_Sub2();
         break;
     case 3:
-        Game_Manage_81_3();
+        Manage_MatchResult_Sub3();
         break;
     default:
         break;
     }
 }
 
-static void Game_Manage_81_0() {
+static void Manage_MatchResult_Sub0() {
     s16 time;
     s16 pos_id;
     s16 pos_id2;
 
     Check_Fade_Out_BGM(546);
-    g_state.C_No[2]++;
-    g_state.C_Timer = 20;
+    g_state.manage_phase[2]++;
+    g_state.manage_timer = 20;
     g_state.Forbid_Break = -1;
     pos_id = 0;
     pos_id2 = 0;
@@ -1137,23 +1144,23 @@ static void Game_Manage_81_0() {
     effect_G0_init(80, time, g_state.Complete_Bonus, pos_id2);
 }
 
-static void Game_Manage_81_1() {
+static void Manage_MatchResult_Sub1() {
     if (g_state.Order_Dir[80] == 0) {
-        g_state.C_No[2]++;
-        g_state.C_Timer = 20;
+        g_state.manage_phase[2]++;
+        g_state.manage_timer = 20;
     }
 }
 
-static void Game_Manage_81_2() {
+static void Manage_MatchResult_Sub2() {
     if (g_state.Scene_Cut) {
-        g_state.C_Timer = 1;
+        g_state.manage_timer = 1;
     }
 
-    if (--g_state.C_Timer != 0) {
+    if (--g_state.manage_timer != 0) {
         return;
     }
 
-    g_state.C_No[2]++;
+    g_state.manage_phase[2]++;
     g_state.Stop_Update_Score = 0;
     g_state.Order_Dir[80] = 1;
     g_state.Order[81] = 1;
@@ -1163,24 +1170,24 @@ static void Game_Manage_81_2() {
     Sound_SE(100);
 }
 
-static void Game_Manage_81_3() {
+static void Manage_MatchResult_Sub3() {
     if (g_state.Order_Dir[80] == 0) {
-        g_state.C_No[1]++;
-        g_state.C_No[2] = 0;
-        g_state.C_Timer = 50;
+        g_state.manage_phase[1]++;
+        g_state.manage_phase[2] = 0;
+        g_state.manage_timer = 50;
     }
 }
 
-static void Game_Manage_8_2() {
+static void Manage_MatchResult_Phase2() {
     if (g_state.Request_Break[g_state.Winner_id ^ 1]) {
-        g_state.C_Timer = 1;
+        g_state.manage_timer = 1;
     }
 
     if (g_state.Scene_Cut) {
-        g_state.C_Timer = 1;
+        g_state.manage_timer = 1;
     }
 
-    if (--g_state.C_Timer != 0) {
+    if (--g_state.manage_timer != 0) {
         return;
     }
 
@@ -1192,55 +1199,55 @@ static void Game_Manage_8_2() {
     g_state.Suicide[2] = 1;
     g_state.gauge_stop_flag[0] = 1;
     g_state.gauge_stop_flag[1] = 1;
-    g_state.C_No[0]++;
-    g_state.C_No[1] = 0;
-    g_state.C_Timer = 30;
+    g_state.manage_phase[0]++;
+    g_state.manage_phase[1] = 0;
+    g_state.manage_timer = 30;
 }
 
-static void Game_Manage_8_3() {
+static void Manage_MatchResult_Phase3() {
     if (g_state.Scene_Cut) {
-        g_state.C_Timer = 1;
+        g_state.manage_timer = 1;
     }
 
-    if (--g_state.C_Timer == 0) {
-        g_state.C_No[0]++;
-        g_state.C_No[1] = 0;
+    if (--g_state.manage_timer == 0) {
+        g_state.manage_phase[0]++;
+        g_state.manage_phase[1] = 0;
     }
 }
 
 /** @brief Phase 9: Between-round transition — screen switch, BGM restart, next round init. */
-static void Game_Manage_9th() {
-    switch (g_state.C_No[1]) {
+static void Manage_NextRound() {
+    switch (g_state.manage_phase[1]) {
     case 0:
         if (g_state.PL_Wins[g_state.Winner_id] >= CurrentSave()->Battle_Number[g_state.Play_Type] + 1) {
-            g_state.C_No[0]++;
-            g_state.C_No[1] = 0;
-            g_state.C_Timer = 75;
+            g_state.manage_phase[0]++;
+            g_state.manage_phase[1] = 0;
+            g_state.manage_timer = 75;
             cpExitTask(TASK_PAUSE);
 
             if (g_state.Play_Type != 1 && g_state.Round_Operator[g_state.WINNER] && g_state.Battle_Q[g_state.WINNER]) {
-                g_state.C_No[0] = 10;
+                g_state.manage_phase[0] = 10;
             }
 
             break;
         }
 
-        g_state.C_No[1]++;
-        g_state.C_Timer = 60;
+        g_state.manage_phase[1]++;
+        g_state.manage_timer = 60;
         g_state.Stop_Combo = 1;
         g_state.BGM_Timer[1] = 1;
         break;
 
     case 1:
         if (g_state.Scene_Cut) {
-            g_state.C_Timer = 1;
+            g_state.manage_timer = 1;
         }
 
-        if (--g_state.C_Timer > 0) {
+        if (--g_state.manage_timer > 0) {
             break;
         }
 
-        g_state.C_No[1]++;
+        g_state.manage_phase[1]++;
         g_state.Game_pause = 1;
         Switch_Screen_Init(0);
 
@@ -1252,14 +1259,14 @@ static void Game_Manage_9th() {
 
     default:
         if (Switch_Screen(0)) {
-            g_state.BGM_No[0] = 1;
+            g_state.BGmessage_phase[0] = 1;
             g_state.BGM_Timer[0] = 1;
-            g_state.G_No[2] = 5;
-            g_state.G_No[3] = 0;
-            g_state.G_Timer = 4;
+            g_state.fsm[2] = 5;
+            g_state.fsm[3] = 0;
+            g_state.fsm_timer = 4;
             g_state.Cover_Timer = 5;
-            g_state.C_No[0] = 1;
-            g_state.C_No[1] = g_state.C_No[2] = g_state.C_No[3] = 0;
+            g_state.manage_phase[0] = 1;
+            g_state.manage_phase[1] = g_state.manage_phase[2] = g_state.manage_phase[3] = 0;
             g_state.Suicide[0] = 1;
             g_state.Suicide[6] = 1;
             g_state.judge_flag = 0;
@@ -1270,11 +1277,11 @@ static void Game_Manage_9th() {
 }
 
 /** @brief Phase 10: Post-match conclusion — naming check, ending check, exit to results. */
-static void Game_Manage_10th() {
-    switch (g_state.C_No[1]) {
+static void Manage_PostMatch() {
+    switch (g_state.manage_phase[1]) {
     case 0:
-        if (Button_Cut_EX(&g_state.C_Timer, 0x7FFF)) {
-            g_state.C_No[1]++;
+        if (Button_Cut_EX(&g_state.manage_timer, 0x7FFF)) {
+            g_state.manage_phase[1]++;
             g_state.Cover_Timer = 25;
             pulpul_stop();
             g_state.Stop_Combo = 1;
@@ -1299,34 +1306,34 @@ static void Game_Manage_10th() {
             g_state.Continue_Coin2[g_state.WINNER] = 0;
 
             if (g_state.Mode_Type == MODE_VERSUS || g_state.Mode_Type == 5 || g_state.Round_Operator[g_state.WINNER]) {
-                g_state.G_No[1] = 3;
-                g_state.G_No[2] = 0;
-                g_state.G_No[3] = 0;
-                g_state.M_No[0] = 0;
-                g_state.M_No[1] = 0;
-                g_state.M_No[2] = 0;
-                g_state.M_No[3] = 0;
-                g_state.E_No[0] = 5;
-                g_state.E_No[1] = 0;
-                g_state.E_No[2] = 0;
-                g_state.E_No[3] = 0;
+                g_state.fsm[1] = 3;
+                g_state.fsm[2] = 0;
+                g_state.fsm[3] = 0;
+                g_state.message_phase[0] = 0;
+                g_state.message_phase[1] = 0;
+                g_state.message_phase[2] = 0;
+                g_state.message_phase[3] = 0;
+                g_state.entry_phase[0] = 5;
+                g_state.entry_phase[1] = 0;
+                g_state.entry_phase[2] = 0;
+                g_state.entry_phase[3] = 0;
                 Check_Ending();
                 g_state.Continue_Coin2[g_state.WINNER] = 0;
                 Clear_Flash_No();
                 break;
             }
 
-            g_state.G_No[1] = 4;
-            g_state.G_No[2] = 0;
-            g_state.G_No[3] = 0;
-            g_state.M_No[0] = 0;
-            g_state.M_No[1] = 0;
-            g_state.M_No[2] = 0;
-            g_state.M_No[3] = 0;
-            g_state.E_No[0] = 6;
-            g_state.E_No[1] = 0;
-            g_state.E_No[2] = 0;
-            g_state.E_No[3] = 0;
+            g_state.fsm[1] = 4;
+            g_state.fsm[2] = 0;
+            g_state.fsm[3] = 0;
+            g_state.message_phase[0] = 0;
+            g_state.message_phase[1] = 0;
+            g_state.message_phase[2] = 0;
+            g_state.message_phase[3] = 0;
+            g_state.entry_phase[0] = 6;
+            g_state.entry_phase[1] = 0;
+            g_state.entry_phase[2] = 0;
+            g_state.entry_phase[3] = 0;
             g_state.E_07_Flag[0] = 0;
             g_state.E_07_Flag[1] = 0;
             Clear_Flash_No();
@@ -1365,9 +1372,9 @@ static s32 Check_Ending() {
     }
 
     if (Check_Ending_Sub()) {
-        g_state.G_No[1] = 8;
-        g_state.G_No[2] = 0;
-        g_state.E_No[0] = 10;
+        g_state.fsm[1] = 8;
+        g_state.fsm[2] = 0;
+        g_state.entry_phase[0] = 10;
         g_state.Break_Com[g_state.WINNER][0] = 1;
         g_state.Extra_Break = 0;
         g_state.Pause_ID = g_state.WINNER;
@@ -1500,7 +1507,8 @@ static void Setup_Win_Mark() {
 
 /** @brief Checks if the player won with full health and sets the Perfect flag. */
 static void Check_Perfect(s16 PL_id) {
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
         return;
     }
 
@@ -1571,10 +1579,10 @@ static void Update_VS_Data() {
 
 /** @brief Handles gradual BGM fade-in after a round-ending silence. */
 static void BGM_Fade_Sub() {
-    switch (g_state.BGM_No[1]) {
+    switch (g_state.BGmessage_phase[1]) {
     case 1:
         if (--g_state.BGM_Timer[1] == 0) {
-            g_state.BGM_No[1]++;
+            g_state.BGmessage_phase[1]++;
             g_state.BGM_Timer[1] = 1;
             g_state.BGM_Vol = -128;
         }
@@ -1589,7 +1597,7 @@ static void BGM_Fade_Sub() {
             g_state.BGM_Timer[1] = 2;
 
             if (++g_state.BGM_Vol == 0) {
-                g_state.BGM_No[1] = 0;
+                g_state.BGmessage_phase[1] = 0;
             }
         }
 
@@ -1603,19 +1611,19 @@ static void BGM_Fade_Sub() {
 
 /** @brief Controls BGM playback state — delayed start, stage BGM, and victory music. */
 static void BGM_Control() {
-    switch (g_state.BGM_No[0]) {
+    switch (g_state.BGmessage_phase[0]) {
     case 0:
         return;
 
     case 1:
         if (--g_state.BGM_Timer[0] == 0) {
-            g_state.BGM_No[0]++;
+            g_state.BGmessage_phase[0]++;
         }
 
         /* fallthrough */
 
     case 2:
-        g_state.BGM_No[0] = 0;
+        g_state.BGmessage_phase[0] = 0;
 
         if (g_state.Play_Type == 0 && g_state.EM_id == 17) {
             Stage_BGM(17, g_state.Round_num);
@@ -1627,13 +1635,13 @@ static void BGM_Control() {
 
     case 3:
         if (--g_state.BGM_Timer[0] == 0) {
-            g_state.BGM_No[0]++;
+            g_state.BGmessage_phase[0]++;
         }
 
         /* fallthrough */
 
     case 4:
-        g_state.BGM_No[0] = 0;
+        g_state.BGmessage_phase[0] = 0;
         BGM_Request(56);
         break;
     }
@@ -1642,7 +1650,7 @@ static void BGM_Control() {
 /** @brief Starts a BGM fade-in from silence over the given time if music is allowed. */
 static void Setup_BGM_Fade_In(s16 Time) {
     if (!g_state.PB_Music_Off) {
-        g_state.BGM_No[1] = 1;
+        g_state.BGmessage_phase[1] = 1;
         g_state.BGM_Timer[1] = Time;
     }
 }
@@ -1811,7 +1819,8 @@ static void Update_Level_Control() {
 
 /** @brief Returns 1 if the next round should be a draw (both players at same win count at max). */
 static s32 Judge_Next_Disposal() {
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
         return 0;
     }
 
@@ -2017,7 +2026,8 @@ static void Judge_Winner() {
 
 /** @brief Returns 1 if the winner's name should be displayed on screen after the match. */
 static s32 Check_Disp_Winner() {
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
         return g_state.Disp_Win_Name = 0;
     }
 
@@ -2060,47 +2070,47 @@ static s32 Check_BI_Grade(s16 PL_id) {
 }
 
 /** @brief Phase 11: Intro sequence for rival/sub-boss encounter. */
-static void Game_Manage_11th() {
-    switch (g_state.C_No[1]) {
+static void Manage_BonusStageInit() {
+    switch (g_state.manage_phase[1]) {
     case 0:
         g_state.Forbid_Break = -1;
-        g_state.C_No[1]++;
+        g_state.manage_phase[1]++;
         g_state.EM_Rank = 2;
         g_state.Q_Country = g_state.Battle_Country;
-        g_state.C_Timer = 90;
+        g_state.manage_timer = 90;
         effect_81_init(30);
         break;
 
     case 1:
-        if (--g_state.C_Timer == 0) {
-            g_state.C_No[1]++;
-            g_state.C_Timer = 150;
-            g_state.C_Timer = 60;
+        if (--g_state.manage_timer == 0) {
+            g_state.manage_phase[1]++;
+            g_state.manage_timer = 150;
+            g_state.manage_timer = 60;
         }
 
         break;
 
     case 2:
-        if (--g_state.C_Timer == 0) {
-            g_state.C_No[1]++;
+        if (--g_state.manage_timer == 0) {
+            g_state.manage_phase[1]++;
         }
 
         break;
 
     case 3:
-        g_state.C_No[1]++;
+        g_state.manage_phase[1]++;
         Switch_Screen_Init(0);
         break;
 
     case 4:
         if (Switch_Screen(0)) {
-            g_state.G_No[1] = 11;
-            g_state.G_No[2] = 0;
-            g_state.G_No[3] = 0;
-            g_state.E_No[0] = 9;
-            g_state.E_No[1] = 0;
-            g_state.E_No[2] = 0;
-            g_state.E_No[3] = 0;
+            g_state.fsm[1] = 11;
+            g_state.fsm[2] = 0;
+            g_state.fsm[3] = 0;
+            g_state.entry_phase[0] = 9;
+            g_state.entry_phase[1] = 0;
+            g_state.entry_phase[2] = 0;
+            g_state.entry_phase[3] = 0;
             effect_work_kill_mod_plcol();
             g_state.Cover_Timer = 21;
         }
@@ -2110,37 +2120,37 @@ static void Game_Manage_11th() {
 }
 
 /** @brief Phase 12 dispatcher: bonus stage (car destruction / parry ball) management. */
-static void Game_Manage_12th() {
-    switch (g_state.C_No[1]) {
+static void Manage_BonusStageResult() {
+    switch (g_state.manage_phase[1]) {
     case 0:
-        Game_Manage_12_0();
+        Manage_BonusStageResult_Phase0();
         break;
     case 1:
-        Game_Manage_12_1();
+        Manage_BonusStageResult_Phase1();
         break;
     case 2:
-        Game_Manage_12_2();
+        Manage_BonusStageResult_Phase2();
         break;
     case 3:
-        Game_Manage_12_3();
+        Manage_BonusStageResult_Phase3();
         break;
     case 4:
-        Game_Manage_12_4();
+        Manage_BonusStageResult_Phase4();
         break;
     case 5:
-        Game_Manage_12_5();
+        Manage_BonusStageResult_Phase5();
         break;
     case 6:
-        Game_Manage_12_1();
+        Manage_BonusStageResult_Phase1();
         break; /* fallthrough from parry ball path */
     case 7:
-        Game_Manage_12_7();
+        Manage_BonusStageResult_Phase7();
         break;
     case 8:
-        Game_Manage_12_8();
+        Manage_BonusStageResult_Phase8();
         break;
     case 9:
-        Game_Manage_12_5();
+        Manage_BonusStageResult_Phase5();
         break; /* fallthrough from parry ball path */
     default:
         break;
@@ -2151,7 +2161,7 @@ static void Game_Manage_12th() {
     }
 }
 
-static void Game_Manage_12_0() {
+static void Manage_BonusStageResult_Phase0() {
     s16 ix;
 
     g_state.Suicide[0] = 0;
@@ -2162,7 +2172,7 @@ static void Game_Manage_12_0() {
         return;
     }
 
-    g_state.C_No[1]++;
+    g_state.manage_phase[1]++;
     g_state.Extra_Break = 0;
     g_state.request_message = 0;
     g_state.Complete_Victory = 0;
@@ -2192,7 +2202,7 @@ static void Game_Manage_12_0() {
     g_state.Stock_Score[g_state.Player_id] = g_state.Score[g_state.Player_id][0];
 
     if (g_state.Bonus_Type == 20) {
-        g_state.C_No[1] = 6;
+        g_state.manage_phase[1] = 6;
         g_state.Time_Stop = 1;
         g_state.Time_Over = false;
         g_state.Exit_No = 0;
@@ -2202,28 +2212,28 @@ static void Game_Manage_12_0() {
     }
 }
 
-static void Game_Manage_12_1() {
+static void Manage_BonusStageResult_Phase1() {
     bcount_cont_main();
 
     if (g_state.Next_Step != 0) {
-        g_state.C_No[1]++;
-        g_state.C_No[2] = 0;
-        g_state.C_No[3] = 0;
+        g_state.manage_phase[1]++;
+        g_state.manage_phase[2] = 0;
+        g_state.manage_phase[3] = 0;
         g_state.Allow_a_battle_f = 1;
         Disp_Bonus_Contents = 0;
     }
 }
 
-static void Game_Manage_12_2() {
+static void Manage_BonusStageResult_Phase2() {
     bcount_cont_main();
 
     if (!g_state.Bonus_Game_Complete) {
         return;
     }
 
-    g_state.C_No[1]++;
-    g_state.C_No[2] = 0;
-    g_state.C_Timer = 30;
+    g_state.manage_phase[1]++;
+    g_state.manage_phase[2] = 0;
+    g_state.manage_timer = 30;
     g_state.Allow_a_battle_f = 0;
     g_state.Forbid_Break = -1;
     g_state.Completion_Bonus[g_state.Player_id][1] = -128;
@@ -2234,20 +2244,20 @@ static void Game_Manage_12_2() {
     grade_makeup_bonus_parameter(g_state.Player_id);
 
     if (Check_Bonus_Perfect()) {
-        g_state.C_Timer = 20;
+        g_state.manage_timer = 20;
     } else {
-        g_state.C_No[1] = 4;
+        g_state.manage_phase[1] = 4;
     }
 
     cpExitTask(TASK_PAUSE);
 }
 
-static void Game_Manage_12_3() {
-    switch (g_state.C_No[2]) {
+static void Manage_BonusStageResult_Phase3() {
+    switch (g_state.manage_phase[2]) {
     case 0:
         if (Cut_Cut_C_Timer() == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 10;
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 10;
             request_center_message(4);
             effect_58_init(6, 1, 155);
             effect_58_init(6, 60, 156);
@@ -2257,38 +2267,38 @@ static void Game_Manage_12_3() {
 
     case 1:
         if (g_state.request_message == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 6;
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 6;
         }
 
         break;
 
     case 2:
-        if (--g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 20;
+        if (--g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 20;
         }
 
         break;
 
     case 3:
         if (Cut_Cut_C_Timer() == 0) {
-            g_state.C_No[1]++;
-            g_state.C_No[2] = 0;
-            g_state.C_No[3] = 0;
-            g_state.C_Timer = 30;
+            g_state.manage_phase[1]++;
+            g_state.manage_phase[2] = 0;
+            g_state.manage_phase[3] = 0;
+            g_state.manage_timer = 30;
         }
 
         break;
     }
 }
 
-static void Game_Manage_12_4() {
-    switch (g_state.C_No[2]) {
+static void Manage_BonusStageResult_Phase4() {
+    switch (g_state.manage_phase[2]) {
     case 0:
-        if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 20;
+        if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 20;
             effect_08_init(7, 0, 1, 15, 0);
             g_state.Disp_Score_Buff[0] = g_state.Bonus_Score;
             effect_14_init(0, 35, 11, 15);
@@ -2297,19 +2307,19 @@ static void Game_Manage_12_4() {
         break;
 
     case 1:
-        if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 1;
+        if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 1;
             g_state.Bonus_Score = 0;
         }
 
         break;
 
     case 2:
-        if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
+        if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
             if (g_state.Bonus_Game_result == 0 && !(g_state.PB_Status & 2)) {
-                g_state.C_No[2] = 4;
-                g_state.C_Timer = 30;
+                g_state.manage_phase[2] = 4;
+                g_state.manage_timer = 30;
                 break;
             }
 
@@ -2323,48 +2333,48 @@ static void Game_Manage_12_4() {
             }
 
             if (--g_state.Bonus_Game_result == 0) {
-                g_state.C_No[2]++;
+                g_state.manage_phase[2]++;
 
                 if (g_state.PB_Status) {
-                    g_state.C_No[3] = 1;
-                    g_state.C_Timer = 10;
+                    g_state.manage_phase[3] = 1;
+                    g_state.manage_timer = 10;
                     break;
                 }
 
-                g_state.C_No[3] = 0;
-                g_state.C_Timer = 20;
+                g_state.manage_phase[3] = 0;
+                g_state.manage_timer = 20;
                 break;
             }
 
-            g_state.C_Timer = 3;
+            g_state.manage_timer = 3;
         }
 
         break;
 
     case 3:
-        switch (g_state.C_No[3]) {
+        switch (g_state.manage_phase[3]) {
         case 0:
-            if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
-                g_state.C_No[2]++;
-                g_state.C_Timer = 30;
+            if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
+                g_state.manage_phase[2]++;
+                g_state.manage_timer = 30;
                 g_state.Bonus_Game_result = g_state.Stock_Bonus_Game_Result;
             }
 
             break;
 
         case 1:
-            if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
-                g_state.C_No[3]++;
-                g_state.C_Timer = 10;
+            if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
+                g_state.manage_phase[3]++;
+                g_state.manage_timer = 10;
                 Disp_Bonus_Perfect();
             }
 
             break;
 
         case 2:
-            if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
-                g_state.C_No[3]++;
-                g_state.C_Timer = 40;
+            if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
+                g_state.manage_phase[3]++;
+                g_state.manage_timer = 40;
 
                 if (g_state.PB_Status & 1) {
                     g_state.Score[g_state.Player_id][0] += Ball_Perfect_PTS[0][g_state.Bonus_Stage_Level];
@@ -2385,9 +2395,9 @@ static void Game_Manage_12_4() {
             break;
 
         default:
-            if (--g_state.C_Timer == 0) {
-                g_state.C_No[2]++;
-                g_state.C_Timer = 30;
+            if (--g_state.manage_timer == 0) {
+                g_state.manage_phase[2]++;
+                g_state.manage_timer = 30;
             }
 
             break;
@@ -2397,10 +2407,10 @@ static void Game_Manage_12_4() {
 
     default:
         if (Cut_Cut_C_Timer() == 0) {
-            g_state.C_No[1]++;
-            g_state.C_No[2] = 0;
-            g_state.C_No[3] = 0;
-            g_state.C_Timer = 10;
+            g_state.manage_phase[1]++;
+            g_state.manage_phase[2] = 0;
+            g_state.manage_phase[3] = 0;
+            g_state.manage_timer = 10;
             g_state.Forbid_Break = 0;
             g_state.Suicide[5] = 1;
             Check_Fade_Out_BGM(546);
@@ -2410,23 +2420,23 @@ static void Game_Manage_12_4() {
     }
 }
 
-static void Game_Manage_12_5() {
-    switch (g_state.C_No[2]) {
+static void Manage_BonusStageResult_Phase5() {
+    switch (g_state.manage_phase[2]) {
     case 0:
-        if (Debug_w[DEBUG_YOSHIZUMI_EXP] != 2 && --g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 20;
+        if (Debug_w[DEBUG_YOSHIZUMI_EXP] != 2 && --g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 20;
         }
 
         break;
 
     case 1:
         if (g_state.Scene_Cut) {
-            g_state.C_Timer = 1;
+            g_state.manage_timer = 1;
         }
 
-        if (--g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
+        if (--g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
         }
 
         break;
@@ -2437,7 +2447,7 @@ static void Game_Manage_12_5() {
     }
 }
 
-static void Game_Manage_12_7() {
+static void Manage_BonusStageResult_Phase7() {
     bcount_cont_main();
 
     if (Check_Time_Over()) {
@@ -2448,10 +2458,10 @@ static void Game_Manage_12_7() {
         return;
     }
 
-    g_state.C_No[1]++;
-    g_state.C_No[2] = 0;
-    g_state.C_No[3] = 0;
-    g_state.C_Timer = 30;
+    g_state.manage_phase[1]++;
+    g_state.manage_phase[2] = 0;
+    g_state.manage_phase[3] = 0;
+    g_state.manage_timer = 30;
     g_state.Allow_a_battle_f = 0;
     g_state.Forbid_Break = -1;
     g_state.Completion_Bonus[g_state.Player_id][0] = -128;
@@ -2460,36 +2470,36 @@ static void Game_Manage_12_7() {
     effect_58_init(6, 10, 169);
 }
 
-static void Game_Manage_12_8() {
-    switch (g_state.C_No[2]) {
+static void Manage_BonusStageResult_Phase8() {
+    switch (g_state.manage_phase[2]) {
     case 0:
-        switch (g_state.C_No[3]) {
+        switch (g_state.manage_phase[3]) {
         case 0:
             g_state.Next_Step = 0;
 
             if (effect_35_init(60, 10) == 0) {
-                g_state.C_No[3]++;
+                g_state.manage_phase[3]++;
             }
 
             break;
 
         case 1:
             if (g_state.Next_Step) {
-                g_state.C_No[3]++;
-                g_state.C_Timer = 20;
+                g_state.manage_phase[3]++;
+                g_state.manage_timer = 20;
             }
 
             break;
 
         case 2:
-            if (g_state.C_Timer < 11 && g_state.Scene_Cut) {
-                g_state.C_Timer = 1;
+            if (g_state.manage_timer < 11 && g_state.Scene_Cut) {
+                g_state.manage_timer = 1;
             }
 
-            if (--g_state.C_Timer == 0) {
-                g_state.C_No[2]++;
-                g_state.C_No[3] = 0;
-                g_state.C_Timer = 30;
+            if (--g_state.manage_timer == 0) {
+                g_state.manage_phase[2]++;
+                g_state.manage_phase[3] = 0;
+                g_state.manage_timer = 30;
             }
 
             break;
@@ -2498,36 +2508,36 @@ static void Game_Manage_12_8() {
         break;
 
     case 1:
-        if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 20;
+        if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 20;
             g_state.Score[g_state.Player_id][0] += g_state.Bonus_Score;
             effect_08_init(7, 0, 1, 15, 0);
             g_state.Disp_Score_Buff[0] = g_state.Bonus_Score;
             effect_14_init(0, 35, 11, 15);
 
             if (g_state.Bonus_Game_result == 0) {
-                g_state.C_No[2] = 99;
-                g_state.C_Timer = 120;
+                g_state.manage_phase[2] = 99;
+                g_state.manage_timer = 120;
             }
         }
 
         break;
 
     case 2:
-        if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 1;
+        if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 1;
         }
 
         break;
 
     case 3:
-        if (Bonus_Cut_Sub() == 0 && --g_state.C_Timer == 0) {
+        if (Bonus_Cut_Sub() == 0 && --g_state.manage_timer == 0) {
             if (bcounter_down(0) == 0) {
-                g_state.C_No[2]++;
-                g_state.C_Timer = 30;
-                g_state.C_Timer = 3;
+                g_state.manage_phase[2]++;
+                g_state.manage_timer = 30;
+                g_state.manage_timer = 3;
                 g_state.Bonus_Score += 1000;
                 g_state.Score[g_state.Player_id][0] += 1000;
                 g_state.Disp_Score_Buff[0] = g_state.Bonus_Score;
@@ -2535,7 +2545,7 @@ static void Game_Manage_12_8() {
                 break;
             }
 
-            g_state.C_Timer = 3;
+            g_state.manage_timer = 3;
             g_state.Bonus_Score += 1000;
             g_state.Score[g_state.Player_id][0] += 1000;
             g_state.Disp_Score_Buff[0] = g_state.Bonus_Score;
@@ -2545,19 +2555,19 @@ static void Game_Manage_12_8() {
         break;
 
     case 4:
-        if (--g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 30;
+        if (--g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 30;
         }
 
         break;
 
     default:
         if (Debug_w[DEBUG_YOSHIZUMI_EXP] != 2 && Cut_Cut_C_Timer() == 0) {
-            g_state.C_No[1]++;
-            g_state.C_No[2] = 0;
-            g_state.C_No[3] = 0;
-            g_state.C_Timer = 10;
+            g_state.manage_phase[1]++;
+            g_state.manage_phase[2] = 0;
+            g_state.manage_phase[3] = 0;
+            g_state.manage_timer = 10;
             g_state.Forbid_Break = 0;
             g_state.Suicide[5] = -128;
             Check_Fade_Out_BGM(546);
@@ -2698,9 +2708,9 @@ static s32 Bonus_Cut_Sub() {
 
             Disp_Bonus_Perfect();
             Flash_Bonus_Perfect();
-            g_state.C_No[2] = 3;
-            g_state.C_No[3] = 99;
-            return g_state.C_Timer = 90;
+            g_state.manage_phase[2] = 3;
+            g_state.manage_phase[3] = 99;
+            return g_state.manage_timer = 90;
         }
 
         bcounter_down(1);
@@ -2710,9 +2720,9 @@ static s32 Bonus_Cut_Sub() {
             effect_14_init(0, 35, 11, 15);
         }
 
-        g_state.C_No[2] = 4;
-        g_state.C_No[3] = 99;
-        return g_state.C_Timer = 90;
+        g_state.manage_phase[2] = 4;
+        g_state.manage_phase[3] = 99;
+        return g_state.manage_timer = 90;
     }
 
     return 0;
@@ -2721,11 +2731,11 @@ static s32 Bonus_Cut_Sub() {
 static s16 Check_Time_Over() {
     s16 return_x = 0;
 
-    switch (g_state.C_No[2]) {
+    switch (g_state.manage_phase[2]) {
     case 0:
         if (g_state.Time_Over) {
-            g_state.C_No[2]++;
-            g_state.C_Timer = 60;
+            g_state.manage_phase[2]++;
+            g_state.manage_timer = 60;
             request_center_message(2);
             SsRequest(143);
             return_x = 1;
@@ -2734,8 +2744,8 @@ static s16 Check_Time_Over() {
         break;
 
     case 1:
-        if (--g_state.C_Timer == 0) {
-            g_state.C_No[2]++;
+        if (--g_state.manage_timer == 0) {
+            g_state.manage_phase[2]++;
             g_state.Game_pause = 0;
             g_state.Suicide[5] = 1;
         }
@@ -2751,4 +2761,4 @@ void complete_victory_pause() {
     g_state.Complete_Victory = 1;
 }
 
-static void Game_Manage_13th() {};
+static void Manage_TrainingReset() {};

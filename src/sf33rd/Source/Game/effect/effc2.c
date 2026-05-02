@@ -878,9 +878,9 @@ static void set_bs2_floor(WORK_Other* wk) {
     g_state.bs2_floor[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
     g_state.bs2_floor[2] = dad[2] + dad[3];
     dad = wk->wu.hosei_adrs[wk->wu.cg_ja.hoix + 1].hos_box;
-    g_state.bs2_hosei[0] = wk->wu.xyz[0].disp.pos + dad[0];
-    g_state.bs2_hosei[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
-    g_state.bs2_hosei[2] = dad[2] + dad[3];
+    g_state.bonus_stage2_offset[0] = wk->wu.xyz[0].disp.pos + dad[0];
+    g_state.bonus_stage2_offset[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
+    g_state.bonus_stage2_offset[2] = dad[2] + dad[3];
 }
 
 void get_shizumi_guai(WORK* wk) {

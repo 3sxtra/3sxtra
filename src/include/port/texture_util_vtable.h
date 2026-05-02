@@ -19,9 +19,9 @@ extern "C" {
 
 typedef struct TextureUtilVtable {
     void* (*LoadFromSurface)(struct SDL_Surface* surface);
-    void  (*Free)(void* texture_id);
-    void  (*GetSize)(void* texture_id, int* w, int* h);
-    void  (*Shutdown)(void);
+    void (*Free)(void* texture_id);
+    void (*GetSize)(void* texture_id, int* w, int* h);
+    void (*Shutdown)(void);
 } TextureUtilVtable;
 
 /** Global vtable pointer — valid after TextureUtilVtable_Init() */

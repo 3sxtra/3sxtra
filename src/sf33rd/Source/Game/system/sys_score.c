@@ -36,7 +36,8 @@ void Score_Sub() {
     s32 assign2;
     s8 assign3;
 
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
+        g_state.Mode_Type == MODE_TRIALS) {
         return;
     }
 
@@ -45,7 +46,8 @@ void Score_Sub() {
     }
 
     for (PL_id = 0; PL_id < 2; PL_id++) {
-        if ((g_state.Mode_Type != MODE_VERSUS && g_state.Mode_Type != MODE_REPLAY) && g_state.plw[PL_id].wu.pl_operator == 0) {
+        if ((g_state.Mode_Type != MODE_VERSUS && g_state.Mode_Type != MODE_REPLAY) &&
+            g_state.plw[PL_id].wu.pl_operator == 0) {
             continue;
         }
 

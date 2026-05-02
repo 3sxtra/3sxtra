@@ -37,7 +37,7 @@ void end_16000(s16 pl_num) {
     case 0:
         g_state.end_w.r_no_1++;
         g_state.end_w.r_no_2 = 0;
-        g_state.c_kakikae = 0;
+        g_state.char_rewrite = 0;
         g_state.c_number = 0;
         common_end_init00(pl_num);
         common_end_init01();
@@ -208,7 +208,7 @@ static void end_1600_3000() {
         Rewrite_End_Message(3);
         bgw_ptr->l_limit2 = 2;
         bgw_ptr->l_limit = 0;
-        g_state.c_kakikae = 1;
+        g_state.char_rewrite = 1;
         break;
 
     case 1:
@@ -226,7 +226,7 @@ static void end_1600_3100() {
         bgw_ptr->xy[1].disp.pos = end_16_pos[g_state.end_w.r_no_2][1];
         effect_E6_init(0x57);
         Rewrite_End_Message(4);
-        g_state.c_kakikae = 2;
+        g_state.char_rewrite = 2;
         break;
 
     case 1:
@@ -240,7 +240,7 @@ static void end_1600_5000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
-        g_state.c_kakikae = 0;
+        g_state.char_rewrite = 0;
         bgw_ptr->xy[0].disp.pos = end_16_pos[g_state.end_w.r_no_2][0];
         bgw_ptr->xy[1].disp.pos = end_16_pos[g_state.end_w.r_no_2][1];
         effect_E6_init(0x58);
