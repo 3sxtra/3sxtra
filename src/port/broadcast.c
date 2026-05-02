@@ -12,7 +12,6 @@
 #include <stddef.h>
 
 extern BroadcastConfig broadcast_config;
-BroadcastConfig broadcast_config;
 
 // Platform backends
 #if defined(PLATFORM_RPI4)
