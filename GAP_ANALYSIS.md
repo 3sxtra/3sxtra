@@ -1,5 +1,11 @@
 # Comprehensive Architecture Audit & Gap Analysis: 3sxtra vs Modern SOTA
 
+> **Last Updated**: 2026-05-02
+> **Status**: Vision document — partially addressed
+> - §3 Subsystem Decoupling: ✅ Renderer decoupled via `GameRendererVtable` + `RendererCaps` + `TextRendererVtable` + `TextureUtilVtable`. Port boundary enforced for rendering path.
+> - §4 Pre-computation: ✅ CG tile descriptor caching, hash-based tile lookup, and LZ77 GPU compute implemented.
+> - §2, §4 AI, §5 Modding: ❌ Not addressed — remain aspirational goals.
+
 ## 1. Executive Summary & Auditing Context
 
 This comprehensive audit evaluates the **3sxtra** modernization project (the CPS3 port) against modern State-of-the-Art (SOTA) engineering principles, heavily informed by the foundational architectural breakthroughs of the **DOOM (1993)** and **Quake 3 Arena (1999)** source codes. 

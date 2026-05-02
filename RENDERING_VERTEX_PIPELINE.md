@@ -1,7 +1,8 @@
 # Rendering Vertex Pipeline
 
-> **Status**: Documentation (Round 3A)  
+> **Status**: ✅ Complete — Documentation + all future work investigated and resolved  
 > **Created**: 2026-04-25  
+> **Last Updated**: 2026-05-02  
 > **Scope**: Vertex data flow from game code → backend GPU submission
 
 ## Overview
@@ -272,12 +273,12 @@ For each `DrawSprite(sprite, color)`:
 
 ---
 
-## §7 — Potential Future Work
+## §7 — Future Work (Investigated — All Resolved)
 
-1. **Remove RendererVertex middleman** — Callers of `*Vtx` functions could be migrated to use Sprite/Quad directly. Low priority (< 5% of calls).
+1. **Remove RendererVertex middleman** — ✅ **Closed (won't do)**. `scrscrntex` is a global `RendererVertex[4]` shared across 8 UI files. Migrating 37 call sites would require renaming hundreds of `.x/.y/.z/.u/.v` field accesses to `.v[i].x/.t[i].s`. The `*Vtx` path handles <5% of draw calls; overhead is negligible. `training_hud.c` was migrated to `Quad + DrawSolidQuad` as an isolated case (2026-05-02).
 
-2. **Unify GL and GPU vertex layout** — Both need `{x, y, z, u, v, r, g, b, a, layer, palette}`. GL uses split streams, GPU uses interleaved. A shared struct would help documentation but the memory layout may need to differ for performance.
+2. **Unify GL and GPU vertex layout** — ✅ **Closed (won't do)**. GL uses split attribute streams (SDL_Vertex + 3 float arrays) optimized for its VAO setup and `samplerBuffer` palette lookup. GPU uses interleaved `GPUVertex` (40B) optimized for SDL_GPU's single-buffer layout. Both backends are already heavily optimized with SIMD. A shared struct would require changing GL VAO setup, shader attribute bindings, and persistent mapping logic for marginal benefit (2026-05-02).
 
-3. **Sprite2 batch optimization** — `FlushSprite2Batch` currently iterates all 8192 chips even when most are inactive. A compact active-chip list could reduce iteration.
+3. **Sprite2 batch optimization** — ✅ **Closed (not needed)**. The `active_layers` check in `FlushSprite2Batch` appears to iterate all 8192 chips, but in practice only `sprTotal` (~100-300) are submitted. More importantly, the `active_layers[id]` check is **not redundant**: `seqs_w.up[id]` can be reset to 0 by `ppgRenewTexChunkSeqs()` during texture upload if a texture fails validation (mtrans.c:2069-2072). Removing the check would cause rendering of sprites with invalid texture data (2026-05-02).
 
-4. **Zero-copy path** — If game code produced backend-native vertices directly, we'd eliminate one copy. But the CPS3 emulation data (tex_code, palette indirection) makes this impractical without significant game-code changes.
+4. **Zero-copy path** — Unchanged. CPS3 emulation data (tex_code, palette indirection) makes this impractical without significant game-code changes.

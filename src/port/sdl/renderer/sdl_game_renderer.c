@@ -28,6 +28,10 @@ RenderPassTable g_render_passes;
 
 static TransientTexture s_transient_textures[TRANSIENT_TEXTURE_COUNT];
 
+/* Phase 2: Alias map — transient_alias[A] = B means A should share B's backing.
+ * A value of -1 (or identity) means no aliasing. */
+static int s_transient_alias[TRANSIENT_TEXTURE_COUNT];
+
 void RenderGraph_Compile(void) {
     // 1. Initial pass culling (geometry / force execute check)
     for (int i = 0; i < g_render_passes.count; i++) {
@@ -71,6 +75,49 @@ void RenderGraph_Compile(void) {
         } else {
             // Cull it!
             g_render_passes.passes[i].skip_this_frame = true;
+        }
+    }
+
+    // 3. Phase 2: Transient texture aliasing — compute lifespans and share backing
+    // For each transient texture, find [first_write, last_read] among active passes.
+    int first_write[TRANSIENT_TEXTURE_COUNT];
+    int last_read[TRANSIENT_TEXTURE_COUNT];
+    for (int t = 0; t < TRANSIENT_TEXTURE_COUNT; t++) {
+        first_write[t] = -1;
+        last_read[t] = -1;
+        s_transient_alias[t] = t; // default: identity (no alias)
+    }
+
+    for (int i = 0; i < g_render_passes.count; i++) {
+        if (g_render_passes.passes[i].skip_this_frame) continue;
+
+        int out = g_render_passes.passes[i].transient_output;
+        if (out >= 0 && out < TRANSIENT_TEXTURE_COUNT) {
+            if (first_write[out] < 0) first_write[out] = i;
+        }
+        for (int j = 0; j < 4; j++) {
+            int in_id = g_render_passes.passes[i].transient_inputs[j];
+            if (in_id >= 0 && in_id < TRANSIENT_TEXTURE_COUNT) {
+                last_read[in_id] = i;
+            }
+        }
+    }
+
+    // Try to alias: if texture A's lifespan ends before texture B's begins,
+    // B can reuse A's backing texture.
+    for (int a = 0; a < TRANSIENT_TEXTURE_COUNT; a++) {
+        if (first_write[a] < 0) continue; // A not used this frame
+        int a_end = (last_read[a] >= 0) ? last_read[a] : first_write[a];
+
+        for (int b = a + 1; b < TRANSIENT_TEXTURE_COUNT; b++) {
+            if (first_write[b] < 0) continue; // B not used this frame
+            if (s_transient_alias[b] != b) continue; // B already aliased
+
+            int b_start = first_write[b];
+            // A's lifespan [first_write[a], a_end] must not overlap B's [b_start, ...]
+            if (a_end < b_start) {
+                s_transient_alias[b] = a;
+            }
         }
     }
 }
@@ -359,7 +406,9 @@ TransientTexture* SDLGameRenderer_GetTransientTexture(TransientTextureID id, int
     if (id < 0 || id >= TRANSIENT_TEXTURE_COUNT) return NULL;
     if (!g_game_renderer || !g_game_renderer->CreateTransientRenderTarget) return NULL;
 
-    TransientTexture* tex = &s_transient_textures[id];
+    // Phase 2: Check alias map — if this texture shares another's backing, redirect
+    int backing_id = s_transient_alias[id];
+    TransientTexture* tex = &s_transient_textures[backing_id];
 
     // If size changed or not created yet
     if (tex->backend_handle == NULL || tex->width != width || tex->height != height) {

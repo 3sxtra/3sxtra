@@ -1,6 +1,6 @@
 #include "training_hud.h"
 #include "game_state.h"
-#include "port/rendering/renderer.h"
+#include "rendering/game_renderer.h"
 #include "port/training_menu.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -17,17 +17,11 @@ void training_hud_init() {
     // Basic setup if required
 }
 
-/* Stun counter is now rendered by the RmlUI HUD overlay (effie_hud.rml).
-   Data flows: gamestate → Lua training_main.lua → engine.set_hud_text()
-   → rmlui_training_hud.cpp data model → effie_hud.rml.
-   This C function is retained as a no-op for ABI compatibility. */
-void training_hud_draw_stun(PLW* player, TrainingPlayerState* state) {
-    (void)player;
-    (void)state;
-}
+
+
 
 static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
-    RendererVertex v[4];
+    Quad q;
 
     // Use the actual main screen center, left edge = center - 192
     s16 cam_x = get_center_position() - 192;
@@ -41,20 +35,19 @@ static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
     f32 sy_b = 224.0f - (f32)(bottom - cam_y) * scr_sc - ground_offset;
 
     for (int i = 0; i < 4; i++) {
-        v[i].z = -1.0f;
-        v[i].color = color;
+        q.v[i].z = -1.0f;
     }
 
-    v[0].x = sx_l;
-    v[0].y = sy_t;
-    v[1].x = sx_r;
-    v[1].y = sy_t;
-    v[2].x = sx_l;
-    v[2].y = sy_b;
-    v[3].x = sx_r;
-    v[3].y = sy_b;
+    q.v[0].x = sx_l;
+    q.v[0].y = sy_t;
+    q.v[1].x = sx_r;
+    q.v[1].y = sy_t;
+    q.v[2].x = sx_l;
+    q.v[2].y = sy_b;
+    q.v[3].x = sx_r;
+    q.v[3].y = sy_b;
 
-    Renderer_DrawSolidQuadVtx(v, 4);
+    Renderer_DrawSolidQuad(&q, color);
 }
 
 /**
