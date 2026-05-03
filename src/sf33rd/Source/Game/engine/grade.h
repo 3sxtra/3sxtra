@@ -50,7 +50,7 @@ void grade_add_blocking(PLW* wk);
 void grade_get_first_attack(s16 ix);
 void grade_set_round_result(s16 ix);
 void grade_add_personal_action(s16 ix);
-void grade_check_tairyokusa();
+void Grade_Check_Health_Difference();
 void grade_add_same_move(s16 ix);
 s16 grade_get_my_grade(s16 ix);
 s16 grade_get_my_point_percentage(s16 ix, s16 flag);

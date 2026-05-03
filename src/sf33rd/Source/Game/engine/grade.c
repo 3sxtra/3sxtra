@@ -107,7 +107,7 @@ const s16 grade_t_sa_stock_2[6][2] = { { 0, 0 }, { 1, 55 }, { 2, 65 }, { 3, 75 }
 
 const s16 grade_t_sa_stock_1[6][2] = { { 0, 0 }, { 1, 60 }, { 2, 70 }, { 3, 80 }, { 4, 90 }, { 5, 100 } };
 
-const s16 grade_t_tairyokusa[21][2] = { { 0, 0 },     { 9, 10 },    { 17, 20 },   { 25, 30 },   { 33, 40 },
+const s16 grade_t_health_difference[21][2] = { { 0, 0 },     { 9, 10 },    { 17, 20 },   { 25, 30 },   { 33, 40 },
                                         { 41, 50 },   { 49, 60 },   { 57, 80 },   { 65, 100 },  { 73, 120 },
                                         { 81, 140 },  { 89, 160 },  { 97, 180 },  { 105, 200 }, { 113, 220 },
                                         { 121, 240 }, { 129, 260 }, { 137, 270 }, { 145, 280 }, { 153, 290 },
@@ -123,10 +123,10 @@ const s16 grade_t_app_rpdblock[7][2] = {
 const s16 grade_t_app_grdblock[7][2] = { { 0, 150 }, { 1, 140 }, { 9, 120 }, { 17, 100 },
                                          { 33, 70 }, { 49, 40 }, { 81, 20 } };
 
-const s16 grade_t_renshou[8][2] = { { 0, 0 },    { 2, 20 },   { 5, 50 },   { 8, 80 },
+const s16 grade_t_win_streak[8][2] = { { 0, 0 },    { 2, 20 },   { 5, 50 },   { 8, 80 },
                                     { 11, 100 }, { 16, 120 }, { 21, 160 }, { 31, 200 } };
 
-const s16 grade_t_em_renshou[8][2] = { { 0, 0 },   { 2, 20 },   { 4, 50 },   { 6, 80 },
+const s16 grade_t_enemy_win_streak[8][2] = { { 0, 0 },   { 2, 20 },   { 4, 50 },   { 6, 80 },
                                        { 9, 100 }, { 12, 120 }, { 16, 160 }, { 20, 200 } };
 
 const s16 grade_t_straight[11][2] = { { 0, 0 },   { 2, 40 },  { 3, 60 },  { 4, 80 },   { 5, 100 }, { 6, 120 },
@@ -182,13 +182,13 @@ void grade_check_work_stage_init(s16 ix) {
     g_state.judge_item[ix][g_state.Play_Type].win_round = 0;
 
     if (g_state.Play_Type == 1) {
-        g_state.judge_item[ix][g_state.Play_Type].renshou = g_state.Win_Record[ix];
-        g_state.judge_item[ix][g_state.Play_Type].em_renshou = g_state.Win_Record[(ix + 1) & 1];
+        g_state.judge_item[ix][g_state.Play_Type].win_streak = g_state.Win_Record[ix];
+        g_state.judge_item[ix][g_state.Play_Type].enemy_win_streak = g_state.Win_Record[(ix + 1) & 1];
         return;
     }
 
-    g_state.judge_item[ix][g_state.Play_Type].renshou = 0;
-    g_state.judge_item[ix][g_state.Play_Type].em_renshou = 0;
+    g_state.judge_item[ix][g_state.Play_Type].win_streak = 0;
+    g_state.judge_item[ix][g_state.Play_Type].enemy_win_streak = 0;
 }
 
 /** @brief Resets per-round grading work (combo counts, blocking, first attack). */
@@ -214,8 +214,8 @@ void grade_check_work_round_init(s16 ix) {
     g_state.judge_item[ix][g_state.Play_Type].reversal = 0;
     g_state.judge_item[ix][g_state.Play_Type].command_move = 0;
     g_state.judge_item[ix][g_state.Play_Type].sa_exec = 0;
-    g_state.judge_item[ix][g_state.Play_Type].tairyokusa = 0;
-    g_state.judge_item[ix][g_state.Play_Type].kimarite = 0;
+    g_state.judge_item[ix][g_state.Play_Type].health_difference = 0;
+    g_state.judge_item[ix][g_state.Play_Type].finishing_move = 0;
     g_state.judge_item[ix][g_state.Play_Type].app_nml_block = -1;
     g_state.judge_item[ix][g_state.Play_Type].app_rpd_block = -1;
     g_state.judge_item[ix][g_state.Play_Type].app_grd_block = -1;
@@ -456,10 +456,10 @@ void grade_makeup_stage_parameter(s16 ix) {
         if (g_state.Play_Type == 0) {
             g_state.judge_item[ix][g_state.Play_Type].ex_point_total +=
                 grade_table_lookup(grade_t_straight, 10, g_state.judge_item[ix][g_state.Play_Type].no_lose);
-        } else if (g_state.judge_item[ix][g_state.Play_Type].renshou) {
-            point += grade_table_lookup(grade_t_renshou, 7, g_state.judge_item[ix][g_state.Play_Type].renshou);
+        } else if (g_state.judge_item[ix][g_state.Play_Type].win_streak) {
+            point += grade_table_lookup(grade_t_win_streak, 7, g_state.judge_item[ix][g_state.Play_Type].win_streak);
         } else {
-            point += grade_table_lookup(grade_t_em_renshou, 7, g_state.judge_item[ix][g_state.Play_Type].em_renshou);
+            point += grade_table_lookup(grade_t_enemy_win_streak, 7, g_state.judge_item[ix][g_state.Play_Type].enemy_win_streak);
         }
     }
 
@@ -721,8 +721,8 @@ s16 get_ex_point_total(s16 ix, s16 wf) {
     point = 0;
 
     if (wf) {
-        point += grade_table_lookup(grade_t_tairyokusa, 20, g_state.judge_item[ix][g_state.Play_Type].tairyokusa);
-        point += grade_t_round_result[g_state.judge_item[ix][g_state.Play_Type].kimarite];
+        point += grade_table_lookup(grade_t_health_difference, 20, g_state.judge_item[ix][g_state.Play_Type].health_difference);
+        point += grade_t_round_result[g_state.judge_item[ix][g_state.Play_Type].finishing_move];
     }
 
     point += grade_table_lookup(grade_t_same_move, 5, g_state.judge_item[ix][g_state.Play_Type].same_move);
@@ -930,26 +930,26 @@ void grade_get_first_attack(s16 ix) {
 /** @brief Sets the round-result flags in the grade work (win type, perfect, etc.). */
 void grade_set_round_result(s16 ix) {
     if (g_state.Round_Result & 0x8201) {
-        g_state.judge_item[ix][g_state.Play_Type].kimarite = 0;
+        g_state.judge_item[ix][g_state.Play_Type].finishing_move = 0;
         return;
     }
 
     if (g_state.Round_Result & 0x2C) {
-        g_state.judge_item[ix][g_state.Play_Type].kimarite = 1;
+        g_state.judge_item[ix][g_state.Play_Type].finishing_move = 1;
         return;
     }
 
     if (g_state.Round_Result & 0x50) {
-        g_state.judge_item[ix][g_state.Play_Type].kimarite = 2;
+        g_state.judge_item[ix][g_state.Play_Type].finishing_move = 2;
         return;
     }
 
     if (g_state.Round_Result & 0x980) {
-        g_state.judge_item[ix][g_state.Play_Type].kimarite = 3;
+        g_state.judge_item[ix][g_state.Play_Type].finishing_move = 3;
         return;
     }
 
-    g_state.judge_item[ix][g_state.Play_Type].kimarite = 0;
+    g_state.judge_item[ix][g_state.Play_Type].finishing_move = 0;
 }
 
 /** @brief Increments the personal-action (taunt) counter for grading. */
@@ -964,17 +964,17 @@ void grade_add_personal_action(s16 ix) {
 }
 
 /** @brief Records the vitality difference between players for grading. */
-void grade_check_tairyokusa() {
+void Grade_Check_Health_Difference() {
     s16 vwork = g_state.plw[1].wu.vital_new - g_state.plw[0].wu.vital_new;
 
-    if (vwork > 0 && g_state.judge_item[0][g_state.Play_Type].tairyokusa < vwork) {
-        g_state.judge_item[0][g_state.Play_Type].tairyokusa = vwork;
+    if (vwork > 0 && g_state.judge_item[0][g_state.Play_Type].health_difference < vwork) {
+        g_state.judge_item[0][g_state.Play_Type].health_difference = vwork;
     }
 
     vwork = g_state.plw[0].wu.vital_new - g_state.plw[1].wu.vital_new;
 
-    if (vwork > 0 && g_state.judge_item[1][g_state.Play_Type].tairyokusa < vwork) {
-        g_state.judge_item[1][g_state.Play_Type].tairyokusa = vwork;
+    if (vwork > 0 && g_state.judge_item[1][g_state.Play_Type].health_difference < vwork) {
+        g_state.judge_item[1][g_state.Play_Type].health_difference = vwork;
     }
 }
 

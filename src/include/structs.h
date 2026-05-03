@@ -1695,10 +1695,10 @@ typedef struct {
     s16 reversal;
     s16 command_move;
     s16 sa_exec;
-    s16 tairyokusa;
-    s16 kimarite;
-    s16 renshou;
-    s16 em_renshou;
+    s16 health_difference;
+    s16 finishing_move;
+    s16 win_streak;
+    s16 enemy_win_streak;
     s16 app_nml_block;
     s16 app_rpd_block;
     s16 app_grd_block;

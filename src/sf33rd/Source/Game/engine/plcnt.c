@@ -693,7 +693,7 @@ static void plcnt_move() {
         }
     }
 
-    grade_check_tairyokusa();
+    Grade_Check_Health_Difference();
 }
 
 /** @brief Handles player death/KO finalization. */
