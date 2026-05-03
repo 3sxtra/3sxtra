@@ -45,7 +45,7 @@ s32 effect_54_init(WORK_Other* oya) {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 54;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
         ewk->my_master = oya;
         ewk->wu.my_col_mode = 0x4200;

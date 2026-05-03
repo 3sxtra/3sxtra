@@ -209,7 +209,7 @@ static void Att_PL14_AT3(PLW* wk) {
 
         if ((wk->wu.routine_no[3] != 1) && wk->wu.cg_ja.caix) {
             wk->wu.cg_ja.caix = pl14_HYAKKI_dat[twk->player_number];
-            wk->wu.h_cat = wk->wu.catch_adrs + wk->wu.cg_ja.caix;
+            wk->wu.catch_box = wk->wu.catch_adrs + wk->wu.cg_ja.caix;
         }
 
         break;
@@ -257,7 +257,7 @@ static void Att_PL14_AT3(PLW* wk) {
 
         if ((wk->wu.routine_no[3] != 2) && wk->wu.cg_ja.caix) {
             wk->wu.cg_ja.caix = pl14_HYAKKI_dat[(twk->player_number)];
-            wk->wu.h_cat = wk->wu.catch_adrs + wk->wu.cg_ja.caix;
+            wk->wu.catch_box = wk->wu.catch_adrs + wk->wu.cg_ja.caix;
         }
 
         break;
@@ -286,15 +286,15 @@ static void Att_PL14_TOKUSHUKOUDOU(PLW* wk) {
 
         if (wk->wu.cg_type == 64) {
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 14;
-            wk->tk_kizetsu += 9;
+            wk->strike_scaling += 14;
+            wk->stun_scaling += 9;
 
-            if (wk->tk_dageki > 14) {
-                wk->tk_dageki = 14;
+            if (wk->strike_scaling > 14) {
+                wk->strike_scaling = 14;
             }
 
-            if (wk->tk_kizetsu > 9) {
-                wk->tk_kizetsu = 9;
+            if (wk->stun_scaling > 9) {
+                wk->stun_scaling = 9;
             }
 
             grade_add_personal_action(wk->wu.id);

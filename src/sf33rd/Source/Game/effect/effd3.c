@@ -46,7 +46,7 @@ void akebono_finish(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0] += 1;
-        ewk->wu.old_rno[1] = 0;
+        ewk->wu.old_routine_no[1] = 0;
         ewk->wu.dir_timer = ake_timer_tbl[0];
         ewk->wu.disp_flag = 0;
         bg = ake_bg_off[g_state.bg_w.stage];
@@ -64,7 +64,7 @@ void akebono_finish(WORK_Other* ewk) {
         Scrn_Move_Set(3, 192 - g_state.bg_w.pos_offset, 16);
         g_state.bg_w.bgw[3].position_x = 192 - g_state.bg_w.pos_offset;
         g_state.bg_w.bgw[3].position_y = 16;
-        overwrite_panel(ake_color[ewk->wu.old_rno[1]], 69);
+        overwrite_panel(ake_color[ewk->wu.old_routine_no[1]], 69);
         break;
 
     case 1:
@@ -72,17 +72,17 @@ void akebono_finish(WORK_Other* ewk) {
 
         if ((ewk->wu.dir_timer) < 0) {
             g_state.akebono_flag = 1;
-            ewk->wu.old_rno[1] += 1;
+            ewk->wu.old_routine_no[1] += 1;
 
-            if (ewk->wu.old_rno[1] < 4) {
-                ewk->wu.dir_timer = ake_timer_tbl[ewk->wu.old_rno[1]];
+            if (ewk->wu.old_routine_no[1] < 4) {
+                ewk->wu.dir_timer = ake_timer_tbl[ewk->wu.old_routine_no[1]];
             } else {
                 ewk->wu.routine_no[0] += 1;
                 effect_G8_init();
             }
         }
 
-        overwrite_panel(ake_color[ewk->wu.old_rno[1]], 69);
+        overwrite_panel(ake_color[ewk->wu.old_routine_no[1]], 69);
         ake_Family_Set2();
         break;
 
@@ -90,16 +90,16 @@ void akebono_finish(WORK_Other* ewk) {
         ewk->wu.dir_timer -= 1;
 
         if ((ewk->wu.dir_timer) < 0) {
-            ewk->wu.old_rno[1] += 1;
-            ewk->wu.dir_timer = ake_timer_tbl[ewk->wu.old_rno[1]];
+            ewk->wu.old_routine_no[1] += 1;
+            ewk->wu.dir_timer = ake_timer_tbl[ewk->wu.old_routine_no[1]];
 
-            if (ewk->wu.old_rno[1] == 12) {
+            if (ewk->wu.old_routine_no[1] == 12) {
                 ewk->wu.routine_no[0] += 1;
                 Bg_Off_R(8);
             }
         }
 
-        overwrite_panel(ake_color[ewk->wu.old_rno[1]], 69);
+        overwrite_panel(ake_color[ewk->wu.old_routine_no[1]], 69);
         ake_Family_Set2();
         break;
 
@@ -170,7 +170,7 @@ void syungoku_finish(WORK_Other* ewk) {
 
         if (ewk->wu.dir_timer <= 0) {
             ewk->wu.routine_no[0] += 1;
-            ewk->wu.old_rno[0] = 0;
+            ewk->wu.old_routine_no[0] = 0;
             effect_20_init(ewk);
             effect_L9_init(ewk, 0);
             effect_L9_init(ewk, 1);
@@ -183,7 +183,7 @@ void syungoku_finish(WORK_Other* ewk) {
         break;
 
     case 2:
-        if (ewk->wu.old_rno[0]) {
+        if (ewk->wu.old_routine_no[0]) {
             ewk->wu.routine_no[0] += 1;
             g_state.akebono_flag = 0;
             g_state.plw[0].wu.disp_flag = 1;
@@ -235,8 +235,8 @@ s32 effect_D3_init(u8 ake_type) {
     ewk->wu.id = 133;
     ewk->wu.be_flag = 1;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
-    ewk->wu.old_rno[1] = 0;
+    ewk->wu.graphic_rom_type = 1;
+    ewk->wu.old_routine_no[1] = 0;
     ewk->wu.type = ake_type;
     return 0;
 }

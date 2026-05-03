@@ -121,7 +121,7 @@ s32 effect_D6_init(WORK_Other* wk, s16 dr, s16 sp, s16 dl, s16 acc) {
     ewk->wu.my_family = wk->wu.my_family;
     ewk->wu.my_col_mode = wk->wu.my_col_mode;
     ewk->wu.my_col_code = wk->wu.my_col_code;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.direction = dr;
     ewk->wu.dir_old = (sp * acc) / 16;
     ewk->wu.dir_step = (dl * acc) / 16;

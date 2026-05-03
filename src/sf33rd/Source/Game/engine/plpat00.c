@@ -174,20 +174,20 @@ static void Att_PL00_TOKUSHUKOUDOU(PLW* wk) {
 
         if (wk->wu.cg_type == 64) {
             wk->wu.routine_no[3]++;
-            wk->tk_dageki += 16;
-            wk->tk_nage += 8;
-            wk->tk_kizetsu += 2;
+            wk->strike_scaling += 16;
+            wk->throw_scaling += 8;
+            wk->stun_scaling += 2;
 
-            if (wk->tk_dageki > 16) {
-                wk->tk_dageki = 16;
+            if (wk->strike_scaling > 16) {
+                wk->strike_scaling = 16;
             }
 
-            if (wk->tk_nage > 8) {
-                wk->tk_nage = 8;
+            if (wk->throw_scaling > 8) {
+                wk->throw_scaling = 8;
             }
 
-            if (wk->tk_kizetsu > 2) {
-                wk->tk_kizetsu = 2;
+            if (wk->stun_scaling > 2) {
+                wk->stun_scaling = 2;
             }
 
             grade_add_personal_action(wk->wu.id);

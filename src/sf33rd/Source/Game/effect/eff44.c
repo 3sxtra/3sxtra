@@ -105,7 +105,7 @@ s32 effect_44_init(s16 type) {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 44;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
 
         if (type == 2) {

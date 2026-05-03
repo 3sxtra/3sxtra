@@ -67,8 +67,8 @@ static void animal_init(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = -4;
         ewk->wu.shadow_y = 33;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 3;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 3;
 
         if (ewk->wu.rl_flag) {
             ewk->wu.xyz[0].disp.pos = work_l;
@@ -82,8 +82,8 @@ static void animal_init(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = -4;
         ewk->wu.shadow_y = 33;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 3;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 3;
         ewk->wu.rl_flag ^= 1;
         break;
 
@@ -97,8 +97,8 @@ static void animal_init(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = -2;
         ewk->wu.shadow_y = 24;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 8;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 8;
 
         if (ewk->wu.rl_flag) {
             ewk->wu.xyz[0].disp.pos = work_l;
@@ -118,8 +118,8 @@ static void animal_init(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 0;
         ewk->wu.shadow_y = 33;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 0;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 0;
         ewk->wu.rl_flag ^= 1;
         break;
     }
@@ -138,11 +138,11 @@ static void animal_0000(WORK_Other* ewk) {
         ewk->wu.disp_flag = 1;
 
         if (ewk->wu.type == 6) {
-            ewk->wu.old_rno[0] = 10;
+            ewk->wu.old_routine_no[0] = 10;
             don_run_set(ewk);
             ewk->wu.xyz[1].disp.pos = 24;
         } else {
-            ewk->wu.old_rno[0] = 60;
+            ewk->wu.old_routine_no[0] = 60;
             cat_run_set(ewk);
             ewk->wu.xyz[1].disp.pos = 32;
         }
@@ -151,9 +151,9 @@ static void animal_0000(WORK_Other* ewk) {
         break;
 
     case 1:
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] <= 0) {
+        if (ewk->wu.old_routine_no[0] <= 0) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -182,7 +182,7 @@ static void animal_0001(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
-        ewk->wu.old_rno[0] = 30;
+        ewk->wu.old_routine_no[0] = 30;
         ewk->wu.disp_flag = 1;
         mouse_run_set(ewk);
         ewk->wu.xyz[1].disp.pos = 32;
@@ -190,9 +190,9 @@ static void animal_0001(WORK_Other* ewk) {
         break;
 
     case 1:
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] <= 0) {
+        if (ewk->wu.old_routine_no[0] <= 0) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -250,7 +250,7 @@ static void animal_0004(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
-        ewk->wu.old_rno[0] = 30;
+        ewk->wu.old_routine_no[0] = 30;
         ewk->wu.disp_flag = 1;
         mouse_stand_set(ewk);
         ewk->wu.xyz[1].disp.pos = 32;
@@ -265,9 +265,9 @@ static void animal_0004(WORK_Other* ewk) {
         break;
 
     case 1:
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] <= 0) {
+        if (ewk->wu.old_routine_no[0] <= 0) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -300,19 +300,19 @@ static void animal_0005(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
-        ewk->wu.old_rno[0] = 30;
+        ewk->wu.old_routine_no[0] = 30;
         ewk->wu.disp_flag = 1;
         mouse_run_set(ewk);
         ewk->wu.xyz[1].disp.pos = 32;
         ewk->wu.my_priority = ewk->wu.position_z = 27;
-        ewk->wu.old_rno[2] = random_16();
-        ewk->wu.old_rno[3] = animal_0005_tbl[ewk->wu.old_rno[2]];
+        ewk->wu.old_routine_no[2] = random_16();
+        ewk->wu.old_routine_no[3] = animal_0005_tbl[ewk->wu.old_routine_no[2]];
         break;
 
     case 1:
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] <= 0) {
+        if (ewk->wu.old_routine_no[0] <= 0) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -320,9 +320,9 @@ static void animal_0005(WORK_Other* ewk) {
 
     case 2:
         char_move(&ewk->wu);
-        ewk->wu.old_rno[3]--;
+        ewk->wu.old_routine_no[3]--;
 
-        if (ewk->wu.old_rno[3] <= 0) {
+        if (ewk->wu.old_routine_no[3] <= 0) {
             ewk->wu.routine_no[1]++;
             mouse_stand_set(ewk);
             break;
@@ -433,7 +433,7 @@ s32 effect_M0_init(u8 pl_rl, u8 animal_type) {
     ewk->wu.id = 220;
     ewk->wu.work_id = 16;
     ewk->wu.type = animal_type;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _etc2_char_table;
     ewk->wu.my_family = 2;

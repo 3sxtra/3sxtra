@@ -62,11 +62,11 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
     wk->cp->input_held = check_illegal_lever_data(wk->cp->input_held);
 
     if ((wk->dead_flag + wk->wkey_flag) == 0) {
-        wk->hurimukenai_flag = 0;
+        wk->cannot_turn_flag = 0;
     }
 
     for (i = 0; i < 8; i++) {
-        wk->wu.old_rno[(i)] = wk->wu.routine_no[(i)];
+        wk->wu.old_routine_no[(i)] = wk->wu.routine_no[(i)];
     }
 
     for (i = 0; i < 3; i++) {
@@ -102,11 +102,11 @@ static void player_mvbs_0000(PLW* wk) {
     set_player_shadow(wk);
     wk->bullet_hcnt = wk->bhcnt_timer = 0;
     wk->auto_guard = 1;
-    wk->wu.hit_stop = wk->wu.dm_stop = 0;
-    wk->wu.hit_quake = wk->wu.dm_quake = 0;
+    wk->wu.hit_stop = wk->wu.damage_hit_stop = 0;
+    wk->wu.hit_quake = wk->wu.damage_screen_shake = 0;
     wk->throw_invuln_flag = 0;
     wk->zuru_timer = 0;
-    wk->zuru_flag = false;
+    wk->invuln_flag = false;
     wk->is_throwing = wk->is_being_thrown = false;
     clear_kizetsu_point(wk);
     wk->recovery_roll_ok_timer = 0;
@@ -241,7 +241,7 @@ static void player_mvbs_4000(PLW* wk) {
     }
 
     if (wk->is_being_thrown) {
-        wk->wu.hit_stop = wk->wu.dm_stop = 0;
+        wk->wu.hit_stop = wk->wu.damage_hit_stop = 0;
     }
 
     if (!check_hit_stop(wk)) {
@@ -252,9 +252,9 @@ static void player_mvbs_4000(PLW* wk) {
         }
 
         if (wk->zuru_timer < 0) {
-            wk->zuru_flag = true;
+            wk->invuln_flag = true;
         } else {
-            wk->zuru_flag = false;
+            wk->invuln_flag = false;
         }
     }
 

@@ -45,11 +45,11 @@ void effect_60_move(WORK_Other* ewk) {
                 ewk->wu.disp_flag = 1;
                 char_move(&ewk->wu);
             } else {
-                ewk->wu.old_rno[1]--;
+                ewk->wu.old_routine_no[1]--;
 
-                if (ewk->wu.old_rno[1] <= 0) {
+                if (ewk->wu.old_routine_no[1] <= 0) {
                     ewk->wu.disp_flag ^= 1;
-                    ewk->wu.old_rno[1] = ewk->wu.old_rno[0];
+                    ewk->wu.old_routine_no[1] = ewk->wu.old_routine_no[0];
 
                     if (ewk->wu.hit_stop) {
                         char_move(&ewk->wu);
@@ -86,7 +86,7 @@ s32 effect_60_init(s16 type) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 60;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.type = type;
@@ -99,8 +99,8 @@ s32 effect_60_init(s16 type) {
     ewk->wu.char_index = *data_ptr++;
     ewk->wu.hit_stop = *data_ptr++;
     ewk->wu.sync_suzi = *data_ptr++;
-    ewk->wu.old_rno[0] = *data_ptr++;
-    ewk->wu.old_rno[1] = ewk->wu.old_rno[0];
+    ewk->wu.old_routine_no[0] = *data_ptr++;
+    ewk->wu.old_routine_no[1] = ewk->wu.old_routine_no[0];
     ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
     suzi_offset_set(ewk);
     ewk->wu.my_mts = 7;

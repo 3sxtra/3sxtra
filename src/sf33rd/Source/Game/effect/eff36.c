@@ -26,9 +26,9 @@ static void eff36_move06(WORK_Other* ewk);
 void effect_36_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (ewk->wu.old_rno[1] <= op_w.index) {
+        if (ewk->wu.old_routine_no[1] <= op_w.index) {
             ewk->wu.routine_no[0] += 1;
-        } else if (ewk->wu.old_rno[2] <= op_w.index) {
+        } else if (ewk->wu.old_routine_no[2] <= op_w.index) {
             switch (ewk->wu.routine_no[1]) {
             case 0:
                 eff36_move00(ewk);
@@ -76,7 +76,7 @@ static void eff36_move00(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
         ewk->wu.my_mr_flag = 1;
         ewk->wu.my_mr.size.x = 63;
         ewk->wu.my_mr.size.y = 63;
@@ -104,7 +104,7 @@ static void eff36_move01(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
 
         if (ewk->wu.type == 0) {
             push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 3, 1);
@@ -124,7 +124,7 @@ static void eff36_move02(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
 
         if (ewk->wu.type == 15) {
             push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 8, 0);
@@ -147,7 +147,7 @@ static void eff36_move03(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
         push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 8, 1);
         ewk->wu.my_col_code = 0;
         break;
@@ -172,58 +172,58 @@ static void eff36_move04(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
-        ewk->wu.old_rno[6] = 4;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
+        ewk->wu.old_routine_no[6] = 4;
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
         push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 2, 1);
         ewk->wu.my_col_code = 0;
         break;
 
     case 1:
-        if (ewk->wu.old_rno[6] <= 0) {
+        if (ewk->wu.old_routine_no[6] <= 0) {
             ewk->wu.disp_flag = 0;
         } else {
-            ewk->wu.old_rno[6] -= 1;
+            ewk->wu.old_routine_no[6] -= 1;
         }
 
         if ((gSeqStatus[0] >= eff36_04_tbl[ewk->wu.routine_no[2]]) && (gSeqStatus[0] != 0x74)) {
             ewk->wu.routine_no[2] += 1;
             ewk->wu.disp_flag = 1;
-            ewk->wu.old_rno[6] = 4;
-            set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], 0x17, 0);
+            ewk->wu.old_routine_no[6] = 4;
+            set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], 0x17, 0);
         }
 
         disp_pos_trans_entry(ewk);
         break;
 
     case 2:
-        if (ewk->wu.old_rno[6] <= 0) {
+        if (ewk->wu.old_routine_no[6] <= 0) {
             ewk->wu.disp_flag = 0;
         } else {
-            ewk->wu.old_rno[6] -= 1;
+            ewk->wu.old_routine_no[6] -= 1;
         }
 
         if (gSeqStatus[0] >= eff36_04_tbl[ewk->wu.routine_no[2]]) {
             ewk->wu.routine_no[2] += 1;
             ewk->wu.disp_flag = 1;
-            ewk->wu.old_rno[6] = 4;
-            set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], 0x18, 0);
+            ewk->wu.old_routine_no[6] = 4;
+            set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], 0x18, 0);
         }
 
         disp_pos_trans_entry(ewk);
         break;
 
     case 3:
-        if (ewk->wu.old_rno[6] <= 0) {
+        if (ewk->wu.old_routine_no[6] <= 0) {
             ewk->wu.disp_flag = 0;
         } else {
-            ewk->wu.old_rno[6] -= 1;
+            ewk->wu.old_routine_no[6] -= 1;
         }
 
         if (gSeqStatus[0] >= eff36_04_tbl[ewk->wu.routine_no[2]]) {
             ewk->wu.routine_no[2] += 1;
             ewk->wu.disp_flag = 1;
-            ewk->wu.old_rno[6] = 4;
-            set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], 0x19, 0);
+            ewk->wu.old_routine_no[6] = 4;
+            set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], 0x19, 0);
         }
 
         disp_pos_trans_entry(ewk);
@@ -240,7 +240,7 @@ static void eff36_move05(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
 
         if (ewk->wu.type < 25) {
             push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 8, 1);
@@ -267,7 +267,7 @@ static void eff36_move06(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
         push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 0x15, 8);
         push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 0x16, 9);
         ewk->wu.my_col_code = 8;
@@ -275,14 +275,14 @@ static void eff36_move06(WORK_Other* ewk) {
         ewk->wu.my_mr.size.x = 66;
         ewk->wu.my_mr.size.y = 66;
         disp_pos_trans_entry5(ewk);
-        ewk->wu.old_rno[6] = 2;
+        ewk->wu.old_routine_no[6] = 2;
         break;
 
     case 1:
-        ewk->wu.old_rno[6] -= 1;
+        ewk->wu.old_routine_no[6] -= 1;
 
-        if (ewk->wu.old_rno[6] <= 0) {
-            ewk->wu.old_rno[6] = 2;
+        if (ewk->wu.old_routine_no[6] <= 0) {
+            ewk->wu.old_routine_no[6] = 2;
             ewk->wu.my_mr.size.x += 1;
             ewk->wu.my_mr.size.y += 1;
 
@@ -336,7 +336,7 @@ s32 effect_36_init(u8 typenum) {
     ewk->wu.be_flag = 1;
     ewk->wu.work_id = 0x10;
     ewk->wu.type = typenum;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _op_char_table;
     ewk->wu.my_family = 2;
@@ -348,10 +348,10 @@ s32 effect_36_init(u8 typenum) {
     ewk->wu.xyz[0].disp.pos = *data_ptr++;
     ewk->wu.xyz[1].disp.pos = *data_ptr++;
     ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
-    ewk->wu.old_rno[0] = *data_ptr++;
+    ewk->wu.old_routine_no[0] = *data_ptr++;
     ewk->wu.char_index = *data_ptr++;
-    ewk->wu.old_rno[2] = *data_ptr++;
-    ewk->wu.old_rno[1] = *data_ptr++;
+    ewk->wu.old_routine_no[2] = *data_ptr++;
+    ewk->wu.old_routine_no[1] = *data_ptr++;
     effect_36_move(ewk);
     return 0;
 }

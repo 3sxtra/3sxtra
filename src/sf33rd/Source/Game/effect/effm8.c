@@ -52,13 +52,13 @@ static void effm8_move_app(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-        ewk->wu.old_rno[0] = 60;
+        ewk->wu.old_routine_no[0] = 60;
         break;
 
     case 1:
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] <= 0) {
+        if (ewk->wu.old_routine_no[0] <= 0) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -94,9 +94,9 @@ static void don_run_sub_m8(WORK_Other* ewk) {
 static void effm8_move_win(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] <= 0) {
+        if (ewk->wu.old_routine_no[0] <= 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 1;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -132,7 +132,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 228;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.disp_flag = 0;
         ewk->my_master = oya;
         ewk->master_id = oya->id;
@@ -162,9 +162,9 @@ s32 effect_M8_init(WORK* oya, u8 data) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = -2;
         ewk->wu.shadow_y = 0;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 8;
-        ewk->wu.old_rno[0] = 0;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 8;
+        ewk->wu.old_routine_no[0] = 0;
         ewk->wu.my_mts = 14;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
 
@@ -177,7 +177,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
             ewk->wu.be_flag = 1;
             ewk->wu.id = 228;
             ewk->wu.work_id = 16;
-            ewk->wu.cgromtype = 1;
+            ewk->wu.graphic_rom_type = 1;
             ewk->wu.disp_flag = 0;
             ewk->my_master = oya;
             ewk->master_id = oya->id;
@@ -207,9 +207,9 @@ s32 effect_M8_init(WORK* oya, u8 data) {
             ewk->wu.shadow_flag = 1;
             ewk->wu.shadow_x = -2;
             ewk->wu.shadow_y = 0;
-            ewk->wu.kage_prio = 71;
-            ewk->wu.kage_char = 8;
-            ewk->wu.old_rno[0] = effm8_timer_tbl[i];
+            ewk->wu.shadow_prio = 71;
+            ewk->wu.shadow_char = 8;
+            ewk->wu.old_routine_no[0] = effm8_timer_tbl[i];
             ewk->wu.my_mts = 14;
             ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
         }
@@ -222,7 +222,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 228;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.disp_flag = 0;
         ewk->my_master = oya;
         ewk->master_id = oya->id;
@@ -251,8 +251,8 @@ s32 effect_M8_init(WORK* oya, u8 data) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = -2;
         ewk->wu.shadow_y = 4;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 8;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 8;
         ewk->wu.my_mts = 14;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     }

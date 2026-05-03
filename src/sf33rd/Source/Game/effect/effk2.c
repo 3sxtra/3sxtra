@@ -251,7 +251,7 @@ void effect_K2_move(WORK_Other* ewk) {
         if ((ewk->wu.next_y = hahen->gr1st) == 0) {
             ewk->wu.next_y = (random_16() & 7) + 4;
 
-            if (hahen->kage_char) {
+            if (hahen->shadow_char) {
                 ewk->wu.next_y = -ewk->wu.next_y;
             }
             if ((ewk->wu.xyz[1].disp.pos) < 0) {
@@ -396,7 +396,7 @@ static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
         ewk->wu.mvxy.d[0].sp /= 2;
         ewk->wu.mvxy.a[1].sp = -ewk->wu.mvxy.a[1].sp;
         ewk->wu.mvxy.a[1].sp /= 3;
-        set_next_next_y(&ewk->wu, hahen->kage_char);
+        set_next_next_y(&ewk->wu, hahen->shadow_char);
         break;
 
     case 10:
@@ -413,7 +413,7 @@ static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
 
         default:
             ewk->wu.disp_flag = 2;
-            ewk->wu.kage_prio = 20;
+            ewk->wu.shadow_prio = 20;
             ewk->wu.routine_no[2] = 11;
             break;
         }
@@ -421,7 +421,7 @@ static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
         break;
 
     case 11:
-        if (--ewk->wu.kage_prio > 0) {
+        if (--ewk->wu.shadow_prio > 0) {
             break;
         }
 
@@ -494,7 +494,7 @@ static void effK2_parts_move_type_4(WORK_Other* ewk, DADD* arg1) {
 
         if (ewk->wu.dir_old) {
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_prio = 60;
+            ewk->wu.shadow_prio = 60;
         }
 
         break;
@@ -502,7 +502,7 @@ static void effK2_parts_move_type_4(WORK_Other* ewk, DADD* arg1) {
     case 1:
         char_move(&ewk->wu);
 
-        if (--ewk->wu.kage_prio <= 0) {
+        if (--ewk->wu.shadow_prio <= 0) {
             char_move_cmja(&ewk->wu);
             ewk->wu.routine_no[1] = 0;
             ewk->wu.routine_no[2] = 0;
@@ -525,8 +525,8 @@ static void effK2_parts_move_type_5(WORK_Other* ewk, DADD* arg1) {
 static void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
-        ewk->wu.kage_prio = (random_16() & 7) + 28;
-        ewk->wu.shadow_y = ewk->wu.kage_prio / 2;
+        ewk->wu.shadow_prio = (random_16() & 7) + 28;
+        ewk->wu.shadow_y = ewk->wu.shadow_prio / 2;
         ewk->wu.routine_no[2]++;
         /* fallthrough */
 
@@ -541,7 +541,7 @@ static void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
             ewk->wu.disp_flag = 2;
         }
 
-        if (--ewk->wu.kage_prio < 0) {
+        if (--ewk->wu.shadow_prio < 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
         }
@@ -615,7 +615,7 @@ static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
         ewk->wu.mvxy.d[0].sp /= 2;
         ewk->wu.mvxy.a[1].sp = -ewk->wu.mvxy.a[1].sp;
         ewk->wu.mvxy.a[1].sp /= 3;
-        set_next_next_y(&ewk->wu, hahen->kage_char);
+        set_next_next_y(&ewk->wu, hahen->shadow_char);
         break;
 
     case 10:
@@ -632,7 +632,7 @@ static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
 
         default:
             ewk->wu.disp_flag = 2;
-            ewk->wu.kage_prio = 20;
+            ewk->wu.shadow_prio = 20;
             ewk->wu.routine_no[2] = 11;
             break;
         }
@@ -640,7 +640,7 @@ static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
         break;
 
     case 11:
-        if (--ewk->wu.kage_prio > 0) {
+        if (--ewk->wu.shadow_prio > 0) {
             break;
         }
 
@@ -678,7 +678,7 @@ static s32 effect_K2_init(WORK_Other* wk, u32* dad) {
     ewk->wu.dm_dir = wk->wu.dm_dir;
     ewk->wu.dm_attlv = wk->wu.dm_attlv;
     ewk->wu.my_family = wk->wu.my_family;
-    ewk->wu.cgromtype = wk->wu.cgromtype;
+    ewk->wu.graphic_rom_type = wk->wu.graphic_rom_type;
     ewk->wu.my_col_mode = wk->wu.my_col_mode;
     ewk->wu.my_col_code = wk->wu.my_col_code;
     ewk->wu.my_priority = wk->wu.position_z;

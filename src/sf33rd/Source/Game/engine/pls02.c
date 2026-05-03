@@ -339,8 +339,8 @@ void check_body_touch() {
     PLW* p2w = &g_state.plw[1];
     s16 meri;
 
-    if (p1w->wu.h_hos->hos_box[0] != 0 && p2w->wu.h_hos->hos_box[0] != 0) {
-        meri = hit_check_subroutine(&p1w->wu, &p2w->wu, &p1w->wu.h_hos->hos_box[0], &p2w->wu.h_hos->hos_box[0]);
+    if (p1w->wu.pushbox->hos_box[0] != 0 && p2w->wu.pushbox->hos_box[0] != 0) {
+        meri = hit_check_subroutine(&p1w->wu, &p2w->wu, &p1w->wu.pushbox->hos_box[0], &p2w->wu.pushbox->hos_box[0]);
 
         if (meri != 0) {
             meri = meri_case_switch(meri);
@@ -563,14 +563,14 @@ s32 set_field_hosei_flag(PLW* pl, s16 pos, s16 ix) {
                     pl->wu.xyz[0].disp.pos -= hami;
                     pl->close_proximity_flag = 1;
                     pl->hos_fi_flag = 1;
-                    pl->hosei_amari = -hami;
+                    pl->scaling_remainder = -hami;
                 } else {
                     break;
                 }
             } else {
                 pl->close_proximity_flag = 1;
                 pl->hos_fi_flag = 0;
-                pl->hosei_amari = 0;
+                pl->scaling_remainder = 0;
             }
         } else {
             hami = pl->wu.xyz[0].disp.pos - satse[pl->player_number] - pos;
@@ -580,14 +580,14 @@ s32 set_field_hosei_flag(PLW* pl, s16 pos, s16 ix) {
                     pl->wu.xyz[0].disp.pos -= hami;
                     pl->close_proximity_flag = 2;
                     pl->hos_fi_flag = 2;
-                    pl->hosei_amari = -hami;
+                    pl->scaling_remainder = -hami;
                 } else {
                     break;
                 }
             } else {
                 pl->close_proximity_flag = 2;
                 pl->hos_fi_flag = 0;
-                pl->hosei_amari = 0;
+                pl->scaling_remainder = 0;
             }
         }
 
@@ -596,7 +596,7 @@ s32 set_field_hosei_flag(PLW* pl, s16 pos, s16 ix) {
 
     pl->close_proximity_flag = 0;
     pl->hos_fi_flag = 0;
-    pl->hosei_amari = 0;
+    pl->scaling_remainder = 0;
     return 1;
 }
 
@@ -820,10 +820,10 @@ void setup_vitality(WORK* wk, s16 pno) {
 
     wk->original_vitality = Com_Vital_Unit_Data[pno][CurrentSave()->Damage_Level][ix];
     wk->original_vitality += (s16)base_vital_omake[omop_vital_init[wk->id]];
-    wk->dmcal_m = 32;
-    wk->dmcal_d = (wk->original_vitality << 5) / g_state.Max_vitality;
+    wk->damage_calc_multiplier = 32;
+    wk->damage_calc_divider = (wk->original_vitality << 5) / g_state.Max_vitality;
     wk->vitality = wk->vital_new = wk->vital_old = g_state.Max_vitality;
-    wk->dm_vital = 0;
+    wk->damage_vitality = 0;
 
     if (g_state.Mode_Type != MODE_ARCADE) {
         wk->vital_new = wk->vital_new * (g_state.Vital_Handicap[g_state.Present_Mode][wk->id] + 1) / 8;
@@ -835,7 +835,7 @@ void setup_vitality(WORK* wk, s16 pno) {
 void cal_dm_vital_gauge_hosei(PLW* wk) {
     s16 cnjix;
 
-    if (wk->wu.dm_vital == 0) {
+    if (wk->wu.damage_vitality == 0) {
         return;
     }
 
@@ -850,27 +850,27 @@ void cal_dm_vital_gauge_hosei(PLW* wk) {
             cnjix = 5;
         }
 
-        wk->wu.dm_vital = wk->wu.dm_vital * konjyou_tbl[wk->player_number][cnjix] / wk->wu.dmcal_m;
+        wk->wu.damage_vitality = wk->wu.damage_vitality * konjyou_tbl[wk->player_number][cnjix] / wk->wu.damage_calc_multiplier;
     }
 
-    wk->wu.dm_vital = wk->wu.dm_vital * (32 - wk->tk_konjyou) / wk->wu.dmcal_m;
-    wk->wu.dm_vital = wk->wu.dm_vital * wk->wu.dmcal_m / wk->wu.dmcal_d;
+    wk->wu.damage_vitality = wk->wu.damage_vitality * (32 - wk->guts_scaling) / wk->wu.damage_calc_multiplier;
+    wk->wu.damage_vitality = wk->wu.damage_vitality * wk->wu.damage_calc_multiplier / wk->wu.damage_calc_divider;
 
-    if (wk->wu.dm_vital <= 0) {
-        wk->wu.dm_vital = 1;
+    if (wk->wu.damage_vitality <= 0) {
+        wk->wu.damage_vitality = 1;
     }
 }
 
 /** @brief Applies hit-stop and hit-quake per frame. */
 void set_hit_stop_hit_quake(WORK* wk) {
-    if (wk->dm_stop) {
-        wk->hit_stop = wk->dm_stop;
-        wk->dm_stop = 0;
+    if (wk->damage_hit_stop) {
+        wk->hit_stop = wk->damage_hit_stop;
+        wk->damage_hit_stop = 0;
     }
 
-    if (wk->dm_quake) {
-        wk->hit_quake = wk->dm_quake;
-        wk->dm_quake = 0;
+    if (wk->damage_screen_shake) {
+        wk->hit_quake = wk->damage_screen_shake;
+        wk->damage_screen_shake = 0;
     }
 }
 
@@ -882,11 +882,11 @@ void add_sp_arts_gauge_init(PLW* wk) {
     if (wk->wu.work_id != 1) {
         mwk = (PLW*)wk->cp;
 
-        if ((mwk->wu.work_id == 1) && !(mwk->spmv_ng_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
+        if ((mwk->wu.work_id == 1) && !(mwk->special_move_disabled_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
             asag = _add_arts_gauge[mwk->player_number][wk->wu.add_arts_point][0];
             add_super_arts_gauge(mwk->sa, mwk->wu.id, asag, mwk->metamorphose);
         }
-    } else if (!(wk->spmv_ng_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
+    } else if (!(wk->special_move_disabled_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
         asag = _add_arts_gauge[wk->player_number][wk->wu.add_arts_point][0];
         add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
     }
@@ -1054,13 +1054,13 @@ void add_sp_arts_gauge_maxbit(PLW* wk) {
         return;
     }
 
-    if (!(wk->spmv_ng_flag2 & DIP2_SA_GAUGE_AUTOFILL_DISABLED)) {
+    if (!(wk->special_move_disabled_flag2 & DIP2_SA_GAUGE_AUTOFILL_DISABLED)) {
         g_state.sag_inc_timer[wk->wu.id] = 2;
         add_super_arts_gauge(wk->sa, wk->wu.id, wk->sa->gauge_len, wk->metamorphose);
         return;
     }
 
-    if (!(wk->spmv_ng_flag2 & DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED)) {
+    if (!(wk->special_move_disabled_flag2 & DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED)) {
         if (g_state.sag_inc_timer[wk->wu.id]) {
             g_state.sag_inc_timer[wk->wu.id]--;
             return;
@@ -1142,7 +1142,7 @@ void setup_saishin_lvdir(PLW* ds, s8 gddir) {
         ds->saishin_lvdir = convert_saishin_lvdir[0][ds->cp->input_held & 0xC];
     }
 
-    if (!(ds->spmv_ng_flag & DIP_ABSOLUTE_GUARD_DISABLED) && (ds->guard_chuu != 0) && ((ds->guard_chuu) < 5)) {
+    if (!(ds->spmv_ng_flag & DIP_ABSOLUTE_GUARD_DISABLED) && (ds->guard_active != 0) && ((ds->guard_active) < 5)) {
         ds->saishin_lvdir = gddir;
     }
 }

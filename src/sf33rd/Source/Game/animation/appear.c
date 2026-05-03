@@ -842,7 +842,7 @@ void Appear_14000(PLW* wk) {
             break;
 
         case 1:
-            work = wk->wu.cg_ix / wk->wu.cgd_type;
+            work = wk->wu.graphic_index / wk->wu.cgd_type;
             set_char_move_init2(&wk->wu, 0, 0, work + 1, 0);
             wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
             wk->wu.routine_no[APPEAR_RNO_PHASE] = 1;

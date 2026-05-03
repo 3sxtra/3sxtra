@@ -24,9 +24,9 @@ void effect_B4_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.old_rno[0] = random_16();
-        ewk->wu.old_rno[0] &= 0x1F;
-        ewk->wu.char_index += s_mark_tbl[ewk->wu.old_rno[0]];
+        ewk->wu.old_routine_no[0] = random_16();
+        ewk->wu.old_routine_no[0] &= 0x1F;
+        ewk->wu.char_index += s_mark_tbl[ewk->wu.old_routine_no[0]];
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
@@ -71,7 +71,7 @@ s32 effect_B4_init(WORK_Other* oya) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 114;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->my_master = oya;
     ewk->master_id = 0;
     ewk->wu.my_col_mode = 0;

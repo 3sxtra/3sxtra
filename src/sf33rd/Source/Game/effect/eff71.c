@@ -26,12 +26,12 @@ void effect_71_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] <= 0) {
+            if (ewk->wu.old_routine_no[0] <= 0) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.disp_flag = 1;
-                ewk->wu.old_rno[1] = 0;
+                ewk->wu.old_routine_no[1] = 0;
                 effect_72_init(ewk, 0);
                 effect_72_init(ewk, 1);
             }
@@ -42,10 +42,10 @@ void effect_71_move(WORK_Other* ewk) {
     case 1:
         if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             ewk->wu.routine_no[0] = 0;
-            ewk->wu.old_rno[1] = 0;
+            ewk->wu.old_routine_no[1] = 0;
             work = random_16();
             work &= 7;
-            ewk->wu.old_rno[0] = eff71_time_tbl[work];
+            ewk->wu.old_routine_no[0] = eff71_time_tbl[work];
         }
 
         break;
@@ -73,9 +73,9 @@ s32 effect_71_init() {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 71;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.disp_flag = 0;
-    ewk->wu.old_rno[0] = 0;
+    ewk->wu.old_routine_no[0] = 0;
     return 0;
 }

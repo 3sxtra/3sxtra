@@ -47,11 +47,11 @@ s32 Player_control_bonus() {
         set_quake(&g_state.plw[0]);
         set_quake(&g_state.plw[1]);
 
-        if (!g_state.plw[0].zuru_flag && !g_state.plw[0].absolute_invuln_flag) {
+        if (!g_state.plw[0].invuln_flag && !g_state.plw[0].absolute_invuln_flag) {
             hit_push_request(&g_state.plw[0].wu);
         }
 
-        if (!g_state.plw[1].zuru_flag && !g_state.plw[1].absolute_invuln_flag) {
+        if (!g_state.plw[1].invuln_flag && !g_state.plw[1].absolute_invuln_flag) {
             hit_push_request(&g_state.plw[1].wu);
         }
 
@@ -142,11 +142,11 @@ void plcnt_b_init() {
 /** @brief Per-frame bonus stage player movement and state update. */
 static void plcnt_b_move() {
     if (g_state.No_Death) {
-        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+        g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
     }
 
     if (g_state.Break_Into) {
-        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+        g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
     }
 
     move_player_work_bonus();
@@ -157,14 +157,14 @@ static void plcnt_b_move() {
 
         if ((g_state.plw[0].dead_flag != 0) && (g_state.plw[1].dead_flag != 0)) {
             g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 2;
-            g_state.plw[0].wu.dm_stop = g_state.plw[1].wu.dm_stop = 0;
+            g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 4;
-            g_state.plw[0].wu.dm_quake = g_state.plw[1].wu.dm_quake = 0;
+            g_state.plw[0].wu.damage_screen_shake = g_state.plw[1].wu.damage_screen_shake = 0;
         } else if ((g_state.plw[0].dead_flag != 0) || (g_state.plw[1].dead_flag != 0)) {
             g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 4;
-            g_state.plw[0].wu.dm_stop = g_state.plw[1].wu.dm_stop = 0;
+            g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 8;
-            g_state.plw[0].wu.dm_quake = g_state.plw[1].wu.dm_quake = 0;
+            g_state.plw[0].wu.damage_screen_shake = g_state.plw[1].wu.damage_screen_shake = 0;
         }
     }
 
@@ -175,7 +175,7 @@ static void plcnt_b_move() {
 
 /** @brief Handles bonus stage KO/completion finalization. */
 static void plcnt_b_die() {
-    g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+    g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
 
     switch (g_state.pcon_rno[2]) {
     case 0:
@@ -324,10 +324,10 @@ static void move_P2_move_P1_bonus(s16* field_work) {
 
 /** @brief Applies damage correction for bonus stage interactions. */
 void check_damage_hosei_bonus() {
-    g_state.plw[0].forced_movement = g_state.plw[0].hosei_amari;
-    g_state.plw[1].forced_movement = g_state.plw[1].hosei_amari;
+    g_state.plw[0].forced_movement = g_state.plw[0].scaling_remainder;
+    g_state.plw[1].forced_movement = g_state.plw[1].scaling_remainder;
 
-    switch ((g_state.plw[0].hosei_amari != 0) + ((g_state.plw[1].hosei_amari != 0) * 2)) {
+    switch ((g_state.plw[0].scaling_remainder != 0) + ((g_state.plw[1].scaling_remainder != 0) * 2)) {
     case 1:
         if ((!g_state.plw[0].is_throwing || g_state.plw[0].kind_of_catch != 1) &&
             (g_state.plw[0].is_being_thrown | g_state.plw[0].dm_hos_flag) == 0) {
@@ -335,8 +335,8 @@ void check_damage_hosei_bonus() {
         }
 
     one:
-        g_state.plw[1].wu.xyz[0].disp.pos += g_state.plw[0].hosei_amari;
-        g_state.plw[1].forced_movement += g_state.plw[0].hosei_amari;
+        g_state.plw[1].wu.xyz[0].disp.pos += g_state.plw[0].scaling_remainder;
+        g_state.plw[1].forced_movement += g_state.plw[0].scaling_remainder;
         break;
 
     case 2:
@@ -346,8 +346,8 @@ void check_damage_hosei_bonus() {
         }
 
     two:
-        g_state.plw[0].wu.xyz[0].disp.pos += g_state.plw[1].hosei_amari;
-        g_state.plw[0].forced_movement += g_state.plw[1].hosei_amari;
+        g_state.plw[0].wu.xyz[0].disp.pos += g_state.plw[1].scaling_remainder;
+        g_state.plw[0].forced_movement += g_state.plw[1].scaling_remainder;
         break;
 
     case 3:
@@ -364,5 +364,5 @@ void check_damage_hosei_bonus() {
         break;
     }
 
-    g_state.plw[0].hosei_amari = g_state.plw[1].hosei_amari = 0;
+    g_state.plw[0].scaling_remainder = g_state.plw[1].scaling_remainder = 0;
 }

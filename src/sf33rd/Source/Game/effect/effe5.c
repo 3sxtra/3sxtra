@@ -72,7 +72,7 @@ void effect_E5_move(WORK_Other* ewk) {
 
         setup_illusion_data(ewk, mwk);
 
-        if (ewk->wu.old_rno[2]) {
+        if (ewk->wu.old_routine_no[2]) {
             ewk->wu.routine_no[1] = 1;
         } else {
             ewk->wu.routine_no[1] = 0;
@@ -127,7 +127,7 @@ void effect_E5_move(WORK_Other* ewk) {
 
             case 1:
                 ewk->wu.routine_no[2]++;
-                ewk->wu.dir_step = ewk->wu.dmcal_m;
+                ewk->wu.dir_step = ewk->wu.damage_calc_multiplier;
                 /* fallthrough */
 
             case 2:
@@ -153,14 +153,14 @@ void effect_E5_move(WORK_Other* ewk) {
                 ewk->wu.routine_no[2]++;
                 ewk->wu.dir_step = 0;
 
-                if (ewk->wu.old_rno[5]) {
-                    for (i = 0; i < ewk->wu.dmcal_d; i++) {
+                if (ewk->wu.old_routine_no[5]) {
+                    for (i = 0; i < ewk->wu.damage_calc_divider; i++) {
                         effect_E8_init(ewk, mwk, ewk->wu.dir_step);
-                        ewk->wu.dir_step += ewk->wu.dmcal_m;
+                        ewk->wu.dir_step += ewk->wu.damage_calc_multiplier;
                     }
                 } else {
-                    for (i = 0; i < ewk->wu.dmcal_d; i++) {
-                        ewk->wu.dir_step += ewk->wu.dmcal_m;
+                    for (i = 0; i < ewk->wu.damage_calc_divider; i++) {
+                        ewk->wu.dir_step += ewk->wu.damage_calc_multiplier;
                         effect_E8_init(ewk, mwk, ewk->wu.dir_step);
                     }
                 }
@@ -189,14 +189,14 @@ static void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
         ewk->wu.disp_flag = 2;
     }
 
-    ewk->wu.old_rno[5] = tblh[0] & 0x20;
-    ewk->wu.old_rno[3] = tblh[0] & 8;
-    ewk->wu.old_rno[2] = tblh[0] & 4;
-    ewk->wu.old_rno[1] = tblh[0] & 2;
-    ewk->wu.old_rno[0] = tblh[0] & 1;
-    ewk->wu.old_rno[4] = tblh[1];
-    ewk->wu.dmcal_m = tblh[2];
-    ewk->wu.dmcal_d = tblh[3];
+    ewk->wu.old_routine_no[5] = tblh[0] & 0x20;
+    ewk->wu.old_routine_no[3] = tblh[0] & 8;
+    ewk->wu.old_routine_no[2] = tblh[0] & 4;
+    ewk->wu.old_routine_no[1] = tblh[0] & 2;
+    ewk->wu.old_routine_no[0] = tblh[0] & 1;
+    ewk->wu.old_routine_no[4] = tblh[1];
+    ewk->wu.damage_calc_multiplier = tblh[2];
+    ewk->wu.damage_calc_divider = tblh[3];
     ewk->wu.direction = tblh[4];
     ewk->wu.dir_old = tblh[5];
     ewk->wu.waku_work_index = mwk->image_data_index;
@@ -208,7 +208,7 @@ static void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.routine_no[6] = mwk->wu.routine_no[2];
     ewk->wu.total_paring = mwk->wu.kind_of_waza;
     ewk->wu.total_att_set = ((WORK*)mwk->wu.target_adrs)->kind_of_waza;
-    push_color_trans_req(after_image_color[ewk->wu.old_rno[4]][mwk->wu.id], (mwk->wu.id * 8) + 4);
+    push_color_trans_req(after_image_color[ewk->wu.old_routine_no[4]][mwk->wu.id], (mwk->wu.id * 8) + 4);
     mwk->image_setup_flag = 1;
 }
 
@@ -237,7 +237,7 @@ s32 effect_E5_init(PLW* wk) {
     ewk->wu.id = 145;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = wk->wu.my_family;
-    ewk->wu.cgromtype = wk->wu.cgromtype;
+    ewk->wu.graphic_rom_type = wk->wu.graphic_rom_type;
     ewk->wu.my_col_mode = wk->wu.my_col_mode;
     ewk->wu.my_col_code = wk->wu.my_col_code;
     ewk->my_master = wk;
@@ -249,21 +249,21 @@ s32 effect_E5_init(PLW* wk) {
 }
 
 void effect_e7_e8_init_union(WORK_Other* nwk, WORK_Other* ek, PLW* mk) {
-    nwk->wu.old_rno[4] = ek->wu.old_rno[4];
-    nwk->wu.old_rno[3] = ek->wu.old_rno[3];
-    nwk->wu.old_rno[1] = ek->wu.old_rno[1];
-    nwk->wu.old_rno[0] = ek->wu.old_rno[0];
-    nwk->wu.old_rno[5] = ek->wu.old_rno[5];
+    nwk->wu.old_routine_no[4] = ek->wu.old_routine_no[4];
+    nwk->wu.old_routine_no[3] = ek->wu.old_routine_no[3];
+    nwk->wu.old_routine_no[1] = ek->wu.old_routine_no[1];
+    nwk->wu.old_routine_no[0] = ek->wu.old_routine_no[0];
+    nwk->wu.old_routine_no[5] = ek->wu.old_routine_no[5];
     nwk->wu.olc_work_ix[2] = ek->wu.olc_work_ix[2];
     nwk->wu.my_bright_type = ek->wu.my_bright_type;
     nwk->wu.my_mts = mk->wu.my_mts;
     nwk->wu.my_family = mk->wu.my_family;
-    nwk->wu.cgromtype = mk->wu.cgromtype;
+    nwk->wu.graphic_rom_type = mk->wu.graphic_rom_type;
     nwk->wu.my_col_mode = mk->wu.my_col_mode;
     nwk->wu.my_col_code = mk->wu.my_col_code;
-    nwk->wu.dir_timer = ek->wu.dmcal_d * ek->wu.dmcal_m;
-    nwk->wu.dmcal_d = ek->wu.dmcal_d;
-    nwk->wu.dmcal_m = ek->wu.dmcal_m;
+    nwk->wu.dir_timer = ek->wu.damage_calc_divider * ek->wu.damage_calc_multiplier;
+    nwk->wu.damage_calc_divider = ek->wu.damage_calc_divider;
+    nwk->wu.damage_calc_multiplier = ek->wu.damage_calc_multiplier;
     nwk->wu.blink_timing = mk->wu.blink_timing;
     nwk->wu.target_adrs = ek;
     nwk->my_master = mk;
@@ -289,7 +289,7 @@ void get_attdata_of_illusion(WORK_Other* ewk) {
     get_char_data_zanzou(&ewk->wu);
     ewk->wu.att.guard = 0x3F;
     ewk->wu.att.dipsw = 1;
-    ewk->wu.kezuri_pow = 0;
+    ewk->wu.chip_damage_power = 0;
     ewk->wu.at_attribute = 0;
     ewk->wu.att.pow /= 4;
 

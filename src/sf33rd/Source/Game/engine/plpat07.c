@@ -266,16 +266,16 @@ static void Att_PL07_TOKUSHUKOUDOU(PLW* wk) {
 
         if (wk->wu.cg_type == 30) {
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 14;
-            wk->tk_nage += 14;
+            wk->strike_scaling += 14;
+            wk->throw_scaling += 14;
         }
 
-        if (wk->tk_dageki > 28) {
-            wk->tk_dageki = 28;
+        if (wk->strike_scaling > 28) {
+            wk->strike_scaling = 28;
         }
 
-        if (wk->tk_nage > 28) {
-            wk->tk_nage = 28;
+        if (wk->throw_scaling > 28) {
+            wk->throw_scaling = 28;
         }
 
         if (wk->wu.cg_type == 64) {

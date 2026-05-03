@@ -35,14 +35,14 @@ void effect_E7_move(WORK_Other* ewk) {
         }
 
         if (g_state.Game_pause != 0x81) {
-            if (ewk->wu.old_rno[5]) {
+            if (ewk->wu.old_routine_no[5]) {
                 ewk->wu.position_x = mwk->wu.position_x;
                 ewk->wu.position_y = mwk->wu.position_y;
             }
 
             ewk->wu.position_z = mwk->wu.position_z;
 
-            if (ewk->wu.old_rno[3] == 0) {
+            if (ewk->wu.old_routine_no[3] == 0) {
                 ewk->wu.cg_number = mwk->wu.cg_number;
                 ewk->wu.rl_flag = mwk->wu.rl_flag;
                 ewk->wu.cg_flip = mwk->wu.cg_flip;
@@ -54,30 +54,30 @@ void effect_E7_move(WORK_Other* ewk) {
                 break;
             }
 
-            pricol = ewk->wu.dmcal_d - (ewk->wu.dir_timer + ewk->wu.dmcal_m - 1) / ewk->wu.dmcal_m;
-            ewk->wu.old_rno[6] = pricol;
+            pricol = ewk->wu.damage_calc_divider - (ewk->wu.dir_timer + ewk->wu.damage_calc_multiplier - 1) / ewk->wu.damage_calc_multiplier;
+            ewk->wu.old_routine_no[6] = pricol;
 
-            if (ewk->wu.old_rno[0]) {
+            if (ewk->wu.old_routine_no[0]) {
                 ewk->wu.position_z -= pricol;
             } else {
                 ewk->wu.position_z += pricol;
             }
 
-            if (ewk->wu.old_rno[4]) {
+            if (ewk->wu.old_routine_no[4]) {
                 if (ewk->wu.olc_work_ix[2] && mwk->metamorphose) {
-                    ewk->wu.extra_col = after_image_color[ewk->wu.old_rno[4] + pricol][(ewk->master_id + 1) & 1];
+                    ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + pricol][(ewk->master_id + 1) & 1];
                 } else {
-                    ewk->wu.extra_col = after_image_color[ewk->wu.old_rno[4] + pricol][ewk->master_id];
+                    ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + pricol][ewk->master_id];
                 }
             } else {
                 ewk->wu.extra_col = mwk->wu.current_colcd;
             }
 
-            if (ewk->wu.old_rno[1]) {
+            if (ewk->wu.old_routine_no[1]) {
                 get_attdata_of_illusion(ewk);
             }
 
-            ewk->wu.my_bright_level = (ewk->wu.old_rno[6] * 3) + 1;
+            ewk->wu.my_bright_level = (ewk->wu.old_routine_no[6] * 3) + 1;
         }
 
         if (mwk->wu.disp_flag != 0 && mwk->sa_stop_flag == 0) {
@@ -118,7 +118,7 @@ s32 effect_E7_init(WORK_Other* ek, PLW* mk) {
     ewk->wu.disp_flag = ek->wu.disp_flag;
     ewk->wu.id = 147;
 
-    if (ek->wu.old_rno[1]) {
+    if (ek->wu.old_routine_no[1]) {
         ewk->wu.work_id = 8;
     } else {
         ewk->wu.work_id = 16;

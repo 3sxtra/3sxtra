@@ -73,14 +73,14 @@ void effect_77_move(WORK_Other* ewk) {
             }
         }
 
-        ewk->wu.old_rno[0] = eff77_data_tbl[ewk->wu.type][0];
-        ewk->wu.old_rno[1] = eff77_data_tbl[ewk->wu.type][1];
-        overwrite_panel(eff77_col_tbl[ewk->wu.old_rno[1]], 0x46);
+        ewk->wu.old_routine_no[0] = eff77_data_tbl[ewk->wu.type][0];
+        ewk->wu.old_routine_no[1] = eff77_data_tbl[ewk->wu.type][1];
+        overwrite_panel(eff77_col_tbl[ewk->wu.old_routine_no[1]], 0x46);
         break;
 
     case 2:
         if (g_state.Game_pause || g_state.EXE_flag) {
-            overwrite_panel(eff77_col_tbl[ewk->wu.old_rno[1]], 0x46);
+            overwrite_panel(eff77_col_tbl[ewk->wu.old_routine_no[1]], 0x46);
             break;
         }
 
@@ -99,18 +99,18 @@ void effect_77_move(WORK_Other* ewk) {
 
     case 3:
         if (g_state.Suicide[6]) {
-            ewk->wu.old_rno[0] = 0;
+            ewk->wu.old_routine_no[0] = 0;
         }
 
         if (!g_state.Game_pause && !g_state.EXE_flag) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] <= 0) {
+            if (ewk->wu.old_routine_no[0] <= 0) {
                 g_state.sa_pa_flag = 0;
                 ewk->wu.routine_no[0]++;
                 g_state.plw[0].wu.disp_flag = 1;
                 g_state.plw[1].wu.disp_flag = 1;
-                overwrite_panel(eff77_col_tbl[ewk->wu.old_rno[1]], 0x46);
+                overwrite_panel(eff77_col_tbl[ewk->wu.old_routine_no[1]], 0x46);
                 bg = ake_bg_off[g_state.bg_w.stage];
                 mask = 1;
 
@@ -126,7 +126,7 @@ void effect_77_move(WORK_Other* ewk) {
             g_state.sa_pa_flag = 1;
         }
 
-        overwrite_panel(eff77_col_tbl[ewk->wu.old_rno[1]], 0x46);
+        overwrite_panel(eff77_col_tbl[ewk->wu.old_routine_no[1]], 0x46);
         break;
 
     case 4:

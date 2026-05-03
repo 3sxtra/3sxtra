@@ -132,7 +132,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "routine_no_1", wu->routine_no[1]);
 
     // --- Recovery (offset 0x187) ---
-    PUSH_INT(L, t, "recovery_time", wu->dm_stop);
+    PUSH_INT(L, t, "recovery_time", wu->damage_hit_stop);
 
     // --- Hit stop ---
     PUSH_INT(L, t, "hit_stop", wu->hit_stop);
@@ -141,7 +141,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "remaining_freeze_frames", wu->dead_f);
 
     // --- Animation frame IDs ---
-    PUSH_INT(L, t, "animation_frame_id", wu->cg_ix);
+    PUSH_INT(L, t, "animation_frame_id", wu->graphic_index);
     PUSH_INT(L, t, "char_index", wu->char_index);
     PUSH_INT(L, t, "cg_number", wu->cg_number);
 
@@ -189,7 +189,7 @@ static int l_read_player(lua_State* L) {
 
     // --- Missing fields from Phase 2 audit ---
     // Damage state
-    PUSH_INT(L, t, "dm_stop", wu->dm_stop);
+    PUSH_INT(L, t, "damage_hit_stop", wu->damage_hit_stop);
     PUSH_INT(L, t, "dm_guard_success", wu->dm_guard_success);
     PUSH_INT(L, t, "dm_attlv", wu->dm_attlv);
     PUSH_INT(L, t, "damage_stun_value", wu->damage_stun_value);
@@ -215,7 +215,7 @@ static int l_read_player(lua_State* L) {
     // --- PLW-specific fields ---
     // Guard
     PUSH_INT(L, t, "guard_flag", wk->guard_flag);
-    PUSH_INT(L, t, "guard_chuu", wk->guard_chuu);
+    PUSH_INT(L, t, "guard_active", wk->guard_active);
     PUSH_INT(L, t, "kind_of_blocking", wk->kind_of_blocking);
 
     // Throws
@@ -275,12 +275,12 @@ static int l_read_player(lua_State* L) {
 
     // --- Hitboxes ---
     // Push simplified hitbox data for the OSD
-    if (wu->h_att) {
+    if (wu->attack_hitbox) {
         lua_createtable(L, 4, 0);
         for (int i = 0; i < 4; i++) {
             lua_createtable(L, 4, 0);
             for (int j = 0; j < 4; j++) {
-                lua_pushinteger(L, wu->h_att->att_box[i][j]);
+                lua_pushinteger(L, wu->attack_hitbox->att_box[i][j]);
                 lua_rawseti(L, -2, j + 1);
             }
             lua_rawseti(L, -2, i + 1);
@@ -288,12 +288,12 @@ static int l_read_player(lua_State* L) {
         lua_setfield(L, t, "attack_boxes");
     }
 
-    if (wu->h_bod) {
+    if (wu->body_hurtbox) {
         lua_createtable(L, 4, 0);
         for (int i = 0; i < 4; i++) {
             lua_createtable(L, 4, 0);
             for (int j = 0; j < 4; j++) {
-                lua_pushinteger(L, wu->h_bod->body_dm[i][j]);
+                lua_pushinteger(L, wu->body_hurtbox->body_dm[i][j]);
                 lua_rawseti(L, -2, j + 1);
             }
             lua_rawseti(L, -2, i + 1);
@@ -312,7 +312,7 @@ static int l_read_player(lua_State* L) {
     // --- PLW extended ---
     PUSH_INT(L, t, "current_attack", wk->current_attack);
     PUSH_INT(L, t, "running_f", wk->running_f);
-    PUSH_INT(L, t, "zuru_flag", wk->zuru_flag ? 1 : 0);
+    PUSH_INT(L, t, "invuln_flag", wk->invuln_flag ? 1 : 0);
     PUSH_INT(L, t, "att_plus", wk->att_plus);
     PUSH_INT(L, t, "def_plus", wk->def_plus);
     PUSH_INT(L, t, "high_jump_flag", wk->high_jump_flag);
@@ -421,7 +421,7 @@ static int l_read_player(lua_State* L) {
         // character_state_byte: base + 0x27 (byte) — same as routine_no[1]
         PUSH_INT(L, t, "character_state_byte", base[0x27]);
 
-        // wakeup_time: base + 0x187 = recovery_time (already pushed as dm_stop)
+        // wakeup_time: base + 0x187 = recovery_time (already pushed as damage_hit_stop)
         // combo: base + 0xA59 (P1) / 0x519 (P2) — but combo_total already pushed via PLW
     }
 

@@ -9,7 +9,7 @@
  * Parry system notes (from engine analysis):
  *   - cmd_main.c check_10() requires neutral→forward TRANSITION (case 0→1)
  *   - hitcheck.c defense_ground() checks move_state_flags[3] (high), move_state_flags[4] (low)
- *   - Red parry needs guard_chuu != 0 && guard_chuu < 5 (just_now flag)
+ *   - Red parry needs guard_active != 0 && guard_active < 5 (just_now flag)
  *   - Guard (blocking) uses saishin_lvdir, computed from cp->input_held from g_state.Lever_Buff
  */
 
@@ -208,13 +208,13 @@ static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
 /**
  * @brief Inject a red parry into the dummy.
  *
- * Red parry in 3S: while in blockstun (guard_chuu != 0), tap forward
- * to parry the next hit. hitcheck checks just_now = (guard_chuu < 5)
+ * Red parry in 3S: while in blockstun (guard_active != 0), tap forward
+ * to parry the next hit. hitcheck checks just_now = (guard_active < 5)
  * and move_state_flags[3/4] >= grdb threshold.
  *
  * We use the same neutral→forward alternation as normal parry but
  * also set move_state_flags to 0xFF to guarantee the threshold is met.
- * The engine will only grant the red parry when guard_chuu is < 5.
+ * The engine will only grant the red parry when guard_active is < 5.
  */
 static void inject_red_parry(PLW* wk, s16 dummy_id, bool low) {
     /* Alternate neutral/forward — engine needs the lever transition
@@ -326,15 +326,15 @@ static void execute_block_or_parry(PLW* wk, s16 dummy_id) {
         /*
          * Red parry: block the first hit, then parry subsequent hits.
          *
-         * guard_chuu != 0 means we're in blockstun (engine field).
-         * When guard_chuu is active and < 5, that's "just_now" — the
+         * guard_active != 0 means we're in blockstun (engine field).
+         * When guard_active is active and < 5, that's "just_now" — the
          * window where red parry is checked by hitcheck.c.
          *
          * Strategy:
          *   - If NOT yet blocking: hold back to block the first hit
-         *   - If IN blockstun (guard_chuu active): inject red parry
+         *   - If IN blockstun (guard_active active): inject red parry
          */
-        if (wk->guard_chuu != 0) {
+        if (wk->guard_active != 0) {
             /* Currently in blockstun — inject red parry for next hit */
             try_red_parry = true;
             parry_low = opponent->is_crouching;

@@ -46,7 +46,7 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
             ewk->wu.dir_timer = 0;
             ewk->wu.dir_step = g_state.Bonus_Game_result;
 
-            if (ewk->wu.kage_prio) {
+            if (ewk->wu.shadow_prio) {
                 ewk->wu.position_z = 8;
                 ewk->wu.my_clear_level = 128;
             } else {
@@ -67,7 +67,7 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
                 break;
             }
 
-            if (ewk->wu.kage_prio) {
+            if (ewk->wu.shadow_prio) {
                 Se_Dispatch(167, 167, ewk);
             }
 
@@ -216,8 +216,8 @@ s32 effect_B1_init(PLW* wk, s32 flag) {
     ewk->wu.work_id = 16;
     ewk->wu.my_mts = 14;
     ewk->wu.my_family = 3;
-    ewk->wu.cgromtype = 1;
-    ewk->wu.kage_prio = flag;
+    ewk->wu.graphic_rom_type = 1;
+    ewk->wu.shadow_prio = flag;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 73;
     ewk->num_of_conn = 20;

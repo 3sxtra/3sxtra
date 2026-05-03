@@ -30,41 +30,41 @@ void effect_53_move(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        ewk->wu.old_rno[2]--;
+        ewk->wu.old_routine_no[2]--;
 
-        if (ewk->wu.old_rno[2] <= 0) {
+        if (ewk->wu.old_routine_no[2] <= 0) {
             ewk->wu.routine_no[0]++;
-            ewk->wu.old_rno[0] = 30;
-            ewk->wu.old_rno[1] = 0;
+            ewk->wu.old_routine_no[0] = 30;
+            ewk->wu.old_routine_no[1] = 0;
             ewk->wu.disp_flag = 1;
         }
 
         break;
 
     case 1:
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] > 0) {
+        if (ewk->wu.old_routine_no[0] > 0) {
             break;
         }
 
         ewk->wu.disp_flag ^= 1;
-        ewk->wu.old_rno[0] = 30;
+        ewk->wu.old_routine_no[0] = 30;
 
         if (ewk->wu.disp_flag) {
             break;
         }
 
-        ewk->wu.old_rno[1]++;
+        ewk->wu.old_routine_no[1]++;
 
-        if (ewk->wu.old_rno[1] < 6) {
+        if (ewk->wu.old_routine_no[1] < 6) {
             break;
         }
 
         ewk->wu.routine_no[0] = 0;
         work = random_16();
         work &= 7;
-        ewk->wu.old_rno[2] = eff53_vanish_time[work];
+        ewk->wu.old_routine_no[2] = eff53_vanish_time[work];
         ewk->wu.disp_flag = 0;
         break;
 
@@ -87,9 +87,9 @@ s32 effect_53_init() {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 53;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.disp_flag = 0;
-    ewk->wu.old_rno[2] = 0;
+    ewk->wu.old_routine_no[2] = 0;
     effect_54_init(ewk);
     return 0;
 }

@@ -10,7 +10,7 @@ extern const u16 acatkoa_table[];
 extern u16 att_req;
 
 void setupCharTableData(WORK* wk, s32 clr, s32 info);
-void char_move_cmhs(PLW* wk);
+void char_move_cmd_hit_stop(PLW* wk);
 void char_move(WORK* wk);
 void check_cm_extended_code(WORK* wk);
 void setup_comm_back(WORK* wk);

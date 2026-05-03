@@ -41,8 +41,8 @@ static void Att_PL16_TOKUSHUKOUDOU(PLW* wk) {
         case 30:
             wk->wu.cg_type = 0;
 
-            if (wk->tk_konjyou == 0) {
-                wk->tk_konjyou = 6;
+            if (wk->guts_scaling == 0) {
+                wk->guts_scaling = 6;
             }
 
             break;
@@ -55,8 +55,8 @@ static void Att_PL16_TOKUSHUKOUDOU(PLW* wk) {
         case 50:
             wk->wu.cg_type = 0;
 
-            if (wk->tk_dageki < 10) {
-                wk->tk_dageki = 10;
+            if (wk->strike_scaling < 10) {
+                wk->strike_scaling = 10;
             }
 
             break;

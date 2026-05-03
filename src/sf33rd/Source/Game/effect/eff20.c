@@ -25,7 +25,7 @@ void effect_20_move(WORK_Other* ewk) {
         ewk->wu.my_mr.size.x = 63;
         ewk->wu.my_mr.size.y = 63;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-        oya->wu.old_rno[0] = 0;
+        oya->wu.old_routine_no[0] = 0;
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
         break;
@@ -36,7 +36,7 @@ void effect_20_move(WORK_Other* ewk) {
         if (ewk->wu.cg_type == 0xFF) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 0;
-            oya->wu.old_rno[0] = 1;
+            oya->wu.old_routine_no[0] = 1;
         }
 
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
@@ -70,7 +70,7 @@ s32 effect_20_init(WORK_Other* oya) {
     ewk->wu.id = 20;
     ewk->wu.work_id = 16;
     ewk->wu.my_priority = 0x40;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = g_state.plw[g_state.Winner_id].wu.rl_flag;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _etc2_char_table;

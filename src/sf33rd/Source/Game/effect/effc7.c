@@ -103,7 +103,7 @@ s32 effect_C7_init(PLW* wk, u8 data) {
     ewk->wu.work_id = 64;
     ewk->wu.rl_flag = wk->wu.rl_flag;
     ewk->wu.direction = data;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 0x2020;
     ewk->wu.my_family = wk->wu.my_family;

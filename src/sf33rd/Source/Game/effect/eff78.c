@@ -81,8 +81,8 @@ void crow_fuss_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
-        ewk->wu.old_rno[0] = crow_char_tbl[ewk->wu.direction][0];
-        set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0]);
+        ewk->wu.old_routine_no[0] = crow_char_tbl[ewk->wu.direction][0];
+        set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0]);
         break;
 
     case 1:
@@ -90,11 +90,11 @@ void crow_fuss_move(WORK_Other* ewk) {
 
         if (ewk->wu.cg_type == 0xFF) {
             ewk->wu.routine_no[1]++;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0] + 1);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0] + 1);
             ewk->wu.dir_timer = 28;
-            ewk->wu.old_rno[1] = ewk->wu.xyz[0].disp.pos + crow_char_tbl[ewk->wu.direction][1];
-            ewk->wu.old_rno[2] = ewk->wu.xyz[1].disp.pos + crow_char_tbl[ewk->wu.direction][2];
-            cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.old_rno[1], ewk->wu.old_rno[2], 2, 2);
+            ewk->wu.old_routine_no[1] = ewk->wu.xyz[0].disp.pos + crow_char_tbl[ewk->wu.direction][1];
+            ewk->wu.old_routine_no[2] = ewk->wu.xyz[1].disp.pos + crow_char_tbl[ewk->wu.direction][2];
+            cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.old_routine_no[1], ewk->wu.old_routine_no[2], 2, 2);
         }
 
         break;
@@ -106,7 +106,7 @@ void crow_fuss_move(WORK_Other* ewk) {
         if (ewk->wu.dir_timer < 1) {
             ewk->wu.routine_no[1]++;
             ewk->wu.dir_timer = 4;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0] + 2);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0] + 2);
         } else {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -129,11 +129,11 @@ void crow_fuss_move(WORK_Other* ewk) {
 
         if (ewk->wu.cg_type == 0xFF) {
             ewk->wu.routine_no[1]++;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0] + 3);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0] + 3);
             ewk->wu.dir_timer = 48;
-            ewk->wu.old_rno[1] = eff78_data_tbl[ewk->wu.type << 1];
-            ewk->wu.old_rno[2] = eff78_data_tbl[(ewk->wu.type << 1) + 1];
-            cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.old_rno[1], ewk->wu.old_rno[2] + 4, 0, 0);
+            ewk->wu.old_routine_no[1] = eff78_data_tbl[ewk->wu.type << 1];
+            ewk->wu.old_routine_no[2] = eff78_data_tbl[(ewk->wu.type << 1) + 1];
+            cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.old_routine_no[1], ewk->wu.old_routine_no[2] + 4, 0, 0);
         }
 
         break;
@@ -155,9 +155,9 @@ void crow_fuss_move(WORK_Other* ewk) {
 
         if (ewk->wu.dir_timer < 1) {
             ewk->wu.routine_no[1]++;
-            ewk->wu.xyz[0].disp.pos = ewk->wu.old_rno[1];
-            ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[2];
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0] + 4);
+            ewk->wu.xyz[0].disp.pos = ewk->wu.old_routine_no[1];
+            ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[2];
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0] + 4);
         } else {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -192,7 +192,7 @@ s32 effect_78_init() {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 78;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
         ewk->wu.type = i;
         ewk->wu.dead_f = 0;

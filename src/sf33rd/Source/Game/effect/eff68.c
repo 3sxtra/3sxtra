@@ -33,7 +33,7 @@ void effect_68_move(WORK_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.routine_no[4] = 50;
-                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_rno[2], ewk->wu.old_rno[3], 1, 1);
+                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[3], 1, 1);
                 ewk->wu.char_index = ewk->wu.routine_no[6];
                 set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
             }
@@ -49,7 +49,7 @@ void effect_68_move(WORK_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.routine_no[4] = 50;
-                cal_delta_speed(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_rno[4], ewk->wu.old_rno[5], 2, 2);
+                cal_delta_speed(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[4], ewk->wu.old_routine_no[5], 2, 2);
                 ewk->wu.char_index = ewk->wu.routine_no[6];
                 set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
             }
@@ -68,7 +68,7 @@ void effect_68_move(WORK_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.routine_no[4] = 40;
-                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_rno[6], ewk->wu.old_rno[7], 1, 1);
+                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[6], ewk->wu.old_routine_no[7], 1, 1);
             }
 
             add_x_sub(&ewk->wu);
@@ -86,7 +86,7 @@ void effect_68_move(WORK_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.routine_no[4] = 60;
-                cal_delta_speed(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_rno[0], ewk->wu.old_rno[1], 2, 2);
+                cal_delta_speed(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], 2, 2);
                 ewk->wu.char_index = ewk->wu.routine_no[5];
                 set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
             }
@@ -106,7 +106,7 @@ void effect_68_move(WORK_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0] = 2;
                 ewk->wu.routine_no[4] = 50;
-                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_rno[2], ewk->wu.old_rno[3], 1, 1);
+                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[3], 1, 1);
                 ewk->wu.char_index = ewk->wu.routine_no[6];
                 set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
             }
@@ -145,7 +145,7 @@ s32 effect_68_init() {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 68;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
         ewk->wu.dead_f = 1;
         ewk->wu.my_col_mode = 0x4200;
@@ -153,14 +153,14 @@ s32 effect_68_init() {
         ewk->wu.my_mts = 7;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
         ewk->wu.my_family = *data_ptr++;
-        ewk->wu.xyz[0].disp.pos = ewk->wu.old_rno[0] = *data_ptr++;
-        ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[1] = *data_ptr++;
-        ewk->wu.old_rno[2] = *data_ptr++;
-        ewk->wu.old_rno[3] = *data_ptr++;
-        ewk->wu.old_rno[4] = *data_ptr++;
-        ewk->wu.old_rno[5] = *data_ptr++;
-        ewk->wu.old_rno[6] = *data_ptr++;
-        ewk->wu.old_rno[7] = *data_ptr++;
+        ewk->wu.xyz[0].disp.pos = ewk->wu.old_routine_no[0] = *data_ptr++;
+        ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[1] = *data_ptr++;
+        ewk->wu.old_routine_no[2] = *data_ptr++;
+        ewk->wu.old_routine_no[3] = *data_ptr++;
+        ewk->wu.old_routine_no[4] = *data_ptr++;
+        ewk->wu.old_routine_no[5] = *data_ptr++;
+        ewk->wu.old_routine_no[6] = *data_ptr++;
+        ewk->wu.old_routine_no[7] = *data_ptr++;
         ewk->wu.char_index = ewk->wu.routine_no[5] = *data_ptr++;
         ewk->wu.routine_no[6] = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;

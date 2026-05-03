@@ -80,10 +80,10 @@ static void Att_PL12_TOKUSHUKOUDOU(PLW* wk) {
 
         if (wk->wu.cg_type == 30) {
             wk->wu.cg_type = 0;
-            wk->tk_kizetsu += 4;
+            wk->stun_scaling += 4;
 
-            if (wk->tk_kizetsu > 12) {
-                wk->tk_kizetsu = 12;
+            if (wk->stun_scaling > 12) {
+                wk->stun_scaling = 12;
             }
         }
 

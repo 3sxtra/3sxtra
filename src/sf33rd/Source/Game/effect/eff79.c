@@ -127,20 +127,20 @@ void effect_79_move(WORK_Other* ewk) {
             case 1:
                 switch (ewk->wu.hit_quake) {
                 case 0:
-                    ewk->wu.dmcal_m = 1;
-                    ewk->wu.dm_vital = 3;
+                    ewk->wu.damage_calc_multiplier = 1;
+                    ewk->wu.damage_vitality = 3;
                     Setup_Move_79(ewk, 2, 0x60000, -0x20000, 0);
                     break;
 
                 case 1:
-                    ewk->wu.dmcal_m = 2;
-                    ewk->wu.dm_vital = 1;
+                    ewk->wu.damage_calc_multiplier = 2;
+                    ewk->wu.damage_vitality = 1;
                     Setup_Move_79(ewk, 2, 0x60000, -0x20000, 0);
                     break;
 
                 default:
-                    ewk->wu.dmcal_m = 0;
-                    ewk->wu.dm_vital = 2;
+                    ewk->wu.damage_calc_multiplier = 0;
+                    ewk->wu.damage_vitality = 2;
                     Setup_Move_79(ewk, 2, 0x20000, -0x80000, 2);
                     break;
                 }
@@ -150,20 +150,20 @@ void effect_79_move(WORK_Other* ewk) {
             case 2:
                 switch (ewk->wu.hit_quake) {
                 case 0:
-                    ewk->wu.dmcal_m = 2;
-                    ewk->wu.dm_vital = 3;
+                    ewk->wu.damage_calc_multiplier = 2;
+                    ewk->wu.damage_vitality = 3;
                     Setup_Move_79(ewk, 2, 0x60000, -0x80000, 1);
                     break;
 
                 case 1:
-                    ewk->wu.dmcal_m = 0;
-                    ewk->wu.dm_vital = 1;
+                    ewk->wu.damage_calc_multiplier = 0;
+                    ewk->wu.damage_vitality = 1;
                     Setup_Move_79(ewk, 1, -0x60000, 0x20000, 0);
                     break;
 
                 default:
-                    ewk->wu.dmcal_m = 1;
-                    ewk->wu.dm_vital = 2;
+                    ewk->wu.damage_calc_multiplier = 1;
+                    ewk->wu.damage_vitality = 2;
                     Setup_Move_79(ewk, 1, -0x60000, 0x20000, 0);
                     break;
                 }
@@ -326,7 +326,7 @@ void effect_79_move(WORK_Other* ewk) {
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos;
-    g_state.PP_Priority[ewk->master_id][ewk->master_player] = ewk->wu.dmcal_m;
+    g_state.PP_Priority[ewk->master_id][ewk->master_player] = ewk->wu.damage_calc_multiplier;
     if (!rmlui_char_select_visible)
         sort_push_request4(&ewk->wu);
 }
@@ -341,9 +341,9 @@ static s32 Check_Play_Status_79(WORK_Other* ewk) {
         g_state.Plate_Disposal_No[ewk->master_id][ewk->master_player] = 1;
         ewk->wu.dir_timer = 1;
         ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
-                            Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.dmcal_m][0];
+                            Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.damage_calc_multiplier][0];
         ewk->wu.direction = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
-                            Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.dmcal_m][1];
+                            Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.damage_calc_multiplier][1];
         g_state.OK_Moving_SA_Plate[ewk->master_id] = 3;
         ewk->wu.mvxy.a[1].sp = -0x8000;
         ewk->wu.mvxy.d[1].sp = -0xE000;
@@ -414,9 +414,9 @@ static void Setup_Move_79(WORK_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_
     ewk->wu.routine_no[7] = 0;
     ewk->wu.dir_timer = 1;
     ewk->wu.vital_new = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
-                        Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.dmcal_m][0];
+                        Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.damage_calc_multiplier][0];
     ewk->wu.direction = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
-                        Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.dmcal_m][1];
+                        Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][ewk->wu.damage_calc_multiplier][1];
     ewk->wu.mvxy.a[1].sp = Y_Value;
     ewk->wu.mvxy.d[1].sp = 0;
     g_state.Plate_Disposal_No[ewk->master_id][ewk->master_player] = 1;
@@ -431,7 +431,7 @@ static void Setup_Move_79(WORK_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_
 
     if (0 < ewk->wu.mvxy.a[1].sp) {
         ewk->wu.vital_old = ewk->wu.xyz[1].disp.pos + 48;
-    } else if (ewk->wu.dmcal_m == 0) {
+    } else if (ewk->wu.damage_calc_multiplier == 0) {
         ewk->wu.vital_old = ewk->wu.xyz[1].disp.pos - 40;
     } else {
         ewk->wu.vital_old = ewk->wu.xyz[1].disp.pos - 48;
@@ -457,7 +457,7 @@ static void Move_79(WORK_Other* ewk) {
 
         if (arrived[0] != 0 && arrived[1] != 0) {
             ewk->wu.routine_no[2]++;
-            ewk->wu.hit_quake = ewk->wu.dmcal_m;
+            ewk->wu.hit_quake = ewk->wu.damage_calc_multiplier;
             g_state.Moving_Plate_Counter[ewk->master_id]--;
             ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->wu.hit_quake] + 35;
         }
@@ -490,9 +490,9 @@ static void Check_Priority(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (--ewk->wu.dm_vital == 0) {
+        if (--ewk->wu.damage_vitality == 0) {
             ewk->wu.routine_no[7]++;
-            ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->wu.dmcal_m] + 35;
+            ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->wu.damage_calc_multiplier] + 35;
         }
 
         break;
@@ -542,12 +542,12 @@ static s32 EFF79_Move_Y(WORK_Other* ewk) {
                 ewk->wu.mvxy.a[1].sp = -ewk->wu.mvxy.a[1].sp;
                 ewk->wu.mvxy.d[1].sp = -ewk->wu.mvxy.d[1].sp;
 
-                if (ewk->wu.dmcal_m == 0) {
+                if (ewk->wu.damage_calc_multiplier == 0) {
                     ewk->wu.mvxy.a[0].sp = -0x60000;
                     ewk->wu.mvxy.d[0].sp = -ewk->wu.mvxy.d[0].sp;
                 }
 
-                ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->wu.dmcal_m] + 35;
+                ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->wu.damage_calc_multiplier] + 35;
                 Setup_Command_Name(ewk);
             }
         } else if (ewk->wu.vital_old <= ewk->wu.xyz[1].disp.pos) {
@@ -558,12 +558,12 @@ static s32 EFF79_Move_Y(WORK_Other* ewk) {
             ewk->wu.mvxy.a[1].sp = -ewk->wu.mvxy.a[1].sp;
             ewk->wu.mvxy.d[1].sp = -ewk->wu.mvxy.d[1].sp;
 
-            if (ewk->wu.dmcal_m == 0) {
+            if (ewk->wu.damage_calc_multiplier == 0) {
                 ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
                 ewk->wu.mvxy.d[0].sp = -ewk->wu.mvxy.d[0].sp;
             }
 
-            ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->wu.dmcal_m] + 35;
+            ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->wu.damage_calc_multiplier] + 35;
             Setup_Command_Name(ewk);
         }
 
@@ -647,7 +647,7 @@ s32 effect_79_init(s16 pl_id, s16 plate_id, s16 pos_id, s16 time, s16 Target_BG)
     ewk->master_player = plate_id;
     ewk->master_priority = pos_id;
     ewk->wu.hit_quake = pos_id;
-    ewk->wu.dmcal_m = pos_id;
+    ewk->wu.damage_calc_multiplier = pos_id;
     ewk->wu.be_flag = 1;
     ewk->wu.id = 79;
     ewk->wu.work_id = 16;
@@ -756,7 +756,7 @@ static s32 Check_Depth_to_Before(WORK_Other* ewk) {
         return 0;
     }
 
-    if (ewk->wu.hit_quake == 2 && ewk->wu.dmcal_m == 0) {
+    if (ewk->wu.hit_quake == 2 && ewk->wu.damage_calc_multiplier == 0) {
         return 1;
     }
 

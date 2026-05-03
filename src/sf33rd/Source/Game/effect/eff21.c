@@ -39,14 +39,14 @@ void effect_21_move(WORK_Other* ewk) {
             char_move(&ewk->wu);
         }
 
-        ewk->wu.xyz[0].disp.pos = ewk->wu.old_rno[0];
+        ewk->wu.xyz[0].disp.pos = ewk->wu.old_routine_no[0];
         ewk->wu.xyz[0].disp.low = 0;
         ewk->wu.xyz[0].cal -= (ewk->wu.mvxy.a[0].sp * g_state.bg_w.bg2_sp_x2);
-        ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[2];
+        ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[2];
         ewk->wu.xyz[1].disp.low = 0;
         ewk->wu.xyz[1].cal += (ewk->wu.mvxy.a[1].sp * g_state.bg_w.bg2_sp_y);
 
-        if (ewk->wu.old_rno[3]) {
+        if (ewk->wu.old_routine_no[3]) {
             disp_pos_trans_entry_rs(ewk);
             break;
         }
@@ -83,15 +83,15 @@ s32 effect_21_init(s16 sync_index) {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 21;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.type = i;
-        ewk->wu.old_rno[3] = *data_ptr++;
+        ewk->wu.old_routine_no[3] = *data_ptr++;
         ewk->wu.my_family = *data_ptr++;
         ewk->wu.my_col_code = *data_ptr++;
-        ewk->wu.old_rno[0] = *data_ptr++;
-        ewk->wu.old_rno[2] = *data_ptr++;
+        ewk->wu.old_routine_no[0] = *data_ptr++;
+        ewk->wu.old_routine_no[2] = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
         ewk->wu.sync_suzi = *data_ptr++;
@@ -99,8 +99,8 @@ s32 effect_21_init(s16 sync_index) {
         ewk->wu.mvxy.a[1].sp = eff21_sp_tbl[*data_ptr][1];
         data_ptr++;
         ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
-        ewk->wu.xyz[0].disp.pos = ewk->wu.old_rno[0];
-        ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[2];
+        ewk->wu.xyz[0].disp.pos = ewk->wu.old_routine_no[0];
+        ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[2];
         suzi_offset_set(ewk);
         ewk->wu.my_mts = 7;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

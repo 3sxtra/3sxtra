@@ -210,7 +210,7 @@ static void setup_damage_process_flags(PLW* wk) {
     wk->wu.next_z = wk->wu.my_priority;
     wk->running_f = 0;
     wk->guard_flag = 3;
-    wk->guard_chuu = 0;
+    wk->guard_active = 0;
     wk->is_throwing = false;
     wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
@@ -224,10 +224,10 @@ static void setup_damage_process_flags(PLW* wk) {
     wk->sa->saeff_ok = 0;
     wk->sa->saeff_mp = 0;
     wk->cancel_timer = 0;
-    wk->hazusenai_flag = 0;
+    wk->inescapable_flag = 0;
     wk->cat_break_reserve = 0;
     wk->cmd_request = 0;
-    wk->hsjp_ok = 0;
+    wk->high_jump_ok = 0;
     wk->high_jump_flag = 0;
     wk->wu.swallow_no_effect = 0;
 
@@ -313,7 +313,7 @@ static void Damage_01000(PLW* wk) {
 /** @brief Damage state 04 — standing guard recoil (block-stun). */
 static void Damage_04000(PLW* wk) {
     wk->guard_flag = 0;
-    wk->guard_chuu = guard_kind[wk->wu.routine_no[2] - 4];
+    wk->guard_active = guard_kind[wk->wu.routine_no[2] - 4];
     set_dm_hos_flag_grd(wk);
 
     switch (wk->wu.routine_no[3]) {
@@ -321,8 +321,8 @@ static void Damage_04000(PLW* wk) {
         wk->wu.routine_no[3]++;
         wk->wu.rl_flag = (wk->wu.dm_rl + 1) & 1;
 
-        if ((wk->wu.dm_quake /= 2) < 4) {
-            wk->wu.dm_quake = 4;
+        if ((wk->wu.damage_screen_shake /= 2) < 4) {
+            wk->wu.damage_screen_shake = 4;
         }
 
         set_char_move_init(&wk->wu, 1, wk->as->char_ix);
@@ -359,7 +359,7 @@ static void Damage_04000(PLW* wk) {
 /** @brief Damage state 07 — air guard recoil with trajectory adjustment. */
 static void Damage_07000(PLW* wk) {
     wk->guard_flag = 0;
-    wk->guard_chuu = guard_kind[wk->wu.routine_no[2] - 4];
+    wk->guard_active = guard_kind[wk->wu.routine_no[2] - 4];
 
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -375,8 +375,8 @@ static void Damage_07000(PLW* wk) {
             break;
         }
 
-        if ((wk->wu.dm_quake /= 2) < 4) {
-            wk->wu.dm_quake = 4;
+        if ((wk->wu.damage_screen_shake /= 2) < 4) {
+            wk->wu.damage_screen_shake = 4;
         }
 
         set_char_move_init(&wk->wu, 1, (s16)(wk->as->char_ix));
@@ -1069,7 +1069,7 @@ static void Damage_29000(PLW* wk) {
         wk->wu.xyz[1].disp.pos = twk->wu.xyz[1].disp.pos + datadrs[1];
         wk->wu.rl_flag = (wk->wu.dm_rl + datadrs[2]) & 1;
         wk->wu.cg_olc_ix = datadrs[3];
-        wk->wu.cg_olc = wk->wu.olc_ix_table[wk->wu.cg_olc_ix];
+        wk->wu.graphic_overlap_index = wk->wu.olc_ix_table[wk->wu.cg_olc_ix];
         wk->wu.cg_number = datadrs[4];
         wk->wu.cg_ctr = 0xFA;
         wk->wu.cg_flip = 0;
@@ -1303,7 +1303,7 @@ static void buttobi_chakuchi_cg_type_check(PLW* wk) {
         break;
 
     case 5:
-        if (!(wk->spmv_ng_flag2 & DIP2_QUICK_STAND_DISABLED) && wk->recovery_roll_success && (wk->dead_flag == 0) &&
+        if (!(wk->special_move_disabled_flag2 & DIP2_QUICK_STAND_DISABLED) && wk->recovery_roll_success && (wk->dead_flag == 0) &&
             (wk->py->flag == 0) && (wk->wu.vital_new > 0) && (g_state.pcon_dp_flag == 0)) {
             wk->wu.routine_no[2] = oki_select_table2[wk->wu.rl_waza + (wk->wu.rl_flag * 2)];
             wk->wu.routine_no[3] = 0;
@@ -1460,10 +1460,10 @@ static void set_dm_hos_flag_grd(PLW* wk) {
 
 /** @brief Calculates the air-damage tech-timer based on combo depth. */
 static void get_sky_dm_timer(PLW* wk) {
-    if (wk->wu.dm_zuru == 7) {
+    if (wk->wu.damage_invuln == 7) {
         wk->zuru_ix_counter = 0;
     } else {
-        wk->zuru_ix_counter += sky_dm_zuru_ix[wk->wu.dm_zuru];
+        wk->zuru_ix_counter += sky_dm_zuru_ix[wk->wu.damage_invuln];
     }
 
     if (wk->zuru_ix_counter > 15) {
@@ -1487,7 +1487,7 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
         return;
     }
 
-    if (wk->wu.dm_vital && (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
+    if (wk->wu.damage_vitality && (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
         Additinal_Score_DM((WORK_Other*)wk->wu.dmg_adrs, wk->wu.dm_ten_ix);
     }
 
@@ -1496,7 +1496,7 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
     }
 
     if (wk->parry_flag) {
-        wk->dm_vital_backup = wk->wu.dm_vital;
+        wk->dm_vital_backup = wk->wu.damage_vitality;
     } else {
         wk->dm_vital_backup = 0;
     }
@@ -1504,10 +1504,10 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
     wk->dm_vital_use = 0;
 
     if (omop_vital_ix[wk->wu.id] == 5) {
-        wk->wu.dm_vital = 0;
+        wk->wu.damage_vitality = 0;
     }
 
-    wk->wu.vital_new -= wk->wu.dm_vital;
+    wk->wu.vital_new -= wk->wu.damage_vitality;
 
     if (wk->wu.dm_guard_success == -1 && wk->wu.vital_old > 0 && wk->wu.vital_new < 0 && wk->wu.vital_new > -3) {
         wk->wu.vital_new = 0;
@@ -1544,7 +1544,7 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
 void subtract_dm_vital(PLW* wk) {
     subtract_dm_vital_core(wk, true);
 
-    if (wk->guard_chuu == 0) {
+    if (wk->guard_active == 0) {
         switch (wk->wu.routine_no[2]) {
         case 1:
         case 2:
@@ -1562,10 +1562,10 @@ void subtract_dm_vital(PLW* wk) {
     }
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
-        Training_Damage_Set(wk->wu.dm_vital, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
+        Training_Damage_Set(wk->wu.damage_vitality, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
     }
 
-    wk->wu.dm_vital = 0;
+    wk->wu.damage_vitality = 0;
     wk->wu.damage_stun_value = 0;
 }
 
@@ -1576,17 +1576,17 @@ void subtract_dm_vital_aiuchi(PLW* wk) {
     pp_pulpara_remake_dm_all(&wk->wu);
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
-        Training_Damage_Set(wk->wu.dm_vital, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
+        Training_Damage_Set(wk->wu.damage_vitality, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
     }
 
-    wk->wu.dm_vital = 0;
+    wk->wu.damage_vitality = 0;
     wk->wu.damage_stun_value = 0;
 }
 
 /** @brief Reads the damage reaction table to set animation and knockback data. */
 static void get_damage_reaction_data(PLW* wk) {
     if (wk->parry_flag == 2) {
-        wk->wu.dm_vital = 0;
+        wk->wu.damage_vitality = 0;
         damage_atemi_setup(wk, (PLW*)wk->wu.dmg_adrs);
         return;
     }
@@ -1624,13 +1624,13 @@ static void get_damage_reaction_data(PLW* wk) {
     wk->as = &dm_reaction_table[wk->wu.routine_no[2]];
     wk->wu.routine_no[2] = wk->as->r_no;
 
-    if (wk->wu.dm_stop) {
-        if (wk->wu.dm_stop > 0) {
-            wk->wu.dm_stop--;
+    if (wk->wu.damage_hit_stop) {
+        if (wk->wu.damage_hit_stop > 0) {
+            wk->wu.damage_hit_stop--;
         }
 
-        if (wk->wu.dm_stop < 0) {
-            wk->wu.dm_stop++;
+        if (wk->wu.damage_hit_stop < 0) {
+            wk->wu.damage_hit_stop++;
         }
     }
 }
@@ -1642,9 +1642,9 @@ static void damage_atemi_setup(PLW* wk, PLW* ek) {
     wk->wu.routine_no[3] = wk->wu.cmmd.pat;
     char_move_cmms(&wk->wu);
     wk->parry_flag = 9;
-    wk->wu.dm_stop = wk->wu.dm_quake = 0;
+    wk->wu.damage_hit_stop = wk->wu.damage_screen_shake = 0;
     wk->wu.hit_stop = wk->wu.hit_quake = 0;
-    ek->wu.dm_stop = ek->wu.dm_quake = 0;
+    ek->wu.damage_hit_stop = ek->wu.damage_screen_shake = 0;
     ek->wu.hit_stop = wk->wu.att.hs_you;
     ek->wu.hit_quake = wk->wu.att.hs_you / 2;
 }
@@ -1666,8 +1666,8 @@ s32 setup_kuzureochi(PLW* wk) {
     wk->zuru_timer = 0;
     wk->zuru_ix_counter = 0;
     set_char_move_init(&wk->wu, 1, 73);
-    wk->wu.dm_stop = wk->wu.hit_stop = 0;
-    wk->wu.dm_quake = wk->wu.hit_quake = 0;
+    wk->wu.damage_hit_stop = wk->wu.hit_stop = 0;
+    wk->wu.damage_screen_shake = wk->wu.hit_quake = 0;
     return 1;
 }
 

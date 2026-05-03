@@ -188,7 +188,7 @@ s32 effect_A7_init(PLW* wk) {
     ewk->wu.work_id = 64;
     ewk->wu.rl_flag = wk->wu.rl_flag;
     ewk->wu.kohm = wk->wu.hm_dm_side;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_family = 2;
     ewk->wu.my_mr_flag = 0;

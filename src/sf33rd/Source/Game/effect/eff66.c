@@ -172,7 +172,7 @@ static void EFF66_FLASH(WORK_Other* ewk) {
     case 0:
         Setup_Pos_66(ewk);
         ewk->wu.dir_timer = 1;
-        ewk->wu.dmcal_m = 0;
+        ewk->wu.damage_calc_multiplier = 0;
         /* fallthrough */
 
     case 1:
@@ -180,9 +180,9 @@ static void EFF66_FLASH(WORK_Other* ewk) {
             break;
         }
 
-        ewk->wu.my_clear_level = Flash_Data_66[ewk->wu.dmcal_m];
+        ewk->wu.my_clear_level = Flash_Data_66[ewk->wu.damage_calc_multiplier];
 
-        if (++ewk->wu.dmcal_m > 13) {
+        if (++ewk->wu.damage_calc_multiplier > 13) {
             g_state.Order[ewk->wu.dir_old] = 0;
             ewk->wu.routine_no[0] = 0;
         } else {

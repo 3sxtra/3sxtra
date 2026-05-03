@@ -79,7 +79,7 @@ s32 effect_J2_init(s16 delay) {
     ewk->wu.work_id = 16;
     ewk->wu.my_mts = 14;
     ewk->wu.my_family = 2;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 0x49;
     ewk->wu.dir_timer = delay;

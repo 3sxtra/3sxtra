@@ -29,7 +29,7 @@ static void EFFK6_KILL(WORK_Other* ewk);
 static void EFFK6_MOVE(WORK_Other* ewk);
 static void Setup_1st_PosK6(WORK_Other* ewk, s16 Who, s16 Play_Style);
 static s16 Get_PosK6(WORK_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style);
-static void Setup_CharK6(WORK_Other* ewk, s16 dm_vital);
+static void Setup_CharK6(WORK_Other* ewk, s16 damage_vitality);
 static s16 Setup_K6_Index(WORK_Other* ewk);
 
 void (*const EFFK6_Jmp_Tbl[6])() = {
@@ -268,7 +268,7 @@ static void EFFK6_MOVE(WORK_Other* ewk) {
     }
 }
 
-s32 effect_K6_init(s16 PL_id, s16 dir_old, s16 dm_vital, s16 Target_BG) {
+s32 effect_K6_init(s16 PL_id, s16 dir_old, s16 damage_vitality, s16 Target_BG) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -284,11 +284,11 @@ s32 effect_K6_init(s16 PL_id, s16 dir_old, s16 dm_vital, s16 Target_BG) {
     ewk->wu.my_family = Target_BG + 1;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->master_id = PL_id;
-    ewk->wu.direction = dm_vital;
+    ewk->wu.direction = damage_vitality;
     ewk->wu.dir_old = dir_old;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    Setup_CharK6(ewk, dm_vital);
+    Setup_CharK6(ewk, damage_vitality);
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
     return 0;
 }
@@ -366,10 +366,10 @@ static s16 Get_PosK6(WORK_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style) {
     }
 }
 
-static void Setup_CharK6(WORK_Other* ewk, s16 dm_vital) {
+static void Setup_CharK6(WORK_Other* ewk, s16 damage_vitality) {
     s16 x;
 
-    switch (dm_vital) {
+    switch (damage_vitality) {
     case 25:
     case 29:
         ewk->wu.char_index = 16;

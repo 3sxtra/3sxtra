@@ -143,7 +143,7 @@ void effect_02_move(WORK_Other* ewk) {
         if (ewk->wu.vital_old == 2) {
             ewk->wu.kohm = tad->deff;
 
-            if (ewk->wu.dm_vital != 0) {
+            if (ewk->wu.damage_vitality != 0) {
                 ewk->wu.kohm = tad->kezu;
             }
         }
@@ -333,8 +333,8 @@ s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl) {
     ewk->wu.dm_rl = dmrl;
     ewk->wu.kohm = wk->att.hit_mark;
     ewk->wu.direction = wk->dir_atthit;
-    ewk->wu.dm_vital = wk->kezuri_pow;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.damage_vitality = wk->chip_damage_power;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_family = 2;
     ewk->wu.my_mr_flag = 0;

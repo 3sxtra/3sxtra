@@ -47,15 +47,15 @@ void effect_50_move(WORK_Other* ewk) {
         if (g_state.Sel_Arts_Complete[ewk->master_id]) {
             ewk->wu.routine_no[0] = 3;
             ewk->wu.dir_timer = 5;
-        } else if (g_state.Moving_Plate[ewk->master_id] == ewk->wu.direction && ewk->wu.dm_vital == 0) {
+        } else if (g_state.Moving_Plate[ewk->master_id] == ewk->wu.direction && ewk->wu.damage_vitality == 0) {
             ewk->wu.routine_no[0]++;
             ewk->wu.char_index++;
-            ewk->wu.dmcal_m += 3;
-            ewk->wu.dmcal_d--;
+            ewk->wu.damage_calc_multiplier += 3;
+            ewk->wu.damage_calc_divider--;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         }
 
-        if (ewk->wu.dm_vital == 0) {
+        if (ewk->wu.damage_vitality == 0) {
             char_move(&ewk->wu);
         }
 
@@ -66,11 +66,11 @@ void effect_50_move(WORK_Other* ewk) {
             ewk->wu.routine_no[0] = 1;
             ewk->wu.char_index--;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-            ewk->wu.cg_ix = pwk->wu.cg_ix - ewk->wu.cgd_type;
+            ewk->wu.graphic_index = pwk->wu.graphic_index - ewk->wu.cgd_type;
             char_move_z(&ewk->wu);
             ewk->wu.cg_ctr = pwk->wu.cg_ctr;
-            ewk->wu.dmcal_m -= 3;
-            ewk->wu.dmcal_d++;
+            ewk->wu.damage_calc_multiplier -= 3;
+            ewk->wu.damage_calc_divider++;
 
             if (ewk->wu.direction != 1) {
                 break;
@@ -94,15 +94,15 @@ void effect_50_move(WORK_Other* ewk) {
         return;
     }
 
-    ewk->wu.xyz[0].disp.pos = ewk->wu.dmcal_m + g_state.Plate_X[ewk->master_id][0];
-    ewk->wu.xyz[1].disp.pos = ewk->wu.dmcal_d + g_state.Plate_Y[ewk->master_id][0];
+    ewk->wu.xyz[0].disp.pos = ewk->wu.damage_calc_multiplier + g_state.Plate_X[ewk->master_id][0];
+    ewk->wu.xyz[1].disp.pos = ewk->wu.damage_calc_divider + g_state.Plate_Y[ewk->master_id][0];
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
     if (!rmlui_char_select_visible)
         sort_push_request4(&ewk->wu);
 }
 
-s32 effect_50_init(s16 PL_id, s16 Direction, s16 dm_vital) {
+s32 effect_50_init(s16 PL_id, s16 Direction, s16 damage_vitality) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -118,19 +118,19 @@ s32 effect_50_init(s16 PL_id, s16 Direction, s16 dm_vital) {
     ewk->wu.my_family = 3;
     ewk->master_id = PL_id;
     *ewk->wu.char_table = _sel_pl_char_table;
-    ewk->wu.dm_vital = dm_vital;
+    ewk->wu.damage_vitality = damage_vitality;
     ewk->wu.direction = Direction;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
 
-    if (dm_vital == 0) {
+    if (damage_vitality == 0) {
         Synchro_Address[ewk->master_id][ewk->wu.direction - 1] = ewk;
     }
 
     ewk->wu.xyz[0].disp.pos = Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][0];
     ewk->wu.xyz[1].disp.pos = Plate_Pos_Data_79[g_state.Play_Type][ewk->master_id][0][1];
 
-    if (dm_vital == 1) {
+    if (damage_vitality == 1) {
         ewk->wu.char_index = 31;
         ewk->wu.dir_step = Direction - 1;
     } else {
@@ -138,8 +138,8 @@ s32 effect_50_init(s16 PL_id, s16 Direction, s16 dm_vital) {
         ewk->wu.dir_step = 0;
     }
 
-    ewk->wu.dmcal_m = EFF50_Correct_Data[Direction - 1][dm_vital][0];
-    ewk->wu.dmcal_d = EFF50_Correct_Data[Direction - 1][dm_vital][1];
+    ewk->wu.damage_calc_multiplier = EFF50_Correct_Data[Direction - 1][damage_vitality][0];
+    ewk->wu.damage_calc_divider = EFF50_Correct_Data[Direction - 1][damage_vitality][1];
     ewk->wu.position_z = 30;
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
     return 0;

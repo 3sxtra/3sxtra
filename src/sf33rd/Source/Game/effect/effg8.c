@@ -30,21 +30,21 @@ void effect_G8_move(WORK_Other* ewk) {
         ewk->wu.my_mr.size.x = 0;
         ewk->wu.my_mr.size.y = 0;
         set_char_move_init(&ewk->wu, 0, 17);
-        ewk->wu.old_rno[3] = random_16();
-        ewk->wu.old_rno[0] = 192;
-        ewk->wu.old_rno[1] = 128;
-        ewk->wu.xyz[0].disp.pos = ewk->wu.old_rno[0];
-        ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[1];
-        ewk->wu.mvxy.a[0].sp = effg8_sp_tbl[ewk->wu.old_rno[2]][0];
-        ewk->wu.mvxy.d[0].sp = effg8_sp_tbl[ewk->wu.old_rno[2]][1];
-        ewk->wu.mvxy.a[1].sp = effg8_sp_tbl[ewk->wu.old_rno[2]][2];
-        ewk->wu.mvxy.d[1].sp = effg8_sp_tbl[ewk->wu.old_rno[2]][3];
+        ewk->wu.old_routine_no[3] = random_16();
+        ewk->wu.old_routine_no[0] = 192;
+        ewk->wu.old_routine_no[1] = 128;
+        ewk->wu.xyz[0].disp.pos = ewk->wu.old_routine_no[0];
+        ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[1];
+        ewk->wu.mvxy.a[0].sp = effg8_sp_tbl[ewk->wu.old_routine_no[2]][0];
+        ewk->wu.mvxy.d[0].sp = effg8_sp_tbl[ewk->wu.old_routine_no[2]][1];
+        ewk->wu.mvxy.a[1].sp = effg8_sp_tbl[ewk->wu.old_routine_no[2]][2];
+        ewk->wu.mvxy.d[1].sp = effg8_sp_tbl[ewk->wu.old_routine_no[2]][3];
         break;
 
     case 1:
-        ewk->wu.old_rno[3] -= 1;
+        ewk->wu.old_routine_no[3] -= 1;
 
-        if (ewk->wu.old_rno[3] > 0) {
+        if (ewk->wu.old_routine_no[3] > 0) {
             break;
         }
 
@@ -118,13 +118,13 @@ s32 effect_G8_init() {
         ewk->wu.be_flag = 1;
         ewk->wu.type = i;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = 30;
         ewk->wu.char_table[0] = _etc2_char_table;
         ewk->wu.my_family = 4;
         ewk->wu.my_priority = ewk->wu.position_z = 10;
-        ewk->wu.old_rno[2] = i;
+        ewk->wu.old_routine_no[2] = i;
         ewk->wu.my_mts = 14;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     }

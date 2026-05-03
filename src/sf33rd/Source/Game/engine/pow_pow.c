@@ -15,20 +15,20 @@
  *
  * @param att_wu    Attacker's WORK data (for pow lookup and work_id check).
  * @param att_plus  Attacker's attack multiplier (from the owning PLW).
- * @param ds        Defender player work (receives dm_vital and applies def_plus).
+ * @param ds        Defender player work (receives damage_vitality and applies def_plus).
  */
 static void cal_damage_core(WORK* att_wu, s16 att_plus, PLW* ds) {
     s16 power = Power_Data[att_wu->att.pow];
     s16 yy = (g_state.Play_Type == 1) ? Pow_Control_Data_1[0][3] : Pow_Control_Data_1[0][g_state.Round_Level];
 
-    ds->wu.dm_vital = (power * yy) / 100;
+    ds->wu.damage_vitality = (power * yy) / 100;
 
     if (att_wu->work_id == 1) {
-        ds->wu.dm_vital = (ds->wu.dm_vital * att_plus) / 8;
+        ds->wu.damage_vitality = (ds->wu.damage_vitality * att_plus) / 8;
     }
 
     if (ds->wu.work_id == 1) {
-        ds->wu.dm_vital = (ds->wu.dm_vital * ds->def_plus) / 8;
+        ds->wu.damage_vitality = (ds->wu.damage_vitality * ds->def_plus) / 8;
     }
 }
 

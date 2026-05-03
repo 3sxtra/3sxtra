@@ -27,8 +27,8 @@ void effect_M2_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        ewk->wu.old_rno[0] = random_16();
-        ewk->wu.old_rno[0] &= 3;
+        ewk->wu.old_routine_no[0] = random_16();
+        ewk->wu.old_routine_no[0] &= 3;
         break;
 
     case 1:
@@ -65,8 +65,8 @@ static void effm2_move(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 0;
         ewk->wu.shadow_y = 7;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 3;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 3;
 
         if (oya_ptr->id) {
             ewk->wu.xyz[0].disp.pos = oya_ptr->xyz[0].disp.pos + 60;
@@ -76,7 +76,7 @@ static void effm2_move(WORK_Other* ewk) {
 
         ewk->wu.xyz[1].disp.pos = 7;
         ewk->wu.my_priority = ewk->wu.position_z = 67;
-        set_char_move_init(&ewk->wu, 0, effm2_char_tbl[ewk->wu.old_rno[0]]);
+        set_char_move_init(&ewk->wu, 0, effm2_char_tbl[ewk->wu.old_routine_no[0]]);
         break;
 
     case 1:
@@ -85,7 +85,7 @@ static void effm2_move(WORK_Other* ewk) {
         if (ewk->wu.cg_type == 0xFF) {
             ewk->wu.routine_no[1]++;
 
-            if (ewk->wu.old_rno[0] == 2) {
+            if (ewk->wu.old_routine_no[0] == 2) {
                 ewk->wu.rl_flag ^= 1;
             }
 
@@ -119,8 +119,8 @@ static void effm2_move2(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 0;
         ewk->wu.shadow_y = 7;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 3;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 3;
 
         if (oya_ptr->rl_flag) {
             ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - g_state.bg_w.pos_offset - 48;
@@ -195,7 +195,7 @@ s32 effect_M2_init(WORK* wk, u8 data) {
     ewk = (WORK_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 222;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->my_master = wk;
     ewk->wu.rl_flag = wk->rl_flag;
     ewk->wu.type = data;

@@ -651,7 +651,7 @@ s32 Check_Limited_Attack(PLW* wk, WORK* em, s16 VS_Technique, u8 PL_Status, s8 S
         return 0;
     }
 
-    xx = (em->cg_ix / em->cgd_type);
+    xx = (em->graphic_index / em->cgd_type);
 
     if ((((PLW*)em)->player_number == 17) && (VS_Technique == 7)) {
         Limit_Number += 1;

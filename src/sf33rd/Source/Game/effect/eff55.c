@@ -34,7 +34,7 @@ void effect_55_move(WORK_Other* ewk) {
 
             if (ewk->wu.xyz[1].disp.pos >= 128) {
                 ewk->wu.routine_no[0]++;
-                ewk->wu.old_rno[0] = 300;
+                ewk->wu.old_routine_no[0] = 300;
             }
         }
 
@@ -43,9 +43,9 @@ void effect_55_move(WORK_Other* ewk) {
 
     case 2:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 0) {
+            if (ewk->wu.old_routine_no[0] < 0) {
                 ewk->wu.routine_no[0]++;
             }
         }
@@ -59,7 +59,7 @@ void effect_55_move(WORK_Other* ewk) {
 
             if (ewk->wu.xyz[1].disp.pos < 97) {
                 ewk->wu.routine_no[0]++;
-                ewk->wu.old_rno[0] = 480;
+                ewk->wu.old_routine_no[0] = 480;
             }
         }
 
@@ -68,9 +68,9 @@ void effect_55_move(WORK_Other* ewk) {
 
     case 4:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 0) {
+            if (ewk->wu.old_routine_no[0] < 0) {
                 ewk->wu.routine_no[0] = 1;
             }
         }
@@ -97,7 +97,7 @@ s32 effect_55_init() {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 55;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_family = 2;

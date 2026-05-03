@@ -26,8 +26,8 @@ void effect_I9_move(WORK_Other* ewk) {
         init_image_buff(mwk, image_buff);
         push_image_buff(mwk, image_buff);
 
-        for (i = ewk->wu.dmcal_d; i > 0; i--) {
-            effect_J0_init(ewk, mwk, i * ewk->wu.dmcal_m);
+        for (i = ewk->wu.damage_calc_divider; i > 0; i--) {
+            effect_J0_init(ewk, mwk, i * ewk->wu.damage_calc_multiplier);
         }
 
         break;
@@ -98,7 +98,7 @@ s32 effect_I9_init(WORK_Other* wk, s16 total, s16 interval, s16 life) {
     ewk->wu.id = 189;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = wk->wu.my_family;
-    ewk->wu.cgromtype = wk->wu.cgromtype;
+    ewk->wu.graphic_rom_type = wk->wu.graphic_rom_type;
     ewk->wu.my_col_mode = wk->wu.my_col_mode;
     ewk->wu.my_col_code = wk->wu.my_col_code;
     ewk->wu.extra_col = wk->wu.current_colcd;
@@ -107,8 +107,8 @@ s32 effect_I9_init(WORK_Other* wk, s16 total, s16 interval, s16 life) {
     ewk->master_work_id = wk->wu.work_id;
     ewk->master_id = wk->wu.id;
     ewk->master_player = wk->master_player;
-    ewk->wu.dmcal_d = total;
-    ewk->wu.dmcal_m = interval;
+    ewk->wu.damage_calc_divider = total;
+    ewk->wu.damage_calc_multiplier = interval;
     ewk->wu.dir_timer = life;
     ewk->wu.blink_timing = ewk->master_id;
 

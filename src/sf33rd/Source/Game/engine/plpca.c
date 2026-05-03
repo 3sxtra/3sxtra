@@ -37,7 +37,7 @@ void Player_catch(PLW* wk) {
     wk->running_f = 0;
     wk->py->flag = 0;
     wk->guard_flag = 3;
-    wk->guard_chuu = 0;
+    wk->guard_active = 0;
     wk->is_throwing = true;
     wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
@@ -54,9 +54,9 @@ void Player_catch(PLW* wk) {
     wk->recovery_roll_ok_timer = 0;
     wk->uot_cd_ok_flag = 0;
     wk->cancel_timer = 0;
-    wk->hazusenai_flag = 0;
+    wk->inescapable_flag = 0;
     wk->cat_break_reserve = 0;
-    wk->hsjp_ok = 0;
+    wk->high_jump_ok = 0;
     wk->high_jump_flag = 0;
     wk->wu.swallow_no_effect = 0;
     check_em_tk_power_off(wk, (PLW*)wk->wu.target_adrs);
@@ -93,7 +93,7 @@ static void check_nagenuke(PLW* wk, PLW* tk) {
         return;
     }
 
-    if (!tk->cat_break_reserve && tk->hazusenai_flag) {
+    if (!tk->cat_break_reserve && tk->inescapable_flag) {
         return;
     }
 
@@ -118,7 +118,7 @@ static void check_nagenuke(PLW* wk, PLW* tk) {
     wk->wu.routine_no[1] = 0;
     wk->wu.routine_no[3] = 0;
     wk->wu.hit_stop = 0;
-    wk->wu.dm_stop = 0;
+    wk->wu.damage_hit_stop = 0;
 
     if (tk->wu.xyz[1].disp.pos > 8) {
         tk->wu.routine_no[2] = 49;
@@ -129,7 +129,7 @@ static void check_nagenuke(PLW* wk, PLW* tk) {
     tk->wu.routine_no[1] = 0;
     tk->wu.routine_no[3] = 0;
     tk->wu.hit_stop = 1;
-    tk->wu.dm_stop = 0;
+    tk->wu.damage_hit_stop = 0;
 }
 
 /** @brief Catch state 00 — no-op placeholder. */
@@ -420,18 +420,18 @@ static void Catch_08000(PLW* wk) {
 
 /** @brief Subtracts grab-damage from the caught opponent's vitality. */
 void subtract_cu_vital(PLW* wk) {
-    if (wk->wu.dm_vital != 0) {
+    if (wk->wu.damage_vitality != 0) {
         if (wk->dead_flag == 0) {
-            if (wk->wu.dm_vital) {
+            if (wk->wu.damage_vitality) {
                 Additinal_Score_DM((WORK_Other*)wk->wu.dmg_adrs, wk->wu.dm_ten_ix);
                 add_sp_arts_gauge_hit_dm(wk);
             }
 
             if (omop_vital_ix[wk->wu.id] == 5) {
-                wk->wu.dm_vital = 0;
+                wk->wu.damage_vitality = 0;
             }
 
-            wk->wu.vital_new -= wk->wu.dm_vital;
+            wk->wu.vital_new -= wk->wu.damage_vitality;
 
             if (wk->wu.dm_nodeathattack && wk->wu.vital_new < 0) {
                 wk->wu.vital_new = 0;
@@ -460,10 +460,10 @@ void subtract_cu_vital(PLW* wk) {
     }
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
-        Training_Damage_Set(wk->wu.dm_vital, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
+        Training_Damage_Set(wk->wu.damage_vitality, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
     }
 
-    wk->wu.dm_vital = 0;
+    wk->wu.damage_vitality = 0;
     wk->wu.damage_stun_value = 0;
 }
 

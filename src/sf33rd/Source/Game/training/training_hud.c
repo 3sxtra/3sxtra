@@ -94,36 +94,36 @@ void training_hud_draw_hitboxes(PLW* player) {
     s8 flip = player->wu.rl_flag ? -1 : 1;
 
     // Pushbox (Green)
-    if (g_training_menu_settings.show_pushboxes && player->wu.h_hos) {
-        calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_hos->hos_box, 0x8000FF00, 0);
+    if (g_training_menu_settings.show_pushboxes && player->wu.pushbox) {
+        calc_and_draw_box(pos_x, pos_y, flip, player->wu.pushbox->hos_box, 0x8000FF00, 0);
     }
 
     // Hurtboxes (Blue)
-    if (g_training_menu_settings.show_hurtboxes && player->wu.h_bod) {
+    if (g_training_menu_settings.show_hurtboxes && player->wu.body_hurtbox) {
         for (int i = 0; i < 4; i++) {
-            if (player->wu.h_bod->body_dm[i][1] != 0)
-                calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_bod->body_dm[i], 0x400000FF, 0);
+            if (player->wu.body_hurtbox->body_dm[i][1] != 0)
+                calc_and_draw_box(pos_x, pos_y, flip, player->wu.body_hurtbox->body_dm[i], 0x400000FF, 0);
         }
     }
 
     // Hitboxes (Red)
-    if (g_training_menu_settings.show_attackboxes && player->wu.h_att) {
+    if (g_training_menu_settings.show_attackboxes && player->wu.attack_hitbox) {
         for (int i = 0; i < 4; i++) {
-            if (player->wu.h_att->att_box[i][1] != 0)
-                calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_att->att_box[i], 0xC0FF0000, 0);
+            if (player->wu.attack_hitbox->att_box[i][1] != 0)
+                calc_and_draw_box(pos_x, pos_y, flip, player->wu.attack_hitbox->att_box[i], 0xC0FF0000, 0);
         }
     }
 
     // Throwable box (Pink) — clamped to minimum visible size
-    if (g_training_menu_settings.show_throwboxes && player->wu.h_cau) {
-        if (!is_empty_box(player->wu.h_cau->cau_box))
-            calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_cau->cau_box, 0x60FF80FF, 1);
+    if (g_training_menu_settings.show_throwboxes && player->wu.caught_box) {
+        if (!is_empty_box(player->wu.caught_box->cau_box))
+            calc_and_draw_box(pos_x, pos_y, flip, player->wu.caught_box->cau_box, 0x60FF80FF, 1);
     }
 
     // Throw hitbox (Yellow) — clamped to minimum visible size
-    if (g_training_menu_settings.show_throwboxes && player->wu.h_cat) {
-        if (!is_empty_box(player->wu.h_cat->cat_box))
-            calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_cat->cat_box, 0x80FFFF00, 1);
+    if (g_training_menu_settings.show_throwboxes && player->wu.catch_box) {
+        if (!is_empty_box(player->wu.catch_box->cat_box))
+            calc_and_draw_box(pos_x, pos_y, flip, player->wu.catch_box->cat_box, 0x80FFFF00, 1);
     }
 }
 

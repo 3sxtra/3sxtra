@@ -14,23 +14,23 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void effect_E3_move(WORK_Other* ewk) {
+void effect_e3_move(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if ((mwk->wu.E3_work_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
+        if ((mwk->wu.effect_e3_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
             (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
              g_state.Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
 
-        if (mwk->init_E3_flag == 0) {
+        if (mwk->init_effect_e3_flag == 0) {
             break;
         }
 
-        mwk->init_E3_flag = 0;
+        mwk->init_effect_e3_flag = 0;
 
         if (g_state.Mode_Type != MODE_NORMAL_TRAINING) {
             break;
@@ -56,7 +56,7 @@ void effect_E3_move(WORK_Other* ewk) {
             omop_vital_ix[mwk->wu.id] = 3;
         }
 
-        ewk->wu.dm_vital = 0;
+        ewk->wu.damage_vitality = 0;
         ewk->wu.vitality = 0;
         ewk->wu.dir_timer = 0;
 
@@ -95,28 +95,28 @@ void effect_E3_move(WORK_Other* ewk) {
 
         switch (Training[0].contents[0][1][0]) {
         case 1:
-            mwk->spmv_ng_flag2 &= 0xFFFBFFFF;
-            mwk->spmv_ng_flag2 |= 0x90000;
+            mwk->special_move_disabled_flag2 &= 0xFFFBFFFF;
+            mwk->special_move_disabled_flag2 |= 0x90000;
             demo_set_sa_full(mwk->sa);
             tr_spgauge_cont_init2(mwk->wu.id);
             break;
 
         case 3:
-            mwk->spmv_ng_flag2 &= 0xFFF7FFFF;
-            mwk->spmv_ng_flag2 |= 0x50000;
+            mwk->special_move_disabled_flag2 &= 0xFFF7FFFF;
+            mwk->special_move_disabled_flag2 |= 0x50000;
             demo_set_sa_full(mwk->sa);
             tr_spgauge_cont_init2(mwk->wu.id);
             break;
 
         case 2:
-            mwk->spmv_ng_flag2 &= 0xFFFEFFFF;
-            mwk->spmv_ng_flag2 |= 0xC0000;
+            mwk->special_move_disabled_flag2 &= 0xFFFEFFFF;
+            mwk->special_move_disabled_flag2 |= 0xC0000;
             clear_super_arts_point(mwk);
             tr_spgauge_cont_init(mwk->wu.id);
             break;
 
         case 0:
-            mwk->spmv_ng_flag2 |= 0xD0000;
+            mwk->special_move_disabled_flag2 |= 0xD0000;
             clear_super_arts_point(mwk);
             tr_spgauge_cont_init(mwk->wu.id);
             break;
@@ -124,21 +124,21 @@ void effect_E3_move(WORK_Other* ewk) {
 
         ewk->wu.routine_no[0]++;
         omop_spmv_ng_table[mwk->wu.id] = mwk->spmv_ng_flag;
-        omop_spmv_ng_table2[mwk->wu.id] = mwk->spmv_ng_flag2;
+        omop_spmv_ng_table2[mwk->wu.id] = mwk->special_move_disabled_flag2;
         /* fallthrough */
 
     case 1:
-        if ((mwk->wu.E3_work_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
+        if ((mwk->wu.effect_e3_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
             (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
              g_state.Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
 
-        if (mwk->init_E3_flag == 1) {
+        if (mwk->init_effect_e3_flag == 1) {
             ewk->wu.routine_no[0] = 0;
-            mwk->spmv_ng_flag = ewk->master_ng_flag;
-            mwk->spmv_ng_flag2 = ewk->master_ng_flag2;
+            mwk->spmv_ng_flag = ewk->master_special_move_disabled_flag;
+            mwk->special_move_disabled_flag2 = ewk->master_special_move_disabled_flag2;
             break;
         }
 
@@ -164,7 +164,7 @@ void effect_E3_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_E3_init(PLW* wk) {
+s32 effect_e3_init(PLW* wk) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -180,9 +180,9 @@ s32 effect_E3_init(PLW* wk) {
     ewk->master_work_id = wk->wu.work_id;
     ewk->master_id = wk->wu.id;
     ewk->master_player = wk->player_number;
-    ewk->master_ng_flag = wk->spmv_ng_flag;
-    ewk->master_ng_flag2 = wk->spmv_ng_flag2;
-    wk->init_E3_flag = 1;
-    wk->wu.E3_work_index = ewk->wu.myself;
+    ewk->master_special_move_disabled_flag = wk->spmv_ng_flag;
+    ewk->master_special_move_disabled_flag2 = wk->special_move_disabled_flag2;
+    wk->init_effect_e3_flag = 1;
+    wk->wu.effect_e3_index = ewk->wu.myself;
     return 0;
 }

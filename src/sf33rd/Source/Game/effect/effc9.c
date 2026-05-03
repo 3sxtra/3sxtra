@@ -73,8 +73,8 @@ void effect_C9_move(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = judge_gals_kage_tbl[ewk->wu.charset_id][0];
         ewk->wu.shadow_y = judge_gals_kage_tbl[ewk->wu.charset_id][1];
-        ewk->wu.kage_prio = judge_gals_kage_tbl[ewk->wu.charset_id][2];
-        ewk->wu.kage_char = judge_gals_kage_tbl[ewk->wu.charset_id][3];
+        ewk->wu.shadow_prio = judge_gals_kage_tbl[ewk->wu.charset_id][2];
+        ewk->wu.shadow_char = judge_gals_kage_tbl[ewk->wu.charset_id][3];
 
         if (ewk->wu.type == 1) {
             ewk->wu.shadow_y -= 2;
@@ -206,7 +206,7 @@ s32 effect_C9_init(PLW* arg0, u8 data) {
     ewk->wu.work_id = 16;
     ewk->wu.type = data;
     ewk->wu.charset_id = ag_sel_table[g_state.bg_w.stage][g_state.Round_num & 3][data];
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_family = 2;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = ag_cc_table[ewk->wu.charset_id];

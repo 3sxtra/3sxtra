@@ -71,7 +71,7 @@ s32 effect_96_init(WORK* wk, u8 chix, s8 dspf, s32 /* unused */) {
     ewk->wu.hit_stop = 0;
     ewk->wu.rl_flag = wk->rl_flag;
     ewk->wu.my_family = wk->my_family;
-    ewk->wu.cgromtype = wk->cgromtype;
+    ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.my_col_code = wk->my_col_code;
     ewk->wu.my_mts = 14;

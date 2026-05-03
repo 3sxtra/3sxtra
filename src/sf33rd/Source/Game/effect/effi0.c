@@ -96,7 +96,7 @@ s32 effect_I0_init(WORK* wk, s16 hsx, s16 hsy, s16 spx, s16 spy, s16 nxy) {
     ewk->wu.work_id = 0x10;
     ewk->wu.rl_flag = wk->rl_flag;
     ewk->wu.my_family = wk->my_family;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.next_y = nxy;
     ewk->wu.mvxy.a[0].sp = spx << 8;
     ewk->wu.mvxy.d[0].sp = 0;

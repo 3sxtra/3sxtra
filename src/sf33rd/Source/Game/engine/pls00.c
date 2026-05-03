@@ -575,7 +575,7 @@ static void nm_10000(PLW* wk) {
 
 /** @brief Normal input handler 16 — neutral pre-jump squat input. */
 static void nm_16000(PLW* wk) {
-    set_new_jpdir(wk);
+    set_new_jump_direction(wk);
 
     if (wk->wu.routine_no[3] == 0) {
         return;
@@ -584,7 +584,7 @@ static void nm_16000(PLW* wk) {
     switch (wk->wu.cg_type) {
     case 0xFF:
         check_jump_rl_dir(wk);
-        switch (wk->jpdir) {
+        switch (wk->jump_direction) {
         case 1:
             wk->wu.routine_no[2] = 21;
             break;
@@ -630,7 +630,7 @@ static void nm_16000(PLW* wk) {
 
 /** @brief Normal input handler 17 — directional pre-jump squat input. */
 static void nm_17000(PLW* wk) {
-    set_new_jpdir(wk);
+    set_new_jump_direction(wk);
 
     if (wk->wu.routine_no[3] == 0) {
         return;
@@ -638,7 +638,7 @@ static void nm_17000(PLW* wk) {
 
     if (wk->wu.cg_type == 0xFF) {
         check_jump_rl_dir(wk);
-        switch (wk->jpdir) {
+        switch (wk->jump_direction) {
         case 1:
             wk->wu.routine_no[2] = 24;
             break;
@@ -684,14 +684,14 @@ void check_jump_rl_dir(PLW* wk) {
     if (check_rl_flag(&wk->wu) == 0) {
         wk->wu.rl_flag = wk->wu.rl_waza;
         wk->cp->lever_dir = lvdir_conv[wk->cp->lever_dir];
-        wk->jpdir = lvdir_conv[wk->jpdir];
+        wk->jump_direction = lvdir_conv[wk->jump_direction];
     }
 }
 
 /** @brief Sets a new jump direction based on lever input. */
-void set_new_jpdir(PLW* wk) {
+void set_new_jump_direction(PLW* wk) {
     if ((wk->cp->input_held & 1) && wk->cp->lever_dir) {
-        wk->jpdir = wk->cp->lever_dir;
+        wk->jump_direction = wk->cp->lever_dir;
     }
 }
 
@@ -981,7 +981,7 @@ static void nm_27_cg_type_check(PLW* wk) {
             break;
         }
 
-        wk->wu.cg_ix -= wk->wu.cgd_type;
+        wk->wu.graphic_index -= wk->wu.cgd_type;
         char_move_z(&wk->wu);
         break;
 
@@ -1408,12 +1408,12 @@ static void process_damage(PLW* wk) {
                     Next_Be_Free(wk);
                 }
 
-                if (wk->wu.dm_stop < 0) {
-                    if (wk->wu.dm_stop > -4) {
-                        wk->wu.dm_stop = -4;
+                if (wk->wu.damage_hit_stop < 0) {
+                    if (wk->wu.damage_hit_stop > -4) {
+                        wk->wu.damage_hit_stop = -4;
                     }
-                } else if (wk->wu.dm_stop < 4) {
-                    wk->wu.dm_stop = 4;
+                } else if (wk->wu.damage_hit_stop < 4) {
+                    wk->wu.damage_hit_stop = 4;
                 }
             }
         }
@@ -1665,8 +1665,8 @@ static s32 check_cg_cancel_data(PLW* wk) {
         return 0;
     }
 
-    if (wk->wu.meoshi_hit_flag != 0) {
-        if (wk->spmv_ng_flag2 & DIP2_SPECIAL_MOVE_SUPER_ART_CANCEL_DISABLED) {
+    if (wk->wu.frame_link_hit_flag != 0) {
+        if (wk->special_move_disabled_flag2 & DIP2_SPECIAL_MOVE_SUPER_ART_CANCEL_DISABLED) {
             if (wk->wu.routine_no[1] == 4) {
                 switch (wk->player_number) {
                 case 7:
@@ -1695,7 +1695,7 @@ static s32 check_cg_cancel_data(PLW* wk) {
             }
         }
 
-        if ((wk->spmv_ng_flag2 & DIP2_SUPER_ART_CANCEL_DISABLED) && (wk->wu.kind_of_waza & 0xF8)) {
+        if ((wk->special_move_disabled_flag2 & DIP2_SUPER_ART_CANCEL_DISABLED) && (wk->wu.kind_of_waza & 0xF8)) {
             wk->wu.cg_cancel &= 0xBF;
         }
 
@@ -1739,7 +1739,7 @@ static s32 check_cg_cancel_data(PLW* wk) {
         return 1;
     }
 
-    if (wk->wu.meoshi_hit_flag == 0) {
+    if (wk->wu.frame_link_hit_flag == 0) {
         return 0;
     }
 

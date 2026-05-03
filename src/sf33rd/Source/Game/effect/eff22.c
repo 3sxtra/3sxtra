@@ -90,20 +90,20 @@ void effect_22_move(WORK_Other* ewk) {
         ewk->wu.dead_f = 1;
         set_char_move_init(&ewk->wu, 0, 11);
         ewk->wu.disp_flag = 1;
-        ewk->wu.old_rno[0] = 0;
+        ewk->wu.old_routine_no[0] = 0;
         /* fallthrough */
 
     case 1:
         ewk->wu.routine_no[0]++;
-        ptr = &snow_sp[ewk->wu.old_rno[0]][ewk->wu.type][0];
+        ptr = &snow_sp[ewk->wu.old_routine_no[0]][ewk->wu.type][0];
         ewk->wu.mvxy.a[0].sp = *ptr++;
         ewk->wu.mvxy.d[0].sp = *ptr++;
         ewk->wu.mvxy.a[1].sp = *ptr++;
         ewk->wu.mvxy.d[1].sp = *ptr++;
         ewk->wu.xyz[0].disp.pos = snow_pos_tbl[ewk->wu.type][0];
         ewk->wu.xyz[1].disp.pos = snow_pos_tbl[ewk->wu.type][1];
-        ewk->wu.old_rno[0]++;
-        ewk->wu.old_rno[0] &= 3;
+        ewk->wu.old_routine_no[0]++;
+        ewk->wu.old_routine_no[0] &= 3;
         break;
 
     case 2:
@@ -140,7 +140,7 @@ s32 effect_22_init() {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 22;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.type = i;
         ewk->wu.my_family = 2;
         ewk->wu.my_col_mode = 0x4200;

@@ -33,9 +33,9 @@ void effect_47_move(WORK_Other* ewk) {
 
     case 1:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 0) {
+            if (ewk->wu.old_routine_no[0] < 0) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.disp_flag = 0;
             } else {
@@ -76,7 +76,7 @@ s32 effect_47_init(WORK* wk, s32 /* unused */) {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 47;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
         *ewk->wu.char_table = _etc_char_table;
         ewk->wu.type = i;
@@ -90,7 +90,7 @@ s32 effect_47_init(WORK* wk, s32 /* unused */) {
         ewk->wu.xyz[1].disp.pos = wk->xyz[1].disp.pos;
         ewk->wu.xyz[0].disp.pos += *(s16*)data_ptr++;
         ewk->wu.xyz[1].disp.pos += *(s16*)data_ptr++;
-        ewk->wu.old_rno[0] = *data_ptr++;
+        ewk->wu.old_routine_no[0] = *data_ptr++;
         ewk->wu.mvxy.a[0].sp = eff47_sp_tbl[i][0];
         ewk->wu.mvxy.d[0].sp = eff47_sp_tbl[i][1];
         ewk->wu.mvxy.a[1].sp = eff47_sp_tbl[i][2];

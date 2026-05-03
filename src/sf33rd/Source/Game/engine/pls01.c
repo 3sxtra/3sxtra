@@ -60,18 +60,18 @@ s32 sa_stop_check() {
 
 /** @brief Deactivates the player's own throw power-up flag. */
 void check_my_tk_power_off(PLW* wk, PLW* /* unused */) {
-    if (wk->wu.old_rno[1] == 1) {
-        if (wk->wu.old_rno[2] < 8 && wk->wu.old_rno[2] > 3) {
+    if (wk->wu.old_routine_no[1] == 1) {
+        if (wk->wu.old_routine_no[2] < 8 && wk->wu.old_routine_no[2] > 3) {
             return;
         }
 
-        wk->tk_dageki = 0;
-        wk->tk_nage = 0;
-        wk->tk_kizetsu = 0;
+        wk->strike_scaling = 0;
+        wk->throw_scaling = 0;
+        wk->stun_scaling = 0;
         return;
     }
 
-    if (wk->wu.old_rno[1] == 3 && wk->wu.routine_no[1] == 0 && wk->wu.routine_no[2] < 51) {
+    if (wk->wu.old_routine_no[1] == 3 && wk->wu.routine_no[1] == 0 && wk->wu.routine_no[2] < 51) {
         if (wk->wu.routine_no[2] > 46) {
             // do nothing
         }
@@ -80,18 +80,18 @@ void check_my_tk_power_off(PLW* wk, PLW* /* unused */) {
 
 /** @brief Deactivates the enemy's throw power-up flag. */
 void check_em_tk_power_off(PLW* wk, PLW* tk) {
-    if (about_rno[wk->wu.old_rno[1]] != 1) {
+    if (about_rno[wk->wu.old_routine_no[1]] != 1) {
         return;
     }
 
-    tk->tk_dageki -= wk->utk_dageki;
-    tk->tk_nage -= wk->utk_nage;
-    tk->tk_kizetsu -= wk->utk_kizetsu;
-    wk->utk_dageki = wk->utk_nage = wk->utk_kizetsu = 0;
+    tk->strike_scaling -= wk->received_strike_scaling;
+    tk->throw_scaling -= wk->received_throw_scaling;
+    tk->stun_scaling -= wk->received_stun_scaling;
+    wk->received_strike_scaling = wk->received_throw_scaling = wk->received_stun_scaling = 0;
 
-    CLAMP_MIN_ZERO(tk->tk_dageki);
-    CLAMP_MIN_ZERO(tk->tk_nage);
-    CLAMP_MIN_ZERO(tk->tk_kizetsu);
+    CLAMP_MIN_ZERO(tk->strike_scaling);
+    CLAMP_MIN_ZERO(tk->throw_scaling);
+    CLAMP_MIN_ZERO(tk->stun_scaling);
 }
 
 /** @brief Returns the ukemi (tech-roll) flag for the player. */
@@ -249,7 +249,7 @@ s32 check_air_jump(PLW* wk) {
     }
 
     set_routine(wk, 53);
-    wk->jpdir = 0;
+    wk->jump_direction = 0;
     grade_add_command_waza(wk->wu.id);
     return 1;
 }
@@ -278,7 +278,7 @@ s32 check_sankaku_tobi(PLW* wk) {
     }
 
     set_routine(wk, 52);
-    wk->jpdir = 0;
+    wk->jump_direction = 0;
     grade_add_command_waza(wk->wu.id);
     return 1;
 }
@@ -417,7 +417,7 @@ s32 check_jump_ready(PLW* wk) {
         set_routine(wk, 16);
     }
 
-    wk->jpdir = 0;
+    wk->jump_direction = 0;
     return 1;
 }
 
@@ -440,7 +440,7 @@ s32 check_hijump_only(PLW* wk) {
     }
 
     set_routine(wk, 17);
-    wk->jpdir = 0;
+    wk->jump_direction = 0;
     grade_add_command_waza(wk->wu.id);
     return 1;
 }
@@ -476,7 +476,7 @@ s16 check_F_R_walk(PLW* wk) {
 
 /** @brief Checks if the player has turned to face backwards. */
 s32 check_turn_to_back(PLW* wk) {
-    if (wk->hurimukenai_flag) {
+    if (wk->cannot_turn_flag) {
         return 0;
     }
 
@@ -495,7 +495,7 @@ s32 check_turn_to_back(PLW* wk) {
     }
 
     wk->wu.cg_type = 0;
-    wk->hurimukenai_flag = 1;
+    wk->cannot_turn_flag = 1;
     return 1;
 }
 
@@ -738,7 +738,7 @@ s32 check_ashimoto(PLW* wk) {
     }
 
     set_routine(wk, 54);
-    wk->jpdir = 0;
+    wk->jump_direction = 0;
     return 1;
 }
 
@@ -750,7 +750,7 @@ s32 check_floor_2(PLW* wk) {
 
     WORK* efw = (WORK*)((WORK*)wk->wu.target_adrs)->my_effadrs;
 
-    if (hit_check_x_only(&wk->wu, efw, &wk->wu.hosei_adrs->hos_box[4], &efw->h_hos->hos_box[0]) != 0) {
+    if (hit_check_x_only(&wk->wu, efw, &wk->wu.hosei_adrs->hos_box[4], &efw->pushbox->hos_box[0]) != 0) {
         return 0;
     }
 

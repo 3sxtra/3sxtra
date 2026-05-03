@@ -95,7 +95,7 @@ s32 effect_C0_init(PLW* wk, s32 /* unused */) {
     ewk->wu.id = 120;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = wk->wu.my_family;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.position_x = wk->wu.position_x;
     ewk->wu.position_y = wk->wu.position_y;
     ewk->wu.position_z = wk->wu.position_z - 4;

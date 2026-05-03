@@ -81,7 +81,7 @@ s32 effect_86_init(s16 type86) {
     ewk->wu.id = 86;
     ewk->wu.work_id = 16;
     ewk->wu.type = type86;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.dead_f = 1;
     ewk->wu.routine_no[1] = *data_ptr++;

@@ -39,7 +39,7 @@ void effect_B2_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0] += 1;
-        ewk->wu.old_rno[0] = ewk->wu.old_rno[1] = ewk->wu.old_rno[2] = 0;
+        ewk->wu.old_routine_no[0] = ewk->wu.old_routine_no[1] = ewk->wu.old_routine_no[2] = 0;
         g_state.rf_b2_flag = 0;
         g_state.b2_curr_no = 0;
         ewk->wu.hit_stop = 2;

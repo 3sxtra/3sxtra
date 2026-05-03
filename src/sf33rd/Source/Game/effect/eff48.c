@@ -30,7 +30,7 @@ void effect_48_move(WORK_Other* ewk) {
 }
 
 static void eff48_0000(WORK_Other* ewk) {
-    if (ewk->wu.old_rno[1] <= op_obj_disp) {
+    if (ewk->wu.old_routine_no[1] <= op_obj_disp) {
         ewk->wu.routine_no[1] = 0x63;
     }
 
@@ -38,7 +38,7 @@ static void eff48_0000(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1] += 1;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
         /* fallthrough */
 
     case 1:
@@ -57,7 +57,7 @@ static void eff48_0000(WORK_Other* ewk) {
 }
 
 static void eff48_1000(WORK_Other* ewk) {
-    if (ewk->wu.old_rno[1] <= op_obj_disp) {
+    if (ewk->wu.old_routine_no[1] <= op_obj_disp) {
         ewk->wu.routine_no[1] = 0x63;
     }
 
@@ -66,20 +66,20 @@ static void eff48_1000(WORK_Other* ewk) {
         ewk->wu.routine_no[1] += 1;
         op_scrn_end = 0;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[0], ewk->wu.char_index, 0);
-        ewk->wu.old_rno[3] = 10;
-        cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[3], ewk->wu.xyz[0].disp.pos, ewk->wu.old_rno[2], 2, 2);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
+        ewk->wu.old_routine_no[3] = 10;
+        cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[3], ewk->wu.xyz[0].disp.pos, ewk->wu.old_routine_no[2], 2, 2);
         /* fallthrough */
 
     case 1:
-        ewk->wu.old_rno[3] -= 1;
+        ewk->wu.old_routine_no[3] -= 1;
 
-        if (ewk->wu.old_rno[3] < 0) {
+        if (ewk->wu.old_routine_no[3] < 0) {
             ewk->wu.routine_no[1] += 1;
-            ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[2];
+            ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[2];
             op_scrn_end = 1;
 
-            if (!ewk->wu.old_rno[4]) {
+            if (!ewk->wu.old_routine_no[4]) {
                 switch (ewk->wu.type) {
                 case 16:
                     effect_36_init(0x18);
@@ -141,23 +141,23 @@ s32 effect_48_init(s16 type) {
         ewk->wu.my_family = 3;
         ewk->wu.my_mts = 9;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-        ewk->wu.old_rno[4] = i;
+        ewk->wu.old_routine_no[4] = i;
         ewk->wu.char_table[0] = _op_char_table;
         ewk->wu.routine_no[0] = *data_ptr++;
-        ewk->wu.old_rno[2] = *data_ptr++;
+        ewk->wu.old_routine_no[2] = *data_ptr++;
 
         if (ewk->wu.routine_no[0] == 2) {
-            ewk->wu.my_col_code += ewk->wu.old_rno[2];
+            ewk->wu.my_col_code += ewk->wu.old_routine_no[2];
         }
 
         ewk->wu.xyz[0].disp.pos = *data_ptr++;
         ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
-        ewk->wu.old_rno[0] = *data_ptr++;
+        ewk->wu.old_routine_no[0] = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
-        ewk->wu.old_rno[1] = *data_ptr++;
+        ewk->wu.old_routine_no[1] = *data_ptr++;
 
-        if (ewk->wu.old_rno[0] == 2) {
+        if (ewk->wu.old_routine_no[0] == 2) {
             COLOR_COPYn(0x10, ((ewk->wu.my_col_code & 0x1FF) + 0x38) * 4, 4);
             ewk->wu.my_col_code = 4;
         } else {

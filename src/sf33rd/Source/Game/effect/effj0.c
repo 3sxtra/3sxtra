@@ -85,7 +85,7 @@ s32 effect_J0_init(WORK_Other* ek, WORK_Other* mk, s16 data) {
     ewk->wu.blink_timing = mk->wu.blink_timing;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = mk->wu.my_family;
-    ewk->wu.cgromtype = mk->wu.cgromtype;
+    ewk->wu.graphic_rom_type = mk->wu.graphic_rom_type;
     ewk->wu.my_col_mode = mk->wu.my_col_mode;
     ewk->wu.my_col_code = mk->wu.my_col_code;
     ewk->wu.extra_col = mk->wu.current_colcd;

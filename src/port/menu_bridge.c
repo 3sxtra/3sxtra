@@ -16,11 +16,11 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 // Undefine conflicting macros from Windows headers
-#ifdef cmb2
-#undef cmb2
+#ifdef cmd_state_backup_2
+#undef cmd_state_backup_2
 #endif
-#ifdef cmb3
-#undef cmb3
+#ifdef cmd_state_backup_3
+#undef cmd_state_backup_3
 #endif
 #ifdef s_addr
 #undef s_addr

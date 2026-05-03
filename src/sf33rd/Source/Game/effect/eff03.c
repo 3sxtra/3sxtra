@@ -221,7 +221,7 @@ s32 effect_03_init(WORK* wk, u8 data) {
     ewk->wu.type = data;
     ewk->wu.rl_waza = wk->rl_flag;
     ewk->wu.my_family = wk->my_family;
-    ewk->wu.cgromtype = wk->cgromtype;
+    ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.my_col_code = wk->my_col_code;
     ewk->my_master = wk;

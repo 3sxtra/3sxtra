@@ -15,7 +15,7 @@
 
 const s16 Pos_Data_A0[4][3] = { { -52, 148, 69 }, { 140, 148, 69 }, { -52, 131, 69 }, { 140, 131, 69 } };
 
-static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_rno, s16 zero);
+static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_routine_no, s16 zero);
 
 void effect_A0_move(WORK_Other_CONN* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
@@ -26,7 +26,7 @@ void effect_A0_move(WORK_Other_CONN* ewk) {
     sort_push_request3(&ewk->wu);
 }
 
-s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_rno, s16 zero, s16 target_bg, s16 master_player) {
+s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_routine_no, s16 zero, s16 target_bg, s16 master_player) {
     WORK_Other_CONN* ewk;
     s16 ix;
 
@@ -49,44 +49,44 @@ s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_rno, s16 ze
     ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_A0[pos_index][1];
     ewk->wu.position_z = Pos_Data_A0[pos_index][2];
     Convert_16_10_3(ewk, disp_target);
-    Setup_A0_Sub(ewk, old_rno, zero);
+    Setup_A0_Sub(ewk, old_routine_no, zero);
     return 0;
 }
 
-static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_rno, s16 zero) {
-    ewk->num_of_conn = old_rno;
+static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_routine_no, s16 zero) {
+    ewk->num_of_conn = old_routine_no;
     ewk->conn[0].nx = 0;
     ewk->conn[0].ny = 0;
     ewk->conn[1].nx = 8;
     ewk->conn[1].ny = 0;
 
-    switch (old_rno) {
+    switch (old_routine_no) {
     case 3:
-        ewk->conn[0].chr = ewk->wu.old_rno[2] + 0x70D7;
+        ewk->conn[0].chr = ewk->wu.old_routine_no[2] + 0x70D7;
 
-        if (zero == 0 && ewk->wu.old_rno[2] == 0) {
+        if (zero == 0 && ewk->wu.old_routine_no[2] == 0) {
             ewk->conn[0].ny -= 256;
         }
 
-        ewk->conn[1].chr = ewk->wu.old_rno[1] + 0x70D7;
+        ewk->conn[1].chr = ewk->wu.old_routine_no[1] + 0x70D7;
 
-        if (zero == 0 && ewk->wu.old_rno[1] == 0 && ewk->wu.old_rno[2] == 0) {
+        if (zero == 0 && ewk->wu.old_routine_no[1] == 0 && ewk->wu.old_routine_no[2] == 0) {
             ewk->conn[1].ny -= 256;
         }
 
         ewk->conn[2].nx = 16;
         ewk->conn[2].ny = 0;
-        ewk->conn[2].chr = ewk->wu.old_rno[0] + 0x70D7;
+        ewk->conn[2].chr = ewk->wu.old_routine_no[0] + 0x70D7;
         break;
 
     case 2:
-        ewk->conn[0].chr = ewk->wu.old_rno[1] + 0x70D7;
+        ewk->conn[0].chr = ewk->wu.old_routine_no[1] + 0x70D7;
 
-        if (zero == 0 && ewk->wu.old_rno[1] == 0) {
+        if (zero == 0 && ewk->wu.old_routine_no[1] == 0) {
             ewk->conn[1].ny -= 256;
         }
 
-        ewk->conn[1].chr = ewk->wu.old_rno[0] + 0x70D7;
+        ewk->conn[1].chr = ewk->wu.old_routine_no[0] + 0x70D7;
         break;
     }
 }

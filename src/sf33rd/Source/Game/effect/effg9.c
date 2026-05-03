@@ -90,7 +90,7 @@ s32 effect_G9_init(WORK* wk) {
     ewk->wu.rl_flag = wk->rl_flag;
     ewk->wu.char_index = wk->direction;
     ewk->wu.my_family = wk->my_family;
-    ewk->wu.cgromtype = wk->cgromtype;
+    ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.my_col_code = wk->my_col_code;
     ewk->wu.mvxy.a[0].sp = wk->mvxy.a[0].sp;

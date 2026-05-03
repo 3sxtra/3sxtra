@@ -40,9 +40,9 @@ void effect_D1_move(WORK_Other* ewk) {
                 char_move(&ewk->wu);
             }
 
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 36) {
+            if (ewk->wu.old_routine_no[0] < 36) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.my_priority = ewk->wu.position_z = 20;
             }
@@ -62,9 +62,9 @@ void effect_D1_move(WORK_Other* ewk) {
                 char_move(&ewk->wu);
             }
 
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] != 0) {
+            if (ewk->wu.old_routine_no[0] != 0) {
                 add_x_sub(&ewk->wu);
                 add_y_sub(&ewk->wu);
             } else {
@@ -102,10 +102,10 @@ static void fall_data_set(WORK_Other* ewk) {
     s16 pos_work;
     s16 id_work;
 
-    ewk->wu.old_rno[0] = 44;
+    ewk->wu.old_routine_no[0] = 44;
     id_work = oya_ef->master_id ^ 1;
     pos_work = g_state.plw[oya_ef->master_id].wu.xyz[0].disp.pos - g_state.plw[id_work].wu.xyz[0].disp.pos;
-    ewk->wu.old_rno[2] = -8;
+    ewk->wu.old_routine_no[2] = -8;
 
     if (ewk->wu.rl_flag) {
         ewk->wu.xyz[0].disp.pos += 32;
@@ -118,7 +118,7 @@ static void fall_data_set(WORK_Other* ewk) {
             pos_work = -pos_work;
         }
 
-        ewk->wu.old_rno[1] = oya_ef->wu.xyz[0].disp.pos + pos_work;
+        ewk->wu.old_routine_no[1] = oya_ef->wu.xyz[0].disp.pos + pos_work;
     } else {
         ewk->wu.xyz[0].disp.pos -= 32;
 
@@ -130,10 +130,10 @@ static void fall_data_set(WORK_Other* ewk) {
             pos_work = 32;
         }
 
-        ewk->wu.old_rno[1] = oya_ef->wu.xyz[0].disp.pos - pos_work;
+        ewk->wu.old_routine_no[1] = oya_ef->wu.xyz[0].disp.pos - pos_work;
     }
 
-    cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[0], ewk->wu.old_rno[1], ewk->wu.old_rno[2], 2, 1);
+    cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], ewk->wu.old_routine_no[2], 2, 1);
 }
 
 s32 effect_D1_init(WORK_Other* oya, s32 /* unused */) {
@@ -148,7 +148,7 @@ s32 effect_D1_init(WORK_Other* oya, s32 /* unused */) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 131;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.disp_flag = 0;
     ewk->my_master = oya;
     ewk->wu.my_family = 2;

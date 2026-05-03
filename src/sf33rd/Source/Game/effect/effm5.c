@@ -38,9 +38,9 @@ void effect_M5_move(WORK_Other* ewk) {
     case 1:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 1) {
+            if (ewk->wu.old_routine_no[0] < 1) {
                 ewk->wu.routine_no[0]++;
                 g_state.Appear_car_stop[ewk->master_id] = 1;
                 set_char_move_init(&ewk->wu, 0, 0x68);
@@ -63,7 +63,7 @@ void effect_M5_move(WORK_Other* ewk) {
 
             if (ewk->wu.cg_type == 1) {
                 ewk->wu.routine_no[0]++;
-                ewk->wu.old_rno[0] = 0x14;
+                ewk->wu.old_routine_no[0] = 0x14;
             } else if (ewk->wu.cg_type == 2) {
                 g_state.demo_car_flag[ewk->master_id] = 1;
             }
@@ -75,11 +75,11 @@ void effect_M5_move(WORK_Other* ewk) {
 
     case 3:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 0) {
+            if (ewk->wu.old_routine_no[0] < 0) {
                 ewk->wu.routine_no[0]++;
-                ewk->wu.old_rno[0] = 0x30;
+                ewk->wu.old_routine_no[0] = 0x30;
 
                 if (ewk->wu.rl_flag) {
                     ewk->wu.mvxy.a[0].sp = -0x20000;
@@ -97,9 +97,9 @@ void effect_M5_move(WORK_Other* ewk) {
 
     case 4:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 0) {
+            if (ewk->wu.old_routine_no[0] < 0) {
                 ewk->wu.routine_no[0]++;
             } else {
                 add_x_sub(&ewk->wu);
@@ -141,7 +141,7 @@ s32 effect_M5_init(PLW* oya) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 225;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.disp_flag = 0;
     ewk->wu.my_family = 2;
     ewk->wu.char_index = 103;
@@ -156,18 +156,18 @@ s32 effect_M5_init(PLW* oya) {
         ewk->wu.xyz[0].disp.low = 0;
         ewk->wu.xyz[1].cal = 0;
         ewk->wu.rl_flag = 0;
-        ewk->wu.old_rno[0] = 40;
+        ewk->wu.old_routine_no[0] = 40;
         work = (g_state.bg_w.bgw[1].pos_x_work + 168) & 0xFFFF;
         ewk->wu.xyz[0].disp.pos = (g_state.bg_w.bgw[1].pos_x_work + 320) & 0xFFFF;
-        cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[0], work, 0, 1, 1);
+        cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[0], work, 0, 1, 1);
     } else {
         ewk->wu.xyz[1].cal = 0;
         ewk->wu.xyz[0].disp.low = 0;
         ewk->wu.rl_flag = 1;
-        ewk->wu.old_rno[0] = 40;
+        ewk->wu.old_routine_no[0] = 40;
         work = (g_state.bg_w.bgw[1].pos_x_work - 168) & 0xFFFF;
         ewk->wu.xyz[0].disp.pos = (g_state.bg_w.bgw[1].pos_x_work - 320) & 0xFFFF;
-        cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[0], work, 0, 1, 1);
+        cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[0], work, 0, 1, 1);
     }
 
     suzi_offset_set(ewk);

@@ -28,7 +28,7 @@ void effect_E0_move(WORK_Other* ewk) {
 
         ewk->wu.disp_flag = 1;
 
-        if (ewk->wu.dm_vital == 1) {
+        if (ewk->wu.damage_vitality == 1) {
             ewk->wu.routine_no[0] = 4;
         } else {
             ewk->wu.routine_no[0]++;
@@ -45,7 +45,7 @@ void effect_E0_move(WORK_Other* ewk) {
             }
 
             ewk->wu.dir_timer = 1;
-        } else if (g_state.Moving_Plate[g_state.Player_id] != 0 && ewk->wu.dm_vital == 0) {
+        } else if (g_state.Moving_Plate[g_state.Player_id] != 0 && ewk->wu.damage_vitality == 0) {
             if (--g_state.Moving_Plate_Counter[g_state.Player_id] == 0) {
                 g_state.Moving_Plate[g_state.Player_id] = 0;
             }
@@ -106,7 +106,7 @@ void effect_E0_move(WORK_Other* ewk) {
         return;
     }
 
-    if (ewk->wu.dm_vital == 0 && g_state.Exec_Wipe == 0) {
+    if (ewk->wu.damage_vitality == 0 && g_state.Exec_Wipe == 0) {
         char_move(&ewk->wu);
     }
 
@@ -126,7 +126,7 @@ static void Setup_Char_E0(WORK_Other* ewk) {
     }
 }
 
-s32 effect_E0_init(s16 Direction, s16 dm_vital, s16 Pos_Type) {
+s32 effect_E0_init(s16 Direction, s16 damage_vitality, s16 Pos_Type) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -141,7 +141,7 @@ s32 effect_E0_init(s16 Direction, s16 dm_vital, s16 Pos_Type) {
     ewk->wu.my_col_code = 0x2090;
     ewk->wu.my_family = 4;
     *ewk->wu.char_table = _sel_pl_char_table;
-    ewk->wu.dm_vital = dm_vital;
+    ewk->wu.damage_vitality = damage_vitality;
     ewk->wu.direction = Direction;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
@@ -155,7 +155,7 @@ s32 effect_E0_init(s16 Direction, s16 dm_vital, s16 Pos_Type) {
         ewk->wu.position_z++;
     }
 
-    if (dm_vital == 1) {
+    if (damage_vitality == 1) {
         ewk->wu.xyz[0].disp.pos += 3;
         ewk->wu.xyz[1].disp.pos--;
         ewk->wu.char_index = 17;

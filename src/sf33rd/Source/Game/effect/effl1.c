@@ -521,7 +521,7 @@ s32 effect_L1_init(s16 flag) {
     ewk->wu.type = flag;
     ewk->wu.my_mts = 13;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     return 0;
 }

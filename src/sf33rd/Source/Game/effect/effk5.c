@@ -51,22 +51,22 @@ const s8 k5_exc_check[125] = { 1, 2, 0, 2, 2, 2, 2, 1, 1, 1, 2, 2, 1, 2, 1, 2, 1
 
 // Forward decls
 
-static void K5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl);
-static void K5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num);
-static void K5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num);
+static void k5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl);
+static void k5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num);
+static void k5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num);
 static void get_table_adrs_K5(WORK* wk);
 static void k5_add_sub(MVJ* mvj);
 static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj);
-static void K5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj);
-static void init_K5_work(WORK* ewk, WORK* mwk, MVJ* mvj);
+static void k5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj);
+static void init_k5_work(WORK* ewk, WORK* mwk, MVJ* mvj);
 static void get_master_table_address(WORK* ewk, WORK* mwk);
 static s32 get_cal_work(WORK* wk);
-static void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf);
+static void k5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf);
 static u32 decode_mvsw(u16 flag);
 
 // Funcs
 
-void effect_K5_move(WORK_Other* ewk) {
+void effect_k5_move(WORK_Other* ewk) {
     WORK* mwk = (WORK*)ewk->my_master;
     MVJ* mvj;
 
@@ -87,10 +87,10 @@ void effect_K5_move(WORK_Other* ewk) {
         // There's one more line just like this one down below.
         mvj = (MVJ*)(((WORK*)ewk->wu.target_adrs)->routine_no);
 
-        init_K5_work(&ewk->wu, mwk, mvj);
-        ewk->wu.old_rno[1] = mwk->cg_hit_ix;
+        init_k5_work(&ewk->wu, mwk, mvj);
+        ewk->wu.old_routine_no[1] = mwk->cg_hit_ix;
         get_table_adrs_K5(mwk);
-        K5_init_data(mwk, mvj, (u16*)(&mwk->cg_ja));
+        k5_init_data(mwk, mvj, (u16*)(&mwk->cg_ja));
         break;
 
     case 1:
@@ -109,23 +109,23 @@ void effect_K5_move(WORK_Other* ewk) {
         get_master_table_address(&ewk->wu, mwk);
         mvj = (MVJ*)(((WORK*)ewk->wu.target_adrs)->routine_no);
 
-        if (mwk->K5_exec_ok) {
-            mwk->K5_exec_ok = 0;
+        if (mwk->phase_k5_exec_ok) {
+            mwk->phase_k5_exec_ok = 0;
 
-            if (mwk->K5_init_flag || (ewk->wu.old_rno[1] != mwk->cg_hit_ix)) {
-                mwk->K5_init_flag = 0;
-                ewk->wu.old_rno[1] = mwk->cg_hit_ix;
+            if (mwk->phase_k5_init_flag || (ewk->wu.old_routine_no[1] != mwk->cg_hit_ix)) {
+                mwk->phase_k5_init_flag = 0;
+                ewk->wu.old_routine_no[1] = mwk->cg_hit_ix;
                 ewk->wu.routine_no[1] = 0;
-                K5_init_data(mwk, mvj, (u16*)(&mwk->cg_ja));
+                k5_init_data(mwk, mvj, (u16*)(&mwk->cg_ja));
             }
 
-            K5_main_process(&ewk->wu, mwk, mvj);
+            k5_main_process(&ewk->wu, mwk, mvj);
         }
 
-        K5_init_data_copy2((K5Data*)&g_state.rambod[mwk->id], mvj, 4);
-        K5_init_data_copy2((K5Data*)&g_state.ramhan[mwk->id], mvj + 4, 4);
-        mwk->h_bod = &g_state.rambod[mwk->id];
-        mwk->h_han = &g_state.ramhan[mwk->id];
+        k5_init_data_copy2((K5Data*)&g_state.rambod[mwk->id], mvj, 4);
+        k5_init_data_copy2((K5Data*)&g_state.ramhan[mwk->id], mvj + 4, 4);
+        mwk->body_hurtbox = &g_state.rambod[mwk->id];
+        mwk->hand_hurtbox = &g_state.ramhan[mwk->id];
         break;
 
     case 2:
@@ -138,7 +138,7 @@ void effect_K5_move(WORK_Other* ewk) {
     }
 }
 
-static void K5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj) {
+static void k5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj) {
     s16 i;
 
     switch (ewk->routine_no[1]) {
@@ -172,28 +172,28 @@ static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
     if ((mwk->cgd_type != 2) && (mwk->cg_ja.mf.full & 0x1010)) {
         now_mf = mwk->cg_ja.mf.full;
         exc = 0;
-        ewk->old_rno[0] = mwk->cg_ctr;
-        ewk->cg_ix = mwk->cg_ix;
+        ewk->old_routine_no[0] = mwk->cg_ctr;
+        ewk->graphic_index = mwk->graphic_index;
 
         while (1) {
-            ewk->cg_ix += mwk->cgd_type;
-            gotcp.cpl = &mwk->set_char_ad[ewk->cg_ix];
+            ewk->graphic_index += mwk->cgd_type;
+            gotcp.cpl = &mwk->set_char_ad[ewk->graphic_index];
 
             if (gotcp.cps[0] >= 0x100) {
                 st.l = gotcp.cpl[2];
                 st.l *= 8;
                 ewk->cg_hit_ix = st.w.h & 0x1FF;
 
-                if (ewk->old_rno[1] == ewk->cg_hit_ix) {
+                if (ewk->old_routine_no[1] == ewk->cg_hit_ix) {
                     if ((gotcp.cpc[1] != 0xFF) || (gotcp.cpc[1] < 0xC8)) {
-                        ewk->old_rno[0] += gotcp.cpc[1];
+                        ewk->old_routine_no[0] += gotcp.cpc[1];
                     }
 
                     continue;
                 }
 
-                if (ewk->old_rno[0] >= 2) {
-                    K5_decode_new_hit_index(ewk, mvj, now_mf);
+                if (ewk->old_routine_no[0] >= 2) {
+                    k5_decode_new_hit_index(ewk, mvj, now_mf);
                     ewk->routine_no[1] = 1;
                     return;
                 }
@@ -215,19 +215,19 @@ static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
 
             switch (gotcp.cps[0]) {
             case 2:
-                ewk->cg_ix = (gotcp.cps[3] - 2) * mwk->cgd_type;
+                ewk->graphic_index = (gotcp.cps[3] - 2) * mwk->cgd_type;
                 break;
 
             case 49:
                 if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
-                    ewk->cg_ix += (gotcp.cps[3] - 1) * mwk->cgd_type;
+                    ewk->graphic_index += (gotcp.cps[3] - 1) * mwk->cgd_type;
                 }
 
                 break;
 
             case 50:
                 if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
-                    ewk->cg_ix -= (gotcp.cps[3] + 1) * mwk->cgd_type;
+                    ewk->graphic_index -= (gotcp.cps[3] + 1) * mwk->cgd_type;
                 }
 
                 break;
@@ -235,11 +235,11 @@ static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
         }
     }
 
-    ewk->old_rno[0] = 1;
+    ewk->old_routine_no[0] = 1;
     ewk->routine_no[1] = 2;
 }
 
-static void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
+static void k5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
     s16 i;
     s16 t0;
     s16 t1;
@@ -254,13 +254,13 @@ static void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
                 wk->xyz[0].disp.pos = mvj[i].r[0].pos.h;
                 wk->xyz[1].disp.pos = mvj[i].r[1].pos.h;
 
-                if ((t1 = wk->h_bod->body_dm[i][1])) {
-                    t0 = wk->h_bod->body_dm[i][0];
+                if ((t1 = wk->body_hurtbox->body_dm[i][1])) {
+                    t0 = wk->body_hurtbox->body_dm[i][0];
                 } else {
                     t0 = wk->xyz[0].disp.pos + wk->xyz[1].disp.pos / 2;
                 }
 
-                cal_all_speed_data(wk, wk->old_rno[0], t0, t1, mvsw.swc.hh, mvsw.swc.l);
+                cal_all_speed_data(wk, wk->old_routine_no[0], t0, t1, mvsw.swc.hh, mvsw.swc.l);
                 mvj[i].r[0].cal = wk->xyz[0].cal;
                 mvj[i].r[1].cal = wk->xyz[1].cal;
                 mvj[i].a[0].sp = wk->mvxy.a[0].sp;
@@ -270,13 +270,13 @@ static void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
                 wk->xyz[0].disp.pos = mvj[i].r[2].pos.h;
                 wk->xyz[1].disp.pos = mvj[i].r[3].pos.h;
 
-                if ((t1 = wk->h_bod->body_dm[i][3])) {
-                    t0 = wk->h_bod->body_dm[i][2];
+                if ((t1 = wk->body_hurtbox->body_dm[i][3])) {
+                    t0 = wk->body_hurtbox->body_dm[i][2];
                 } else {
                     t0 = wk->xyz[0].disp.pos + wk->xyz[1].disp.pos / 2;
                 }
 
-                cal_all_speed_data(wk, wk->old_rno[0], t0, t1, mvsw.swc.h, mvsw.swc.ll);
+                cal_all_speed_data(wk, wk->old_routine_no[0], t0, t1, mvsw.swc.h, mvsw.swc.ll);
                 mvj[i].r[2].cal = wk->xyz[0].cal;
                 mvj[i].r[3].cal = wk->xyz[1].cal;
                 mvj[i].a[2].sp = wk->mvxy.a[0].sp;
@@ -298,13 +298,13 @@ static void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
                 wk->xyz[0].disp.pos = mvj[i].r[0].pos.h;
                 wk->xyz[1].disp.pos = mvj[i].r[1].pos.h;
 
-                if ((t1 = wk->h_han->hand_dm[i - 4][1])) {
-                    t0 = wk->h_han->hand_dm[i - 4][0];
+                if ((t1 = wk->hand_hurtbox->hand_dm[i - 4][1])) {
+                    t0 = wk->hand_hurtbox->hand_dm[i - 4][0];
                 } else {
                     t0 = wk->xyz[0].disp.pos + wk->xyz[1].disp.pos / 2;
                 }
 
-                cal_all_speed_data(wk, wk->old_rno[0], t0, t1, mvsw.swc.hh, mvsw.swc.l);
+                cal_all_speed_data(wk, wk->old_routine_no[0], t0, t1, mvsw.swc.hh, mvsw.swc.l);
                 mvj[i].r[0].cal = wk->xyz[0].cal;
                 mvj[i].r[1].cal = wk->xyz[1].cal;
                 mvj[i].a[0].sp = wk->mvxy.a[0].sp;
@@ -314,13 +314,13 @@ static void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
                 wk->xyz[0].disp.pos = mvj[i].r[2].pos.h;
                 wk->xyz[1].disp.pos = mvj[i].r[3].pos.h;
 
-                if ((t1 = wk->h_han->hand_dm[i - 4][3])) {
-                    t0 = wk->h_han->hand_dm[i - 4][2];
+                if ((t1 = wk->hand_hurtbox->hand_dm[i - 4][3])) {
+                    t0 = wk->hand_hurtbox->hand_dm[i - 4][2];
                 } else {
                     t0 = wk->xyz[0].disp.pos + wk->xyz[1].disp.pos / 2;
                 }
 
-                cal_all_speed_data(wk, wk->old_rno[0], t0, t1, mvsw.swc.h, mvsw.swc.ll);
+                cal_all_speed_data(wk, wk->old_routine_no[0], t0, t1, mvsw.swc.h, mvsw.swc.ll);
                 mvj[i].r[2].cal = wk->xyz[0].cal;
                 mvj[i].r[3].cal = wk->xyz[1].cal;
                 mvj[i].a[2].sp = wk->mvxy.a[0].sp;
@@ -365,11 +365,11 @@ static u32 decode_mvsw(u16 flag) {
 
 static void get_table_adrs_K5(WORK* wk) {
     wk->cg_ja = wk->hit_ix_table[wk->cg_hit_ix];
-    wk->h_bod = &wk->body_adrs[wk->cg_ja.boix];
-    wk->h_han = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
+    wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.boix];
+    wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
 }
 
-static void init_K5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
+static void init_k5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
     s16 i;
 
     for (i = 0; i < 10; i++) {
@@ -380,7 +380,7 @@ static void init_K5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
     ewk->hit_ix_table = mwk->hit_ix_table;
     ewk->body_adrs = mwk->body_adrs;
     ewk->hand_adrs = mwk->hand_adrs;
-    mwk->K5_init_flag = 1;
+    mwk->phase_k5_init_flag = 1;
 }
 
 static void get_master_table_address(WORK* ewk, WORK* mwk) {
@@ -389,7 +389,7 @@ static void get_master_table_address(WORK* ewk, WORK* mwk) {
     ewk->hand_adrs = mwk->hand_adrs;
 }
 
-static void K5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl) {
+static void k5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl) {
     s16 i;
 
     for (i = 0; i < 8; i++) {
@@ -397,11 +397,11 @@ static void K5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl) {
         mvj[i].index = ixtbl[lookup_index[i]];
     }
 
-    K5_init_data_copy(mvj, (K5Data*)mwk->body_adrs[mwk->cg_ja.boix].body_dm, 4);
-    K5_init_data_copy(mvj + 4, (K5Data*)mwk->hand_adrs[mwk->cg_ja.bhix + mwk->cg_ja.haix].hand_dm, 4);
+    k5_init_data_copy(mvj, (K5Data*)mwk->body_adrs[mwk->cg_ja.boix].body_dm, 4);
+    k5_init_data_copy(mvj + 4, (K5Data*)mwk->hand_adrs[mwk->cg_ja.bhix + mwk->cg_ja.haix].hand_dm, 4);
 }
 
-static void K5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num) {
+static void k5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num) {
     s16 i;
 
     for (i = 0; i < num; i++) {
@@ -412,7 +412,7 @@ static void K5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num) {
     }
 }
 
-static void K5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num) {
+static void k5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num) {
     s16 i;
 
     for (i = 0; i < num; i++) {
@@ -450,7 +450,7 @@ static void k5_add_sub(MVJ* mvj) {
     }
 }
 
-s32 effect_K5_init(PLW* wk) {
+s32 effect_k5_init(PLW* wk) {
     WORK_Other* ewk;
     s16 ix;
 

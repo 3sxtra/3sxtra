@@ -133,7 +133,7 @@ void effect_G6_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0] += 1;
-        ewk->wu.dmcal_m = effg6_data[ewk->wu.type][0];
+        ewk->wu.damage_calc_multiplier = effg6_data[ewk->wu.type][0];
         ewk->wu.dir_timer = effg6_data[ewk->wu.type][1];
         ewk->wu.next_x = effg6_data[ewk->wu.type][2];
         ewk->wu.next_y = effg6_data[ewk->wu.type][3];
@@ -158,12 +158,12 @@ void effect_G6_move(WORK_Other* ewk) {
             return;
         }
 
-        if (((ewk->wu.dmcal_m & 1) && (ewk->wu.old_pos[1] != mwk->xyz[1].disp.pos)) ||
-            ((ewk->wu.dmcal_m & 2) && (mwk->disp_flag == 0)) ||
-            ((ewk->wu.dmcal_m & 4) && (ewk->wu.dm_vital != mwk->dm_count_up)) ||
-            ((ewk->wu.dmcal_m & 8) &&
-             ((ewk->wu.old_rno[0] != mwk->routine_no[0]) || (ewk->wu.old_rno[1] != mwk->routine_no[1]) ||
-              (ewk->wu.old_rno[2] != mwk->routine_no[2])))) {
+        if (((ewk->wu.damage_calc_multiplier & 1) && (ewk->wu.old_pos[1] != mwk->xyz[1].disp.pos)) ||
+            ((ewk->wu.damage_calc_multiplier & 2) && (mwk->disp_flag == 0)) ||
+            ((ewk->wu.damage_calc_multiplier & 4) && (ewk->wu.damage_vitality != mwk->dm_count_up)) ||
+            ((ewk->wu.damage_calc_multiplier & 8) &&
+             ((ewk->wu.old_routine_no[0] != mwk->routine_no[0]) || (ewk->wu.old_routine_no[1] != mwk->routine_no[1]) ||
+              (ewk->wu.old_routine_no[2] != mwk->routine_no[2])))) {
         block_22:
             ewk->wu.routine_no[0] += 1;
             return;
@@ -173,7 +173,7 @@ void effect_G6_move(WORK_Other* ewk) {
             break;
         }
 
-        if (ewk->wu.dmcal_m & 0x10) {
+        if (ewk->wu.damage_calc_multiplier & 0x10) {
             if (ewk->wu.dir_timer-- <= 0) {
                 goto block_22;
             }
@@ -183,7 +183,7 @@ void effect_G6_move(WORK_Other* ewk) {
             break;
         }
 
-        if (ewk->wu.dmcal_m & 0x20) {
+        if (ewk->wu.damage_calc_multiplier & 0x20) {
             if ((mwk->hit_stop == 0) && (ewk->wu.old_pos[0] == mwk->xyz[0].disp.pos) &&
                 (ewk->wu.old_pos[1] == mwk->xyz[1].disp.pos)) {
                 goto block_22;
@@ -222,14 +222,14 @@ s32 effect_G6_init(WORK* wk, u8 dat) {
     ewk->wu.type = dat;
     ewk->wu.rl_flag = wk->rl_flag;
     ewk->wu.my_family = 2;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 0x2020;
     ewk->wu.old_pos[0] = ewk->wu.old_pos[1] = 0;
-    ewk->wu.old_rno[0] = wk->routine_no[0];
-    ewk->wu.old_rno[1] = wk->routine_no[1];
-    ewk->wu.old_rno[2] = wk->routine_no[2];
-    ewk->wu.dm_vital = wk->dm_count_up;
+    ewk->wu.old_routine_no[0] = wk->routine_no[0];
+    ewk->wu.old_routine_no[1] = wk->routine_no[1];
+    ewk->wu.old_routine_no[2] = wk->routine_no[2];
+    ewk->wu.damage_vitality = wk->dm_count_up;
     ewk->my_master = wk;
     ewk->master_work_id = wk->work_id;
     ewk->master_id = wk->id;

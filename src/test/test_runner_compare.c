@@ -219,7 +219,7 @@ static void compare_service_values(SDL_IOStream* io, bool compare_characters, Ui
             stop_if(routine_no_3sx != routine_no_cps3);
         }
 
-        const s16 dm_stop_3sx = g_state.plw[i].wu.dm_stop;
+        const s16 dm_stop_3sx = g_state.plw[i].wu.damage_hit_stop;
         const s16 dm_stop_cps3 = read_s16(io, plw_offset + WORK_DM_STOP_OFFSET);
         stop_if(dm_stop_3sx != dm_stop_cps3);
 
@@ -232,7 +232,7 @@ static void compare_service_values(SDL_IOStream* io, bool compare_characters, Ui
         stop_if(sa_stop_flag_3sx != sa_stop_flag_cps3);
 
         // const u16 cg_ix_cps3 = read_u16(io, plw_offset + WORK_CG_IX_OFFSET);
-        // const u16 cg_ix_3sx = g_state.plw[i].wu.cg_ix;
+        // const u16 cg_ix_3sx = g_state.plw[i].wu.graphic_index;
         // stop_if(cg_ix_cps3 != cg_ix_3sx);
 
         const u16 cg_add_xy_cps3 = read_u16(io, plw_offset + WORK_CG_ADD_XY_OFFSET);

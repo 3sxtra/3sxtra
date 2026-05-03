@@ -60,7 +60,7 @@ static void Att_PL01_DDT(PLW* wk) {
 
         if (wk->wu.routine_no[3] != 3 && wk->wu.cg_ja.caix) {
             wk->wu.cg_ja.caix = pl01_ddt_dat[twk->player_number][1];
-            wk->wu.h_cat = wk->wu.cg_ja.caix + wk->wu.catch_adrs;
+            wk->wu.catch_box = wk->wu.cg_ja.caix + wk->wu.catch_adrs;
         }
 
         break;
@@ -94,14 +94,14 @@ static void Att_PL01_TOKUSHUKOUDOU(PLW* wk) {
         switch (wk->wu.cg_type) {
         case 20:
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 3;
-            wk->tk_nage += 2;
+            wk->strike_scaling += 3;
+            wk->throw_scaling += 2;
             break;
 
         case 30:
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 2;
-            wk->tk_nage += 2;
+            wk->strike_scaling += 2;
+            wk->throw_scaling += 2;
             break;
 
         case 64:
@@ -109,12 +109,12 @@ static void Att_PL01_TOKUSHUKOUDOU(PLW* wk) {
             break;
         }
 
-        if (wk->tk_dageki > 12) {
-            wk->tk_dageki = 12;
+        if (wk->strike_scaling > 12) {
+            wk->strike_scaling = 12;
         }
 
-        if (wk->tk_nage > 16) {
-            wk->tk_nage = 16;
+        if (wk->throw_scaling > 16) {
+            wk->throw_scaling = 16;
         }
 
         break;

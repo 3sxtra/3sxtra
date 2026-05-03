@@ -96,7 +96,7 @@ void effect_59_move(WORK_Other* ewk) {
 static void EFF59_Trans(WORK_Other* ewk) {
     if (rmlui_char_select_visible)
         return;
-    if (ewk->wu.dm_vital == 4 || ewk->wu.dm_vital == 5) {
+    if (ewk->wu.damage_vitality == 4 || ewk->wu.damage_vitality == 5) {
         sort_push_requestA(&ewk->wu);
     } else {
         sort_push_request4(&ewk->wu);
@@ -106,7 +106,7 @@ static void EFF59_Trans(WORK_Other* ewk) {
 static void Check_Under_Name(WORK_Other* ewk) {
     WORK_Other* mwk;
 
-    if (ewk->wu.dm_vital != 5) {
+    if (ewk->wu.damage_vitality != 5) {
         return;
     }
 
@@ -139,7 +139,7 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) {
     ewk->my_master = mwk;
     ewk->wu.char_index = 19;
     ewk->wu.dir_step = arg_ID;
-    ewk->wu.dm_vital = arg_ID;
+    ewk->wu.damage_vitality = arg_ID;
     ewk->wu.direction = direction;
     ewk->wu.vital_new = EFF59_Correct_Data[arg_ID][0];
     ewk->wu.vital_old = EFF59_Correct_Data[arg_ID][1];
@@ -162,7 +162,7 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) {
         break;
 
     case 5:
-        ewk->wu.dm_vital = arg_ID;
+        ewk->wu.damage_vitality = arg_ID;
         ewk->wu.char_index = 82;
         ewk->wu.dir_step = mwk->wu.dir_step;
         ewk->wu.my_col_code = 1;
@@ -177,7 +177,7 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) {
 }
 
 static s32 Check_Break_Into_59(WORK_Other* ewk) {
-    if (ewk->wu.dm_vital != 4 || ewk->wu.routine_no[0] == 4) {
+    if (ewk->wu.damage_vitality != 4 || ewk->wu.routine_no[0] == 4) {
         return 0;
     }
 

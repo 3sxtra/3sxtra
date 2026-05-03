@@ -41,10 +41,10 @@ void effect_73_move(WORK_Other* ewk) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 0) {
-                if (ewk->wu.old_rno[1]) {
+            if (ewk->wu.old_routine_no[0] < 0) {
+                if (ewk->wu.old_routine_no[1]) {
                     ewk->wu.routine_no[0]++;
                 } else {
                     ewk->wu.routine_no[0] = 99;
@@ -120,7 +120,7 @@ s32 effect_73_init(WORK_Other* oya) {
         ewk->wu.id = 73;
         ewk->wu.work_id = 16;
         ewk->my_master = oya;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
         ewk->wu.type = i;
         ewk->wu.my_col_mode = 0x4200;
@@ -137,15 +137,15 @@ s32 effect_73_init(WORK_Other* oya) {
         ewk->wu.mvxy.d[1].sp = -0x4000;
 
         if (i == eff73_survive_tbl[work]) {
-            ewk->wu.old_rno[1] = 1;
+            ewk->wu.old_routine_no[1] = 1;
         } else {
-            ewk->wu.old_rno[1] = 0;
+            ewk->wu.old_routine_no[1] = 0;
         }
 
         work2 = random_16();
         work2 &= 7;
 
-        ewk->wu.old_rno[0] = eff73_vanish_tbl[work2];
+        ewk->wu.old_routine_no[0] = eff73_vanish_tbl[work2];
         suzi_offset_set(ewk);
     }
 

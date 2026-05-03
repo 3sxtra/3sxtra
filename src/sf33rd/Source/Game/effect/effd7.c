@@ -35,7 +35,7 @@ void effect_D7_move(WORK_Other* ewk) {
         ewk->wu.routine_no[0]++;
         ewk->wu.charset_id = 11;
         set_char_base_data(&ewk->wu);
-        ewk->wu.my_col_code = ewk->wu.dm_vital;
+        ewk->wu.my_col_code = ewk->wu.damage_vitality;
         *ewk->wu.char_table = _plef_char_table;
         ball_init_position_effD7(ewk, (PLW*)ewk->my_master);
         ewk->wu.type = 1;
@@ -45,8 +45,8 @@ void effect_D7_move(WORK_Other* ewk) {
         ewk->wu.shell_ix[2] = 8;
         ewk->wu.shell_ix[3] = 16;
         ewk->wu.shadow_flag = 1;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 0;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 0;
         cal_speeds_to_me(ewk, (PLW*)ewk->my_master);
         set_char_move_init(&ewk->wu, 0, 0x75);
         break;
@@ -355,7 +355,7 @@ s32 effect_D7_init(PLW* wk) {
     ewk->wu.id = 137;
     ewk->wu.work_id = 2;
     ewk->wu.rl_flag = wk->wu.rl_flag;
-    ewk->wu.dm_vital = wk->wu.my_col_code;
+    ewk->wu.damage_vitality = wk->wu.my_col_code;
     ewk->wu.my_mts = 14;
     ewk->wu.shell_ix[0] = wk->tk_success;
     ewk->my_master = wk;

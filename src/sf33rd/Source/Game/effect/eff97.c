@@ -32,7 +32,7 @@ void effect_97_move(WORK_Other* ewk) {
             if (g_state.plw[ewk->master_id].wu.routine_no[2] == 1 &&
                 g_state.plw[ewk->master_id].wu.routine_no[3] == 0) {
                 ewk->wu.routine_no[0]++;
-                ewk->wu.old_rno[0] = 16;
+                ewk->wu.old_routine_no[0] = 16;
             }
         }
 
@@ -42,13 +42,13 @@ void effect_97_move(WORK_Other* ewk) {
 
     case 2:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] > 0) {
+            if (ewk->wu.old_routine_no[0] > 0) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.rl_flag ^= 1;
                 set_char_move_init(&ewk->wu, 0, 45);
-                ewk->wu.old_rno[0] = 16;
+                ewk->wu.old_routine_no[0] = 16;
                 ewk->wu.mvxy.a[1].sp = 0xE8000;
                 ewk->wu.mvxy.d[1].sp = -0x6000;
 
@@ -68,9 +68,9 @@ void effect_97_move(WORK_Other* ewk) {
 
     case 3:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] > 0) {
+            if (ewk->wu.old_routine_no[0] > 0) {
                 add_x_sub(&ewk->wu);
                 add_y_sub(&ewk->wu);
             } else {
@@ -106,7 +106,7 @@ s32 effect_97_init(PLW* oya) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 97;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->my_master = oya;
     ewk->master_id = oya->wu.id;
     ewk->wu.my_col_mode = 0x4200;
@@ -118,8 +118,8 @@ s32 effect_97_init(PLW* oya) {
     ewk->wu.shadow_flag = 1;
     ewk->wu.shadow_x = 0;
     ewk->wu.shadow_y = 40;
-    ewk->wu.kage_prio = 71;
-    ewk->wu.kage_char = 20;
+    ewk->wu.shadow_prio = 71;
+    ewk->wu.shadow_char = 20;
     *ewk->wu.char_table = _etc_char_table;
 
     if (oya->wu.id) {

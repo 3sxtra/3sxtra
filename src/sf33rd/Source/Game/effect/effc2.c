@@ -317,13 +317,13 @@ static void effC2_main_process_first(WORK_Other* ewk, PLW* twk) {
         case 1:
             switch (ewk->wu.routine_no[2]) {
             case 0:
-                ewk->wu.shell_ix[0] -= ewk->wu.dm_vital;
-                ewk->wu.dm_vital = 0;
+                ewk->wu.shell_ix[0] -= ewk->wu.damage_vitality;
+                ewk->wu.damage_vitality = 0;
 
                 if (twk->bs2_on_car) {
                     ewk->wu.hit_stop = 0;
                 } else {
-                    ewk->wu.hit_stop = ewk->wu.dm_stop / 2;
+                    ewk->wu.hit_stop = ewk->wu.damage_hit_stop / 2;
                 }
 
                 ewk->wu.routine_no[2] = 1;
@@ -516,12 +516,12 @@ static void effC2_main_process_second(WORK_Other* ewk, PLW* twk) {
             switch (ewk->wu.routine_no[2]) {
             case 0:
                 if (g_state.Time_Over) {
-                    ewk->wu.dm_vital = 0;
+                    ewk->wu.damage_vitality = 0;
                 }
 
-                ewk->wu.shell_ix[0] -= ewk->wu.dm_vital;
-                ewk->wu.dm_vital = 0;
-                ewk->wu.hit_stop = ewk->wu.dm_stop;
+                ewk->wu.shell_ix[0] -= ewk->wu.damage_vitality;
+                ewk->wu.damage_vitality = 0;
+                ewk->wu.hit_stop = ewk->wu.damage_hit_stop;
 
                 if (ewk->wu.hit_stop < 0) {
                     ewk->wu.hit_stop = -ewk->wu.hit_stop;
@@ -655,24 +655,24 @@ s32 check_effc2_p2_rno(WORK* wk) {
 }
 
 static void copy_rno(WORK* wk) {
-    wk->old_rno[0] = wk->routine_no[0];
-    wk->old_rno[1] = wk->routine_no[1];
-    wk->old_rno[2] = wk->routine_no[2];
-    wk->old_rno[3] = wk->routine_no[3];
+    wk->old_routine_no[0] = wk->routine_no[0];
+    wk->old_routine_no[1] = wk->routine_no[1];
+    wk->old_routine_no[2] = wk->routine_no[2];
+    wk->old_routine_no[3] = wk->routine_no[3];
 }
 
 void player_hosei_data(WORK_Other* ewk, s16 flag, s16 f2) {
     if (f2) {
         if (ewk->wu.type) {
             ewk->wu.cg_ja.hoix = get_sel_hosei_tbl_ix(ewk->master_player) + 1 + ((flag == 1) * 2);
-            ewk->wu.h_hos = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
+            ewk->wu.pushbox = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
         } else {
             ewk->wu.cg_ja.hoix = get_sel_hosei_tbl_ix(ewk->master_player) + ((flag == 1) * 2);
-            ewk->wu.h_hos = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
+            ewk->wu.pushbox = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
         }
     } else {
         ewk->wu.cg_ja.hoix = 0;
-        ewk->wu.h_hos = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
+        ewk->wu.pushbox = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
     }
 }
 
@@ -705,9 +705,9 @@ void get_bs2_parts_data(WORK* wk) {
     wk->xyz[1].disp.pos = 0;
     wk->my_priority = bs2->prio_low;
     wk->vital_old = 0;
-    wk->dmcal_m = 1;
-    wk->dmcal_d = 2;
-    wk->dm_vital = 0;
+    wk->damage_calc_multiplier = 1;
+    wk->damage_calc_divider = 2;
+    wk->damage_vitality = 0;
     wk->dir_atthit = -1;
     wk->vs_id = -1;
     set_parts_priority(wk);
@@ -752,7 +752,7 @@ void c3_new_damage(WORK* wk) {
     s16 brlv;
 
     if (g_state.Time_Over) {
-        wk->dm_vital = 0;
+        wk->damage_vitality = 0;
     }
 
     c2wk = (WORK*)wk->my_effadrs;
@@ -761,26 +761,26 @@ void c3_new_damage(WORK* wk) {
     c2wk->dm_attlv = wk->dm_attlv;
     c2wk->dm_rl = wk->dm_rl;
     c2wk->dm_dir = wk->dm_dir;
-    c2wk->dm_stop = wk->dm_stop;
+    c2wk->damage_hit_stop = wk->damage_hit_stop;
     c2wk->rl_waza = wk->type;
 
-    if (c2wk->dm_stop < 0) {
-        c2wk->dm_stop = -c2wk->dm_stop;
+    if (c2wk->damage_hit_stop < 0) {
+        c2wk->damage_hit_stop = -c2wk->damage_hit_stop;
     }
 
-    wk->dm_vital = (wk->dm_vital * wk->dmcal_m) / wk->dmcal_d;
+    wk->damage_vitality = (wk->damage_vitality * wk->damage_calc_multiplier) / wk->damage_calc_divider;
     ix = ix_exchange[wk->type];
     brlv = dm_copy_to_master[wk->type];
-    c2wk->shell_ix[ix] -= wk->dm_vital;
+    c2wk->shell_ix[ix] -= wk->damage_vitality;
 
     if (c2wk->shell_ix[ix] <= 0) {
-        c2wk->dm_vital += wk->dm_vital;
+        c2wk->damage_vitality += wk->damage_vitality;
         c2wk->shell_ix[ix] = 0;
     } else if (c2wk->cmwk[ix] >= brlv) {
-        c2wk->dm_vital += wk->dm_vital / 2;
+        c2wk->damage_vitality += wk->damage_vitality / 2;
     }
 
-    wk->dm_vital = 0;
+    wk->damage_vitality = 0;
     g_state.bs2_current_damage = wk->type;
 }
 

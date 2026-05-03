@@ -80,7 +80,7 @@ static void eff46_move(WORK_Other* ewk) {
         char_move(&ewk->wu);
         add_x_sub(&ewk->wu);
 
-        if (ewk->wu.xyz[1].disp.pos >= ewk->wu.old_rno[0]) {
+        if (ewk->wu.xyz[1].disp.pos >= ewk->wu.old_routine_no[0]) {
             add_y_sub(&ewk->wu);
         }
 
@@ -135,7 +135,7 @@ s32 effect_46_init(WORK* wk, s32 /* unused */) {
     ewk->wu.id = 46;
     ewk->master_id = wk->id;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.my_col_code = wk->my_col_code + 6;
     ewk->wu.my_family = wk->my_family;
@@ -157,7 +157,7 @@ s32 effect_46_init(WORK* wk, s32 /* unused */) {
     }
 
     ewk->wu.xyz[1].disp.pos = wk->xyz[1].disp.pos - 12;
-    ewk->wu.old_rno[0] = ewk->wu.xyz[1].disp.pos;
+    ewk->wu.old_routine_no[0] = ewk->wu.xyz[1].disp.pos;
     ewk->wu.my_priority = wk->my_priority - 12;
     ewk->wu.position_z = ewk->wu.my_priority - 12;
     *ewk->wu.char_table = _etc2_char_table;

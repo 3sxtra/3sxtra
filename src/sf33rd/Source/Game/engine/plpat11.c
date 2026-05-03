@@ -45,10 +45,10 @@ static void Att_PL11_TOKUSHUKOUDOU(PLW* wk) {
 
         case 20:
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 10;
+            wk->strike_scaling += 10;
 
-            if (wk->tk_dageki > 10) {
-                wk->tk_dageki = 10;
+            if (wk->strike_scaling > 10) {
+                wk->strike_scaling = 10;
             }
 
             break;

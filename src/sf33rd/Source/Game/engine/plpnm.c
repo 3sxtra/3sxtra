@@ -105,7 +105,7 @@ static void setup_normal_process_flags(PLW* wk) {
     wk->running_f = 0;
     wk->py->flag = 0;
     wk->guard_flag = 0;
-    wk->guard_chuu = 0;
+    wk->guard_active = 0;
     wk->is_throwing = false;
     wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
@@ -122,10 +122,10 @@ static void setup_normal_process_flags(PLW* wk) {
     wk->recovery_roll_ok_timer = 0;
     wk->uot_cd_ok_flag = 0;
     wk->cancel_timer = 0;
-    wk->hazusenai_flag = 0;
+    wk->inescapable_flag = 0;
     wk->cat_break_reserve = 0;
     wk->cmd_request = 0;
-    wk->hsjp_ok = 0;
+    wk->high_jump_ok = 0;
 
     if (wk->wu.routine_no[2] != 17) {
         wk->high_jump_flag = 0;
@@ -599,7 +599,7 @@ static void Normal_31000(PLW* wk) {
         wk->wu.next_z = 32;
     }
 
-    wk->guard_chuu = guard_kind[wk->wu.routine_no[2] - 27];
+    wk->guard_active = guard_kind[wk->wu.routine_no[2] - 27];
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -608,8 +608,8 @@ static void Normal_31000(PLW* wk) {
         wk->wu.rl_flag = (wk->wu.dm_rl + 1) & 1;
         set_char_move_init(&wk->wu, 0, wk->wu.routine_no[2] - 7);
 
-        if (wk->wu.dm_stop > 0) {
-            wk->wu.dm_stop = -wk->wu.dm_stop;
+        if (wk->wu.damage_hit_stop > 0) {
+            wk->wu.damage_hit_stop = -wk->wu.damage_hit_stop;
         }
 
         set_hit_stop_hit_quake(&wk->wu);
@@ -635,14 +635,14 @@ static void Normal_35000(PLW* wk) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
 
-    wk->guard_chuu = guard_kind[(wk->wu.routine_no[2] - 27)];
+    wk->guard_active = guard_kind[(wk->wu.routine_no[2] - 27)];
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
 
-        if (wk->wu.dm_stop > 0) {
-            wk->wu.dm_stop = -wk->wu.dm_stop;
+        if (wk->wu.damage_hit_stop > 0) {
+            wk->wu.damage_hit_stop = -wk->wu.damage_hit_stop;
         }
 
         set_hit_stop_hit_quake(&wk->wu);
@@ -867,7 +867,7 @@ static void Normal_47000(PLW* wk) {
         setup_mvxy_data(&wk->wu, datix[1]);
         wk->wu.hit_stop = -18;
         wk->wu.hit_quake = 0;
-        wk->wu.dm_stop = wk->wu.dm_quake = 0;
+        wk->wu.damage_hit_stop = wk->wu.damage_screen_shake = 0;
         add_sp_arts_gauge_nagenuke(wk);
         grade_add_grap_def(wk->wu.id);
         break;
@@ -919,7 +919,7 @@ static void Normal_48000(PLW* wk) {
         setup_mvxy_data(&wk->wu, 27);
         wk->wu.hit_stop = -17;
         wk->wu.hit_quake = 8;
-        wk->wu.dm_stop = wk->wu.dm_quake = 0;
+        wk->wu.damage_hit_stop = wk->wu.damage_screen_shake = 0;
         break;
 
     case 1:
@@ -963,7 +963,7 @@ static void Normal_50000(PLW* wk) {
         setup_mvxy_data(&wk->wu, 29);
         wk->wu.hit_stop = -17;
         wk->wu.hit_quake = 8;
-        wk->wu.dm_stop = wk->wu.dm_quake = 0;
+        wk->wu.damage_hit_stop = wk->wu.damage_screen_shake = 0;
         return;
 
     case 1:
@@ -1050,11 +1050,11 @@ static void Normal_53000(PLW* wk) {
 
     case 1:
         char_move(&wk->wu);
-        set_new_jpdir(wk);
+        set_new_jump_direction(wk);
         if (wk->wu.cg_type == 0xFF) {
             check_jump_rl_dir(wk);
 
-            switch (wk->jpdir) {
+            switch (wk->jump_direction) {
             case 1:
                 wk->wu.routine_no[2] = 21;
                 break;

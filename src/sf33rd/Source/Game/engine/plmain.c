@@ -36,7 +36,7 @@ static void plmv_1020(PLW* wk, s16 step);
 static void mpg_union(PLW* wk);
 static void eag_union(PLW* wk);
 static void sag_union(PLW* wk);
-static void addSAAttribute(u8* kow, u16* koa);
+static void addSAAttribute(u8* waza_type, u16* koa);
 static void check_omop_vital(PLW* wk);
 static s16 select_hit_stop(s16 ms, s16 sb);
 
@@ -88,11 +88,11 @@ void Player_move(PLW* wk, u16 lv_data) {
     }
 
     if ((wk->dead_flag + wk->wkey_flag) == 0) {
-        wk->hurimukenai_flag = 0;
+        wk->cannot_turn_flag = 0;
     }
 
     for (i = 0; i < 8; i++) {
-        wk->wu.old_rno[i] = wk->wu.routine_no[i];
+        wk->wu.old_routine_no[i] = wk->wu.routine_no[i];
     }
 
     for (i = 0; i < 3; i++) {
@@ -140,11 +140,11 @@ static void player_mv_0000(PLW* wk) {
     set_player_shadow(wk);
     wk->bullet_hcnt = wk->bhcnt_timer = 0;
     wk->auto_guard = 0;
-    wk->wu.hit_stop = wk->wu.dm_stop = 0;
-    wk->wu.hit_quake = wk->wu.dm_quake = 0;
+    wk->wu.hit_stop = wk->wu.damage_hit_stop = 0;
+    wk->wu.hit_quake = wk->wu.damage_screen_shake = 0;
     wk->throw_invuln_flag = 0;
     wk->zuru_timer = 0;
-    wk->zuru_flag = false;
+    wk->invuln_flag = false;
     wk->is_throwing = wk->is_being_thrown = false;
     clear_kizetsu_point(wk);
 
@@ -199,7 +199,7 @@ static void player_mv_0000(PLW* wk) {
         metamor_color_restore(wk->wu.id);
     }
 
-    switch (wk->spmv_ng_flag2 & (DIP2_SA_GAUGE_ROUND_RESET_DISABLED | DIP2_SA_GAUGE_MAX_START_DISABLED)) {
+    switch (wk->special_move_disabled_flag2 & (DIP2_SA_GAUGE_ROUND_RESET_DISABLED | DIP2_SA_GAUGE_MAX_START_DISABLED)) {
     case DIP2_SA_GAUGE_MAX_START_DISABLED:
         clear_super_arts_point(wk);
         spgauge_cont_init();
@@ -336,7 +336,7 @@ static void player_mv_4000(PLW* wk) {
     }
 
     if (wk->is_being_thrown) {
-        wk->wu.hit_stop = wk->wu.dm_stop = 0;
+        wk->wu.hit_stop = wk->wu.damage_hit_stop = 0;
     }
 
     if (!check_hit_stop(wk)) {
@@ -347,9 +347,9 @@ static void player_mv_4000(PLW* wk) {
         }
 
         if (wk->zuru_timer < 0) {
-            wk->zuru_flag = true;
+            wk->invuln_flag = true;
         } else {
-            wk->zuru_flag = false;
+            wk->invuln_flag = false;
         }
 
 #if !CPS3
@@ -371,12 +371,12 @@ s16 check_hit_stop(PLW* wk) {
 
     num = 0;
 
-    if ((wk->wu.dm_stop != 0) && (wk->wu.hit_stop != 0)) {
+    if ((wk->wu.damage_hit_stop != 0) && (wk->wu.hit_stop != 0)) {
         if (wk->wu.routine_no[3]) {
-            wk->wu.hit_stop = select_hit_stop(wk->wu.hit_stop, wk->wu.dm_stop);
-            wk->wu.dm_stop = 0;
+            wk->wu.hit_stop = select_hit_stop(wk->wu.hit_stop, wk->wu.damage_hit_stop);
+            wk->wu.damage_hit_stop = 0;
         } else {
-            wk->wu.dm_stop = select_hit_stop(wk->wu.dm_stop, wk->wu.hit_stop);
+            wk->wu.damage_hit_stop = select_hit_stop(wk->wu.damage_hit_stop, wk->wu.hit_stop);
             wk->wu.hit_stop = 0;
             return 0;
         }
@@ -408,8 +408,8 @@ s16 check_hit_stop(PLW* wk) {
             num = 0;
         }
 
-        if ((wk->wu.hit_stop == 0) && (wk->hsjp_ok != 0)) {
-            char_move_cmhs(wk);
+        if ((wk->wu.hit_stop == 0) && (wk->high_jump_ok != 0)) {
+            char_move_cmd_hit_stop(wk);
         }
     }
 
@@ -1034,17 +1034,17 @@ static void sag_union(PLW* wk) {
 
 #if !CPS3
 /** @brief Adds SA attribute flags to the current attack's kind-of-waza. */
-static void addSAAttribute(u8* kow, u16* koa) {
-    switch (*kow & 0x78) {
+static void addSAAttribute(u8* waza_type, u16* koa) {
+    switch (*waza_type & 0x78) {
     case 0:
     case 8:
-        *kow = 0x20;
+        *waza_type = 0x20;
         *koa = 0x80;
         break;
 
     case 16:
     case 24:
-        *kow = 0x28;
+        *waza_type = 0x28;
         *koa = 0x100;
         break;
     }
@@ -1098,10 +1098,10 @@ void clear_attack_num(WORK* wk) {
 /** @brief Clears throw/grab-related tracking flags for a player. */
 void clear_tk_flags(PLW* wk) {
     wk->tk_success = 0;
-    wk->tk_dageki = 0;
-    wk->tk_nage = 0;
-    wk->tk_kizetsu = 0;
-    wk->tk_konjyou = 0;
+    wk->strike_scaling = 0;
+    wk->throw_scaling = 0;
+    wk->stun_scaling = 0;
+    wk->guts_scaling = 0;
     wk->att_plus = 8;
     wk->def_plus = 8;
 }
@@ -1215,7 +1215,7 @@ static void check_omop_vital(PLW* wk) {
             break;
         }
 
-        if (plpxx_kind[wk->wu.old_rno[1]]) {
+        if (plpxx_kind[wk->wu.old_routine_no[1]]) {
             wk->omop_vital_timer = 40;
         }
 

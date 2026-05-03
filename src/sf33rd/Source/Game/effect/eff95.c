@@ -34,15 +34,15 @@ void effect_95_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dmcal_m != (g_state.Continue_Count[g_state.LOSER])) {
-            if (!(ewk->wu.dmcal_m = g_state.Continue_Count[g_state.LOSER])) {
+        if (ewk->wu.damage_calc_multiplier != (g_state.Continue_Count[g_state.LOSER])) {
+            if (!(ewk->wu.damage_calc_multiplier = g_state.Continue_Count[g_state.LOSER])) {
                 if (g_state.Continue_Cut[g_state.Loser_id]) {
                     ewk->wu.routine_no[0] = 3;
                     ewk->wu.dir_step = 0;
                     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
                 } else {
-                    ewk->wu.old_rno[5] = 6;
-                    ewk->wu.old_rno[6] = 6;
+                    ewk->wu.old_routine_no[5] = 6;
+                    ewk->wu.old_routine_no[6] = 6;
                     ewk->wu.dir_step = 9;
                     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
                 }
@@ -51,18 +51,18 @@ void effect_95_move(WORK_Other* ewk) {
                 ewk->wu.dir_step = 0;
                 set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
             } else {
-                ewk->wu.old_rno[5] = 6;
-                ewk->wu.old_rno[6] = 6;
+                ewk->wu.old_routine_no[5] = 6;
+                ewk->wu.old_routine_no[6] = 6;
                 ewk->wu.dir_step = 9;
                 set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
             }
         } else {
             switch (ewk->wu.vital_new) {
             case 4:
-                ewk->wu.old_rno[5] = ewk->wu.old_rno[5] - 1;
+                ewk->wu.old_routine_no[5] = ewk->wu.old_routine_no[5] - 1;
 
-                if (ewk->wu.old_rno[5] <= 0) {
-                    ewk->wu.old_rno[5] = 6;
+                if (ewk->wu.old_routine_no[5] <= 0) {
+                    ewk->wu.old_routine_no[5] = 6;
                     ewk->wu.dir_step = ewk->wu.dir_step - 1;
 
                     if (ewk->wu.dir_step <= 0) {
@@ -75,14 +75,14 @@ void effect_95_move(WORK_Other* ewk) {
                 break;
 
             case 8:
-                ewk->wu.old_rno[6] = ewk->wu.old_rno[6] - 1;
+                ewk->wu.old_routine_no[6] = ewk->wu.old_routine_no[6] - 1;
 
-                if (ewk->wu.old_rno[6] <= 0) {
-                    ewk->wu.old_rno[6] = 6;
+                if (ewk->wu.old_routine_no[6] <= 0) {
+                    ewk->wu.old_routine_no[6] = 6;
                 }
 
                 RND_95 = (random_16() >> 1) & 3;
-                ewk->wu.dir_step = eff95_data_tbl[ewk->wu.old_rno[6]][RND_95];
+                ewk->wu.dir_step = eff95_data_tbl[ewk->wu.old_routine_no[6]][RND_95];
                 set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
                 break;
 
@@ -148,7 +148,7 @@ s32 effect_95_init(s16 vital_new) {
     ewk->wu.vital_new = vital_new;
     ewk->wu.my_family = 2;
     ewk->wu.char_index = 85;
-    ewk->wu.dmcal_m = g_state.Continue_Count[g_state.LOSER];
+    ewk->wu.damage_calc_multiplier = g_state.Continue_Count[g_state.LOSER];
     ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[1].wxy[1].disp.pos + 152;
     ewk->wu.position_z = 15;
 
@@ -162,13 +162,13 @@ s32 effect_95_init(s16 vital_new) {
         break;
 
     case 8:
-        ewk->wu.old_rno[6] = 6;
+        ewk->wu.old_routine_no[6] = 6;
         ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + 538;
         break;
 
     case 4:
         END_OF_95 = 10;
-        ewk->wu.old_rno[5] = 6;
+        ewk->wu.old_routine_no[5] = 6;
         ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + 514;
         break;
     }

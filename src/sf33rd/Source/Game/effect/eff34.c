@@ -28,11 +28,11 @@ void effect_34_move(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 0;
         ewk->wu.shadow_y = -10;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 16;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 16;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-        ewk->wu.old_rno[0] = 60;
-        cal_initial_speed(&ewk->wu, ewk->wu.old_rno[0], ewk->wu.old_rno[1], ewk->wu.xyz[1].disp.pos);
+        ewk->wu.old_routine_no[0] = 60;
+        cal_initial_speed(&ewk->wu, ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], ewk->wu.xyz[1].disp.pos);
         break;
 
     case 1:
@@ -80,7 +80,7 @@ void effect_34_move(WORK_Other* ewk) {
             break;
         }
 
-        if (ewk->wu.old_rno[0]--) {
+        if (ewk->wu.old_routine_no[0]--) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             suzi_sync_pos_set(ewk);
@@ -115,7 +115,7 @@ s32 effect_34_init(WORK* wk, s32 /* unused */) {
     ewk->wu.id = 34;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.my_col_code = wk->my_col_code + 1;
     ewk->wu.my_family = wk->my_family;
@@ -131,9 +131,9 @@ s32 effect_34_init(WORK* wk, s32 /* unused */) {
     ewk->wu.char_index = g_state.bg_w.stage == 6 ? 4 : 8;
 
     if (wk->rl_flag) {
-        ewk->wu.old_rno[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos - (g_state.bg_w.pos_offset + 32);
+        ewk->wu.old_routine_no[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos - (g_state.bg_w.pos_offset + 32);
     } else {
-        ewk->wu.old_rno[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos + (g_state.bg_w.pos_offset + 32);
+        ewk->wu.old_routine_no[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos + (g_state.bg_w.pos_offset + 32);
     }
 
     suzi_offset_set(ewk);

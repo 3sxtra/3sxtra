@@ -36,7 +36,7 @@ void effect_25_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
-            eff25_jp_tbl[ewk->wu.old_rno[2]](ewk);
+            eff25_jp_tbl[ewk->wu.old_routine_no[2]](ewk);
         }
 
         disp_pos_trans_entry_rs(ewk);
@@ -72,9 +72,9 @@ void eff25_00(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (eff_hit_check(ewk, ewk->wu.old_rno[4])) {
+        if (eff_hit_check(ewk, ewk->wu.old_routine_no[4])) {
             piece_set(ewk);
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[1]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[1]);
             ewk->wu.routine_no[1]++;
             break;
         }
@@ -108,7 +108,7 @@ void eff25_02(WORK_Other* ewk) {
         if (g_state.eff_hit_flag[ewk->wu.type]) {
             ewk->wu.disp_flag = 1;
             ewk->wu.routine_no[1] = 4;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[7]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[7]);
             break;
         }
 
@@ -116,10 +116,10 @@ void eff25_02(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (eff_hit_check(ewk, ewk->wu.old_rno[4])) {
+        if (eff_hit_check(ewk, ewk->wu.old_routine_no[4])) {
             piece_set(ewk);
             ewk->wu.routine_no[1]++;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[1]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[1]);
             break;
         }
 
@@ -164,7 +164,7 @@ void eff25_04(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (eff_hit_check(ewk, ewk->wu.old_rno[4])) {
+        if (eff_hit_check(ewk, ewk->wu.old_routine_no[4])) {
             piece_set(ewk);
             ewk->wu.routine_no[1]++;
             break;
@@ -187,7 +187,7 @@ void eff25_06(WORK_Other* ewk) {
     case 0:
         if (g_state.eff_hit_flag[ewk->wu.type]) {
             ewk->wu.disp_flag = 1;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[7]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[7]);
             ewk->wu.routine_no[1] = 4;
             break;
         }
@@ -196,10 +196,10 @@ void eff25_06(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (eff_hit_check(ewk, ewk->wu.old_rno[4])) {
+        if (eff_hit_check(ewk, ewk->wu.old_routine_no[4])) {
             piece_set(ewk);
             ewk->wu.routine_no[1]++;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[1]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[1]);
             break;
         }
 
@@ -215,7 +215,7 @@ void eff25_06(WORK_Other* ewk) {
         }
 
         if (ewk->wu.cg_type) {
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[3]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[3]);
             ewk->wu.routine_no[1]++;
             break;
         }
@@ -246,7 +246,7 @@ void eff25_08(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (eff_hit_check(ewk, ewk->wu.old_rno[4])) {
+        if (eff_hit_check(ewk, ewk->wu.old_routine_no[4])) {
             piece_set(ewk);
             ewk->wu.routine_no[1]++;
             break;
@@ -271,15 +271,15 @@ void eff25_char_set(WORK_Other* ewk) {
 }
 
 void piece_set(WORK_Other* ewk) {
-    if (!(ewk->wu.old_rno[2] & 1)) {
+    if (!(ewk->wu.old_routine_no[2] & 1)) {
         return;
     }
 
-    if (ewk->wu.old_rno[0] < 0) {
+    if (ewk->wu.old_routine_no[0] < 0) {
         return;
     }
 
-    effect_27_init(ewk, ewk->wu.old_rno[0]);
+    effect_27_init(ewk, ewk->wu.old_routine_no[0]);
 }
 
 s32 effect_25_init(s8 num) {
@@ -295,7 +295,7 @@ s32 effect_25_init(s8 num) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 25;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.type = num;
@@ -308,12 +308,12 @@ s32 effect_25_init(s8 num) {
     ewk->wu.char_index = *data_ptr++;
     ewk->wu.hit_stop = *data_ptr++;
     ewk->wu.sync_suzi = *data_ptr++;
-    ewk->wu.old_rno[0] = *data_ptr++;
-    ewk->wu.old_rno[1] = *data_ptr++;
-    ewk->wu.old_rno[7] = *data_ptr++;
-    ewk->wu.old_rno[3] = *data_ptr++;
-    ewk->wu.old_rno[2] = *data_ptr++;
-    ewk->wu.old_rno[4] = *data_ptr++;
+    ewk->wu.old_routine_no[0] = *data_ptr++;
+    ewk->wu.old_routine_no[1] = *data_ptr++;
+    ewk->wu.old_routine_no[7] = *data_ptr++;
+    ewk->wu.old_routine_no[3] = *data_ptr++;
+    ewk->wu.old_routine_no[2] = *data_ptr++;
+    ewk->wu.old_routine_no[4] = *data_ptr++;
     ewk->wu.position_z = ewk->wu.my_priority;
 
     if (*data_ptr >= 0) {

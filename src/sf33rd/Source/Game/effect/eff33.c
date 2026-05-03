@@ -26,8 +26,8 @@ void effect_33_move(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 0;
         ewk->wu.shadow_y = -10;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 16;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 16;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
@@ -93,7 +93,7 @@ s32 effect_33_init(WORK* wk) {
     ewk->wu.id = 33;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.my_col_code = wk->my_col_code + 1;
     ewk->wu.my_family = wk->my_family;

@@ -289,7 +289,7 @@ s32 effect_H6_init(s16 timer, s8* str, s16 X, s16 Y, s16 Original_Color, s32 /* 
     ewk->wu.id = 176;
     ewk->wu.type = 0;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_family = 6;
     ewk->wu.my_priority = ewk->wu.position_z = 20;
     ewk->wu.my_mts = 8;

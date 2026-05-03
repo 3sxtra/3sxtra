@@ -135,12 +135,12 @@ static void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk) {
         ewk->wu.disp_flag = 0;
     }
 
-    ewk->wu.h_bod = twk->h_bod;
-    ewk->wu.h_han = twk->h_han;
-    ewk->wu.h_cat = twk->h_cat;
-    ewk->wu.h_cau = twk->h_cau;
-    ewk->wu.h_att = twk->h_att;
-    ewk->wu.h_hos = twk->h_hos;
+    ewk->wu.body_hurtbox = twk->body_hurtbox;
+    ewk->wu.hand_hurtbox = twk->hand_hurtbox;
+    ewk->wu.catch_box = twk->catch_box;
+    ewk->wu.caught_box = twk->caught_box;
+    ewk->wu.attack_hitbox = twk->attack_hitbox;
+    ewk->wu.pushbox = twk->pushbox;
     ewk->wu.position_x = twk->xyz[0].disp.pos;
     ewk->wu.position_y = twk->xyz[1].disp.pos;
 }
@@ -150,33 +150,33 @@ static void renewal_table_data(WORK_Other_JUDGE* ewk) {
     s16 i;
     s16 j;
 
-    for (mm = (u16*)ewk->wu.h_bod, i = 0; i < 4; i++) {
+    for (mm = (u16*)ewk->wu.body_hurtbox, i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             ewk->jx[i][j] = *mm++;
         }
     }
 
-    for (mm = (u16*)ewk->wu.h_han, i = 0; i < 4; i++) {
+    for (mm = (u16*)ewk->wu.hand_hurtbox, i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             ewk->jx[i + 4][j] = *mm++;
         }
     }
 
-    for (mm = (u16*)ewk->wu.h_cat, j = 0; j < 4; j++) {
+    for (mm = (u16*)ewk->wu.catch_box, j = 0; j < 4; j++) {
         ewk->jx[8][j] = *mm++;
     }
 
-    for (mm = (u16*)ewk->wu.h_cau, j = 0; j < 4; j++) {
+    for (mm = (u16*)ewk->wu.caught_box, j = 0; j < 4; j++) {
         ewk->jx[9][j] = *mm++;
     }
 
-    for (mm = (u16*)ewk->wu.h_att, i = 0; i < 4; i++) {
+    for (mm = (u16*)ewk->wu.attack_hitbox, i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             ewk->jx[i + 10][j] = *mm++;
         }
     }
 
-    for (mm = (u16*)ewk->wu.h_hos, j = 0; j < 4; j++) {
+    for (mm = (u16*)ewk->wu.pushbox, j = 0; j < 4; j++) {
         ewk->jx[14][j] = *mm++;
     }
 }

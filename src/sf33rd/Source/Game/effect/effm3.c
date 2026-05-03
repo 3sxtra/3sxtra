@@ -26,8 +26,8 @@ void effect_M3_move(WORK_Other* ewk) {
         ewk->wu.my_col_code = 0x90;
         ewk->wu.my_family = 3;
         ewk->wu.position_z = 60 - (ewk->wu.type + 2);
-        ewk->wu.dmcal_m = M3_bahn_data[0];
-        ewk->wu.dmcal_d = M3_bahn_data[1];
+        ewk->wu.damage_calc_multiplier = M3_bahn_data[0];
+        ewk->wu.damage_calc_divider = M3_bahn_data[1];
         ewk->wu.dir_timer = M3_bahn_data[2];
         ewk->wu.old_cgnum = 0;
         break;
@@ -66,7 +66,7 @@ void effect_M3_move(WORK_Other* ewk) {
 
         case 2:
             cal_mvxy_speed(&ewk->wu);
-            ewk->wu.mvxy.d[0].sp = (ewk->wu.mvxy.d[0].sp * ewk->wu.dmcal_m) / ewk->wu.dmcal_d;
+            ewk->wu.mvxy.d[0].sp = (ewk->wu.mvxy.d[0].sp * ewk->wu.damage_calc_multiplier) / ewk->wu.damage_calc_divider;
 
             if (!ewk->wu.mvxy.a[0].real.h) {
                 ewk->wu.routine_no[1]++;
@@ -119,7 +119,7 @@ s32 effect_M3_init(WORK_Other_CONN* wk, s16 num) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 223;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.type = num;
     ewk->wu.xyz[0].disp.pos = wk->conn[num].nx;
     ewk->wu.xyz[1].disp.pos = wk->conn[num].ny + 40;

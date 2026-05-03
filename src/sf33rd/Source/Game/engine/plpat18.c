@@ -43,7 +43,7 @@ static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
             wk->wu.routine_no[1] = 1;
             wk->wu.routine_no[2] = 91;
             wk->wu.routine_no[3] = 0;
-            wk->wu.dm_vital = 0;
+            wk->wu.damage_vitality = 0;
             wk->sa->gauge.i = wk->sa->dtm * wk->sa->dtm_mul;
 
             if (g_state.Bonus_Game_Flag == 20) {
@@ -55,16 +55,16 @@ static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
             wk->wu.dm_attlv = wk->wu.att.level;
             wk->wu.dm_impact = wk->wu.att.impact;
             wk->wu.dm_dir = wk->wu.dir_atthit;
-            wk->wu.dm_stop = 1;
-            wk->wu.dm_quake = 1;
+            wk->wu.damage_hit_stop = 1;
+            wk->wu.damage_screen_shake = 1;
 
-            if (wk->wu.dm_quake < 0) {
-                wk->wu.dm_quake = -wk->wu.dm_quake;
+            if (wk->wu.damage_screen_shake < 0) {
+                wk->wu.damage_screen_shake = -wk->wu.damage_screen_shake;
             }
 
             wk->wu.dm_weight = wk->wu.weight_level;
             wk->wu.damage_knockback_type = wk->wu.att.but_ix;
-            wk->wu.dm_zuru = wk->wu.att_zuru;
+            wk->wu.damage_invuln = wk->wu.attack_invuln;
             wk->wu.dm_attribute = wk->wu.at_attribute;
             wk->wu.dm_ten_ix = wk->wu.at_ten_ix;
             wk->wu.damage_kind_of_arts = wk->wu.at_koa;
@@ -76,7 +76,7 @@ static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
             wk->wu.dm_jump_att_flag = wk->wu.jump_att_flag;
             wk->wu.dm_exdm_ix = wk->exdm_ix;
             wk->wu.dm_plnum = wk->player_number;
-            wk->wu.meoshi_hit_flag = 1;
+            wk->wu.frame_link_hit_flag = 1;
         }
 
         break;
@@ -101,10 +101,10 @@ static void Att_PL18_TOKUSHUKOUDOU(PLW* wk) {
         if (wk->wu.cg_type == 40) {
             wk->wu.cg_type = 0;
             add_sp_arts_gauge_tokushu(wk);
-            wk->tk_konjyou += 4;
+            wk->guts_scaling += 4;
 
-            if (wk->tk_konjyou > 12) {
-                wk->tk_konjyou = 12;
+            if (wk->guts_scaling > 12) {
+                wk->guts_scaling = 12;
             }
         }
 

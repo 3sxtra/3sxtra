@@ -30,35 +30,35 @@ void effect_at_vs_player_dm(s16 ix2, s16 ix) {
     ds->wu.damage_stun_value = ds->wu.damage_stun_value * stun_gauge_omake[omop_stun_gauge_add[(ds->wu.id + 1) & 1]] / 32;
 
     if ((ds->wu.pat_status == 32 || ds->wu.pat_status == 3) || ds->wu.pat_status == 25) {
-        ds->wu.dm_vital = (ds->wu.dm_vital * 125) / 100;
+        ds->wu.damage_vitality = (ds->wu.damage_vitality * 125) / 100;
     } else if (ds->wu.pat_status == 7 || ds->wu.pat_status == 23 || ds->wu.pat_status == 35) {
-        ds->wu.dm_vital = (ds->wu.dm_vital * 150) / 100;
+        ds->wu.damage_vitality = (ds->wu.damage_vitality * 150) / 100;
     } else if (ds->wu.pat_status == 1 || ds->wu.pat_status == 21 || ds->wu.pat_status == 37) {
-        ds->wu.dm_vital *= 2;
+        ds->wu.damage_vitality *= 2;
     }
 
     ms = (PLW*)as->my_master;
 
     if (ms->wu.work_id == 1) {
         if (as->wu.olc_work_ix[3] == 2) {
-            ds->wu.dm_vital = ds->wu.dm_vital * (as->wu.olc_work_ix[1] + 32) / 32;
+            ds->wu.damage_vitality = ds->wu.damage_vitality * (as->wu.olc_work_ix[1] + 32) / 32;
         }
 
         if (as->wu.olc_work_ix[3] == 4) {
-            ds->wu.dm_vital = ds->wu.dm_vital * (as->wu.olc_work_ix[0] + 32) / 32;
+            ds->wu.damage_vitality = ds->wu.damage_vitality * (as->wu.olc_work_ix[0] + 32) / 32;
         }
 
-        ds->utk_dageki = as->wu.olc_work_ix[0];
-        ds->utk_nage = as->wu.olc_work_ix[1];
+        ds->received_strike_scaling = as->wu.olc_work_ix[0];
+        ds->received_throw_scaling = as->wu.olc_work_ix[1];
         ds->wu.damage_stun_value = ds->wu.damage_stun_value * (as->wu.olc_work_ix[2] + 32) / 32;
-        ds->utk_kizetsu = as->wu.olc_work_ix[2];
+        ds->received_stun_scaling = as->wu.olc_work_ix[2];
     }
 
-    as->wu.at_ten_ix = remake_score_index(ds->wu.dm_vital);
+    as->wu.at_ten_ix = remake_score_index(ds->wu.damage_vitality);
     cal_combo_waribiki((PLW*)as, ds);
     cal_dm_vital_gauge_hosei(ds);
     cal_combo_waribiki2(ds);
-    as->wu.dm_vital = 256;
+    as->wu.damage_vitality = 256;
     ds->parry_flag = 0;
     plef_at_vs_player_damage_union((PLW*)as, ds, gddir);
 }

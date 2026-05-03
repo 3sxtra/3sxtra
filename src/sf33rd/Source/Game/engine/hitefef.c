@@ -20,11 +20,11 @@ void effect_at_vs_effect_dm(s16 ix2, s16 ix) {
 
     if (ds->wu.att.dipsw & 2) {
         if (as->wu.att.dipsw & 2) {
-            ds->wu.dm_vital = 128;
-            as->wu.dm_vital = 128;
+            ds->wu.damage_vitality = 128;
+            as->wu.damage_vitality = 128;
         } else {
-            ds->wu.dm_vital = 128;
-            as->wu.dm_vital = 128;
+            ds->wu.damage_vitality = 128;
+            as->wu.damage_vitality = 128;
 
             if (as->wu.shell_vs_refrect == 0) {
                 as->dm_refrect = 1;
@@ -35,15 +35,15 @@ void effect_at_vs_effect_dm(s16 ix2, s16 ix) {
     } else if (ds->wu.id == 13) {
         switch (as->wu.work_id) {
         case 4:
-            ds->wu.dm_vital = as->wu.vital_new;
-            as->wu.dm_vital = ds->wu.vital_new;
+            ds->wu.damage_vitality = as->wu.vital_new;
+            as->wu.damage_vitality = ds->wu.vital_new;
 
-            if (ds->wu.dm_vital > ds->wu.vital_new) {
-                ds->wu.dm_vital = ds->wu.vital_new;
+            if (ds->wu.damage_vitality > ds->wu.vital_new) {
+                ds->wu.damage_vitality = ds->wu.vital_new;
             }
 
-            if (as->wu.dm_vital > as->wu.vital_new) {
-                as->wu.dm_vital = as->wu.vital_new;
+            if (as->wu.damage_vitality > as->wu.vital_new) {
+                as->wu.damage_vitality = as->wu.vital_new;
             }
 
             break;
@@ -53,9 +53,9 @@ void effect_at_vs_effect_dm(s16 ix2, s16 ix) {
         }
     } else if (ds->wu.id == 122 || ds->wu.id == 123) {
         cal_damage_vitality((PLW*)as, (PLW*)ds);
-        as->wu.dm_vital = 256;
+        as->wu.damage_vitality = 256;
     } else {
-        ds->wu.dm_vital = 256;
+        ds->wu.damage_vitality = 256;
     }
 
     if (ds->wu.xyz[1].disp.pos > 0) {

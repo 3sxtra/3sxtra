@@ -169,14 +169,14 @@ static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
                 continue;
             }
 
-            ewk->conn[ix].chr = ewk->wu.old_rno[1] + 0x80C3;
+            ewk->conn[ix].chr = ewk->wu.old_routine_no[1] + 0x80C3;
             ewk->conn[ix].col = 0x17;
 
-            if (ewk->wu.old_rno[1] == 0) {
+            if (ewk->wu.old_routine_no[1] == 0) {
                 ewk->conn[ix].ny -= 0x100;
             }
 
-            ewk->conn[ix + 1].chr = ewk->wu.old_rno[0] + 0x80C3;
+            ewk->conn[ix + 1].chr = ewk->wu.old_routine_no[0] + 0x80C3;
             ewk->conn[ix + 1].col = 0x17;
             return;
         }
@@ -205,14 +205,14 @@ static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
                 continue;
             }
 
-            ewk->conn[ix].chr = ewk->wu.old_rno[1] + 0x7F81;
+            ewk->conn[ix].chr = ewk->wu.old_routine_no[1] + 0x7F81;
             ewk->conn[ix].col = 0x17;
 
-            if (ewk->wu.old_rno[1] == 0) {
+            if (ewk->wu.old_routine_no[1] == 0) {
                 ewk->conn[ix].ny -= 0x100;
             }
 
-            ewk->conn[(ix) + 1].chr = ewk->wu.old_rno[0] + 0x7F81;
+            ewk->conn[(ix) + 1].chr = ewk->wu.old_routine_no[0] + 0x7F81;
             ewk->conn[(ix) + 1].col = 0x17;
             return;
         }
@@ -225,21 +225,21 @@ static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
                 continue;
             }
 
-            ewk->conn[ix].chr = ewk->wu.old_rno[2] + 0x7F81;
+            ewk->conn[ix].chr = ewk->wu.old_routine_no[2] + 0x7F81;
             ewk->conn[ix].col = 0x17;
 
-            if (ewk->wu.old_rno[2] == 0) {
+            if (ewk->wu.old_routine_no[2] == 0) {
                 ewk->conn[ix].ny -= 0x100;
             }
 
-            ewk->conn[ix + 1].chr = ewk->wu.old_rno[1] + 0x7F81;
+            ewk->conn[ix + 1].chr = ewk->wu.old_routine_no[1] + 0x7F81;
             ewk->conn[ix + 1].col = 0x17;
 
-            if (ewk->wu.old_rno[1] == 0 && ewk->wu.old_rno[2] == 0) {
+            if (ewk->wu.old_routine_no[1] == 0 && ewk->wu.old_routine_no[2] == 0) {
                 ewk->conn[ix + 1].ny -= 0x100;
             }
 
-            ewk->conn[ix + 2].chr = ewk->wu.old_rno[0] + 0x7F81;
+            ewk->conn[ix + 2].chr = ewk->wu.old_routine_no[0] + 0x7F81;
             ewk->conn[ix + 2].col = 0x17;
             return;
         }
@@ -249,15 +249,15 @@ static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
 }
 
 static void Convert_16_10_2(WORK_Other_CONN* ewk, u16 target) {
-    ewk->wu.old_rno[1] = target / 10;
+    ewk->wu.old_routine_no[1] = target / 10;
     target %= 10;
-    ewk->wu.old_rno[0] = target;
+    ewk->wu.old_routine_no[0] = target;
 }
 
 void Convert_16_10_3(WORK_Other_CONN* ewk, u16 target) {
-    ewk->wu.old_rno[2] = target / 100;
+    ewk->wu.old_routine_no[2] = target / 100;
     target %= 100;
-    ewk->wu.old_rno[1] = target / 10;
+    ewk->wu.old_routine_no[1] = target / 10;
     target %= 10;
-    ewk->wu.old_rno[0] = target;
+    ewk->wu.old_routine_no[0] = target;
 }

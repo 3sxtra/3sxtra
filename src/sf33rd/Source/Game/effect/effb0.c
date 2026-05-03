@@ -22,15 +22,15 @@ const s16 effb0_data_tbl[8][2] = { { 656, 112 }, { 328, 96 },  { 352, 224 }, { 6
 void effect_B0_move(WORK_Other* ewk) {
     s16 work;
 
-    if (ewk->wu.old_rno[6] < g_state.end_w.r_no_2) {
+    if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[0] = 99;
     }
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        ewk->wu.old_rno[5]--;
+        ewk->wu.old_routine_no[5]--;
 
-        if (ewk->wu.old_rno[5] <= 0) {
+        if (ewk->wu.old_routine_no[5] <= 0) {
             ewk->wu.routine_no[0]++;
             ewk->wu.disp_flag = 1;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -46,7 +46,7 @@ void effect_B0_move(WORK_Other* ewk) {
             ewk->wu.disp_flag = 0;
             work = random_16();
             work &= 7;
-            ewk->wu.old_rno[5] = effb0_timer_tbl[work];
+            ewk->wu.old_routine_no[5] = effb0_timer_tbl[work];
             work = random_16();
             work &= 7;
             ewk->wu.xyz[0].disp.pos = effb0_data_tbl[work][0];
@@ -80,21 +80,21 @@ s32 effect_B0_init() {
         ewk->wu.be_flag = 1;
         ewk->wu.type = i;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
-        ewk->wu.old_rno[0] = g_state.end_w.r_no_2;
+        ewk->wu.graphic_rom_type = 1;
+        ewk->wu.old_routine_no[0] = g_state.end_w.r_no_2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.char_table[0] = (u32*)_end_char_table;
         ewk->wu.my_col_code = 300;
         ewk->wu.my_family = 1;
-        ewk->wu.old_rno[6] = 0;
-        ewk->wu.old_rno[6] += g_state.end_w.r_no_2;
+        ewk->wu.old_routine_no[6] = 0;
+        ewk->wu.old_routine_no[6] += g_state.end_w.r_no_2;
         ewk->wu.xyz[0].disp.pos = effb0_data_tbl[i][0];
         ewk->wu.xyz[1].disp.pos = effb0_data_tbl[i][1];
         ewk->wu.my_priority = ewk->wu.position_z = 80;
         ewk->wu.char_index = 29;
         work = random_16();
         work &= 7;
-        ewk->wu.old_rno[5] = effb0_timer_tbl[work];
+        ewk->wu.old_routine_no[5] = effb0_timer_tbl[work];
         ewk->wu.my_mts = 8;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     }

@@ -29,7 +29,7 @@ void eff85_0000(WORK_Other* ewk) {
     ewk->wu.routine_no[1] = 0;
     ewk->wu.routine_no[2] = 0;
     ewk->wu.rl_flag = 0;
-    ewk->wu.old_rno[0] = 0;
+    ewk->wu.old_routine_no[0] = 0;
 }
 
 void eff85_0100(WORK_Other* ewk) {
@@ -49,14 +49,14 @@ void eff85_1000(WORK_Other* ewk) {
         ewk->wu.routine_no[2]++;
         ewk->wu.disp_flag = 1;
 
-        if (ewk->wu.old_rno[0]) {
+        if (ewk->wu.old_routine_no[0]) {
             set_char_move_init(&ewk->wu, 0, 44);
         } else {
             set_char_move_init(&ewk->wu, 0, 28);
         }
 
-        ewk->wu.old_rno[0]++;
-        ewk->wu.old_rno[0] &= 1;
+        ewk->wu.old_routine_no[0]++;
+        ewk->wu.old_routine_no[0] &= 1;
         ewk->wu.xyz[0].cal = 0x1EB0000;
         ewk->wu.xyz[1].cal = 0x2C0000;
         break;
@@ -270,7 +270,7 @@ s32 effect_85_init() {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 85;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.dead_f = 1;
     ewk->wu.my_col_mode = 0x4200;

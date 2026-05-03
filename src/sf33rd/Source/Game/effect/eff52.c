@@ -62,7 +62,7 @@ static void EFF52_SUDDENLY(WORK_Other* ewk) {
 
     case 1:
         char_move(&ewk->wu);
-        x = ewk->wu.cg_ix / ewk->wu.cgd_type;
+        x = ewk->wu.graphic_index / ewk->wu.cgd_type;
 
         if (x < ewk->wu.direction) {
             break;
@@ -215,7 +215,7 @@ static void Setup_Char_52(WORK_Other* ewk) {
     ewk->wu.char_index = 18;
     ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
     ix = chkNameAkuma(ewk->wu.dir_step, 6);
-    ewk->wu.dm_vital = Pattern_Data_52[ewk->wu.dir_step + ix][0];
+    ewk->wu.damage_vitality = Pattern_Data_52[ewk->wu.dir_step + ix][0];
     ewk->wu.direction = Pattern_Data_52[ewk->wu.dir_step + ix][1];
 }
 

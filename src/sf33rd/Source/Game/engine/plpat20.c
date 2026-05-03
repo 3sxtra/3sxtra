@@ -248,10 +248,10 @@ static void Att_PL20_TOKUSHUKOUDOU(PLW* wk) {
 
         if (wk->wu.cg_type == 64) {
             wk->wu.routine_no[3]++;
-            wk->tk_kizetsu += 6;
+            wk->stun_scaling += 6;
 
-            if (wk->tk_kizetsu > 24) {
-                wk->tk_kizetsu = 24;
+            if (wk->stun_scaling > 24) {
+                wk->stun_scaling = 24;
             }
 
             grade_add_personal_action(wk->wu.id);

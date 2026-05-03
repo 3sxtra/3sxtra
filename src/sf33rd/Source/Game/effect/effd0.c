@@ -32,7 +32,7 @@ void effect_D0_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.old_rno[1] = 0;
+        ewk->wu.old_routine_no[1] = 0;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
@@ -47,7 +47,7 @@ void effect_D0_move(WORK_Other* ewk) {
         if (ewk->wu.cg_type) {
             ewk->wu.routine_no[0]++;
             set_char_move_init(&ewk->wu, 0, 15);
-            d0_speed_set(&ewk->wu, ewk->wu.old_rno[1]);
+            d0_speed_set(&ewk->wu, ewk->wu.old_routine_no[1]);
             ewk->wu.xyz[1].disp.pos += 96;
 
             if (ewk->wu.rl_flag) {
@@ -66,10 +66,10 @@ void effect_D0_move(WORK_Other* ewk) {
             break;
         }
 
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] < 0) {
-            d0_speed_set(&ewk->wu, ewk->wu.old_rno[1]);
+        if (ewk->wu.old_routine_no[0] < 0) {
+            d0_speed_set(&ewk->wu, ewk->wu.old_routine_no[1]);
         } else {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
@@ -120,8 +120,8 @@ void effect_D0_move(WORK_Other* ewk) {
 }
 
 static void d0_speed_set(WORK* ewk, s16 num) {
-    ewk->old_rno[0] = effd0_conter[num];
-    ewk->old_rno[1]++;
+    ewk->old_routine_no[0] = effd0_conter[num];
+    ewk->old_routine_no[1]++;
 
     if (ewk->rl_flag) {
         ewk->mvxy.a[0].sp = -effd0_data_tbl[num][0];
@@ -147,7 +147,7 @@ s32 effect_D0_init(PLW* oya, s32 /* unused */) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 130;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.disp_flag = 0;
     ewk->my_master = oya;
     ewk->wu.my_family = 2;

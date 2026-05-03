@@ -153,7 +153,7 @@ static void EFF76_SUDDENLY(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.dm_vital)) {
+        if (Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.damage_vitality)) {
             break;
         }
 
@@ -263,7 +263,7 @@ s32 effect_76_init(s16 dir_old) {
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.dir_old = dir_old;
     ewk->wu.direction = 2;
-    ewk->wu.dm_vital = Width_Data_76[dir_old - 43];
+    ewk->wu.damage_vitality = Width_Data_76[dir_old - 43];
     Setup_Char_76(ewk);
     Setup_Pos_76(ewk);
     return 0;
@@ -620,7 +620,7 @@ static s16 Check_Range_Out(WORK_Other* ewk) {
         return 0;
     }
 
-    return Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.dm_vital);
+    return Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.damage_vitality);
 }
 
 static void Setup_Color_76(WORK_Other* ewk) {

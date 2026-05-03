@@ -124,7 +124,7 @@ s32 effect_06_init() {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 6;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];

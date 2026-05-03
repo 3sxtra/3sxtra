@@ -162,20 +162,20 @@ static void sanitize_work_pointers(WORK* w) {
     w->set_char_ad = NULL;
     w->hit_ix_table = NULL;
     w->body_adrs = NULL;
-    w->h_bod = NULL;
+    w->body_hurtbox = NULL;
     w->hand_adrs = NULL;
-    w->h_han = NULL;
+    w->hand_hurtbox = NULL;
     w->dumm_adrs = NULL;
     w->h_dumm = NULL;
     w->catch_adrs = NULL;
-    w->h_cat = NULL;
+    w->catch_box = NULL;
     w->caught_adrs = NULL;
-    w->h_cau = NULL;
+    w->caught_box = NULL;
     w->attack_adrs = NULL;
-    w->h_att = NULL;
+    w->attack_hitbox = NULL;
     w->h_eat = NULL;
     w->hosei_adrs = NULL;
-    w->h_hos = NULL;
+    w->pushbox = NULL;
     w->att_ix_table = NULL;
     w->my_effadrs = NULL;
 }

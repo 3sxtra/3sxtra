@@ -18,9 +18,9 @@ void effect_92_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if ((ewk->wu.dir_timer -= 1) == 0) {
-            ewk->wu.type = Rewrite_Mark_Data[ewk->wu.dmcal_m][0];
-            ewk->wu.dir_timer = Rewrite_Mark_Data[ewk->wu.dmcal_m][1];
-            ewk->wu.dmcal_m++;
+            ewk->wu.type = Rewrite_Mark_Data[ewk->wu.damage_calc_multiplier][0];
+            ewk->wu.dir_timer = Rewrite_Mark_Data[ewk->wu.damage_calc_multiplier][1];
+            ewk->wu.damage_calc_multiplier++;
         }
 
         if (ewk->wu.type == 0xFF) {
@@ -55,7 +55,7 @@ s32 effect_92_init(s16 PL_id, s16 win_number) {
     ewk->master_id = PL_id;
     ewk->wu.dir_step = win_number;
     ewk->wu.dir_timer = 1;
-    ewk->wu.dmcal_m = 0;
+    ewk->wu.damage_calc_multiplier = 0;
     g_state.sync_win_type[ewk->master_id][ewk->wu.dir_step] = g_state.win_type[ewk->master_id][ewk->wu.dir_step];
     return 0;
 }

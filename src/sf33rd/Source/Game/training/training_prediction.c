@@ -37,8 +37,8 @@ void predict_physics_state(PredictedGameState* out, s16 frames_ahead) {
     out->p1.speed_y = g_state.plw[0].wu.mvxy.a[1].sp >> 8;
     out->p1.accel_x = g_state.plw[0].wu.mvxy.d[0].sp >> 8;
     out->p1.accel_y = g_state.plw[0].wu.mvxy.d[1].sp >> 8;
-    out->p1.p_body = g_state.plw[0].wu.h_bod;
-    out->p1.p_pushbox = g_state.plw[0].wu.h_hos;
+    out->p1.p_body = g_state.plw[0].wu.body_hurtbox;
+    out->p1.p_pushbox = g_state.plw[0].wu.pushbox;
 
     // P2
     out->p2.pos_x = g_state.plw[1].wu.xyz[0].disp.pos;
@@ -47,8 +47,8 @@ void predict_physics_state(PredictedGameState* out, s16 frames_ahead) {
     out->p2.speed_y = g_state.plw[1].wu.mvxy.a[1].sp >> 8;
     out->p2.accel_x = g_state.plw[1].wu.mvxy.d[0].sp >> 8;
     out->p2.accel_y = g_state.plw[1].wu.mvxy.d[1].sp >> 8;
-    out->p2.p_body = g_state.plw[1].wu.h_bod;
-    out->p2.p_pushbox = g_state.plw[1].wu.h_hos;
+    out->p2.p_body = g_state.plw[1].wu.body_hurtbox;
+    out->p2.p_pushbox = g_state.plw[1].wu.pushbox;
 
     out->frame_offset = frames_ahead;
 

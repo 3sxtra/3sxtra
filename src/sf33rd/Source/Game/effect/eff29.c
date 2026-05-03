@@ -29,9 +29,9 @@ void effect_29_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] <= 0) {
+            if (ewk->wu.old_routine_no[0] <= 0) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.disp_flag = 1;
                 set_char_move_init(&ewk->wu, 0, 0);
@@ -50,7 +50,7 @@ void effect_29_move(WORK_Other* ewk) {
                 ewk->wu.disp_flag = 0;
                 work = random_16();
                 work &= 7;
-                ewk->wu.old_rno[0] = eff29_vanish_time[work];
+                ewk->wu.old_routine_no[0] = eff29_vanish_time[work];
             }
         }
 
@@ -76,7 +76,7 @@ s32 effect_29_init() {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 29;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.dead_f = 1;
     ewk->wu.my_col_mode = 0x4200;
@@ -91,7 +91,7 @@ s32 effect_29_init() {
     ewk->wu.sync_suzi = 0;
     ewk->wu.char_table[0] = _hkg_char_table;
     suzi_offset_set(ewk);
-    ewk->wu.old_rno[0] = 120;
+    ewk->wu.old_routine_no[0] = 120;
     ewk->wu.disp_flag = 0;
     return 0;
 }

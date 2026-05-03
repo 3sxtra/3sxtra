@@ -49,7 +49,7 @@ s32 effect_F0_init(WORK* wk) {
     ewk->my_master = wk;
     ewk->master_work_id = wk->work_id;
     ewk->master_id = wk->id;
-    ewk->wu.cgromtype = wk->cgromtype;
+    ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.disp_flag = 0;

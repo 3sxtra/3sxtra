@@ -1142,17 +1142,17 @@ static void set_display_car_parts(WORK_Other* wk) {
     bs2_get_parts_break(&wk->wu);
     adrs = car_parts[wk->wu.type - 1][wk->wu.scr_mv_y][wk->wu.scr_mv_x - 1];
     wk->wu.cg_number = adrs[0];
-    wk->wu.h_bod = wk->wu.body_adrs + (wk->wu.cg_hit_ix = adrs[1]);
+    wk->wu.body_hurtbox = wk->wu.body_adrs + (wk->wu.cg_hit_ix = adrs[1]);
 }
 
 static void clear_parts_hit_data(WORK* wk) {
     wk->cg_ja = wk->hit_ix_table[0];
-    wk->h_bod = &wk->body_adrs[wk->cg_ja.boix];
-    wk->h_cat = &wk->catch_adrs[wk->cg_ja.caix];
-    wk->h_cau = &wk->caught_adrs[wk->cg_ja.cuix];
-    wk->h_att = &wk->attack_adrs[wk->cg_ja.atix];
-    wk->h_hos = &wk->hosei_adrs[wk->cg_ja.hoix];
-    wk->h_han = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
+    wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.boix];
+    wk->catch_box = &wk->catch_adrs[wk->cg_ja.caix];
+    wk->caught_box = &wk->caught_adrs[wk->cg_ja.cuix];
+    wk->attack_hitbox = &wk->attack_adrs[wk->cg_ja.atix];
+    wk->pushbox = &wk->hosei_adrs[wk->cg_ja.hoix];
+    wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
 }
 
 static void effC3_main_process(WORK_Other* ewk) {

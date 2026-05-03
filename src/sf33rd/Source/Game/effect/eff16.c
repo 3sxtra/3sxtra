@@ -65,7 +65,7 @@ void effect_16_move(WORK_Other* ewk) {
             ewk->free = 0;
             ewk->wu.dir_timer = 0;
 
-            if (ewk->wu.kage_prio) {
+            if (ewk->wu.shadow_prio) {
                 ewk->wu.position_z = 29;
                 ewk->wu.my_clear_level = 128;
                 break;
@@ -157,11 +157,11 @@ s32 effect_16_init(PLW* wk, s16 flag) {
     ewk->wu.work_id = 16;
     ewk->wu.my_mts = 14;
     ewk->wu.my_family = 3;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.type = (wk->wu.id + 1) & 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 73;
-    ewk->wu.kage_prio = flag;
+    ewk->wu.shadow_prio = flag;
     ewk->num_of_conn = 8;
 
     for (i = 0; i < 8; i++) {

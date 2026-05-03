@@ -417,11 +417,11 @@ void Player_control() {
     set_quake(&g_state.plw[0]);
     set_quake(&g_state.plw[1]);
 
-    if (!g_state.plw[0].zuru_flag && !g_state.plw[0].absolute_invuln_flag) {
+    if (!g_state.plw[0].invuln_flag && !g_state.plw[0].absolute_invuln_flag) {
         hit_push_request(&g_state.plw[0].wu);
     }
 
-    if (!g_state.plw[1].zuru_flag && !g_state.plw[1].absolute_invuln_flag) {
+    if (!g_state.plw[1].invuln_flag && !g_state.plw[1].absolute_invuln_flag) {
         hit_push_request(&g_state.plw[1].wu);
     }
 
@@ -625,11 +625,11 @@ static void plcnt_move() {
 
 #if DEBUG
     if (DebugConfig_Get(DEBUG_PLAYER_1_INVINCIBLE)) {
-        g_state.plw[0].wu.dm_vital = 0;
+        g_state.plw[0].wu.damage_vitality = 0;
     }
 
     if (DebugConfig_Get(DEBUG_PLAYER_2_INVINCIBLE)) {
-        g_state.plw[1].wu.dm_vital = 0;
+        g_state.plw[1].wu.damage_vitality = 0;
     }
 
     if (DebugConfig_Get(DEBUG_PLAYER_1_NO_LIFE)) {
@@ -642,11 +642,11 @@ static void plcnt_move() {
 #endif
 
     if (g_state.No_Death) {
-        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+        g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
     }
 
     if (g_state.Break_Into) {
-        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+        g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
     }
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING && Training->contents[0][1][3] == 0) {
@@ -662,14 +662,14 @@ static void plcnt_move() {
 
         if ((g_state.plw[0].dead_flag != 0) && (g_state.plw[1].dead_flag != 0)) {
             g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 2;
-            g_state.plw[0].wu.dm_stop = g_state.plw[1].wu.dm_stop = 0;
+            g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 4;
-            g_state.plw[0].wu.dm_quake = g_state.plw[1].wu.dm_quake = 0;
+            g_state.plw[0].wu.damage_screen_shake = g_state.plw[1].wu.damage_screen_shake = 0;
         } else if ((g_state.plw[0].dead_flag != 0) || (g_state.plw[1].dead_flag != 0)) {
             g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 4;
-            g_state.plw[0].wu.dm_stop = g_state.plw[1].wu.dm_stop = 0;
+            g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 8;
-            g_state.plw[0].wu.dm_quake = g_state.plw[1].wu.dm_quake = 0;
+            g_state.plw[0].wu.damage_screen_shake = g_state.plw[1].wu.damage_screen_shake = 0;
         }
     }
 
@@ -698,7 +698,7 @@ static void plcnt_move() {
 
 /** @brief Handles player death/KO finalization. */
 static void plcnt_die() {
-    g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+    g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
     settle_process[g_state.pcon_rno[1]]();
     move_player_work();
 
@@ -1019,15 +1019,15 @@ void store_player_after_image_data() {
 
 /** @brief Applies damage correction (hosei) based on difficulty and character. */
 static void check_damage_hosei() {
-    g_state.plw[0].forced_movement = g_state.plw[0].hosei_amari;
-    g_state.plw[1].forced_movement = g_state.plw[1].hosei_amari;
+    g_state.plw[0].forced_movement = g_state.plw[0].scaling_remainder;
+    g_state.plw[1].forced_movement = g_state.plw[1].scaling_remainder;
 
     if (g_state.plw[0].is_throwing && g_state.plw[1].is_being_thrown) {
         check_damage_hosei_nage(&g_state.plw[0], &g_state.plw[1]);
     } else if (g_state.plw[1].is_throwing && g_state.plw[0].is_being_thrown) {
         check_damage_hosei_nage(&g_state.plw[1], &g_state.plw[0]);
     } else {
-        switch ((g_state.plw[0].hosei_amari != 0) + ((g_state.plw[1].hosei_amari != 0) * 2)) {
+        switch ((g_state.plw[0].scaling_remainder != 0) + ((g_state.plw[1].scaling_remainder != 0) * 2)) {
         case 1:
             check_damage_hosei_dageki(&g_state.plw[0], &g_state.plw[1]);
             break;
@@ -1037,15 +1037,15 @@ static void check_damage_hosei() {
         }
     }
 
-    g_state.plw[0].hosei_amari = g_state.plw[1].hosei_amari = 0;
+    g_state.plw[0].scaling_remainder = g_state.plw[1].scaling_remainder = 0;
 }
 
 /** @brief Applies throw damage correction based on difficulty and mode. */
 static void check_damage_hosei_nage(PLW* as, PLW* ds) {
     if (as->kind_of_catch) {
-        if (ds->hosei_amari != 0) {
-            as->wu.xyz[0].disp.pos += ds->hosei_amari;
-            as->forced_movement += ds->hosei_amari;
+        if (ds->scaling_remainder != 0) {
+            as->wu.xyz[0].disp.pos += ds->scaling_remainder;
+            as->forced_movement += ds->scaling_remainder;
             return;
         }
 
@@ -1053,21 +1053,21 @@ static void check_damage_hosei_nage(PLW* as, PLW* ds) {
             set_field_hosei_flag(as, g_state.scrl, 0);
         }
 
-        if (as->hosei_amari != 0) {
-            ds->wu.xyz[0].disp.pos += as->hosei_amari;
-            ds->forced_movement += as->hosei_amari;
+        if (as->scaling_remainder != 0) {
+            ds->wu.xyz[0].disp.pos += as->scaling_remainder;
+            ds->forced_movement += as->scaling_remainder;
         }
-    } else if (ds->hosei_amari != 0) {
-        as->wu.xyz[0].disp.pos += ds->hosei_amari;
-        as->forced_movement += ds->hosei_amari;
+    } else if (ds->scaling_remainder != 0) {
+        as->wu.xyz[0].disp.pos += ds->scaling_remainder;
+        as->forced_movement += ds->scaling_remainder;
     }
 }
 
 /** @brief Applies strike damage correction based on difficulty and mode. */
 static void check_damage_hosei_dageki(PLW* w1, PLW* w2) {
     if ((w1->dm_hos_flag != 0) && (w2->wu.hit_stop == 0)) {
-        w2->wu.xyz[0].disp.pos += w1->hosei_amari;
-        w2->forced_movement += w1->hosei_amari;
+        w2->wu.xyz[0].disp.pos += w1->scaling_remainder;
+        w2->forced_movement += w1->scaling_remainder;
     }
 }
 
@@ -1090,7 +1090,7 @@ static s32 time_over_check() {
             request_center_message(2);
         }
 
-        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+        g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
         g_state.Round_Result |= 1;
         return 1;
     }
@@ -1100,11 +1100,11 @@ static s32 time_over_check() {
 
 /** @brief Returns 1 if either player's vitality has reached zero. */
 static s32 will_die() {
-    if (g_state.plw[0].wu.dm_vital > g_state.plw[0].wu.vital_new) {
+    if (g_state.plw[0].wu.damage_vitality > g_state.plw[0].wu.vital_new) {
         return 0;
     }
 
-    if (g_state.plw[1].wu.dm_vital > g_state.plw[1].wu.vital_new) {
+    if (g_state.plw[1].wu.damage_vitality > g_state.plw[1].wu.vital_new) {
         return 0;
     }
 
@@ -1307,8 +1307,8 @@ void setup_base_and_other_data() {
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_PARRY_TRAINING ||
         g_state.Mode_Type == MODE_TRIALS) {
-        effect_E3_init(&g_state.plw[0]);
-        effect_E3_init(&g_state.plw[1]);
+        effect_e3_init(&g_state.plw[0]);
+        effect_e3_init(&g_state.plw[1]);
         effect_E4_init(&g_state.plw[0]);
         effect_E4_init(&g_state.plw[1]);
     }
@@ -1354,11 +1354,11 @@ static void set_base_data(PLW* wk, s16 ix) {
     }
 
     wk->spmv_ng_flag = omop_spmv_ng_table[wk->wu.id];
-    wk->spmv_ng_flag2 = omop_spmv_ng_table2[wk->wu.id];
+    wk->special_move_disabled_flag2 = omop_spmv_ng_table2[wk->wu.id];
     wk->wu.weight_level = weight_lv_table[wk->player_number];
     set_player_shadow(wk);
     wk->wu.cg_olc_ix = wk->wu.cg_hit_ix = 0;
-    wk->wu.cg_olc = wk->wu.olc_ix_table[wk->wu.cg_olc_ix];
+    wk->wu.graphic_overlap_index = wk->wu.olc_ix_table[wk->wu.cg_olc_ix];
     wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.cg_hit_ix];
 
     set_jugde_area(&wk->wu);
@@ -1374,7 +1374,7 @@ void set_base_data_metamorphose(PLW* wk, s16 dmid) {
 
     cmd_init(wk);
     wk->spmv_ng_flag = omop_spmv_ng_table[dmid];
-    wk->spmv_ng_flag2 = omop_spmv_ng_table2[dmid];
+    wk->special_move_disabled_flag2 = omop_spmv_ng_table2[dmid];
     set_player_shadow(wk);
 }
 
@@ -1393,7 +1393,7 @@ static void set_base_data_tiny(PLW* wk) {
     wk->wkey_flag = wk->dead_flag = 0;
     cmd_init(wk);
     wk->spmv_ng_flag = omop_spmv_ng_table[wk->wu.id];
-    wk->spmv_ng_flag2 = omop_spmv_ng_table2[wk->wu.id];
+    wk->special_move_disabled_flag2 = omop_spmv_ng_table2[wk->wu.id];
     wk->wu.weight_level = weight_lv_table[wk->player_number];
     set_player_shadow(wk);
 }
@@ -1401,9 +1401,9 @@ static void set_base_data_tiny(PLW* wk) {
 /** @brief Configures the player's shadow sprite parameters. */
 void set_player_shadow(PLW* wk) {
     wk->wu.shadow_flag = 1;
-    wk->wu.kage_prio = 68;
+    wk->wu.shadow_prio = 68;
     wk->wu.shadow_x = kage_base[wk->player_number][0];
-    wk->wu.kage_char = kage_base[wk->player_number][1];
+    wk->wu.shadow_char = kage_base[wk->player_number][1];
 }
 
 /** @brief Sets up other per-player data (SA config, damage tables). */
@@ -1418,7 +1418,7 @@ static void setup_other_data(PLW* wk) {
         effect_01_init(&wk->wu, i);
     }
 
-    effect_K5_init(wk);
+    effect_k5_init(wk);
     effect_00_init(&wk->wu);
 }
 
@@ -1583,7 +1583,7 @@ s16 check_combo_end(s16 ix) {
         return 0;
     }
 
-    if (g_state.plw[ix].zuru_flag) {
+    if (g_state.plw[ix].invuln_flag) {
         return 0;
     }
 

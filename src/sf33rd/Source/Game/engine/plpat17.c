@@ -282,10 +282,10 @@ static void Att_PL17_TOKUSHUKOUDOU(PLW* wk) {
 
         case 10:
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 10;
+            wk->strike_scaling += 10;
 
-            if (wk->tk_dageki > 10) {
-                wk->tk_dageki = 10;
+            if (wk->strike_scaling > 10) {
+                wk->strike_scaling = 10;
             }
 
             grade_add_personal_action(wk->wu.id);
@@ -293,10 +293,10 @@ static void Att_PL17_TOKUSHUKOUDOU(PLW* wk) {
 
         case 20:
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 10;
+            wk->strike_scaling += 10;
 
-            if (wk->tk_dageki > 20) {
-                wk->tk_dageki = 20;
+            if (wk->strike_scaling > 20) {
+                wk->strike_scaling = 20;
             }
 
             break;

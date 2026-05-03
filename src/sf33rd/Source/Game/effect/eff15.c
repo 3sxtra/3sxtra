@@ -37,7 +37,7 @@ static void eff15_koishi(WORK_Other* ewk) {
             ewk->wu.mvxy.a[1].sp = -0x28000;
             ewk->wu.mvxy.d[1].sp = -0x6000;
             ewk->wu.xyz[0].disp.pos = 640;
-            ewk->wu.old_rno[2] = 64;
+            ewk->wu.old_routine_no[2] = 64;
             break;
         }
 
@@ -46,7 +46,7 @@ static void eff15_koishi(WORK_Other* ewk) {
         ewk->wu.mvxy.a[1].sp = 0;
         ewk->wu.mvxy.d[1].sp = -0x4000;
         ewk->wu.xyz[0].disp.pos = 576;
-        ewk->wu.old_rno[2] = 72;
+        ewk->wu.old_routine_no[2] = 72;
         break;
 
     case 1:
@@ -55,7 +55,7 @@ static void eff15_koishi(WORK_Other* ewk) {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
 
-            if (ewk->wu.xyz[1].disp.pos < ewk->wu.old_rno[2]) {
+            if (ewk->wu.xyz[1].disp.pos < ewk->wu.old_routine_no[2]) {
                 ewk->wu.routine_no[0]++;
                 set_char_move_init(&ewk->wu, 0, 41);
             }
@@ -102,7 +102,7 @@ s32 effect_15_init(WORK* wk, u8 data) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0xF;
     ewk->master_id = wk->id;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.type = data;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 0x2020;

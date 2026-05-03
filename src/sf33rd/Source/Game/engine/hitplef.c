@@ -22,7 +22,7 @@ void player_at_vs_effect_dm(s16 ix2, s16 ix) {
     if (ds->wu.id == 122 || ds->wu.id == 123) {
         cal_damage_vitality(as, (PLW*)ds);
     } else {
-        ds->wu.dm_vital = 256;
+        ds->wu.damage_vitality = 256;
     }
 
     if (ds->wu.work_id == 2 && (ds->wu.id == 122 || ds->wu.id == 123)) {
@@ -55,7 +55,7 @@ void player_at_vs_effect_dm(s16 ix2, s16 ix) {
     if (ds->wu.work_id == 2 && ds->wu.id != 122 && ds->wu.id != 123) {
         as->wu.att_hit_ok = 1;
         as->wu.hit_stop /= 2;
-        ds->wu.dm_stop /= 2;
+        ds->wu.damage_hit_stop /= 2;
     }
 
     hit_pattern_extdat_check(&as->wu);

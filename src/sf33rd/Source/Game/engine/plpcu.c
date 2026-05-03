@@ -57,7 +57,7 @@ static void setup_caught_process_flags(PLW* wk) {
     wk->wu.next_z = wk->wu.my_priority;
     wk->running_f = 0;
     wk->guard_flag = 3;
-    wk->guard_chuu = 0;
+    wk->guard_active = 0;
     wk->is_throwing = false;
     wk->is_being_thrown = true;
     wk->scr_pos_set_flag = 0;
@@ -70,7 +70,7 @@ static void setup_caught_process_flags(PLW* wk) {
     wk->sa->saeff_mp = 0;
     wk->cancel_timer = 0;
     wk->cmd_request = 0;
-    wk->hsjp_ok = 0;
+    wk->high_jump_ok = 0;
     wk->high_jump_flag = 0;
     wk->wu.swallow_no_effect = 0;
 
@@ -181,8 +181,8 @@ static void Caught_03000(PLW* /* unused */, PLW* /* unused */) {}
 static void caught_cg_type_check(PLW* wk, PLW* emwk) {
     switch (wk->wu.cg_type) {
     case 2:
-        wk->wu.hit_quake = wk->wu.dm_quake;
-        wk->wu.dm_quake = 0;
+        wk->wu.hit_quake = wk->wu.damage_screen_shake;
+        wk->wu.damage_screen_shake = 0;
         wk->wu.cg_type = 0;
         break;
 
@@ -237,7 +237,7 @@ static s32 check_tsukamare_keizoku_check(PLW* wk, PLW* emwk) {
         wk->wu.routine_no[1] = 1;
         wk->wu.routine_no[2] = 88;
         wk->wu.routine_no[3] = 0;
-        wk->wu.dm_stop = wk->wu.hit_stop = 0;
+        wk->wu.damage_hit_stop = wk->wu.hit_stop = 0;
 
         if (wk->wu.cg_flip & 2) {
             wk->reserv_add_y = -getObjectHeight(wk->wu.cg_number);

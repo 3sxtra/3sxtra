@@ -55,10 +55,10 @@ static void effm7_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        ewk->wu.old_rno[1]--;
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[1]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] < 0) {
+        if (ewk->wu.old_routine_no[0] < 0) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -67,9 +67,9 @@ static void effm7_move(WORK_Other* ewk) {
     case 2:
         char_move(&ewk->wu);
 
-        ewk->wu.old_rno[1]--;
+        ewk->wu.old_routine_no[1]--;
 
-        if (ewk->wu.old_rno[1] < 0) {
+        if (ewk->wu.old_routine_no[1] < 0) {
             ewk->wu.routine_no[1]++;
             set_char_move_init(&ewk->wu, 1, 0x6C);
         }
@@ -146,7 +146,7 @@ s32 effect_M7_init(PLW* oya) {
         ewk->wu.be_flag = 1;
         ewk->wu.id = 227;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.disp_flag = 0;
         ewk->my_master = oya;
         ewk->master_id = oya->wu.id;
@@ -160,16 +160,16 @@ s32 effect_M7_init(PLW* oya) {
         ewk->wu.position_z += *(s16*)data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z;
         ewk->wu.rl_flag = *data_ptr++;
-        ewk->wu.kage_char = *data_ptr++;
-        ewk->wu.old_rno[0] = *data_ptr++;
-        ewk->wu.old_rno[1] = *data_ptr++;
+        ewk->wu.shadow_char = *data_ptr++;
+        ewk->wu.old_routine_no[0] = *data_ptr++;
+        ewk->wu.old_routine_no[1] = *data_ptr++;
         ewk->wu.char_table[0] = *oya->wu.char_table;
         ewk->wu.char_table[1] = _etc_char_table;
         ewk->wu.char_index = 0;
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 6;
         ewk->wu.shadow_y = 0;
-        ewk->wu.kage_prio = ewk->wu.position_z + 5;
+        ewk->wu.shadow_prio = ewk->wu.position_z + 5;
         ewk->wu.my_mts = oya->wu.my_mts;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     }

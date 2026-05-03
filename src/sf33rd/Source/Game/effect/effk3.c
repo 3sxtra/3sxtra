@@ -64,7 +64,7 @@ void effect_K3_move(WORK_Other* ewk) {
                 ewk->wu.disp_flag = 2;
             }
 
-            if (--ewk->wu.kage_prio < 0) {
+            if (--ewk->wu.shadow_prio < 0) {
                 ewk->wu.disp_flag = 0;
                 ewk->wu.routine_no[0] = 2;
             }
@@ -112,8 +112,8 @@ static void set_init_posspeed_effK3(WORK* wk) {
     ix = random_16() & 7;
     data[2] += effK3_isp_y_hosei[wk->dm_attlv][ix];
     setup_move_data_easy(wk, &data[0], 1, 0);
-    wk->kage_prio = effK3_life_time[wk->dm_attlv] + (random_16() & 3);
-    wk->shadow_y = wk->kage_prio / 2;
+    wk->shadow_prio = effK3_life_time[wk->dm_attlv] + (random_16() & 3);
+    wk->shadow_y = wk->shadow_prio / 2;
 }
 
 static s32 effect_K3_init(WORK_Other* wk) {
@@ -130,7 +130,7 @@ static s32 effect_K3_init(WORK_Other* wk) {
     ewk->wu.work_id = 16;
     ewk->wu.my_mts = 5;
     ewk->wu.my_family = wk->wu.my_family;
-    ewk->wu.cgromtype = wk->wu.cgromtype;
+    ewk->wu.graphic_rom_type = wk->wu.graphic_rom_type;
     ewk->wu.my_col_mode = wk->wu.my_col_mode;
     ewk->wu.my_col_code = wk->wu.my_col_code;
     ewk->my_master = wk;

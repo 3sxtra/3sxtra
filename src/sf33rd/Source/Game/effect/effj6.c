@@ -93,7 +93,7 @@ s32 effect_J6_init(WORK_Other* oya) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 196;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.type = 3;

@@ -65,7 +65,7 @@ s32 effect_L9_init(WORK_Other* oya, u8 ten_type) {
     ewk->wu.id = 219;
     ewk->wu.work_id = 16;
     ewk->wu.my_priority = 64;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _etc2_char_table;

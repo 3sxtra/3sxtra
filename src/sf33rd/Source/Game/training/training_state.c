@@ -43,12 +43,12 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
     // 4 = generic attack routine.
     state->is_attacking = (wk->wu.routine_no[1] == 4);
     state->has_just_attacked = (!prev_is_attacking && state->is_attacking);
-    // In plpdm.c, every damage frame starts with guard_chuu = 0, then only
+    // In plpdm.c, every damage frame starts with guard_active = 0, then only
     // Damage_04000 (standing guard recoil) and Damage_07000 (air guard recoil)
-    // set guard_chuu = guard_kind[...] (a non-zero value).
-    // All hitstun handlers leave guard_chuu = 0.
-    // Therefore: guard_chuu != 0  ⟺  currently in blockstun.
-    state->is_blocking = (wk->guard_chuu != 0);
+    // set guard_active = guard_kind[...] (a non-zero value).
+    // All hitstun handlers leave guard_active = 0.
+    // Therefore: guard_active != 0  ⟺  currently in blockstun.
+    state->is_blocking = (wk->guard_active != 0);
     state->has_just_blocked = (!prev_is_blocking && state->is_blocking);
     state->has_just_ended_recovery = (prev_is_blocking && !state->is_blocking);
 
@@ -69,16 +69,16 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
 
     state->has_just_landed = (prev_is_airborne && !state->is_airborne && state->is_grounded);
 
-    // We also exclude hit_stop and dm_stop so characters frozen before hitstun don't appear idle.
+    // We also exclude hit_stop and damage_hit_stop so characters frozen before hitstun don't appear idle.
     // routine_no[1] == 1 is the damage/guard processing routine.
     state->is_idle = (wk->wu.char_state.pat_status <= 3) && !state->is_attacking && !state->is_blocking &&
-                     (wk->wu.routine_no[1] != 1) && (wk->wu.hit_stop == 0) && (wk->wu.dm_stop == 0);
+                     (wk->wu.routine_no[1] != 1) && (wk->wu.hit_stop == 0) && (wk->wu.damage_hit_stop == 0);
     state->has_just_become_idle = (!prev_is_idle && state->is_idle);
-    // h_att is always non-null. Check whether any slot has actual width to confirm active hitbox.
+    // attack_hitbox is always non-null. Check whether any slot has actual width to confirm active hitbox.
     state->has_hitboxes = false;
-    if (wk->wu.h_att) {
+    if (wk->wu.attack_hitbox) {
         for (int _i = 0; _i < 4; _i++) {
-            if (wk->wu.h_att->att_box[_i][1] != 0) {
+            if (wk->wu.attack_hitbox->att_box[_i][1] != 0) {
                 state->has_hitboxes = true;
                 break;
             }
@@ -86,7 +86,7 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
     }
 
     // When opponent gets put into hit/blockstun during our attack calculation
-    if (state->advantage_active && (opponent_wk->wu.routine_no[1] == 1 || opponent_wk->guard_chuu != 0)) {
+    if (state->advantage_active && (opponent_wk->wu.routine_no[1] == 1 || opponent_wk->guard_active != 0)) {
         state->opponent_was_affected = true;
     }
 
@@ -158,7 +158,7 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
         // Hard knockdown / down state range (0x54+)
         state->current_frame_state = FRAME_STATE_DOWN;
     } else if (state->is_blocking) {
-        // guard_chuu != 0: character is actively in blockstun recoil.
+        // guard_active != 0: character is actively in blockstun recoil.
         state->current_frame_state = FRAME_STATE_BLOCKSTUN;
     } else if (wk->wu.routine_no[1] == 1) {
         // routine_no[1] == 1 is the Player_damage global state.
@@ -198,7 +198,7 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
     // Combo Reset (if no longer in hitstun, blockstun, or down, and not being thrown)
     if (state->current_frame_state != FRAME_STATE_HITSTUN && state->current_frame_state != FRAME_STATE_BLOCKSTUN &&
         state->current_frame_state != FRAME_STATE_DOWN && !state->is_being_thrown && wk->wu.routine_no[1] != 1 &&
-        wk->wu.hit_stop == 0 && wk->wu.dm_stop == 0) {
+        wk->wu.hit_stop == 0 && wk->wu.damage_hit_stop == 0) {
         state->combo_stun = 0;
         state->combo_hits = 0;
     }

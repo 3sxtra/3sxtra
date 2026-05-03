@@ -45,14 +45,14 @@ static void Att_PL03_TOKUSHUKOUDOU(PLW* wk) {
         switch (wk->wu.cg_type) {
         case 20:
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 2;
-            wk->tk_nage += 2;
+            wk->strike_scaling += 2;
+            wk->throw_scaling += 2;
             break;
 
         case 30:
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 2;
-            wk->tk_nage++;
+            wk->strike_scaling += 2;
+            wk->throw_scaling++;
             break;
 
         case 64:
@@ -60,12 +60,12 @@ static void Att_PL03_TOKUSHUKOUDOU(PLW* wk) {
             break;
         }
 
-        if (wk->tk_dageki > 16) {
-            wk->tk_dageki = 16;
+        if (wk->strike_scaling > 16) {
+            wk->strike_scaling = 16;
         }
 
-        if (wk->tk_nage > 8) {
-            wk->tk_nage = 8;
+        if (wk->throw_scaling > 8) {
+            wk->throw_scaling = 8;
         }
 
         break;

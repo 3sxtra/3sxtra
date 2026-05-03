@@ -696,7 +696,7 @@ void shadow_setup(WORK* wk, s16 bsy) {
         return;
     }
 
-    Renderer_Queue2DPrimitive(&base_y, (f32)PrioBase[wk->kage_prio], (uintptr_t)wk, 1);
+    Renderer_Queue2DPrimitive(&base_y, (f32)PrioBase[wk->shadow_prio], (uintptr_t)wk, 1);
 }
 
 /** @brief Render a character's shadow sprite. */
@@ -709,9 +709,9 @@ void shadow_drawing(WORK* wk, s16 bsy) {
 
     dmwk_kage.position_x = (wk->position_x + wk->shadow_x * (1 - (wk->rl_flag != 0) * 2));
     dmwk_kage.position_y = wk->shadow_y;
-    dmwk_kage.position_z = wk->kage_prio;
+    dmwk_kage.position_z = wk->shadow_prio;
     dmwk_kage.my_family = wk->my_family;
-    shadow = wk->kage_char - get_kage_width(wk->xyz[1].disp.pos - wk->shadow_y);
+    shadow = wk->shadow_char - get_kage_width(wk->xyz[1].disp.pos - wk->shadow_y);
 
     if (shadow >= 0x1D) {
         shadow = 0x1C;

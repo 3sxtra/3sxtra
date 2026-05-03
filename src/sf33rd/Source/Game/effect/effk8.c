@@ -85,7 +85,7 @@ s32 effect_K8_init(WORK* wk, u8 data) {
     ewk->wu.my_mts = 6;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = 8;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 2;
     ewk->wu.position_x = -8;

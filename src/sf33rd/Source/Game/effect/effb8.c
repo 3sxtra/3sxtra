@@ -160,7 +160,7 @@ static void wk_set(WORK_Other_CONN* ewk) {
     ewk->wu.id = 118;
     ewk->wu.work_id = 16;
     ewk->wu.rl_flag = 0;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.sync_suzi = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 0x37;

@@ -96,8 +96,8 @@ void effect_D4_move(WORK_Other* ewk) {
             rl = 0;
         }
 
-        if ((ewk->wu.dmcal_d || mwk->sa_stop_flag) &&
-            (!ewk->wu.dmcal_d || rl != ewk->wu.rl_flag || mwk->sa_stop_flag)) {
+        if ((ewk->wu.damage_calc_divider || mwk->sa_stop_flag) &&
+            (!ewk->wu.damage_calc_divider || rl != ewk->wu.rl_flag || mwk->sa_stop_flag)) {
             break;
         }
 
@@ -112,7 +112,7 @@ void effect_D4_move(WORK_Other* ewk) {
         add_x = ewk->wu.mvxy.a[0].sp;
         add_y = -ewk->wu.mvxy.a[1].sp;
 
-        if (ewk->wu.dmcal_m == -1) {
+        if (ewk->wu.damage_calc_multiplier == -1) {
             add_x = -add_x;
             add_y = -add_y;
         }
@@ -127,7 +127,7 @@ void effect_D4_move(WORK_Other* ewk) {
             wk->wu.xyz[1].cal += add_y;
         }
 
-        if (ewk->wu.dmcal_m != -1) {
+        if (ewk->wu.damage_calc_multiplier != -1) {
             break;
         }
 
@@ -221,7 +221,7 @@ s32 effect_D4_init(WORK* wk, u8 data) {
     ewk->wu.work_id = 16;
     ewk->wu.type = data;
     ewk->wu.my_family = wk->my_family;
-    ewk->wu.cgromtype = wk->cgromtype;
+    ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.my_col_code = wk->my_col_code;
     ewk->my_master = wk;
@@ -235,8 +235,8 @@ s32 effect_D4_init(WORK* wk, u8 data) {
     ewk->wu.position_y = wk->position_y;
     ewk->wu.position_z = wk->position_z;
     ewk->wu.rl_flag = wk->rl_flag + sel_suikomi_tbl[data][1] & 1;
-    ewk->wu.dmcal_d = sel_suikomi_tbl[data][2];
-    ewk->wu.dmcal_m = sel_suikomi_tbl[data][3];
+    ewk->wu.damage_calc_divider = sel_suikomi_tbl[data][2];
+    ewk->wu.damage_calc_multiplier = sel_suikomi_tbl[data][3];
     ewk->wu.dir_timer = sel_suikomi_tbl[data][4];
     effect_G3_init(&ewk->wu, 0);
     effect_G3_init(&ewk->wu, 1);

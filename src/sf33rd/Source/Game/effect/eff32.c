@@ -26,11 +26,11 @@ void effect_32_move(WORK_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 0;
         ewk->wu.shadow_y = -4;
-        ewk->wu.kage_prio = 71;
-        ewk->wu.kage_char = 16;
+        ewk->wu.shadow_prio = 71;
+        ewk->wu.shadow_char = 16;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-        ewk->wu.old_rno[0] = 120;
-        cal_initial_speed(&ewk->wu, ewk->wu.old_rno[0], ewk->wu.old_rno[1], ewk->wu.xyz[1].disp.pos);
+        ewk->wu.old_routine_no[0] = 120;
+        cal_initial_speed(&ewk->wu, ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], ewk->wu.xyz[1].disp.pos);
         break;
 
     case 1:
@@ -38,9 +38,9 @@ void effect_32_move(WORK_Other* ewk) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] < 1) {
+            if (ewk->wu.old_routine_no[0] < 1) {
                 ewk->wu.routine_no[0]++;
                 set_char_move_init(&ewk->wu, 0, 1);
             }
@@ -100,7 +100,7 @@ s32 effect_32_init(WORK* wk) {
     ewk->wu.id = 32;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.my_col_code = wk->my_col_code + 1;
     ewk->wu.my_family = wk->my_family;
@@ -116,7 +116,7 @@ s32 effect_32_init(WORK* wk) {
             ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - (g_state.bg_w.pos_offset + 32);
         }
 
-        ewk->wu.old_rno[1] = twk->wu.xyz[0].disp.pos - 144;
+        ewk->wu.old_routine_no[1] = twk->wu.xyz[0].disp.pos - 144;
     } else {
         if (wk->xyz[0].disp.pos > g_state.bg_w.bgw[1].wxy[0].disp.pos) {
             ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos + 256;
@@ -124,7 +124,7 @@ s32 effect_32_init(WORK* wk) {
             ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + (g_state.bg_w.pos_offset + 32);
         }
 
-        ewk->wu.old_rno[1] = twk->wu.xyz[0].disp.pos + 144;
+        ewk->wu.old_routine_no[1] = twk->wu.xyz[0].disp.pos + 144;
     }
 
     ewk->wu.xyz[1].disp.pos = wk->xyz[1].disp.pos - 4;

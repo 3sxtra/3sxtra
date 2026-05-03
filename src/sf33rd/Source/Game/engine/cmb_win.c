@@ -239,7 +239,7 @@ s32 reversal_check(s8 PL) {
         return 0;
     }
 
-    if (g_state.plw[PL].wu.routine_no[1] == 4 && g_state.plw[PL].wu.old_rno[1] == 1 && !g_state.pcon_dp_flag &&
+    if (g_state.plw[PL].wu.routine_no[1] == 4 && g_state.plw[PL].wu.old_routine_no[1] == 1 && !g_state.pcon_dp_flag &&
         g_state.plw[PL].wu.routine_no[2] >= 0x10) {
         g_state.rever_attack[PL] = 1;
 

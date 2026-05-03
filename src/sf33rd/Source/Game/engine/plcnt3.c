@@ -35,11 +35,11 @@ s32 Player_control_bonus2() {
         set_quake(&g_state.plw[0]);
         set_quake(&g_state.plw[1]);
 
-        if (!g_state.plw[0].zuru_flag && !g_state.plw[0].absolute_invuln_flag) {
+        if (!g_state.plw[0].invuln_flag && !g_state.plw[0].absolute_invuln_flag) {
             hit_push_request(&g_state.plw[0].wu);
         }
 
-        if (!g_state.plw[1].zuru_flag && !g_state.plw[1].absolute_invuln_flag) {
+        if (!g_state.plw[1].invuln_flag && !g_state.plw[1].absolute_invuln_flag) {
             hit_push_request(&g_state.plw[1].wu);
         }
 
@@ -62,11 +62,11 @@ s32 Player_control_bonus2() {
 /** @brief Per-frame car-crush bonus stage movement update. */
 static void plcnt_b2_move() {
     if (g_state.No_Death) {
-        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+        g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
     }
 
     if (g_state.Break_Into) {
-        g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+        g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
     }
 
     move_player_work_bonus();
@@ -87,7 +87,7 @@ static void plcnt_b2_move() {
 
 /** @brief Handles car-crush bonus stage completion/finalization. */
 static void plcnt_b2_die() {
-    g_state.plw[0].wu.dm_vital = g_state.plw[1].wu.dm_vital = 0;
+    g_state.plw[0].wu.damage_vitality = g_state.plw[1].wu.damage_vitality = 0;
 
     switch (g_state.pcon_rno[2]) {
     case 0:

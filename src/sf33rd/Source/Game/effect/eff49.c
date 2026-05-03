@@ -27,11 +27,11 @@ void effect_49_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dmcal_m == g_state.Continue_Count[g_state.LOSER]) {
+        if (ewk->wu.damage_calc_multiplier == g_state.Continue_Count[g_state.LOSER]) {
             break;
         }
 
-        ewk->wu.dmcal_m = g_state.Continue_Count[g_state.LOSER];
+        ewk->wu.damage_calc_multiplier = g_state.Continue_Count[g_state.LOSER];
 
         if (g_state.Continue_Count[g_state.LOSER] < 0) {
             ewk->wu.routine_no[0]++;
@@ -80,7 +80,7 @@ s32 effect_49_init(s16 vital_new) {
     ewk->wu.vital_new = vital_new;
     ewk->wu.my_family = 2;
     ewk->wu.char_index = 84;
-    ewk->wu.dmcal_m = g_state.Continue_Count[g_state.LOSER];
+    ewk->wu.damage_calc_multiplier = g_state.Continue_Count[g_state.LOSER];
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[1].wxy[1].disp.pos + 8;

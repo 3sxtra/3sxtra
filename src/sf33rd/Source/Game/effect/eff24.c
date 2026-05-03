@@ -46,7 +46,7 @@ void effect_24_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.old_rno[0] = 0;
+        ewk->wu.old_routine_no[0] = 0;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
@@ -55,7 +55,7 @@ void effect_24_move(WORK_Other* ewk) {
             eff24_quake_sub(ewk);
         }
 
-        if (ewk->wu.old_rno[7]) {
+        if (ewk->wu.old_routine_no[7]) {
             disp_pos_trans_entry_r(ewk);
             break;
         }
@@ -83,9 +83,9 @@ void eff24_quake_sub(WORK_Other* ewk) {
         add_x_sub(&ewk->wu);
         add_y_sub(&ewk->wu);
 
-        if (ewk->wu.xyz[1].disp.pos < ewk->wu.old_rno[2]) {
+        if (ewk->wu.xyz[1].disp.pos < ewk->wu.old_routine_no[2]) {
             ewk->wu.routine_no[1]++;
-            ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[2];
+            ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[2];
             ewk->wu.xyz[1].disp.low = 0;
             eff24_sp_data_set(ewk);
         }
@@ -95,42 +95,42 @@ void eff24_quake_sub(WORK_Other* ewk) {
     case 2:
         add_x_sub(&ewk->wu);
         add_y_sub(&ewk->wu);
-        ewk->wu.old_rno[5]--;
+        ewk->wu.old_routine_no[5]--;
 
-        if (ewk->wu.old_rno[5] > 0) {
+        if (ewk->wu.old_routine_no[5] > 0) {
             break;
         }
 
-        ewk->wu.xyz[0].disp.pos = ewk->wu.old_rno[4];
+        ewk->wu.xyz[0].disp.pos = ewk->wu.old_routine_no[4];
         ewk->wu.xyz[0].disp.low = 0;
-        ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[2];
+        ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[2];
         ewk->wu.xyz[1].disp.low = 0;
 
-        if (ewk->wu.type == 0 && ewk->wu.old_rno[1] > 2) {
+        if (ewk->wu.type == 0 && ewk->wu.old_routine_no[1] > 2) {
             ewk->wu.routine_no[1]++;
             dog24_data_set(ewk);
 
-            if (ewk->wu.old_rno[6]) {
+            if (ewk->wu.old_routine_no[6]) {
                 set_char_move_init(&ewk->wu, 0, 14);
             } else {
                 set_char_move_init(&ewk->wu, 0, 13);
             }
 
-            ewk->wu.old_rno[6] ^= 1;
+            ewk->wu.old_routine_no[6] ^= 1;
             break;
         }
 
         ewk->wu.routine_no[1] = 0;
-        ewk->wu.old_rno[1] = 0;
-        ewk->wu.old_rno[0] = 0;
+        ewk->wu.old_routine_no[1] = 0;
+        ewk->wu.old_routine_no[0] = 0;
         break;
 
     case 3:
         char_move(&ewk->wu);
         add_x_sub(&ewk->wu);
-        ewk->wu.old_rno[5]--;
+        ewk->wu.old_routine_no[5]--;
 
-        if (ewk->wu.old_rno[5] > 0) {
+        if (ewk->wu.old_routine_no[5] > 0) {
             break;
         }
 
@@ -143,11 +143,11 @@ void eff24_quake_sub(WORK_Other* ewk) {
 
         if (ewk->wu.cg_type) {
             ewk->wu.routine_no[1] = 0;
-            ewk->wu.old_rno[1] = 0;
-            ewk->wu.old_rno[0] = 0;
-            ewk->wu.old_rno[4] = ewk->wu.xyz[0].disp.pos;
+            ewk->wu.old_routine_no[1] = 0;
+            ewk->wu.old_routine_no[0] = 0;
+            ewk->wu.old_routine_no[4] = ewk->wu.xyz[0].disp.pos;
             ewk->wu.xyz[0].disp.low = 0;
-            ewk->wu.old_rno[2] = ewk->wu.xyz[1].disp.pos;
+            ewk->wu.old_routine_no[2] = ewk->wu.xyz[1].disp.pos;
             ewk->wu.xyz[1].disp.low = 0;
         }
 
@@ -158,25 +158,25 @@ void eff24_quake_sub(WORK_Other* ewk) {
 void dog24_data_set(WORK_Other* ewk) {
     s16 work;
 
-    ewk->wu.old_rno[5] = 40;
+    ewk->wu.old_routine_no[5] = 40;
 
-    if (ewk->wu.old_rno[6]) {
-        work = ewk->wu.xyz[0].disp.pos + dog24_x_data[ewk->wu.old_rno[1]];
+    if (ewk->wu.old_routine_no[6]) {
+        work = ewk->wu.xyz[0].disp.pos + dog24_x_data[ewk->wu.old_routine_no[1]];
     } else {
-        work = ewk->wu.xyz[0].disp.pos - dog24_x_data[ewk->wu.old_rno[1]];
+        work = ewk->wu.xyz[0].disp.pos - dog24_x_data[ewk->wu.old_routine_no[1]];
     }
 
-    cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[5], work, ewk->wu.xyz[1].disp.pos, 2, 0);
+    cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[5], work, ewk->wu.xyz[1].disp.pos, 2, 0);
 }
 
 void eff24_sp_data_set(WORK_Other* ewk) {
     s16 work;
 
-    if (ewk->wu.old_rno[0]) {
-        ewk->wu.old_rno[5] = 12;
+    if (ewk->wu.old_routine_no[0]) {
+        ewk->wu.old_routine_no[5] = 12;
         ewk->wu.mvxy.d[0].sp = 0;
 
-        switch (ewk->wu.old_rno[1]) {
+        switch (ewk->wu.old_routine_no[1]) {
         case 0:
         case 1:
             ewk->wu.mvxy.d[1].sp = -0x2000;
@@ -192,10 +192,10 @@ void eff24_sp_data_set(WORK_Other* ewk) {
             break;
         }
 
-        cal_initial_speed(&ewk->wu, ewk->wu.old_rno[5], ewk->wu.old_rno[4], ewk->wu.old_rno[2]);
+        cal_initial_speed(&ewk->wu, ewk->wu.old_routine_no[5], ewk->wu.old_routine_no[4], ewk->wu.old_routine_no[2]);
     } else {
-        ewk->wu.old_rno[1] = eff24_quake_index_tbl[g_state.bg_w.quake_y_index];
-        ewk->wu.mvxy.a[0].sp = eff24_quake_speed_x_tbl[ewk->wu.old_rno[3]][ewk->wu.old_rno[1]];
+        ewk->wu.old_routine_no[1] = eff24_quake_index_tbl[g_state.bg_w.quake_y_index];
+        ewk->wu.mvxy.a[0].sp = eff24_quake_speed_x_tbl[ewk->wu.old_routine_no[3]][ewk->wu.old_routine_no[1]];
         ewk->wu.mvxy.d[0].sp = 0;
         work = random_16();
 
@@ -203,12 +203,12 @@ void eff24_sp_data_set(WORK_Other* ewk) {
             ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
         }
 
-        ewk->wu.mvxy.a[1].sp = eff24_quake_speed_y_tbl[ewk->wu.old_rno[3]][ewk->wu.old_rno[1]];
+        ewk->wu.mvxy.a[1].sp = eff24_quake_speed_y_tbl[ewk->wu.old_routine_no[3]][ewk->wu.old_routine_no[1]];
         ewk->wu.mvxy.d[1].sp = -0x6000;
     }
 
-    ewk->wu.old_rno[0]++;
-    ewk->wu.old_rno[0] &= 1;
+    ewk->wu.old_routine_no[0]++;
+    ewk->wu.old_routine_no[0] &= 1;
 }
 
 s32 effect_24_init() {
@@ -227,7 +227,7 @@ s32 effect_24_init() {
         ewk->wu.id = 24;
         ewk->wu.type = i;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
 
         if (i) {
@@ -244,13 +244,13 @@ s32 effect_24_init() {
         ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
-        ewk->wu.old_rno[3] = *data_ptr++;
-        ewk->wu.old_rno[7] = *data_ptr++;
-        ewk->wu.old_rno[6] = 0;
-        ewk->wu.old_rno[0] = 0;
-        ewk->wu.old_rno[1] = 0;
-        ewk->wu.old_rno[4] = ewk->wu.xyz[0].disp.pos;
-        ewk->wu.old_rno[2] = ewk->wu.xyz[1].disp.pos;
+        ewk->wu.old_routine_no[3] = *data_ptr++;
+        ewk->wu.old_routine_no[7] = *data_ptr++;
+        ewk->wu.old_routine_no[6] = 0;
+        ewk->wu.old_routine_no[0] = 0;
+        ewk->wu.old_routine_no[1] = 0;
+        ewk->wu.old_routine_no[4] = ewk->wu.xyz[0].disp.pos;
+        ewk->wu.old_routine_no[2] = ewk->wu.xyz[1].disp.pos;
         suzi_offset_set(ewk);
         ewk->wu.my_mts = 7;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

@@ -59,7 +59,7 @@ void Player_attack(PLW* wk) {
     wk->running_f = 0;
     wk->py->flag = 0;
     wk->guard_flag = 3;
-    wk->guard_chuu = 0;
+    wk->guard_active = 0;
     wk->is_throwing = false;
     wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
@@ -71,7 +71,7 @@ void Player_attack(PLW* wk) {
     wk->recovery_roll_success = 0;
     wk->recovery_roll_ok_timer = 0;
     wk->uot_cd_ok_flag = 0;
-    wk->hazusenai_flag = 0;
+    wk->inescapable_flag = 0;
     wk->cat_break_reserve = 0;
     wk->wu.swallow_no_effect = 0;
     check_em_tk_power_off(wk, (PLW*)wk->wu.target_adrs);
@@ -81,7 +81,7 @@ void Player_attack(PLW* wk) {
         wk->dm_vital_backup = 0;
         wk->dm_vital_use = 0;
         wk->total_att_hit_ok = 0;
-        wk->hsjp_ok = 0;
+        wk->high_jump_ok = 0;
 
         if (wk->wu.routine_no[2] < 16) {
             clear_chainex_check(wk->wu.id);

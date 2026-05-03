@@ -34,12 +34,12 @@ static void fight_vanish(WORK_Other* ewk);
 void effect_B3_move(WORK_Other* ewk) {
     oya_adrs = (WORK_Other*)ewk->my_master;
 
-    if (ewk->wu.old_rno[1] != oya_adrs->wu.routine_no[0]) {
+    if (ewk->wu.old_routine_no[1] != oya_adrs->wu.routine_no[0]) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[2] = 0;
     }
 
-    ewk->wu.old_rno[1] = oya_adrs->wu.routine_no[0];
+    ewk->wu.old_routine_no[1] = oya_adrs->wu.routine_no[0];
 
     switch (oya_adrs->wu.routine_no[0]) {
     case 1:
@@ -202,7 +202,7 @@ s32 effect_B3_init(WORK_Other* oya) {
     *ewk->wu.char_table = _etc_char_table;
     ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
     ewk->wu.xyz[1].disp.pos = 0x90;
-    ewk->wu.old_rno[1] = 0;
+    ewk->wu.old_routine_no[1] = 0;
 
     if (oya->wu.type) {
         ewk->wu.hit_quake = 1;

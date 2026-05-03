@@ -97,7 +97,7 @@ s32 effect_G3_init(WORK* wk, u8 data) {
     ewk->wu.work_id = 16;
     ewk->wu.my_mts = 14;
     ewk->wu.my_family = wk->my_family;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->my_master = wk;
     ewk->master_work_id = wk->work_id;
     ewk->master_id = wk->id;

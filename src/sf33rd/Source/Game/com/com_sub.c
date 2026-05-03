@@ -309,7 +309,7 @@ void Push_Shot(PLW* wk, s16 Power_Level) {
             g_state.Lever_Buff[wk->wu.id] = g_state.Lever_LR[wk->wu.id];
             if ((wk->wu.now_koc == 8) && (wk->wu.char_index == 0xD)) {
 
-                xx = wk->wu.cg_ix / wk->wu.cgd_type;
+                xx = wk->wu.graphic_index / wk->wu.cgd_type;
                 if (xx >= Power_Level) {
                     g_state.CP_Index[wk->wu.id][1] = 0x63;
                 }

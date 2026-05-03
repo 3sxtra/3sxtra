@@ -163,18 +163,18 @@ void effect_F9_move(WORK_Other* ewk) {
             get_message_conn_data((WORK_Other_CONN*)ewk, 2, ewk->master_player, g_state.mes_already);
         }
 
-        ewk->wu.old_rno[4] = ewk->free;
+        ewk->wu.old_routine_no[4] = ewk->free;
 
-        if (ewk->wu.old_rno[4] == 0) {
-            ewk->wu.old_rno[5] = 0;
+        if (ewk->wu.old_routine_no[4] == 0) {
+            ewk->wu.old_routine_no[5] = 0;
         } else {
-            ewk->wu.old_rno[5] = 1;
+            ewk->wu.old_routine_no[5] = 1;
         }
 
-        ewk->wu.old_rno[6] = 1;
+        ewk->wu.old_routine_no[6] = 1;
         ewk->wu.disp_flag = 1;
         ewk->wu.vitality = 240;
-        ewk->free = ewk->wu.old_rno[5];
+        ewk->free = ewk->wu.old_routine_no[5];
         efff9_suicide = 0;
         break;
 
@@ -193,31 +193,31 @@ void effect_F9_move(WORK_Other* ewk) {
             break;
         }
 
-        ewk->wu.old_rno[6]--;
+        ewk->wu.old_routine_no[6]--;
 
-        if (ewk->wu.old_rno[6] == 0) {
-            ewk->wu.old_rno[6] = 3;
+        if (ewk->wu.old_routine_no[6] == 0) {
+            ewk->wu.old_routine_no[6] = 3;
 
-            if (ewk->wu.old_rno[4] == ewk->wu.old_rno[5]) {
-                ewk->wu.old_rno[6] = 3;
+            if (ewk->wu.old_routine_no[4] == ewk->wu.old_routine_no[5]) {
+                ewk->wu.old_routine_no[6] = 3;
             } else {
-                ewk->wu.old_rno[5]++;
+                ewk->wu.old_routine_no[5]++;
 
                 if (g_state.Country != COUNTRY_JAPAN && g_state.Country != COUNTRY_KOREA &&
-                    (ewk->wu.old_rno[5]++, ewk->wu.old_rno[4] < ewk->wu.old_rno[5])) {
-                    ewk->wu.old_rno[5] = ewk->wu.old_rno[4];
+                    (ewk->wu.old_routine_no[5]++, ewk->wu.old_routine_no[4] < ewk->wu.old_routine_no[5])) {
+                    ewk->wu.old_routine_no[5] = ewk->wu.old_routine_no[4];
                 }
 
-                ewk->free = ewk->wu.old_rno[5];
+                ewk->free = ewk->wu.old_routine_no[5];
             }
         }
 
-        if (ewk->wu.old_rno[3] == 0) {
+        if (ewk->wu.old_routine_no[3] == 0) {
             Rewrite();
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 6;
         } else {
-            ewk->wu.old_rno[3]--;
+            ewk->wu.old_routine_no[3]--;
 
             if (efff9_suicide == 1) {
                 ewk->wu.disp_flag = 0;
@@ -252,7 +252,7 @@ static void efff9_wk_set(WORK_Other_CONN* ewk) {
     ewk->wu.id = 159;
     ewk->wu.work_id = 16;
     ewk->wu.rl_flag = 0;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.sync_suzi = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 55;
@@ -280,7 +280,7 @@ s32 Rewrite_End_Message(u16 mes_no) {
     efff9_txt_no_adrs = txt_no_tbl[efff9_PL_NO];
     efff9_txt_scene_adrs = efff9_txt_no_adrs[mes_no];
     efff9_message = efff9_txt_scene_adrs[0];
-    ewk->wu.old_rno[3] = efff9_txt_scene_adrs[1];
+    ewk->wu.old_routine_no[3] = efff9_txt_scene_adrs[1];
     g_state.mes_already = efff9_message;
     return 0;
 }
@@ -300,7 +300,7 @@ static s32 Rewrite() {
     efff9_txt_no_adrs = txt_no_tbl[efff9_PL_NO];
     efff9_txt_scene_adrs = efff9_txt_no_adrs[keep_mes_no];
     efff9_message = efff9_txt_scene_adrs[efff9_txt_point];
-    ewk->wu.old_rno[3] = efff9_txt_scene_adrs[efff9_txt_point + 1];
+    ewk->wu.old_routine_no[3] = efff9_txt_scene_adrs[efff9_txt_point + 1];
     efff9_txt_point += 2;
     g_state.mes_already = efff9_message;
     return 0;

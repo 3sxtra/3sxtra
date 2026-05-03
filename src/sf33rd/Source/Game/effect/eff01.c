@@ -26,10 +26,10 @@ void effect_01_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        ewk->wu.cgromtype = mwk->cgromtype;
+        ewk->wu.graphic_rom_type = mwk->graphic_rom_type;
         ewk->wu.cg_number = ewk->wu.old_cgnum = 0;
         ewk->wu.blink_timing = mwk->blink_timing;
-        ewk->wu.cg_olc.olc_ix[ewk->wu.type] = 0;
+        ewk->wu.graphic_overlap_index.olc_ix[ewk->wu.type] = 0;
         return;
 
     case 1:
@@ -39,15 +39,15 @@ void effect_01_move(WORK_Other* ewk) {
             return;
         }
 
-        if (mwk->cg_olc.olc_ix[ewk->wu.type] == 0) {
-            ewk->wu.cg_olc.olc_ix[ewk->wu.type] = 0;
+        if (mwk->graphic_overlap_index.olc_ix[ewk->wu.type] == 0) {
+            ewk->wu.graphic_overlap_index.olc_ix[ewk->wu.type] = 0;
             return;
         }
 
         if (!g_state.Game_pause && !g_state.EXE_flag) {
-            if (ewk->wu.cg_olc.olc_ix[ewk->wu.type] != mwk->cg_olc.olc_ix[ewk->wu.type]) {
-                ewk->wu.cg_olc.olc_ix[ewk->wu.type] = ewk->wu.cg_ix = mwk->cg_olc.olc_ix[ewk->wu.type];
-                ewk->wu.now_koc = ewk->wu.cg_ix;
+            if (ewk->wu.graphic_overlap_index.olc_ix[ewk->wu.type] != mwk->graphic_overlap_index.olc_ix[ewk->wu.type]) {
+                ewk->wu.graphic_overlap_index.olc_ix[ewk->wu.type] = ewk->wu.graphic_index = mwk->graphic_overlap_index.olc_ix[ewk->wu.type];
+                ewk->wu.now_koc = ewk->wu.graphic_index;
 
                 if (ewk->wu.type == 0 && ((PLW*)mwk)->player_number == 0 && mwk->rl_flag) {
                     ewk->wu.now_koc++;
@@ -57,12 +57,12 @@ void effect_01_move(WORK_Other* ewk) {
             } else if (((PLW*)mwk)->sa_stop_flag == 0) {
                 if (--ewk->wu.cg_ctr == 0) {
                     if (ewk->wu.overlap_char_tbl->parts_nix) {
-                        ewk->wu.cg_ix = ewk->wu.overlap_char_tbl->parts_nix;
+                        ewk->wu.graphic_index = ewk->wu.overlap_char_tbl->parts_nix;
                     } else {
-                        ewk->wu.cg_ix++;
+                        ewk->wu.graphic_index++;
                     }
 
-                    ewk->wu.now_koc = ewk->wu.cg_ix;
+                    ewk->wu.now_koc = ewk->wu.graphic_index;
                     get_new_parts_data(ewk, (PLW*)mwk);
                 }
             }
@@ -133,7 +133,7 @@ void effect_01_move(WORK_Other* ewk) {
 }
 
 static void get_new_parts_data(WORK_Other* ewk, PLW* mwk) {
-    ewk->wu.now_koc = ewk->wu.cg_ix;
+    ewk->wu.now_koc = ewk->wu.graphic_index;
 
     if (ewk->wu.type == 0 && mwk->player_number == 0 && mwk->wu.rl_flag) {
         ewk->wu.now_koc++;

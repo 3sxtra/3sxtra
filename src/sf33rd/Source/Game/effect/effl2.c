@@ -31,7 +31,7 @@ void effect_L2_move(WORK_Other* ewk) {
         if (g_state.Allow_a_battle_f == 0 && g_state.Conclusion_Flag == 1 && *g_state.manage_phase >= 2) {
             if (!(g_state.Complete_Victory == 0) && g_state.Conclusion_Flag) {
                 ewk->wu.routine_no[0]++;
-                ewk->wu.old_rno[0] = 0;
+                ewk->wu.old_routine_no[0] = 0;
 
                 if (g_state.Winner_id != ewk->master_id) {
                     set_char_move_init(&ewk->wu, 0, 2);
@@ -50,10 +50,10 @@ void effect_L2_move(WORK_Other* ewk) {
 
     case 2:
         if (g_state.Exec_Wipe) {
-            ewk->wu.old_rno[0] = 1;
+            ewk->wu.old_routine_no[0] = 1;
         }
 
-        if (ewk->wu.old_rno[0] && !g_state.Exec_Wipe) {
+        if (ewk->wu.old_routine_no[0] && !g_state.Exec_Wipe) {
             ewk->wu.routine_no[0] = 0;
         }
 
@@ -111,7 +111,7 @@ s32 effect_L2_init() {
     ewk->wu.id = 212;
     ewk->wu.work_id = 16;
     ewk->master_id = oya_id;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.my_family = 2;
     ewk->my_master = &g_state.plw[oya_id];
@@ -138,8 +138,8 @@ s32 effect_L2_init() {
     ewk->wu.shadow_flag = 1;
     ewk->wu.shadow_x = 0;
     ewk->wu.shadow_y = 11;
-    ewk->wu.kage_char = 10;
-    ewk->wu.kage_prio = ewk->wu.position_z + 1;
+    ewk->wu.shadow_char = 10;
+    ewk->wu.shadow_prio = ewk->wu.position_z + 1;
     ewk->wu.dir_old = 0;
     ewk->wu.direction = 0;
     return 0;

@@ -58,19 +58,19 @@ void effect_13_move(WORK_Other* ewk) {
         ewk->wu.blink_timing = ewk->master_id;
         ewk->wu.at_koa = tama->koa;
         ewk->wu.vital_new = tama->def_power;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.damage_vitality = 0;
         ewk->wu.original_vitality = tama->waza_num;
         ewk->wu.shell_vs_refrect = tama->vs_refrect;
         ewk->wu.charset_id = tama->kind_of_tama;
 
         if (ewk->master_id) {
             if (tama->col_2p == 0) {
-                ewk->wu.my_col_code = ewk->wu.old_rno[7];
+                ewk->wu.my_col_code = ewk->wu.old_routine_no[7];
             } else {
                 ewk->wu.my_col_code = tcct[tama->col_2p];
             }
         } else if (tama->col_1p == 0) {
-            ewk->wu.my_col_code = ewk->wu.old_rno[7];
+            ewk->wu.my_col_code = ewk->wu.old_routine_no[7];
         } else {
             ewk->wu.my_col_code = tcct[tama->col_1p];
         }
@@ -79,8 +79,8 @@ void effect_13_move(WORK_Other* ewk) {
             ewk->wu.shadow_flag = 1;
             ewk->wu.shadow_x = kage_tbl[tama->kage_index][0];
             ewk->wu.shadow_y = kage_tbl[tama->kage_index][1];
-            ewk->wu.kage_prio = kage_tbl[tama->kage_index][2];
-            ewk->wu.kage_char = kage_tbl[tama->kage_index][3];
+            ewk->wu.shadow_prio = kage_tbl[tama->kage_index][2];
+            ewk->wu.shadow_char = kage_tbl[tama->kage_index][3];
         } else {
             ewk->wu.shadow_flag = 0;
         }
@@ -343,8 +343,8 @@ static void kotp_00000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 0x100) {
             if (ewk->wu.hf.hit.player) {
@@ -523,7 +523,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
             if (ewk->wu.dir_step > 8) {
                 ewk->wu.routine_no[2] = 1;
                 ewk->wu.dir_timer = 8;
-                cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.dmcal_m, ewk->wu.dmcal_d, 2, 2);
+                cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider, 2, 2);
             }
 
             break;
@@ -537,7 +537,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
                 ewk->wu.att_hit_ok = 0;
                 ewk->wu.dir_timer = twk->hos_x;
                 set_tengu_my_home(&ewk->wu, &mwk->wu);
-                cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.dmcal_m, ewk->wu.dmcal_d, 2, 2);
+                cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider, 2, 2);
             }
 
             break;
@@ -560,7 +560,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
             ewk->wu.dir_timer = twk->hos_y;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = -0x4000;
-            cal_initial_speed(&ewk->wu, ewk->wu.dir_timer, ewk->wu.dmcal_m, ewk->wu.dmcal_d);
+            cal_initial_speed(&ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider);
             break;
         }
 
@@ -589,14 +589,14 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
 }
 static void set_tengu_my_home(WORK* ewk, WORK* mwk) {
     if (mwk->pat_status < 32) {
-        ewk->dmcal_m = mwk->xyz[0].disp.pos + ewk->old_pos[0];
-        ewk->dmcal_d = mwk->xyz[1].disp.pos + ewk->old_pos[1];
+        ewk->damage_calc_multiplier = mwk->xyz[0].disp.pos + ewk->old_pos[0];
+        ewk->damage_calc_divider = mwk->xyz[1].disp.pos + ewk->old_pos[1];
     } else {
-        ewk->dmcal_m = mwk->xyz[0].disp.pos + ewk->scr_mv_x;
-        ewk->dmcal_d = mwk->xyz[1].disp.pos + ewk->scr_mv_y;
+        ewk->damage_calc_multiplier = mwk->xyz[0].disp.pos + ewk->scr_mv_x;
+        ewk->damage_calc_divider = mwk->xyz[1].disp.pos + ewk->scr_mv_y;
     }
 
-    ewk->dir_step = cal_move_quantity2(ewk->xyz[0].disp.pos, ewk->xyz[1].disp.pos, ewk->dmcal_m, ewk->dmcal_d);
+    ewk->dir_step = cal_move_quantity2(ewk->xyz[0].disp.pos, ewk->xyz[1].disp.pos, ewk->damage_calc_multiplier, ewk->damage_calc_divider);
 }
 
 static s32 check_tengu_attack(WORK* ewk, WORK* mwk, TAMA* twk) {
@@ -631,16 +631,16 @@ static void make_speed_xy_back(WORK* ewk, WORK* mwk, TAMA* twk) {
     s16 bx;
     s16 by;
 
-    ewk->dmcal_m = ewk->xyz[0].disp.pos;
-    ewk->dmcal_d = ewk->xyz[1].disp.pos;
+    ewk->damage_calc_multiplier = ewk->xyz[0].disp.pos;
+    ewk->damage_calc_divider = ewk->xyz[1].disp.pos;
     ewk->mvxy.d[0].sp = 0;
     ewk->mvxy.d[1].sp = -0x7000;
     ewk->dir_timer = twk->data01;
     set_tengu_init_pos(ewk, mwk);
     bx = ewk->xyz[0].disp.pos;
     by = ewk->xyz[1].disp.pos;
-    ewk->xyz[0].disp.pos = ewk->dmcal_m;
-    ewk->xyz[1].disp.pos = ewk->dmcal_d;
+    ewk->xyz[0].disp.pos = ewk->damage_calc_multiplier;
+    ewk->xyz[1].disp.pos = ewk->damage_calc_divider;
     cal_initial_speed(ewk, ewk->dir_timer, bx, by);
 }
 
@@ -681,7 +681,7 @@ static void kotp_03000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
         ewk->wu.hit_stop = 0;
         ewk->wu.hit_quake = 0;
 
@@ -793,8 +793,8 @@ static void kotp_05000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
@@ -861,8 +861,8 @@ static void kotp_06000(WORK_Other* ewk, TAMA* twk) {
 
     mwk = (PLW*)ewk->my_master;
     emwk = (PLW*)mwk->wu.target_adrs;
-    target_x = &ewk->wu.E3_work_index;
-    target_y = &ewk->wu.E4_work_index;
+    target_x = &ewk->wu.effect_e3_index;
+    target_y = &ewk->wu.effect_e4_index;
 
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
@@ -941,8 +941,8 @@ static void kotp_06000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
@@ -1061,14 +1061,14 @@ static void kotp_07000(WORK_Other* ewk, TAMA* twk) {
                     dsst = (ewk->wu.dm_kind_of_waza / 2) & 3;
                 }
 
-                ewk->wu.dm_vital = kotp_07_dm_vital[dsst];
+                ewk->wu.damage_vitality = kotp_07_dm_vital[dsst];
             } else {
-                ewk->wu.dm_vital = kotp_07_dm_vital[2];
+                ewk->wu.damage_vitality = kotp_07_dm_vital[2];
             }
         }
 
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 0x100) {
             if (ewk->wu.hf.hit.player) {
@@ -1171,8 +1171,8 @@ static void kotp_08000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
@@ -1286,8 +1286,8 @@ static void kotp_09000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
@@ -1471,8 +1471,8 @@ static void kotp_12000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
@@ -1590,8 +1590,8 @@ static void kotp_13000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
             ewk->wu.routine_no[1] = 2;
@@ -1671,8 +1671,8 @@ static void kotp_15000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
             set_char_move_init(&ewk->wu, 0, twk->ernm);
@@ -1765,8 +1765,8 @@ static void kotp_16000(WORK_Other* ewk, TAMA* twk) {
         break;
 
     case 1:
-        ewk->wu.vital_new -= ewk->wu.dm_vital;
-        ewk->wu.dm_vital = 0;
+        ewk->wu.vital_new -= ewk->wu.damage_vitality;
+        ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
@@ -1850,9 +1850,9 @@ s32 effect_13_init(WORK* wk, u8 data) {
     ewk->wu.pl_operator = wk->pl_operator;
     ewk->wu.rl_flag = wk->rl_flag;
     ewk->wu.my_family = wk->my_family;
-    ewk->wu.cgromtype = wk->cgromtype;
+    ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_col_mode = wk->my_col_mode;
-    ewk->wu.old_rno[7] = wk->my_col_code;
+    ewk->wu.old_routine_no[7] = wk->my_col_code;
     ewk->wu.weight_level = wk->weight_level;
     ewk->wu.rl_waza = g_state.Round_num;
     ewk->my_master = wk;
@@ -1861,9 +1861,9 @@ s32 effect_13_init(WORK* wk, u8 data) {
         ewk->master_player = ((PLW*)wk)->player_number;
         ewk->master_id = wk->id;
         ewk->master_work_id = wk->work_id;
-        ewk->wu.olc_work_ix[0] = ((PLW*)wk)->tk_dageki;
-        ewk->wu.olc_work_ix[1] = ((PLW*)wk)->tk_nage;
-        ewk->wu.olc_work_ix[2] = ((PLW*)wk)->tk_kizetsu;
+        ewk->wu.olc_work_ix[0] = ((PLW*)wk)->strike_scaling;
+        ewk->wu.olc_work_ix[1] = ((PLW*)wk)->throw_scaling;
+        ewk->wu.olc_work_ix[2] = ((PLW*)wk)->stun_scaling;
         ewk->wu.olc_work_ix[3] = wk->routine_no[1];
     } else {
         ewk->master_player = ((WORK_Other*)wk)->master_player;

@@ -161,25 +161,25 @@ static void Att_PL06_TOKUSHUKOUDOU(PLW* wk) {
         switch (wk->wu.cg_type) {
         case 20:
             wk->wu.cg_type = 0;
-            wk->tk_nage += 8;
+            wk->throw_scaling += 8;
 
-            if (wk->tk_nage > 8) {
-                wk->tk_nage = 8;
+            if (wk->throw_scaling > 8) {
+                wk->throw_scaling = 8;
             }
 
             break;
 
         case 30:
             wk->wu.cg_type = 0;
-            wk->tk_dageki += 6;
-            wk->tk_konjyou += 2;
+            wk->strike_scaling += 6;
+            wk->guts_scaling += 2;
 
-            if (wk->tk_dageki > 6) {
-                wk->tk_dageki = 6;
+            if (wk->strike_scaling > 6) {
+                wk->strike_scaling = 6;
             }
 
-            if (wk->tk_konjyou > 8) {
-                wk->tk_konjyou = 8;
+            if (wk->guts_scaling > 8) {
+                wk->guts_scaling = 8;
             }
 
             break;

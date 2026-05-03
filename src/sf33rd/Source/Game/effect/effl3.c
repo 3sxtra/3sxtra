@@ -78,13 +78,13 @@ static void effl3_0000(WORK_Other* ewk) {
         add_x_sub(&ewk->wu);
 
         if (ewk->wu.rl_flag) {
-            if (ewk->wu.xyz[0].disp.pos > ewk->wu.old_rno[0]) {
+            if (ewk->wu.xyz[0].disp.pos > ewk->wu.old_routine_no[0]) {
                 ewk->wu.routine_no[2]++;
                 set_char_move_init(&ewk->wu, 0, 11);
                 break;
             }
         } else {
-            if (ewk->wu.xyz[0].disp.pos < ewk->wu.old_rno[0]) {
+            if (ewk->wu.xyz[0].disp.pos < ewk->wu.old_routine_no[0]) {
                 ewk->wu.routine_no[2]++;
                 set_char_move_init(&ewk->wu, 0, 11);
             }
@@ -117,15 +117,15 @@ static void effl3_0001(WORK_Other* ewk) {
         ewk->wu.routine_no[2]++;
         ewk->wu.disp_flag = 1;
         set_char_move_init(&ewk->wu, 1, 49);
-        ewk->wu.old_rno[2] = 60;
-        cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[2], ewk->wu.old_rno[0], ewk->wu.xyz[1].disp.pos - 32, 2, 2);
+        ewk->wu.old_routine_no[2] = 60;
+        cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[0], ewk->wu.xyz[1].disp.pos - 32, 2, 2);
         break;
 
     case 1:
         char_move(&ewk->wu);
-        ewk->wu.old_rno[2]--;
+        ewk->wu.old_routine_no[2]--;
 
-        if (ewk->wu.old_rno[2] < 0) {
+        if (ewk->wu.old_routine_no[2] < 0) {
             ewk->wu.routine_no[2]++;
             set_char_move_init(&ewk->wu, 1, 50);
             ewk->wu.mvxy.a[1].sp = 0;
@@ -141,7 +141,7 @@ static void effl3_0001(WORK_Other* ewk) {
         char_move(&ewk->wu);
         add_y_sub(&ewk->wu);
 
-        if (ewk->wu.xyz[1].disp.pos < ewk->wu.old_rno[1]) {
+        if (ewk->wu.xyz[1].disp.pos < ewk->wu.old_routine_no[1]) {
             ewk->wu.routine_no[2]++;
             set_char_move_init(&ewk->wu, 0, 0);
         }
@@ -166,12 +166,12 @@ static void effl3_0002(WORK_Other* ewk) {
         ewk->wu.routine_no[3]++;
         ewk->wu.disp_flag = 1;
         work = random_16();
-        ewk->wu.old_rno[4] = effl3_wait_timer[work];
-        ewk->wu.old_rno[3] = ewk->wu.type & 1;
+        ewk->wu.old_routine_no[4] = effl3_wait_timer[work];
+        ewk->wu.old_routine_no[3] = ewk->wu.type & 1;
         break;
 
     case 1:
-        if (ewk->wu.old_rno[3]) {
+        if (ewk->wu.old_routine_no[3]) {
             effl3_tobi(ewk);
             break;
         }
@@ -184,9 +184,9 @@ static void effl3_0002(WORK_Other* ewk) {
 static void effl3_tobi(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[4]) {
     case 0:
-        ewk->wu.old_rno[4]--;
+        ewk->wu.old_routine_no[4]--;
 
-        if (ewk->wu.old_rno[4] < 0) {
+        if (ewk->wu.old_routine_no[4] < 0) {
             ewk->wu.routine_no[4]++;
             set_char_move_init(&ewk->wu, 9, 39);
         }
@@ -247,9 +247,9 @@ static void effl3_tobi(WORK_Other* ewk) {
 static void effl3_kie(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[4]) {
     case 0:
-        ewk->wu.old_rno[4]--;
+        ewk->wu.old_routine_no[4]--;
 
-        if (ewk->wu.old_rno[4] < 0) {
+        if (ewk->wu.old_routine_no[4] < 0) {
             ewk->wu.routine_no[4]++;
             set_char_move_init(&ewk->wu, 1, 94);
         }
@@ -292,7 +292,7 @@ s32 effect_L3_init(PLW* oya) {
         ewk->wu.work_id = 16;
         ewk->my_master = oya;
         ewk->master_id = oya->wu.id;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.my_family = 2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = oya->wu.id ? 8 : 0;
@@ -305,10 +305,10 @@ s32 effect_L3_init(PLW* oya) {
         ewk->wu.position_z += *(s16*)data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z;
         ewk->wu.rl_flag = *data_ptr++;
-        ewk->wu.kage_char = *data_ptr++;
-        ewk->wu.old_rno[0] = g_state.plw[id_w].wu.xyz[0].disp.pos;
-        ewk->wu.old_rno[0] += *(s16*)data_ptr++;
-        ewk->wu.old_rno[1] = *data_ptr++;
+        ewk->wu.shadow_char = *data_ptr++;
+        ewk->wu.old_routine_no[0] = g_state.plw[id_w].wu.xyz[0].disp.pos;
+        ewk->wu.old_routine_no[0] += *(s16*)data_ptr++;
+        ewk->wu.old_routine_no[1] = *data_ptr++;
         ewk->wu.routine_no[1] = *data_ptr++;
         ewk->wu.char_table[0] = oya->wu.char_table[0];
         ewk->wu.char_table[1] = _etc_char_table;
@@ -316,7 +316,7 @@ s32 effect_L3_init(PLW* oya) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 6;
         ewk->wu.shadow_y = 0;
-        ewk->wu.kage_prio = ewk->wu.position_z + 5;
+        ewk->wu.shadow_prio = ewk->wu.position_z + 5;
         ewk->wu.my_mts = oya->wu.my_mts;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     }

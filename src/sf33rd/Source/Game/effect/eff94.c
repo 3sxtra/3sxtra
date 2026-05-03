@@ -38,7 +38,7 @@ void effect_94_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.disp_flag = 1;
-        set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0]);
+        set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0]);
         break;
 
     case 1:
@@ -46,7 +46,7 @@ void effect_94_move(WORK_Other* ewk) {
             eff94_move_jp[ewk->wu.routine_no[1]](ewk);
         }
 
-        if (ewk->wu.old_rno[1]) {
+        if (ewk->wu.old_routine_no[1]) {
             disp_pos_trans_entry_r(ewk);
             break;
         }
@@ -72,7 +72,7 @@ void eff94_0000(WORK_Other* ewk) {
 
     case 1:
         ewk->wu.routine_no[2]++;
-        set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[2]);
+        set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[2]);
         break;
 
     case 2:
@@ -80,7 +80,7 @@ void eff94_0000(WORK_Other* ewk) {
 
         if (ewk->wu.cg_type == 0xFF) {
             ewk->wu.routine_no[2] = 0;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0]);
         }
 
         break;
@@ -92,7 +92,7 @@ void eff94_1000(WORK_Other* ewk) {
     case 0:
         if (g_state.bg_w.quake_y_index > 3) {
             ewk->wu.routine_no[2]++;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[2]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[2]);
         }
 
         break;
@@ -112,7 +112,7 @@ void eff94_1000(WORK_Other* ewk) {
             }
 
             ewk->wu.routine_no[2] = 0;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0]);
             break;
         }
 
@@ -127,7 +127,7 @@ void eff94_1000(WORK_Other* ewk) {
             ewk->wu.routine_no[2]++;
             set_char_move_init(&ewk->wu, 0, 48);
             ewk->wu.xyz[0].disp.pos += 2;
-            ewk->wu.old_rno[1] = 0;
+            ewk->wu.old_routine_no[1] = 0;
             break;
         }
 
@@ -159,11 +159,11 @@ void eff94_2000_0(WORK_Other* ewk) {
         ewk->wu.routine_no[2]++;
 
         if (g_state.bg_w.quake_y_index >= 24) {
-            ewk->wu.old_rno[3] = 1;
+            ewk->wu.old_routine_no[3] = 1;
             return;
         }
 
-        ewk->wu.old_rno[3] = 0;
+        ewk->wu.old_routine_no[3] = 0;
     }
 }
 
@@ -171,7 +171,7 @@ void eff94_2000_1(WORK_Other* ewk) {
     s16 work;
 
     ewk->wu.routine_no[2]++;
-    set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0]);
+    set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0]);
     ewk->wu.disp_flag = 1;
     work = random_16();
 
@@ -181,7 +181,7 @@ void eff94_2000_1(WORK_Other* ewk) {
         return;
     }
 
-    if (work == 7 && ewk->wu.old_rno[3]) {
+    if (work == 7 && ewk->wu.old_routine_no[3]) {
         effect_94_init(4);
         effect_94_init(4);
         effect_94_init(4);
@@ -232,7 +232,7 @@ void eff94_3000_0(WORK_Other* ewk) {
     s16 work;
 
     ewk->wu.routine_no[2]++;
-    set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0]);
+    set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0]);
     ewk->wu.disp_flag = 1;
     work = random_16();
     work &= 3;
@@ -258,7 +258,7 @@ void eff94_4000(WORK_Other* ewk) {
 
     case 1:
         ewk->wu.routine_no[2]++;
-        set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[2]);
+        set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[2]);
         break;
 
     case 2:
@@ -271,7 +271,7 @@ void eff94_4000(WORK_Other* ewk) {
             }
         } else if (ewk->wu.cg_type == 0xFF) {
             ewk->wu.routine_no[2] = 0;
-            set_char_move_init(&ewk->wu, 0, ewk->wu.old_rno[0]);
+            set_char_move_init(&ewk->wu, 0, ewk->wu.old_routine_no[0]);
         }
 
         break;
@@ -291,7 +291,7 @@ s32 effect_94_init(u8 type94) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 94;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.rl_flag = 0;
     ewk->wu.type = type94;
     ewk->wu.dead_f = 0;
@@ -302,11 +302,11 @@ s32 effect_94_init(u8 type94) {
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = *data_ptr++;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = *data_ptr++;
     ewk->wu.position_z = ewk->wu.my_priority = *data_ptr++;
-    ewk->wu.old_rno[0] = ewk->wu.char_index = *data_ptr++;
-    ewk->wu.old_rno[2] = *data_ptr++;
+    ewk->wu.old_routine_no[0] = ewk->wu.char_index = *data_ptr++;
+    ewk->wu.old_routine_no[2] = *data_ptr++;
     ewk->wu.hit_stop = *data_ptr++;
     ewk->wu.routine_no[1] = *data_ptr++;
-    ewk->wu.old_rno[1] = *data_ptr++;
+    ewk->wu.old_routine_no[1] = *data_ptr++;
     ewk->wu.my_mts = 7;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     return 0;

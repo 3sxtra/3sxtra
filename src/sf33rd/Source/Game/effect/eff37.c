@@ -96,7 +96,7 @@ s32 effect_37_init(WORK* wk, u8 gal, u8 ohen) {
     ewk->wu.type = ohen;
     ewk->my_master = wk;
     ewk->wu.rl_waza = wk->rl_flag;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_family = 2;
     ewk->wu.my_mts = 14;
     ewk->wu.position_z = wk->position_z - 1;

@@ -27,7 +27,7 @@ const s16 effh1_data_tbl[8][5] = { { -96, 256, 74, 34, 10 }, { 64, 288, 74, 34, 
 void effect_H1_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (ewk->wu.old_rno[6] < g_state.end_w.r_no_2) {
+        if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
             ewk->wu.routine_no[1] = 99;
             break;
         }
@@ -51,9 +51,9 @@ static void eff_h1_move(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] <= 0) {
+        if (ewk->wu.old_routine_no[0] <= 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 1;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -79,7 +79,7 @@ static void eff_h1_move(WORK_Other* ewk) {
         ewk->wu.disp_flag = 0;
         work = random_16();
         work &= 7;
-        ewk->wu.old_rno[0] = effh1_wait_timer[work];
+        ewk->wu.old_routine_no[0] = effh1_wait_timer[work];
         ewk->wu.xyz[0].disp.pos = effh1_data_tbl[ewk->wu.type][0];
         ewk->wu.xyz[1].disp.pos = effh1_data_tbl[ewk->wu.type][1];
         break;
@@ -102,8 +102,8 @@ s32 effect_H1_init() {
         ewk->wu.be_flag = 1;
         ewk->wu.type = i;
         ewk->wu.work_id = 16;
-        ewk->wu.cgromtype = 1;
-        ewk->wu.old_rno[6] = g_state.end_w.r_no_2;
+        ewk->wu.graphic_rom_type = 1;
+        ewk->wu.old_routine_no[6] = g_state.end_w.r_no_2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.char_table[0] = (u32*)_end_char_table;
         ewk->wu.my_family = 2;
@@ -112,7 +112,7 @@ s32 effect_H1_init() {
         ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
-        ewk->wu.old_rno[0] = *data_ptr++;
+        ewk->wu.old_routine_no[0] = *data_ptr++;
         ewk->wu.my_mts = 8;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     }

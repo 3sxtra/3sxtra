@@ -468,7 +468,7 @@ s32 flip_my_rl_flag(WORK* wk, u8 /* unused */) {
 }
 
 s32 setup_meoshi_hit_flag(WORK* wk, u8 data) {
-    wk->meoshi_hit_flag = data;
+    wk->frame_link_hit_flag = data;
     return 0;
 }
 
@@ -571,13 +571,13 @@ void setup_shadow_of_the_Effy(WORK* wk) {
     wk->shadow_flag = 1;
     wk->shadow_x = 0;
     wk->shadow_y = -0xA;
-    wk->kage_prio = 0x47;
-    wk->kage_char = 0xC;
+    wk->shadow_prio = 0x47;
+    wk->shadow_char = 0xC;
 }
 
 void set_init_A4_flag() {
-    g_state.plw[0].init_E3_flag = 1;
-    g_state.plw[1].init_E3_flag = 1;
-    g_state.plw[0].init_E4_flag = 1;
-    g_state.plw[1].init_E4_flag = 1;
+    g_state.plw[0].init_effect_e3_flag = 1;
+    g_state.plw[1].init_effect_e3_flag = 1;
+    g_state.plw[0].init_effect_e4_flag = 1;
+    g_state.plw[1].init_effect_e4_flag = 1;
 }

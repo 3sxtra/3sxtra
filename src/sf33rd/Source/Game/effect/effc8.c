@@ -36,10 +36,10 @@ void effect_C8_move(WORK_Other* ewk) {
 
         case 0:
         case 2:
-            if (oya_pl->wu.cg_ix != ewk->wu.cg_ix) {
-                work = oya_pl->wu.cg_ix / oya_pl->wu.cgd_type + 1;
+            if (oya_pl->wu.graphic_index != ewk->wu.graphic_index) {
+                work = oya_pl->wu.graphic_index / oya_pl->wu.cgd_type + 1;
                 set_char_move_init2(&ewk->wu, 0, 12, work + 1, 0);
-                ewk->wu.cg_ix = oya_pl->wu.cg_ix;
+                ewk->wu.graphic_index = oya_pl->wu.graphic_index;
             }
 
             break;
@@ -115,7 +115,7 @@ s32 effect_C8_init(PLW* wk) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 128;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_family = 2;
     ewk->wu.rl_flag = wk->wu.rl_flag;
     ewk->wu.my_col_mode = 0x4200;

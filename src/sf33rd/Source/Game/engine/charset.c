@@ -67,7 +67,7 @@ void set_char_move_init(WORK* wk, s16 koc, s16 index) {
     setupCharTableData(wk, 1, 1);
 #endif
 
-    wk->cg_ix = -wk->cgd_type;
+    wk->graphic_index = -wk->cgd_type;
     wk->cg_ctr = 1;
     wk->cg_next_ix = 0;
     wk->old_cgnum = 0;
@@ -79,7 +79,7 @@ void set_char_move_init(WORK* wk, s16 koc, s16 index) {
     wk->cmwk[15] = 0;
 
 #if !CPS3
-    wk->kow = wk->kind_of_waza;
+    wk->waza_type = wk->kind_of_waza;
 #endif
 
     if (wk->work_id & 0xF) {
@@ -97,7 +97,7 @@ void set_char_move_init(WORK* wk, s16 koc, s16 index) {
         pp_pulpara_remake_at_init(wk);
     }
 
-    wk->K5_init_flag = 1; // TODO: Confirm CPS3 match
+    wk->phase_k5_init_flag = 1; // TODO: Confirm CPS3 match
     char_move(wk);
 }
 
@@ -127,7 +127,7 @@ void setupCharTableData(WORK* wk, s32 clr, s32 info) {
             }
         }
     } else {
-        src = wk->set_char_ad + wk->cg_ix;
+        src = wk->set_char_ad + wk->graphic_index;
 
         // Copy body from src to body.raw
         for (i = 0; i < wk->cgd_type; i++) {
@@ -139,7 +139,7 @@ void setupCharTableData(WORK* wk, s32 clr, s32 info) {
 /** @brief Extended char move init with IP and SCF parameters. */
 void set_char_move_init2(WORK* wk, s16 koc, s16 index, s16 ip, s16 scf) {
     u8 pst;
-    u8 kow;
+    u8 waza_type;
 
 #if !CPS3
     if (index < 0) {
@@ -152,7 +152,7 @@ void set_char_move_init2(WORK* wk, s16 koc, s16 index, s16 ip, s16 scf) {
 #endif
 
     pst = wk->pat_status;
-    kow = wk->kind_of_waza;
+    waza_type = wk->kind_of_waza;
     wk->now_koc = koc;
     wk->char_index = index;
 
@@ -173,7 +173,7 @@ void set_char_move_init2(WORK* wk, s16 koc, s16 index, s16 ip, s16 scf) {
     setupCharTableData(wk, 1, 1);
 #endif
 
-    wk->cg_ix = (ip - 1) * wk->cgd_type - wk->cgd_type;
+    wk->graphic_index = (ip - 1) * wk->cgd_type - wk->cgd_type;
     wk->cg_ctr = 1;
     wk->cg_next_ix = 0;
     wk->old_cgnum = 0;
@@ -187,10 +187,10 @@ void set_char_move_init2(WORK* wk, s16 koc, s16 index, s16 ip, s16 scf) {
 
     if (scf) {
         wk->pat_status = pst;
-        wk->kind_of_waza = kow;
+        wk->kind_of_waza = waza_type;
     } else {
 #if !CPS3
-        wk->kow = wk->kind_of_waza;
+        wk->waza_type = wk->kind_of_waza;
 #endif
     }
 
@@ -198,7 +198,7 @@ void set_char_move_init2(WORK* wk, s16 koc, s16 index, s16 ip, s16 scf) {
         wk->at_koa = acatkoa_table[wk->kind_of_waza];
     }
 
-    wk->K5_init_flag = 1; // TODO: Confirm CPS3 match
+    wk->phase_k5_init_flag = 1; // TODO: Confirm CPS3 match
     char_move(wk);
 }
 
@@ -219,7 +219,7 @@ void exset_char_move_init(WORK* wk, s16 koc, s16 index) {
 
 #if CPS3
     u32* dst = (u32*)&wk->cg_ctr;
-    const u32* src = wk->set_char_ad + wk->cg_ix;
+    const u32* src = wk->set_char_ad + wk->graphic_index;
 
     for (int i = 0; i < wk->cgd_type; i++) {
         dst[i] = src[i];
@@ -233,7 +233,7 @@ void exset_char_move_init(WORK* wk, s16 koc, s16 index) {
     wk->cmoa.koc = wk->now_koc;
     wk->cmoa.ix = wk->char_index;
     wk->cmoa.pat = 1;
-    wk->K5_init_flag = 1;  // TODO: Confirm CPS3 match
+    wk->phase_k5_init_flag = 1;  // TODO: Confirm CPS3 match
     check_cgd_patdat2(wk); // TODO: Confirm CPS3 match
 }
 
@@ -244,25 +244,25 @@ void char_move_z(WORK* wk) {
     }
 
     wk->cg_ctr = 1;
-    wk->K5_init_flag = 1; // TODO: Confirm CPS3 match
+    wk->phase_k5_init_flag = 1; // TODO: Confirm CPS3 match
     char_move(wk);
 }
 
 /** @brief Advances character animation with WCA (wait-for-command-A). */
 void char_move_wca(WORK* wk) {
     wk->cg_next_ix = 0;
-    wk->cg_ix = (wk->cg_wca_ix - 1) * wk->cgd_type - wk->cgd_type;
+    wk->graphic_index = (wk->cg_wca_ix - 1) * wk->cgd_type - wk->cgd_type;
     wk->cg_ctr = 1;
-    wk->K5_init_flag = 1;
+    wk->phase_k5_init_flag = 1;
     char_move(wk);
 }
 
 /** @brief Initializes WCA mode for the character animation. */
 void char_move_wca_init(WORK* wk) {
     wk->cg_next_ix = 0;
-    wk->cg_ix = (wk->cg_wca_ix - 1) * wk->cgd_type - wk->cgd_type;
+    wk->graphic_index = (wk->cg_wca_ix - 1) * wk->cgd_type - wk->cgd_type;
     wk->cg_ctr = 1;
-    wk->K5_init_flag = 1;
+    wk->phase_k5_init_flag = 1;
 }
 
 /** @brief Script command: WCA (wait-for-command-A) mode toggle. */
@@ -274,9 +274,9 @@ static s32 comm_wca(WORK* wk, CommandState* /* unused */) {
 /** @brief Advances character animation at a specific index. */
 void char_move_index(WORK* wk, s16 ix) {
     wk->cg_next_ix = 0;
-    wk->cg_ix = (ix - 1) * wk->cgd_type - wk->cgd_type;
+    wk->graphic_index = (ix - 1) * wk->cgd_type - wk->cgd_type;
     wk->cg_ctr = 1;
-    wk->K5_init_flag = 1;
+    wk->phase_k5_init_flag = 1;
     char_move(wk);
 }
 
@@ -349,14 +349,14 @@ void char_move_cmms2(WORK* wk) {
         }
     }
 
-    wk->cg_ix = (wk->cmms.pat - 1) * wk->cgd_type - wk->cgd_type;
+    wk->graphic_index = (wk->cmms.pat - 1) * wk->cgd_type - wk->cgd_type;
     wk->cg_ctr = 1;
     wk->cg_next_ix = 0;
     wk->old_cgnum = 0;
     wk->cg_wca_ix = 0;
 
 #if !CPS3
-    wk->kow = wk->kind_of_waza;
+    wk->waza_type = wk->kind_of_waza;
 #endif
 }
 
@@ -386,21 +386,21 @@ s32 char_move_cmms3(PLW* wk) {
     setupCharTableData(&wk->wu, 0, 1);
 #endif
 
-    wk->wu.cg_ix = wk->wu.cmms.pat * wk->wu.cgd_type - wk->wu.cgd_type;
+    wk->wu.graphic_index = wk->wu.cmms.pat * wk->wu.cgd_type - wk->wu.cgd_type;
 
 #if !CPS3
-    wk->wu.kow = wk->wu.kind_of_waza;
+    wk->wu.waza_type = wk->wu.kind_of_waza;
 #endif
 
     while (1) {
-        cpc = (CommandState*)(wk->wu.set_char_ad + wk->wu.cg_ix);
+        cpc = (CommandState*)(wk->wu.set_char_ad + wk->wu.graphic_index);
 
         if (cpc->code >= 0x100) {
             break;
         }
 
         if (decode_chcmd[cpc->code](wk, cpc) != 0) {
-            wk->wu.cg_ix += wk->wu.cgd_type;
+            wk->wu.graphic_index += wk->wu.cgd_type;
         } else if (wk->link_jump_flag != 0) {
             break;
         } else {
@@ -416,7 +416,7 @@ s32 char_move_cmms3(PLW* wk) {
         }
     }
 
-    wk->wu.cg_ix -= wk->wu.cgd_type;
+    wk->wu.graphic_index -= wk->wu.cgd_type;
     wk->wu.cg_ctr = 1;
     wk->wu.cg_next_ix = 0;
     wk->wu.old_cgnum = 0;
@@ -426,17 +426,17 @@ s32 char_move_cmms3(PLW* wk) {
 }
 
 /** @brief Character move with command-hit-set processing. */
-void char_move_cmhs(PLW* wk) {
-    if (wk->hsjp_ok != 0) {
+void char_move_cmd_hit_stop(PLW* wk) {
+    if (wk->high_jump_ok != 0) {
         setup_comm_back(&wk->wu);
-        wk->hsjp_ok = 0;
-        set_char_move_init2(&wk->wu, wk->wu.cmhs.koc, wk->wu.cmhs.ix, wk->wu.cmhs.pat, 0);
+        wk->high_jump_ok = 0;
+        set_char_move_init2(&wk->wu, wk->wu.cmd_hit_stop_backup.koc, wk->wu.cmd_hit_stop_backup.ix, wk->wu.cmd_hit_stop_backup.pat, 0);
     }
 }
 
 /** @brief Main character animation tick — processes script commands. */
 void char_move(WORK* wk) {
-    wk->K5_exec_ok = 1;
+    wk->phase_k5_exec_ok = 1;
 
     if (--wk->cg_ctr == 0) {
         check_cm_extended_code(wk);
@@ -448,13 +448,13 @@ void check_cm_extended_code(WORK* wk) {
     CommandState* cpc;
 
     if (wk->cg_next_ix) {
-        wk->cg_ix = (wk->cg_next_ix - 1) * wk->cgd_type;
+        wk->graphic_index = (wk->cg_next_ix - 1) * wk->cgd_type;
     } else {
-        wk->cg_ix += wk->cgd_type;
+        wk->graphic_index += wk->cgd_type;
     }
 
     while (1) {
-        cpc = (CommandState*)(wk->set_char_ad + wk->cg_ix);
+        cpc = (CommandState*)(wk->set_char_ad + wk->graphic_index);
 
         if (cpc->code >= 0x100) {
             check_cgd_patdat(wk);
@@ -465,7 +465,7 @@ void check_cm_extended_code(WORK* wk) {
             break;
         }
 
-        wk->cg_ix += wk->cgd_type;
+        wk->graphic_index += wk->cgd_type;
     }
 }
 
@@ -488,7 +488,7 @@ static s32 comm_roa(WORK* wk, CommandState* /* unused */) {
 
 /** @brief Script command: END — sets end-of-script type. */
 static s32 comm_end(WORK* wk, CommandState* ctc) {
-    wk->cg_ix = (ctc->pat - 2) * wk->cgd_type;
+    wk->graphic_index = (ctc->pat - 2) * wk->cgd_type;
     return 1;
 }
 
@@ -510,7 +510,7 @@ static s32 comm_jpss(WORK* wk, CommandState* ctc) {
 static s32 comm_jsr(WORK* wk, CommandState* ctc) {
     wk->cmsw.koc = wk->now_koc;
     wk->cmsw.ix = wk->char_index;
-    wk->cmsw.pat = (wk->cg_ix / wk->cgd_type) + 2;
+    wk->cmsw.pat = (wk->graphic_index / wk->cgd_type) + 2;
     set_char_move_init2(wk, ctc->koc, ctc->ix, ctc->pat, 0);
     return 0;
 }
@@ -598,7 +598,7 @@ static s32 comm_for(WORK* wk, CommandState* ctc) {
 
     wk->cmlp.koc = wk->now_koc;
     wk->cmlp.ix = wk->char_index;
-    wk->cmlp.pat = wk->cg_ix / wk->cgd_type + 2;
+    wk->cmlp.pat = wk->graphic_index / wk->cgd_type + 2;
     return 1;
 }
 
@@ -622,7 +622,7 @@ static s32 comm_for2(WORK* wk, CommandState* ctc) {
 
     wk->cml2.koc = wk->now_koc;
     wk->cml2.ix = wk->char_index;
-    wk->cml2.pat = (wk->cg_ix / wk->cgd_type) + 2;
+    wk->cml2.pat = (wk->graphic_index / wk->cgd_type) + 2;
     return 1;
 }
 
@@ -1036,7 +1036,7 @@ static s32 comm_pjmp(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: HJMP — hit-stop jump with save. */
 static s32 comm_hjmp(WORK* wk, CommandState* ctc) {
-    if (wk->meoshi_hit_flag != 0 && wk->hf.hit_flag != 0) {
+    if (wk->frame_link_hit_flag != 0 && wk->hf.hit_flag != 0) {
         if (wk->hf.hit_flag & 0x303) {
             return decord_if_jump(wk, ctc, ctc->koc);
         }
@@ -1062,7 +1062,7 @@ static s32 comm_hclr(WORK* wk, CommandState* /* unused */) {
 /** @brief Script command: IXFW — index forward jump. */
 static s32 comm_ixfw(WORK* wk, CommandState* ctc) {
     if (g_state.test_flag == 0 || g_state.ixbfw_cut == 0) {
-        wk->cg_ix += (ctc->pat - 1) * wk->cgd_type;
+        wk->graphic_index += (ctc->pat - 1) * wk->cgd_type;
     }
 
     return 1;
@@ -1071,7 +1071,7 @@ static s32 comm_ixfw(WORK* wk, CommandState* ctc) {
 /** @brief Script command: IXBW — index backward jump. */
 static s32 comm_ixbw(WORK* wk, CommandState* ctc) {
     if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
-        wk->cg_ix -= (ctc->pat + 1) * wk->cgd_type;
+        wk->graphic_index -= (ctc->pat + 1) * wk->cgd_type;
     }
 
     return 1;
@@ -1200,7 +1200,7 @@ static s32 comm_stop(PLW* wk, CommandState* ctc) {
     PLW* wk2;
 
     if (g_state.test_flag == 0) {
-        wk->wu.dm_stop = 0;
+        wk->wu.damage_hit_stop = 0;
         wk->wu.hit_stop = ctc->koc;
         wk2 = (PLW*)wk->wu.target_adrs;
         wk2->wu.hit_stop = ctc->ix;
@@ -1222,7 +1222,7 @@ static s32 comm_stop(PLW* wk, CommandState* ctc) {
 
 /** @brief Script command: SMHF — set movement half-speed flag. */
 static s32 comm_smhf(WORK* wk, CommandState* ctc) {
-    wk->meoshi_hit_flag = ctc->koc;
+    wk->frame_link_hit_flag = ctc->koc;
     return 1;
 }
 
@@ -1337,7 +1337,7 @@ static s32 comm_schy(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: BACK — store backup state. */
 static s32 comm_back(WORK* wk, CommandState* /* unused */) {
-    set_char_move_init2(wk, wk->cmbk.koc, wk->cmbk.ix, wk->cmbk.pat, 0);
+    set_char_move_init2(wk, wk->cmd_state_backup_1.koc, wk->cmd_state_backup_1.ix, wk->cmd_state_backup_1.pat, 0);
     return 0;
 }
 
@@ -1912,9 +1912,9 @@ static s32 comm_chkwf(PLW* wk, CommandState* ctc) {
 
 /** @brief Script command: RETMJ — return from move-jump. */
 static s32 comm_retmj(PLW* wk, CommandState* /* unused */) {
-    wk->wu.now_koc = wk->wu.cmb2.koc;
-    wk->wu.char_index = wk->wu.cmb2.ix;
-    wk->wu.cg_ix = wk->wu.cmb2.pat;
+    wk->wu.now_koc = wk->wu.cmd_state_backup_2.koc;
+    wk->wu.char_index = wk->wu.cmd_state_backup_2.ix;
+    wk->wu.graphic_index = wk->wu.cmd_state_backup_2.pat;
     wk->wu.set_char_ad = &wk->wu.char_table[wk->wu.now_koc][wk->wu.char_table[wk->wu.now_koc][wk->wu.char_index] / 4];
     setupCharTableData(&wk->wu, 0, 1);
     wk->link_jump_flag = 0;
@@ -2171,7 +2171,7 @@ static s32 comm_flip(WORK* wk, CommandState* /* unused */) {
 static s32 comm_kage(WORK* wk, CommandState* ctc) {
     wk->shadow_x = ctc->koc;
     wk->shadow_y = ctc->ix;
-    wk->kage_char = ctc->pat;
+    wk->shadow_char = ctc->pat;
     return 1;
 }
 
@@ -2265,7 +2265,7 @@ static s32 comm_ifs2(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: ABBAK — absolute back position restore. */
 static s32 comm_abbak(WORK* wk, CommandState* /* unused */) {
-    set_char_move_init2(wk, wk->cmb3.koc, wk->cmb3.ix, wk->cmb3.pat, 0);
+    set_char_move_init2(wk, wk->cmd_state_backup_3.koc, wk->cmd_state_backup_3.ix, wk->cmd_state_backup_3.pat, 0);
     return 0;
 }
 
@@ -2329,18 +2329,18 @@ static s32 comm_schg2(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: RHSJA — read hit-stop jump A. */
 static s32 comm_rhsja(PLW* wk, CommandState* ctc) {
-    wk->wu.cmhs.koc = ctc->koc;
-    wk->wu.cmhs.ix = ctc->ix;
-    wk->wu.cmhs.pat = ctc->pat;
-    wk->hsjp_ok = 1;
+    wk->wu.cmd_hit_stop_backup.koc = ctc->koc;
+    wk->wu.cmd_hit_stop_backup.ix = ctc->ix;
+    wk->wu.cmd_hit_stop_backup.pat = ctc->pat;
+    wk->high_jump_ok = 1;
     return 1;
 }
 
 /** @brief Script command: UHSJA — unconditional hit-stop jump A. */
 static s32 comm_uhsja(PLW* wk, CommandState* /* unused */) {
     setup_comm_back(&wk->wu);
-    wk->hsjp_ok = 0;
-    set_char_move_init2(&wk->wu, wk->wu.cmhs.koc, wk->wu.cmhs.ix, wk->wu.cmhs.pat, 0);
+    wk->high_jump_ok = 0;
+    set_char_move_init2(&wk->wu, wk->wu.cmd_hit_stop_backup.koc, wk->wu.cmd_hit_stop_backup.ix, wk->wu.cmd_hit_stop_backup.pat, 0);
     return 0;
 }
 
@@ -2405,12 +2405,12 @@ static s16 decord_if_jump(WORK* wk, CommandState* cpc, s16 ix) {
 
     switch (ix & 0xE000) {
     case 0x4000:
-        wk->cg_ix += ((ix & 0xFF) - 1) * wk->cgd_type;
+        wk->graphic_index += ((ix & 0xFF) - 1) * wk->cgd_type;
         rnum = 1;
         break;
 
     case 0x8000:
-        wk->cg_ix -= ((ix & 0xFF) + 1) * wk->cgd_type;
+        wk->graphic_index -= ((ix & 0xFF) + 1) * wk->cgd_type;
         rnum = 1;
         break;
 
@@ -2419,7 +2419,7 @@ static s16 decord_if_jump(WORK* wk, CommandState* cpc, s16 ix) {
         break;
 
     default:
-        wk->cg_ix = (ix - 2) * wk->cgd_type;
+        wk->graphic_index = (ix - 2) * wk->cgd_type;
         rnum = 1;
         break;
     }
@@ -2519,24 +2519,24 @@ static u8 get_comm_djmp_lever_dir(PLW* wk) {
 
 /** @brief Stores the backup state for comm_back. */
 void setup_comm_back(WORK* wk) {
-    wk->K5_init_flag = 1;
-    wk->cmbk.koc = wk->now_koc;
-    wk->cmbk.ix = wk->char_index;
-    wk->cmbk.pat = (wk->cg_ix / wk->cgd_type) + 2;
+    wk->phase_k5_init_flag = 1;
+    wk->cmd_state_backup_1.koc = wk->now_koc;
+    wk->cmd_state_backup_1.ix = wk->char_index;
+    wk->cmd_state_backup_1.pat = (wk->graphic_index / wk->cgd_type) + 2;
 }
 
 /** @brief Stores the return-move-jump state. */
 static void setup_comm_retmj(WORK* wk) {
-    wk->cmb2.koc = wk->now_koc;
-    wk->cmb2.ix = wk->char_index;
-    wk->cmb2.pat = wk->cg_ix;
+    wk->cmd_state_backup_2.koc = wk->now_koc;
+    wk->cmd_state_backup_2.ix = wk->char_index;
+    wk->cmd_state_backup_2.pat = wk->graphic_index;
 }
 
 /** @brief Stores the absolute-backup state. */
 void setup_comm_abbak(WORK* wk) {
-    wk->cmb3.koc = wk->now_koc;
-    wk->cmb3.ix = wk->char_index;
-    wk->cmb3.pat = (wk->cg_ix / wk->cgd_type) + 2;
+    wk->cmd_state_backup_3.koc = wk->now_koc;
+    wk->cmd_state_backup_3.ix = wk->char_index;
+    wk->cmd_state_backup_3.pat = (wk->graphic_index / wk->cgd_type) + 2;
 }
 
 static int catch_table_offset(Character thrown_character) {
@@ -2627,7 +2627,7 @@ void check_cgd_patdat(WORK* wk) {
             wk->curr_rca = wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PLW*)wk)->throw_target_id));
         }
 
-        wk->cg_olc = wk->olc_ix_table[wk->cg_olc_ix];
+        wk->graphic_overlap_index = wk->olc_ix_table[wk->cg_olc_ix];
     }
 
     if (wk->work_id < 16) {
@@ -2641,8 +2641,8 @@ void check_cgd_patdat(WORK* wk) {
     }
 
     if (wk->work_id == 1) {
-        if ((WK_AS_PLW->spmv_ng_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) && !(wk->kow & 0xF8)) {
-            if (wk->kow & 6) {
+        if ((WK_AS_PLW->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) && !(wk->waza_type & 0xF8)) {
+            if (wk->waza_type & 6) {
                 wk->cg_cancel &= 0xF7;
                 wk->cg_meoshi = 0;
             } else if (wk->cg_meoshi & 0x110) {
@@ -2653,20 +2653,20 @@ void check_cgd_patdat(WORK* wk) {
             }
         }
 
-        if (WK_AS_PLW->spmv_ng_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) {
-            if (wk->kow & 0x60) {
+        if (WK_AS_PLW->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) {
+            if (wk->waza_type & 0x60) {
                 wk->cg_cancel &= 0xBF;
             }
-        } else if ((wk->kow & 0x60) && (wk->cg_cancel & 0x40)) {
-            wk->meoshi_hit_flag = 1;
+        } else if ((wk->waza_type & 0x60) && (wk->cg_cancel & 0x40)) {
+            wk->frame_link_hit_flag = 1;
         }
 
-        if (!(WK_AS_PLW->spmv_ng_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(wk->kow & 0x60) &&
-            (wk->kow & 0xF8) && (wk->cg_cancel & 0x40)) {
+        if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(wk->waza_type & 0x60) &&
+            (wk->waza_type & 0xF8) && (wk->cg_cancel & 0x40)) {
             wk->cg_cancel |= 0x60;
         }
 
-        if (!(wk->kow & 0xF8) && (wk->routine_no[1] == 4) && (wk->routine_no[2] < 16)) {
+        if (!(wk->waza_type & 0xF8) && (wk->routine_no[1] == 4) && (wk->routine_no[2] < 16)) {
             switch (plpat_rno_filter[wk->routine_no[2]]) {
             case 9:
                 if (wk->routine_no[3] != 1) {
@@ -2676,22 +2676,22 @@ void check_cgd_patdat(WORK* wk) {
                 /* fallthrough */
 
             case 1:
-                if (!(WK_AS_PLW->spmv_ng_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
+                if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
                     wk->cg_cancel |= 1;
                 }
 
-                if (!(WK_AS_PLW->spmv_ng_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_DASH_DISABLED)) {
+                if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_DASH_DISABLED)) {
                     wk->cg_cancel |= 2;
                 }
 
-                if (!(WK_AS_PLW->spmv_ng_flag2 & DIP2_GROUND_CHAIN_COMBO_DISABLED)) {
+                if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_GROUND_CHAIN_COMBO_DISABLED)) {
                     if (WK_AS_PLW->player_number == 4) {
-                        wk->cg_meoshi = chain_hidou_nm_ground_table[wk->kow & 7];
+                        wk->cg_meoshi = chain_hidou_nm_ground_table[wk->waza_type & 7];
                         wk->cg_cancel |= 8;
                         return;
                     }
 
-                    wk->cg_meoshi = chain_normal_ground_table[wk->kow & 7];
+                    wk->cg_meoshi = chain_normal_ground_table[wk->waza_type & 7];
                     wk->cg_cancel |= 8;
                     return;
                 }
@@ -2699,14 +2699,14 @@ void check_cgd_patdat(WORK* wk) {
                 break;
 
             case 2:
-                if (!(WK_AS_PLW->spmv_ng_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(wk)) {
+                if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(wk)) {
                     if (WK_AS_PLW->player_number == 7) {
-                        wk->cg_meoshi = chain_hidou_nm_air_table[wk->kow & 7];
+                        wk->cg_meoshi = chain_hidou_nm_air_table[wk->waza_type & 7];
                         wk->cg_cancel |= 8;
                         return;
                     }
 
-                    wk->cg_meoshi = chain_normal_air_table[wk->kow & 7];
+                    wk->cg_meoshi = chain_normal_air_table[wk->waza_type & 7];
                     wk->cg_cancel |= 8;
                 }
 
@@ -2794,7 +2794,7 @@ static void check_cgd_patdat2(WORK* wk) {
         }
     }
 
-    wk->cg_olc = wk->olc_ix_table[wk->cg_olc_ix];
+    wk->graphic_overlap_index = wk->olc_ix_table[wk->cg_olc_ix];
     wk->cg_ja = wk->hit_ix_table[wk->cg_hit_ix];
 
     set_jugde_area(wk);
@@ -2825,7 +2825,7 @@ void set_new_attnum(WORK* wk) {
         wk->attack_num = g_state.att_req;
         wk->att_hit_ok = 1;
         aag_sw = 1;
-        wk->meoshi_hit_flag = 0;
+        wk->frame_link_hit_flag = 0;
 
         if (wk->work_id == 1) {
             WK_AS_PLW->caution_flag = 1;
@@ -2841,9 +2841,9 @@ void set_new_attnum(WORK* wk) {
     wk->at_attribute = (wk->att.level >> 4) & 3;
     wk->no_death_attack = wk->att.level & 8;
     wk->att.level &= 7;
-    wk->kezuri_pow = kezuri_pow_table[(wk->att.guard >> 6) & 3];
+    wk->chip_damage_power = kezuri_pow_table[(wk->att.guard >> 6) & 3];
     wk->att.guard &= 0x3F;
-    wk->att_zuru = (wk->att.dir >> 4) & 7;
+    wk->attack_invuln = (wk->att.dir >> 4) & 7;
     wk->att.dir &= 0xF;
     wk->add_arts_point = (wk->att.piyo >> 4) & 0xF;
     wk->att.piyo &= 0xF;
@@ -2862,19 +2862,19 @@ void set_new_attnum(WORK* wk) {
 
 /** @brief Configures chip-damage (kezuri) for metamorphosis mode. */
 static void setup_metamor_kezuri(WORK* wk) {
-    if (wk->kezuri_pow == 0) {
-        wk->kezuri_pow = kezuri_pow_table[4];
+    if (wk->chip_damage_power == 0) {
+        wk->chip_damage_power = kezuri_pow_table[4];
     }
 }
 
 /** @brief Sets up the judge (collision) area for the work object. */
 void set_jugde_area(WORK* wk) {
-    wk->h_bod = wk->body_adrs + wk->cg_ja.boix;
-    wk->h_cat = wk->catch_adrs + wk->cg_ja.caix;
-    wk->h_cau = wk->caught_adrs + wk->cg_ja.cuix;
-    wk->h_att = wk->attack_adrs + wk->cg_ja.atix;
-    wk->h_hos = wk->hosei_adrs + wk->cg_ja.hoix;
-    wk->h_han = wk->hand_adrs + (wk->cg_ja.bhix + wk->cg_ja.haix);
+    wk->body_hurtbox = wk->body_adrs + wk->cg_ja.boix;
+    wk->catch_box = wk->catch_adrs + wk->cg_ja.caix;
+    wk->caught_box = wk->caught_adrs + wk->cg_ja.cuix;
+    wk->attack_hitbox = wk->attack_adrs + wk->cg_ja.atix;
+    wk->pushbox = wk->hosei_adrs + wk->cg_ja.hoix;
+    wk->hand_hurtbox = wk->hand_adrs + (wk->cg_ja.bhix + wk->cg_ja.haix);
 }
 
 /** @brief Captures current character data for after-image (zanzou). */

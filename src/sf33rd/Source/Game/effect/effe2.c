@@ -282,7 +282,7 @@ s32 effect_E2_init(PLW* wk, const s16* data, s16 color_code, u8 ff) {
         return -1;
     }
 
-    bxt = wk->wu.h_bod->body_dm[data[0]];
+    bxt = wk->wu.body_hurtbox->body_dm[data[0]];
 
     if (bxt[1] == 0) {
         return -1;
@@ -314,7 +314,7 @@ s32 effect_E2_init(PLW* wk, const s16* data, s16 color_code, u8 ff) {
     ewk->master_id = wk->wu.id;
     ewk->master_work_id = wk->wu.work_id;
     ewk->master_player = wk->player_number;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = color_code | 0x2000;
     ewk->wu.my_family = 2;

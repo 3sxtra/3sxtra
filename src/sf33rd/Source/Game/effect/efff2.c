@@ -26,7 +26,7 @@ const s16 efff2_timer_tbl[16] = { 60, 0, 40, 90, 20, 10, 8, 130, 1, 34, 50, 70, 
 void effect_F2_move(WORK_Other* ewk) {
     s16 work;
 
-    if (ewk->wu.old_rno[6] < g_state.end_w.r_no_2) {
+    if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[1] = 99;
     }
 
@@ -34,16 +34,16 @@ void effect_F2_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_rno[4], ewk->wu.char_index, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[4], ewk->wu.char_index, 0);
         work = random_16();
         work &= 0xF;
-        ewk->wu.old_rno[5] = efff2_timer_tbl[work];
+        ewk->wu.old_routine_no[5] = efff2_timer_tbl[work];
         break;
 
     case 1:
-        ewk->wu.old_rno[5]--;
+        ewk->wu.old_routine_no[5]--;
 
-        if (ewk->wu.old_rno[5] <= 0) {
+        if (ewk->wu.old_routine_no[5] <= 0) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -72,7 +72,7 @@ void effect_F2_move(WORK_Other* ewk) {
             ewk->wu.routine_no[1] = 0;
             ewk->wu.xyz[0].disp.pos = efff2_data_tbl1[ewk->wu.type][1];
             ewk->wu.xyz[1].disp.pos = efff2_data_tbl1[ewk->wu.type][2];
-            ewk->wu.old_rno[4] = 19;
+            ewk->wu.old_routine_no[4] = 19;
             ewk->wu.char_index = 1;
             break;
         }
@@ -101,21 +101,21 @@ s32 effect_F2_init() {
         ewk->wu.id = 152;
         ewk->wu.be_flag = 1;
         ewk->wu.work_id = 0x10;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.type = i;
-        ewk->wu.old_rno[0] = g_state.end_w.r_no_2;
+        ewk->wu.old_routine_no[0] = g_state.end_w.r_no_2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.char_table[0] = (u32*)_end_char_table;
         ewk->wu.my_col_code = 0x12C;
         ewk->wu.my_family = *data_ptr++;
-        ewk->wu.old_rno[6] = 0;
-        ewk->wu.old_rno[6] += g_state.end_w.r_no_2;
-        ewk->wu.old_rno[4] = 19;
+        ewk->wu.old_routine_no[6] = 0;
+        ewk->wu.old_routine_no[6] += g_state.end_w.r_no_2;
+        ewk->wu.old_routine_no[4] = 19;
         ewk->wu.xyz[0].disp.pos = *data_ptr++;
         ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = 1;
-        ewk->wu.old_rno[1] = 1;
+        ewk->wu.old_routine_no[1] = 1;
         ewk->wu.my_mts = 8;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     }

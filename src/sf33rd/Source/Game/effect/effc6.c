@@ -84,7 +84,7 @@ s32 effect_C6_init(WORK_Other* oya) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 126;
     ewk->wu.work_id = 16;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.disp_flag = 0;
     ewk->my_master = oya;
     ewk->wu.my_family = 2;

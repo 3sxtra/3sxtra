@@ -82,7 +82,7 @@ s32 effect_H0_init(WORK* wk) {
     ewk->wu.work_id = 16;
     ewk->wu.my_mts = 14;
     ewk->wu.my_family = 3;
-    ewk->wu.cgromtype = 1;
+    ewk->wu.graphic_rom_type = 1;
     ewk->wu.type = wk->rl_flag;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 73;

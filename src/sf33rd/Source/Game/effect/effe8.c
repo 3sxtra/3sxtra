@@ -92,7 +92,7 @@ void effect_E8_move(WORK_Other* ewk) {
 }
 
 static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
-    if (ewk->wu.old_rno[5]) {
+    if (ewk->wu.old_routine_no[5]) {
         if (ewk->wu.type == 0) {
             ewk->wu.position_x = mwk->wu.position_x;
             ewk->wu.position_y = mwk->wu.position_y;
@@ -107,7 +107,7 @@ static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
 
     ewk->wu.position_z = mwk->wu.position_z;
 
-    if (ewk->wu.old_rno[3] == 0) {
+    if (ewk->wu.old_routine_no[3] == 0) {
         ewk->wu.old_cgnum = ewk->wu.cg_number = mwk->wu.cg_number;
         ewk->wu.rl_flag = mwk->wu.rl_flag;
         ewk->wu.cg_flip = mwk->wu.cg_flip;
@@ -117,34 +117,34 @@ static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
         ewk->wu.cg_flip = g_state.zanzou_table[ewk->master_id][ewk->wu.type].cg_flp;
     }
 
-    if (ewk->wu.old_rno[0]) {
+    if (ewk->wu.old_routine_no[0]) {
         ewk->wu.position_z -= ewk->wu.rl_waza;
     } else {
         ewk->wu.position_z += ewk->wu.rl_waza;
     }
 
-    if (ewk->wu.old_rno[4]) {
+    if (ewk->wu.old_routine_no[4]) {
         if (ewk->wu.olc_work_ix[2] && mwk->metamorphose) {
-            ewk->wu.extra_col = after_image_color[ewk->wu.old_rno[4] + ewk->wu.rl_waza - 1][(ewk->master_id + 1) & 1];
+            ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.rl_waza - 1][(ewk->master_id + 1) & 1];
         } else {
-            ewk->wu.extra_col = after_image_color[ewk->wu.old_rno[4] + ewk->wu.rl_waza - 1][ewk->master_id];
+            ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.rl_waza - 1][ewk->master_id];
         }
     } else {
         ewk->wu.extra_col = mwk->wu.current_colcd;
     }
 
-    if (ewk->wu.old_rno[1]) {
+    if (ewk->wu.old_routine_no[1]) {
         get_attdata_of_illusion(ewk);
     }
 }
 
 static void effE8_trans(WORK_Other* ewk, PLW* mwk) {
-    if (ewk->wu.old_rno[3] == 0) {
+    if (ewk->wu.old_routine_no[3] == 0) {
         return;
     }
 
-    ewk->wu.old_rno[6] = ewk->wu.rl_waza - 1;
-    ewk->wu.my_bright_level = (ewk->wu.old_rno[6] * 3) + 1;
+    ewk->wu.old_routine_no[6] = ewk->wu.rl_waza - 1;
+    ewk->wu.my_bright_level = (ewk->wu.old_routine_no[6] * 3) + 1;
 
     if (mwk->wu.disp_flag != 0 && mwk->sa_stop_flag == 0) {
         sort_push_request(&ewk->wu);
@@ -165,9 +165,9 @@ s32 effect_E8_init(WORK_Other* ek, PLW* mk, s16 data) {
     ewk->wu.id = 148;
     ewk->wu.type = 0;
     ewk->wu.charset_id = data;
-    ewk->wu.rl_waza = data / ek->wu.dmcal_m;
+    ewk->wu.rl_waza = data / ek->wu.damage_calc_multiplier;
 
-    if (ek->wu.old_rno[1]) {
+    if (ek->wu.old_routine_no[1]) {
         ewk->wu.work_id = 8;
     } else {
         ewk->wu.work_id = 16;

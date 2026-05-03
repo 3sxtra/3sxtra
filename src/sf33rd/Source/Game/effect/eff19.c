@@ -80,20 +80,20 @@ void eff19_quake_sub(WORK_Other* ewk) {
             ewk->wu.routine_no[2] = 0;
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[1].sp = -0x6000;
-            ewk->wu.old_rno[0] = eff19_wait_tbl[work];
+            ewk->wu.old_routine_no[0] = eff19_wait_tbl[work];
             break;
         }
 
         ewk->wu.routine_no[1]++;
         ewk->wu.routine_no[2] = 1;
-        ewk->wu.old_rno[0] = 60;
+        ewk->wu.old_routine_no[0] = 60;
         break;
 
     case 1:
         if (ewk->wu.routine_no[2]) {
-            ewk->wu.old_rno[0]--;
+            ewk->wu.old_routine_no[0]--;
 
-            if (ewk->wu.old_rno[0] >= 0) {
+            if (ewk->wu.old_routine_no[0] >= 0) {
                 break;
             }
 
@@ -102,9 +102,9 @@ void eff19_quake_sub(WORK_Other* ewk) {
             break;
         }
 
-        ewk->wu.old_rno[0]--;
+        ewk->wu.old_routine_no[0]--;
 
-        if (ewk->wu.old_rno[0] < 0) {
+        if (ewk->wu.old_routine_no[0] < 0) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -157,7 +157,7 @@ s32 effect_19_init() {
         ewk = (WORK_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 19;
-        ewk->wu.cgromtype = 1;
+        ewk->wu.graphic_rom_type = 1;
         ewk->wu.rl_flag = 0;
         ewk->wu.dead_f = 1;
         ewk->wu.type = i;
