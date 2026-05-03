@@ -174,7 +174,7 @@ static void sanitize_work_pointers(WORK* w) {
     w->attack_adrs = NULL;
     w->attack_hitbox = NULL;
     w->h_eat = NULL;
-    w->hosei_adrs = NULL;
+    w->adjust_adrs = NULL;
     w->pushbox = NULL;
     w->att_ix_table = NULL;
     w->my_effadrs = NULL;

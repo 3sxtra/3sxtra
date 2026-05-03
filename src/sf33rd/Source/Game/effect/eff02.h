@@ -30,7 +30,7 @@ extern const s16 hcct[];
 extern const s16 gqdt[][2];
 extern const EXPLEM explem[];
 extern const EXPLEM explem2[][20];
-extern const s16 hit_mark_hosei_table[][2];
+extern const s16 hit_mark_adjust_table[][2];
 
 void effect_02_move(WORK_Other* ewk);
 s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl);

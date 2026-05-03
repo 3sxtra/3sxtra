@@ -33,9 +33,9 @@ void effect_40_move(WORK_Other* ewk) {
     }
 
     if (ewk->master_id) {
-        ewk->wu.rl_waza = save_w[1].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Max];
+        ewk->wu.active_move = save_w[1].extra_option.contents[g_state.Menu_Page_Buff][g_state.Menu_Max];
     } else {
-        ewk->wu.rl_waza = system_dir[1].contents[g_state.Menu_Page_Buff][g_state.Menu_Max];
+        ewk->wu.active_move = system_dir[1].contents[g_state.Menu_Page_Buff][g_state.Menu_Max];
     }
 
     EFF40_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
@@ -43,7 +43,7 @@ void effect_40_move(WORK_Other* ewk) {
 }
 
 static void EFF40_EXIT(WORK_Other* ewk) {
-    if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max && ewk->wu.rl_waza == ewk->master_priority) {
+    if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max && ewk->wu.active_move == ewk->master_priority) {
         ewk->wu.my_clear_level = 0;
     } else {
         ewk->wu.my_clear_level = 128;
@@ -53,7 +53,7 @@ static void EFF40_EXIT(WORK_Other* ewk) {
 static void EFF40_BACK(WORK_Other* ewk) {
     s16 ix;
 
-    if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max && ewk->wu.rl_waza == ewk->master_priority) {
+    if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max && ewk->wu.active_move == ewk->master_priority) {
         ix = 1;
     } else {
         ix = 0;
@@ -66,7 +66,7 @@ static void EFF40_ARROW(WORK_Other* ewk) {
     if (g_state.Menu_Cursor_Y[0] != g_state.Menu_Max) {
         set_char_move_init2(&ewk->wu, 0, 76, (ewk->master_priority / 2) + 1, 0);
         ewk->wu.routine_no[1] = 0;
-    } else if (ewk->wu.rl_waza == ewk->master_priority) {
+    } else if (ewk->wu.active_move == ewk->master_priority) {
         if (ewk->wu.routine_no[1] == 0) {
             set_char_move_init(&ewk->wu, 0, ewk->wu.dir_step);
             ewk->wu.routine_no[1] = 1;

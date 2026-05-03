@@ -21,7 +21,7 @@ s32 check_nagenuke_cmd(PLW* wk);
 s32 check_catch_attack(PLW* wk);
 void set_attack_routine_number(PLW* wk);
 u16 get_nearing_range(s16 pnum, s16 kos);
-s32 waza_select(PLW* wk, s16 kos, s16 sf);
+s32 move_select(PLW* wk, s16 kos, s16 sf);
 u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex);
 s16 get_em_body_range(WORK* wk);
 s32 cmd_ex_check(s16 px, s16 cx);

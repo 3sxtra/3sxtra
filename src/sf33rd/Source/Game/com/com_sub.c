@@ -450,7 +450,7 @@ void Setup_KA_Jump(PLW* wk) {
     g_state.CP_Index[wk->wu.id][3] = 2;
     xx = Back_Jump_Data[wk->player_number];
 
-    if (wk->wu.rl_waza) {
+    if (wk->wu.active_move) {
         xx = wk->wu.xyz[0].disp.pos - Back_Jump_Data[wk->player_number];
         if ((g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset) > xx) {
             g_state.CP_Index[wk->wu.id][3] = 1;
@@ -470,7 +470,7 @@ void Setup_KA_Walk(PLW* wk) {
 
 /** @brief Search for a safe position behind the CPU then walk/jump there. */
 void Search_Back_Term(PLW* wk, s16 Move_Value, s16 Next_Action, s16 Next_Menu) {
-    if (wk->wu.rl_waza) {
+    if (wk->wu.active_move) {
         Move_Value = wk->wu.xyz[0].disp.pos - Move_Value;
         if ((g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset) > Move_Value) {
             Next_Another_Menu(wk, Next_Action, Next_Menu);
@@ -923,14 +923,14 @@ s32 Setup_Guard_Lever(PLW* wk, u16 Lever) {
 
     switch (Lever) {
     case 0:
-        if (wk->wu.rl_waza == 0) {
+        if (wk->wu.active_move == 0) {
             rnum = 4;
         } else {
             rnum = 8;
         }
         break;
     case 1:
-        if (wk->wu.rl_waza == 1) {
+        if (wk->wu.active_move == 1) {
             rnum = 4;
         } else {
             rnum = 8;
@@ -2967,7 +2967,7 @@ s32 Check_Resume_Lever(PLW* wk) {
     u16 Target_Lever;
     s16 xx;
 
-    if (wk->wu.rl_waza) {
+    if (wk->wu.active_move) {
         Target_Lever = 8;
     } else {
         Target_Lever = 4;
@@ -3883,7 +3883,7 @@ s32 Check_Dash_Hit(PLW* wk, u16 Tech_Number) {
 
 /** @brief  */
 s32 Setup_Front_or_Back(PLW* wk, s16 xx) {
-    if (wk->wu.rl_waza == 0) {
+    if (wk->wu.active_move == 0) {
         if (xx >= 0) {
             return 0;
         }
@@ -3900,7 +3900,7 @@ s32 Setup_Front_or_Back(PLW* wk, s16 xx) {
 s32 Check_Hit_Shell(PLW* wk, WORK_Other* tmw, u16 Tech_Number) {
     s16 xx;
 
-    if (wk->wu.rl_waza == 1) {
+    if (wk->wu.active_move == 1) {
         Tech_Number ^= 1;
     }
 
@@ -3945,7 +3945,7 @@ s32 Command_Type_00(PLW* wk, s16 Power_Level, u16 Tech_Number, s16 Ex_Shot) {
         g_state.Lever_Buff[wk->wu.id] = Tech_Address[wk->wu.id][g_state.Tech_Index[wk->wu.id] + 3] & 0x7FFF;
         g_state.Lever_Buff[wk->wu.id] = datacmd_conpanecmd(g_state.Lever_Buff[wk->wu.id]);
 
-        if (wk->wu.rl_waza) {
+        if (wk->wu.active_move) {
             if (g_state.Lever_Buff[wk->wu.id] & 0xC) {
                 g_state.Lever_Buff[wk->wu.id] ^= 0xC;
             }
@@ -3954,7 +3954,7 @@ s32 Command_Type_00(PLW* wk, s16 Power_Level, u16 Tech_Number, s16 Ex_Shot) {
         return 1;
     } else {
         g_state.Lever_Buff[wk->wu.id] = Tech_Address[wk->wu.id][g_state.Tech_Index[wk->wu.id] + 3] & 0x7FFF;
-        if (wk->wu.rl_waza) {
+        if (wk->wu.active_move) {
             if (g_state.Lever_Buff[wk->wu.id] & 0xC) {
                 g_state.Lever_Buff[wk->wu.id] ^= 0xC;
             }
@@ -4034,7 +4034,7 @@ s32 Command_Type_01(PLW* wk, s16 Power_Level, s16 Ex_Shot) {
         g_state.Lever_Pool[wk->wu.id] = Tech_Address[wk->wu.id][g_state.Tech_Index[wk->wu.id] + 3];
         Setup_Command_01(wk);
 
-        if (wk->wu.rl_waza) {
+        if (wk->wu.active_move) {
             if (g_state.Lever_Pool[wk->wu.id] & 0xC) {
                 g_state.Lever_Pool[wk->wu.id] ^= 0xC;
             }
@@ -4100,7 +4100,7 @@ void Check_Store_Lever(PLW* wk, u16 Tech_Number, s16 Next_Action, s16 Next_Menu)
 
 /** @brief  */
 s32 Check_Store_Direction(PLW* wk, u16 lever, s16 time) {
-    if (wk->wu.rl_waza) {
+    if (wk->wu.active_move) {
         if (lever & (SWK_LEFT | SWK_RIGHT)) {
             lever ^= (SWK_LEFT | SWK_RIGHT);
         }
@@ -5069,15 +5069,15 @@ s32 Check_Flip_Tech(WORK* em) {
         rnum = 0;
         break;
     default:
-        if (em->kind_of_waza & 0xF8) {
+        if (em->attack_type & 0xF8) {
             rnum = 0;
         }
         /* fallthrough */
     case 6:
-        if (em->kind_of_waza == 0) {
+        if (em->attack_type == 0) {
             rnum = 0;
         }
-        if (em->kind_of_waza == 1) {
+        if (em->attack_type == 1) {
             rnum = 0;
         }
         break;
@@ -5151,7 +5151,7 @@ s32 Check_Diagonal_Shell(PLW* wk) {
         if (tmw->wu.routine_no[1] == 2) {
             continue;
         }
-        if (wk->wu.rl_waza == tmw->wu.rl_flag) {
+        if (wk->wu.active_move == tmw->wu.rl_flag) {
             continue;
         }
 
@@ -5218,7 +5218,7 @@ s32 Check_Shell(PLW* wk) {
         if (tmw->wu.routine_no[1] == 2) {
             continue;
         }
-        if (wk->wu.rl_waza == tmw->wu.rl_flag) {
+        if (wk->wu.active_move == tmw->wu.rl_flag) {
             continue;
         }
         if (tmw->wu.routine_no[0] != 1) {
@@ -5274,7 +5274,7 @@ s32 Check_Shell_Another_in_Flip(PLW* wk) {
         if (tmw->wu.routine_no[1] == 2) {
             continue;
         }
-        if (wk->wu.rl_waza == tmw->wu.rl_flag) {
+        if (wk->wu.active_move == tmw->wu.rl_flag) {
             continue;
         }
         if (tmw->wu.routine_no[0] != 1) {
@@ -5476,7 +5476,7 @@ s32 Ck_Distance_XX(s16 x1, s16 x2) {
 
 /** @brief  */
 s32 Check_Behind(PLW* wk, WORK_Other* tmw) {
-    if (wk->wu.rl_waza == 0) {
+    if (wk->wu.active_move == 0) {
         if (wk->wu.xyz[0].disp.pos < tmw->wu.xyz[0].disp.pos) {
             return 1;
         }

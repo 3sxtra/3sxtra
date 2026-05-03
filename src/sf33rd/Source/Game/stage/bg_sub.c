@@ -962,7 +962,7 @@ void ake_Family_Set2() {
 }
 
 /** @brief Apply position correction to a background layer, optionally with quake offsets. */
-static void bg_pos_hosei_impl(s16 bg_no, s16 apply_quake) {
+static void bg_pos_adjust_impl(s16 bg_no, s16 apply_quake) {
     u16 pos;
     s16 pos2;
 
@@ -997,17 +997,17 @@ static void bg_pos_hosei_impl(s16 bg_no, s16 apply_quake) {
 }
 
 /** @brief Apply position correction to a single background layer (with quake). */
-void bg_pos_hosei_sub2(s16 bg_no) {
-    bg_pos_hosei_impl(bg_no, 1);
+void bg_pos_adjust_sub2(s16 bg_no) {
+    bg_pos_adjust_impl(bg_no, 1);
 }
 
 /** @brief Apply position correction to a bg layer (without quake). */
-void bg_pos_hosei_sub3(s16 bg_no) {
-    bg_pos_hosei_impl(bg_no, 0);
+void bg_pos_adjust_sub3(s16 bg_no) {
+    bg_pos_adjust_impl(bg_no, 0);
 }
 
 /** @brief Apply position correction to all active background layers. */
-void bg_pos_hosei2() {
+void bg_pos_adjust2() {
     s16 bg_no = 0;
     u16 pos;
     u16 pos2;
@@ -1197,11 +1197,11 @@ void bg_initialize() {
     }
 
     if (g_state.bg_w.stage > STAGE_BONUS_THRESHOLD) {
-        bg_pos_hosei_sub3(2);
+        bg_pos_adjust_sub3(2);
         Bg_Family_Set_appoint(2);
     }
 
-    bg_pos_hosei2();
+    bg_pos_adjust2();
     Bg_Family_Set();
 }
 

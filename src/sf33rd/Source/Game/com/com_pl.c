@@ -90,7 +90,7 @@ void Main_Program(PLW* wk);
 
 static u16 CPU_Sub(PLW* wk);
 static s32 Check_Counter_Attack(PLW* wk);
-static s16 Check_Hamari(PLW* wk);
+static s16 Check_Spam_Trap(PLW* wk);
 static s32 Check_No12_Shell_Guard(PLW* wk, WORK_Other* tmw);
 static s32 Ck_Exit_Guard(PLW* wk, WORK* em);
 static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em);
@@ -487,11 +487,11 @@ static s32 Check_Counter_Attack(PLW* wk) {
         return 1;
     }
 
-    return Check_Hamari(wk);
+    return Check_Spam_Trap(wk);
 }
 
-/** @brief Check if the opponent is repeating the same attack ("hamari" trap detection). */
-static s16 Check_Hamari(PLW* wk) {
+/** @brief Check if the opponent is repeating the same attack ("spam_trap" trap detection). */
+static s16 Check_Spam_Trap(PLW* wk) {
     u8 tech;
     s16 Rnd;
     s16 limit;
@@ -1814,8 +1814,8 @@ void Check_At_Count(PLW* wk) {
         if (g_state.Attack_Flag[wk->wu.id]) {
             g_state.Attack_Counter[wk->wu.id]++;
             g_state.Attack_Count_No0[wk->wu.id] = 1;
-            g_state.Type_of_Attack[wk->wu.id] = em->kind_of_waza;
-            g_state.Attack_Count_Buff[wk->wu.id][g_state.Attack_Count_Index[wk->wu.id]] = em->kind_of_waza;
+            g_state.Type_of_Attack[wk->wu.id] = em->attack_type;
+            g_state.Attack_Count_Buff[wk->wu.id][g_state.Attack_Count_Index[wk->wu.id]] = em->attack_type;
             g_state.Attack_Count_Index[wk->wu.id]++;
             g_state.Attack_Count_Index[wk->wu.id] &= 3;
         }
@@ -1876,7 +1876,7 @@ void Check_Store_Lv(PLW* wk) {
 
 /** @brief Sub-routine for Store_LR — count left/right directional holds with facing correction. */
 void Store_LR_Sub(PLW* wk) {
-    if (wk->wu.rl_waza) {
+    if (wk->wu.active_move) {
         if (g_state.Lever_Buff[wk->wu.id] & 8) {
             g_state.Lever_Store[wk->wu.id][1]++;
             g_state.Lever_Store[wk->wu.id][2] = 0;

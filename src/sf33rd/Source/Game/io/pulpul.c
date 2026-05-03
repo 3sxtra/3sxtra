@@ -516,7 +516,7 @@ void pp_screen_quake(s16 ix) {
 }
 
 /** @brief Convert a KO-weight value to a vibration parameter index. */
-static s32 pp_convert_waza_type(u8 num) {
+static s32 pp_convert_attack_type(u8 num) {
     s16 ix;
 
     if (num & 0x60) {
@@ -560,19 +560,19 @@ void pp_pulpara_remake_at(WORK* wk) {
 void pp_pulpara_remake_dm_all(WORK* wk) {
     s16 ix;
 
-    ix = pp_convert_waza_type(wk->dm_kind_of_waza);
+    ix = pp_convert_attack_type(wk->damage_attack_type);
 
     pulpul_request(wk->id, pp_dm_shock[ix]);
 }
 
 /** @brief Set vibration parameters for a guard impact. */
 void pp_pulpara_guard(WORK* wk) {
-    pulpul_request(wk->id, pp_guard_shock[pp_convert_waza_type(wk->dm_kind_of_waza)]);
+    pulpul_request(wk->id, pp_guard_shock[pp_convert_attack_type(wk->damage_attack_type)]);
 }
 
 /** @brief Set vibration parameters for a hit impact. */
 void pp_pulpara_hit(WORK* wk) {
-    pulpul_request(wk->id, pp_hit_shock[pp_convert_waza_type(wk->kind_of_waza)]);
+    pulpul_request(wk->id, pp_hit_shock[pp_convert_attack_type(wk->attack_type)]);
 }
 
 /** @brief Set vibration parameters for a blocking (parry) event. */

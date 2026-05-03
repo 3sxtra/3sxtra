@@ -29,7 +29,7 @@ s32 Player_control_bonus2() {
 
         if (check_be_car_object()) {
             check_body_touch2();
-            check_damage_hosei_bonus();
+            check_damage_adjust_bonus();
         }
 
         set_quake(&g_state.plw[0]);

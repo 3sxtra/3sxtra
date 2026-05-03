@@ -138,7 +138,7 @@ void effect_13_move(WORK_Other* ewk) {
         }
 
         if (tama->kind_of_tama == 10) {
-            ewk->wu.rl_flag = ((WORK*)ewk->my_master)->rl_waza;
+            ewk->wu.rl_flag = ((WORK*)ewk->my_master)->active_move;
         }
 
         tama_display(&ewk->wu);
@@ -163,7 +163,7 @@ void effect_13_move(WORK_Other* ewk) {
         tama_display(&ewk->wu);
 
         if (ewk->wu.floor) {
-            ewk->wu.kind_of_waza |= 0x20;
+            ewk->wu.attack_type |= 0x20;
             ewk->wu.at_koa = 0x80;
         }
 
@@ -1057,8 +1057,8 @@ static void kotp_07000(WORK_Other* ewk, TAMA* twk) {
             if (awk->work_id == 1) {
                 dsst = 3;
 
-                if (!(ewk->wu.dm_kind_of_waza & 0xF8)) {
-                    dsst = (ewk->wu.dm_kind_of_waza / 2) & 3;
+                if (!(ewk->wu.damage_attack_type & 0xF8)) {
+                    dsst = (ewk->wu.damage_attack_type / 2) & 3;
                 }
 
                 ewk->wu.damage_vitality = kotp_07_dm_vital[dsst];
@@ -1854,7 +1854,7 @@ s32 effect_13_init(WORK* wk, u8 data) {
     ewk->wu.my_col_mode = wk->my_col_mode;
     ewk->wu.old_routine_no[7] = wk->my_col_code;
     ewk->wu.weight_level = wk->weight_level;
-    ewk->wu.rl_waza = g_state.Round_num;
+    ewk->wu.active_move = g_state.Round_num;
     ewk->my_master = wk;
 
     if (wk->work_id == 1) {

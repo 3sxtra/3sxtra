@@ -42,34 +42,34 @@ void player_at_vs_player_dm(s16 ix2, s16 ix) {
                     break;
                 }
 
-                if (ds->wu.kind_of_waza & 4) {
+                if (ds->wu.attack_type & 4) {
                     break;
                 }
 
                 goto two;
             }
-        } else if (as->wu.kind_of_waza & 4) {
+        } else if (as->wu.attack_type & 4) {
             if (!(ds->wu.att.dipsw & 0x40)) {
                 if (ds->wu.att.dipsw & 0x20) {
                     break;
                 }
 
-                if (ds->wu.kind_of_waza & 4) {
+                if (ds->wu.attack_type & 4) {
                     break;
                 }
 
                 goto two;
             }
-        } else if (as->wu.kind_of_waza & 2) {
-            if (!(ds->wu.att.dipsw & 0x60) && !(ds->wu.kind_of_waza & 4)) {
-                if (ds->wu.kind_of_waza & 2) {
+        } else if (as->wu.attack_type & 2) {
+            if (!(ds->wu.att.dipsw & 0x60) && !(ds->wu.attack_type & 4)) {
+                if (ds->wu.attack_type & 2) {
                     break;
                 }
 
                 goto two;
             }
-        } else if (!(as->wu.kind_of_waza & 6) && !(ds->wu.att.dipsw & 0x60) && !(ds->wu.kind_of_waza & 4)) {
-            if (!(ds->wu.kind_of_waza & 2)) {
+        } else if (!(as->wu.attack_type & 6) && !(ds->wu.att.dipsw & 0x60) && !(ds->wu.attack_type & 4)) {
+            if (!(ds->wu.attack_type & 2)) {
                 break;
             }
         }

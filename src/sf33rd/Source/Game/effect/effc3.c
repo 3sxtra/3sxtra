@@ -1151,7 +1151,7 @@ static void clear_parts_hit_data(WORK* wk) {
     wk->catch_box = &wk->catch_adrs[wk->cg_ja.caix];
     wk->caught_box = &wk->caught_adrs[wk->cg_ja.cuix];
     wk->attack_hitbox = &wk->attack_adrs[wk->cg_ja.atix];
-    wk->pushbox = &wk->hosei_adrs[wk->cg_ja.hoix];
+    wk->pushbox = &wk->adjust_adrs[wk->cg_ja.hoix];
     wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
 }
 

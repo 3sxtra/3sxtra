@@ -68,7 +68,7 @@ void effect_at_vs_effect_dm(s16 ix2, s16 ix) {
     ds->wu.routine_no[2] = 0;
     as->wu.hit_stop = ds->wu.hit_stop = 6;
     ds->wu.dm_dir = as->wu.dir_atthit;
-    ds->wu.dm_kind_of_waza = as->wu.kind_of_waza;
+    ds->wu.damage_attack_type = as->wu.attack_type;
 
     if (ds->wu.id == 122 || ds->wu.id == 123) {
         effect_02_init(&as->wu, 2, 1, ds->wu.dm_rl);

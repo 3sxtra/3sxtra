@@ -22,9 +22,9 @@ void Bonus_bg() {
     bns01();
     bgw_ptr = &g_state.bg_w.bgw[2];
     bns03();
-    bg_pos_hosei_sub3(2);
+    bg_pos_adjust_sub3(2);
     Bg_Family_Set_appoint(2);
-    bg_pos_hosei2();
+    bg_pos_adjust2();
     Bg_Family_Set();
 }
 

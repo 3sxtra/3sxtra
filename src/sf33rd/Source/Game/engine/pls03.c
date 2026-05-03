@@ -112,7 +112,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
                     wk->wu.cg_cancel = 0;
                     wk->sa->mp = -1;
                     hissatsu_setup_union(wk, wk->cp->move_state_timers[g_ix][j]);
-                    waza_compel_all_init2(wk);
+                    move_compel_all_init2(wk);
                     chainex_check[wk->wu.id][g_ix - 20] = 1;
                     chainex_spat_cancel_kidou(&wk->wu);
                     return 1;
@@ -169,7 +169,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
                 wk->wu.cg_cancel = 0;
                 wk->sa->mp = -1;
                 hissatsu_setup_union(wk, wk->cp->move_state_timers[a_ix][j]);
-                waza_compel_all_init2(wk);
+                move_compel_all_init2(wk);
                 chainex_check[wk->wu.id][a_ix - 20] = 1;
                 chainex_spat_cancel_kidou(&wk->wu);
                 return 1;
@@ -278,7 +278,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
                     wk->wu.cg_cancel = 0;
                     wk->sa->ok = -1;
                     hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_g_ix][j]);
-                    waza_compel_all_init2(wk);
+                    move_compel_all_init2(wk);
                     chainex_check[wk->wu.id][wk->sa->nmsa_g_ix - 20] = 1;
                     chainex_spat_cancel_kidou(&wk->wu);
                     return 1;
@@ -332,7 +332,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
                 wk->wu.cg_cancel = 0;
                 wk->sa->ok = -1;
                 hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_a_ix][j]);
-                waza_compel_all_init2(wk);
+                move_compel_all_init2(wk);
                 chainex_check[wk->wu.id][wk->sa->nmsa_a_ix - 20] = 1;
                 chainex_spat_cancel_kidou(&wk->wu);
                 return 1;
@@ -372,7 +372,7 @@ s32 execute_super_arts(PLW* wk) {
         wk->wu.cg_cancel = 0;
         wk->sa->ok = -1;
         hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_g_ix][0]);
-        waza_compel_all_init2(wk);
+        move_compel_all_init2(wk);
         wk->sa->gt2 = wk->sa->gauge_type;
         return 1;
     }
@@ -395,7 +395,7 @@ s32 execute_super_arts(PLW* wk) {
     wk->wu.cg_cancel = 0;
     wk->sa->ok = -1;
     hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_a_ix][0]);
-    waza_compel_all_init2(wk);
+    move_compel_all_init2(wk);
     wk->sa->gt2 = wk->sa->gauge_type;
     return 1;
 }
@@ -483,8 +483,8 @@ s32 check_special_attack(PLW* wk) {
                 wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(i)][j + (i - 28) * 4];
                 wk->wu.cg_cancel &= 0x40;
                 hissatsu_setup_union(wk, wk->cp->move_state_timers[i][j]);
-                waza_flag_clear_only_1(wk->wu.id, i);
-                grade_add_command_waza(wk->wu.id);
+                move_flag_clear_only_1(wk->wu.id, i);
+                grade_add_command_move(wk->wu.id);
                 chainex_check[wk->wu.id][i - 20] = 1;
                 chainex_spat_cancel_kidou(&wk->wu);
                 return 1;
@@ -566,8 +566,8 @@ s32 check_special_attack(PLW* wk) {
                 wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(i)][j + (i - 46) * 4];
                 wk->wu.cg_cancel &= 0x40;
                 hissatsu_setup_union(wk, wk->cp->move_state_timers[i][j]);
-                waza_flag_clear_only_1(wk->wu.id, i);
-                grade_add_command_waza(wk->wu.id);
+                move_flag_clear_only_1(wk->wu.id, i);
+                grade_add_command_move(wk->wu.id);
                 chainex_check[wk->wu.id][i - 20] = 1;
                 chainex_spat_cancel_kidou(&wk->wu);
                 return 1;
@@ -581,8 +581,8 @@ s32 check_special_attack(PLW* wk) {
             wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(i)][(i - 46) * 4];
             wk->wu.cg_cancel &= 0x40;
             hissatsu_setup_union(wk, wk->cp->move_state_timers[i][0]);
-            waza_flag_clear_only_1(wk->wu.id, i);
-            grade_add_command_waza(wk->wu.id);
+            move_flag_clear_only_1(wk->wu.id, i);
+            grade_add_command_move(wk->wu.id);
             chainex_check[wk->wu.id][i - 20] = 1;
             chainex_spat_cancel_kidou(&wk->wu);
             return 1;
@@ -662,7 +662,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 3);
+        koa = move_select(wk, kos, 3);
         wk->as = &_asstbl_lv_3010[wk->player_number][kos][koa];
         break;
 
@@ -671,7 +671,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 6);
+        koa = move_select(wk, kos, 6);
         wk->as = &_asstbl_lv_3010[wk->player_number][kos][koa];
         break;
 
@@ -680,7 +680,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 9);
+        koa = move_select(wk, kos, 9);
         wk->as = &_asstbl_lv_3010[wk->player_number][kos][koa];
         break;
 
@@ -689,7 +689,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 2);
+        koa = move_select(wk, kos, 2);
         wk->as = &_asstbl_lv_2010[wk->player_number][kos][koa];
         break;
 
@@ -698,7 +698,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 5);
+        koa = move_select(wk, kos, 5);
         wk->as = &_asstbl_lv_2010[wk->player_number][kos][koa];
         break;
 
@@ -707,7 +707,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 8);
+        koa = move_select(wk, kos, 8);
         wk->as = &_asstbl_lv_2010[wk->player_number][kos][koa];
         break;
 
@@ -716,7 +716,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 4);
+        koa = move_select(wk, kos, 4);
         wk->as = &_asstbl_lv_4010[wk->player_number][kos][koa];
         break;
 
@@ -725,7 +725,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 7);
+        koa = move_select(wk, kos, 7);
         wk->as = &_asstbl_lv_4010[wk->player_number][kos][koa];
         break;
 
@@ -734,7 +734,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        koa = waza_select(wk, kos, 10);
+        koa = move_select(wk, kos, 10);
         wk->as = &_asstbl_lv_4010[wk->player_number][kos][koa];
         break;
 
@@ -744,10 +744,10 @@ s32 check_nm_attack(PLW* wk) {
         }
 
         if (wk->cp->input_held & 2) {
-            koa = waza_select(wk, kos, 1);
+            koa = move_select(wk, kos, 1);
             wk->as = &_asstbl_lv_1010[wk->player_number][kos][koa];
         } else {
-            koa = waza_select(wk, kos, 0);
+            koa = move_select(wk, kos, 0);
             wk->as = &_asstbl_lv_0010[wk->player_number][kos][koa];
         }
 
@@ -923,7 +923,7 @@ u16 get_nearing_range(s16 pnum, s16 kos) {
 }
 
 /** @brief Selects the appropriate move from the command input. */
-s32 waza_select(PLW* wk, s16 kos, s16 sf) {
+s32 move_select(PLW* wk, s16 kos, s16 sf) {
     const u16* wst;
 
     switch (sf) {
@@ -986,7 +986,7 @@ s32 waza_select(PLW* wk, s16 kos, s16 sf) {
     return 0;
 }
 
-/** @brief Decodes waza select table data into actual move parameters. */
+/** @brief Decodes move select table data into actual move parameters. */
 u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
     u16 lever;
     u16 rnum;
@@ -1088,7 +1088,7 @@ s16 get_em_body_range(WORK* wk) {
 
     if (g_state.Bonus_Game_Flag == 20 && wk->pl_operator != 0) {
         em = (WORK*)((WORK*)wk->target_adrs)->my_effadrs;
-        dad = (s16*)(em->hosei_adrs + (get_sel_hosei_tbl_ix(((WORK_Other*)em)->master_player) + 1));
+        dad = (s16*)(em->adjust_adrs + (get_sel_adjust_tbl_ix(((WORK_Other*)em)->master_player) + 1));
         res_hs = wk->xyz[0].disp.pos - (em->xyz[0].disp.pos + dad[0] + (dad[1] / 2));
 
         if (res_hs < 0) {
@@ -1107,7 +1107,7 @@ s16 get_em_body_range(WORK* wk) {
         res_hs = -res_hs;
     }
 
-    res_hs += em->hosei_adrs[1].hos_box[0];
+    res_hs += em->adjust_adrs[1].hos_box[0];
 
     return res_hs;
 }
@@ -1169,7 +1169,7 @@ const u8 renda_status_table[4] = { 0, 20, 32, 0 };
 
 /** @brief Checks for rapid-fire cancel (renda) opportunity. */
 s32 check_renda_cancel(PLW* wk) {
-    if (wk->wu.rl_flag != wk->wu.rl_waza) {
+    if (wk->wu.rl_flag != wk->wu.active_move) {
         return 0;
     }
 

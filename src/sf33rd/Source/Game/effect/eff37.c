@@ -56,7 +56,7 @@ void effect_37_move(WORK_Other* ewk) {
                 ix = mwk->cg_type - 1;
             }
 
-            if (ewk->wu.rl_waza) {
+            if (ewk->wu.active_move) {
                 ewk->wu.position_x = mwk->position_x - panel_pos_hosei[ewk->wu.charset_id][ix][0];
             } else {
                 ewk->wu.position_x = mwk->position_x + panel_pos_hosei[ewk->wu.charset_id][ix][0];
@@ -95,7 +95,7 @@ s32 effect_37_init(WORK* wk, u8 gal, u8 ohen) {
     ewk->wu.charset_id = gal;
     ewk->wu.type = ohen;
     ewk->my_master = wk;
-    ewk->wu.rl_waza = wk->rl_flag;
+    ewk->wu.active_move = wk->rl_flag;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_family = 2;
     ewk->wu.my_mts = 14;

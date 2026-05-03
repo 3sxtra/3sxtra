@@ -45,7 +45,7 @@ void end_19000(s16 pl_num) {
                 g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
-                end_bg_pos_hosei2();
+                end_bg_pos_adjust2();
                 end_fam_set2();
                 break;
             }
@@ -61,7 +61,7 @@ void end_19000(s16 pl_num) {
 
     case 2:
         end_scn_pos_set2();
-        end_bg_pos_hosei2();
+        end_bg_pos_adjust2();
         end_fam_set2();
         break;
     }

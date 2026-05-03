@@ -405,8 +405,8 @@ static void Win_02000(PLW* wk) {
             set_char_move_init(&wk->wu, 9, 32);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -468,8 +468,8 @@ static void Win_03000(PLW* wk) {
         break;
     }
 
-    if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-        set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+    if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+        set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
     }
 }
 
@@ -519,8 +519,8 @@ static void Win_04000(PLW* wk) {
         break;
     }
 
-    if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-        set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+    if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+        set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
     }
 }
 
@@ -543,8 +543,8 @@ static void Normal_normal_Winner(PLW* wk) {
         break;
     }
 
-    if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-        set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+    if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+        set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
     }
 }
 
@@ -568,8 +568,8 @@ static void Judge_normal_winner(PLW* wk) {
         break;
     }
 
-    if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-        set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+    if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+        set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
     }
 }
 
@@ -632,8 +632,8 @@ static void Win_05000(PLW* wk) {
         }
     }
 
-    if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-        set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+    if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+        set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
     }
 }
 
@@ -657,8 +657,8 @@ static void Win_06000(PLW* wk) {
             set_char_move_init(&wk->wu, 9, work + 32);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -744,8 +744,8 @@ static void Win_07000(PLW* wk) {
         }
     }
 
-    if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-        set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+    if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+        set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
     }
 }
 
@@ -771,8 +771,8 @@ static void Win_08000(PLW* wk) {
             set_char_move_init(&wk->wu, 9, work + 32);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -862,8 +862,8 @@ static void Win_09000(PLW* wk) {
         break;
     }
 
-    if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-        set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+    if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+        set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
     }
 }
 
@@ -919,8 +919,8 @@ static void Win_10000(PLW* wk) {
             set_char_move_init(&wk->wu, 9, work + 32);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -1212,8 +1212,8 @@ static void Win_11000(PLW* wk) {
             set_char_move_init(&wk->wu, 9, work + 32);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -1305,8 +1305,8 @@ static void twelve_win_backjump(PLW* wk) {
             }
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -1322,8 +1322,8 @@ static void twelve_win_backjump(PLW* wk) {
             wk->wu.xyz[1].cal = 0;
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -1370,8 +1370,8 @@ static void Win_12000(PLW* wk) {
             effect_M2_init(&wk->wu, 1);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -1412,8 +1412,8 @@ static void Win_13000(PLW* wk) {
             set_char_move_init(&wk->wu, 9, work + 32);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -1461,8 +1461,8 @@ static void Win_14000(PLW* wk) {
         break;
     }
 
-    if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-        set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+    if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+        set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
     }
 }
 
@@ -1474,11 +1474,11 @@ static s32 urien_dash_chk(PLW* wk) {
     if (pos_w < 0) {
         pos_w = -pos_w;
 
-        if (!wk->wu.rl_waza) {
-            wk->wu.rl_waza = 1;
+        if (!wk->wu.active_move) {
+            wk->wu.active_move = 1;
         }
-    } else if (wk->wu.rl_waza) {
-        wk->wu.rl_waza = 0;
+    } else if (wk->wu.active_move) {
+        wk->wu.active_move = 0;
     }
 
     if (pos_w < 88) {
@@ -1497,7 +1497,7 @@ static void urien_dash(PLW* wk) {
         if (urien_dash_chk(wk)) {
             g_state.win_rno[1] = 5;
         } else {
-            wk->wu.rl_flag = wk->wu.rl_waza;
+            wk->wu.rl_flag = wk->wu.active_move;
             set_char_move_init(&wk->wu, 0, 4);
             setup_mvxy_data(&wk->wu, 2);
         }
@@ -1588,8 +1588,8 @@ static void Win_15000(PLW* wk) {
             set_char_move_init(&wk->wu, 9, work + 32);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
 
         break;
@@ -1672,12 +1672,12 @@ static void bonus_game_win_pause(PLW* wk) {
         break;
     }
 
-    if (set_field_hosei_flag(&g_state.plw[1], g_state.bs_scrrrl[1][0], 1)) {
-        set_field_hosei_flag(&g_state.plw[1], g_state.bs_scrrrl[1][1], 0);
+    if (set_field_adjust_flag(&g_state.plw[1], g_state.bs_scrrrl[1][0], 1)) {
+        set_field_adjust_flag(&g_state.plw[1], g_state.bs_scrrrl[1][1], 0);
     }
 
-    if (set_field_hosei_flag(&g_state.plw[0], g_state.bs_scrrrl[0][0], 1)) {
-        set_field_hosei_flag(&g_state.plw[0], g_state.bs_scrrrl[0][1], 0);
+    if (set_field_adjust_flag(&g_state.plw[0], g_state.bs_scrrrl[0][0], 1)) {
+        set_field_adjust_flag(&g_state.plw[0], g_state.bs_scrrrl[0][1], 0);
     }
 }
 
@@ -1703,16 +1703,16 @@ static void meta_win_pause(PLW* wk) {
     }
 
     if (g_state.Bonus_Game_Flag) {
-        if (set_field_hosei_flag(&g_state.plw[1], g_state.bs_scrrrl[1][0], 1)) {
-            set_field_hosei_flag(&g_state.plw[1], g_state.bs_scrrrl[1][1], 0);
+        if (set_field_adjust_flag(&g_state.plw[1], g_state.bs_scrrrl[1][0], 1)) {
+            set_field_adjust_flag(&g_state.plw[1], g_state.bs_scrrrl[1][1], 0);
         }
 
-        if (set_field_hosei_flag(&g_state.plw[0], g_state.bs_scrrrl[0][0], 1)) {
-            set_field_hosei_flag(&g_state.plw[0], g_state.bs_scrrrl[0][1], 0);
+        if (set_field_adjust_flag(&g_state.plw[0], g_state.bs_scrrrl[0][0], 1)) {
+            set_field_adjust_flag(&g_state.plw[0], g_state.bs_scrrrl[0][1], 0);
         }
     } else {
-        if (set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
-            set_field_hosei_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
+        if (set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrr, 1)) {
+            set_field_adjust_flag(&g_state.plw[wk->wu.id], g_state.scrl, 0);
         }
     }
 }

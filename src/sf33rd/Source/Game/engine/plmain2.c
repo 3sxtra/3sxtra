@@ -79,7 +79,7 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
     wk->wu.vital_old = wk->wu.vital_new;
 
     if (wk->sa_stop_flag != 1) {
-        waza_check(wk);
+        move_check(wk);
     }
 
     wk->wu.cmwk[10] = wk->cp->lgp;
@@ -105,7 +105,7 @@ static void player_mvbs_0000(PLW* wk) {
     wk->wu.hit_stop = wk->wu.damage_hit_stop = 0;
     wk->wu.hit_quake = wk->wu.damage_screen_shake = 0;
     wk->throw_invuln_flag = 0;
-    wk->zuru_timer = 0;
+    wk->slide_timer = 0;
     wk->invuln_flag = false;
     wk->is_throwing = wk->is_being_thrown = false;
     clear_kizetsu_point(wk);
@@ -247,11 +247,11 @@ static void player_mvbs_4000(PLW* wk) {
     if (!check_hit_stop(wk)) {
         plmain_lv_02[wk->wu.routine_no[1]](wk);
 
-        if ((g_state.Timer_Freeze == 0) && (wk->wu.hit_stop == 0) && (wk->zuru_timer > 0)) {
-            wk->zuru_timer -= 2;
+        if ((g_state.Timer_Freeze == 0) && (wk->wu.hit_stop == 0) && (wk->slide_timer > 0)) {
+            wk->slide_timer -= 2;
         }
 
-        if (wk->zuru_timer < 0) {
+        if (wk->slide_timer < 0) {
             wk->invuln_flag = true;
         } else {
             wk->invuln_flag = false;

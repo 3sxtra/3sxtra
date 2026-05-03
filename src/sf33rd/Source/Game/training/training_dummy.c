@@ -38,11 +38,11 @@ DummySettings g_dummy_settings = {
 /* ------------------------------------------------------------------ */
 
 static u16 guard_back_lever(PLW* wk) {
-    return (wk->wu.rl_waza == 0) ? 0x04 : 0x08;
+    return (wk->wu.active_move == 0) ? 0x04 : 0x08;
 }
 
 static u16 forward_lever(PLW* wk) {
-    return (wk->wu.rl_waza == 0) ? 0x08 : 0x04;
+    return (wk->wu.active_move == 0) ? 0x08 : 0x04;
 }
 
 static u16 down_forward_lever(PLW* wk) {

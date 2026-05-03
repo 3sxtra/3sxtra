@@ -10,26 +10,26 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/plpat00.h"
-#include "sf33rd/Source/Game/engine/plpat01.h"
-#include "sf33rd/Source/Game/engine/plpat02.h"
-#include "sf33rd/Source/Game/engine/plpat03.h"
-#include "sf33rd/Source/Game/engine/plpat04.h"
-#include "sf33rd/Source/Game/engine/plpat05.h"
-#include "sf33rd/Source/Game/engine/plpat06.h"
-#include "sf33rd/Source/Game/engine/plpat07.h"
-#include "sf33rd/Source/Game/engine/plpat08.h"
-#include "sf33rd/Source/Game/engine/plpat09.h"
-#include "sf33rd/Source/Game/engine/plpat10.h"
-#include "sf33rd/Source/Game/engine/plpat11.h"
-#include "sf33rd/Source/Game/engine/plpat12.h"
-#include "sf33rd/Source/Game/engine/plpat13.h"
-#include "sf33rd/Source/Game/engine/plpat14.h"
-#include "sf33rd/Source/Game/engine/plpat16.h"
-#include "sf33rd/Source/Game/engine/plpat17.h"
-#include "sf33rd/Source/Game/engine/plpat18.h"
-#include "sf33rd/Source/Game/engine/plpat19.h"
-#include "sf33rd/Source/Game/engine/plpat20.h"
+#include "sf33rd/Source/Game/engine/plpat_gill.h"
+#include "sf33rd/Source/Game/engine/plpat_alex.h"
+#include "sf33rd/Source/Game/engine/plpat_ryu.h"
+#include "sf33rd/Source/Game/engine/plpat_yun.h"
+#include "sf33rd/Source/Game/engine/plpat_dudley.h"
+#include "sf33rd/Source/Game/engine/plpat_necro.h"
+#include "sf33rd/Source/Game/engine/plpat_hugo.h"
+#include "sf33rd/Source/Game/engine/plpat_ibuki.h"
+#include "sf33rd/Source/Game/engine/plpat_elena.h"
+#include "sf33rd/Source/Game/engine/plpat_oro.h"
+#include "sf33rd/Source/Game/engine/plpat_yang.h"
+#include "sf33rd/Source/Game/engine/plpat_ken.h"
+#include "sf33rd/Source/Game/engine/plpat_sean.h"
+#include "sf33rd/Source/Game/engine/plpat_urien.h"
+#include "sf33rd/Source/Game/engine/plpat_akuma.h"
+#include "sf33rd/Source/Game/engine/plpat_chun_li.h"
+#include "sf33rd/Source/Game/engine/plpat_makoto.h"
+#include "sf33rd/Source/Game/engine/plpat_q.h"
+#include "sf33rd/Source/Game/engine/plpat_twelve.h"
+#include "sf33rd/Source/Game/engine/plpat_remy.h"
 #include "sf33rd/Source/Game/engine/plpnm.h"
 #include "sf33rd/Source/Game/engine/pls00.h"
 #include "sf33rd/Source/Game/engine/pls01.h"
@@ -42,16 +42,16 @@ static void Attack_07000(PLW* wk);
 static void attack_ground_init(PLW* wk);
 static void attack_special_init(PLW* wk);
 static void get_cancel_timer(PLW* wk);
-static void check_ja_nmj_dummy_RTNM(PLW* wk);
+static void check_jump_attack_dummy_rtn(PLW* wk);
 static u8 get_cjdR(PLW*);
 
 void (*const plpat_lv_00[16])(PLW* wk);
 void (*const plxx_extra_attack_table[])();
 
-const u8* cjdr_karaburi_table[20];
-const u8* cjdr_hits_table[20];
-const u8* cjdr_blocking_table[20];
-const u8* cjdr_defense_table[20];
+const u8* cancel_whiff_table[20];
+const u8* cancel_hit_table[20];
+const u8* cancel_block_table[20];
+const u8* cancel_defense_table[20];
 
 /** @brief Main player attack dispatcher — routes to attack level sub-handlers. */
 void Player_attack(PLW* wk) {
@@ -65,8 +65,8 @@ void Player_attack(PLW* wk) {
     wk->scr_pos_set_flag = 1;
     wk->dm_hos_flag = 0;
     wk->recovery_roll_success = 0;
-    wk->zuru_timer = 0;
-    wk->zuru_ix_counter = 0;
+    wk->slide_timer = 0;
+    wk->slide_index_counter = 0;
     wk->sa_stop_flag = 0;
     wk->recovery_roll_success = 0;
     wk->recovery_roll_ok_timer = 0;
@@ -114,8 +114,8 @@ void Player_attack(PLW* wk) {
 /** @brief Common case-0 preamble for ground-based attack init. */
 static void attack_ground_init(PLW* wk) {
     wk->wu.routine_no[3]++;
-    hoken_muriyari_chakuchi(wk);
-    wk->wu.rl_flag = wk->wu.rl_waza;
+    force_grounded_state(wk);
+    wk->wu.rl_flag = wk->wu.active_move;
     setup_lvdir_after_autodir(wk);
     get_cancel_timer(wk);
     set_char_move_init(&wk->wu, 4, wk->as->char_ix);
@@ -221,8 +221,8 @@ static void Attack_03000(PLW* wk) {
         wk->wu.routine_no[3]++;
         get_cancel_timer(wk);
         if ((g_state.Bonus_Game_Flag == 20 && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
-            hoken_muriyari_chakuchi(wk);
-            wk->wu.rl_flag = wk->wu.rl_waza;
+            force_grounded_state(wk);
+            wk->wu.rl_flag = wk->wu.active_move;
             setup_lvdir_after_autodir(wk);
             Normal_18000_init_unit(wk, wk->wu.pat_status);
         }
@@ -243,7 +243,7 @@ static void Attack_03000(PLW* wk) {
         jumping_union_process(&wk->wu, 3);
 
         if (wk->wu.routine_no[3] != 3) {
-            check_ja_nmj_dummy_RTNM(wk);
+            check_jump_attack_dummy_rtn(wk);
 
             if (wk->wu.cg_type == 0x40) {
                 if (!(wk->spmv_ng_flag & 0x100000) && ja_nmj_rno_change(&wk->wu)) {
@@ -319,36 +319,36 @@ static s16 ja_nmj_rno_change(WORK* wk) {
 }
 
 /** @brief Checks and handles dummy RTN for jump normal/special transitions. */
-static void check_ja_nmj_dummy_RTNM(PLW* wk) {
+static void check_jump_attack_dummy_rtn(PLW* wk) {
     if (wk->wu.xyz[1].disp.pos <= 0) {
-        wk->ja_nmj_rno = 0;
+        wk->jump_attack_routine = 0;
         return;
     }
 
-    switch (wk->ja_nmj_rno) {
+    switch (wk->jump_attack_routine) {
     case 0:
         if ((wk->wu.cg_ja.atix != 0) || (wk->wu.cg_ja.caix != 0)) {
-            wk->ja_nmj_rno = 1;
+            wk->jump_attack_routine = 1;
         }
 
         break;
 
     case 1:
         if (((wk->wu.cg_ja.atix == 0) && (wk->wu.cg_ja.caix == 0)) || !wk->wu.att_hit_ok) {
-            wk->ja_nmj_cnt = get_cjdR(wk);
-            wk->ja_nmj_rno = 2;
+            wk->jump_attack_timer = get_cjdR(wk);
+            wk->jump_attack_routine = 2;
         }
 
         break;
 
     case 2:
         if (((wk->wu.cg_ja.atix != 0) || (wk->wu.cg_ja.caix != 0)) && wk->wu.att_hit_ok) {
-            wk->ja_nmj_rno = 1;
+            wk->jump_attack_routine = 1;
             break;
         }
 
-        if (!--wk->ja_nmj_cnt) {
-            wk->ja_nmj_rno = 3;
+        if (!--wk->jump_attack_timer) {
+            wk->jump_attack_routine = 3;
         }
 
         break;
@@ -356,7 +356,7 @@ static void check_ja_nmj_dummy_RTNM(PLW* wk) {
     default:
         if ((wk->wu.cg_ja.atix != 0) || (wk->wu.cg_ja.caix != 0)) {
             if (wk->wu.att_hit_ok) {
-                wk->ja_nmj_rno = 1;
+                wk->jump_attack_routine = 1;
                 break;
             }
         } else if (wk->wu.cg_type == 0) {
@@ -369,7 +369,7 @@ static void check_ja_nmj_dummy_RTNM(PLW* wk) {
 
 /** @brief Gets the cancel-jump-dash routing data for the current state. */
 static u8 get_cjdR(PLW* wk) {
-    s16 w_ix = (wk->wu.kind_of_waza & 6);
+    s16 w_ix = (wk->wu.attack_type & 6);
     w_ix += ((wk->wu.hf.hit.player & 0xA2) != 0);
 
     if (wk->wu.att_hit_ok || (wk->wu.hf.hit.player == 0)) {
@@ -389,16 +389,16 @@ static u8 get_cjdR(PLW* wk) {
     }
 
 case0:
-    return cjdr_karaburi_table[wk->player_number][w_ix];
+    return cancel_whiff_table[wk->player_number][w_ix];
 
 case1:
-    return cjdr_hits_table[wk->player_number][w_ix];
+    return cancel_hit_table[wk->player_number][w_ix];
 
 case2:
-    return cjdr_blocking_table[wk->player_number][w_ix];
+    return cancel_block_table[wk->player_number][w_ix];
 
 case3:
-    return cjdr_defense_table[wk->player_number][w_ix];
+    return cancel_defense_table[wk->player_number][w_ix];
 }
 
 /** @brief Attack level 4: EX special move execution. */
@@ -425,14 +425,14 @@ static void Attack_04000(PLW* wk) {
 static void Attack_05000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
-        wk->wu.rl_flag = wk->wu.rl_waza;
+        wk->wu.rl_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
 
         if (wk->wu.xyz[1].disp.pos > 0) {
             wk->wu.routine_no[3] = 2;
             char_move_wca(&wk->wu);
         } else {
-            hoken_muriyari_chakuchi(wk);
+            force_grounded_state(wk);
             wk->wu.routine_no[3] = 1;
         }
 
@@ -473,13 +473,13 @@ static void Attack_07000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
+        force_grounded_state(wk);
         get_cancel_timer(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
 
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
-            wk->wu.rl_flag = wk->wu.rl_waza;
+            wk->wu.rl_flag = wk->wu.active_move;
             break;
         }
 
@@ -490,7 +490,7 @@ static void Attack_07000(PLW* wk) {
 
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
-            wk->wu.rl_flag = wk->wu.rl_waza;
+            wk->wu.rl_flag = wk->wu.active_move;
         }
 
         break;
@@ -506,7 +506,7 @@ static void Attack_08000(PLW* wk) {
         wk->wu.routine_no[3]++;
 
         if (wk->wu.xyz[1].disp.pos <= 0) {
-            wk->wu.rl_flag = wk->wu.rl_waza;
+            wk->wu.rl_flag = wk->wu.active_move;
             wk->wu.xyz[1].disp.pos = 0;
 
             ixx = ((wk->wu.pat_status - 20) / 2 & 3) + 9;
@@ -562,14 +562,14 @@ static void Attack_09000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
+        force_grounded_state(wk);
         get_cancel_timer(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->data_ix);
 
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
-            wk->wu.rl_flag = wk->wu.rl_waza;
+            wk->wu.rl_flag = wk->wu.active_move;
             break;
         }
 
@@ -580,7 +580,7 @@ static void Attack_09000(PLW* wk) {
 
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
-            wk->wu.rl_flag = wk->wu.rl_waza;
+            wk->wu.rl_flag = wk->wu.active_move;
         }
 
         if (wk->wu.cg_type == 1) {
@@ -607,8 +607,8 @@ static void Attack_10000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
-        wk->wu.rl_flag = wk->wu.rl_waza;
+        force_grounded_state(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->data_ix);
         wk->cancel_timer = 0;
@@ -679,8 +679,8 @@ static void Attack_14000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
-        wk->wu.rl_flag = wk->wu.rl_waza;
+        force_grounded_state(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
         wk->cat_break_ok_timer = 6;
         setup_lvdir_after_autodir(wk);
         set_char_move_init(&wk->wu, 4, wk->as->char_ix);
@@ -703,7 +703,7 @@ static void Attack_15000(PLW* wk) {
         wk->wu.routine_no[3]++;
 
         if (wk->wu.xyz[1].disp.pos <= 0) {
-            wk->wu.rl_flag = wk->wu.rl_waza;
+            wk->wu.rl_flag = wk->wu.active_move;
             setup_lvdir_after_autodir(wk);
             wk->wu.xyz[1].disp.pos = 0;
             Normal_18000_init_unit(wk, wk->wu.pat_status);
@@ -764,7 +764,7 @@ static void get_cancel_timer(PLW* wk) {
 }
 
 /** @brief Forces a landing if the player is airborne as a safety check. */
-void hoken_muriyari_chakuchi(PLW* wk) {
+void force_grounded_state(PLW* wk) {
     if ((g_state.Bonus_Game_Flag == 20) && wk->bs2_on_car) {
         wk->wu.xyz[1].disp.pos = g_state.bs2_floor[2];
         return;
@@ -779,35 +779,35 @@ void (*const plpat_lv_00[16])(PLW* wk) = { Attack_00000, Attack_01000, Attack_02
                                            Attack_00000, Attack_00000, Attack_14000, Attack_15000 };
 
 void (*const plxx_extra_attack_table[])() = {
-    pl00_extra_attack, pl01_extra_attack, pl02_extra_attack, pl03_extra_attack, pl04_extra_attack,
-    pl05_extra_attack, pl06_extra_attack, pl07_extra_attack, pl08_extra_attack, pl09_extra_attack,
-    pl10_extra_attack, pl11_extra_attack, pl12_extra_attack, pl13_extra_attack, pl14_extra_attack,
-    pl16_extra_attack, pl17_extra_attack, pl18_extra_attack, pl19_extra_attack, pl20_extra_attack
+    pl_gill_extra_attack, pl_alex_extra_attack, pl_ryu_extra_attack, pl_yun_extra_attack, pl_dudley_extra_attack,
+    pl_necro_extra_attack, pl_hugo_extra_attack, pl_ibuki_extra_attack, pl_elena_extra_attack, pl_oro_extra_attack,
+    pl_yang_extra_attack, pl_ken_extra_attack, pl_sean_extra_attack, pl_urien_extra_attack, pl_akuma_extra_attack,
+    pl_chun_li_extra_attack, pl_makoto_extra_attack, pl_q_extra_attack, pl_twelve_extra_attack, pl_remy_extra_attack
 };
 
-const u8 cjdr_karaburi_type3[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
+const u8 cancel_whiff_type3[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
 
-const u8* cjdr_karaburi_table[20] = {
-    cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3,
-    cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3,
-    cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3,
-    cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3, cjdr_karaburi_type3
+const u8* cancel_whiff_table[20] = {
+    cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
+    cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
+    cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
+    cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3
 };
 
-const u8 cjdr_hits_type3[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
+const u8 cancel_hit_type3[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
 
-const u8* cjdr_hits_table[20] = {
-    cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3,
-    cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3,
-    cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3,
-    cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3, cjdr_hits_type3,
+const u8* cancel_hit_table[20] = {
+    cancel_hit_type3, cancel_hit_type3, cancel_hit_type3, cancel_hit_type3, cancel_hit_type3,
+    cancel_hit_type3, cancel_hit_type3, cancel_hit_type3, cancel_hit_type3, cancel_hit_type3,
+    cancel_hit_type3, cancel_hit_type3, cancel_hit_type3, cancel_hit_type3, cancel_hit_type3,
+    cancel_hit_type3, cancel_hit_type3, cancel_hit_type3, cancel_hit_type3, cancel_hit_type3,
 };
 
 const u8 cjdr_blocking_type0[8] = { 16, 7, 18, 9, 20, 11, 20, 11 };
 const u8 cjdr_blocking_type1[8] = { 17, 8, 19, 10, 21, 12, 21, 12 };
 const u8 cjdr_blocking_type2[8] = { 18, 9, 20, 11, 22, 13, 22, 13 };
 
-const u8* cjdr_blocking_table[20] = {
+const u8* cancel_block_table[20] = {
     cjdr_blocking_type0, cjdr_blocking_type1, cjdr_blocking_type1, cjdr_blocking_type1, cjdr_blocking_type0,
     cjdr_blocking_type2, cjdr_blocking_type1, cjdr_blocking_type0, cjdr_blocking_type1, cjdr_blocking_type1,
     cjdr_blocking_type1, cjdr_blocking_type0, cjdr_blocking_type1, cjdr_blocking_type2, cjdr_blocking_type0,
@@ -816,7 +816,7 @@ const u8* cjdr_blocking_table[20] = {
 
 const u8 cjdr_defense_type3[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
 
-const u8* cjdr_defense_table[20] = { cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
+const u8* cancel_defense_table[20] = { cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
                                      cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
                                      cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
                                      cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,

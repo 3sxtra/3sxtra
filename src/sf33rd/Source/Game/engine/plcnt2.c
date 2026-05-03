@@ -43,7 +43,7 @@ s32 Player_control_bonus() {
         g_state.players_timer &= 0x7FFF;
         player_bonus_process[g_state.pcon_rno[0]]();
         check_body_touch();
-        check_damage_hosei_bonus();
+        check_damage_adjust_bonus();
         set_quake(&g_state.plw[0]);
         set_quake(&g_state.plw[1]);
 
@@ -268,8 +268,8 @@ static void setup_bs_scrrrl_bs2() {
 /** @brief Processes player work updates for bonus stage (movement, scroll). */
 void move_player_work_bonus() {
     g_state.positional_relation = check_work_position(&g_state.plw->wu, &g_state.plw[1].wu);
-    set_rl_waza(&g_state.plw[0]);
-    set_rl_waza(&g_state.plw[1]);
+    set_rl_move(&g_state.plw[0]);
+    set_rl_move(&g_state.plw[1]);
     g_state.Timer_Freeze = 0;
 
     if (g_state.Bonus_Game_Flag == 20) {
@@ -288,14 +288,14 @@ void move_player_work_bonus() {
 static void move_P1_move_P2_bonus(s16* field_work) {
     Player_move_bonus(&g_state.plw[0], processed_lvbt(Convert_User_Setting(0)));
 
-    if (set_field_hosei_flag(&g_state.plw[0], field_work[0], 1) != 0) {
-        set_field_hosei_flag(&g_state.plw[0], field_work[1], 0);
+    if (set_field_adjust_flag(&g_state.plw[0], field_work[0], 1) != 0) {
+        set_field_adjust_flag(&g_state.plw[0], field_work[1], 0);
     }
 
     Player_move_bonus(&g_state.plw[1], processed_lvbt(Convert_User_Setting(1)));
 
-    if (set_field_hosei_flag(&g_state.plw[1], field_work[2], 1) != 0) {
-        set_field_hosei_flag(&g_state.plw[1], field_work[3], 0);
+    if (set_field_adjust_flag(&g_state.plw[1], field_work[2], 1) != 0) {
+        set_field_adjust_flag(&g_state.plw[1], field_work[3], 0);
     }
 
     if (g_state.Bonus_Game_Flag == 20) {
@@ -307,14 +307,14 @@ static void move_P1_move_P2_bonus(s16* field_work) {
 static void move_P2_move_P1_bonus(s16* field_work) {
     Player_move_bonus(&g_state.plw[1], processed_lvbt(Convert_User_Setting(1)));
 
-    if (set_field_hosei_flag(&g_state.plw[1], field_work[2], 1) != 0) {
-        set_field_hosei_flag(&g_state.plw[1], field_work[3], 0);
+    if (set_field_adjust_flag(&g_state.plw[1], field_work[2], 1) != 0) {
+        set_field_adjust_flag(&g_state.plw[1], field_work[3], 0);
     }
 
     Player_move_bonus(&g_state.plw[0], processed_lvbt(Convert_User_Setting(0)));
 
-    if (set_field_hosei_flag(&g_state.plw[0], field_work[0], 1) != 0) {
-        set_field_hosei_flag(&g_state.plw[0], field_work[1], 0);
+    if (set_field_adjust_flag(&g_state.plw[0], field_work[0], 1) != 0) {
+        set_field_adjust_flag(&g_state.plw[0], field_work[1], 0);
     }
 
     if (g_state.Bonus_Game_Flag == 20) {
@@ -323,7 +323,7 @@ static void move_P2_move_P1_bonus(s16* field_work) {
 }
 
 /** @brief Applies damage correction for bonus stage interactions. */
-void check_damage_hosei_bonus() {
+void check_damage_adjust_bonus() {
     g_state.plw[0].forced_movement = g_state.plw[0].scaling_remainder;
     g_state.plw[1].forced_movement = g_state.plw[1].scaling_remainder;
 

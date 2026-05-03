@@ -187,8 +187,8 @@ static void EFF42_MOVE(WORK_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.rl_waza != g_state.Select_Timer) {
-            ewk->wu.rl_waza = g_state.Select_Timer;
+        if (ewk->wu.active_move != g_state.Select_Timer) {
+            ewk->wu.active_move = g_state.Select_Timer;
             Setup_Char_Index(ewk);
             set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
         }
@@ -232,7 +232,7 @@ s32 effect_42_init(s16 type) {
     ewk->wu.my_col_code = 0x2090;
     ewk->wu.my_family = 3;
     ewk->wu.dir_timer = 10;
-    ewk->wu.rl_waza = g_state.Select_Timer;
+    ewk->wu.active_move = g_state.Select_Timer;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.dir_old = type;
     ewk->wu.my_mts = 13;

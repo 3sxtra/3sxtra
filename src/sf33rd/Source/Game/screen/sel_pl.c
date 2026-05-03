@@ -488,7 +488,7 @@ static void Initialize_BG() {
 static void Setup_BG_General() {
     Zoomf_Init();
     g_state.bg_w.bgw[0].old_pos_x = g_state.bg_w.bgw[0].xy[0].disp.pos;
-    bg_pos_hosei2();
+    bg_pos_adjust2();
     Bg_Family_Set();
 }
 

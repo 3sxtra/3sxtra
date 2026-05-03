@@ -569,7 +569,7 @@ typedef struct GameState {
 
     WORK_CP wcp[2];
     T_PL_LVR t_pl_lvr[2];
-    WAZA_WORK waza_work[2][56];
+    MOVE_WORK move_work[2][56];
 
     // ======================================================================
     // Combo tracking (cmb_win)

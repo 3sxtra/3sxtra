@@ -94,7 +94,7 @@ void effect_D9_move(WORK_Other* ewk) {
             }
 
             if (((ewk->wu.vital_old & 8) == 0 || (mwk->sa->ok == -1)) &&
-                (((ewk->wu.vital_old & 0x10) == 0) || (ewk->wu.total_paring == mwk->wu.kind_of_waza))) {
+                (((ewk->wu.vital_old & 0x10) == 0) || (ewk->wu.total_paring == mwk->wu.attack_type))) {
                 if (--ewk->wu.vitality <= 0) {
                     ewk->wu.dir_step += 2;
 
@@ -148,7 +148,7 @@ s32 effect_D9_init(PLW* wk, u8 data) {
     ewk->wu.dir_old = wk->wu.dm_count_up;
     ewk->wu.dm_attribute = wk->wu.dm_attribute;
     ewk->wu.type = wk->wu.pat_status;
-    ewk->wu.total_paring = wk->wu.kind_of_waza;
+    ewk->wu.total_paring = wk->wu.attack_type;
     ewk->my_master = wk;
     ewk->master_id = wk->wu.id;
     ewk->master_work_id = wk->wu.work_id;

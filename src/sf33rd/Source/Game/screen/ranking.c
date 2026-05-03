@@ -505,7 +505,7 @@ void Ranking_Sub() {
         bg_etc_write(6);
     }
 
-    bg_pos_hosei2();
+    bg_pos_adjust2();
     Bg_Family_Set();
 }
 

@@ -227,7 +227,7 @@ typedef struct {
         struct {
             s16 cgd_type;
             u8 pat_status;
-            u8 kind_of_waza;
+            u8 attack_type;
         };
         u32 header_block_1;
     };
@@ -293,7 +293,7 @@ typedef struct {
     s16 work_id;
     s16 id;
     s8 rl_flag;
-    s8 rl_waza;
+    s8 active_move;
     void* target_adrs; ///< @netplay_sync Pointer — zeroed for checksum
     void* hit_adrs;    ///< @netplay_sync Pointer — zeroed for checksum
     void* dmg_adrs;    ///< @netplay_sync Pointer — zeroed for checksum
@@ -396,7 +396,7 @@ typedef struct {
         struct {
             s16 cgd_type;
             u8 pat_status;
-            u8 kind_of_waza;
+            u8 attack_type;
             u8 hit_range;
             u8 total_paring;
             u8 total_att_set;
@@ -465,7 +465,7 @@ typedef struct {
     CollisionHitbox* attack_adrs;
     CollisionHitbox* attack_hitbox;
     CollisionHitbox* h_eat;
-    CollisionPushbox* hosei_adrs;
+    CollisionPushbox* adjust_adrs;
     CollisionPushbox* pushbox;
     AttackIndexTable* att_ix_table;
     AttackIndexTable att;
@@ -523,7 +523,7 @@ typedef struct {
     s8 dm_nodeathattack;
     u8 dm_exdm_ix;
     u8 dm_dip;
-    u8 dm_kind_of_waza;
+    u8 damage_attack_type;
     s16 attpow;
     s16 defpow;
     void* my_effadrs;
@@ -536,7 +536,7 @@ typedef struct {
     u8 dmg_work_id;
     s8 phase_k5_init_flag;
     s8 phase_k5_exec_ok;
-    u8 waza_type;
+    u8 move_type;
     u8 swallow_no_effect;
     s16 effect_e3_index;
     s16 effect_e4_index;
@@ -628,8 +628,8 @@ typedef struct {
     /// Number of the character that the player controls.
     s16 player_number;
 
-    s16 zuru_timer;
-    u16 zuru_ix_counter;
+    s16 slide_timer;
+    u16 slide_index_counter;
 
     // Invulnerability?
     bool invuln_flag;
@@ -737,8 +737,8 @@ typedef struct {
     u8 air_jump_ok_time;
     s16 waku_ram_index;
     u16 permited_koa;
-    u8 ja_nmj_rno;
-    u8 ja_nmj_cnt;
+    u8 jump_attack_routine;
+    u8 jump_attack_timer;
     u8 kind_of_blocking;
     u8 metamorphose;
     s16 metamor_index;
@@ -1702,7 +1702,7 @@ typedef struct {
     s16 app_nml_block;
     s16 app_rpd_block;
     s16 app_grd_block;
-    s16 onaji_waza;
+    s16 same_move;
     s16 grd_miss;
     s16 grd_mcnt;
     s16 grade;
@@ -2131,7 +2131,7 @@ typedef struct {
     } uni0;
     s16 free3;
     s16 shot_ok;
-} WAZA_WORK;
+} MOVE_WORK;
 
 typedef struct {
     s16 r_no_0;

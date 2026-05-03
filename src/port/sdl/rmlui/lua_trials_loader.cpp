@@ -66,7 +66,7 @@ static const char* CHARA_NAMES[] = { NULL,      "Alex",  "Ryu",    "Ken",   "Gou
 // ---- Dynamic storage ----
 struct DynTrialStep {
     TrialRequirementType type;
-    s16 waza_ids[MAX_WAZA_ALTERNATIVES];
+    s16 move_ids[MAX_MOVE_ALTERNATIVES];
     std::string display_name;
     std::string kadai_input;
 };
@@ -85,7 +85,7 @@ static std::vector<const TrialDef*> s_flat_def_ptrs;
 static std::vector<TrialCharacterDef> s_char_defs;
 static bool s_loaded = false;
 
-// ---- Waza g_state.ID parser (mirrors lua_trial_parser.py parse_waza_id) ----
+// ---- Move g_state.ID parser (mirrors lua_trial_parser.py parse_move_id) ----
 
 static void parse_waza_values(const char* s, s16* out, int max_out, int* count) {
     *count = 0;
@@ -160,8 +160,8 @@ static bool read_combo_tests(lua_State* L) {
 
                 DynTrialStep step;
                 step.type = TRIAL_REQ_ATTACK_HIT;
-                for (int w = 0; w < MAX_WAZA_ALTERNATIVES; w++)
-                    step.waza_ids[w] = (s16)0xFFFF;
+                for (int w = 0; w < MAX_MOVE_ALTERNATIVES; w++)
+                    step.move_ids[w] = (s16)0xFFFF;
 
                 // Field 1: display name
                 lua_rawgeti(L, -1, 1);
@@ -188,38 +188,38 @@ static bool read_combo_tests(lua_State* L) {
                 }
                 lua_pop(L, 1);
 
-                // Fields 3+: waza g_state.ID strings like "A00460034"
+                // Fields 3+: move g_state.ID strings like "A00460034"
                 int waza_count = 0;
                 int field_count = (int)luaL_len(L, -1);
-                for (int fi = 3; fi <= field_count && waza_count < MAX_WAZA_ALTERNATIVES; fi++) {
+                for (int fi = 3; fi <= field_count && waza_count < MAX_MOVE_ALTERNATIVES; fi++) {
                     lua_rawgeti(L, -1, fi);
                     if (lua_isstring(L, -1)) {
                         const char* ws = lua_tostring(L, -1);
                         // Skip timer values (pure numbers)
                         if (ws[0] >= 'A' && ws[0] <= 'Z') {
-                            s16 vals[MAX_WAZA_ALTERNATIVES];
+                            s16 vals[MAX_MOVE_ALTERNATIVES];
                             int vc = 0;
-                            parse_waza_values(ws, vals, MAX_WAZA_ALTERNATIVES, &vc);
-                            for (int vi = 0; vi < vc && waza_count < MAX_WAZA_ALTERNATIVES; vi++) {
+                            parse_waza_values(ws, vals, MAX_MOVE_ALTERNATIVES, &vc);
+                            for (int vi = 0; vi < vc && waza_count < MAX_MOVE_ALTERNATIVES; vi++) {
                                 // Deduplicate
                                 bool dup = false;
                                 for (int di = 0; di < waza_count; di++) {
-                                    if (step.waza_ids[di] == vals[vi]) {
+                                    if (step.move_ids[di] == vals[vi]) {
                                         dup = true;
                                         break;
                                     }
                                 }
                                 if (!dup)
-                                    step.waza_ids[waza_count++] = vals[vi];
+                                    step.move_ids[waza_count++] = vals[vi];
                             }
                         }
                     } else if (lua_istable(L, -1)) {
                         // Sub-array of hex ints (ANIM2P style: {0x422A, 0x42E9})
                         int sub_len = (int)luaL_len(L, -1);
-                        for (int subi = 1; subi <= sub_len && waza_count < MAX_WAZA_ALTERNATIVES; subi++) {
+                        for (int subi = 1; subi <= sub_len && waza_count < MAX_MOVE_ALTERNATIVES; subi++) {
                             lua_rawgeti(L, -1, subi);
                             if (lua_isinteger(L, -1)) {
-                                step.waza_ids[waza_count++] = (s16)lua_tointeger(L, -1);
+                                step.move_ids[waza_count++] = (s16)lua_tointeger(L, -1);
                             }
                             lua_pop(L, 1);
                         }
@@ -401,7 +401,7 @@ static void flatten_to_c_structs() {
             memset(td.steps, 0, sizeof(td.steps));
             for (int i = 0; i < td.num_steps; i++) {
                 td.steps[i].type = dt.steps[i].type;
-                memcpy(td.steps[i].waza_ids, dt.steps[i].waza_ids, sizeof(td.steps[i].waza_ids));
+                memcpy(td.steps[i].move_ids, dt.steps[i].move_ids, sizeof(td.steps[i].move_ids));
                 // Strings: use strdup so they persist (leaked on purpose - lives for app lifetime)
                 td.steps[i].display_name = strdup(dt.steps[i].display_name.c_str());
                 td.steps[i].kadai_input = strdup(dt.steps[i].kadai_input.c_str());

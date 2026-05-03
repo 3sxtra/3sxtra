@@ -402,12 +402,12 @@ void setup_catch_atthit(WORK* as, WORK* ds) {
 void set_catch_hit_mark_pos(WORK* as, WORK* ds) {
     if (as->att.mkh_ix) {
         if (as->rl_flag) {
-            as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_hosei_table[as->att.mkh_ix][0];
+            as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.mkh_ix][0];
         } else {
-            as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_hosei_table[as->att.mkh_ix][0];
+            as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_adjust_table[as->att.mkh_ix][0];
         }
 
-        as->hit_mark_y = as->xyz[1].disp.pos + hit_mark_hosei_table[as->att.mkh_ix][1];
+        as->hit_mark_y = as->xyz[1].disp.pos + hit_mark_adjust_table[as->att.mkh_ix][1];
         return;
     }
 
@@ -461,12 +461,12 @@ void set_struck_status(s16 ix) {
 void cal_hit_mark_pos(WORK* as, WORK* ds, s16 ix2, s16 ix) {
     if (as->att.mkh_ix) {
         if (as->rl_flag) {
-            as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_hosei_table[as->att.mkh_ix][0];
+            as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.mkh_ix][0];
         } else {
-            as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_hosei_table[as->att.mkh_ix][0];
+            as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_adjust_table[as->att.mkh_ix][0];
         }
 
-        as->hit_mark_y = as->xyz[1].disp.pos + hit_mark_hosei_table[as->att.mkh_ix][1];
+        as->hit_mark_y = as->xyz[1].disp.pos + hit_mark_adjust_table[as->att.mkh_ix][1];
     } else {
         cal_hit_mark_position(ds, as, hs[ix].dh, hs[ix2].ah);
     }
@@ -657,12 +657,12 @@ void set_paring_status(PLW* as, PLW* ds) {
         ds->wu.routine_no[2] = ds->wu.old_routine_no[2];
     } else {
         hsadix = 4;
-        if ((as->wu.kind_of_waza & 0xF8) == 0) {
-            hsadix = (as->wu.kind_of_waza / 2) & 3;
+        if ((as->wu.attack_type & 0xF8) == 0) {
+            hsadix = (as->wu.attack_type / 2) & 3;
         }
         ds->wu.routine_no[1] = 0;
         ds->wu.routine_no[3] = 0;
-        waza_compel_all_init2(ds);
+        move_compel_all_init2(ds);
         dm_status_copy(&as->wu, &ds->wu);
         ds->wu.damage_stun_value = 0;
         ds->wu.cg_type = 0;
@@ -691,7 +691,7 @@ void set_paring_status(PLW* as, PLW* ds) {
         ds->wu.dm_arts_point = 0;
 
         if (as->wu.pat_status >= 0xE && as->wu.pat_status < 31 && as->wu.work_id == 1 &&
-            sel_sp_ch_tbl[as->wu.kind_of_waza >> 3] == 0) {
+            sel_sp_ch_tbl[as->wu.attack_type >> 3] == 0) {
             remake_mvxy_PoGR(&as->wu);
         }
 
@@ -714,8 +714,8 @@ void set_paring_status(PLW* as, PLW* ds) {
 }
 
 /** @brief Returns whether the given move is a normal (non-special) attack. */
-s32 check_normal_attack(u8 waza) {
-    return sel_sp_ch_tbl[waza >> 3] == 0;
+s32 check_normal_attack(u8 attack) {
+    return sel_sp_ch_tbl[attack >> 3] == 0;
 }
 
 /** @brief Parses hit-pattern extended data and sets attack/damage flags. */
@@ -752,8 +752,8 @@ void hit_pattern_extdat_check(WORK* as) {
     }
 
     if (as->work_id == 1) {
-        if ((((PLW*)as)->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && as->cg_cancel & 8 && !(as->waza_type & 0xF8)) {
-            if (as->waza_type & 6) {
+        if ((((PLW*)as)->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && as->cg_cancel & 8 && !(as->move_type & 0xF8)) {
+            if (as->move_type & 6) {
                 as->cg_cancel &= 0xF7;
                 as->cg_meoshi = 0;
             } else if (as->cg_meoshi & 0x110) {
@@ -764,16 +764,16 @@ void hit_pattern_extdat_check(WORK* as) {
             }
         }
 
-        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) && as->waza_type & 0x60) {
+        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) && as->move_type & 0x60) {
             as->cg_cancel |= 0x40;
         }
 
-        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(as->waza_type & 0x60) &&
-            as->waza_type & 0xF8) {
+        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(as->move_type & 0x60) &&
+            as->move_type & 0xF8) {
             as->cg_cancel |= 0x60;
         }
 
-        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_ALL_NORMALS_CANCELLABLE_DISABLED) && !(as->waza_type & 0xF8)) {
+        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_ALL_NORMALS_CANCELLABLE_DISABLED) && !(as->move_type & 0xF8)) {
             switch (plpat_rno_filter[as->routine_no[2]]) {
             case 9:
                 if (as->routine_no[3] != 1) {
@@ -789,7 +789,7 @@ void hit_pattern_extdat_check(WORK* as) {
             }
         }
 
-        if (!(as->waza_type & 0xF8) && as->routine_no[1] == 4 && as->routine_no[2] < 0x10) {
+        if (!(as->move_type & 0xF8) && as->routine_no[1] == 4 && as->routine_no[2] < 0x10) {
             switch (plpat_rno_filter[as->routine_no[2]]) {
             case 9:
                 if (as->routine_no[3] != 1) {
@@ -811,10 +811,10 @@ void hit_pattern_extdat_check(WORK* as) {
                     i = 0;
 
                     if (((PLW*)as)->player_number == 4) {
-                        as->cg_meoshi = chain_hidou_nm_ground_table[as->waza_type & 7];
+                        as->cg_meoshi = chain_hidou_nm_ground_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     } else {
-                        as->cg_meoshi = i | chain_normal_ground_table[as->waza_type & 7];
+                        as->cg_meoshi = i | chain_normal_ground_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     }
                 }
@@ -826,10 +826,10 @@ void hit_pattern_extdat_check(WORK* as) {
                     i = 0;
 
                     if (((PLW*)as)->player_number == 7) {
-                        as->cg_meoshi = chain_hidou_nm_air_table[as->waza_type & 7];
+                        as->cg_meoshi = chain_hidou_nm_air_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     } else {
-                        as->cg_meoshi = i | chain_normal_air_table[as->waza_type & 7];
+                        as->cg_meoshi = i | chain_normal_air_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     }
                 }
@@ -938,7 +938,7 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
     training_state_add_combo_hit(ds->wu.id, ds->wu.damage_stun_value);
     // Notify trials mode of the hit (P1's player_number == 0 is the attacker)
     if (as->wu.work_id == 1) {
-        trials_on_hit_registered(((PLW*)as)->player_number, as->wu.kind_of_waza);
+        trials_on_hit_registered(((PLW*)as)->player_number, as->wu.attack_type);
     }
 
     if (ds->wu.damage_vitality) {
@@ -974,7 +974,7 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
 
     as->wu.at_ten_ix = remake_score_index(ds->wu.damage_vitality);
     cal_combo_waribiki(as, ds);
-    cal_dm_vital_gauge_hosei(ds);
+    cal_dm_vital_gauge_adjust(ds);
     cal_combo_waribiki2(ds);
 
     if (as->wu.work_id != 1) {
@@ -1062,7 +1062,7 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
 
     if (ds->guard_active != 0 && ds->guard_active < 5) {
         just_now = 1;
-        attr_att = check_normal_attack(as->wu.kind_of_waza);
+        attr_att = check_normal_attack(as->wu.attack_type);
     }
 
     if (ds->py->flag == 0 && !(ds->guard_flag & 2) && as->wu.att.guard & 4) {
@@ -1164,7 +1164,7 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
 
     if (ds->guard_active != 0 && ds->guard_active < 5) {
         just_now = 1;
-        attr_att = check_normal_attack(as->wu.kind_of_waza);
+        attr_att = check_normal_attack(as->wu.attack_type);
     }
 
     if (ds->py->flag == 0 && !(ds->guard_flag & 2) && as->wu.att.guard & 3) {
@@ -1323,7 +1323,7 @@ void dm_status_copy(WORK* as, WORK* ds) {
     ds->dm_work_id = as->work_id;
     as->hit_stop = as->att.hs_me;
     ds->dm_arts_point = as->add_arts_point;
-    ds->dm_kind_of_waza = as->kind_of_waza;
+    ds->damage_attack_type = as->attack_type;
     ds->dm_nodeathattack = as->no_death_attack;
     ds->dm_jump_att_flag = as->jump_att_flag;
 
@@ -1344,17 +1344,17 @@ void dm_status_copy(WORK* as, WORK* ds) {
 
 /** @brief Core combo counter update — increments hit tracking arrays. */
 static void add_combo_work_impl(PLW* as, PLW* ds) {
-    s16* waza_type;
+    s16* move_type;
     s16* cal;
 
-    ds->stun_state = ds->combo_type.new_dm = as->wu.kind_of_waza;
-    waza_type = &ds->combo_type.kind_of[0][0][0];
+    ds->stun_state = ds->combo_type.new_dm = as->wu.attack_type;
+    move_type = &ds->combo_type.kind_of[0][0][0];
     cal = &g_state.calc_hit[ds->wu.id][0];
-    waza_type[as->wu.kind_of_waza]++;
-    cal[(as->wu.kind_of_waza & 120) / 8]++;
+    move_type[as->wu.attack_type]++;
+    cal[(as->wu.attack_type & 120) / 8]++;
     ds->combo_type.total++;
-    waza_type = &ds->remake_power.kind_of[0][0][0];
-    waza_type[as->wu.kind_of_waza]++;
+    move_type = &ds->remake_power.kind_of[0][0][0];
+    move_type[as->wu.attack_type]++;
     ds->remake_power.total++;
 }
 
@@ -1393,7 +1393,7 @@ void cal_combo_waribiki(PLW* as, PLW* ds) {
         return;
     }
 
-    koatt = (KOATT*)_exchange_koa[(as->wu.kind_of_waza) >> 1];
+    koatt = (KOATT*)_exchange_koa[(as->wu.attack_type) >> 1];
     tbl.ixl = 0;
 
     for (i = 0; i < 9; i++) {
@@ -1411,10 +1411,10 @@ void cal_combo_waribiki(PLW* as, PLW* ds) {
         tbl.ixs.h++;
     }
 
-    power = (POWER*)_exchange_pow[as->wu.kind_of_waza >> 1];
+    power = (POWER*)_exchange_pow[as->wu.attack_type >> 1];
 
     if ((as->player_number == 3 || as->player_number == 10) && (as->sa->kind_of_arts == 2 && as->sa->ok == -1)) {
-        power = (POWER*)_exchange_pow_pl03_sa3[as->wu.kind_of_waza >> 1];
+        power = (POWER*)_exchange_pow_pl03_sa3[as->wu.attack_type >> 1];
     }
 
     if (tbl.ixs.h > 31) {
@@ -1653,7 +1653,7 @@ void attack_hit_check() {
                     }
 
                     if (lp2 == 10) {
-                        if (!(mad->att.dipsw & 64) || sad->kind_of_waza & 0x60 || g_state.pcon_dp_flag ||
+                        if (!(mad->att.dipsw & 64) || sad->attack_type & 0x60 || g_state.pcon_dp_flag ||
                             sad->pat_status == 0x26) {
                             continue;
                         }

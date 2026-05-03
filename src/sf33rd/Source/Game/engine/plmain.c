@@ -36,7 +36,7 @@ static void plmv_1020(PLW* wk, s16 step);
 static void mpg_union(PLW* wk);
 static void eag_union(PLW* wk);
 static void sag_union(PLW* wk);
-static void addSAAttribute(u8* waza_type, u16* koa);
+static void addSAAttribute(u8* move_type, u16* koa);
 static void check_omop_vital(PLW* wk);
 static s16 select_hit_stop(s16 ms, s16 sb);
 
@@ -105,7 +105,7 @@ void Player_move(PLW* wk, u16 lv_data) {
     wk->wu.vital_old = wk->wu.vital_new;
 
     if (wk->sa_stop_flag != 1) {
-        waza_check(wk);
+        move_check(wk);
     } else {
         key_thru(wk);
     }
@@ -143,7 +143,7 @@ static void player_mv_0000(PLW* wk) {
     wk->wu.hit_stop = wk->wu.damage_hit_stop = 0;
     wk->wu.hit_quake = wk->wu.damage_screen_shake = 0;
     wk->throw_invuln_flag = 0;
-    wk->zuru_timer = 0;
+    wk->slide_timer = 0;
     wk->invuln_flag = false;
     wk->is_throwing = wk->is_being_thrown = false;
     clear_kizetsu_point(wk);
@@ -342,11 +342,11 @@ static void player_mv_4000(PLW* wk) {
     if (!check_hit_stop(wk)) {
         plmain_lv_02[wk->wu.routine_no[1]](wk);
 
-        if (g_state.Timer_Freeze == 0 && wk->wu.hit_stop == 0 && wk->zuru_timer > 0) {
-            wk->zuru_timer -= 2;
+        if (g_state.Timer_Freeze == 0 && wk->wu.hit_stop == 0 && wk->slide_timer > 0) {
+            wk->slide_timer -= 2;
         }
 
-        if (wk->zuru_timer < 0) {
+        if (wk->slide_timer < 0) {
             wk->invuln_flag = true;
         } else {
             wk->invuln_flag = false;
@@ -768,22 +768,22 @@ void sag_union_1(PLW* wk) {
             wk->sa->dtm_mul = 1;
         } else {
             if (g_state.My_char[wk->wu.id] == CHAR_YUN) {
-                wk->wu.kind_of_waza |= 0x20;
+                wk->wu.attack_type |= 0x20;
                 wk->wu.at_koa = 0x80;
             }
 
             if (g_state.My_char[wk->wu.id] == CHAR_YANG) {
-                wk->wu.kind_of_waza |= 0x20;
+                wk->wu.attack_type |= 0x20;
                 wk->wu.at_koa = 0x80;
             }
 
             if (g_state.My_char[wk->wu.id] == CHAR_MAKOTO) {
-                wk->wu.kind_of_waza |= 0x20;
+                wk->wu.attack_type |= 0x20;
                 wk->wu.at_koa = 0x80;
             }
 
             if (g_state.My_char[wk->wu.id] == CHAR_TWELVE) {
-                wk->wu.kind_of_waza |= 0x20;
+                wk->wu.attack_type |= 0x20;
                 wk->wu.at_koa = 0x80;
             }
 
@@ -965,12 +965,12 @@ void sag_union_ps2(PLW* wk) {
                 }
 
                 if (g_state.My_char[wk->wu.id] == 3) {
-                    addSAAttribute(&wk->wu.kind_of_waza, &wk->wu.at_koa);
+                    addSAAttribute(&wk->wu.attack_type, &wk->wu.at_koa);
                 }
 
                 if (g_state.My_char[wk->wu.id] == 10 || g_state.My_char[wk->wu.id] == 16 ||
                     g_state.My_char[wk->wu.id] == 18) {
-                    wk->wu.kind_of_waza |= 32;
+                    wk->wu.attack_type |= 32;
                     wk->wu.at_koa = 128;
                 }
 
@@ -1033,18 +1033,18 @@ static void sag_union(PLW* wk) {
 }
 
 #if !CPS3
-/** @brief Adds SA attribute flags to the current attack's kind-of-waza. */
-static void addSAAttribute(u8* waza_type, u16* koa) {
-    switch (*waza_type & 0x78) {
+/** @brief Adds SA attribute flags to the current attack's kind-of-move. */
+static void addSAAttribute(u8* move_type, u16* koa) {
+    switch (*move_type & 0x78) {
     case 0:
     case 8:
-        *waza_type = 0x20;
+        *move_type = 0x20;
         *koa = 0x80;
         break;
 
     case 16:
     case 24:
-        *waza_type = 0x28;
+        *move_type = 0x28;
         *koa = 0x100;
         break;
     }

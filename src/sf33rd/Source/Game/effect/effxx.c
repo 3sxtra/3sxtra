@@ -209,7 +209,7 @@
 #include "sf33rd/Source/Game/effect/effm6.h"
 #include "sf33rd/Source/Game/effect/effm7.h"
 #include "sf33rd/Source/Game/effect/effm8.h"
-#include "sf33rd/Source/Game/engine/plpat09.h"
+#include "sf33rd/Source/Game/engine/plpat_oro.h"
 
 static s32 effect_dummy_init() {
     return -1;

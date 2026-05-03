@@ -330,7 +330,7 @@ static void effC2_main_process_first(WORK_Other* ewk, PLW* twk) {
                 set_char_move_init(&ewk->wu,
                                    0,
                                    (twk->bs2_on_car * 6) +
-                                       ((ewk->wu.dm_rl == 0) + sel_dm_quake[ewk->wu.dm_attlv][ewk->wu.rl_waza]));
+                                       ((ewk->wu.dm_rl == 0) + sel_dm_quake[ewk->wu.dm_attlv][ewk->wu.active_move]));
 
                 if (ewk->wu.shell_ix[0] < 0) {
                     ewk->wu.dir_old = 1;
@@ -589,8 +589,8 @@ static void c2_last_char_and_mvxy(WORK_Other* ewk) {
 }
 
 static s16 c2_last_dir_select(PLW* wk, WORK* efw) {
-    s16 ix = get_sel_hosei_tbl_ix(wk->player_number) + 1;
-    s16* dad = efw->hosei_adrs[ix].hos_box;
+    s16 ix = get_sel_adjust_tbl_ix(wk->player_number) + 1;
+    s16* dad = efw->adjust_adrs[ix].hos_box;
 
     ix = 4;
 
@@ -664,15 +664,15 @@ static void copy_rno(WORK* wk) {
 void player_hosei_data(WORK_Other* ewk, s16 flag, s16 f2) {
     if (f2) {
         if (ewk->wu.type) {
-            ewk->wu.cg_ja.hoix = get_sel_hosei_tbl_ix(ewk->master_player) + 1 + ((flag == 1) * 2);
-            ewk->wu.pushbox = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
+            ewk->wu.cg_ja.hoix = get_sel_adjust_tbl_ix(ewk->master_player) + 1 + ((flag == 1) * 2);
+            ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.hoix];
         } else {
-            ewk->wu.cg_ja.hoix = get_sel_hosei_tbl_ix(ewk->master_player) + ((flag == 1) * 2);
-            ewk->wu.pushbox = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
+            ewk->wu.cg_ja.hoix = get_sel_adjust_tbl_ix(ewk->master_player) + ((flag == 1) * 2);
+            ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.hoix];
         }
     } else {
         ewk->wu.cg_ja.hoix = 0;
-        ewk->wu.pushbox = &ewk->wu.hosei_adrs[ewk->wu.cg_ja.hoix];
+        ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.hoix];
     }
 }
 
@@ -762,7 +762,7 @@ void c3_new_damage(WORK* wk) {
     c2wk->dm_rl = wk->dm_rl;
     c2wk->dm_dir = wk->dm_dir;
     c2wk->damage_hit_stop = wk->damage_hit_stop;
-    c2wk->rl_waza = wk->type;
+    c2wk->active_move = wk->type;
 
     if (c2wk->damage_hit_stop < 0) {
         c2wk->damage_hit_stop = -c2wk->damage_hit_stop;
@@ -873,11 +873,11 @@ static void set_bs2_floor(WORK_Other* wk) {
     s16* dad;
 
     player_hosei_data(wk, wk->wu.dir_timer, 1);
-    dad = wk->wu.hosei_adrs[wk->wu.cg_ja.hoix].hos_box;
+    dad = wk->wu.adjust_adrs[wk->wu.cg_ja.hoix].hos_box;
     g_state.bs2_floor[0] = wk->wu.xyz[0].disp.pos + dad[0];
     g_state.bs2_floor[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
     g_state.bs2_floor[2] = dad[2] + dad[3];
-    dad = wk->wu.hosei_adrs[wk->wu.cg_ja.hoix + 1].hos_box;
+    dad = wk->wu.adjust_adrs[wk->wu.cg_ja.hoix + 1].hos_box;
     g_state.bonus_stage2_offset[0] = wk->wu.xyz[0].disp.pos + dad[0];
     g_state.bonus_stage2_offset[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
     g_state.bonus_stage2_offset[2] = dad[2] + dad[3];

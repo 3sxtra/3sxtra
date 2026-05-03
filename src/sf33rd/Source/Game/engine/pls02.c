@@ -57,7 +57,7 @@
 static void read_adrs_store_mvxy(WORK* wk, s16* adrs);
 void remake_mvxy_PoGR(WORK* wk);
 static s16 meri_case_switch(s16 meri);
-static s16 hoseishitemo_eenka(WORK* wk, s16 tx);
+static s16 is_adjustment_allowed(WORK* wk, s16 tx);
 s32 random_32();
 static s32 random_32_ex();
 static s32 random_16_ex();
@@ -70,7 +70,7 @@ static void dead_voice_request2(PLW* wk);
 
 const s16 asagh_zuru[8] = { -2, -1, 0, 0, 1, 2, 3, 4 };
 
-const s16 sel_hosei_tbl_ix[20] = { 29, 45, 1, 5, 49, 13, 9, 21, 17, 25, 5, 1, 1, 29, 1, 33, 37, 41, 57, 53 };
+const s16 sel_adjust_tbl_ix[20] = { 29, 45, 1, 5, 49, 13, 9, 21, 17, 25, 5, 1, 1, 29, 1, 33, 37, 41, 57, 53 };
 
 const s16 satse[20] = { 32, 32, 28, 24, 32, 36, 40, 24, 28, 28, 24, 28, 28, 32, 30, 28, 28, 24, 36, 24 };
 
@@ -424,11 +424,11 @@ void check_body_touch2() {
 
     if (!saishin_bs2_on_car(hmw)) {
         efw = (WORK*)cmw->wu.my_effadrs;
-        ix = (sel_hosei_tbl_ix[hmw->player_number]) + 1 + ((efw->dir_timer == 1) * 2);
-        dad0 = &hmw->wu.hosei_adrs[1].hos_box[0];
-        dad1 = &efw->hosei_adrs[ix].hos_box[0];
+        ix = (sel_adjust_tbl_ix[hmw->player_number]) + 1 + ((efw->dir_timer == 1) * 2);
+        dad0 = &hmw->wu.adjust_adrs[1].hos_box[0];
+        dad1 = &efw->adjust_adrs[ix].hos_box[0];
 
-        if (!hoseishitemo_eenka(&hmw->wu, efw->xyz[0].disp.pos + (dad1[0] + dad1[1] / 2))) {
+        if (!is_adjustment_allowed(&hmw->wu, efw->xyz[0].disp.pos + (dad1[0] + dad1[1] / 2))) {
             dad2[0] = dad0[0];
             dad2[1] = dad0[1];
             dad2[2] = dad0[2];
@@ -500,7 +500,7 @@ s32 check_be_car_object() {
 }
 
 /** @brief Checks if position correction is allowed. */
-static s16 hoseishitemo_eenka(WORK* wk, s16 tx) {
+static s16 is_adjustment_allowed(WORK* wk, s16 tx) {
     s16 rnum = 0;
 
     if (wk->cg_jphos + cal_top_of_position_y(wk) > g_state.bs2_floor[2] || wk->mvxy.a[1].real.h < 0) {
@@ -528,8 +528,8 @@ static s16 hoseishitemo_eenka(WORK* wk, s16 tx) {
 }
 
 /** @brief Returns the correction table index for a player. */
-s16 get_sel_hosei_tbl_ix(s16 plnum) {
-    return sel_hosei_tbl_ix[plnum];
+s16 get_sel_adjust_tbl_ix(s16 plnum) {
+    return sel_adjust_tbl_ix[plnum];
 }
 
 /** @brief Checks work position relative to bonus stage. */
@@ -551,7 +551,7 @@ s16 check_work_position_bonus(WORK* hm, s16 tx) {
 }
 
 /** @brief Sets the field correction flag based on position. */
-s32 set_field_hosei_flag(PLW* pl, s16 pos, s16 ix) {
+s32 set_field_adjust_flag(PLW* pl, s16 pos, s16 ix) {
     s16 hami;
 
     while (1) {
@@ -757,7 +757,7 @@ s8 get_guard_direction(WORK* as, WORK* ds) {
         if (as->rl_flag + ds->rl_flag & 1) {
             if (ds->work_id != 1) {
                 num = 2;
-            } else if (ds->rl_flag == ds->rl_waza) {
+            } else if (ds->rl_flag == ds->active_move) {
                 num = 2;
             } else {
                 num = 3;
@@ -832,7 +832,7 @@ void setup_vitality(WORK* wk, s16 pno) {
 }
 
 /** @brief Calculates damage-vitality gauge scaling correction. */
-void cal_dm_vital_gauge_hosei(PLW* wk) {
+void cal_dm_vital_gauge_adjust(PLW* wk) {
     s16 cnjix;
 
     if (wk->wu.damage_vitality == 0) {

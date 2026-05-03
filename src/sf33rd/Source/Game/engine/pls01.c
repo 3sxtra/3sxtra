@@ -101,11 +101,11 @@ s16 check_ukemi_flag(PLW* wk) {
 
 /** @brief Returns the left/right facing flag. */
 s32 check_rl_flag(WORK* wk) {
-    return wk->rl_flag == wk->rl_waza;
+    return wk->rl_flag == wk->active_move;
 }
 
 /** @brief Sets the left/right facing for the current move. */
-void set_rl_waza(PLW* wk) {
+void set_rl_move(PLW* wk) {
     WORK* em;
     s16 result;
 
@@ -118,12 +118,12 @@ void set_rl_waza(PLW* wk) {
                 }
 
                 if (((result = wk->cp->input_held & 0xF) != 0) && !(result & 3)) {
-                    wk->wu.rl_waza = (result & 8) != 0;
+                    wk->wu.active_move = (result & 8) != 0;
                     return;
                 }
             }
 
-            wk->wu.rl_waza = wk->wu.rl_flag;
+            wk->wu.active_move = wk->wu.rl_flag;
             return;
         }
 
@@ -135,15 +135,15 @@ void set_rl_waza(PLW* wk) {
 
     if (result) {
         if (result > 0) {
-            wk->wu.rl_waza = 0;
+            wk->wu.active_move = 0;
             return;
         }
 
-        wk->wu.rl_waza = 1;
+        wk->wu.active_move = 1;
         return;
     }
 
-    wk->wu.rl_waza = (em->rl_waza + 1) & 1;
+    wk->wu.active_move = (em->active_move + 1) & 1;
 }
 
 /** @brief Checks if the player is on top of the bonus-stage car. */
@@ -250,7 +250,7 @@ s32 check_air_jump(PLW* wk) {
 
     set_routine(wk, 53);
     wk->jump_direction = 0;
-    grade_add_command_waza(wk->wu.id);
+    grade_add_command_move(wk->wu.id);
     return 1;
 }
 
@@ -279,7 +279,7 @@ s32 check_sankaku_tobi(PLW* wk) {
 
     set_routine(wk, 52);
     wk->jump_direction = 0;
-    grade_add_command_waza(wk->wu.id);
+    grade_add_command_move(wk->wu.id);
     return 1;
 }
 
@@ -394,7 +394,7 @@ s16 check_F_R_dash(PLW* wk) {
     }
 
     if (rnum) {
-        grade_add_command_waza(wk->wu.id);
+        grade_add_command_move(wk->wu.id);
     }
 
     return rnum;
@@ -408,7 +408,7 @@ s32 check_jump_ready(PLW* wk) {
 
     if (!(wk->spmv_ng_flag & DIP_HIGH_JUMP_DISABLED) && wk->cp->move_state_flags[2] != 0) {
         set_routine(wk, 17);
-        grade_add_command_waza(wk->wu.id);
+        grade_add_command_move(wk->wu.id);
     } else {
         if (wk->spmv_ng_flag & DIP_JUMP_DISABLED) {
             return 0;
@@ -441,7 +441,7 @@ s32 check_hijump_only(PLW* wk) {
 
     set_routine(wk, 17);
     wk->jump_direction = 0;
-    grade_add_command_waza(wk->wu.id);
+    grade_add_command_move(wk->wu.id);
     return 1;
 }
 
@@ -750,7 +750,7 @@ s32 check_floor_2(PLW* wk) {
 
     WORK* efw = (WORK*)((WORK*)wk->wu.target_adrs)->my_effadrs;
 
-    if (hit_check_x_only(&wk->wu, efw, &wk->wu.hosei_adrs->hos_box[4], &efw->pushbox->hos_box[0]) != 0) {
+    if (hit_check_x_only(&wk->wu, efw, &wk->wu.adjust_adrs->hos_box[4], &efw->pushbox->hos_box[0]) != 0) {
         return 0;
     }
 

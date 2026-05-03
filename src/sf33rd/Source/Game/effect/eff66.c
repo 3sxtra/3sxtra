@@ -103,7 +103,7 @@ static void EFF66_SLIDE_IN(WORK_Other* ewk) {
         }
 
         ewk->wu.routine_no[1]++;
-        ewk->wu.disp_flag = ewk->wu.rl_waza;
+        ewk->wu.disp_flag = ewk->wu.active_move;
         ewk->wu.xyz[0].disp.pos =
             g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Slide_Pos_Data_66[ewk->wu.type - 7][0] + 384;
         ewk->wu.xyz[1].disp.pos =
@@ -212,7 +212,7 @@ static void Setup_Pos_66(WORK_Other* ewk) {
     }
 
     ewk->wu.routine_no[1]++;
-    ewk->wu.disp_flag = ewk->wu.rl_waza;
+    ewk->wu.disp_flag = ewk->wu.active_move;
     ewk->wu.xyz[0].disp.pos =
         g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Suddenly_Pos_Data_66[ewk->wu.type][0];
     ewk->wu.xyz[1].disp.pos =
@@ -256,7 +256,7 @@ s32 effect_66_init(s16 order_index, s16 id, s16 master_player, s16 target_bg, s1
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x1AC;
     ewk->wu.my_family = target_bg + 1;
-    ewk->wu.rl_waza = 1;
+    ewk->wu.active_move = 1;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.dir_old = order_index;
     ewk->wu.dir_step = char_ix2;
@@ -294,7 +294,7 @@ s32 effect_66_init(s16 order_index, s16 id, s16 master_player, s16 target_bg, s1
         ewk->wu.shell_ix[3] = EFF66_Half_OBJ_Data[cg_type][3];
         ewk->wu.charset_id = EFF66_Half_OBJ_Data[cg_type][4];
         ewk->wu.my_clear_level = EFF66_Half_OBJ_Data[cg_type][5];
-        ewk->wu.rl_waza = EFF66_Half_OBJ_Data[cg_type][6];
+        ewk->wu.active_move = EFF66_Half_OBJ_Data[cg_type][6];
     }
 
     return 0;

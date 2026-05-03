@@ -65,7 +65,7 @@ void Att_METAMOR_REBIRTH(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3] = 1;
-        wk->wu.rl_flag = wk->wu.rl_waza;
+        wk->wu.rl_flag = wk->wu.active_move;
         reset_mvxy_data(&wk->wu);
 
         if (wk->wu.xyz[1].disp.pos < 3) {
@@ -129,8 +129,8 @@ void Att_HADOUKEN2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
 
@@ -159,8 +159,8 @@ void Att_SHOURYUUKEN(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
@@ -207,8 +207,8 @@ void Att_SENPUUKYAKU(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->data_ix;
@@ -249,8 +249,8 @@ void Att_SENPUUKYAKU2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->data_ix);
         cal_initial_speed_y(&wk->wu, wk->as->r_no, 0);
@@ -282,8 +282,8 @@ void Att_ABISEGERI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->r_no);
         break;
@@ -337,8 +337,8 @@ void Att_SHOURYUUREPPA(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
@@ -395,8 +395,8 @@ void Att_SHINSHOURYUUKEN(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
         break;
@@ -512,8 +512,8 @@ void Att_TENSHINSENKYUUTAI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
@@ -608,8 +608,8 @@ void Att_CHOUCHUURENGEKI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
-        wk->wu.rl_flag = wk->wu.rl_waza;
+        force_grounded_state(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
@@ -640,8 +640,8 @@ void Att_SLIDE_and_JUMP(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
-        wk->wu.rl_flag = wk->wu.rl_waza;
+        force_grounded_state(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
@@ -716,8 +716,8 @@ void Att_JINNCHUUWATARI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         wk->wu.mvxy.index = wk->as->data_ix;
         break;
@@ -760,8 +760,8 @@ void Att_HOMING_JUMP(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        hoken_muriyari_chakuchi(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         wk->wu.mvxy.index = wk->as->data_ix;
         break;

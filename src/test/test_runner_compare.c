@@ -80,12 +80,12 @@ static void read_wcp(SDL_IOStream* io, WORK_CP dst[2]) {
     }
 }
 
-static void read_waza_work(SDL_IOStream* io, WAZA_WORK dst[2][56]) {
+static void read_move_work(SDL_IOStream* io, MOVE_WORK dst[2][56]) {
     SDL_SeekIO(io, WAZA_WORK_OFFSET, SDL_IO_SEEK_SET);
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 56; j++) {
-            WAZA_WORK* wk = &dst[i][j];
+            MOVE_WORK* wk = &dst[i][j];
 
             SDL_ReadS16BE(io, &wk->w_type);
             SDL_ReadS16BE(io, &wk->w_int);
@@ -241,14 +241,14 @@ static void compare_service_values(SDL_IOStream* io, bool compare_characters, Ui
     }
 }
 
-static void compare_waza_work(SDL_IOStream* io) {
-    WAZA_WORK waza_work_cps3[2][56];
-    read_waza_work(io, waza_work_cps3);
+static void compare_move_work(SDL_IOStream* io) {
+    MOVE_WORK move_work_cps3[2][56];
+    read_move_work(io, move_work_cps3);
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 56; j++) {
-            const WAZA_WORK* w_3sx = &g_state.waza_work[i][j];
-            const WAZA_WORK* w_cps3 = &waza_work_cps3[i][j];
+            const MOVE_WORK* w_3sx = &g_state.move_work[i][j];
+            const MOVE_WORK* w_cps3 = &move_work_cps3[i][j];
 
             stop_if(w_3sx->w_type != w_cps3->w_type);
             stop_if(w_3sx->w_int != w_cps3->w_int);
@@ -271,8 +271,8 @@ static void compare_wcp(SDL_IOStream* io) {
     read_wcp(io, wcp_cps3);
 
     for (int i = 0; i < 2; i++) {
-        const s16 waza_type_cps3 = read_s16(io, WAZA_TYPE_OFFSET + i * sizeof(s16));
-        stop_if(waza_type[i] != waza_type_cps3);
+        const s16 move_type_cps3 = read_s16(io, WAZA_TYPE_OFFSET + i * sizeof(s16));
+        stop_if(move_type[i] != move_type_cps3);
 
         const WORK_CP* w_3sx = &g_state.wcp[i];
         const WORK_CP* w_cps3 = &wcp_cps3[i];
@@ -311,7 +311,7 @@ static void compare_wcp(SDL_IOStream* io) {
 }
 
 void compare_values(SDL_IOStream* io, Uint64 frame) {
-    // compare_waza_work(io);
+    // compare_move_work(io);
     // compare_wcp(io);
 
     const bool compare_characters = g_state.fsm[1] == 2 && g_state.fsm[2] == 1;
@@ -360,7 +360,7 @@ static void sync_wcp(WORK_CP* dst, const WORK_CP* src) {
     }
 }
 
-static void sync_waza_work(WAZA_WORK* dst, const WAZA_WORK* src, Character character) {
+static void sync_move_work(MOVE_WORK* dst, const MOVE_WORK* src, Character character) {
     if (dst->w_type == 15 && character == CHAR_URIEN) {
         dst->w_int = src->w_int;
         dst->uni0.tame.flag = src->uni0.tame.flag;
@@ -374,8 +374,8 @@ void sync_values(SDL_IOStream* io) {
     // WORK_CP wcp_cps3[2];
     // read_wcp(io, wcp_cps3);
 
-    // WAZA_WORK waza_work_cps3[2][56];
-    // read_waza_work(io, waza_work_cps3);
+    // MOVE_WORK move_work_cps3[2][56];
+    // read_move_work(io, move_work_cps3);
 
     // T_PL_LVR t_pl_lvr_cps3[2];
     // read_t_pl_lvr(io, t_pl_lvr_cps3);
@@ -387,7 +387,7 @@ void sync_values(SDL_IOStream* io) {
         // sync_wcp(&g_state.wcp[i], &wcp_cps3[i]);
 
         // for (int j = 0; j < 56; j++) {
-        //     sync_waza_work(&g_state.waza_work[i][j], &waza_work_cps3[i][j], character);
+        //     sync_move_work(&g_state.move_work[i][j], &move_work_cps3[i][j], character);
         // }
     }
 }

@@ -30,7 +30,7 @@ void BG080() {
     bgw_ptr = &g_state.bg_w.bgw[6];
     bg080_sync_common();
     zoom_ud_check();
-    bg_pos_hosei2();
+    bg_pos_adjust2();
     Bg_Family_Set();
 }
 

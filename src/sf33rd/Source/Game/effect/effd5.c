@@ -165,8 +165,8 @@ static void effD5_main_process(WORK_Other* ewk) {
             ewk->wu.direction = ewk->wu.dm_dir;
             dsst = 3;
 
-            if (!(ewk->wu.dm_kind_of_waza & 0xF8)) {
-                dsst = (ewk->wu.dm_kind_of_waza / 2) & 3;
+            if (!(ewk->wu.damage_attack_type & 0xF8)) {
+                dsst = (ewk->wu.damage_attack_type / 2) & 3;
             }
 
             setup_hana_extra(&ewk->wu, dm_sp_sel_tbl[dsst][0], dm_sp_sel_tbl[dsst][1]);

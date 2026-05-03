@@ -491,15 +491,15 @@ s32 Check_Special_Technique(PLW* wk, WORK* em, s16 VS_Technique, u8 Kind_of_Tech
         return 0;
     }
 
-    xx = em->kind_of_waza & 0xF8;
+    xx = em->attack_type & 0xF8;
 
     if (xx == Kind_of_Tech && (em->sp_tech_id == SP_Tech_ID)) {
         if ((Option2 == -1 || !(Option2 & 8))) {
-            if (Option2 == (em->kind_of_waza & 6)) {
+            if (Option2 == (em->attack_type & 6)) {
                 g_state.Last_Attack_Counter[(wk->wu.id)] = g_state.Attack_Counter[(wk->wu.id)];
                 return 0;
             }
-        } else if (!((Option2 & 6) & (em->kind_of_waza & 6))) {
+        } else if (!((Option2 & 6) & (em->attack_type & 6))) {
             return 0;
         }
 
@@ -647,7 +647,7 @@ s32 Check_Limited_Attack(PLW* wk, WORK* em, s16 VS_Technique, u8 PL_Status, s8 S
         return 0;
     }
 
-    if ((em->pat_status != PL_Status) || em->kind_of_waza != Status_00) {
+    if ((em->pat_status != PL_Status) || em->attack_type != Status_00) {
         return 0;
     }
 
@@ -678,7 +678,7 @@ s32 Check_Limited_Attack(PLW* wk, WORK* em, s16 VS_Technique, u8 PL_Status, s8 S
 
 /** @brief Check if opponent is doing a limited jump attack. */
 s32 Check_Limited_Jump_Attack(PLW* wk, WORK* em, u8 PL_Status, s8 Status_00) {
-    if ((em->pat_status != PL_Status) || (em->kind_of_waza != Status_00)) {
+    if ((em->pat_status != PL_Status) || (em->attack_type != Status_00)) {
         return 0;
     }
 
@@ -807,7 +807,7 @@ s32 Check_Catch(PLW* wk, WORK* em, s16 VS_Technique) {
         xx = p1sw_0;
     }
 
-    if (wk->wu.rl_waza) {
+    if (wk->wu.active_move) {
         if (!(xx & 4)) {
             return 0;
         }
@@ -893,9 +893,9 @@ s32 Check_After_Attack(PLW* wk, WORK* em, s16 VS_Technique) {
 
     g_state.Last_Attack_Counter[wk->wu.id] = g_state.Attack_Counter[wk->wu.id];
 
-    if (!(em->kind_of_waza & 32) && !(em->kind_of_waza & 48) && !(em->kind_of_waza & 40) && !(em->kind_of_waza & 56) &&
-        !(em->kind_of_waza & 8)) {
-        xx = em->kind_of_waza & 6;
+    if (!(em->attack_type & 32) && !(em->attack_type & 48) && !(em->attack_type & 40) && !(em->attack_type & 56) &&
+        !(em->attack_type & 8)) {
+        xx = em->attack_type & 6;
 
         if (xx == 0) {
             return 0;
@@ -917,7 +917,7 @@ s32 Check_F_Cross_Chop(PLW* wk, WORK* em, s16 VS_Technique) {
         return 0;
     }
 
-    if ((em->kind_of_waza) != 4) {
+    if ((em->attack_type) != 4) {
         return 0;
     }
 

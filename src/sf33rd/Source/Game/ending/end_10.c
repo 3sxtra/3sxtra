@@ -57,7 +57,7 @@ void end_10000(s16 pl_num) {
                 g_state.end_w.end_flag = 1;
                 fadeout_to_staff_roll();
                 end_scn_pos_set2();
-                end_bg_pos_hosei2();
+                end_bg_pos_adjust2();
                 end_fam_set2();
                 break;
             }
@@ -77,7 +77,7 @@ void end_10000(s16 pl_num) {
 
     case 2:
         end_scn_pos_set2();
-        end_bg_pos_hosei2();
+        end_bg_pos_adjust2();
         end_fam_set2();
         break;
     }
@@ -348,7 +348,7 @@ static void end_1003_1000() {
         bgw_ptr->abs_y = bgw_ptr->xy[1].disp.pos;
         effect_E6_init(0x4F);
         bgw_ptr->free = 0xB4;
-        end_bg_pos_hosei(5);
+        end_bg_pos_adjust(5);
         end_fam_set(5);
         break;
 
@@ -359,7 +359,7 @@ static void end_1003_1000() {
             bgw_ptr->r_no_1++;
         }
 
-        end_bg_pos_hosei(5);
+        end_bg_pos_adjust(5);
         end_fam_set(5);
         break;
 
@@ -374,7 +374,7 @@ static void end_1003_1000() {
         /* fallthrough */
 
     case 3:
-        end_bg_pos_hosei(5);
+        end_bg_pos_adjust(5);
         end_fam_set(5);
         break;
     }
@@ -392,7 +392,7 @@ static void end_1003_2000() {
         /* fallthrough */
 
     case 1:
-        end_bg_pos_hosei(5);
+        end_bg_pos_adjust(5);
         end_fam_set(5);
         break;
     }

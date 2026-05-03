@@ -79,21 +79,21 @@ void set_char_move_init(WORK* wk, s16 koc, s16 index) {
     wk->cmwk[15] = 0;
 
 #if !CPS3
-    wk->waza_type = wk->kind_of_waza;
+    wk->move_type = wk->attack_type;
 #endif
 
     if (wk->work_id & 0xF) {
-        wk->at_koa = acatkoa_table[wk->kind_of_waza];
+        wk->at_koa = acatkoa_table[wk->attack_type];
     }
 
     if (wk->work_id == 1) {
         ((PLW*)wk)->tc_1st_flag = 0; // TODO: Confirm CPS3 match
 
         if (wk->now_koc == 4 || wk->now_koc == 5) {
-            grade_add_onaji_waza(wk->id);
+            grade_add_same_move(wk->id);
         }
 
-        ((PLW*)wk)->ja_nmj_rno = 0; // TODO: Confirm CPS3 match
+        ((PLW*)wk)->jump_attack_routine = 0; // TODO: Confirm CPS3 match
         pp_pulpara_remake_at_init(wk);
     }
 
@@ -109,7 +109,7 @@ void setupCharTableData(WORK* wk, s32 clr, s32 info) {
     if (info != 0) {
         src = wk->set_char_ad;
         // Previously: dst[-1] = src[-1]; dst[-2] = src[-2];
-        // dst[-1] corresponds to: cgd_type, pat_status, kind_of_waza
+        // dst[-1] corresponds to: cgd_type, pat_status, attack_type
         // dst[-2] corresponds to: sp_tech_id, total_att_set, total_paring, hit_range
 
         // Emulate the raw copy for header to maintain binary compatibility with assets
@@ -139,7 +139,7 @@ void setupCharTableData(WORK* wk, s32 clr, s32 info) {
 /** @brief Extended char move init with IP and SCF parameters. */
 void set_char_move_init2(WORK* wk, s16 koc, s16 index, s16 ip, s16 scf) {
     u8 pst;
-    u8 waza_type;
+    u8 move_type;
 
 #if !CPS3
     if (index < 0) {
@@ -152,7 +152,7 @@ void set_char_move_init2(WORK* wk, s16 koc, s16 index, s16 ip, s16 scf) {
 #endif
 
     pst = wk->pat_status;
-    waza_type = wk->kind_of_waza;
+    move_type = wk->attack_type;
     wk->now_koc = koc;
     wk->char_index = index;
 
@@ -187,15 +187,15 @@ void set_char_move_init2(WORK* wk, s16 koc, s16 index, s16 ip, s16 scf) {
 
     if (scf) {
         wk->pat_status = pst;
-        wk->kind_of_waza = waza_type;
+        wk->attack_type = move_type;
     } else {
 #if !CPS3
-        wk->waza_type = wk->kind_of_waza;
+        wk->move_type = wk->attack_type;
 #endif
     }
 
     if (wk->work_id & 0xF) {
-        wk->at_koa = acatkoa_table[wk->kind_of_waza];
+        wk->at_koa = acatkoa_table[wk->attack_type];
     }
 
     wk->phase_k5_init_flag = 1; // TODO: Confirm CPS3 match
@@ -356,7 +356,7 @@ void char_move_cmms2(WORK* wk) {
     wk->cg_wca_ix = 0;
 
 #if !CPS3
-    wk->waza_type = wk->kind_of_waza;
+    wk->move_type = wk->attack_type;
 #endif
 }
 
@@ -389,7 +389,7 @@ s32 char_move_cmms3(PLW* wk) {
     wk->wu.graphic_index = wk->wu.cmms.pat * wk->wu.cgd_type - wk->wu.cgd_type;
 
 #if !CPS3
-    wk->wu.waza_type = wk->wu.kind_of_waza;
+    wk->wu.move_type = wk->wu.attack_type;
 #endif
 
     while (1) {
@@ -1900,13 +1900,13 @@ static s32 comm_atmf(PLW* wk, CommandState* ctc) {
     return 1;
 }
 
-/** @brief Script command: CHKWF — check waza flag conditional. */
+/** @brief Script command: CHKWF — check move flag conditional. */
 static s32 comm_chkwf(PLW* wk, CommandState* ctc) {
     if (wk->cp->move_state_flags[ctc->koc] == 0 || wk->cp->move_state_flags[ctc->koc] == -1) {
         return decord_if_jump(&wk->wu, ctc, ctc->pat);
     }
 
-    waza_flag_clear_only_1(wk->wu.id, ctc->koc);
+    move_flag_clear_only_1(wk->wu.id, ctc->koc);
     return decord_if_jump(&wk->wu, ctc, ctc->ix);
 }
 
@@ -2184,14 +2184,14 @@ static s32 comm_dspf(WORK* wk, CommandState* ctc) {
 /** @brief Script command: IFRLF — conditional on RL flag. */
 static s32 comm_ifrlf(WORK* wk, CommandState* ctc) {
     if (ctc->koc) {
-        if (wk->rl_flag == wk->rl_waza) {
+        if (wk->rl_flag == wk->active_move) {
             return decord_if_jump(wk, ctc, ctc->pat);
         }
 
         return decord_if_jump(wk, ctc, ctc->ix);
     }
 
-    if (wk->rl_flag == wk->rl_waza) {
+    if (wk->rl_flag == wk->active_move) {
         return decord_if_jump(wk, ctc, ctc->ix);
     }
 
@@ -2201,10 +2201,10 @@ static s32 comm_ifrlf(WORK* wk, CommandState* ctc) {
 /** @brief Script command: SRLF — set RL flag. */
 static s32 comm_srlf(WORK* wk, CommandState* ctc) {
     if (ctc->koc) {
-        if (wk->rl_flag != wk->rl_waza) {
-            wk->rl_flag = wk->rl_waza;
+        if (wk->rl_flag != wk->active_move) {
+            wk->rl_flag = wk->active_move;
         }
-    } else if (wk->rl_flag == wk->rl_waza) {
+    } else if (wk->rl_flag == wk->active_move) {
         wk->rl_flag = (wk->rl_flag + 1) & 1;
     }
 
@@ -2641,8 +2641,8 @@ void check_cgd_patdat(WORK* wk) {
     }
 
     if (wk->work_id == 1) {
-        if ((WK_AS_PLW->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) && !(wk->waza_type & 0xF8)) {
-            if (wk->waza_type & 6) {
+        if ((WK_AS_PLW->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) && !(wk->move_type & 0xF8)) {
+            if (wk->move_type & 6) {
                 wk->cg_cancel &= 0xF7;
                 wk->cg_meoshi = 0;
             } else if (wk->cg_meoshi & 0x110) {
@@ -2654,19 +2654,19 @@ void check_cgd_patdat(WORK* wk) {
         }
 
         if (WK_AS_PLW->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) {
-            if (wk->waza_type & 0x60) {
+            if (wk->move_type & 0x60) {
                 wk->cg_cancel &= 0xBF;
             }
-        } else if ((wk->waza_type & 0x60) && (wk->cg_cancel & 0x40)) {
+        } else if ((wk->move_type & 0x60) && (wk->cg_cancel & 0x40)) {
             wk->frame_link_hit_flag = 1;
         }
 
-        if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(wk->waza_type & 0x60) &&
-            (wk->waza_type & 0xF8) && (wk->cg_cancel & 0x40)) {
+        if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(wk->move_type & 0x60) &&
+            (wk->move_type & 0xF8) && (wk->cg_cancel & 0x40)) {
             wk->cg_cancel |= 0x60;
         }
 
-        if (!(wk->waza_type & 0xF8) && (wk->routine_no[1] == 4) && (wk->routine_no[2] < 16)) {
+        if (!(wk->move_type & 0xF8) && (wk->routine_no[1] == 4) && (wk->routine_no[2] < 16)) {
             switch (plpat_rno_filter[wk->routine_no[2]]) {
             case 9:
                 if (wk->routine_no[3] != 1) {
@@ -2686,12 +2686,12 @@ void check_cgd_patdat(WORK* wk) {
 
                 if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_GROUND_CHAIN_COMBO_DISABLED)) {
                     if (WK_AS_PLW->player_number == 4) {
-                        wk->cg_meoshi = chain_hidou_nm_ground_table[wk->waza_type & 7];
+                        wk->cg_meoshi = chain_hidou_nm_ground_table[wk->move_type & 7];
                         wk->cg_cancel |= 8;
                         return;
                     }
 
-                    wk->cg_meoshi = chain_normal_ground_table[wk->waza_type & 7];
+                    wk->cg_meoshi = chain_normal_ground_table[wk->move_type & 7];
                     wk->cg_cancel |= 8;
                     return;
                 }
@@ -2701,12 +2701,12 @@ void check_cgd_patdat(WORK* wk) {
             case 2:
                 if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(wk)) {
                     if (WK_AS_PLW->player_number == 7) {
-                        wk->cg_meoshi = chain_hidou_nm_air_table[wk->waza_type & 7];
+                        wk->cg_meoshi = chain_hidou_nm_air_table[wk->move_type & 7];
                         wk->cg_cancel |= 8;
                         return;
                     }
 
-                    wk->cg_meoshi = chain_normal_air_table[wk->waza_type & 7];
+                    wk->cg_meoshi = chain_normal_air_table[wk->move_type & 7];
                     wk->cg_cancel |= 8;
                 }
 
@@ -2873,7 +2873,7 @@ void set_jugde_area(WORK* wk) {
     wk->catch_box = wk->catch_adrs + wk->cg_ja.caix;
     wk->caught_box = wk->caught_adrs + wk->cg_ja.cuix;
     wk->attack_hitbox = wk->attack_adrs + wk->cg_ja.atix;
-    wk->pushbox = wk->hosei_adrs + wk->cg_ja.hoix;
+    wk->pushbox = wk->adjust_adrs + wk->cg_ja.hoix;
     wk->hand_hurtbox = wk->hand_adrs + (wk->cg_ja.bhix + wk->cg_ja.haix);
 }
 

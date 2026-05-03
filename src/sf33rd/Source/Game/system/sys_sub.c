@@ -506,7 +506,7 @@ void BG_move() {
 
     for (ix = 0; ix < 4; ix++) {
         if (g_state.Unsubstantial_BG[ix]) {
-            bg_pos_hosei_sub2(ix);
+            bg_pos_adjust_sub2(ix);
             Bg_Family_Set_appoint(ix);
         }
     }

@@ -58,7 +58,7 @@ void effect_E8_move(WORK_Other* ewk) {
             break;
 
         default:
-            ewk->wu.type -= ewk->wu.rl_waza;
+            ewk->wu.type -= ewk->wu.active_move;
 
             if (ewk->wu.type <= 0) {
                 ewk->wu.disp_flag = 0;
@@ -118,16 +118,16 @@ static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
     }
 
     if (ewk->wu.old_routine_no[0]) {
-        ewk->wu.position_z -= ewk->wu.rl_waza;
+        ewk->wu.position_z -= ewk->wu.active_move;
     } else {
-        ewk->wu.position_z += ewk->wu.rl_waza;
+        ewk->wu.position_z += ewk->wu.active_move;
     }
 
     if (ewk->wu.old_routine_no[4]) {
         if (ewk->wu.olc_work_ix[2] && mwk->metamorphose) {
-            ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.rl_waza - 1][(ewk->master_id + 1) & 1];
+            ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.active_move - 1][(ewk->master_id + 1) & 1];
         } else {
-            ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.rl_waza - 1][ewk->master_id];
+            ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.active_move - 1][ewk->master_id];
         }
     } else {
         ewk->wu.extra_col = mwk->wu.current_colcd;
@@ -143,7 +143,7 @@ static void effE8_trans(WORK_Other* ewk, PLW* mwk) {
         return;
     }
 
-    ewk->wu.old_routine_no[6] = ewk->wu.rl_waza - 1;
+    ewk->wu.old_routine_no[6] = ewk->wu.active_move - 1;
     ewk->wu.my_bright_level = (ewk->wu.old_routine_no[6] * 3) + 1;
 
     if (mwk->wu.disp_flag != 0 && mwk->sa_stop_flag == 0) {
@@ -165,7 +165,7 @@ s32 effect_E8_init(WORK_Other* ek, PLW* mk, s16 data) {
     ewk->wu.id = 148;
     ewk->wu.type = 0;
     ewk->wu.charset_id = data;
-    ewk->wu.rl_waza = data / ek->wu.damage_calc_multiplier;
+    ewk->wu.active_move = data / ek->wu.damage_calc_multiplier;
 
     if (ek->wu.old_routine_no[1]) {
         ewk->wu.work_id = 8;

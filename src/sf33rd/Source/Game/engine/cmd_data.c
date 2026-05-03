@@ -16,8 +16,8 @@ s16 cmd_id;
 s16* cmd_tbl_ptr;
 u16 sw_work;
 T_PL_LVR* chk_pl;
-s16 waza_type[2];
-WAZA_WORK* waza_ptr;
+s16 move_type[2];
+MOVE_WORK* move_ptr;
 PLW* cmd_pl;
 
 // rodata

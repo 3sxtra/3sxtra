@@ -107,7 +107,7 @@ void effect_03_move(WORK_Other* ewk) {
         ewk->wu.blink_timing = ewk->master_id;
 
         if (plef_data[ewk->wu.type].sel_rl) {
-            ewk->wu.rl_flag = ewk->wu.rl_waza;
+            ewk->wu.rl_flag = ewk->wu.active_move;
         }
 
         if (ewk->wu.rl_flag) {
@@ -219,7 +219,7 @@ s32 effect_03_init(WORK* wk, u8 data) {
     ewk->wu.id = 3;
     ewk->wu.work_id = 16;
     ewk->wu.type = data;
-    ewk->wu.rl_waza = wk->rl_flag;
+    ewk->wu.active_move = wk->rl_flag;
     ewk->wu.my_family = wk->my_family;
     ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_col_mode = wk->my_col_mode;

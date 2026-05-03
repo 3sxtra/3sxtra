@@ -56,7 +56,7 @@ void effect_at_vs_player_dm(s16 ix2, s16 ix) {
 
     as->wu.at_ten_ix = remake_score_index(ds->wu.damage_vitality);
     cal_combo_waribiki((PLW*)as, ds);
-    cal_dm_vital_gauge_hosei(ds);
+    cal_dm_vital_gauge_adjust(ds);
     cal_combo_waribiki2(ds);
     as->wu.damage_vitality = 256;
     ds->parry_flag = 0;

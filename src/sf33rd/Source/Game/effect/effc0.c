@@ -1,6 +1,6 @@
 /**
  * @file effc0.c
- * Effect: Hok Table / Player Hosei Effect
+ * Effect: Hok Table / Player Adjust Effect
  */
 
 #include "sf33rd/Source/Game/effect/effc0.h"

@@ -431,9 +431,9 @@ void Game_Challenge() {
     }
     BG_Draw_System();
     Basic_Sub();
-    bg_pos_hosei_sub2(0);
-    bg_pos_hosei_sub2(1);
-    bg_pos_hosei_sub2(2);
+    bg_pos_adjust_sub2(0);
+    bg_pos_adjust_sub2(1);
+    bg_pos_adjust_sub2(2);
     Bg_Family_Set_appoint(0);
     Bg_Family_Set_appoint(1);
     Bg_Family_Set_appoint(2);
@@ -2153,7 +2153,7 @@ void Before_Select_Sub() {
 void Wait_Auto_Load(struct _TASK* unused1) {
     Basic_Sub();
     BG_Draw_System();
-    bg_pos_hosei_sub2(0);
+    bg_pos_adjust_sub2(0);
     Bg_Family_Set_appoint(0);
     BG_move_Ex(0);
 }

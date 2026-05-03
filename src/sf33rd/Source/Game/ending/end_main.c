@@ -159,7 +159,7 @@ static void normal_ending(s16 pl_num) {
             g_state.bg_w.bgw[0].xy[1].disp.pos = 0;
             g_state.bg_w.bgw[0].abs_y = 0;
             end_scn_pos_set2();
-            end_bg_pos_hosei2();
+            end_bg_pos_adjust2();
             end_fam_set2();
             Bg_Off_W(0xF);
         }
@@ -339,7 +339,7 @@ void end_fam_set2() {
 }
 
 /** @brief Apply position offset correction to a single background layer. */
-void end_bg_pos_hosei(s16 bg_no) {
+void end_bg_pos_adjust(s16 bg_no) {
     s16 pos_work = g_state.bg_w.bgw[bg_no].abs_x & 0xFFFF;
     pos_work -= g_state.bg_w.pos_offset;
     g_state.bg_w.bgw[bg_no].position_x = pos_work & 0xFFFF;
@@ -348,11 +348,11 @@ void end_bg_pos_hosei(s16 bg_no) {
 }
 
 /** @brief Apply position offset correction to all active background layers. */
-void end_bg_pos_hosei2() {
+void end_bg_pos_adjust2() {
     s16 bg_no;
 
     for (bg_no = 0; bg_no < g_state.bg_w.scno; bg_no++) {
-        end_bg_pos_hosei(bg_no);
+        end_bg_pos_adjust(bg_no);
     }
 }
 

@@ -43,8 +43,8 @@ void Player_catch(PLW* wk) {
     wk->scr_pos_set_flag = 1;
     wk->dm_hos_flag = 0;
     wk->recovery_roll_success = 0;
-    wk->zuru_timer = 0;
-    wk->zuru_ix_counter = 0;
+    wk->slide_timer = 0;
+    wk->slide_index_counter = 0;
     wk->sa_stop_flag = 0;
     wk->parry_flag = 0;
     wk->caution_flag = 0;

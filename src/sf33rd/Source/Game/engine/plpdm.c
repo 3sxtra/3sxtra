@@ -245,8 +245,8 @@ static void Damage_00000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
         set_char_move_init(&wk->wu, 1, wk->as->char_ix);
         break;
 
@@ -270,8 +270,8 @@ static void Damage_01000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3] = 1;
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
         reset_mvxy_data(&wk->wu);
         set_char_move_init(&wk->wu, 1, wk->as->char_ix);
         break;
@@ -327,8 +327,8 @@ static void Damage_04000(PLW* wk) {
 
         set_char_move_init(&wk->wu, 1, wk->as->char_ix);
         wk->dm_step_tbl = _dm_step_data[_select_grd_dsd[wk->wu.dm_impact][get_weight_point(&wk->wu)]];
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
         pp_pulpara_guard(&wk->wu);
         break;
 
@@ -380,8 +380,8 @@ static void Damage_07000(PLW* wk) {
         }
 
         set_char_move_init(&wk->wu, 1, (s16)(wk->as->char_ix));
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
         pp_pulpara_guard(&wk->wu);
         break;
 
@@ -503,8 +503,8 @@ static void Damage_12000(PLW* wk) {
         wk->dm_ix = wk->as->char_ix + wk->wu.dm_attlv;
         set_char_move_init(&wk->wu, 1, wk->dm_ix);
         wk->dm_step_tbl = _dm_step_data[_select_hit_dsd[wk->wu.dm_impact][get_weight_point(&wk->wu)]];
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
 
         if (wk->wu.dm_attribute) {
             setup_accessories(wk, wk->wu.pat_status);
@@ -565,8 +565,8 @@ static void Damage_14000(PLW* wk) {
         set_char_move_init(&wk->wu, 1, wk->dm_ix);
         setup_butt_own_data(&wk->wu);
         wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
         break;
 
     case 1:
@@ -798,8 +798,8 @@ static void Damage_21000(PLW* wk) {
         set_char_move_init(&wk->wu, 1, wk->dm_ix);
         setup_butt_own_data(&wk->wu);
         wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
         break;
 
     case 1:
@@ -861,8 +861,8 @@ static void Damage_24000(PLW* wk) {
         if (wk->as->char_ix == 0x44 && (wk->dm_point == 2 || wk->dm_point == 3)) {
             set_char_move_init(&wk->wu, 1, 0x45);
         } else {
-            wk->zuru_timer = 0;
-            wk->zuru_ix_counter = 0;
+            wk->slide_timer = 0;
+            wk->slide_index_counter = 0;
             set_char_move_init(&wk->wu, 1, wk->as->char_ix);
         }
 
@@ -909,8 +909,8 @@ static void Damage_25000(PLW* wk) {
         set_char_move_init(&wk->wu, 1, wk->as->char_ix);
         wk->py->flag = 0;
         wk->py->time = kizetsu_timer_table[(wk->stun_state & 0xF8) / 8][(wk->stun_state & 7) / 2][random_16()];
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
         I_ZeroStruct(wk->remake_power);
         check_em_tk_power_off(wk, (PLW*)wk->wu.target_adrs);
         grade_add_em_stun((wk->wu.id + 1) & 1);
@@ -1002,8 +1002,8 @@ static void Damage_27000(PLW* wk) {
         set_char_move_init(&wk->wu, 1, wk->dm_ix);
         setup_butt_own_data(&wk->wu);
         wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
-        wk->zuru_timer = 0;
-        wk->zuru_ix_counter = 0;
+        wk->slide_timer = 0;
+        wk->slide_index_counter = 0;
         break;
 
     case 1:
@@ -1305,7 +1305,7 @@ static void buttobi_chakuchi_cg_type_check(PLW* wk) {
     case 5:
         if (!(wk->special_move_disabled_flag2 & DIP2_QUICK_STAND_DISABLED) && wk->recovery_roll_success && (wk->dead_flag == 0) &&
             (wk->py->flag == 0) && (wk->wu.vital_new > 0) && (g_state.pcon_dp_flag == 0)) {
-            wk->wu.routine_no[2] = oki_select_table2[wk->wu.rl_waza + (wk->wu.rl_flag * 2)];
+            wk->wu.routine_no[2] = oki_select_table2[wk->wu.active_move + (wk->wu.rl_flag * 2)];
             wk->wu.routine_no[3] = 0;
             add_sp_arts_gauge_ukemi(wk);
             grade_add_quick_stand(wk->wu.id);
@@ -1461,16 +1461,16 @@ static void set_dm_hos_flag_grd(PLW* wk) {
 /** @brief Calculates the air-damage tech-timer based on combo depth. */
 static void get_sky_dm_timer(PLW* wk) {
     if (wk->wu.damage_invuln == 7) {
-        wk->zuru_ix_counter = 0;
+        wk->slide_index_counter = 0;
     } else {
-        wk->zuru_ix_counter += sky_dm_zuru_ix[wk->wu.damage_invuln];
+        wk->slide_index_counter += sky_dm_zuru_ix[wk->wu.damage_invuln];
     }
 
-    if (wk->zuru_ix_counter > 15) {
-        wk->zuru_ix_counter = 15;
+    if (wk->slide_index_counter > 15) {
+        wk->slide_index_counter = 15;
     }
 
-    wk->zuru_timer = sky_dm_zuru_table[omop_otedama_ix[(wk->wu.id + 1) & 1]][wk->zuru_ix_counter];
+    wk->slide_timer = sky_dm_zuru_table[omop_otedama_ix[(wk->wu.id + 1) & 1]][wk->slide_index_counter];
 }
 
 /**
@@ -1663,8 +1663,8 @@ s32 setup_kuzureochi(PLW* wk) {
     wk->wu.routine_no[1] = 1;
     wk->wu.routine_no[2] = 0;
     wk->wu.routine_no[3] = 1;
-    wk->zuru_timer = 0;
-    wk->zuru_ix_counter = 0;
+    wk->slide_timer = 0;
+    wk->slide_index_counter = 0;
     set_char_move_init(&wk->wu, 1, 73);
     wk->wu.damage_hit_stop = wk->wu.hit_stop = 0;
     wk->wu.damage_screen_shake = wk->wu.hit_quake = 0;

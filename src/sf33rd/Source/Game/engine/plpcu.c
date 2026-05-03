@@ -62,8 +62,8 @@ static void setup_caught_process_flags(PLW* wk) {
     wk->is_being_thrown = true;
     wk->scr_pos_set_flag = 0;
     wk->dm_hos_flag = 0;
-    wk->zuru_timer = 0;
-    wk->zuru_ix_counter = 0;
+    wk->slide_timer = 0;
+    wk->slide_index_counter = 0;
     wk->parry_flag = 0;
     wk->caution_flag = 0;
     wk->sa->saeff_ok = 0;

@@ -134,7 +134,7 @@ const s16 grade_t_straight[11][2] = { { 0, 0 },   { 2, 40 },  { 3, 60 },  { 4, 8
 
 const s16 grade_t_round_result[4] = { 0, 50, 100, 160 };
 
-const s16 grade_t_onaji_waza[6][2] = { { 0, 100 }, { 6, 70 }, { 12, 50 }, { 18, 30 }, { 24, 10 }, { 30, 0 } };
+const s16 grade_t_same_move[6][2] = { { 0, 100 }, { 6, 70 }, { 12, 50 }, { 18, 30 }, { 24, 10 }, { 30, 0 } };
 
 const s16 grade_t_f_stage[4][2] = { { 0, -40 }, { 4, -20 }, { 8, 0 }, { 10, 60 } };
 
@@ -219,7 +219,7 @@ void grade_check_work_round_init(s16 ix) {
     g_state.judge_item[ix][g_state.Play_Type].app_nml_block = -1;
     g_state.judge_item[ix][g_state.Play_Type].app_rpd_block = -1;
     g_state.judge_item[ix][g_state.Play_Type].app_grd_block = -1;
-    g_state.judge_item[ix][g_state.Play_Type].onaji_waza = 0;
+    g_state.judge_item[ix][g_state.Play_Type].same_move = 0;
 
     if (g_state.Round_Operator[ix] == 0) {
         g_state.judge_item[ix][g_state.Play_Type].grd_miss = ji_grd_init_data[Setup_Lv10(0)];
@@ -725,7 +725,7 @@ s16 get_ex_point_total(s16 ix, s16 wf) {
         point += grade_t_round_result[g_state.judge_item[ix][g_state.Play_Type].kimarite];
     }
 
-    point += grade_table_lookup(grade_t_onaji_waza, 5, g_state.judge_item[ix][g_state.Play_Type].onaji_waza);
+    point += grade_table_lookup(grade_t_same_move, 5, g_state.judge_item[ix][g_state.Play_Type].same_move);
 
     if (g_state.judge_item[ix][g_state.Play_Type].app_nml_block != -1) {
         point += grade_table_lookup(grade_t_app_nmlblock, 6, g_state.judge_item[ix][g_state.Play_Type].app_nml_block);
@@ -836,7 +836,7 @@ void grade_add_quick_stand(s16 ix) {
 void grade_add_nml_nage(WORK* wk) {
     s16 ix;
 
-    if (check_normal_attack(wk->kind_of_waza)) {
+    if (check_normal_attack(wk->attack_type)) {
         ix = wk->id;
         g_state.judge_item[ix][g_state.Play_Type].nml_nage += 1;
         if (g_state.judge_item[ix][g_state.Play_Type].nml_nage > 0xC) {
@@ -864,7 +864,7 @@ void grade_add_target_combo(s16 ix) {
 }
 
 /** @brief Increments the command-move counter for grading. */
-void grade_add_command_waza(s16 ix) {
+void grade_add_command_move(s16 ix) {
     g_state.judge_item[ix][g_state.Play_Type].comwaza += 1;
 
     if (g_state.judge_item[ix][g_state.Play_Type].comwaza > 36) {
@@ -979,7 +979,7 @@ void grade_check_tairyokusa() {
 }
 
 /** @brief Tracks repeated-move usage and penalizes excessive repetition. */
-void grade_add_onaji_waza(s16 ix) {
+void grade_add_same_move(s16 ix) {
     s16 num;
 
     num = g_state.plw[ix].wu.char_index + ((g_state.plw[ix].wu.now_koc == 5) * 0xF0);
@@ -988,8 +988,8 @@ void grade_add_onaji_waza(s16 ix) {
             g_state.ji_sat[ix][num]++;
         }
 
-        if (g_state.judge_item[ix][g_state.Play_Type].onaji_waza < g_state.ji_sat[ix][num]) {
-            g_state.judge_item[ix][g_state.Play_Type].onaji_waza = g_state.ji_sat[ix][num];
+        if (g_state.judge_item[ix][g_state.Play_Type].same_move < g_state.ji_sat[ix][num]) {
+            g_state.judge_item[ix][g_state.Play_Type].same_move = g_state.ji_sat[ix][num];
         }
     }
 }

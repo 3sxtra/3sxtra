@@ -46,7 +46,7 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir);
 void dm_reaction_init_set(PLW* as, PLW* ds);
 void set_guard_status(PLW* as, PLW* ds);
 void set_paring_status(PLW* as, PLW* ds);
-s32 check_normal_attack(u8 waza);
+s32 check_normal_attack(u8 attack);
 void hit_pattern_extdat_check(WORK* as);
 s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom);
 s16 check_dm_att_blocking(WORK* as, WORK* ds, s16 dnum);

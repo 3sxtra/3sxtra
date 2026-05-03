@@ -59,9 +59,9 @@ static void pli_1000();
 static void move_player_work();
 static void move_P1_move_P2();
 static void move_P2_move_P1();
-static void check_damage_hosei();
-static void check_damage_hosei_nage(PLW* as, PLW* ds);
-static void check_damage_hosei_dageki(PLW* w1, PLW* w2);
+static void check_damage_adjust();
+static void check_damage_adjust_throw(PLW* as, PLW* ds);
+static void check_damage_adjust_strike(PLW* w1, PLW* w2);
 static s32 time_over_check();
 static s32 will_die();
 static void setup_settle_rno(s16 kos);
@@ -413,7 +413,7 @@ void Player_control() {
     set_scrrrl();
     player_main_process[g_state.pcon_rno[0]]();
     check_body_touch();
-    check_damage_hosei();
+    check_damage_adjust();
     set_quake(&g_state.plw[0]);
     set_quake(&g_state.plw[1]);
 
@@ -903,8 +903,8 @@ static void move_player_work() {
     }
 
     g_state.positional_relation = check_work_position(&g_state.plw[0].wu, &g_state.plw[1].wu);
-    set_rl_waza(&g_state.plw[0]);
-    set_rl_waza(&g_state.plw[1]);
+    set_rl_move(&g_state.plw[0]);
+    set_rl_move(&g_state.plw[1]);
     g_state.Timer_Freeze = 0;
 
     switch (g_state.plw[0].is_throwing + (g_state.plw[1].is_throwing * 2)) {
@@ -960,8 +960,8 @@ static void move_P1_move_P2() {
     }
 
     if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 &&
-        set_field_hosei_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
-        set_field_hosei_flag(&g_state.plw[0], g_state.scrl, 0);
+        set_field_adjust_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
+        set_field_adjust_flag(&g_state.plw[0], g_state.scrl, 0);
     }
 
     if (g_state.plw[1].do_not_move == 0) {
@@ -969,8 +969,8 @@ static void move_P1_move_P2() {
     }
 
     if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 &&
-        set_field_hosei_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
-        set_field_hosei_flag(&g_state.plw[1], g_state.scrl, 0);
+        set_field_adjust_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
+        set_field_adjust_flag(&g_state.plw[1], g_state.scrl, 0);
     }
 }
 
@@ -981,8 +981,8 @@ static void move_P2_move_P1() {
     }
 
     if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 &&
-        set_field_hosei_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
-        set_field_hosei_flag(&g_state.plw[1], g_state.scrl, 0);
+        set_field_adjust_flag(&g_state.plw[1], g_state.scrr, 1) != 0) {
+        set_field_adjust_flag(&g_state.plw[1], g_state.scrl, 0);
     }
 
     if (g_state.plw[0].do_not_move == 0) {
@@ -990,8 +990,8 @@ static void move_P2_move_P1() {
     }
 
     if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 &&
-        set_field_hosei_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
-        set_field_hosei_flag(&g_state.plw[0], g_state.scrl, 0);
+        set_field_adjust_flag(&g_state.plw[0], g_state.scrr, 1) != 0) {
+        set_field_adjust_flag(&g_state.plw[0], g_state.scrl, 0);
     }
 }
 
@@ -1013,26 +1013,26 @@ void store_player_after_image_data() {
         g_state.zanzou_table[i]->hit_ix = g_state.plw[i].wu.cg_hit_ix;
         g_state.zanzou_table[i]->flip = g_state.plw[i].wu.rl_flag;
         g_state.zanzou_table[i]->cg_flp = g_state.plw[i].wu.cg_flip;
-        g_state.zanzou_table[i]->kowaza = g_state.plw[i].wu.kind_of_waza;
+        g_state.zanzou_table[i]->kowaza = g_state.plw[i].wu.attack_type;
     }
 }
 
-/** @brief Applies damage correction (hosei) based on difficulty and character. */
-static void check_damage_hosei() {
+/** @brief Applies damage correction (adjust) based on difficulty and character. */
+static void check_damage_adjust() {
     g_state.plw[0].forced_movement = g_state.plw[0].scaling_remainder;
     g_state.plw[1].forced_movement = g_state.plw[1].scaling_remainder;
 
     if (g_state.plw[0].is_throwing && g_state.plw[1].is_being_thrown) {
-        check_damage_hosei_nage(&g_state.plw[0], &g_state.plw[1]);
+        check_damage_adjust_throw(&g_state.plw[0], &g_state.plw[1]);
     } else if (g_state.plw[1].is_throwing && g_state.plw[0].is_being_thrown) {
-        check_damage_hosei_nage(&g_state.plw[1], &g_state.plw[0]);
+        check_damage_adjust_throw(&g_state.plw[1], &g_state.plw[0]);
     } else {
         switch ((g_state.plw[0].scaling_remainder != 0) + ((g_state.plw[1].scaling_remainder != 0) * 2)) {
         case 1:
-            check_damage_hosei_dageki(&g_state.plw[0], &g_state.plw[1]);
+            check_damage_adjust_strike(&g_state.plw[0], &g_state.plw[1]);
             break;
         case 2:
-            check_damage_hosei_dageki(&g_state.plw[1], &g_state.plw[0]);
+            check_damage_adjust_strike(&g_state.plw[1], &g_state.plw[0]);
             break;
         }
     }
@@ -1041,7 +1041,7 @@ static void check_damage_hosei() {
 }
 
 /** @brief Applies throw damage correction based on difficulty and mode. */
-static void check_damage_hosei_nage(PLW* as, PLW* ds) {
+static void check_damage_adjust_throw(PLW* as, PLW* ds) {
     if (as->kind_of_catch) {
         if (ds->scaling_remainder != 0) {
             as->wu.xyz[0].disp.pos += ds->scaling_remainder;
@@ -1049,8 +1049,8 @@ static void check_damage_hosei_nage(PLW* as, PLW* ds) {
             return;
         }
 
-        if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_hosei_flag(as, g_state.scrr, 1) != 0) {
-            set_field_hosei_flag(as, g_state.scrl, 0);
+        if (g_state.bg_app_stop == 0 && g_state.bg_app == 0 && set_field_adjust_flag(as, g_state.scrr, 1) != 0) {
+            set_field_adjust_flag(as, g_state.scrl, 0);
         }
 
         if (as->scaling_remainder != 0) {
@@ -1064,7 +1064,7 @@ static void check_damage_hosei_nage(PLW* as, PLW* ds) {
 }
 
 /** @brief Applies strike damage correction based on difficulty and mode. */
-static void check_damage_hosei_dageki(PLW* w1, PLW* w2) {
+static void check_damage_adjust_strike(PLW* w1, PLW* w2) {
     if ((w1->dm_hos_flag != 0) && (w2->wu.hit_stop == 0)) {
         w2->wu.xyz[0].disp.pos += w1->scaling_remainder;
         w2->forced_movement += w1->scaling_remainder;

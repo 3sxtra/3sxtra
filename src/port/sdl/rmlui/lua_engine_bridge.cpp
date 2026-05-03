@@ -124,7 +124,7 @@ static int l_read_player(lua_State* L) {
     // --- Movement type (offset 0x0AD) ---
     // action_type in memory_addresses is at same offset
     PUSH_INT(L, t, "movement_type", wu->cgd_type);
-    PUSH_INT(L, t, "movement_type2", wu->kind_of_waza);
+    PUSH_INT(L, t, "movement_type2", wu->attack_type);
     PUSH_INT(L, t, "action_type", wu->cgd_type);
 
     // --- Routine state ---
@@ -182,7 +182,7 @@ static int l_read_player(lua_State* L) {
     }
 
     // --- Attack state ---
-    PUSH_INT(L, t, "kind_of_waza", wu->kind_of_waza);
+    PUSH_INT(L, t, "attack_type", wu->attack_type);
     PUSH_INT(L, t, "pat_status", wu->pat_status);
     PUSH_INT(L, t, "attpow", wu->attpow);
     PUSH_INT(L, t, "defpow", wu->defpow);
@@ -434,18 +434,18 @@ static int l_read_player(lua_State* L) {
     // --- Parry validity/cooldown (from command processing system) ---
     // move_state_flags[N] = parry validity timer (counts down from reset[N])
     //   N=3: forward parry, N=4: down parry, N=5: air parry, N=6: antiair parry
-    // g_state.waza_work[id][N].free3 = cooldown timer (counts down from reset[N]+10)
+    // g_state.move_work[id][N].free3 = cooldown timer (counts down from reset[N]+10)
     // See check_10() and check_12() in cmd_main.c for the parry input detection.
     {
-        int pid = id - 1; // 0-indexed player id for g_state.wcp[] and g_state.waza_work[]
+        int pid = id - 1; // 0-indexed player id for g_state.wcp[] and g_state.move_work[]
         PUSH_INT(L, t, "parry_forward_validity_time", g_state.wcp[pid].move_state_flags[3]);
-        PUSH_INT(L, t, "parry_forward_cooldown_time", g_state.waza_work[pid][3].free3);
+        PUSH_INT(L, t, "parry_forward_cooldown_time", g_state.move_work[pid][3].free3);
         PUSH_INT(L, t, "parry_down_validity_time", g_state.wcp[pid].move_state_flags[4]);
-        PUSH_INT(L, t, "parry_down_cooldown_time", g_state.waza_work[pid][4].free3);
+        PUSH_INT(L, t, "parry_down_cooldown_time", g_state.move_work[pid][4].free3);
         PUSH_INT(L, t, "parry_air_validity_time", g_state.wcp[pid].move_state_flags[5]);
-        PUSH_INT(L, t, "parry_air_cooldown_time", g_state.waza_work[pid][5].free3);
+        PUSH_INT(L, t, "parry_air_cooldown_time", g_state.move_work[pid][5].free3);
         PUSH_INT(L, t, "parry_antiair_validity_time", g_state.wcp[pid].move_state_flags[6]);
-        PUSH_INT(L, t, "parry_antiair_cooldown_time", g_state.waza_work[pid][6].free3);
+        PUSH_INT(L, t, "parry_antiair_cooldown_time", g_state.move_work[pid][6].free3);
     }
 
     return 1;

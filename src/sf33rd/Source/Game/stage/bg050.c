@@ -24,7 +24,7 @@ void BG050() {
     bgw_ptr = &g_state.bg_w.bgw[2];
     bg050_sync_common();
     zoom_ud_check();
-    bg_pos_hosei2();
+    bg_pos_adjust2();
     Bg_Family_Set();
 }
 

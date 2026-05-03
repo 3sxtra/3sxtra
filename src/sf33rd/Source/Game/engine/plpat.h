@@ -5,6 +5,6 @@
 #include "types.h"
 
 void Player_attack(PLW* wk);
-void hoken_muriyari_chakuchi(PLW* wk);
+void force_grounded_state(PLW* wk);
 
 #endif

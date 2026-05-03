@@ -102,8 +102,8 @@ void effect_E5_move(WORK_Other* ewk) {
             (ewk->wu.dir_old & 8 && ((WORK*)mwk->wu.target_adrs)->routine_no[1] != 4 &&
              ((WORK*)mwk->wu.target_adrs)->routine_no[1] != 2) ||
             (ewk->wu.dir_old & 0x10 && mwk->wu.routine_no[1] != 4 && mwk->wu.routine_no[1] != 2) ||
-            (ewk->wu.dir_old & 0x20 && ewk->wu.total_att_set != ((WORK*)mwk->wu.target_adrs)->kind_of_waza) ||
-            (ewk->wu.dir_old & 0x40 && ewk->wu.total_paring != mwk->wu.kind_of_waza) ||
+            (ewk->wu.dir_old & 0x20 && ewk->wu.total_att_set != ((WORK*)mwk->wu.target_adrs)->attack_type) ||
+            (ewk->wu.dir_old & 0x40 && ewk->wu.total_paring != mwk->wu.attack_type) ||
             (ewk->wu.dir_old & 0x80 && g_state.pcon_dp_flag) || !mwk->image_setup_flag) {
             mwk->image_setup_flag = 0;
         jump:
@@ -206,8 +206,8 @@ static void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.my_bright_type = tblh[9];
     ewk->wu.routine_no[5] = mwk->wu.routine_no[1];
     ewk->wu.routine_no[6] = mwk->wu.routine_no[2];
-    ewk->wu.total_paring = mwk->wu.kind_of_waza;
-    ewk->wu.total_att_set = ((WORK*)mwk->wu.target_adrs)->kind_of_waza;
+    ewk->wu.total_paring = mwk->wu.attack_type;
+    ewk->wu.total_att_set = ((WORK*)mwk->wu.target_adrs)->attack_type;
     push_color_trans_req(after_image_color[ewk->wu.old_routine_no[4]][mwk->wu.id], (mwk->wu.id * 8) + 4);
     mwk->image_setup_flag = 1;
 }
@@ -275,7 +275,7 @@ void effect_e7_e8_init_union(WORK_Other* nwk, WORK_Other* ek, PLW* mk) {
     nwk->wu.catch_adrs = mk->wu.catch_adrs;
     nwk->wu.caught_adrs = mk->wu.caught_adrs;
     nwk->wu.attack_adrs = mk->wu.attack_adrs;
-    nwk->wu.hosei_adrs = mk->wu.hosei_adrs;
+    nwk->wu.adjust_adrs = mk->wu.adjust_adrs;
     nwk->wu.att_ix_table = mk->wu.att_ix_table;
     nwk->wu.weight_level = mk->wu.weight_level;
 }
@@ -300,8 +300,8 @@ void get_attdata_of_illusion(WORK_Other* ewk) {
     ewk->wu.att.piyo = 0;
     ewk->wu.att.hs_you = 0;
     ewk->wu.add_arts_point = 0;
-    ewk->wu.kind_of_waza = g_state.zanzou_table[ewk->master_id][ewk->wu.type].kowaza;
-    ewk->wu.at_koa = acatkoa_table[ewk->wu.kind_of_waza];
+    ewk->wu.attack_type = g_state.zanzou_table[ewk->master_id][ewk->wu.type].kowaza;
+    ewk->wu.at_koa = acatkoa_table[ewk->wu.attack_type];
 
     if (ewk->wu.cg_hit_ix) {
         hit_push_request(&ewk->wu);

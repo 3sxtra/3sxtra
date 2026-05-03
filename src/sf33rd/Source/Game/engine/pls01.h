@@ -9,7 +9,7 @@ void check_my_tk_power_off(PLW* wk, PLW* /* unused */);
 void check_em_tk_power_off(PLW* wk, PLW* tk);
 s16 check_ukemi_flag(PLW* wk);
 s32 check_rl_flag(WORK* wk);
-void set_rl_waza(PLW* wk);
+void set_rl_move(PLW* wk);
 s16 check_rl_on_car(PLW* wk);
 s32 saishin_bs2_area_car(PLW* wk);
 s8 saishin_bs2_on_car(PLW* wk);

@@ -682,7 +682,7 @@ static void nm_17000(PLW* wk) {
 /** @brief Checks and sets left/right direction flags during jump startup. */
 void check_jump_rl_dir(PLW* wk) {
     if (check_rl_flag(&wk->wu) == 0) {
-        wk->wu.rl_flag = wk->wu.rl_waza;
+        wk->wu.rl_flag = wk->wu.active_move;
         wk->cp->lever_dir = lvdir_conv[wk->cp->lever_dir];
         wk->jump_direction = lvdir_conv[wk->jump_direction];
     }
@@ -1670,32 +1670,32 @@ static s32 check_cg_cancel_data(PLW* wk) {
             if (wk->wu.routine_no[1] == 4) {
                 switch (wk->player_number) {
                 case 7:
-                    if (wk->wu.routine_no[2] != 25 && !(wk->wu.kind_of_waza & 0xF8)) {
+                    if (wk->wu.routine_no[2] != 25 && !(wk->wu.attack_type & 0xF8)) {
                         wk->wu.cg_cancel &= 0x9F;
                     }
 
                     break;
 
                 case 18:
-                    if (wk->wu.routine_no[2] != 17 && !(wk->wu.kind_of_waza & 0xF8)) {
+                    if (wk->wu.routine_no[2] != 17 && !(wk->wu.attack_type & 0xF8)) {
                         wk->wu.cg_cancel &= 0x9F;
                     }
 
                     break;
 
                 default:
-                    if (!(wk->wu.kind_of_waza & 0xF8)) {
+                    if (!(wk->wu.attack_type & 0xF8)) {
                         wk->wu.cg_cancel &= 0x9F;
                     }
 
                     break;
                 }
-            } else if (!(wk->wu.kind_of_waza & 0xF8)) {
+            } else if (!(wk->wu.attack_type & 0xF8)) {
                 wk->wu.cg_cancel &= 0x9F;
             }
         }
 
-        if ((wk->special_move_disabled_flag2 & DIP2_SUPER_ART_CANCEL_DISABLED) && (wk->wu.kind_of_waza & 0xF8)) {
+        if ((wk->special_move_disabled_flag2 & DIP2_SUPER_ART_CANCEL_DISABLED) && (wk->wu.attack_type & 0xF8)) {
             wk->wu.cg_cancel &= 0xBF;
         }
 

@@ -206,7 +206,7 @@ static void draw_layer(int layer_index, const BackgroundParameters* local_bg_prm
     const float vp_h = 224.0f;
 
     /* Normalize scroll position using the engine's live scroll limits.
-     * bg_h_shift = wxy.pos - pos_offset (set in bg_pos_hosei).
+     * bg_h_shift = wxy.pos - pos_offset (set in bg_pos_adjust).
      * wxy.pos is clamped to [l_limit2, r_limit2], so bg_h_shift ranges
      * from (l_limit2 - pos_offset) to (r_limit2 - pos_offset).
      * We remap this range to [0 .. effective_w - viewport_w].
@@ -219,7 +219,7 @@ static void draw_layer(int layer_index, const BackgroundParameters* local_bg_prm
         float raw_x = (float)(s16)local_bg_prm[bg_idx].bg_h_shift;
         float raw_y = (float)(s16)local_bg_prm[bg_idx].bg_v_shift;
 
-        /* bg_h_shift = wxy.pos - pos_offset  (see bg_pos_hosei / Irl_Scrn).
+        /* bg_h_shift = wxy.pos - pos_offset  (see bg_pos_adjust / Irl_Scrn).
          * wxy.pos is clamped to [l_limit2, r_limit2] by bg_base_x_move_check.
          * So the runtime range of bg_h_shift is:
          *   min = l_limit2 - pos_offset

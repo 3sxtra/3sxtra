@@ -15,12 +15,12 @@ typedef enum {
     TRIAL_REQ_ANIMATION     // Player or enemy enters specific animation
 } TrialRequirementType;
 
-#define MAX_WAZA_ALTERNATIVES 8
+#define MAX_MOVE_ALTERNATIVES 8
 
-// Standard signature of a waza (move)
+// Standard signature of a move
 typedef struct {
     TrialRequirementType type;
-    s16 waza_ids[MAX_WAZA_ALTERNATIVES]; // Multiple allowed move/object IDs. 0xFFFF is the end-of-list sentinel.
+    s16 move_ids[MAX_MOVE_ALTERNATIVES]; // Multiple allowed move/object IDs. 0xFFFF is the end-of-list sentinel.
     const char* display_name;            // String to show in HUD (e.g. "JHK")
     const char* kadai_input;             // Internal input hint notation string (e.g. "_COMMON_EX _SP_RYU4")
 } TrialStep;
@@ -56,7 +56,7 @@ typedef struct {
 
     s32 last_combo_hits;                // To detect combo drops
     TrialRequirementType last_hit_type; // Set by engine hooks (ATTACK/THROW/FIREBALL)
-    s16 last_hit_waza;                  // Waza ID from the last engine hook
+    s16 last_hit_move;                  // Move ID from the last engine hook
     bool pending_hit;                   // True when a hook fires, consumed by update
     s32 combo_drop_grace;               // Frames to wait before declaring combo drop
 } TrialsState;
@@ -68,7 +68,7 @@ void trials_update(void);
 void trials_draw(void);
 
 // Engine hooks — called from hitcheck.c
-void trials_on_hit_registered(s16 attacker_id, s16 kind_of_waza); // Unified: covers attacks/throws/fireballs
+void trials_on_hit_registered(s16 attacker_id, s16 attack_type); // Unified: covers attacks/throws/fireballs
 void trials_on_parry(s16 defender_id);
 
 // Navigation

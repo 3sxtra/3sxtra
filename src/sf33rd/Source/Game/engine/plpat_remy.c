@@ -1,0 +1,273 @@
+/**
+ * @file plpat_remy.c
+ * Remy Attacks
+ */
+
+#include "sf33rd/Source/Game/engine/plpat_remy.h"
+#include "common.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/engine/grade.h"
+#include "sf33rd/Source/Game/engine/plpat.h"
+#include "sf33rd/Source/Game/engine/plpatuni.h"
+#include "sf33rd/Source/Game/engine/pls01.h"
+#include "sf33rd/Source/Game/engine/pls02.h"
+
+#define EXATT_TABLE_SIZE 18
+
+void (*const pl20_exatt_table[18])(PLW*);
+
+/** @brief Remy: extra attack dispatcher. */
+void pl_remy_extra_attack(PLW* wk) {
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl20_exatt_table[idx](wk);
+}
+
+/** @brief Remy: attack 1 (Light of Virtue, high). */
+static void Att_PL20_AT1(PLW* wk) {
+    switch (wk->wu.routine_no[3]) {
+    case 0:
+        wk->wu.routine_no[3]++;
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
+        set_char_move_init(&wk->wu, 5, wk->as->char_ix);
+        reset_mvxy_data(&wk->wu);
+        wk->wu.mvxy.index = wk->as->r_no;
+        break;
+
+    case 1:
+        char_move(&wk->wu);
+        add_mvxy_speed(&wk->wu);
+        cal_mvxy_speed(&wk->wu);
+
+        switch (wk->wu.cg_type) {
+        case 20:
+            setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.mvxy.index++;
+            wk->wu.cg_type = 0;
+            break;
+
+        case 25:
+            add_to_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.mvxy.index++;
+            wk->wu.cg_type = 0;
+            break;
+
+        case 30:
+            setup_mvxy_data(&wk->wu, wk->as->data_ix);
+            wk->wu.routine_no[3] = 2;
+            wk->wu.cg_type = 0;
+            /* fallthrough */
+
+        case 35:
+            setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.mvxy.index++;
+            wk->wu.routine_no[3] = 2;
+            wk->wu.cg_type = 0;
+            break;
+        }
+
+        break;
+
+    case 2:
+        jumping_union_process(&wk->wu, 3);
+        break;
+
+    case 3:
+        char_move(&wk->wu);
+
+        if (wk->wu.cg_type == 20) {
+            setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.mvxy.index++;
+            wk->wu.routine_no[3] = 1;
+            wk->wu.cg_type = 0;
+        }
+
+        break;
+    }
+}
+
+/** @brief Remy: attack 2 (Cold Blue Kick). */
+static void Att_PL20_AT2(PLW* wk) {
+    switch (wk->wu.routine_no[3]) {
+    case 0:
+        wk->wu.routine_no[3]++;
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
+        set_char_move_init(&wk->wu, 5, wk->as->char_ix);
+        setup_mvxy_data(&wk->wu, wk->as->r_no);
+        wk->wu.mvxy.index++;
+        break;
+
+    case 1:
+        char_move(&wk->wu);
+
+        if (wk->wu.cg_type == 20) {
+            wk->wu.routine_no[3]++;
+            wk->wu.cg_type = 0;
+            add_mvxy_speed(&wk->wu);
+        }
+
+        break;
+
+    case 2:
+        jumping_union_process(&wk->wu, 4);
+
+        if (wk->wu.cg_type == 30) {
+            setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.routine_no[3]++;
+            wk->wu.cg_type = 0;
+        }
+
+        break;
+
+    case 3:
+        jumping_union_process(&wk->wu, 4);
+
+        if (wk->wu.routine_no[3] == 4) {
+            if (wk->wu.mvxy.kop[0] == 2) {
+                wk->wu.mvxy.kop[0] = 1;
+            }
+
+            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = 0;
+        }
+
+        break;
+
+    case 4:
+        wk->wu.routine_no[3]++;
+        setup_mvxy_data(&wk->wu, wk->as->data_ix);
+        /* fallthrough */
+
+    case 5:
+        cal_mvxy_speed(&wk->wu);
+        add_mvxy_speed(&wk->wu);
+        char_move(&wk->wu);
+
+        if (wk->wu.cg_type == 20) {
+            wk->wu.routine_no[3]++;
+            reset_mvxy_data(&wk->wu);
+        }
+
+        break;
+
+    default:
+        char_move(&wk->wu);
+    }
+}
+
+/** @brief Remy: attack 3 (Rising Rage Flash). */
+static void Att_PL20_AT3(PLW* wk) {
+    PLW* emwk;
+
+    switch (wk->wu.routine_no[3]) {
+    case 0:
+        wk->wu.routine_no[3]++;
+        force_grounded_state(wk);
+        wk->wu.rl_flag = wk->wu.active_move;
+        reset_mvxy_data(&wk->wu);
+        emwk = (PLW*)wk->wu.target_adrs;
+
+        if (emwk->wu.hit_mark_y < 32) {
+            set_char_move_init(&wk->wu, 5, 55);
+        }
+
+        break;
+
+    case 1:
+        char_move(&wk->wu);
+        add_mvxy_speed(&wk->wu);
+        cal_mvxy_speed(&wk->wu);
+
+        switch (wk->wu.cg_type) {
+        case 20:
+            setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.mvxy.index++;
+            wk->wu.cg_type = 0;
+            break;
+
+        case 25:
+            add_to_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.mvxy.index++;
+            wk->wu.cg_type = 0;
+            break;
+
+        case 30:
+            setup_mvxy_data(&wk->wu, wk->as->data_ix);
+            wk->wu.routine_no[3] = 2;
+            wk->wu.cg_type = 0;
+            /* fallthrough */
+
+        case 35:
+            setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.mvxy.index++;
+            wk->wu.routine_no[3] = 2;
+            wk->wu.cg_type = 0;
+            break;
+        }
+
+        break;
+
+    case 2:
+        jumping_union_process(&wk->wu, 3);
+        break;
+
+    case 3:
+        char_move(&wk->wu);
+
+        if (wk->wu.cg_type == 20) {
+            setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
+            wk->wu.mvxy.index++;
+            wk->wu.routine_no[3] = 1;
+            wk->wu.cg_type = 0;
+        }
+
+        break;
+    }
+}
+
+/** @brief Remy: special action (tokushu koudou). */
+static void Att_PL20_TOKUSHUKOUDOU(PLW* wk) {
+    wk->scr_pos_set_flag = 0;
+
+    switch (wk->wu.routine_no[3]) {
+    case 0:
+        wk->wu.routine_no[3]++;
+        wk->wu.rl_flag = wk->wu.active_move;
+        force_grounded_state(wk);
+        set_char_move_init(&wk->wu, 5, wk->as->char_ix);
+        break;
+
+    case 1:
+        char_move(&wk->wu);
+
+        if (wk->wu.cg_type == 40) {
+            wk->wu.cg_type = 0;
+            add_sp_arts_gauge_tokushu(wk);
+        }
+
+        if (wk->wu.cg_type == 64) {
+            wk->wu.routine_no[3]++;
+            wk->stun_scaling += 6;
+
+            if (wk->stun_scaling > 24) {
+                wk->stun_scaling = 24;
+            }
+
+            grade_add_personal_action(wk->wu.id);
+        }
+
+        break;
+
+    default:
+        char_move(&wk->wu);
+        break;
+    }
+}
+
+void (*const pl20_exatt_table[18])(PLW*) = { Att_HADOUKEN,    Att_PL20_AT1,     Att_PL20_AT2,
+                                             Att_HOMING_JUMP, Att_HADOUKEN,     Att_PL20_AT3,
+                                             Att_DUMMY,       Att_DUMMY,        Att_DUMMY,
+                                             Att_DUMMY,       Att_DUMMY,        Att_DUMMY,
+                                             Att_DUMMY,       Att_DUMMY,        Att_PL20_TOKUSHUKOUDOU,
+                                             Att_DUMMY,       Att_METAMOR_WAIT, Att_METAMOR_REBIRTH };

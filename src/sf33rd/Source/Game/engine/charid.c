@@ -102,7 +102,7 @@ void set_char_base_data(WORK* wk) {
     wk->catch_adrs = cdat->cata;
     wk->caught_adrs = cdat->caua;
     wk->attack_adrs = cdat->atta;
-    wk->hosei_adrs = cdat->hosa;
+    wk->adjust_adrs = cdat->hosa;
     wk->att_ix_table = cdat->atit;
     wk->my_col_mode = cdat2->my_cm;
     wk->my_col_code = cdat2->my_cc;
