@@ -104,31 +104,31 @@ typedef struct {
     u16 cuix;
     u16 atix;
     u16 hoix;
-} UNK_0;
+} HitIndexTable;
 
 typedef struct {
     s16 body_dm[4][4];
-} UNK_1;
+} CollisionHurtbox;
 
 typedef struct {
     s16 hand_dm[4][4];
-} UNK_2;
+} CollisionHurtboxExt;
 
 typedef struct {
     s16 cat_box[4];
-} UNK_3;
+} CollisionCatchbox;
 
 typedef struct {
     s16 cau_box[4];
-} UNK_4;
+} CollisionThrowable;
 
 typedef struct {
     s16 att_box[4][4];
-} UNK_5;
+} CollisionHitbox;
 
 typedef struct {
     s16 hos_box[4];
-} UNK_6;
+} CollisionPushbox;
 
 typedef struct {
     u8 reaction;
@@ -147,7 +147,7 @@ typedef struct {
     s8 hs_you;
     u8 hit_mark;
     u8 dmg_mark;
-} UNK_7;
+} AttackIndexTable;
 
 typedef struct {
     s16 parts_hos_x;
@@ -161,11 +161,11 @@ typedef struct {
     s16 parts_mts;
     u16 parts_nix;
     u16 parts_char;
-} UNK_8;
+} CollisionOverlapBox;
 
 typedef struct {
     s16 olc_ix[4];
-} UNK_9;
+} CollisionOverlapIndex;
 
 typedef struct {
     s16 catch_hos_x;
@@ -180,7 +180,7 @@ typedef struct {
     s16 koc;
     s16 ix;
     s16 pat;
-} UNK11;
+} CommandState;
 
 typedef struct {
     Reg32SpReal a[2];
@@ -321,11 +321,11 @@ typedef struct {
     s16 hit_stop;
     s16 hit_quake;
     s8 cgromtype;
-    u8 kage_flag;
-    s16 kage_hx;
-    s16 kage_hy;
+    u8 shadow_flag;
+    s16 shadow_x;
+    s16 shadow_y;
     s16 kage_prio;
-    s16 kage_width;
+    s16 shadow_width;
     s16 kage_char;
     s16 position_x;
     s16 position_y;
@@ -351,38 +351,38 @@ typedef struct {
     s16 dmcal_m;
     s16 dmcal_d;
     s8 weight_level;
-    UNK11 cmoa;
-    UNK11 cmsw;
-    UNK11 cmlp;
-    UNK11 cml2;
-    UNK11 cmja;
-    UNK11 cmj2;
-    UNK11 cmj3;
-    UNK11 cmj4;
-    UNK11 cmj5;
-    UNK11 cmj6;
-    UNK11 cmj7;
-    UNK11 cmms;
-    UNK11 cmmd;
-    UNK11 cmyd;
-    UNK11 cmcf;
-    UNK11 cmcr;
-    UNK11 cmbk;
-    UNK11 cmb2;
-    UNK11 cmb3;
-    UNK11 cmhs;
-    UNK11 cmr0;
-    UNK11 cmr1;
-    UNK11 cmr2;
-    UNK11 cmr3;
+    CommandState cmoa;
+    CommandState cmsw;
+    CommandState cmlp;
+    CommandState cml2;
+    CommandState cmja;
+    CommandState cmj2;
+    CommandState cmj3;
+    CommandState cmj4;
+    CommandState cmj5;
+    CommandState cmj6;
+    CommandState cmj7;
+    CommandState cmms;
+    CommandState cmmd;
+    CommandState cmyd;
+    CommandState cmcf;
+    CommandState cmcr;
+    CommandState cmbk;
+    CommandState cmb2;
+    CommandState cmb3;
+    CommandState cmhs;
+    CommandState cmr0;
+    CommandState cmr1;
+    CommandState cmr2;
+    CommandState cmr3;
     s16 cmwk[32];
     u32* char_table[12];
     u32* se_random_table;
     s16* step_xy_table;
     s16* move_xy_table;
-    UNK_8* overlap_char_tbl;
-    UNK_9* olc_ix_table;
-    UNK_9 cg_olc;
+    CollisionOverlapBox* overlap_char_tbl;
+    CollisionOverlapIndex* olc_ix_table;
+    CollisionOverlapIndex cg_olc;
     CatchTable* rival_catch_tbl;
     CatchTable* curr_rca;
     u32* set_char_ad;
@@ -450,25 +450,25 @@ typedef struct {
     s16 my_trans_mode;
     s16 waku_work_index;
     s16 olc_work_ix[4];
-    UNK_0* hit_ix_table;
-    UNK_0 cg_ja;
-    UNK_1* body_adrs;
-    UNK_1* h_bod;
-    UNK_2* hand_adrs;
-    UNK_2* h_han;
-    UNK_2* dumm_adrs;
-    UNK_2* h_dumm;
-    UNK_3* catch_adrs;
-    UNK_3* h_cat;
-    UNK_4* caught_adrs;
-    UNK_4* h_cau;
-    UNK_5* attack_adrs;
-    UNK_5* h_att;
-    UNK_5* h_eat;
-    UNK_6* hosei_adrs;
-    UNK_6* h_hos;
-    UNK_7* att_ix_table;
-    UNK_7 att;
+    HitIndexTable* hit_ix_table;
+    HitIndexTable cg_ja;
+    CollisionHurtbox* body_adrs;
+    CollisionHurtbox* h_bod;
+    CollisionHurtboxExt* hand_adrs;
+    CollisionHurtboxExt* h_han;
+    CollisionHurtboxExt* dumm_adrs;
+    CollisionHurtboxExt* h_dumm;
+    CollisionCatchbox* catch_adrs;
+    CollisionCatchbox* h_cat;
+    CollisionThrowable* caught_adrs;
+    CollisionThrowable* h_cau;
+    CollisionHitbox* attack_adrs;
+    CollisionHitbox* h_att;
+    CollisionHitbox* h_eat;
+    CollisionPushbox* hosei_adrs;
+    CollisionPushbox* h_hos;
+    AttackIndexTable* att_ix_table;
+    AttackIndexTable att;
     u16 zu_flag;
     u16 at_attribute;
     s16 kezuri_pow;
@@ -499,9 +499,9 @@ typedef struct {
     s16 hit_mark_y;
     s16 hit_mark_z;
     s16 kohm;
-    u8 dm_fushin;
+    u8 damage_float_state;
     s8 dm_weight;
-    u16 dm_butt_type;
+    u16 damage_knockback_type;
     u16 dm_zuru;
     u16 dm_attribute;
     s16 dm_guard_success;
@@ -512,9 +512,9 @@ typedef struct {
     u8 dm_impact;
     s16 dm_stop;
     s16 dm_quake;
-    u16 dm_piyo;
+    u16 damage_stun_value;
     u16 dm_ten_ix;
-    u16 dm_koa;
+    u16 damage_kind_of_arts;
     s16 dm_work_id;
     u16 dm_arts_point;
     u8 dm_jump_att_flag;
@@ -540,7 +540,7 @@ typedef struct {
     u8 swallow_no_effect;
     s16 E3_work_index;
     s16 E4_work_index;
-    u8 kezurare_flag;
+    u8 is_taking_chip_damage;
     u8 wrd_free[53];
 } WORK;
 
@@ -582,12 +582,12 @@ typedef struct {
 } SA_WORK;
 
 typedef struct {
-    u16 sw_lvbt;
-    u16 sw_new;
-    u16 sw_old;
-    u16 sw_now;
-    u16 sw_off;
-    u16 sw_chg;
+    u16 input_held;
+    u16 input_pressed;
+    u16 input_old;
+    u16 input_current;
+    u16 input_released;
+    u16 input_changed;
     u16 old_now;
     s16 lgp;
     u8 ca14;
@@ -596,9 +596,9 @@ typedef struct {
     u8 calf;
     u8 calr;
     u8 lever_dir;
-    s16 waza_flag[56];
+    s16 move_state_flags[56];
     s16 reset[56];
-    u8 waza_r[56][4];
+    u8 move_state_timers[56][4];
     u16 btix[56];
     u16 exdt[56][4];
 } WORK_CP;
@@ -634,20 +634,20 @@ typedef struct {
     // Invulnerability?
     bool zuru_flag;
 
-    s8 tsukamarenai_flag;
-    u8 kizetsu_kow;
-    u8 micchaku_flag;
+    s8 throw_invuln_flag;
+    u8 stun_state;
+    u8 close_proximity_flag;
     u8 hos_fi_flag;
     u8 hos_em_flag;
 
     /// Number of the character the player is throwing.
-    s16 tsukami_num;
+    s16 throw_target_id;
 
     /// Flag that's set if the player is throwing the opponent.
-    bool tsukami_f;
+    bool is_throwing;
 
     /// Flag that's set if the player is being thrown by the opponent.
-    bool tsukamare_f;
+    bool is_being_thrown;
 
     s8 kind_of_catch;
     u8 old_gdflag;
@@ -657,7 +657,7 @@ typedef struct {
     s16 hosei_amari;
     s8 dm_hos_flag;
     u8 dm_point;
-    s16 muriyari_ugoku;
+    s16 forced_movement;
     s8 scr_pos_set_flag;
     s8 hoshi_flag;
     s8 the_same_players;
@@ -673,10 +673,10 @@ typedef struct {
     PiyoriType* py;
     s8 wkey_flag;
     s8 dead_flag;
-    s16 ukemi_ok_timer;
+    s16 recovery_roll_ok_timer;
     s16 backup_ok_timer;
     s8 uot_cd_ok_flag;
-    s8 ukemi_success;
+    s8 recovery_roll_success;
     s16 old_pos_data[8];
     s16 move_distance;
     s16 move_power;
@@ -684,7 +684,7 @@ typedef struct {
     u8 saishin_lvdir;
     u8 sa_stop_lvdir;
     u8 sa_stop_flag;
-    u8 kezurijini_flag;
+    u8 chip_death_flag;
     s16 image_setup_flag;
     s16 image_data_index;
     u8 caution_flag;
@@ -705,18 +705,18 @@ typedef struct {
     s16 utk_dageki;
     s16 utk_nage;
     s16 utk_kizetsu;
-    u8 atemi_flag;
-    u8 atemi_point;
+    u8 parry_flag;
+    u8 parry_point;
     s16 dm_vital_backup;
     u8 dm_refrect;
     u8 dm_vital_use;
     u8 exdm_ix;
-    u8 meoshi_jump_flag;
+    u8 link_jump_flag;
     s16 cmd_request;
     s16 rl_save;
 
     // Invulnerability during bonus games
-    bool zettai_muteki_flag;
+    bool absolute_invuln_flag;
 
     u8 do_not_move;
     u16 just_sa_stop_timer;
@@ -1303,7 +1303,7 @@ typedef struct {
 
 typedef struct {
     s16 data[4][6];
-} UNK_Data;
+} ParabolaData;
 
 typedef struct {
     u32* nmca;
@@ -1319,18 +1319,18 @@ typedef struct {
     s16* stxy;
     s16* mvxy;
     u32* sernd;
-    UNK_8* ovct;
-    UNK_9* ovix;
+    CollisionOverlapBox* ovct;
+    CollisionOverlapIndex* ovix;
     CatchTable* rict;
-    UNK_0* hiit;
-    UNK_1* boda;
-    UNK_2* hana;
-    UNK_3* cata;
-    UNK_4* caua;
-    UNK_5* atta;
-    UNK_6* hosa;
-    UNK_7* atit;
-    UNK_Data* prot;
+    HitIndexTable* hiit;
+    CollisionHurtbox* boda;
+    CollisionHurtboxExt* hana;
+    CollisionCatchbox* cata;
+    CollisionThrowable* caua;
+    CollisionHitbox* atta;
+    CollisionPushbox* hosa;
+    AttackIndexTable* atit;
+    ParabolaData* prot;
 } CharInitData;
 
 typedef struct {
@@ -2072,10 +2072,10 @@ typedef struct _anon13 {
 } _anon13;
 
 typedef struct {
-    u16 sw_new;
-    u16 sw_old;
-    u16 sw_chg;
-    u16 sw_now;
+    u16 input_pressed;
+    u16 input_old;
+    u16 input_changed;
+    u16 input_current;
     u16 old_now;
     u16 now_lvbt;
     u16 old_lvbt;

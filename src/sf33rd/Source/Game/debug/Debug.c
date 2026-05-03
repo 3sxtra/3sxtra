@@ -115,7 +115,7 @@ void Debug_1st(struct _TASK* task_ptr) {
 void Debug_2nd(struct _TASK* task_ptr) {
 #if DEBUG
     // Check for toggle: right stick click to show/hide debug menu
-    if ((io_w.data[0].sw_new & SWK_RIGHT_STICK) || (io_w.data[1].sw_new & SWK_RIGHT_STICK)) {
+    if ((io_w.data[0].input_pressed & SWK_RIGHT_STICK) || (io_w.data[1].input_pressed & SWK_RIGHT_STICK)) {
         debug_menu_active = !debug_menu_active;
     }
 
@@ -264,7 +264,7 @@ s32 Debug_Menu_Lever() {
     u16 ix;
 
     lever = (io_w.data[0].sw | io_w.data[1].sw) & SWK_DIRECTIONS;
-    sw = io_w.data[0].sw_new | io_w.data[1].sw_new;
+    sw = io_w.data[0].input_pressed | io_w.data[1].input_pressed;
 
     if (sw & (SWK_WEST | SWK_NORTH | SWK_SOUTH)) {
         return sw;
@@ -308,7 +308,7 @@ u16 Debug_Menu_Shot() {
     u16 shot;
 
     shot = (io_w.data[0].sw | io_w.data[1].sw) & (SWK_WEST | SWK_NORTH | SWK_SOUTH);
-    sw = io_w.data[0].sw_new | io_w.data[1].sw_new;
+    sw = io_w.data[0].input_pressed | io_w.data[1].input_pressed;
 
     if (sw & SWK_WEST) {
         return sw;

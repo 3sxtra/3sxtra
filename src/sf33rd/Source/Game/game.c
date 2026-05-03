@@ -1990,7 +1990,7 @@ void Next_Title_Sub() {
                              which was never loaded since we skipped Sub0) */
     g_state.entry_phase[0] = 1; /* Entry_01 will still run ... */
     g_state.entry_phase[1] = 1; /* ... pre-init its sub-state (what case 0 would set) ... */
-    g_state.entry_phase[2] = 3; /* ... and skip to default → Exit_Title_Sub_Entry() immediately */
+    g_state.entry_phase[2] = 3; /* ... and skip to default → Exit_Title_Entry() immediately */
     g_state.Break_Into = 0;     /* What Entry_01 case 0 would have set */
     title_tex_flag = 0;         /* Title texture was never loaded */
     InitTask_SetPhase(ITP_RUNNING);

@@ -64,9 +64,9 @@ static void animal_init(WORK_Other* ewk) {
 
     switch (ewk->wu.type) {
     case 0:
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = -4;
-        ewk->wu.kage_hy = 33;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = -4;
+        ewk->wu.shadow_y = 33;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 3;
 
@@ -79,9 +79,9 @@ static void animal_init(WORK_Other* ewk) {
         break;
 
     case 2:
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = -4;
-        ewk->wu.kage_hy = 33;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = -4;
+        ewk->wu.shadow_y = 33;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 3;
         ewk->wu.rl_flag ^= 1;
@@ -94,9 +94,9 @@ static void animal_init(WORK_Other* ewk) {
             ewk->wu.my_col_code = g_state.plw[1].wu.my_col_code;
         }
 
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = -2;
-        ewk->wu.kage_hy = 24;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = -2;
+        ewk->wu.shadow_y = 24;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 8;
 
@@ -115,9 +115,9 @@ static void animal_init(WORK_Other* ewk) {
             ewk->wu.xyz[0].disp.pos = work_l;
         }
 
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 0;
-        ewk->wu.kage_hy = 33;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 0;
+        ewk->wu.shadow_y = 33;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 0;
         ewk->wu.rl_flag ^= 1;

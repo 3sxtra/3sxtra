@@ -123,16 +123,16 @@ void Scrscreen_Init() {
     ppgSetupPalChunk(&ppgScrPalShot, (u8*)loadAdrs, loadSize, 0, 2, 1);
     ppgSetupPalChunk(&ppgScrPalFace, (u8*)loadAdrs, loadSize, 0, 1, 1);
     ppgSetupPalChunk(NULL, (u8*)loadAdrs, loadSize, 0, 0, 1);
-    ppgSetupTexChunk_1st(NULL, (u8*)loadAdrs, loadSize, 0, 6, 0, 0);
+    PPG_SetupTexturePrimary(NULL, (u8*)loadAdrs, loadSize, 0, 6, 0, 0);
 
     for (i = 0; i < 3; i++) {
-        ppgSetupTexChunk_2nd(NULL, i);
-        ppgSetupTexChunk_3rd(NULL, i, 1);
+        PPG_SetupTextureSecondary(NULL, i);
+        PPG_SetupTextureTertiary(NULL, i, 1);
     }
 
     for (i = 3; i < ppgScrTex.textures; i++) {
-        ppgSetupTexChunk_2nd(NULL, i);
-        ppgSetupTexChunk_3rd(NULL, i, 1);
+        PPG_SetupTextureSecondary(NULL, i);
+        PPG_SetupTextureTertiary(NULL, i, 1);
     }
 
     Push_ramcnt_key(key);

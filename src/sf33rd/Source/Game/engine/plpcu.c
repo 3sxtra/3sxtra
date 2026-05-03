@@ -40,9 +40,9 @@ void Player_caught(PLW* wk) {
     setup_caught_process_flags(wk);
 
     if (wk->wu.routine_no[3] == 0) {
-        wk->ukemi_ok_timer = wk->backup_ok_timer = emwk->wu.cmyd.koc;
+        wk->recovery_roll_ok_timer = wk->backup_ok_timer = emwk->wu.cmyd.koc;
         wk->uot_cd_ok_flag = 0;
-        wk->ukemi_success = 0;
+        wk->recovery_roll_success = 0;
         wk->wu.dir_old = 1;
         pp_pulpara_caught(&wk->wu);
         clear_chainex_check(wk->wu.id);
@@ -58,13 +58,13 @@ static void setup_caught_process_flags(PLW* wk) {
     wk->running_f = 0;
     wk->guard_flag = 3;
     wk->guard_chuu = 0;
-    wk->tsukami_f = false;
-    wk->tsukamare_f = true;
+    wk->is_throwing = false;
+    wk->is_being_thrown = true;
     wk->scr_pos_set_flag = 0;
     wk->dm_hos_flag = 0;
     wk->zuru_timer = 0;
     wk->zuru_ix_counter = 0;
-    wk->atemi_flag = 0;
+    wk->parry_flag = 0;
     wk->caution_flag = 0;
     wk->sa->saeff_ok = 0;
     wk->sa->saeff_mp = 0;
@@ -222,8 +222,8 @@ static void caught_cg_type_check(PLW* wk, PLW* emwk) {
             setup_cu_dm_init_data[cu_dm_idx](wk);
         get_catch_off_data(wk, emwk->wu.att.reaction);
 
-        if (wk->ukemi_success == 0) {
-            wk->ukemi_ok_timer = wk->backup_ok_timer;
+        if (wk->recovery_roll_success == 0) {
+            wk->recovery_roll_ok_timer = wk->backup_ok_timer;
             wk->uot_cd_ok_flag = 0;
         }
 
@@ -233,7 +233,7 @@ static void caught_cg_type_check(PLW* wk, PLW* emwk) {
 
 /** @brief Checks if the caught hold should continue (tsukamare keizoku). */
 static s32 check_tsukamare_keizoku_check(PLW* wk, PLW* emwk) {
-    if (!emwk->tsukami_f) {
+    if (!emwk->is_throwing) {
         wk->wu.routine_no[1] = 1;
         wk->wu.routine_no[2] = 88;
         wk->wu.routine_no[3] = 0;

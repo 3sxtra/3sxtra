@@ -70,14 +70,14 @@ void effect_C9_move(WORK_Other* ewk) {
         ewk->wu.xyz[0].disp.pos = app_pos_hosei[ewk->wu.type][0] + scrc;
         ewk->wu.xyz[1].disp.pos = app_pos_hosei[ewk->wu.type][1];
         ewk->wu.xyz[2].disp.pos = app_pos_hosei[ewk->wu.type][2] + 32;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = judge_gals_kage_tbl[ewk->wu.charset_id][0];
-        ewk->wu.kage_hy = judge_gals_kage_tbl[ewk->wu.charset_id][1];
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = judge_gals_kage_tbl[ewk->wu.charset_id][0];
+        ewk->wu.shadow_y = judge_gals_kage_tbl[ewk->wu.charset_id][1];
         ewk->wu.kage_prio = judge_gals_kage_tbl[ewk->wu.charset_id][2];
         ewk->wu.kage_char = judge_gals_kage_tbl[ewk->wu.charset_id][3];
 
         if (ewk->wu.type == 1) {
-            ewk->wu.kage_hy -= 2;
+            ewk->wu.shadow_y -= 2;
         }
 
         set_char_move_init(&ewk->wu, 0, 0);

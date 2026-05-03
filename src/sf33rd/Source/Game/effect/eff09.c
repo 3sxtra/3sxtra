@@ -432,9 +432,9 @@ static void eff09_4000(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 2;
-        ewk->wu.kage_hy = -3;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 2;
+        ewk->wu.shadow_y = -3;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 0;
         ewk->wu.my_col_code = 0x2000;
@@ -722,9 +722,9 @@ static void eff09_11000(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 2;
-        ewk->wu.kage_hy = -10;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 2;
+        ewk->wu.shadow_y = -10;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 0;
         ewk->wu.my_col_code = 0x2000;
@@ -1210,9 +1210,9 @@ static void eff09_20000(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.dead_f = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 5;
-        ewk->wu.kage_hy = g_state.base_y_pos + 2;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 5;
+        ewk->wu.shadow_y = g_state.base_y_pos + 2;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 11;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -1400,9 +1400,9 @@ static void eff09_23000(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.dead_f = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 1;
-        ewk->wu.kage_hy = -2;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 1;
+        ewk->wu.shadow_y = -2;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 11;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -1683,9 +1683,9 @@ static void eff09_27000(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.dead_f = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = -8;
-        ewk->wu.kage_hy = -11;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = -8;
+        ewk->wu.shadow_y = -11;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 8;
         ewk->wu.mvxy.a[0].sp = -0x80000;

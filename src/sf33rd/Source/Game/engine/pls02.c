@@ -187,9 +187,9 @@ void setup_mvxy_data(WORK* wk, u16 ix) {
 
 /** @brief Sets up own blow-away trajectory data. */
 void setup_butt_own_data(WORK* wk) {
-    wk->mvxy.index = wk->dm_butt_type;
+    wk->mvxy.index = wk->damage_knockback_type;
     read_adrs_store_mvxy(
-        wk, (s16*)((char*)parabora_own_table[wk->dm_plnum] + wk->dm_butt_type * 48 + wk->weight_level * 12));
+        wk, (s16*)((char*)parabora_own_table[wk->dm_plnum] + wk->damage_knockback_type * 48 + wk->weight_level * 12));
 }
 
 /** @brief Reads movement address data and stores into work XY. */
@@ -366,15 +366,15 @@ void check_body_touch() {
     return;
 
 one:
-    p1w->wu.xyz[0].disp.pos += meri * (p1w->micchaku_flag != 1);
-    p2w->wu.xyz[0].disp.pos -= meri * (p2w->micchaku_flag != 2);
+    p1w->wu.xyz[0].disp.pos += meri * (p1w->close_proximity_flag != 1);
+    p2w->wu.xyz[0].disp.pos -= meri * (p2w->close_proximity_flag != 2);
     p1w->hos_em_flag = 2;
     p2w->hos_em_flag = 1;
     return;
 
 two:
-    p1w->wu.xyz[0].disp.pos -= meri * (p1w->micchaku_flag != 2);
-    p2w->wu.xyz[0].disp.pos += meri * (p2w->micchaku_flag != 1);
+    p1w->wu.xyz[0].disp.pos -= meri * (p1w->close_proximity_flag != 2);
+    p2w->wu.xyz[0].disp.pos += meri * (p2w->close_proximity_flag != 1);
     p1w->hos_em_flag = 1;
     p2w->hos_em_flag = 2;
 }
@@ -466,13 +466,13 @@ void check_body_touch2() {
     return;
 
 one:
-    hmw->wu.xyz[0].disp.pos += (meri) * (hmw->micchaku_flag != 1);
+    hmw->wu.xyz[0].disp.pos += (meri) * (hmw->close_proximity_flag != 1);
     hmw->hos_em_flag = 2;
     cmw->hos_em_flag = 1;
     return;
 
 two:
-    hmw->wu.xyz[0].disp.pos -= (meri) * (hmw->micchaku_flag != 2);
+    hmw->wu.xyz[0].disp.pos -= (meri) * (hmw->close_proximity_flag != 2);
     hmw->hos_em_flag = 1;
     cmw->hos_em_flag = 2;
     return;
@@ -561,14 +561,14 @@ s32 set_field_hosei_flag(PLW* pl, s16 pos, s16 ix) {
             if (hami) {
                 if (hami >= 0) {
                     pl->wu.xyz[0].disp.pos -= hami;
-                    pl->micchaku_flag = 1;
+                    pl->close_proximity_flag = 1;
                     pl->hos_fi_flag = 1;
                     pl->hosei_amari = -hami;
                 } else {
                     break;
                 }
             } else {
-                pl->micchaku_flag = 1;
+                pl->close_proximity_flag = 1;
                 pl->hos_fi_flag = 0;
                 pl->hosei_amari = 0;
             }
@@ -578,14 +578,14 @@ s32 set_field_hosei_flag(PLW* pl, s16 pos, s16 ix) {
             if (hami) {
                 if (hami <= 0) {
                     pl->wu.xyz[0].disp.pos -= hami;
-                    pl->micchaku_flag = 2;
+                    pl->close_proximity_flag = 2;
                     pl->hos_fi_flag = 2;
                     pl->hosei_amari = -hami;
                 } else {
                     break;
                 }
             } else {
-                pl->micchaku_flag = 2;
+                pl->close_proximity_flag = 2;
                 pl->hos_fi_flag = 0;
                 pl->hosei_amari = 0;
             }
@@ -594,7 +594,7 @@ s32 set_field_hosei_flag(PLW* pl, s16 pos, s16 ix) {
         return 0;
     }
 
-    pl->micchaku_flag = 0;
+    pl->close_proximity_flag = 0;
     pl->hos_fi_flag = 0;
     pl->hosei_amari = 0;
     return 1;
@@ -1137,9 +1137,9 @@ void setup_saishin_lvdir(PLW* ds, s8 gddir) {
             ds->saishin_lvdir = convert_saishin_lvdir[0][ds->sa_stop_lvdir & 0xC];
         }
     } else if (ds->wu.rl_flag) {
-        ds->saishin_lvdir = convert_saishin_lvdir[1][ds->cp->sw_lvbt & 0xC];
+        ds->saishin_lvdir = convert_saishin_lvdir[1][ds->cp->input_held & 0xC];
     } else {
-        ds->saishin_lvdir = convert_saishin_lvdir[0][ds->cp->sw_lvbt & 0xC];
+        ds->saishin_lvdir = convert_saishin_lvdir[0][ds->cp->input_held & 0xC];
     }
 
     if (!(ds->spmv_ng_flag & DIP_ABSOLUTE_GUARD_DISABLED) && (ds->guard_chuu != 0) && ((ds->guard_chuu) < 5)) {
@@ -1150,11 +1150,11 @@ void setup_saishin_lvdir(PLW* ds, s8 gddir) {
 /** @brief Sets up lever direction after auto-direction adjustment. */
 void setup_lvdir_after_autodir(PLW* wk) {
     if (wk->wu.rl_flag) {
-        wk->cp->lever_dir = convert_saishin_lvdir[1][wk->cp->sw_lvbt & 0xC];
+        wk->cp->lever_dir = convert_saishin_lvdir[1][wk->cp->input_held & 0xC];
         return;
     }
 
-    wk->cp->lever_dir = convert_saishin_lvdir[0][wk->cp->sw_lvbt & 0xC];
+    wk->cp->lever_dir = convert_saishin_lvdir[0][wk->cp->input_held & 0xC];
 }
 
 /** @brief Requests the death voice sound for both players. */

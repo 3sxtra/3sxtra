@@ -26,16 +26,16 @@ typedef struct {
     u32 sw;
 
     /// Buttons for the previous frame
-    u32 sw_old;
+    u32 input_old;
 
     /// Buttons newly pressed this frame
-    u32 sw_new;
+    u32 input_pressed;
 
     /// Buttons released this frame
-    u32 sw_off;
+    u32 input_released;
 
     /// Buttons that changed
-    u32 sw_chg;
+    u32 input_changed;
 
     PAD_ANSHOT anshot;
     PAD_STICK stick[2];

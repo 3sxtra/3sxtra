@@ -19,7 +19,7 @@
 
 #include <SDL3/SDL.h>
 
-BroadcastConfig broadcast_config = {0};
+BroadcastConfig broadcast_config = { 0 };
 
 #define CONFIG_ENTRIES_MAX 128
 

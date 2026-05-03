@@ -38,20 +38,20 @@ void Player_catch(PLW* wk) {
     wk->py->flag = 0;
     wk->guard_flag = 3;
     wk->guard_chuu = 0;
-    wk->tsukami_f = true;
-    wk->tsukamare_f = false;
+    wk->is_throwing = true;
+    wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
     wk->dm_hos_flag = 0;
-    wk->ukemi_success = 0;
+    wk->recovery_roll_success = 0;
     wk->zuru_timer = 0;
     wk->zuru_ix_counter = 0;
     wk->sa_stop_flag = 0;
-    wk->atemi_flag = 0;
+    wk->parry_flag = 0;
     wk->caution_flag = 0;
     wk->sa->saeff_ok = 0;
     wk->sa->saeff_mp = 0;
-    wk->ukemi_success = 0;
-    wk->ukemi_ok_timer = 0;
+    wk->recovery_roll_success = 0;
+    wk->recovery_roll_ok_timer = 0;
     wk->uot_cd_ok_flag = 0;
     wk->cancel_timer = 0;
     wk->hazusenai_flag = 0;
@@ -364,7 +364,7 @@ static void Catch_07000(PLW* wk) {
     case 4:
         jumping_union_process(&wk->wu, 6);
 
-        if (((PLW*)wk->wu.target_adrs)->micchaku_flag) {
+        if (((PLW*)wk->wu.target_adrs)->close_proximity_flag) {
             char_move_z(&wk->wu);
             wk->wu.routine_no[3] = 5;
         }
@@ -447,7 +447,7 @@ void subtract_cu_vital(PLW* wk) {
                     g_state.round_slow_flag = true;
                 }
             } else if (wk->py->flag == 0) {
-                wk->py->now.quantity.h += wk->wu.dm_piyo;
+                wk->py->now.quantity.h += wk->wu.damage_stun_value;
 
                 if (wk->py->now.quantity.h >= wk->py->genkai) {
                     wk->py->now.timer = 0;
@@ -460,11 +460,11 @@ void subtract_cu_vital(PLW* wk) {
     }
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
-        Training_Damage_Set(wk->wu.dm_vital, wk->wu.dm_piyo, wk->wu.kezurare_flag);
+        Training_Damage_Set(wk->wu.dm_vital, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
     }
 
     wk->wu.dm_vital = 0;
-    wk->wu.dm_piyo = 0;
+    wk->wu.damage_stun_value = 0;
 }
 
 /** @brief Processes cg_type transitions during the catch state. */
@@ -490,21 +490,21 @@ static void catch_cg_type_check(PLW* wk) {
 
         if (emwk->backup_ok_timer) {
             emwk->uot_cd_ok_flag = 1;
-            emwk->ukemi_ok_timer = emwk->backup_ok_timer;
+            emwk->recovery_roll_ok_timer = emwk->backup_ok_timer;
         } else {
             emwk->uot_cd_ok_flag = 0;
-            emwk->ukemi_ok_timer = 0;
+            emwk->recovery_roll_ok_timer = 0;
         }
 
-        emwk->ukemi_success = 0;
+        emwk->recovery_roll_success = 0;
         break;
 
     case 5:
         subtract_cu_vital(emwk);
         wk->wu.cg_type = 0;
-        emwk->ukemi_ok_timer = 0;
+        emwk->recovery_roll_ok_timer = 0;
         emwk->uot_cd_ok_flag = 0;
-        emwk->ukemi_success = 0;
+        emwk->recovery_roll_success = 0;
         break;
 
     case 6:

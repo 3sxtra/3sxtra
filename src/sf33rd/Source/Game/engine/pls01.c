@@ -96,7 +96,7 @@ void check_em_tk_power_off(PLW* wk, PLW* tk) {
 
 /** @brief Returns the ukemi (tech-roll) flag for the player. */
 s16 check_ukemi_flag(PLW* wk) {
-    return wk->cp->waza_flag[7];
+    return wk->cp->move_state_flags[7];
 }
 
 /** @brief Returns the left/right facing flag. */
@@ -117,7 +117,7 @@ void set_rl_waza(PLW* wk) {
                     break;
                 }
 
-                if (((result = wk->cp->sw_lvbt & 0xF) != 0) && !(result & 3)) {
+                if (((result = wk->cp->input_held & 0xF) != 0) && !(result & 3)) {
                     wk->wu.rl_waza = (result & 8) != 0;
                     return;
                 }
@@ -225,7 +225,7 @@ s8 saishin_bs2_on_car(PLW* wk) {
 
 /** @brief Checks if the player can perform an air jump (double-jump). */
 s32 check_air_jump(PLW* wk) {
-    if (wk->spmv_ng_flag & DIP_UNKNOWN_19) {
+    if (wk->spmv_ng_flag & DIP_AIR_JUMP_DISABLED) {
         return 0;
     }
 
@@ -244,7 +244,7 @@ s32 check_air_jump(PLW* wk) {
         return 0;
     }
 
-    if (!(wk->cp->sw_now & 1)) {
+    if (!(wk->cp->input_current & 1)) {
         return 0;
     }
 
@@ -256,7 +256,7 @@ s32 check_air_jump(PLW* wk) {
 
 /** @brief Checks if the player can perform a wall-kick (triangle jump). */
 s32 check_sankaku_tobi(PLW* wk) {
-    if (wk->spmv_ng_flag & DIP_UNKNOWN_18) {
+    if (wk->spmv_ng_flag & DIP_WALL_JUMP_DISABLED) {
         return 0;
     }
 
@@ -273,7 +273,7 @@ s32 check_sankaku_tobi(PLW* wk) {
         return 0;
     }
 
-    if (!(wk->micchaku_flag & wk->cp->sw_lvbt >> 2)) {
+    if (!(wk->close_proximity_flag & wk->cp->input_held >> 2)) {
         return 0;
     }
 
@@ -289,7 +289,7 @@ void check_extra_jump_timer(PLW* wk) {
         wk->air_jump_ok_time--;
     }
 
-    if (wk->wu.xyz[1].disp.pos > 48 && wk->micchaku_flag) {
+    if (wk->wu.xyz[1].disp.pos > 48 && wk->close_proximity_flag) {
         if (wk->wu.routine_no[1] == 1) {
             wk->micchaku_wall_time = 0;
         }
@@ -357,7 +357,7 @@ s16 check_F_R_dash(PLW* wk) {
         }
     }
 
-    num = (wk->cp->waza_flag[0] != 0) + (wk->cp->waza_flag[1] != 0) * 2;
+    num = (wk->cp->move_state_flags[0] != 0) + (wk->cp->move_state_flags[1] != 0) * 2;
     rnum = 0;
 
     while (1) {
@@ -402,11 +402,11 @@ s16 check_F_R_dash(PLW* wk) {
 
 /** @brief Checks if the player has jump-ready input (up direction). */
 s32 check_jump_ready(PLW* wk) {
-    if (!(wk->cp->sw_new & 1)) {
+    if (!(wk->cp->input_pressed & 1)) {
         return 0;
     }
 
-    if (!(wk->spmv_ng_flag & DIP_HIGH_JUMP_DISABLED) && wk->cp->waza_flag[2] != 0) {
+    if (!(wk->spmv_ng_flag & DIP_HIGH_JUMP_DISABLED) && wk->cp->move_state_flags[2] != 0) {
         set_routine(wk, 17);
         grade_add_command_waza(wk->wu.id);
     } else {
@@ -427,11 +427,11 @@ s32 check_hijump_only(PLW* wk) {
         return 0;
     }
 
-    if (!(wk->cp->sw_new & 1)) {
+    if (!(wk->cp->input_pressed & 1)) {
         return 0;
     }
 
-    if (wk->cp->waza_flag[2] == 0) {
+    if (wk->cp->move_state_flags[2] == 0) {
         return 0;
     }
 
@@ -447,7 +447,7 @@ s32 check_hijump_only(PLW* wk) {
 
 /** @brief Checks if the player should bend/crouch from standing. */
 s32 check_bend_myself(PLW* wk) {
-    if (!(wk->cp->sw_new & 2)) {
+    if (!(wk->cp->input_pressed & 2)) {
         return 0;
     }
 
@@ -488,7 +488,7 @@ s32 check_turn_to_back(PLW* wk) {
         return 0;
     }
 
-    if (wk->cp->sw_lvbt & 2) {
+    if (wk->cp->input_held & 2) {
         set_routine(wk, 10);
     } else {
         set_routine(wk, 2);
@@ -551,7 +551,7 @@ s16 check_walking_lv_dir(PLW* wk) {
 
 /** @brief Checks if the player should stand up from crouching. */
 s32 check_stand_up(PLW* wk) {
-    if (wk->cp->sw_new & 2) {
+    if (wk->cp->input_pressed & 2) {
         return 0;
     }
 
@@ -571,7 +571,7 @@ s32 check_defense_lever(PLW* wk) {
         return 0;
     }
 
-    if (wk->cp->sw_new & 2) {
+    if (wk->cp->input_pressed & 2) {
         set_routine(wk, 29);
     } else if (check_attbox_dir(wk)) {
         set_routine(wk, 28);
@@ -595,7 +595,7 @@ s32 check_em_catt(PLW* wk) {
         return 0;
     }
 
-    if (wk->cp->lever_dir != 2 || wk->cp->sw_new & 1) {
+    if (wk->cp->lever_dir != 2 || wk->cp->input_pressed & 1) {
         return 0;
     }
 
@@ -646,7 +646,7 @@ u16 check_defense_kind(PLW* wk) {
 
     switch (wk->wu.routine_no[2]) {
     case 27:
-        if (wk->cp->sw_new & 2) {
+        if (wk->cp->input_pressed & 2) {
             rnum = 3;
         } else if (chcgp_hos[wk->player_number] && check_attbox_dir(wk)) {
             rnum = 2;
@@ -655,7 +655,7 @@ u16 check_defense_kind(PLW* wk) {
         break;
 
     case 28:
-        if (wk->cp->sw_new & 2) {
+        if (wk->cp->input_pressed & 2) {
             rnum = 3;
         } else if (chcgp_hos[wk->player_number] && (check_attbox_dir(wk) == 0)) {
             rnum = 1;
@@ -664,7 +664,7 @@ u16 check_defense_kind(PLW* wk) {
         break;
 
     case 29:
-        if (!(wk->cp->sw_new & 2)) {
+        if (!(wk->cp->input_pressed & 2)) {
             if (check_attbox_dir(wk)) {
                 rnum = 2;
             } else {

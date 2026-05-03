@@ -1,0 +1,10 @@
+submodules/
+android/
+rom/
+fcade-replays/
+.agents/
+graphify-out/
+tmp/
+configs/
+plugins/
+*.csv

@@ -326,16 +326,16 @@ void set_caught_status(s16 ix) {
         break;
     }
 
-    ds->wu.kezurare_flag = 0;
+    ds->wu.is_taking_chip_damage = 0;
     as->wu.routine_no[3] = 0;
 
     if (ds->guard_flag == 3 || blocking_status & 1) {
         ds->hazusenai_flag = 1;
     }
 
-    as->tsukami_num = ds->player_number;
-    as->tsukami_f = true;
-    ds->tsukamare_f = true;
+    as->throw_target_id = ds->player_number;
+    as->is_throwing = true;
+    ds->is_being_thrown = true;
     ds->wu.routine_no[1] = 3;
     ds->wu.routine_no[2] = as->wu.att.ng_type;
     ds->wu.routine_no[3] = 0;
@@ -385,9 +385,9 @@ s16 check_blocking_flag(PLW* as, PLW* ds) {
     s16 num;
 
     wp = ds->cp;
-    num = (wp->waza_flag[3] + wp->waza_flag[4]) != 0;
+    num = (wp->move_state_flags[3] + wp->move_state_flags[4]) != 0;
     wp = as->cp;
-    num += (wp->waza_flag[3] + wp->waza_flag[4] != 0) << 1;
+    num += (wp->move_state_flags[3] + wp->move_state_flags[4] != 0) << 1;
     return num;
 }
 
@@ -509,7 +509,7 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
 
     jump_one:
         as->wu.hf.hit.player = 2;
-        ds->wu.kezurare_flag = 0;
+        ds->wu.is_taking_chip_damage = 0;
         dm_reaction_init_set(as, ds);
 
         if (as->wu.att.dipsw & 0x10) {
@@ -529,7 +529,7 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
 
     jump_two:
         as->wu.hf.hit.player = 1;
-        ds->wu.kezurare_flag = 0;
+        ds->wu.is_taking_chip_damage = 0;
         dm_reaction_init_set(as, ds);
 
         if (as->wu.zu_flag == 0) {
@@ -579,8 +579,8 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
     add_combo_work(as, ds);
     hit_pattern_extdat_check(&as->wu);
 
-    if (ds->atemi_flag && ds->atemi_point != ds->dm_point) {
-        ds->atemi_flag = 0;
+    if (ds->parry_flag && ds->parry_point != ds->dm_point) {
+        ds->parry_flag = 0;
     }
 
     g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
@@ -635,7 +635,7 @@ void set_guard_status(PLW* as, PLW* ds) {
             ds->wu.xyz[1].cal = 0;
         }
 
-        ds->wu.dm_piyo = 0;
+        ds->wu.damage_stun_value = 0;
         as->wu.cmwk[8]++;
         add_sp_arts_gauge_guard(as);
         ds->wu.dm_arts_point = 0;
@@ -664,7 +664,7 @@ void set_paring_status(PLW* as, PLW* ds) {
         ds->wu.routine_no[3] = 0;
         waza_compel_all_init2(ds);
         dm_status_copy(&as->wu, &ds->wu);
-        ds->wu.dm_piyo = 0;
+        ds->wu.damage_stun_value = 0;
         ds->wu.cg_type = 0;
 
         // turbo
@@ -846,7 +846,7 @@ s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
     s16 rnum;
 
     rnum = 0;
-    ds->kezurare_flag = 0;
+    ds->is_taking_chip_damage = 0;
 
     if (as->work_id == 1) {
         curr_id = as->id;
@@ -860,7 +860,7 @@ s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
 
     if (as->kezuri_pow) {
         if (ds->dm_vital != 0) {
-            ds->kezurare_flag = 1;
+            ds->is_taking_chip_damage = 1;
             ds->dm_vital = ds->dm_vital / (as->kezuri_pow / kom);
 
             if (ds->dm_vital == 0) {
@@ -888,11 +888,11 @@ s16 check_dm_att_blocking(WORK* as, WORK* ds, s16 dnum) {
     s16 rnum = 0;
     TAMA* tama = (TAMA*)as->my_effadrs;
 
-    ds->kezurare_flag = 0;
+    ds->is_taking_chip_damage = 0;
 
     if (as->work_id == 4 && as->id == 13 && tama->kz_blocking != 0 && as->kezuri_pow) {
         if (ds->dm_vital != 0) {
-            ds->kezurare_flag = 1;
+            ds->is_taking_chip_damage = 1;
 
             if (as->kezuri_pow) {
                 ds->dm_vital = ds->dm_vital / as->kezuri_pow;
@@ -923,8 +923,8 @@ s16 check_dm_att_blocking(WORK* as, WORK* ds, s16 dnum) {
 /** @brief Applies damage and stun (piyo) values to the defender. */
 void set_damage_and_piyo(PLW* as, PLW* ds) {
     cal_damage_vitality(as, ds);
-    ds->wu.dm_piyo = _add_piyo_gauge[as->player_number][as->wu.att.piyo];
-    ds->wu.dm_piyo = ds->wu.dm_piyo * stun_gauge_omake[omop_stun_gauge_add[(ds->wu.id + 1) & 1]] / 32;
+    ds->wu.damage_stun_value = _add_piyo_gauge[as->player_number][as->wu.att.piyo];
+    ds->wu.damage_stun_value = ds->wu.damage_stun_value * stun_gauge_omake[omop_stun_gauge_add[(ds->wu.id + 1) & 1]] / 32;
 
     if ((ds->wu.pat_status == 32 || ds->wu.pat_status == 3) || ds->wu.pat_status == 25) {
         ds->wu.dm_vital = (ds->wu.dm_vital * 125) / 100;
@@ -935,7 +935,7 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
     }
 
     // Add natively to training state
-    training_state_add_combo_hit(ds->wu.id, ds->wu.dm_piyo);
+    training_state_add_combo_hit(ds->wu.id, ds->wu.damage_stun_value);
     // Notify trials mode of the hit (P1's player_number == 0 is the attacker)
     if (as->wu.work_id == 1) {
         trials_on_hit_registered(((PLW*)as)->player_number, as->wu.kind_of_waza);
@@ -962,8 +962,8 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
         ds->utk_dageki = as->tk_dageki;
     }
 
-    if (ds->wu.dm_piyo) {
-        ds->wu.dm_piyo = ds->wu.dm_piyo * (as->tk_kizetsu + 32) / 32;
+    if (ds->wu.damage_stun_value) {
+        ds->wu.damage_stun_value = ds->wu.damage_stun_value * (as->tk_kizetsu + 32) / 32;
 
         if ((as->tk_kizetsu -= 2) < 0) {
             as->tk_kizetsu = 0;
@@ -1068,11 +1068,11 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
     if (ds->py->flag == 0 && !(ds->guard_flag & 2) && as->wu.att.guard & 4) {
         if (just_now) {
             if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
-                (ds->cp->waza_flag[5] >= grdb2[ds->wu.id][attr_att] || abs)) {
+                (ds->cp->move_state_flags[5] >= grdb2[ds->wu.id][attr_att] || abs)) {
                 last_parry_red[ds->wu.id] = 1;
                 return apply_air_parry_result(as, ds);
             }
-        } else if (!(ds->spmv_ng_flag & DIP_AIR_PARRY_DISABLED) && ((ds->cp->waza_flag[5] != 0) || abs)) {
+        } else if (!(ds->spmv_ng_flag & DIP_AIR_PARRY_DISABLED) && ((ds->cp->move_state_flags[5] != 0) || abs)) {
             last_parry_red[ds->wu.id] = 0;
             return apply_air_parry_result(as, ds);
         }
@@ -1095,7 +1095,7 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
             if (!(ds->saishin_lvdir & gddir)) {
                 return 2;
             }
-            if (ds->cp->sw_lvbt & 3) {
+            if (ds->cp->input_held & 3) {
                 return 2;
             }
         }
@@ -1173,17 +1173,17 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
 
             if (just_now) {
                 if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
-                    ((ds->cp->waza_flag[3] >= grdb[ds->wu.id][attr_att][0]) || abs)) {
+                    ((ds->cp->move_state_flags[3] >= grdb[ds->wu.id][attr_att][0]) || abs)) {
                     last_parry_red[ds->wu.id] = 1;
                     return apply_ground_parry_result(as, ds, stand_rno, 5);
                 }
-            } else if (!(ds->spmv_ng_flag & DIP_UNKNOWN_8)) {
+            } else if (!(ds->spmv_ng_flag & DIP_STAND_PARRY_DISABLED)) {
                 if (as->wu.jump_att_flag) {
-                    if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->waza_flag[12] != 0 || abs)) {
+                    if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->move_state_flags[12] != 0 || abs)) {
                         last_parry_red[ds->wu.id] = 0;
                         return apply_ground_parry_result(as, ds, stand_rno, 5);
                     }
-                } else if (ds->cp->waza_flag[3] != 0 || abs) {
+                } else if (ds->cp->move_state_flags[3] != 0 || abs) {
                     last_parry_red[ds->wu.id] = 0;
                     return apply_ground_parry_result(as, ds, stand_rno, 5);
                 }
@@ -1193,17 +1193,17 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
         if (as->wu.att.guard & 1) {
             if (just_now) {
                 if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
-                    (!(ds->cp->waza_flag[4] < grdb[ds->wu.id][attr_att][1]) || abs)) {
+                    (!(ds->cp->move_state_flags[4] < grdb[ds->wu.id][attr_att][1]) || abs)) {
                     last_parry_red[ds->wu.id] = 1;
                     return apply_ground_parry_result(as, ds, 33, 6);
                 }
-            } else if (!(ds->spmv_ng_flag & DIP_UNKNOWN_9)) {
+            } else if (!(ds->spmv_ng_flag & DIP_CROUCH_PARRY_DISABLED)) {
                 if (as->wu.jump_att_flag) {
-                    if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->waza_flag[4] != 0 || abs)) {
+                    if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->move_state_flags[4] != 0 || abs)) {
                         last_parry_red[ds->wu.id] = 0;
                         return apply_ground_parry_result(as, ds, 33, 6);
                     }
-                } else if (ds->cp->waza_flag[4] != 0 || abs) {
+                } else if (ds->cp->move_state_flags[4] != 0 || abs) {
                     last_parry_red[ds->wu.id] = 0;
                     return apply_ground_parry_result(as, ds, 33, 6);
                 }
@@ -1228,14 +1228,14 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
             return 2;
         }
 
-        if (ds->cp->sw_lvbt & 1) {
+        if (ds->cp->input_held & 1) {
             return 2;
         }
     }
 
     switch (as->wu.att.guard & 0x18) {
     case 8:
-        if (!(ds->cp->sw_lvbt & 2) && ags == 0) {
+        if (!(ds->cp->input_held & 2) && ags == 0) {
             return 2;
         }
 
@@ -1243,7 +1243,7 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
         break;
 
     case 16:
-        if (ds->cp->sw_lvbt & 2 && ags == 0) {
+        if (ds->cp->input_held & 2 && ags == 0) {
             return 2;
         }
 
@@ -1251,7 +1251,7 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
         break;
 
     default:
-        if (ds->cp->sw_lvbt & 2) {
+        if (ds->cp->input_held & 2) {
             ds->wu.routine_no[2] = 6;
             break;
         }
@@ -1314,11 +1314,11 @@ void dm_status_copy(WORK* as, WORK* ds) {
     ds->dm_stop = as->att.hs_you;
     ds->dm_quake = as->att.hs_you;
     ds->dm_weight = as->weight_level;
-    ds->dm_butt_type = as->att.but_ix;
+    ds->damage_knockback_type = as->att.but_ix;
     ds->dm_zuru = as->att_zuru;
     ds->dm_attribute = as->at_attribute;
     ds->dm_ten_ix = as->at_ten_ix;
-    ds->dm_koa = as->at_koa;
+    ds->damage_kind_of_arts = as->at_koa;
     ds->hm_dm_side = as->att.dmg_mark;
     ds->dm_work_id = as->work_id;
     as->hit_stop = as->att.hs_me;
@@ -1347,7 +1347,7 @@ static void add_combo_work_impl(PLW* as, PLW* ds) {
     s16* kow;
     s16* cal;
 
-    ds->kizetsu_kow = ds->combo_type.new_dm = as->wu.kind_of_waza;
+    ds->stun_state = ds->combo_type.new_dm = as->wu.kind_of_waza;
     kow = &ds->combo_type.kind_of[0][0][0];
     cal = &g_state.calc_hit[ds->wu.id][0];
     kow[as->wu.kind_of_waza]++;
@@ -1360,7 +1360,7 @@ static void add_combo_work_impl(PLW* as, PLW* ds) {
 
 /** @brief Adds a hit to the combo counter and updates combo display work. */
 void add_combo_work(PLW* as, PLW* ds) {
-    if (ds->kezurijini_flag) {
+    if (ds->chip_death_flag) {
         return;
     }
 
@@ -1433,7 +1433,7 @@ void cal_combo_waribiki(PLW* as, PLW* ds) {
 void cal_combo_waribiki2(PLW* ds) {
     s16 num;
 
-    if (ds->wu.dm_piyo == 0) {
+    if (ds->wu.damage_stun_value == 0) {
         return;
     }
 
@@ -1451,10 +1451,10 @@ void cal_combo_waribiki2(PLW* ds) {
         num = 32;
     }
 
-    ds->wu.dm_piyo = (ds->wu.dm_piyo * num) / 32;
+    ds->wu.damage_stun_value = (ds->wu.damage_stun_value * num) / 32;
 
-    if (ds->wu.dm_piyo == 0) {
-        ds->wu.dm_piyo = 1;
+    if (ds->wu.damage_stun_value == 0) {
+        ds->wu.damage_stun_value = 1;
     }
 }
 
@@ -1510,7 +1510,7 @@ void catch_hit_check() {
             }
 
             if (!(mad->att.guard & 0x18)) {
-                if (!((PLW*)sad)->tsukamarenai_flag) {
+                if (!((PLW*)sad)->throw_invuln_flag) {
                     if (!(mad->att.dipsw & 0x60)) {
                         if ((sad->routine_no[1] == 1) && (sad->routine_no[3] != 0)) {
                             if (sad->routine_no[2] != 0x19) {

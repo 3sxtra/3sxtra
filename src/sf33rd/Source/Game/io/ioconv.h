@@ -20,10 +20,10 @@ typedef struct {
     u8 anstate;
     u16 kind;
     u32 sw;
-    u32 sw_old;
-    u32 sw_new;
-    u32 sw_off;
-    u32 sw_chg;
+    u32 input_old;
+    u32 input_pressed;
+    u32 input_released;
+    u32 input_changed;
     u32 sw_repeat;
     PAD_STICK stick[2];
 } IOPad;

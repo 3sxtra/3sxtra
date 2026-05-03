@@ -37,9 +37,9 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
 
     if (wk->wu.pl_operator) {
         if (wk->metamor_over) {
-            wk->cp->sw_lvbt = 0;
+            wk->cp->input_held = 0;
         } else {
-            wk->cp->sw_lvbt = lv_data;
+            wk->cp->input_held = lv_data;
         }
     } else {
         if (g_state.Bonus_Game_Flag == 21) {
@@ -48,18 +48,18 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
             bbbs_com_execute2(wk);
         }
 
-        wk->cp->sw_lvbt = 0;
+        wk->cp->input_held = 0;
     }
 
     if (wk->dead_flag) {
-        wk->cp->sw_lvbt = 0;
+        wk->cp->input_held = 0;
     }
 
     if (wk->wkey_flag) {
-        wk->cp->sw_lvbt = 0;
+        wk->cp->input_held = 0;
     }
 
-    wk->cp->sw_lvbt = check_illegal_lever_data(wk->cp->sw_lvbt);
+    wk->cp->input_held = check_illegal_lever_data(wk->cp->input_held);
 
     if ((wk->dead_flag + wk->wkey_flag) == 0) {
         wk->hurimukenai_flag = 0;
@@ -85,8 +85,8 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
     wk->wu.cmwk[10] = wk->cp->lgp;
     wk->wu.cmwk[11] += wk->cp->lgp;
     wk->wu.cmwk[11] &= 0x7FFF;
-    wk->wu.cmwk[12] = wk->cp->sw_new;
-    wk->wu.cmwk[13] = wk->cp->sw_now;
+    wk->wu.cmwk[12] = wk->cp->input_pressed;
+    wk->wu.cmwk[13] = wk->cp->input_current;
     plmain_b_lv_00[wk->wu.routine_no[0]](wk);
 }
 
@@ -104,14 +104,14 @@ static void player_mvbs_0000(PLW* wk) {
     wk->auto_guard = 1;
     wk->wu.hit_stop = wk->wu.dm_stop = 0;
     wk->wu.hit_quake = wk->wu.dm_quake = 0;
-    wk->tsukamarenai_flag = 0;
+    wk->throw_invuln_flag = 0;
     wk->zuru_timer = 0;
     wk->zuru_flag = false;
-    wk->tsukami_f = wk->tsukamare_f = false;
+    wk->is_throwing = wk->is_being_thrown = false;
     clear_kizetsu_point(wk);
-    wk->ukemi_ok_timer = 0;
+    wk->recovery_roll_ok_timer = 0;
     wk->uot_cd_ok_flag = 0;
-    wk->ukemi_success = 0;
+    wk->recovery_roll_success = 0;
     clear_my_shell_ix(&wk->wu);
     wk->sa->mp = 0;
     wk->sa->ok = 0;
@@ -126,7 +126,7 @@ static void player_mvbs_0000(PLW* wk) {
     wk->sa_healing = 0;
     demo_set_sa_full(wk->sa);
     wk->dm_hos_flag = 0;
-    wk->kezurijini_flag = 0;
+    wk->chip_death_flag = 0;
     wk->wu.floor = 0;
     wk->bs2_area_car = 0;
     wk->bs2_over_car = 0;
@@ -240,7 +240,7 @@ static void player_mvbs_4000(PLW* wk) {
         check_lever_data(wk);
     }
 
-    if (wk->tsukamare_f) {
+    if (wk->is_being_thrown) {
         wk->wu.hit_stop = wk->wu.dm_stop = 0;
     }
 

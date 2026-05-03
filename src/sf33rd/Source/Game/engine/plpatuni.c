@@ -360,7 +360,7 @@ void Att_SHOURYUUREPPA(PLW* wk) {
             wk->wu.cg_type = 0;
         }
 
-        if (wk->wu.cg_type == 40 && (wk->cp->sw_new & 0x770) == 0x70) {
+        if (wk->wu.cg_type == 40 && (wk->cp->input_pressed & 0x770) == 0x70) {
             wk->wu.routine_no[1] = 0;
             wk->wu.routine_no[2] = 6;
             wk->wu.routine_no[3] = 0;

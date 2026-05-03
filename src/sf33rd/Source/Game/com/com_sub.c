@@ -542,7 +542,7 @@ s32 Check_Arrival(PLW* wk, s16 Target_Pos, s16 Option) {
         if (Target_Pos <= g_state.PL_Distance[wk->wu.id]) {
             return 1;
         }
-        return wk->micchaku_flag;
+        return wk->close_proximity_flag;
     }
 
     if (wk->hos_em_flag) {
@@ -587,7 +587,7 @@ void Walk(PLW* wk, u16 Lever, s16 Time, s16 unused) {
                 g_state.Passive_Flag[wk->wu.id] = 0;
             }
         } else {
-            if ((g_state.Timer_01[wk->wu.id] != (s16)wk->wu.rl_flag) || (wk->micchaku_flag != 0) ||
+            if ((g_state.Timer_01[wk->wu.id] != (s16)wk->wu.rl_flag) || (wk->close_proximity_flag != 0) ||
                 (wk->hos_em_flag != 0)) {
                 Next_Be_Free(wk);
             }
@@ -2905,7 +2905,7 @@ void Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16
 
     case 3:
         g_state.Lever_Buff[wk->wu.id] = g_state.Lever_LR[wk->wu.id];
-        if (g_state.plw[wk->wu.id].tsukami_f) {
+        if (g_state.plw[wk->wu.id].is_throwing) {
             break;
         }
         if (((wk->wu.cg_type) == 0x40) || (wk->wu.routine_no[1] == 0)) {
@@ -4405,7 +4405,7 @@ void Reaction_Sub(PLW* wk, s16 Reaction, s16 Power_Level) {
         if (g_state.plw[wk->wu.id].caution_flag) {
             break;
         }
-        if (g_state.plw[wk->wu.id].tsukami_f) {
+        if (g_state.plw[wk->wu.id].is_throwing) {
             break;
         }
 
@@ -4485,7 +4485,7 @@ void Reaction_Sub(PLW* wk, s16 Reaction, s16 Power_Level) {
         if (g_state.plw[wk->wu.id].caution_flag) {
             break;
         }
-        if (g_state.plw[wk->wu.id].tsukami_f) {
+        if (g_state.plw[wk->wu.id].is_throwing) {
             break;
         }
 

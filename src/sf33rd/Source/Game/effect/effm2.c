@@ -62,9 +62,9 @@ static void effm2_move(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.dead_f = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 0;
-        ewk->wu.kage_hy = 7;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 0;
+        ewk->wu.shadow_y = 7;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 3;
 
@@ -116,9 +116,9 @@ static void effm2_move2(WORK_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         ewk->wu.dead_f = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 0;
-        ewk->wu.kage_hy = 7;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 0;
+        ewk->wu.shadow_y = 7;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 3;
 

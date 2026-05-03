@@ -63,11 +63,11 @@ static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
             }
 
             wk->wu.dm_weight = wk->wu.weight_level;
-            wk->wu.dm_butt_type = wk->wu.att.but_ix;
+            wk->wu.damage_knockback_type = wk->wu.att.but_ix;
             wk->wu.dm_zuru = wk->wu.att_zuru;
             wk->wu.dm_attribute = wk->wu.at_attribute;
             wk->wu.dm_ten_ix = wk->wu.at_ten_ix;
-            wk->wu.dm_koa = wk->wu.at_koa;
+            wk->wu.damage_kind_of_arts = wk->wu.at_koa;
             wk->wu.hm_dm_side = wk->wu.att.dmg_mark;
             wk->wu.dm_work_id = wk->wu.work_id;
             wk->wu.dm_arts_point = 0;

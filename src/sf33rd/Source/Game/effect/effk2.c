@@ -246,7 +246,7 @@ void effect_K2_move(WORK_Other* ewk) {
         ewk->wu.xyz[0].disp.pos += hahen->hx;
         ewk->wu.xyz[1].disp.pos += hahen->hy;
         ewk->wu.position_z = 24;
-        ewk->wu.kage_hy = 0;
+        ewk->wu.shadow_y = 0;
 
         if ((ewk->wu.next_y = hahen->gr1st) == 0) {
             ewk->wu.next_y = (random_16() & 7) + 4;
@@ -376,7 +376,7 @@ static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
             if (ewk->wu.xyz[1].disp.pos <= ewk->wu.next_y) {
                 ewk->wu.xyz[1].disp.pos = ewk->wu.next_y;
 
-                if (++ewk->wu.kage_hy > hahen->bau) {
+                if (++ewk->wu.shadow_y > hahen->bau) {
                     ewk->wu.routine_no[2] = 10;
                 } else {
                     ewk->wu.routine_no[2] = 1;
@@ -469,7 +469,7 @@ static void effK2_parts_move_type_3(WORK_Other* ewk, DADD* hahen) {
         if (ewk->wu.xyz[1].disp.pos <= ewk->wu.next_y) {
             ewk->wu.xyz[1].disp.pos = ewk->wu.next_y;
 
-            if (++ewk->wu.kage_hy > hahen->bau) {
+            if (++ewk->wu.shadow_y > hahen->bau) {
                 ewk->wu.routine_no[2] = 10;
             } else {
                 ewk->wu.routine_no[2] = 1;
@@ -526,7 +526,7 @@ static void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.kage_prio = (random_16() & 7) + 28;
-        ewk->wu.kage_hy = ewk->wu.kage_prio / 2;
+        ewk->wu.shadow_y = ewk->wu.kage_prio / 2;
         ewk->wu.routine_no[2]++;
         /* fallthrough */
 
@@ -535,8 +535,8 @@ static void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
         add_mvxy_speed(&ewk->wu);
         cal_mvxy_speed(&ewk->wu);
 
-        if (ewk->wu.kage_hy) {
-            ewk->wu.kage_hy--;
+        if (ewk->wu.shadow_y) {
+            ewk->wu.shadow_y--;
         } else {
             ewk->wu.disp_flag = 2;
         }
@@ -594,7 +594,7 @@ static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
         if (ewk->wu.xyz[1].disp.pos <= ewk->wu.next_y) {
             ewk->wu.xyz[1].disp.pos = ewk->wu.next_y;
 
-            if (++ewk->wu.kage_hy > hahen->bau) {
+            if (++ewk->wu.shadow_y > hahen->bau) {
                 ewk->wu.routine_no[2] = 10;
             } else {
                 ewk->wu.routine_no[2] = 1;

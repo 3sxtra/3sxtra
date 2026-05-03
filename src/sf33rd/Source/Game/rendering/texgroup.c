@@ -24,7 +24,7 @@ typedef struct {
     s16 y;
     u16 attr;
     u16 code;
-} TexGroup_UNK_0;
+} TexGroupTransform;
 
 u8 omSelObjNowOnMemoryType = 0xFF;
 TEX_GRP_LD texgrplds[100];
@@ -141,7 +141,7 @@ void q_ldreq_texture_group(REQ* curr) {
     s32 err;
     s16 i;
     u16* trsbas;
-    TexGroup_UNK_0* trsptr;
+    TexGroupTransform* trsptr;
     s16 count;
     s16 loop;
 
@@ -307,7 +307,7 @@ void q_ldreq_texture_group(REQ* curr) {
                         count -= 1;
                         trsbas[0] = count;
                         trsbas += 1;
-                        trsptr = (TexGroup_UNK_0*)trsbas;
+                        trsptr = (TexGroupTransform*)trsbas;
                         trsptr[0].x += trsptr[1].x;
                         trsptr[0].y += trsptr[1].y;
                         trsptr[0].attr = trsptr[1].attr;

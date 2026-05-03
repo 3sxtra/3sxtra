@@ -555,8 +555,8 @@ typedef struct GameState {
     bool pcon_dp_flag;
     u8 win_sp_flag;
     bool dead_voice_flag;
-    UNK_1 rambod[2];
-    UNK_2 ramhan[2];
+    CollisionHurtbox rambod[2];
+    CollisionHurtboxExt ramhan[2];
     u16 vital_inc_timer;
     u16 vital_dec_timer;
     s16 sag_inc_timer[2];

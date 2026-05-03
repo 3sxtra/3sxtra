@@ -23,9 +23,9 @@ void effect_31_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 0;
-        ewk->wu.kage_hy = -10;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 0;
+        ewk->wu.shadow_y = -10;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 16;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -63,7 +63,7 @@ void effect_31_move(WORK_Other* ewk) {
     case 3:
         if (!g_state.EXE_flag && !g_state.Game_pause && (char_move(&ewk->wu), ewk->wu.cg_type == 10)) {
             ewk->wu.cg_type = 0;
-            ewk->wu.kage_hx += 4;
+            ewk->wu.shadow_x += 4;
         }
 
         suzi_sync_pos_set(ewk);
@@ -72,7 +72,7 @@ void effect_31_move(WORK_Other* ewk) {
 
     case 4:
         ewk->wu.disp_flag = 0;
-        ewk->wu.kage_flag = 0;
+        ewk->wu.shadow_flag = 0;
         ewk->wu.routine_no[0]++;
         break;
 

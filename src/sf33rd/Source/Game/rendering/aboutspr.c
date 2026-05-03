@@ -481,7 +481,7 @@ s32 sort_push_request(WORK* wk) {
 
     Mtrans_use_trans_mode(wk, g_state.base_y_pos);
 
-    if (wk->kage_flag) {
+    if (wk->shadow_flag) {
         shadow_setup(wk, g_state.base_y_pos);
     }
 
@@ -568,7 +568,7 @@ s32 sort_push_request4(WORK* wk) {
 
     Mtrans_use_trans_mode(wk, 0);
 
-    if (wk->kage_flag) {
+    if (wk->shadow_flag) {
         shadow_setup(wk, 0);
     }
 
@@ -707,11 +707,11 @@ void shadow_drawing(WORK* wk, s16 bsy) {
         return;
     }
 
-    dmwk_kage.position_x = (wk->position_x + wk->kage_hx * (1 - (wk->rl_flag != 0) * 2));
-    dmwk_kage.position_y = wk->kage_hy;
+    dmwk_kage.position_x = (wk->position_x + wk->shadow_x * (1 - (wk->rl_flag != 0) * 2));
+    dmwk_kage.position_y = wk->shadow_y;
     dmwk_kage.position_z = wk->kage_prio;
     dmwk_kage.my_family = wk->my_family;
-    shadow = wk->kage_char - get_kage_width(wk->xyz[1].disp.pos - wk->kage_hy);
+    shadow = wk->kage_char - get_kage_width(wk->xyz[1].disp.pos - wk->shadow_y);
 
     if (shadow >= 0x1D) {
         shadow = 0x1C;

@@ -1059,7 +1059,7 @@ s32 ppgRenewTexChunkSeqs(Texture* tch) {
 }
 
 /** @brief First-pass setup of a texture chunk — scan for pTEX entries and build offset table. */
-s32 ppgSetupTexChunk_1st(Texture* tch, u8* adrs, ssize_t size, s32 ixNum1st, s32 ixNums, s32 ar, s32 arcnt) {
+s32 PPG_SetupTexturePrimary(Texture* tch, u8* adrs, ssize_t size, s32 ixNum1st, s32 ixNums, s32 ar, s32 arcnt) {
     PPGFileHeader* ppg;
     s32 i;
     s32 ofs;
@@ -1159,7 +1159,7 @@ error_handler:
 }
 
 /** @brief Update the accumulated texture counter for deferred setup. */
-s32 ppgSetupTexChunk_1st_Accnum(Texture* tch, u16 accnum) {
+s32 PPG_SetTextureAccumulator(Texture* tch, u16 accnum) {
     if (tch == NULL) {
         tch = ppg_w.cur->tex;
     }
@@ -1169,7 +1169,7 @@ s32 ppgSetupTexChunk_1st_Accnum(Texture* tch, u16 accnum) {
 }
 
 /** @brief Second-pass — assign a texture handle index and detect paletted textures. */
-s32 ppgSetupTexChunk_2nd(Texture* tch, s32 ixNum) {
+s32 PPG_SetupTextureSecondary(Texture* tch, s32 ixNum) {
     PPGFileHeader* ppg;
     TextureHandle* hnof;
 
@@ -1202,7 +1202,7 @@ s32 ppgSetupTexChunk_2nd(Texture* tch, s32 ixNum) {
 }
 
 /** @brief Third-pass — decompress texture data and create the GPU texture handle. */
-s32 ppgSetupTexChunk_3rd(Texture* tch, s32 ixNum, u32 attribute) {
+s32 PPG_SetupTextureTertiary(Texture* tch, s32 ixNum, u32 attribute) {
     plContext bits;
     PPGFileHeader* ppg;
     TextureHandle* hnof;

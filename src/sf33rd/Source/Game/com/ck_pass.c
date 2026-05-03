@@ -563,7 +563,7 @@ s32 Check_VS_Jump(PLW* wk, PLW* em, s16 Height) {
         return 0;
     }
 
-    if (em->micchaku_flag) {
+    if (em->close_proximity_flag) {
         g_state.VS_Tech[wk->wu.id] = 18;
         return PASSIVE_X = 1;
     }

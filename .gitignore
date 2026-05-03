@@ -102,3 +102,16 @@ android/third_party/
 /third_party_android
 /scratch
 /build-sw
+
+# === Graphify Graph exclusions ===
+android/
+rom/
+submodules/
+third_party/
+fcade-replays/
+.agents/
+graphify-out/
+tmp/
+configs/
+plugins/
+*.csv

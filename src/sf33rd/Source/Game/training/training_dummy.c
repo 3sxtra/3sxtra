@@ -2,15 +2,15 @@
  * @file training_dummy.c
  * @brief Dummy AI Controller for Training Mode.
  *
- * Injects inputs directly into g_state.Lever_Buff[] and waza_flag[] to control the
+ * Injects inputs directly into g_state.Lever_Buff[] and move_state_flags[] to control the
  * training dummy. Uses the same g_state.Lever_Buff bitfield encoding as the native
  * CPU AI (4=left, 8=right, 2=down, 1=up).
  *
  * Parry system notes (from engine analysis):
  *   - cmd_main.c check_10() requires neutral→forward TRANSITION (case 0→1)
- *   - hitcheck.c defense_ground() checks waza_flag[3] (high), waza_flag[4] (low)
+ *   - hitcheck.c defense_ground() checks move_state_flags[3] (high), move_state_flags[4] (low)
  *   - Red parry needs guard_chuu != 0 && guard_chuu < 5 (just_now flag)
- *   - Guard (blocking) uses saishin_lvdir, computed from cp->sw_lvbt from g_state.Lever_Buff
+ *   - Guard (blocking) uses saishin_lvdir, computed from cp->input_held from g_state.Lever_Buff
  */
 
 #include "training_dummy.h"
@@ -177,7 +177,7 @@ static void try_stun_mash(s16 dummy_id) {
  *   2. Then lever at forward direction (sw_lever == w_lvr)
  *
  * We alternate: even frames = neutral, odd frames = forward.
- * We also directly set waza_flag[3] (high) or waza_flag[4] (low) to
+ * We also directly set move_state_flags[3] (high) or move_state_flags[4] (low) to
  * 0xFF so ANY grdb threshold is exceeded.
  */
 static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
@@ -194,13 +194,13 @@ static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
         g_state.Lever_Buff[dummy_id] = 0;
     }
 
-    /* Directly set waza_flag to guarantee parry detection in hitcheck.
+    /* Directly set move_state_flags to guarantee parry detection in hitcheck.
        Value 0xFF exceeds any grdb threshold. */
     if (wk->cp) {
         if (low) {
-            wk->cp->waza_flag[4] = 0xFF;
+            wk->cp->move_state_flags[4] = 0xFF;
         } else {
-            wk->cp->waza_flag[3] = 0xFF;
+            wk->cp->move_state_flags[3] = 0xFF;
         }
     }
 }
@@ -210,10 +210,10 @@ static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
  *
  * Red parry in 3S: while in blockstun (guard_chuu != 0), tap forward
  * to parry the next hit. hitcheck checks just_now = (guard_chuu < 5)
- * and waza_flag[3/4] >= grdb threshold.
+ * and move_state_flags[3/4] >= grdb threshold.
  *
  * We use the same neutral→forward alternation as normal parry but
- * also set waza_flag to 0xFF to guarantee the threshold is met.
+ * also set move_state_flags to 0xFF to guarantee the threshold is met.
  * The engine will only grant the red parry when guard_chuu is < 5.
  */
 static void inject_red_parry(PLW* wk, s16 dummy_id, bool low) {
@@ -229,12 +229,12 @@ static void inject_red_parry(PLW* wk, s16 dummy_id, bool low) {
         g_state.Lever_Buff[dummy_id] = 0;
     }
 
-    /* Set waza_flag high enough to exceed any grdb threshold */
+    /* Set move_state_flags high enough to exceed any grdb threshold */
     if (wk->cp) {
         if (low) {
-            wk->cp->waza_flag[4] = 0xFF;
+            wk->cp->move_state_flags[4] = 0xFF;
         } else {
-            wk->cp->waza_flag[3] = 0xFF;
+            wk->cp->move_state_flags[3] = 0xFF;
         }
     }
 }

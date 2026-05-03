@@ -64,7 +64,7 @@ static void Entry_FinalEnding();
 
 static void Disp_00_0();
 static void Entry_01_Sub(s16 PL_id);
-static void Exit_Title_Sub_Entry();
+static void Exit_Title_Entry();
 static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index);
 static void entry_phase_1st(s16 jump_index);
 static void entry_end_2nd(s16 jump_index);
@@ -91,15 +91,15 @@ static void Name_In_Sub(s16 PL_id);
 static void Name_In_Sub0(s16 PL_id, s16 xx);
 static s32 Credit_Continue_1P();
 static s32 Credit_Continue_2P();
-static void Naming_Cut_Sub_1P();
-static void Naming_Cut_Sub_2P();
+static void Naming_Cut_1P();
+static void Naming_Cut_2P();
 static void Naming_Init(s16 PL_id);
 s32 Ck_Break_Into_SP(u16 Sw_0, u16 Sw_1, s16 PL_id);
 s32 Ck_Break_Into(u16 Sw_0, u16 Sw_1, s16 PL_id);
-static s32 Credit_Sub_1P();
-static s32 Credit_Sub_2P();
-static s32 Loser_Sub_1P();
-static s32 Loser_Sub_2P();
+static s32 Credit_1P();
+static s32 Credit_2P();
+static s32 Loser_1P();
+static s32 Loser_2P();
 static s32 Flash_Start(s16 PL_id);
 static s32 Flash_Please(s16 PL_id);
 static void Setup_Next_Step(s16 PL_id);
@@ -269,7 +269,7 @@ static void Entry_WaitStart() {
         break;
 
     default:
-        Exit_Title_Sub_Entry();
+        Exit_Title_Entry();
         break;
     }
 }
@@ -297,7 +297,7 @@ static void Entry_01_Sub(s16 PL_id) {
 }
 
 /** @brief Reset all entry/flash counters and advance to entry phase 2. */
-static void Exit_Title_Sub_Entry() {
+static void Exit_Title_Entry() {
     s16 i;
     s16 j;
 
@@ -798,9 +798,9 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
         case ENTRY_PL_NAMING:
             if (g_state.Forbid_Break != 1) {
                 if (PL_id == 0) {
-                    Naming_Cut_Sub_1P();
+                    Naming_Cut_1P();
                 } else {
-                    Naming_Cut_Sub_2P();
+                    Naming_Cut_2P();
                 }
 
                 if (Name_Input(PL_id)) {
@@ -892,7 +892,7 @@ static void Naming_Init(s16 PL_id) {
 }
 
 /** @brief If 1P pressed start during naming, cut short and flag the name entry as complete. */
-static void Naming_Cut_Sub_1P() {
+static void Naming_Cut_1P() {
     if (!g_state.Naming_Cut[0] && (Ck_Break_Into_SP(p1sw_0, p1sw_1, 0) != 0)) {
         g_state.Game_pause = 0;
         g_state.Naming_Cut[0] = 1;
@@ -901,7 +901,7 @@ static void Naming_Cut_Sub_1P() {
 }
 
 /** @brief If 2P pressed start during naming, cut short and flag the name entry as complete. */
-static void Naming_Cut_Sub_2P() {
+static void Naming_Cut_2P() {
     if (!g_state.Naming_Cut[1] && (Ck_Break_Into_SP(p2sw_0, p2sw_1, 1) != 0)) {
         g_state.Game_pause = 0;
         g_state.Naming_Cut[1] = 1;
@@ -938,10 +938,10 @@ static void Name_In_Sub0(s16 PL_id, s16 xx) {
 /** @brief Common entry sub — check credit and break-in for a non-operator player. */
 static void Entry_Common_Sub(s16 PL_id, s16 Jump_Index) {
     if (PL_id) {
-        if (Credit_Sub_2P() != 0) {
+        if (Credit_2P() != 0) {
             Break_Into_Sub(PL_id, Jump_Index);
         }
-    } else if (Credit_Sub_1P() != 0) {
+    } else if (Credit_1P() != 0) {
         Break_Into_Sub(PL_id, Jump_Index);
     }
 }
@@ -949,16 +949,16 @@ static void Entry_Common_Sub(s16 PL_id, s16 Jump_Index) {
 /** @brief Loser-side entry sub — check credit and break-in for the losing player. */
 static void Loser_Scene_Sub(s16 PL_id, s16 Jump_Index) {
     if (PL_id) {
-        if (Loser_Sub_2P() != 0) {
+        if (Loser_2P() != 0) {
             Break_Into_Sub(PL_id, Jump_Index);
         }
-    } else if (Loser_Sub_1P() != 0) {
+    } else if (Loser_1P() != 0) {
         Break_Into_Sub(PL_id, Jump_Index);
     }
 }
 
 /** @brief 1P loser credit/continue check — display "CONTINUE?" or flash start prompt. */
-static s32 Loser_Sub_1P() {
+static s32 Loser_1P() {
     if ((Ck_Break_Into(p1sw_0, p1sw_1, 0) == 0) && !g_state.Request_Break[0]) {
         if (g_state.LOSER == 0) {
             if (save_w[1].extra_option.contents[3][5]) {
@@ -974,7 +974,7 @@ static s32 Loser_Sub_1P() {
 }
 
 /** @brief 2P loser credit/continue check — display "CONTINUE?" or flash start prompt. */
-static s32 Loser_Sub_2P() {
+static s32 Loser_2P() {
     if ((Ck_Break_Into(p2sw_0, p2sw_1, 1) == 0) && !g_state.Request_Break[1]) {
         if (g_state.LOSER == 1) {
             if (save_w[1].extra_option.contents[3][5]) {
@@ -990,7 +990,7 @@ static s32 Loser_Sub_2P() {
 }
 
 /** @brief 1P credit check — flash "PRESS START" or "PLEASE WAIT" depending on break state. */
-static s32 Credit_Sub_1P() {
+static s32 Credit_1P() {
     if (Ck_Break_Into(p1sw_0, p1sw_1, 0) == 0) {
         if (g_state.Request_Break[0]) {
             Flash_Please(0);
@@ -1003,7 +1003,7 @@ static s32 Credit_Sub_1P() {
 }
 
 /** @brief 2P credit check — flash "PRESS START" or "PLEASE WAIT" depending on break state. */
-static s32 Credit_Sub_2P() {
+static s32 Credit_2P() {
     if (Ck_Break_Into(p2sw_0, p2sw_1, 1) == 0) {
         if (g_state.Request_Break[1]) {
             Flash_Please(1);

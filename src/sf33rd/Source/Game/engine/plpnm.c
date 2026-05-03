@@ -106,20 +106,20 @@ static void setup_normal_process_flags(PLW* wk) {
     wk->py->flag = 0;
     wk->guard_flag = 0;
     wk->guard_chuu = 0;
-    wk->tsukami_f = false;
-    wk->tsukamare_f = false;
+    wk->is_throwing = false;
+    wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
     wk->dm_hos_flag = 0;
-    wk->ukemi_success = 0;
+    wk->recovery_roll_success = 0;
     wk->zuru_timer = 0;
     wk->zuru_ix_counter = 0;
     wk->sa_stop_flag = 0;
-    wk->atemi_flag = 0;
+    wk->parry_flag = 0;
     wk->caution_flag = 0;
     wk->sa->saeff_ok = 0;
     wk->sa->saeff_mp = 0;
-    wk->ukemi_success = 0;
-    wk->ukemi_ok_timer = 0;
+    wk->recovery_roll_success = 0;
+    wk->recovery_roll_ok_timer = 0;
     wk->uot_cd_ok_flag = 0;
     wk->cancel_timer = 0;
     wk->hazusenai_flag = 0;
@@ -1015,7 +1015,7 @@ static void Normal_52000(PLW* wk) {
     case 0:
         wk->wu.routine_no[3]++;
         wk->extra_jump = 1;
-        remake_sankaku_tobi_mvxy(&wk->wu, wk->micchaku_flag);
+        remake_sankaku_tobi_mvxy(&wk->wu, wk->close_proximity_flag);
         set_char_move_init(&wk->wu, 0, 48);
         effect_I3_init(&wk->wu, 0);
         break;

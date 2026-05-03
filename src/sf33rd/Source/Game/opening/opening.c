@@ -161,9 +161,9 @@ void TITLE_Init() {
         return;
     }
 
-    ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 601, 1, 0, 0);
-    ppgSetupTexChunk_2nd(NULL, 601);
-    ppgSetupTexChunk_3rd(NULL, 601, 1);
+    PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, 601, 1, 0, 0);
+    PPG_SetupTextureSecondary(NULL, 601);
+    PPG_SetupTextureTertiary(NULL, 601, 1);
     Push_ramcnt_key(key);
     ppgSourceDataReleased(NULL);
     title_tex_flag = 1;
@@ -258,12 +258,12 @@ void OPBG_Init() {
     loadSize = Get_size_data_ramcnt_key(key);
     loadAdrs = (void*)Get_ramcnt_address(key);
     printf("[BOOT] OPBG_Init: key=%d, loadAdrs=%p, loadSize=%u\n", key, loadAdrs, (unsigned)loadSize);
-    ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 602, 91, 0, 0);
-    printf("[BOOT] OPBG_Init: ppgSetupTexChunk_1st done, textures=%d\n", ppgOpnBgTex.textures);
+    PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, 602, 91, 0, 0);
+    printf("[BOOT] OPBG_Init: PPG_SetupTexturePrimary done, textures=%d\n", ppgOpnBgTex.textures);
 
     for (i = 0; i < ppgOpnBgTex.textures; i++) {
-        ppgSetupTexChunk_2nd(NULL, i + 602);
-        ppgSetupTexChunk_3rd(NULL, i + 602, 1);
+        PPG_SetupTextureSecondary(NULL, i + 602);
+        PPG_SetupTextureTertiary(NULL, i + 602, 1);
     }
     printf("[BOOT] OPBG_Init: all tex chunks done\n");
 

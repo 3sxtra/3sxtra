@@ -690,7 +690,7 @@ void check_jump_rl_dir(PLW* wk) {
 
 /** @brief Sets a new jump direction based on lever input. */
 void set_new_jpdir(PLW* wk) {
-    if ((wk->cp->sw_lvbt & 1) && wk->cp->lever_dir) {
+    if ((wk->cp->input_held & 1) && wk->cp->lever_dir) {
         wk->jpdir = wk->cp->lever_dir;
     }
 }
@@ -1460,7 +1460,7 @@ static void dm_04000(PLW* wk) {
         }
 
         if (wk->py->flag == 0) {
-            wk->tsukamarenai_flag = 7;
+            wk->throw_invuln_flag = 7;
 
             if (wk->wu.pat_status < 32) {
                 TO_nm_36000(&wk->wu);
@@ -1483,7 +1483,7 @@ static void dm_04000(PLW* wk) {
         }
 
         if (wk->py->flag == 0) {
-            wk->tsukamarenai_flag = 7;
+            wk->throw_invuln_flag = 7;
 
             if (wk->wu.pat_status < 32) {
                 TO_nm_01000(&wk->wu);
@@ -1505,12 +1505,12 @@ static void dm_04000(PLW* wk) {
 static void dm_08000(PLW* wk) {
     switch (wk->wu.cg_type) {
     case 0xFF:
-        wk->tsukamarenai_flag = 7;
+        wk->throw_invuln_flag = 7;
         TO_nm_01000(&wk->wu);
         break;
 
     case 64:
-        wk->tsukamarenai_flag = 7;
+        wk->throw_invuln_flag = 7;
         TO_nm_36000(&wk->wu);
         break;
     }
@@ -1548,7 +1548,7 @@ static void dm_18000(PLW* wk) {
 
     case 64:
         if (wk->py->flag == 0) {
-            wk->tsukamarenai_flag = 7;
+            wk->throw_invuln_flag = 7;
             TO_nm_36000(&wk->wu);
             break;
         }
@@ -1735,7 +1735,7 @@ static s32 check_cg_cancel_data(PLW* wk) {
         return 1;
     }
 
-    if ((wk->wu.cg_cancel & 4) && ((wk->cp->sw_now & 0x770) != ((wk->current_attack))) && (check_nm_attack(wk) != 0)) {
+    if ((wk->wu.cg_cancel & 4) && ((wk->cp->input_current & 0x770) != ((wk->current_attack))) && (check_nm_attack(wk) != 0)) {
         return 1;
     }
 

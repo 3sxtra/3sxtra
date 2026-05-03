@@ -782,7 +782,7 @@ void Appear_13000(PLW* wk) {
         set_char_move_init2(&wk->wu, 9, 0x3D, 4, 0);
         wk->wu.mvxy.a[1].sp = 0x78000;
         wk->wu.mvxy.d[1].sp = -0x3000;
-        wk->wu.kage_flag = 0;
+        wk->wu.shadow_flag = 0;
         break;
 
     case 1:

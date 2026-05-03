@@ -1064,7 +1064,7 @@ void Damage_7th(PLW* wk) {
             break;
         }
 
-        if (wk->tsukamarenai_flag == 0) {
+        if (wk->throw_invuln_flag == 0) {
             Exit_Damage_Sub(wk);
         }
 

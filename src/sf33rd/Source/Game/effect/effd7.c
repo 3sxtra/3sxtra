@@ -44,7 +44,7 @@ void effect_D7_move(WORK_Other* ewk) {
         ewk->wu.shell_ix[1] = 0;
         ewk->wu.shell_ix[2] = 8;
         ewk->wu.shell_ix[3] = 16;
-        ewk->wu.kage_flag = 1;
+        ewk->wu.shadow_flag = 1;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 0;
         cal_speeds_to_me(ewk, (PLW*)ewk->my_master);
@@ -97,7 +97,7 @@ static void effD7_main_process(WORK_Other* ewk) {
     }
 
     if (ewk->wu.shell_ix[1]) {
-        ewk->wu.kage_flag = ewk->wu.shell_ix[1] = 0;
+        ewk->wu.shadow_flag = ewk->wu.shell_ix[1] = 0;
     }
 
     switch (ewk->wu.routine_no[1]) {
@@ -152,7 +152,7 @@ static void effD7_main_process(WORK_Other* ewk) {
                 }
             }
 
-            if (ewk->wu.kage_flag && mwk->wu.routine_no[1] == 4 && mwk->wu.routine_no[2] == 30 &&
+            if (ewk->wu.shadow_flag && mwk->wu.routine_no[1] == 4 && mwk->wu.routine_no[2] == 30 &&
                 mwk->wu.cg_type == 0x28 && mwk->tk_success == ewk->wu.shell_ix[0] &&
                 hit_check_subroutine(&ewk->wu, (WORK*)ewk->my_master, effD7_hit_box[0], effD7_hit_box[1])) {
                 mwk->wu.cmwk[7] = 1;
@@ -237,7 +237,7 @@ static void effD7_main_process(WORK_Other* ewk) {
             ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
             ewk->wu.disp_flag = 2;
             ewk->wu.type = 0;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.dir_timer = 8;
             ewk->wu.hit_stop = 2;
         }

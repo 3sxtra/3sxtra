@@ -76,13 +76,13 @@ void effect_13_move(WORK_Other* ewk) {
         }
 
         if (tama->kage_index) {
-            ewk->wu.kage_flag = 1;
-            ewk->wu.kage_hx = kage_tbl[tama->kage_index][0];
-            ewk->wu.kage_hy = kage_tbl[tama->kage_index][1];
+            ewk->wu.shadow_flag = 1;
+            ewk->wu.shadow_x = kage_tbl[tama->kage_index][0];
+            ewk->wu.shadow_y = kage_tbl[tama->kage_index][1];
             ewk->wu.kage_prio = kage_tbl[tama->kage_index][2];
             ewk->wu.kage_char = kage_tbl[tama->kage_index][3];
         } else {
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
         }
 
         if (tama->kind_of_tama == 2) {
@@ -359,7 +359,7 @@ static void kotp_00000(WORK_Other* ewk, TAMA* twk) {
 
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
         } else {
             ewk->wu.routine_no[1] = 0;
@@ -698,7 +698,7 @@ static void kotp_03000(WORK_Other* ewk, TAMA* twk) {
                     ewk->wu.mvxy.d[0].sp = 0;
                     ewk->wu.mvxy.d[1].sp = 0;
                     ewk->wu.hf.hit_flag = 0;
-                    ewk->wu.kage_flag = 0;
+                    ewk->wu.shadow_flag = 0;
                     break;
                 }
             } else {
@@ -713,7 +713,7 @@ static void kotp_03000(WORK_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.hf.hit_flag = 0;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             break;
         }
 
@@ -809,7 +809,7 @@ static void kotp_05000(WORK_Other* ewk, TAMA* twk) {
 
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
         } else {
             ewk->wu.routine_no[1] = 0;
@@ -878,18 +878,18 @@ static void kotp_06000(WORK_Other* ewk, TAMA* twk) {
         switch (ewk->wu.routine_no[3]) {
         case 0:
             ewk->wu.routine_no[3]++;
-            ewk->wu.kezurare_flag = 6;
+            ewk->wu.is_taking_chip_damage = 6;
             ewk->wu.direction = ewk->wu.rl_flag ? twk->data01 : 256 - twk->data01 & 0xFF;
             effect_I9_init(ewk, 2, 3, 0x77);
             break;
 
         case 1:
-            if (ewk->wu.kezurare_flag--) {
+            if (ewk->wu.is_taking_chip_damage--) {
                 break;
             }
 
             ewk->wu.routine_no[3]++;
-            ewk->wu.kezurare_flag = 0x70;
+            ewk->wu.is_taking_chip_damage = 0x70;
             /* fallthrough */
 
         case 2:
@@ -907,7 +907,7 @@ static void kotp_06000(WORK_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.mvxy.a[0].sp < 0) {
                 ewk->wu.routine_no[3]++;
-            } else if (!ewk->wu.kezurare_flag--) {
+            } else if (!ewk->wu.is_taking_chip_damage--) {
                 ewk->wu.routine_no[3]++;
             }
 
@@ -957,7 +957,7 @@ static void kotp_06000(WORK_Other* ewk, TAMA* twk) {
 
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
         } else {
             ewk->wu.routine_no[1] = 0;
@@ -1083,7 +1083,7 @@ static void kotp_07000(WORK_Other* ewk, TAMA* twk) {
 
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
         } else {
             ewk->wu.routine_no[1] = 0;
@@ -1187,7 +1187,7 @@ static void kotp_08000(WORK_Other* ewk, TAMA* twk) {
 
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
         } else {
             ewk->wu.routine_no[1] = 0;
@@ -1204,7 +1204,7 @@ static void kotp_08000(WORK_Other* ewk, TAMA* twk) {
                 set_char_move_init(&ewk->wu, 0, twk->erex);
                 ewk->wu.routine_no[1] = 2;
                 ewk->wu.routine_no[2] = 1;
-                ewk->wu.kage_flag = 0;
+                ewk->wu.shadow_flag = 0;
                 ewk->wu.hit_stop = 0;
             }
 
@@ -1302,7 +1302,7 @@ static void kotp_09000(WORK_Other* ewk, TAMA* twk) {
 
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
         } else {
             ewk->wu.routine_no[1] = 0;
@@ -1316,7 +1316,7 @@ static void kotp_09000(WORK_Other* ewk, TAMA* twk) {
 
                 ewk->wu.routine_no[1] = 2;
                 ewk->wu.routine_no[2] = 1;
-                ewk->wu.kage_flag = 0;
+                ewk->wu.shadow_flag = 0;
                 ewk->wu.hit_stop = 0;
             } else {
                 effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
@@ -1487,7 +1487,7 @@ static void kotp_12000(WORK_Other* ewk, TAMA* twk) {
 
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
         } else {
             ewk->wu.routine_no[1] = 0;
@@ -1596,7 +1596,7 @@ static void kotp_13000(WORK_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 256) {
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
             ewk->wu.att_hit_ok = 0;
         } else {
@@ -1781,7 +1781,7 @@ static void kotp_16000(WORK_Other* ewk, TAMA* twk) {
 
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.hit_stop = 0;
         } else {
             ewk->wu.routine_no[1] = 0;

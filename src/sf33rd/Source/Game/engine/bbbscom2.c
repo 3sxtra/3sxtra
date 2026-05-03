@@ -23,7 +23,7 @@ void bbbs_com_execute2(PLW* wk) {
 
             g_state.Bonus_Stage_RNO[0] = 1;
             g_state.Bonus_Stage_RNO[1] = 0;
-            wk->zettai_muteki_flag = true;
+            wk->absolute_invuln_flag = true;
 
             break;
         }

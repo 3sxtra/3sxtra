@@ -18,8 +18,8 @@ typedef struct {
     s16 accel_y;
 
     // Predicted hitboxes
-    UNK_1* p_body;
-    UNK_6* p_pushbox;
+    CollisionHurtbox* p_body;
+    CollisionPushbox* p_pushbox;
 } PredictedPlayerState;
 
 typedef struct {

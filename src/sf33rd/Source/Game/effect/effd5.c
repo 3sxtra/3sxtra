@@ -41,7 +41,7 @@ void effect_D5_move(WORK_Other* ewk) {
         ewk->wu.type = 1;
         ewk->wu.disp_flag = 1;
         ewk->wu.blink_timing = ewk->master_id;
-        ewk->wu.kage_flag = 1;
+        ewk->wu.shadow_flag = 1;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 0;
         cal_speeds(ewk, (PLW*)ewk->my_master, (PLW*)ewk->wu.target_adrs);
@@ -159,7 +159,7 @@ static void effD5_main_process(WORK_Other* ewk) {
             ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
             ewk->wu.disp_flag = 2;
             ewk->wu.type = 0;
-            ewk->wu.kage_flag = 0;
+            ewk->wu.shadow_flag = 0;
             ewk->wu.dir_timer = 16;
             ewk->wu.hit_stop = 2;
             ewk->wu.direction = ewk->wu.dm_dir;

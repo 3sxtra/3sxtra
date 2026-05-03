@@ -108,7 +108,7 @@ static void Att_PL10_MACH_SLIDE2(PLW* wk) {
 
         wk->wu.xyz[1].cal += wk->wu.mvxy.a[1].sp;
 
-        if (!wk->micchaku_flag) {
+        if (!wk->close_proximity_flag) {
             break;
         }
 

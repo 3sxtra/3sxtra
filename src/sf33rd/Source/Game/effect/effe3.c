@@ -152,7 +152,7 @@ void effect_E3_move(WORK_Other* ewk) {
         }
 
         if (ewk->wu.direction == 0) {
-            mwk->cp->waza_flag[7] = 2;
+            mwk->cp->move_state_flags[7] = 2;
         }
 
         break;

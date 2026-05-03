@@ -46,45 +46,45 @@ void Player_move(PLW* wk, u16 lv_data) {
 
 #if CPS3
     if (DAT_02016b6c == -1) {
-        wk->cp->sw_lvbt = processed_lvbt(FUN_06092294(wk->wu.id));
+        wk->cp->input_held = processed_lvbt(FUN_06092294(wk->wu.id));
     } else {
         if (wk->wu.pl_operator) {
-            wk->cp->sw_lvbt = lv_data;
+            wk->cp->input_held = lv_data;
         } else {
-            wk->cp->sw_lvbt = processed_lvbt(cpu_algorithm(wk));
+            wk->cp->input_held = processed_lvbt(cpu_algorithm(wk));
         }
 
         if (wk->metamor_over) {
-            wk->cp->sw_lvbt = 0;
+            wk->cp->input_held = 0;
         }
     }
 #else
     if (g_lua_dummy_active && wk->wu.id == g_lua_dummy_player_id) {
         // Lua dummy: use g_state.Lever_Buff written by joypad.set() in emu.registerbefore()
-        wk->cp->sw_lvbt = processed_lvbt(g_state.Lever_Buff[wk->wu.id]);
+        wk->cp->input_held = processed_lvbt(g_state.Lever_Buff[wk->wu.id]);
     } else if (wk->wu.pl_operator) {
-        wk->cp->sw_lvbt = lv_data;
+        wk->cp->input_held = lv_data;
     } else {
-        wk->cp->sw_lvbt = processed_lvbt(cpu_algorithm(wk));
+        wk->cp->input_held = processed_lvbt(cpu_algorithm(wk));
     }
 
-    wk->cp->sw_lvbt = check_illegal_lever_data(wk->cp->sw_lvbt);
+    wk->cp->input_held = check_illegal_lever_data(wk->cp->input_held);
 
     if (wk->metamor_over) {
-        wk->cp->sw_lvbt = 0;
+        wk->cp->input_held = 0;
     }
 
     if (wk->resurrection_resv) {
-        wk->cp->sw_lvbt = 0;
+        wk->cp->input_held = 0;
     }
 #endif
 
     if (wk->dead_flag) {
-        wk->cp->sw_lvbt = 0;
+        wk->cp->input_held = 0;
     }
 
     if (wk->wkey_flag) {
-        wk->cp->sw_lvbt = 0;
+        wk->cp->input_held = 0;
     }
 
     if ((wk->dead_flag + wk->wkey_flag) == 0) {
@@ -113,8 +113,8 @@ void Player_move(PLW* wk, u16 lv_data) {
     wk->wu.cmwk[10] = wk->cp->lgp;
     wk->wu.cmwk[11] += wk->cp->lgp;
     wk->wu.cmwk[11] &= 0x7FFF;
-    wk->wu.cmwk[12] = wk->cp->sw_new;
-    wk->wu.cmwk[13] = wk->cp->sw_now;
+    wk->wu.cmwk[12] = wk->cp->input_pressed;
+    wk->wu.cmwk[13] = wk->cp->input_current;
     plmain_lv_00[wk->wu.routine_no[0]](wk);
 }
 
@@ -142,19 +142,19 @@ static void player_mv_0000(PLW* wk) {
     wk->auto_guard = 0;
     wk->wu.hit_stop = wk->wu.dm_stop = 0;
     wk->wu.hit_quake = wk->wu.dm_quake = 0;
-    wk->tsukamarenai_flag = 0;
+    wk->throw_invuln_flag = 0;
     wk->zuru_timer = 0;
     wk->zuru_flag = false;
-    wk->tsukami_f = wk->tsukamare_f = false;
+    wk->is_throwing = wk->is_being_thrown = false;
     clear_kizetsu_point(wk);
 
 #if CPS3
     DAT_20281a8[wk->wu.id] = 0; // TODO: figure out what this does
 #endif
 
-    wk->ukemi_ok_timer = 0;
+    wk->recovery_roll_ok_timer = 0;
     wk->uot_cd_ok_flag = 0;
-    wk->ukemi_success = 0;
+    wk->recovery_roll_success = 0;
     clear_my_shell_ix(&wk->wu);
     wk->sa->mp = 0;
     wk->sa->ok = 0;
@@ -173,7 +173,7 @@ static void player_mv_0000(PLW* wk) {
 #endif
 
     wk->dm_hos_flag = 0;
-    wk->kezurijini_flag = 0;
+    wk->chip_death_flag = 0;
     wk->wu.floor = 0;
     wk->bs2_area_car = 0;
     wk->bs2_over_car = 0;
@@ -335,7 +335,7 @@ static void player_mv_4000(PLW* wk) {
         check_lever_data(wk);
     }
 
-    if (wk->tsukamare_f) {
+    if (wk->is_being_thrown) {
         wk->wu.hit_stop = wk->wu.dm_stop = 0;
     }
 
@@ -394,7 +394,7 @@ s16 check_hit_stop(PLW* wk) {
                 }
 
                 if (wk->wu.hit_stop <= wk->sa_stop_sai) {
-                    wk->sa_stop_lvdir = wk->cp->sw_lvbt;
+                    wk->sa_stop_lvdir = wk->cp->input_held;
                     wk->sa_stop_flag = 1;
                 }
             }
@@ -442,8 +442,8 @@ static s16 select_hit_stop(s16 ms, s16 sb) {
 
 /** @brief Decrements and manages miscellaneous per-player timers each frame. */
 void look_after_timers(PLW* wk) {
-    if (wk->tsukamarenai_flag) {
-        wk->tsukamarenai_flag--;
+    if (wk->throw_invuln_flag) {
+        wk->throw_invuln_flag--;
     }
 
     if (wk->cat_break_ok_timer) {
@@ -451,16 +451,16 @@ void look_after_timers(PLW* wk) {
     }
 
     if (wk->uot_cd_ok_flag) {
-        wk->ukemi_ok_timer--;
+        wk->recovery_roll_ok_timer--;
 
-        if (wk->ukemi_ok_timer <= 0) {
-            wk->ukemi_ok_timer = 0;
+        if (wk->recovery_roll_ok_timer <= 0) {
+            wk->recovery_roll_ok_timer = 0;
             wk->uot_cd_ok_flag = 0;
-            wk->ukemi_success = 0;
+            wk->recovery_roll_success = 0;
         } else if (check_ukemi_flag(wk)) {
-            wk->ukemi_ok_timer = 0;
+            wk->recovery_roll_ok_timer = 0;
             wk->uot_cd_ok_flag = 0;
-            wk->ukemi_success = 1;
+            wk->recovery_roll_success = 1;
         }
     }
 
@@ -486,7 +486,7 @@ void look_after_timers(PLW* wk) {
 
         for (si = 0; si < 6; si++) {
             if (sa_ixs[si] != 0) {
-                wk->cp->waza_flag[sa_ixs[si]] = 9;
+                wk->cp->move_state_flags[sa_ixs[si]] = 9;
             }
         }
     }
@@ -1179,7 +1179,7 @@ static void check_omop_vital(PLW* wk) {
 
         if (wk->wu.vital_new < 0) {
             wk->wu.vital_new = -1;
-            wk->wu.dm_koa = 4;
+            wk->wu.damage_kind_of_arts = 4;
             wk->dead_flag = 1;
             wk->guard_flag = 3;
             ca_check_flag = 0;

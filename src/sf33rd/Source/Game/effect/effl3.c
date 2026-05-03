@@ -313,9 +313,9 @@ s32 effect_L3_init(PLW* oya) {
         ewk->wu.char_table[0] = oya->wu.char_table[0];
         ewk->wu.char_table[1] = _etc_char_table;
         ewk->wu.char_table[9] = oya->wu.char_table[9];
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 6;
-        ewk->wu.kage_hy = 0;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 6;
+        ewk->wu.shadow_y = 0;
         ewk->wu.kage_prio = ewk->wu.position_z + 5;
         ewk->wu.my_mts = oya->wu.my_mts;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

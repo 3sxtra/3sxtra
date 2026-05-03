@@ -85,8 +85,8 @@ u8 ci_timer;
 
 // Removed duplicates found in plcnt.c
 /*
-UNK_1 rambod[2];
-UNK_2 ramhan[2];
+CollisionHurtbox rambod[2];
+CollisionHurtboxExt ramhan[2];
 u16 vital_inc_timer;
 u16 vital_dec_timer;
 s16 sag_inc_timer[2];

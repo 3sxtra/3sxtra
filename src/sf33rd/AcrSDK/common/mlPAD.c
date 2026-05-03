@@ -114,7 +114,7 @@ void flPADGetALL() {
         flupdate_pad_button_data(&flpad_adr[0][i], tarpad_root[i].sw);
 
         flupdate_pad_on_cnt(&flpad_adr[0][i]);
-        flpad_adr[0][i].sw_repeat = flpad_adr[0][i].sw_new;
+        flpad_adr[0][i].sw_repeat = flpad_adr[0][i].input_pressed;
     }
 
     flPADACRConf();
@@ -190,7 +190,7 @@ void flPADACRConf() {
         flupdate_pad_button_data(&flpad_adr[1][i], conf_data2);
         flupdate_pad_on_cnt(&flpad_adr[1][i]);
 
-        flpad_adr[1][i].sw_repeat = flpad_adr[1][i].sw_new;
+        flpad_adr[1][i].sw_repeat = flpad_adr[1][i].input_pressed;
         flpad_adr[1][i].stick[0] = flpad_adr[0][i].stick[0];
 
         switch (flpad_config[i].flip_ast1) {
@@ -275,11 +275,11 @@ void flupdate_pad_stick_dir(PAD_STICK* st) {
 
 /** @brief Update button edge-detection fields (new, off, chg) from raw switch data. */
 void flupdate_pad_button_data(FLPAD* pad, u32 data) {
-    pad->sw_old = pad->sw;
+    pad->input_old = pad->sw;
     pad->sw = data;
-    pad->sw_new = pad->sw & (pad->sw_old ^ pad->sw);
-    pad->sw_off = pad->sw_old & (pad->sw_old ^ pad->sw);
-    pad->sw_chg = pad->sw_new | pad->sw_off;
+    pad->input_pressed = pad->sw & (pad->input_old ^ pad->sw);
+    pad->input_released = pad->input_old & (pad->input_old ^ pad->sw);
+    pad->input_changed = pad->input_pressed | pad->input_released;
 }
 
 /** @brief Increment press counters for all currently held buttons. */

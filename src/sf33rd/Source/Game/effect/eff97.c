@@ -115,9 +115,9 @@ s32 effect_97_init(PLW* oya) {
     ewk->wu.my_priority = ewk->wu.position_z = oya->wu.my_priority;
     ewk->wu.sync_suzi = 0;
     ewk->wu.xyz[1].disp.pos = 40;
-    ewk->wu.kage_flag = 1;
-    ewk->wu.kage_hx = 0;
-    ewk->wu.kage_hy = 40;
+    ewk->wu.shadow_flag = 1;
+    ewk->wu.shadow_x = 0;
+    ewk->wu.shadow_y = 40;
     ewk->wu.kage_prio = 71;
     ewk->wu.kage_char = 20;
     *ewk->wu.char_table = _etc_char_table;

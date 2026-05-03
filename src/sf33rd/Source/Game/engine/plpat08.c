@@ -44,7 +44,7 @@ static void Att_PL08_HEALING(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cmwk[0]) {
-            cpsw = (wk->cp->sw_now & 0x770);
+            cpsw = (wk->cp->input_current & 0x770);
             cpsw >>= 4;
 
             if (pl08_hcs_tbl[cpsw & 7] || pl08_hcs_tbl[(cpsw >> 4) & 7]) {

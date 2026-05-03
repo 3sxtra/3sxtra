@@ -381,7 +381,7 @@ static void game_step_0() {
         if (mpp_w.sysStop) {
             sysSLOW = 1;
 
-            switch (io_w.data[1].sw_new) {
+            switch (io_w.data[1].input_pressed) {
             case SWK_LEFT_STICK:
                 mpp_w.sysStop = false;
                 // fallthrough
@@ -420,7 +420,7 @@ static void game_step_0() {
 
                 break;
             }
-        } else if (io_w.data[1].sw_new & SWK_LEFT_STICK) {
+        } else if (io_w.data[1].input_pressed & SWK_LEFT_STICK) {
             mpp_w.sysStop = true;
         }
     }

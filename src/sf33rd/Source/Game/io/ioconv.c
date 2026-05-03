@@ -291,11 +291,11 @@ void keyConvert() {
             drv_pad->kind = 0x1; // Digital/DualShock (Connected)
             drv_pad->state = 0;  // Stable
 
-            drv_pad->sw_old = drv_pad->sw;
+            drv_pad->input_old = drv_pad->sw;
             drv_pad->sw = hw_sw;
-            drv_pad->sw_new = drv_pad->sw & ~drv_pad->sw_old;
-            drv_pad->sw_off = ~drv_pad->sw & drv_pad->sw_old;
-            drv_pad->sw_chg = drv_pad->sw ^ drv_pad->sw_old;
+            drv_pad->input_pressed = drv_pad->sw & ~drv_pad->input_old;
+            drv_pad->input_released = ~drv_pad->sw & drv_pad->input_old;
+            drv_pad->input_changed = drv_pad->sw ^ drv_pad->input_old;
 
             if (!is_keyboard) {
                 drv_pad->stick[0].x = state.left_stick_x;
@@ -341,10 +341,10 @@ void keyConvert() {
             pad->anstate = drv_pad->anstate;
             pad->kind = drv_pad->kind;
             pad->sw = drv_pad->sw;
-            pad->sw_old = drv_pad->sw_old;
-            pad->sw_new = drv_pad->sw_new;
-            pad->sw_off = drv_pad->sw_off;
-            pad->sw_chg = drv_pad->sw_chg;
+            pad->input_old = drv_pad->input_old;
+            pad->input_pressed = drv_pad->input_pressed;
+            pad->input_released = drv_pad->input_released;
+            pad->input_changed = drv_pad->input_changed;
             pad->sw_repeat = drv_pad->sw_repeat;
             pad->stick[0] = drv_pad->stick[0];
             pad->stick[1] = drv_pad->stick[1];
@@ -364,10 +364,10 @@ void keyConvert() {
             pad->anstate = flpad_adr[0][i].anstate;
             pad->kind = flpad_adr[0][i].kind;
             pad->sw = flpad_adr[0][i].sw;
-            pad->sw_old = flpad_adr[0][i].sw_old;
-            pad->sw_new = flpad_adr[0][i].sw_new;
-            pad->sw_off = flpad_adr[0][i].sw_off;
-            pad->sw_chg = flpad_adr[0][i].sw_chg;
+            pad->input_old = flpad_adr[0][i].input_old;
+            pad->input_pressed = flpad_adr[0][i].input_pressed;
+            pad->input_released = flpad_adr[0][i].input_released;
+            pad->input_changed = flpad_adr[0][i].input_changed;
             pad->sw_repeat = flpad_adr[0][i].sw_repeat;
             pad->stick[0] = flpad_adr[0][i].stick[0];
             pad->stick[1] = flpad_adr[0][i].stick[1];
@@ -375,19 +375,19 @@ void keyConvert() {
             if (mpp_w.useAnalogStickData) {
                 if (!(flpad_adr[0][i].sw & 0xF)) {
                     pad->sw |= (pad->sw >> 16) & 0xF;
-                    pad->sw_old |= (pad->sw_old >> 16) & 0xF;
-                    pad->sw_new |= (pad->sw_new >> 16) & 0xF;
-                    pad->sw_off |= (pad->sw_off >> 16) & 0xF;
-                    pad->sw_chg |= (pad->sw_chg >> 16) & 0xF;
+                    pad->input_old |= (pad->input_old >> 16) & 0xF;
+                    pad->input_pressed |= (pad->input_pressed >> 16) & 0xF;
+                    pad->input_released |= (pad->input_released >> 16) & 0xF;
+                    pad->input_changed |= (pad->input_changed >> 16) & 0xF;
                     pad->sw_repeat |= (pad->sw_repeat >> 16) & 0xF;
                 }
 
                 if (!(flpad_adr[0][i].sw & 0xF)) {
                     pad->sw |= (pad->sw >> 20) & 0xF;
-                    pad->sw_old |= (pad->sw_old >> 20) & 0xF;
-                    pad->sw_new |= (pad->sw_new >> 20) & 0xF;
-                    pad->sw_off |= (pad->sw_off >> 20) & 0xF;
-                    pad->sw_chg |= (pad->sw_chg >> 20) & 0xF;
+                    pad->input_old |= (pad->input_old >> 20) & 0xF;
+                    pad->input_pressed |= (pad->input_pressed >> 20) & 0xF;
+                    pad->input_released |= (pad->input_released >> 20) & 0xF;
+                    pad->input_changed |= (pad->input_changed >> 20) & 0xF;
                     pad->sw_repeat |= (pad->sw_repeat >> 20) & 0xF;
                 }
             }

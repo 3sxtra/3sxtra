@@ -135,9 +135,9 @@ s32 effect_L2_init() {
 
     ewk->wu.xyz[1].cal = 0xA0000;
     ewk->wu.char_table[0] = _direct_03_char_table;
-    ewk->wu.kage_flag = 1;
-    ewk->wu.kage_hx = 0;
-    ewk->wu.kage_hy = 11;
+    ewk->wu.shadow_flag = 1;
+    ewk->wu.shadow_x = 0;
+    ewk->wu.shadow_y = 11;
     ewk->wu.kage_char = 10;
     ewk->wu.kage_prio = ewk->wu.position_z + 1;
     ewk->wu.dir_old = 0;

@@ -1340,7 +1340,8 @@ void SDLApp_BeginFrame() {
     // / rmlui_wrapper_render_game) — do NOT include rmlui_wrapper_any_game_visible()
     // here, as it would trigger the GL3 renderer for zero window documents.
     bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
-                        show_training_menu || show_dev_overlay || show_palmod_menu || rmlui_wrapper_any_window_visible();
+                        show_training_menu || show_dev_overlay || show_palmod_menu ||
+                        rmlui_wrapper_any_window_visible();
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
     }
@@ -1405,7 +1406,8 @@ static void render_overlays(int win_w, int win_h) {
      * documents use their own separate render path. Including it would
      * activate the GL3 renderer every frame for zero visible windows. */
     bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
-                        show_training_menu || show_dev_overlay || show_palmod_menu || rmlui_wrapper_any_window_visible();
+                        show_training_menu || show_dev_overlay || show_palmod_menu ||
+                        rmlui_wrapper_any_window_visible();
     if (rmlui_active) {
         rmlui_wrapper_render();
     }

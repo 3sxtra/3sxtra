@@ -216,7 +216,7 @@ void effect_02_move(WORK_Other* ewk) {
         }
 
         if (ewk->wu.weight_level) {
-            ewk->wu.xyz[0].disp.pos += ((PLW*)ewk->my_master)->muriyari_ugoku;
+            ewk->wu.xyz[0].disp.pos += ((PLW*)ewk->my_master)->forced_movement;
         }
 
         if (tad->status & 2) {

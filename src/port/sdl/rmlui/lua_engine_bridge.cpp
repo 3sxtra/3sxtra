@@ -192,7 +192,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "dm_stop", wu->dm_stop);
     PUSH_INT(L, t, "dm_guard_success", wu->dm_guard_success);
     PUSH_INT(L, t, "dm_attlv", wu->dm_attlv);
-    PUSH_INT(L, t, "dm_piyo", wu->dm_piyo);
+    PUSH_INT(L, t, "damage_stun_value", wu->damage_stun_value);
 
     // Extended routine state
     PUSH_INT(L, t, "routine_no_2", wu->routine_no[2]);
@@ -219,9 +219,9 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "kind_of_blocking", wk->kind_of_blocking);
 
     // Throws
-    PUSH_BOOL(L, t, "is_being_thrown", wk->tsukamare_f);
-    PUSH_BOOL(L, t, "is_throwing", wk->tsukami_f);
-    PUSH_INT(L, t, "tsukami_num", wk->tsukami_num);
+    PUSH_BOOL(L, t, "is_being_thrown", wk->is_being_thrown);
+    PUSH_BOOL(L, t, "is_throwing", wk->is_throwing);
+    PUSH_INT(L, t, "throw_target_id", wk->throw_target_id);
 
     // Combo
     PUSH_INT(L, t, "combo_total", wk->combo_type.total);
@@ -237,7 +237,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "player_number", wk->player_number);
 
     // Ukemi
-    PUSH_INT(L, t, "ukemi_ok_timer", wk->ukemi_ok_timer);
+    PUSH_INT(L, t, "recovery_roll_ok_timer", wk->recovery_roll_ok_timer);
 
     // --- Stun (PiyoriType) ---
     if (wk->py) {
@@ -303,9 +303,9 @@ static int l_read_player(lua_State* L) {
 
     // --- WORK_CP (command processing) ---
     if (wk->cp) {
-        PUSH_INT(L, t, "sw_now", wk->cp->sw_now);
-        PUSH_INT(L, t, "sw_new", wk->cp->sw_new);
-        PUSH_INT(L, t, "sw_old", wk->cp->sw_old);
+        PUSH_INT(L, t, "input_current", wk->cp->input_current);
+        PUSH_INT(L, t, "input_pressed", wk->cp->input_pressed);
+        PUSH_INT(L, t, "input_old", wk->cp->input_old);
         PUSH_INT(L, t, "lever_dir", wk->cp->lever_dir);
     }
 
@@ -432,19 +432,19 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "sa_stop_flag", wk->sa_stop_flag);
 
     // --- Parry validity/cooldown (from command processing system) ---
-    // waza_flag[N] = parry validity timer (counts down from reset[N])
+    // move_state_flags[N] = parry validity timer (counts down from reset[N])
     //   N=3: forward parry, N=4: down parry, N=5: air parry, N=6: antiair parry
     // g_state.waza_work[id][N].free3 = cooldown timer (counts down from reset[N]+10)
     // See check_10() and check_12() in cmd_main.c for the parry input detection.
     {
         int pid = id - 1; // 0-indexed player id for g_state.wcp[] and g_state.waza_work[]
-        PUSH_INT(L, t, "parry_forward_validity_time", g_state.wcp[pid].waza_flag[3]);
+        PUSH_INT(L, t, "parry_forward_validity_time", g_state.wcp[pid].move_state_flags[3]);
         PUSH_INT(L, t, "parry_forward_cooldown_time", g_state.waza_work[pid][3].free3);
-        PUSH_INT(L, t, "parry_down_validity_time", g_state.wcp[pid].waza_flag[4]);
+        PUSH_INT(L, t, "parry_down_validity_time", g_state.wcp[pid].move_state_flags[4]);
         PUSH_INT(L, t, "parry_down_cooldown_time", g_state.waza_work[pid][4].free3);
-        PUSH_INT(L, t, "parry_air_validity_time", g_state.wcp[pid].waza_flag[5]);
+        PUSH_INT(L, t, "parry_air_validity_time", g_state.wcp[pid].move_state_flags[5]);
         PUSH_INT(L, t, "parry_air_cooldown_time", g_state.waza_work[pid][5].free3);
-        PUSH_INT(L, t, "parry_antiair_validity_time", g_state.wcp[pid].waza_flag[6]);
+        PUSH_INT(L, t, "parry_antiair_validity_time", g_state.wcp[pid].move_state_flags[6]);
         PUSH_INT(L, t, "parry_antiair_cooldown_time", g_state.waza_work[pid][6].free3);
     }
 

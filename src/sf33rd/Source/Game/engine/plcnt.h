@@ -55,8 +55,8 @@ extern bool dead_voice_flag;
 
 // MARK: - Unhandled
 
-extern UNK_1 rambod[2];
-extern UNK_2 ramhan[2];
+extern CollisionHurtbox rambod[2];
+extern CollisionHurtboxExt ramhan[2];
 extern u32 omop_spmv_ng_table[2];
 extern u32 omop_spmv_ng_table2[2];
 extern u16 vital_inc_timer;

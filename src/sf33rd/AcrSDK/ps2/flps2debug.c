@@ -115,7 +115,7 @@ void flPS2SystemError(s32 error_level, s8* format, ...) {
             flSetRenderState(FLRENDER_BACKCOLOR, 0xFF);
             flPrintL(10, 40, "PRESS 1P START BUTTON TO EXIT");
 
-            if (flpad_adr[0][0].sw_new & 0x8000) {
+            if (flpad_adr[0][0].input_pressed & 0x8000) {
                 break;
             }
         }

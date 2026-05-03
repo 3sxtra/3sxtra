@@ -59,17 +59,17 @@ static void read_wcp(SDL_IOStream* io, WORK_CP dst[2]) {
     for (int i = 0; i < 2; i++) {
         WORK_CP* w = &dst[i];
 
-        w->sw_lvbt = SDL_Swap16BE(w->sw_lvbt);
-        w->sw_new = SDL_Swap16BE(w->sw_new);
-        w->sw_old = SDL_Swap16BE(w->sw_old);
-        w->sw_now = SDL_Swap16BE(w->sw_now);
-        w->sw_off = SDL_Swap16BE(w->sw_off);
-        w->sw_chg = SDL_Swap16BE(w->sw_chg);
+        w->input_held = SDL_Swap16BE(w->input_held);
+        w->input_pressed = SDL_Swap16BE(w->input_pressed);
+        w->input_old = SDL_Swap16BE(w->input_old);
+        w->input_current = SDL_Swap16BE(w->input_current);
+        w->input_released = SDL_Swap16BE(w->input_released);
+        w->input_changed = SDL_Swap16BE(w->input_changed);
         w->old_now = SDL_Swap16BE(w->old_now);
         w->lgp = SDL_Swap16BE(w->lgp);
 
         for (int j = 0; j < 56; j++) {
-            w->waza_flag[j] = SDL_Swap16BE(w->waza_flag[j]);
+            w->move_state_flags[j] = SDL_Swap16BE(w->move_state_flags[j]);
             w->reset[j] = SDL_Swap16BE(w->reset[j]);
             w->btix[j] = SDL_Swap16BE(w->btix[j]);
 
@@ -277,12 +277,12 @@ static void compare_wcp(SDL_IOStream* io) {
         const WORK_CP* w_3sx = &g_state.wcp[i];
         const WORK_CP* w_cps3 = &wcp_cps3[i];
 
-        stop_if(w_3sx->sw_lvbt != w_cps3->sw_lvbt);
-        stop_if(w_3sx->sw_new != w_cps3->sw_new);
-        stop_if(w_3sx->sw_old != w_cps3->sw_old);
-        stop_if(w_3sx->sw_now != w_cps3->sw_now);
-        stop_if(w_3sx->sw_off != w_cps3->sw_off);
-        stop_if(w_3sx->sw_chg != w_cps3->sw_chg);
+        stop_if(w_3sx->input_held != w_cps3->input_held);
+        stop_if(w_3sx->input_pressed != w_cps3->input_pressed);
+        stop_if(w_3sx->input_old != w_cps3->input_old);
+        stop_if(w_3sx->input_current != w_cps3->input_current);
+        stop_if(w_3sx->input_released != w_cps3->input_released);
+        stop_if(w_3sx->input_changed != w_cps3->input_changed);
         stop_if(w_3sx->old_now != w_cps3->old_now);
         stop_if(w_3sx->lgp != w_cps3->lgp);
         stop_if(w_3sx->ca14 != w_cps3->ca14);
@@ -293,9 +293,9 @@ static void compare_wcp(SDL_IOStream* io) {
         stop_if(w_3sx->lever_dir != w_cps3->lever_dir);
 
         for (int j = 0; j < 56; j++) {
-            stop_if(w_3sx->waza_flag[j] != w_cps3->waza_flag[j]);
+            stop_if(w_3sx->move_state_flags[j] != w_cps3->move_state_flags[j]);
 
-            if (w_3sx->waza_flag[j] == -1) {
+            if (w_3sx->move_state_flags[j] == -1) {
                 continue;
             }
 
@@ -303,7 +303,7 @@ static void compare_wcp(SDL_IOStream* io) {
             stop_if(w_3sx->btix[j] != w_cps3->btix[j]);
 
             for (int k = 0; k < 4; k++) {
-                stop_if(w_3sx->waza_r[j][k] != w_cps3->waza_r[j][k]);
+                stop_if(w_3sx->move_state_timers[j][k] != w_cps3->move_state_timers[j][k]);
                 stop_if(w_3sx->exdt[j][k] != w_cps3->exdt[j][k]);
             }
         }
@@ -325,10 +325,10 @@ void compare_values(SDL_IOStream* io, Uint64 frame) {
 // Syncing
 
 static void sync_lvr(T_PL_LVR* dst, const T_PL_LVR* src) {
-    dst->sw_new = src->sw_new;
-    dst->sw_old = src->sw_old;
-    dst->sw_chg = src->sw_chg;
-    dst->sw_now = src->sw_now;
+    dst->input_pressed = src->input_pressed;
+    dst->input_old = src->input_old;
+    dst->input_changed = src->input_changed;
+    dst->input_current = src->input_current;
     dst->old_now = src->old_now;
     dst->now_lvbt = src->now_lvbt;
     dst->old_lvbt = src->old_lvbt;
@@ -340,12 +340,12 @@ static void sync_lvr(T_PL_LVR* dst, const T_PL_LVR* src) {
 }
 
 static void sync_wcp(WORK_CP* dst, const WORK_CP* src) {
-    dst->sw_lvbt = src->sw_lvbt;
-    dst->sw_new = src->sw_new;
-    dst->sw_old = src->sw_old;
-    dst->sw_now = src->sw_now;
-    dst->sw_off = src->sw_off;
-    dst->sw_chg = src->sw_chg;
+    dst->input_held = src->input_held;
+    dst->input_pressed = src->input_pressed;
+    dst->input_old = src->input_old;
+    dst->input_current = src->input_current;
+    dst->input_released = src->input_released;
+    dst->input_changed = src->input_changed;
     dst->old_now = src->old_now;
     dst->lgp = src->lgp;
     dst->ca14 = src->ca14;
@@ -354,8 +354,8 @@ static void sync_wcp(WORK_CP* dst, const WORK_CP* src) {
     dst->lever_dir = src->lever_dir;
 
     for (int i = 0; i < 56; i++) {
-        if (dst->waza_flag[i] != -1) {
-            dst->waza_flag[i] = src->waza_flag[i];
+        if (dst->move_state_flags[i] != -1) {
+            dst->move_state_flags[i] = src->move_state_flags[i];
         }
     }
 }

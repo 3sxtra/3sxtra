@@ -103,12 +103,12 @@ static void Sel_PL_5th();
 static void Sel_PL_6th();
 static u16 Disposal_Of_Diagonal(u16 sw);
 static void Sel_PL_Sub(s16 PL_id, u16 sw);
-static void Sel_PL_Sub_CR(s16 PL_id);
-static void Sel_PL_Sub_CL(s16 PL_id);
-static void Sel_PL_Sub_CU(s16 PL_id);
-static void Sel_PL_Sub_CD(s16 PL_id);
+static void Sel_PL_MoveCursorRight(s16 PL_id);
+static void Sel_PL_MoveCursorLeft(s16 PL_id);
+static void Sel_PL_MoveCursorUp(s16 PL_id);
+static void Sel_PL_MoveCursorDown(s16 PL_id);
 static void Auto_Repeat_Sub(s16 PL_id);
-static u16 Auto_Repeat_Sub_Wife(s16 PL_id);
+static u16 Auto_Repeat_Wait(s16 PL_id);
 static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */);
 static void Check_Exit();
 static void Exit_1st();
@@ -1284,16 +1284,16 @@ static void Sel_PL_Sub(s16 PL_id, u16 sw) {
 
         if (sw & SWK_RIGHT) {
             g_state.Cursor_Timer[PL_id] = 5;
-            Sel_PL_Sub_CR(PL_id);
+            Sel_PL_MoveCursorRight(PL_id);
         } else if (sw & SWK_LEFT) {
             g_state.Cursor_Timer[PL_id] = 5;
-            Sel_PL_Sub_CL(PL_id);
+            Sel_PL_MoveCursorLeft(PL_id);
         } else if (sw & SWK_UP) {
             g_state.Cursor_Timer[PL_id] = 5;
-            Sel_PL_Sub_CU(PL_id);
+            Sel_PL_MoveCursorUp(PL_id);
         } else if (sw & SWK_DOWN) {
             g_state.Cursor_Timer[PL_id] = 5;
-            Sel_PL_Sub_CD(PL_id);
+            Sel_PL_MoveCursorDown(PL_id);
         }
     }
 
@@ -1332,7 +1332,7 @@ static void Sel_PL_Sub(s16 PL_id, u16 sw) {
 }
 
 /** @brief Move cursor right on the face grid, wrapping rows. */
-static void Sel_PL_Sub_CR(s16 PL_id) {
+static void Sel_PL_MoveCursorRight(s16 PL_id) {
     if (g_state.Cursor_X[PL_id] == 7) {
         return;
     }
@@ -1364,7 +1364,7 @@ static void Sel_PL_Sub_CR(s16 PL_id) {
 }
 
 /** @brief Move cursor left on the face grid, wrapping rows. */
-static void Sel_PL_Sub_CL(s16 PL_id) {
+static void Sel_PL_MoveCursorLeft(s16 PL_id) {
     if (g_state.Cursor_X[PL_id] == 7) {
         return;
     }
@@ -1402,7 +1402,7 @@ static void Sel_PL_Sub_CL(s16 PL_id) {
 }
 
 /** @brief Move cursor up on the face grid, wrapping columns. */
-static void Sel_PL_Sub_CU(s16 PL_id) {
+static void Sel_PL_MoveCursorUp(s16 PL_id) {
     g_state.Cursor_Move[PL_id] = 1;
 
     do {
@@ -1435,7 +1435,7 @@ static void Sel_PL_Sub_CU(s16 PL_id) {
 }
 
 /** @brief Move cursor down on the face grid, wrapping columns. */
-static void Sel_PL_Sub_CD(s16 PL_id) {
+static void Sel_PL_MoveCursorDown(s16 PL_id) {
     g_state.Cursor_Move[PL_id] = 1;
 
     do {
@@ -1540,19 +1540,19 @@ static void Auto_Repeat_Sub(s16 PL_id) {
         }
 
         if (sw & SWK_RIGHT) {
-            Sel_PL_Sub_CR(PL_id);
+            Sel_PL_MoveCursorRight(PL_id);
         }
 
         if (sw & SWK_LEFT) {
-            Sel_PL_Sub_CL(PL_id);
+            Sel_PL_MoveCursorLeft(PL_id);
         }
 
         if (sw & SWK_UP) {
-            Sel_PL_Sub_CU(PL_id);
+            Sel_PL_MoveCursorUp(PL_id);
         }
 
         if (sw & SWK_DOWN) {
-            Sel_PL_Sub_CD(PL_id);
+            Sel_PL_MoveCursorDown(PL_id);
         }
 
         break;
@@ -1560,7 +1560,7 @@ static void Auto_Repeat_Sub(s16 PL_id) {
 }
 
 /** @brief Auto-repeat logic for the super-art plate (up/down only, instant repeat). */
-static u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
+static u16 Auto_Repeat_Wait(s16 PL_id) {
     u16 sw;
 
     if (g_state.Cursor_Move[PL_id] || g_state.Demo_Flag == 0) {
@@ -1649,7 +1649,7 @@ static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
     lever_sw = sw & SWK_DIRECTIONS;
 
     if (lever_sw == 0) {
-        sw |= Auto_Repeat_Sub_Wife(PL_id);
+        sw |= Auto_Repeat_Wait(PL_id);
     }
 
     if (sw & SWK_DOWN) {

@@ -25,9 +25,9 @@ void effect_M1_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.kage_flag = 1;
-        ewk->wu.kage_hx = 0;
-        ewk->wu.kage_hy = 0;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 0;
+        ewk->wu.shadow_y = 0;
         ewk->wu.kage_prio = 71;
         ewk->wu.kage_char = 16;
         set_char_move_init(&ewk->wu, 0, 12);

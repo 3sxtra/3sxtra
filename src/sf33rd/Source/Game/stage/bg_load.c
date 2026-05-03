@@ -52,12 +52,12 @@ static u16 bg_setup_rewrite_textures(void* loadAdrs, u32 loadSize, u8 count, s32
     }
 
     ppgSetupCurrentDataList(&ppgRwBgList);
-    ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, base_gbix, count, 0, 0);
-    ppgSetupTexChunk_1st_Accnum(0, accnum);
+    PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, base_gbix, count, 0, 0);
+    PPG_SetTextureAccumulator(0, accnum);
 
     for (i = 0; i < count; i++) {
-        accnum = ppgSetupTexChunk_2nd(NULL, i + base_gbix);
-        ppgSetupTexChunk_3rd(NULL, i + base_gbix, 1);
+        accnum = PPG_SetupTextureSecondary(NULL, i + base_gbix);
+        PPG_SetupTextureTertiary(NULL, i + base_gbix, 1);
     }
 
     return accnum;
@@ -173,13 +173,13 @@ void Bg_Texture_Load_EX() {
         tgbix = bgtex_stage_gbix[g_state.bg_w.stage][j];
         mask = 0x80000000;
         ppgSetupCurrentDataList(&ppgBgList[stg]);
-        ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, (stg * 64) + 0x84, 32, 0, 0);
-        ppgSetupTexChunk_1st_Accnum(0, accnum);
+        PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, (stg * 64) + 0x84, 32, 0, 0);
+        PPG_SetTextureAccumulator(0, accnum);
 
         for (i = 0; i < 32; i++, assign2 = mask >>= 1) {
             if (tgbix & mask) {
-                accnum = ppgSetupTexChunk_2nd(NULL, i + ((stg * 64) + 0x84));
-                ppgSetupTexChunk_3rd(NULL, i + ((stg * 64) + 0x84), 1);
+                accnum = PPG_SetupTextureSecondary(NULL, i + ((stg * 64) + 0x84));
+                PPG_SetupTextureTertiary(NULL, i + ((stg * 64) + 0x84), 1);
             }
         }
     }
@@ -189,12 +189,12 @@ void Bg_Texture_Load_EX() {
     if (g_state.bg_w.stage == 7) {
         ppgSetupCurrentDataList(&ppgAkaneList);
         ppgSetupPalChunk(NULL, loadAdrs, loadSize, 0, 0, 1);
-        ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 0, 3, 0, 0);
-        ppgSetupTexChunk_1st_Accnum(0, accnum);
+        PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, 0, 3, 0, 0);
+        PPG_SetTextureAccumulator(0, accnum);
 
         for (i = 0; i < 3; i++) {
-            accnum = ppgSetupTexChunk_2nd(NULL, i);
-            ppgSetupTexChunk_3rd(NULL, i, 1);
+            accnum = PPG_SetupTextureSecondary(NULL, i);
+            PPG_SetupTextureTertiary(NULL, i, 1);
         }
 
         ppgSourceDataReleased(&ppgAkaneList);
@@ -206,11 +206,11 @@ void Bg_Texture_Load_EX() {
         akeAdrs = (u8*)Get_ramcnt_address(akeKey);
         ppgSetupCurrentDataList(&ppgAkeList);
         ppgSetupPalChunk(NULL, akeAdrs, akeSize, 0, 0, 1);
-        ppgSetupTexChunk_1st(NULL, akeAdrs, akeSize, 0, 3, 0, 0);
+        PPG_SetupTexturePrimary(NULL, akeAdrs, akeSize, 0, 3, 0, 0);
 
         for (i = 0; i < 3; i++) {
-            ppgSetupTexChunk_2nd(NULL, i);
-            ppgSetupTexChunk_3rd(NULL, i, 1);
+            PPG_SetupTextureSecondary(NULL, i);
+            PPG_SetupTextureTertiary(NULL, i, 1);
         }
 
         ppgSourceDataReleased(&ppgAkeList);
@@ -266,7 +266,7 @@ void Bg_Texture_Load2(u8 type) {
 
     loadSize = Get_size_data_ramcnt_key(key);
     loadAdrs = (void*)Get_ramcnt_address(key);
-    ppgSetupTexChunk_1st(0, loadAdrs, loadSize, 0x84, 0x20, 0, 0);
+    PPG_SetupTexturePrimary(0, loadAdrs, loadSize, 0x84, 0x20, 0, 0);
     pmask = 0xFF000000;
     shift = 24;
     tgbix = bgtex_etc_gbix[type];
@@ -279,8 +279,8 @@ void Bg_Texture_Load2(u8 type) {
     for (j = 0, i = 0; i < 32; i++, assign = mask >>= 1) {
         if (tgbix & mask) {
             ppgBgList->tex->accnum = etcBgGixCnvTable[type][j];
-            ppgSetupTexChunk_2nd(NULL, i + 0x84);
-            ppgSetupTexChunk_3rd(NULL, i + 0x84, 1);
+            PPG_SetupTextureSecondary(NULL, i + 0x84);
+            PPG_SetupTextureTertiary(NULL, i + 0x84, 1);
             j++;
         }
     }
@@ -320,14 +320,14 @@ void Bg_Texture_Load_Ending(s16 type) {
         tgbix[1] = bgtex_ending_gbix[type][(j * 2) + 1];
         mask = 0x80000000;
         ppgSetupCurrentDataList(&ppgBgList[j]);
-        ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, (j * 64) + 100, 64, 0, 0);
-        ppgSetupTexChunk_1st_Accnum(0, accnum);
+        PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, (j * 64) + 100, 64, 0, 0);
+        PPG_SetTextureAccumulator(0, accnum);
 
         for (k = 0; k < 2; k++) {
             for (i = 0; i < 32; i++, assign2 = mask >>= 1) {
                 if (mask & tgbix[k]) {
-                    accnum = ppgSetupTexChunk_2nd(NULL, i + ((j * 64) + 100 + (k * 32)));
-                    ppgSetupTexChunk_3rd(NULL, i + ((j * 64) + 100 + (k * 32)), 1);
+                    accnum = PPG_SetupTextureSecondary(NULL, i + ((j * 64) + 100 + (k * 32)));
+                    PPG_SetupTextureTertiary(NULL, i + ((j * 64) + 100 + (k * 32)), 1);
                 }
             }
 
@@ -349,12 +349,12 @@ void Bg_Texture_Load_Ending(s16 type) {
 
         ppgSetupCurrentDataList(&ppgAkeList);
         ppgSetupPalChunk(NULL, loadAdrs, loadSize, 0, 0, 1);
-        ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 0x1A0, 0x18, 0, 0);
-        ppgSetupTexChunk_1st_Accnum(0, accnum);
+        PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, 0x1A0, 0x18, 0, 0);
+        PPG_SetTextureAccumulator(0, accnum);
 
         for (i = 0; i < 0x18; i++) {
-            accnum = ppgSetupTexChunk_2nd(NULL, i + 0x1A0);
-            ppgSetupTexChunk_3rd(NULL, i + 0x1A0, 1);
+            accnum = PPG_SetupTextureSecondary(NULL, i + 0x1A0);
+            PPG_SetupTextureTertiary(NULL, i + 0x1A0, 1);
         }
 
         break;
@@ -367,10 +367,10 @@ void Bg_Texture_Load_Ending(s16 type) {
         g_state.special_stage = 7;
         ppgSetupCurrentDataList(&ppgAkeList);
         ppgSetupPalChunk(NULL, loadAdrs, loadSize, 0, 0, 1);
-        ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 0xE4, 1, 0, 0);
-        ppgSetupTexChunk_1st_Accnum(0, accnum);
-        accnum = ppgSetupTexChunk_2nd(NULL, 0xE4);
-        ppgSetupTexChunk_3rd(NULL, 0xE4, 1);
+        PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, 0xE4, 1, 0, 0);
+        PPG_SetTextureAccumulator(0, accnum);
+        accnum = PPG_SetupTextureSecondary(NULL, 0xE4);
+        PPG_SetupTextureTertiary(NULL, 0xE4, 1);
         break;
 
     default:

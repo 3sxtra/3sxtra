@@ -53,7 +53,7 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
     state->has_just_ended_recovery = (prev_is_blocking && !state->is_blocking);
 
     // Throws
-    state->is_being_thrown = wk->tsukamare_f;
+    state->is_being_thrown = wk->is_being_thrown;
 
     // Stun
     if (wk->py) {

@@ -428,7 +428,7 @@ static s32 kabe_check3(PLW* wk) {
         return 0;
     }
 
-    return (wk->wu.rl_flag + wk->micchaku_flag == 2);
+    return (wk->wu.rl_flag + wk->close_proximity_flag == 2);
 }
 
 /** @brief Twelve: special action (tokushu koudou). */

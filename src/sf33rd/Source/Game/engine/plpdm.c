@@ -184,20 +184,20 @@ void Player_damage(PLW* wk) {
     if (wk->wu.routine_no[3] == 0) {
         get_damage_reaction_data(wk);
 
-        if (wk->wu.dm_koa & 0x980) {
-            wk->ukemi_ok_timer = 0;
+        if (wk->wu.damage_kind_of_arts & 0x980) {
+            wk->recovery_roll_ok_timer = 0;
         } else {
-            wk->ukemi_ok_timer = 6;
+            wk->recovery_roll_ok_timer = 6;
         }
 
         wk->uot_cd_ok_flag = 0;
-        wk->ukemi_success = 0;
+        wk->recovery_roll_success = 0;
         check_bullet_damage(wk);
         clear_chainex_check(wk->wu.id);
     }
 
-    if (wk->atemi_flag == 9) {
-        wk->atemi_flag = 0;
+    if (wk->parry_flag == 9) {
+        wk->parry_flag = 0;
     } else {
         plpdm_lv_00[(wk->wu.routine_no[2])](wk);
     }
@@ -211,8 +211,8 @@ static void setup_damage_process_flags(PLW* wk) {
     wk->running_f = 0;
     wk->guard_flag = 3;
     wk->guard_chuu = 0;
-    wk->tsukami_f = false;
-    wk->tsukamare_f = false;
+    wk->is_throwing = false;
+    wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
     wk->dm_hos_flag = 0;
 
@@ -650,7 +650,7 @@ static void Damage_17000(PLW* wk) {
 
         if (wk->wu.routine_no[3] == 3) {
             wk->guard_flag = 0;
-            wk->tsukamarenai_flag = 7;
+            wk->throw_invuln_flag = 7;
             combo_rp_clear_check(wk->wu.id);
             break;
         }
@@ -666,7 +666,7 @@ static void Damage_17000(PLW* wk) {
             exset_char_move_init(&wk->wu, wk->wu.now_koc, dm17_to_nm23_change[wk->player_number]);
         }
 
-        wk->tsukamarenai_flag = 7;
+        wk->throw_invuln_flag = 7;
         break;
 
     case 3:
@@ -908,7 +908,7 @@ static void Damage_25000(PLW* wk) {
         wk->wu.routine_no[3]++;
         set_char_move_init(&wk->wu, 1, wk->as->char_ix);
         wk->py->flag = 0;
-        wk->py->time = kizetsu_timer_table[(wk->kizetsu_kow & 0xF8) / 8][(wk->kizetsu_kow & 7) / 2][random_16()];
+        wk->py->time = kizetsu_timer_table[(wk->stun_state & 0xF8) / 8][(wk->stun_state & 7) / 2][random_16()];
         wk->zuru_timer = 0;
         wk->zuru_ix_counter = 0;
         I_ZeroStruct(wk->remake_power);
@@ -1136,7 +1136,7 @@ static void Damage_30000(PLW* wk) {
         wk->wu.routine_no[2] = 18;
         wk->wu.routine_no[3] = 1;
         set_char_move_init(&wk->wu, 6, wk->as->data_ix);
-        wk->wu.dm_butt_type++;
+        wk->wu.damage_knockback_type++;
         setup_butt_own_data(&wk->wu);
         cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->as->data_ix][wk->wu.dm_attlv], wk->wu.xyz[1].disp.pos);
         get_sky_dm_timer(wk);
@@ -1237,7 +1237,7 @@ static void first_flight_union(PLW* wk, s16 num, s16 dv) {
     wk->wu.mvxy.d[0].sp = wk->wu.mvxy.kop[0] = 0;
     wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
 
-    if (wk->ukemi_ok_timer) {
+    if (wk->recovery_roll_ok_timer) {
         wk->uot_cd_ok_flag = 1;
     } else {
         wk->uot_cd_ok_flag = 0;
@@ -1247,7 +1247,7 @@ static void first_flight_union(PLW* wk, s16 num, s16 dv) {
     effect_A7_init(wk);
     buttobi_chakuchi_cg_type_check(wk);
 
-    if (wk->ukemi_ok_timer != 0 && wk->ukemi_success == 0) {
+    if (wk->recovery_roll_ok_timer != 0 && wk->recovery_roll_success == 0) {
         wk->uot_cd_ok_flag = 1;
     }
 }
@@ -1261,7 +1261,7 @@ static void first_TtktV_union(PLW* wk, s16 num, s16 dv) {
         wk->wu.mvxy.a[0].sp /= dv;
         wk->wu.mvxy.d[0].sp = wk->wu.mvxy.kop[0] = 0;
 
-        if (wk->ukemi_ok_timer) {
+        if (wk->recovery_roll_ok_timer) {
             wk->uot_cd_ok_flag = 1;
         } else {
             wk->uot_cd_ok_flag = 0;
@@ -1271,7 +1271,7 @@ static void first_TtktV_union(PLW* wk, s16 num, s16 dv) {
         effect_A7_init(wk);
         buttobi_chakuchi_cg_type_check(wk);
 
-        if (wk->ukemi_ok_timer != 0 && wk->ukemi_success == 0) {
+        if (wk->recovery_roll_ok_timer != 0 && wk->recovery_roll_success == 0) {
             wk->uot_cd_ok_flag = 1;
         }
     } else {
@@ -1303,7 +1303,7 @@ static void buttobi_chakuchi_cg_type_check(PLW* wk) {
         break;
 
     case 5:
-        if (!(wk->spmv_ng_flag2 & DIP2_QUICK_STAND_DISABLED) && wk->ukemi_success && (wk->dead_flag == 0) &&
+        if (!(wk->spmv_ng_flag2 & DIP2_QUICK_STAND_DISABLED) && wk->recovery_roll_success && (wk->dead_flag == 0) &&
             (wk->py->flag == 0) && (wk->wu.vital_new > 0) && (g_state.pcon_dp_flag == 0)) {
             wk->wu.routine_no[2] = oki_select_table2[wk->wu.rl_waza + (wk->wu.rl_flag * 2)];
             wk->wu.routine_no[3] = 0;
@@ -1495,7 +1495,7 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
         add_sp_arts_gauge_hit_dm(wk);
     }
 
-    if (wk->atemi_flag) {
+    if (wk->parry_flag) {
         wk->dm_vital_backup = wk->wu.dm_vital;
     } else {
         wk->dm_vital_backup = 0;
@@ -1523,7 +1523,7 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
         g_state.dead_voice_flag = true;
 
         if (wk->wu.dm_guard_success != -1) {
-            wk->kezurijini_flag = 1;
+            wk->chip_death_flag = 1;
         }
 
         if (!g_state.round_slow_flag) {
@@ -1531,7 +1531,7 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
             g_state.round_slow_flag = true;
         }
     } else if (wk->py->flag == 0) {
-        wk->py->now.quantity.h += wk->wu.dm_piyo;
+        wk->py->now.quantity.h += wk->wu.damage_stun_value;
 
         if (wk->py->now.quantity.h >= wk->py->genkai) {
             wk->py->now.timer = 0;
@@ -1562,11 +1562,11 @@ void subtract_dm_vital(PLW* wk) {
     }
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
-        Training_Damage_Set(wk->wu.dm_vital, wk->wu.dm_piyo, wk->wu.kezurare_flag);
+        Training_Damage_Set(wk->wu.dm_vital, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
     }
 
     wk->wu.dm_vital = 0;
-    wk->wu.dm_piyo = 0;
+    wk->wu.damage_stun_value = 0;
 }
 
 /** @brief Subtracts damage for a simultaneous-hit (aiuchi) trade situation. */
@@ -1576,16 +1576,16 @@ void subtract_dm_vital_aiuchi(PLW* wk) {
     pp_pulpara_remake_dm_all(&wk->wu);
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING && (g_state.Training_ID != wk->wu.id)) {
-        Training_Damage_Set(wk->wu.dm_vital, wk->wu.dm_piyo, wk->wu.kezurare_flag);
+        Training_Damage_Set(wk->wu.dm_vital, wk->wu.damage_stun_value, wk->wu.is_taking_chip_damage);
     }
 
     wk->wu.dm_vital = 0;
-    wk->wu.dm_piyo = 0;
+    wk->wu.damage_stun_value = 0;
 }
 
 /** @brief Reads the damage reaction table to set animation and knockback data. */
 static void get_damage_reaction_data(PLW* wk) {
-    if (wk->atemi_flag == 2) {
+    if (wk->parry_flag == 2) {
         wk->wu.dm_vital = 0;
         damage_atemi_setup(wk, (PLW*)wk->wu.dmg_adrs);
         return;
@@ -1612,9 +1612,9 @@ static void get_damage_reaction_data(PLW* wk) {
         }
     }
 
-    if (wk->atemi_flag == 1) {
+    if (wk->parry_flag == 1) {
         if (wk->py->flag) {
-            wk->atemi_flag = 0;
+            wk->parry_flag = 0;
         } else {
             damage_atemi_setup(wk, (PLW*)wk->wu.dmg_adrs);
             return;
@@ -1641,7 +1641,7 @@ static void damage_atemi_setup(PLW* wk, PLW* ek) {
     wk->wu.routine_no[2] = wk->wu.cmmd.ix;
     wk->wu.routine_no[3] = wk->wu.cmmd.pat;
     char_move_cmms(&wk->wu);
-    wk->atemi_flag = 9;
+    wk->parry_flag = 9;
     wk->wu.dm_stop = wk->wu.dm_quake = 0;
     wk->wu.hit_stop = wk->wu.hit_quake = 0;
     ek->wu.dm_stop = ek->wu.dm_quake = 0;

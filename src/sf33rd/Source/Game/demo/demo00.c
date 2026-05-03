@@ -240,9 +240,9 @@ static void CAPLOGO_Init() {
     }
 
     ppgSetupPalChunk(NULL, loadAdrs, loadSize, 0, 0, 1);
-    ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 600, 1, 0, 0);
-    ppgSetupTexChunk_2nd(NULL, 600);
-    ppgSetupTexChunk_3rd(NULL, 600, 1);
+    PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, 600, 1, 0, 0);
+    PPG_SetupTextureSecondary(NULL, 600);
+    PPG_SetupTextureTertiary(NULL, 600, 1);
     Push_ramcnt_key(key);
     ppgSourceDataReleased(0);
 }
@@ -323,11 +323,11 @@ void Warning_Init() {
 
     ppgSetupPalChunk(&ppgWarPal, loadAdrs, loadSize, 0, 0, 1);
     ppgSetupPalChunk(&ppgAdxPal, loadAdrs, loadSize, 0, 1, 1);
-    ppgSetupTexChunk_1st(0, loadAdrs, loadSize, 590, 4, 0, 0);
+    PPG_SetupTexturePrimary(0, loadAdrs, loadSize, 590, 4, 0, 0);
 
     for (i = 0; i < ppgWarTex.textures; i++) {
-        ppgSetupTexChunk_2nd(0, i + 590);
-        ppgSetupTexChunk_3rd(0, i + 590, 1);
+        PPG_SetupTextureSecondary(0, i + 590);
+        PPG_SetupTextureTertiary(0, i + 590, 1);
     }
 
     Push_ramcnt_key(key);

@@ -314,11 +314,11 @@ static const void* read_sernd(SDL_IOStream* rom, Location location) {
 static const void* read_ovct(SDL_IOStream* rom, Location location, Character character) {
     SDL_SeekIO(rom, location.offset, SDL_IO_SEEK_SET);
 
-    UNK_8* result = SDL_malloc(location.size);
-    const int elem_count = location.size / sizeof(UNK_8);
+    CollisionOverlapBox* result = SDL_malloc(location.size);
+    const int elem_count = location.size / sizeof(CollisionOverlapBox);
 
     for (int i = 0; i < elem_count; i++) {
-        UNK_8* element = &result[i];
+        CollisionOverlapBox* element = &result[i];
         SDL_ReadS16BE(rom, &element->parts_hos_x);
         SDL_ReadS16BE(rom, &element->parts_hos_y);
         SDL_ReadU8(rom, &element->parts_colmd);

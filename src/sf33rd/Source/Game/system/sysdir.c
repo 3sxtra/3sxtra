@@ -48,16 +48,18 @@ const u32 omop_guard_type[OMOP_GUARD_TYPE_COUNT] = { DIP_AUTO_GUARD_DISABLED | D
                                                      DIP_AUTO_GUARD_DISABLED | DIP_AUTO_PARRY_DISABLED,
                                                      DIP_AUTO_GUARD_DISABLED | DIP_SEMI_AUTO_PARRY_DISABLED };
 
-const u32 sysdir_base_move[20] = { (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), DIP_UNKNOWN_18,
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), DIP_UNKNOWN_19,
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
-                                   (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19) };
+const u32 sysdir_base_move[20] = {
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED),
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED),
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED),
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED),
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), DIP_WALL_JUMP_DISABLED,
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED),
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED),
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), DIP_AIR_JUMP_DISABLED,
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED),
+    (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED), (DIP_WALL_JUMP_DISABLED | DIP_AIR_JUMP_DISABLED)
+};
 
 const s16 use_ex_gauge[4] = { 0, 20, 40, 60 };
 
@@ -111,8 +113,8 @@ void init_omop() {
     omop_spmv_ng_table[0] = 0;
     omop_spmv_ng_table2[1] = 0;
     omop_spmv_ng_table[1] = 0;
-    omop_spmv_ng_table2[0] |= DIP2_UNKNOWN_22;
-    omop_spmv_ng_table2[0] |= DIP2_UNKNOWN_23;
+    omop_spmv_ng_table2[0] |= DIP2_CHAIN_INTO_SPECIAL_DISABLED;
+    omop_spmv_ng_table2[0] |= DIP2_CHAIN_INTO_SUPER_ART_DISABLED;
 
     if (g_state.Mode_Type == MODE_NETWORK) {
         get_system_direction_parameter((SystemDir*)&Dir_Default_Data);
@@ -134,8 +136,8 @@ void init_omop() {
     omop_spmv_ng_table[1] |= sysdir_base_move[g_state.My_char[1]];
     g_state.cmd_sel[0] = (omop_spmv_ng_table[0] & DIP2_ALL_SUPER_ARTS_AVAILABLE_DISABLED) == 0;
     g_state.cmd_sel[1] = (omop_spmv_ng_table[1] & DIP2_ALL_SUPER_ARTS_AVAILABLE_DISABLED) == 0;
-    g_state.no_sa[0] = (omop_spmv_ng_table[0] & (DIP_UNKNOWN_30 | DIP_UNKNOWN_31)) != 0;
-    g_state.no_sa[1] = (omop_spmv_ng_table[1] & (DIP_UNKNOWN_30 | DIP_UNKNOWN_31)) != 0;
+    g_state.no_sa[0] = (omop_spmv_ng_table[0] & (DIP_GROUND_SUPER_ART_DISABLED | DIP_AIR_SUPER_ART_DISABLED)) != 0;
+    g_state.no_sa[1] = (omop_spmv_ng_table[1] & (DIP_GROUND_SUPER_ART_DISABLED | DIP_AIR_SUPER_ART_DISABLED)) != 0;
     vib_sel[0] = 1;
     vib_sel[1] = 1;
 }
@@ -205,7 +207,7 @@ void get_extra_option_parameter(_EXTRA_OPTION* omop_extra) {
 /** @brief Decode system-direction parameters into dipswitch bitfields for all gameplay mechanics. */
 void get_system_direction_parameter(SystemDir* sysdir_data) {
     if (sysdir_data->contents[0][0] == 0) { // Ground parry disabled
-        omop_spmv_ng_table[0] |= (DIP_UNKNOWN_8 | DIP_UNKNOWN_9);
+        omop_spmv_ng_table[0] |= (DIP_STAND_PARRY_DISABLED | DIP_CROUCH_PARRY_DISABLED);
     }
 
     if (sysdir_data->contents[0][1] == 0) {
@@ -295,11 +297,11 @@ void get_system_direction_parameter(SystemDir* sysdir_data) {
     }
 
     if (sysdir_data->contents[5][0] == 0) { // Super arts disabled
-        omop_spmv_ng_table[0] |= (DIP_UNKNOWN_30 | DIP_UNKNOWN_31);
+        omop_spmv_ng_table[0] |= (DIP_GROUND_SUPER_ART_DISABLED | DIP_AIR_SUPER_ART_DISABLED);
     }
 
     if (sysdir_data->contents[5][1] == 0) { // Special moves disabled
-        omop_spmv_ng_table[0] |= (DIP_UNKNOWN_28 | DIP_UNKNOWN_29);
+        omop_spmv_ng_table[0] |= (DIP_GROUND_SPECIAL_DISABLED | DIP_AIR_SPECIAL_DISABLED);
     }
 
     if (sysdir_data->contents[5][2] == 0) {

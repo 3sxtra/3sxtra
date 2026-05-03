@@ -568,9 +568,9 @@ void effect_work_kill_mod_plcol() {
 }
 
 void setup_shadow_of_the_Effy(WORK* wk) {
-    wk->kage_flag = 1;
-    wk->kage_hx = 0;
-    wk->kage_hy = -0xA;
+    wk->shadow_flag = 1;
+    wk->shadow_x = 0;
+    wk->shadow_y = -0xA;
     wk->kage_prio = 0x47;
     wk->kage_char = 0xC;
 }

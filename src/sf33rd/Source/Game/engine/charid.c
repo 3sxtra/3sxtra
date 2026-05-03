@@ -11,7 +11,7 @@
 CharInitData char_init_data[23];
 
 // sbss
-UNK_Data* parabora_own_table[20];
+ParabolaData* parabora_own_table[20];
 
 const CharInitData2 char_init_data2[23] = {
     { 0x0000, 0x0000, 0x0000, 0x0000 }, { 0x4200, 0x2000, 0x0026, 0x0002 }, { 0x4200, 0x2000, 0x0032, 0x0002 },
@@ -40,14 +40,14 @@ const CharInitData char_init_data_ex[2] = { { _ef13_char_table,
                                               NULL,
                                               NULL,
                                               NULL,
-                                              (UNK_0*)_ef13_hit_ix_table,
-                                              (UNK_1*)_ef13_body_box,
-                                              (UNK_2*)_ef13_hand_box,
-                                              (UNK_3*)_ef13_cat_box,
-                                              (UNK_4*)_ef13_cau_box,
-                                              (UNK_5*)_ef13_att_box,
-                                              (UNK_6*)_ef13_hos_box,
-                                              (UNK_7*)_ef13_catt_table,
+                                              (HitIndexTable*)_ef13_hit_ix_table,
+                                              (CollisionHurtbox*)_ef13_body_box,
+                                              (CollisionHurtboxExt*)_ef13_hand_box,
+                                              (CollisionCatchbox*)_ef13_cat_box,
+                                              (CollisionThrowable*)_ef13_cau_box,
+                                              (CollisionHitbox*)_ef13_att_box,
+                                              (CollisionPushbox*)_ef13_hos_box,
+                                              (AttackIndexTable*)_ef13_catt_table,
                                               NULL },
                                             { (u32*)_bonus_char_table,
                                               NULL,
@@ -65,14 +65,14 @@ const CharInitData char_init_data_ex[2] = { { _ef13_char_table,
                                               NULL,
                                               NULL,
                                               NULL,
-                                              (UNK_0*)_ef13_hit_ix_table,
-                                              (UNK_1*)_ef13_body_box,
-                                              (UNK_2*)_ef13_hand_box,
-                                              (UNK_3*)_ef13_cat_box,
-                                              (UNK_4*)_ef13_cau_box,
-                                              (UNK_5*)_ef13_att_box,
-                                              (UNK_6*)_ef13_hos_box,
-                                              (UNK_7*)_ef13_catt_table,
+                                              (HitIndexTable*)_ef13_hit_ix_table,
+                                              (CollisionHurtbox*)_ef13_body_box,
+                                              (CollisionHurtboxExt*)_ef13_hand_box,
+                                              (CollisionCatchbox*)_ef13_cat_box,
+                                              (CollisionThrowable*)_ef13_cau_box,
+                                              (CollisionHitbox*)_ef13_att_box,
+                                              (CollisionPushbox*)_ef13_hos_box,
+                                              (AttackIndexTable*)_ef13_catt_table,
                                               NULL } };
 
 /** @brief Initializes character work data from the char init tables. */

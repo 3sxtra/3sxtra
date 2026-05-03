@@ -35,11 +35,11 @@ s32 Player_control_bonus2() {
         set_quake(&g_state.plw[0]);
         set_quake(&g_state.plw[1]);
 
-        if (!g_state.plw[0].zuru_flag && !g_state.plw[0].zettai_muteki_flag) {
+        if (!g_state.plw[0].zuru_flag && !g_state.plw[0].absolute_invuln_flag) {
             hit_push_request(&g_state.plw[0].wu);
         }
 
-        if (!g_state.plw[1].zuru_flag && !g_state.plw[1].zettai_muteki_flag) {
+        if (!g_state.plw[1].zuru_flag && !g_state.plw[1].absolute_invuln_flag) {
             hit_push_request(&g_state.plw[1].wu);
         }
 

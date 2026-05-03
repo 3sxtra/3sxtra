@@ -195,7 +195,7 @@ s32 effect_G0_init(s16 arg_Order, s16 Time, u32 arg_Score, s16 Pos_Index) {
     ewk->wu.my_family = 2;
     ewk->wu.dir_old = arg_Order;
     ewk->wu.dir_timer = Time;
-    ewk->wu.dm_butt_type = arg_Score;
+    ewk->wu.damage_knockback_type = arg_Score;
     ewk->wu.my_col_code = 82;
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

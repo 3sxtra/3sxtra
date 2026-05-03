@@ -47,11 +47,11 @@ s32 Player_control_bonus() {
         set_quake(&g_state.plw[0]);
         set_quake(&g_state.plw[1]);
 
-        if (!g_state.plw[0].zuru_flag && !g_state.plw[0].zettai_muteki_flag) {
+        if (!g_state.plw[0].zuru_flag && !g_state.plw[0].absolute_invuln_flag) {
             hit_push_request(&g_state.plw[0].wu);
         }
 
-        if (!g_state.plw[1].zuru_flag && !g_state.plw[1].zettai_muteki_flag) {
+        if (!g_state.plw[1].zuru_flag && !g_state.plw[1].absolute_invuln_flag) {
             hit_push_request(&g_state.plw[1].wu);
         }
 
@@ -324,39 +324,39 @@ static void move_P2_move_P1_bonus(s16* field_work) {
 
 /** @brief Applies damage correction for bonus stage interactions. */
 void check_damage_hosei_bonus() {
-    g_state.plw[0].muriyari_ugoku = g_state.plw[0].hosei_amari;
-    g_state.plw[1].muriyari_ugoku = g_state.plw[1].hosei_amari;
+    g_state.plw[0].forced_movement = g_state.plw[0].hosei_amari;
+    g_state.plw[1].forced_movement = g_state.plw[1].hosei_amari;
 
     switch ((g_state.plw[0].hosei_amari != 0) + ((g_state.plw[1].hosei_amari != 0) * 2)) {
     case 1:
-        if ((!g_state.plw[0].tsukami_f || g_state.plw[0].kind_of_catch != 1) &&
-            (g_state.plw[0].tsukamare_f | g_state.plw[0].dm_hos_flag) == 0) {
+        if ((!g_state.plw[0].is_throwing || g_state.plw[0].kind_of_catch != 1) &&
+            (g_state.plw[0].is_being_thrown | g_state.plw[0].dm_hos_flag) == 0) {
             break;
         }
 
     one:
         g_state.plw[1].wu.xyz[0].disp.pos += g_state.plw[0].hosei_amari;
-        g_state.plw[1].muriyari_ugoku += g_state.plw[0].hosei_amari;
+        g_state.plw[1].forced_movement += g_state.plw[0].hosei_amari;
         break;
 
     case 2:
-        if ((!g_state.plw[1].tsukami_f || g_state.plw[1].kind_of_catch != 1) &&
-            (g_state.plw[1].tsukamare_f | g_state.plw[1].dm_hos_flag) == 0) {
+        if ((!g_state.plw[1].is_throwing || g_state.plw[1].kind_of_catch != 1) &&
+            (g_state.plw[1].is_being_thrown | g_state.plw[1].dm_hos_flag) == 0) {
             break;
         }
 
     two:
         g_state.plw[0].wu.xyz[0].disp.pos += g_state.plw[1].hosei_amari;
-        g_state.plw[0].muriyari_ugoku += g_state.plw[1].hosei_amari;
+        g_state.plw[0].forced_movement += g_state.plw[1].hosei_amari;
         break;
 
     case 3:
         if (g_state.plw[0].hos_fi_flag == g_state.plw[1].hos_fi_flag) {
-            if (g_state.plw[0].tsukamare_f) {
+            if (g_state.plw[0].is_being_thrown) {
                 goto one;
             }
 
-            if (g_state.plw[1].tsukamare_f) {
+            if (g_state.plw[1].is_being_thrown) {
                 goto two;
             }
         }

@@ -60,7 +60,7 @@ void check_cg_zoom() {
         if (g_state.plw[i].scr_pos_set_flag) {
             g_state.plw[i].wu.scr_mv_x = g_state.plw[i].wu.xyz[0].disp.pos;
             g_state.plw[i].wu.scr_mv_y = g_state.plw[i].wu.xyz[1].disp.pos;
-        } else if (g_state.plw[i].tsukamare_f) {
+        } else if (g_state.plw[i].is_being_thrown) {
             g_state.plw[i].wu.scr_mv_x = g_state.plw[(i + 1) & 1].wu.xyz[0].disp.pos;
             g_state.plw[i].wu.scr_mv_y = g_state.plw[(i + 1) & 1].wu.xyz[1].disp.pos;
         }
@@ -507,10 +507,10 @@ void scr_11_22() {
     meri2 -= g_state.ideal_w.iw[0].disp.pos;
 
     if (meri2 < 0) {
-        if (g_state.plw[1].micchaku_flag != 1) {
+        if (g_state.plw[1].close_proximity_flag != 1) {
             x_left_check(meri2);
         }
-    } else if (g_state.plw[0].micchaku_flag != 2) {
+    } else if (g_state.plw[0].close_proximity_flag != 2) {
         x_right_check(meri2);
     }
 }
@@ -537,10 +537,10 @@ void scr_12_21() {
     meri2 -= g_state.ideal_w.iw[0].disp.pos;
 
     if (meri2 < 0) {
-        if (g_state.plw[0].micchaku_flag != 1) {
+        if (g_state.plw[0].close_proximity_flag != 1) {
             x_left_check(meri2);
         }
-    } else if (g_state.plw[1].micchaku_flag != 2) {
+    } else if (g_state.plw[1].close_proximity_flag != 2) {
         x_right_check(meri2);
     }
 }

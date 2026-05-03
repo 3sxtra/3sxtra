@@ -1326,9 +1326,9 @@ static void Setup_Com_Color() {
 void Setup_PL_Color(s16 PL_id, u16 sw) {
     s8 id_0;
     s8 id_1;
-    u16 sw_new;
+    u16 input_pressed;
 
-    sw_new = 0;
+    input_pressed = 0;
 
     if (g_state.plw[PL_id ^ 1].wu.pl_operator == 0) {
         id_0 = -1;
@@ -1343,21 +1343,21 @@ void Setup_PL_Color(s16 PL_id, u16 sw) {
     }
 
     if (g_state.plw[PL_id].wu.pl_operator != 0 && g_state.My_char[PL_id] == CHAR_GILL) {
-        sw_new = 0;
+        input_pressed = 0;
     } else {
         if (Debug_w[DEBUG_NEW_COLOR]) {
             if (PL_id == 0) {
-                sw_new = p1sw_0;
+                input_pressed = p1sw_0;
             } else {
-                sw_new = p2sw_0;
+                input_pressed = p2sw_0;
             }
         }
 
         if (CurrentSave()->PL_Color[PL_id][g_state.My_char[PL_id]]) {
             if (PL_id == 0) {
-                sw_new = p1sw_0;
+                input_pressed = p1sw_0;
             } else {
-                sw_new = p2sw_0;
+                input_pressed = p2sw_0;
             }
         }
     }
@@ -1384,7 +1384,7 @@ void Setup_PL_Color(s16 PL_id, u16 sw) {
 
             break;
         }
-    } else if (sw_new & SWK_START) {
+    } else if (input_pressed & SWK_START) {
         switch (sw) {
         case SWK_WEST:
             if (g_state.Player_Color[PL_id ^ 1] == 7 && id_0 == id_1) {

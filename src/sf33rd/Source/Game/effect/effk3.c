@@ -58,8 +58,8 @@ void effect_K3_move(WORK_Other* ewk) {
             add_mvxy_speed(&ewk->wu);
             cal_mvxy_speed(&ewk->wu);
 
-            if (ewk->wu.kage_hy) {
-                ewk->wu.kage_hy--;
+            if (ewk->wu.shadow_y) {
+                ewk->wu.shadow_y--;
             } else {
                 ewk->wu.disp_flag = 2;
             }
@@ -113,7 +113,7 @@ static void set_init_posspeed_effK3(WORK* wk) {
     data[2] += effK3_isp_y_hosei[wk->dm_attlv][ix];
     setup_move_data_easy(wk, &data[0], 1, 0);
     wk->kage_prio = effK3_life_time[wk->dm_attlv] + (random_16() & 3);
-    wk->kage_hy = wk->kage_prio / 2;
+    wk->shadow_y = wk->kage_prio / 2;
 }
 
 static s32 effect_K3_init(WORK_Other* wk) {

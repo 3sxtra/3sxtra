@@ -417,11 +417,11 @@ void Player_control() {
     set_quake(&g_state.plw[0]);
     set_quake(&g_state.plw[1]);
 
-    if (!g_state.plw[0].zuru_flag && !g_state.plw[0].zettai_muteki_flag) {
+    if (!g_state.plw[0].zuru_flag && !g_state.plw[0].absolute_invuln_flag) {
         hit_push_request(&g_state.plw[0].wu);
     }
 
-    if (!g_state.plw[1].zuru_flag && !g_state.plw[1].zettai_muteki_flag) {
+    if (!g_state.plw[1].zuru_flag && !g_state.plw[1].absolute_invuln_flag) {
         hit_push_request(&g_state.plw[1].wu);
     }
 
@@ -684,7 +684,7 @@ static void plcnt_move() {
             }
         }
 
-        if ((g_state.plw[0].kezurijini_flag == 1) || (g_state.plw[1].kezurijini_flag == 1)) {
+        if ((g_state.plw[0].chip_death_flag == 1) || (g_state.plw[1].chip_death_flag == 1)) {
             g_state.Round_Result |= 0x200;
         }
 
@@ -907,7 +907,7 @@ static void move_player_work() {
     set_rl_waza(&g_state.plw[1]);
     g_state.Timer_Freeze = 0;
 
-    switch (g_state.plw[0].tsukami_f + (g_state.plw[1].tsukami_f * 2)) {
+    switch (g_state.plw[0].is_throwing + (g_state.plw[1].is_throwing * 2)) {
     case 1:
         move_P1_move_P2();
         break;
@@ -1019,12 +1019,12 @@ void store_player_after_image_data() {
 
 /** @brief Applies damage correction (hosei) based on difficulty and character. */
 static void check_damage_hosei() {
-    g_state.plw[0].muriyari_ugoku = g_state.plw[0].hosei_amari;
-    g_state.plw[1].muriyari_ugoku = g_state.plw[1].hosei_amari;
+    g_state.plw[0].forced_movement = g_state.plw[0].hosei_amari;
+    g_state.plw[1].forced_movement = g_state.plw[1].hosei_amari;
 
-    if (g_state.plw[0].tsukami_f && g_state.plw[1].tsukamare_f) {
+    if (g_state.plw[0].is_throwing && g_state.plw[1].is_being_thrown) {
         check_damage_hosei_nage(&g_state.plw[0], &g_state.plw[1]);
-    } else if (g_state.plw[1].tsukami_f && g_state.plw[0].tsukamare_f) {
+    } else if (g_state.plw[1].is_throwing && g_state.plw[0].is_being_thrown) {
         check_damage_hosei_nage(&g_state.plw[1], &g_state.plw[0]);
     } else {
         switch ((g_state.plw[0].hosei_amari != 0) + ((g_state.plw[1].hosei_amari != 0) * 2)) {
@@ -1045,7 +1045,7 @@ static void check_damage_hosei_nage(PLW* as, PLW* ds) {
     if (as->kind_of_catch) {
         if (ds->hosei_amari != 0) {
             as->wu.xyz[0].disp.pos += ds->hosei_amari;
-            as->muriyari_ugoku += ds->hosei_amari;
+            as->forced_movement += ds->hosei_amari;
             return;
         }
 
@@ -1055,11 +1055,11 @@ static void check_damage_hosei_nage(PLW* as, PLW* ds) {
 
         if (as->hosei_amari != 0) {
             ds->wu.xyz[0].disp.pos += as->hosei_amari;
-            ds->muriyari_ugoku += as->hosei_amari;
+            ds->forced_movement += as->hosei_amari;
         }
     } else if (ds->hosei_amari != 0) {
         as->wu.xyz[0].disp.pos += ds->hosei_amari;
-        as->muriyari_ugoku += ds->hosei_amari;
+        as->forced_movement += ds->hosei_amari;
     }
 }
 
@@ -1067,7 +1067,7 @@ static void check_damage_hosei_nage(PLW* as, PLW* ds) {
 static void check_damage_hosei_dageki(PLW* w1, PLW* w2) {
     if ((w1->dm_hos_flag != 0) && (w2->wu.hit_stop == 0)) {
         w2->wu.xyz[0].disp.pos += w1->hosei_amari;
-        w2->muriyari_ugoku += w1->hosei_amari;
+        w2->forced_movement += w1->hosei_amari;
     }
 }
 
@@ -1136,7 +1136,7 @@ static void settle_check() {
         jump:
             if (check_sa_resurrection(&g_state.plw[g_state.Loser_id]) == 0) {
                 setup_gouki_wins();
-                g_state.Round_Result |= g_state.plw[g_state.Loser_id].wu.dm_koa;
+                g_state.Round_Result |= g_state.plw[g_state.Loser_id].wu.damage_kind_of_arts;
 
                 if ((g_state.Round_Result & 0x800) && g_state.gouki_wins) {
                     g_state.Forbid_Break = -1;
@@ -1186,7 +1186,7 @@ static s32 check_sa_resurrection(PLW* wk) {
         return 0;
     }
 
-    wk->kezurijini_flag = 0;
+    wk->chip_death_flag = 0;
     wk->dead_flag = 0;
     wk->resurrection_resv = 1;
     return 1;
@@ -1194,7 +1194,7 @@ static s32 check_sa_resurrection(PLW* wk) {
 
 /** @brief Checks if a player's SA provides rebirth-type resurrection. */
 s32 check_sa_type_rebirth(PLW* wk) {
-    if ((wk->spmv_ng_flag & DIP_UNKNOWN_30) || (wk->spmv_ng_flag & DIP_UNKNOWN_31)) {
+    if ((wk->spmv_ng_flag & DIP_GROUND_SUPER_ART_DISABLED) || (wk->spmv_ng_flag & DIP_AIR_SUPER_ART_DISABLED)) {
         return 0;
     }
 
@@ -1400,9 +1400,9 @@ static void set_base_data_tiny(PLW* wk) {
 
 /** @brief Configures the player's shadow sprite parameters. */
 void set_player_shadow(PLW* wk) {
-    wk->wu.kage_flag = 1;
+    wk->wu.shadow_flag = 1;
     wk->wu.kage_prio = 68;
-    wk->wu.kage_hx = kage_base[wk->player_number][0];
+    wk->wu.shadow_x = kage_base[wk->player_number][0];
     wk->wu.kage_char = kage_base[wk->player_number][1];
 }
 
@@ -1570,7 +1570,7 @@ s16 check_combo_end(s16 ix) {
         return 1;
     }
 
-    if (g_state.plw[ix].tsukamare_f) {
+    if (g_state.plw[ix].is_being_thrown) {
         return 1;
     }
 

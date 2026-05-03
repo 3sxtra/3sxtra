@@ -27,7 +27,7 @@ void effect_47_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.kage_flag = 0;
+        ewk->wu.shadow_flag = 0;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 

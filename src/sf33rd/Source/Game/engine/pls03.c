@@ -66,7 +66,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
     }
 
     if (((g_state.Bonus_Game_Flag == 0x14) && (wk->bs2_on_car)) || (wk->wu.xyz[1].disp.pos <= 0)) {
-        if (wk->spmv_ng_flag & DIP_UNKNOWN_30) {
+        if (wk->spmv_ng_flag & DIP_GROUND_SUPER_ART_DISABLED) {
             return 0;
         }
 
@@ -82,7 +82,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
             return 0;
         }
 
-        if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && (chainex_check[wk->wu.id][g_ix - 20])) {
+        if ((wk->spmv_ng_flag2 & DIP2_CHAIN_INTO_SUPER_ART_DISABLED) && (chainex_check[wk->wu.id][g_ix - 20])) {
             return 0;
         }
 
@@ -90,13 +90,13 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
             wk->permited_koa |= 0x40;
         }
 
-        conpane = &wk->cp->sw_lvbt;
+        conpane = &wk->cp->input_held;
 
-        if (wk->cp->waza_flag[g_ix] == -1) {
+        if (wk->cp->move_state_flags[g_ix] == -1) {
             return 0;
         }
 
-        if (((wk->cp->btix[g_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[g_ix])) {
+        if (((wk->cp->btix[g_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[g_ix])) {
             cusw = conpane[wk->cp->btix[g_ix] & 0xFF];
 
             for (j = 3; j >= 0; j--) {
@@ -111,7 +111,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
                     wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(g_ix)][j + ((g_ix - 20) * 4)];
                     wk->wu.cg_cancel = 0;
                     wk->sa->mp = -1;
-                    hissatsu_setup_union(wk, wk->cp->waza_r[g_ix][j]);
+                    hissatsu_setup_union(wk, wk->cp->move_state_timers[g_ix][j]);
                     waza_compel_all_init2(wk);
                     chainex_check[wk->wu.id][g_ix - 20] = 1;
                     chainex_spat_cancel_kidou(&wk->wu);
@@ -123,7 +123,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
         return 0;
     }
 
-    if (wk->spmv_ng_flag & DIP_UNKNOWN_31) {
+    if (wk->spmv_ng_flag & DIP_AIR_SUPER_ART_DISABLED) {
         return 0;
     }
 
@@ -139,7 +139,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
         return 0;
     }
 
-    if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && chainex_check[wk->wu.id][a_ix - 20]) {
+    if ((wk->spmv_ng_flag2 & DIP2_CHAIN_INTO_SUPER_ART_DISABLED) && chainex_check[wk->wu.id][a_ix - 20]) {
         return 0;
     }
 
@@ -147,13 +147,13 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
         wk->permited_koa |= 0x40;
     }
 
-    conpane = &wk->cp->sw_lvbt;
+    conpane = &wk->cp->input_held;
 
-    if (wk->cp->waza_flag[a_ix] == -1) {
+    if (wk->cp->move_state_flags[a_ix] == -1) {
         return 0;
     }
 
-    if (((wk->cp->btix[a_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[a_ix])) {
+    if (((wk->cp->btix[a_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[a_ix])) {
         cusw = conpane[wk->cp->btix[a_ix] & 0xFF];
 
         for (j = 3; j >= 0; j--) {
@@ -168,7 +168,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
                 wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(a_ix)][j + ((a_ix - 38) * 4)];
                 wk->wu.cg_cancel = 0;
                 wk->sa->mp = -1;
-                hissatsu_setup_union(wk, wk->cp->waza_r[a_ix][j]);
+                hissatsu_setup_union(wk, wk->cp->move_state_timers[a_ix][j]);
                 waza_compel_all_init2(wk);
                 chainex_check[wk->wu.id][a_ix - 20] = 1;
                 chainex_spat_cancel_kidou(&wk->wu);
@@ -235,7 +235,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
     }
 
     if (((g_state.Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
-        if (wk->spmv_ng_flag & DIP_UNKNOWN_30) {
+        if (wk->spmv_ng_flag & DIP_GROUND_SUPER_ART_DISABLED) {
             return 0;
         }
 
@@ -247,17 +247,18 @@ s32 check_super_arts_attack_dc(PLW* wk) {
             return 0;
         }
 
-        if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && (chainex_check[wk->wu.id][wk->sa->nmsa_g_ix - 20])) {
+        if ((wk->spmv_ng_flag2 & DIP2_CHAIN_INTO_SUPER_ART_DISABLED) &&
+            (chainex_check[wk->wu.id][wk->sa->nmsa_g_ix - 20])) {
             return 0;
         }
 
-        conpane = &wk->cp->sw_lvbt;
+        conpane = &wk->cp->input_held;
 
-        if (wk->cp->waza_flag[wk->sa->nmsa_g_ix] == -1) {
+        if (wk->cp->move_state_flags[wk->sa->nmsa_g_ix] == -1) {
             return 0;
         }
 
-        if (((wk->cp->btix[wk->sa->nmsa_g_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[wk->sa->nmsa_g_ix])) {
+        if (((wk->cp->btix[wk->sa->nmsa_g_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[wk->sa->nmsa_g_ix])) {
             cusw = conpane[wk->cp->btix[wk->sa->nmsa_g_ix] & 0xFF];
 
             for (j = 3; j >= 0; j--) {
@@ -276,7 +277,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
                     wk->sa->ex4th_exec = (j == 3) * wk->sa->ex4th_full;
                     wk->wu.cg_cancel = 0;
                     wk->sa->ok = -1;
-                    hissatsu_setup_union(wk, wk->cp->waza_r[wk->sa->nmsa_g_ix][j]);
+                    hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_g_ix][j]);
                     waza_compel_all_init2(wk);
                     chainex_check[wk->wu.id][wk->sa->nmsa_g_ix - 20] = 1;
                     chainex_spat_cancel_kidou(&wk->wu);
@@ -288,7 +289,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
         return 0;
     }
 
-    if (wk->spmv_ng_flag & DIP_UNKNOWN_31) {
+    if (wk->spmv_ng_flag & DIP_AIR_SUPER_ART_DISABLED) {
         return 0;
     }
 
@@ -300,17 +301,18 @@ s32 check_super_arts_attack_dc(PLW* wk) {
         return 0;
     }
 
-    if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && (chainex_check[wk->wu.id][wk->sa->nmsa_a_ix - 20])) {
+    if ((wk->spmv_ng_flag2 & DIP2_CHAIN_INTO_SUPER_ART_DISABLED) &&
+        (chainex_check[wk->wu.id][wk->sa->nmsa_a_ix - 20])) {
         return 0;
     }
 
-    conpane = &wk->cp->sw_lvbt;
+    conpane = &wk->cp->input_held;
 
-    if (wk->cp->waza_flag[wk->sa->nmsa_a_ix] == -1) {
+    if (wk->cp->move_state_flags[wk->sa->nmsa_a_ix] == -1) {
         return 0;
     }
 
-    if (((wk->cp->btix[wk->sa->nmsa_a_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[wk->sa->nmsa_a_ix])) {
+    if (((wk->cp->btix[wk->sa->nmsa_a_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[wk->sa->nmsa_a_ix])) {
         cusw = conpane[wk->cp->btix[wk->sa->nmsa_a_ix] & 0xFF];
 
         for (j = 3; j >= 0; j--) {
@@ -329,7 +331,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
                 wk->sa->ex4th_exec = ((j == 3) * (wk->sa->ex4th_full));
                 wk->wu.cg_cancel = 0;
                 wk->sa->ok = -1;
-                hissatsu_setup_union(wk, wk->cp->waza_r[wk->sa->nmsa_a_ix][j]);
+                hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_a_ix][j]);
                 waza_compel_all_init2(wk);
                 chainex_check[wk->wu.id][wk->sa->nmsa_a_ix - 20] = 1;
                 chainex_spat_cancel_kidou(&wk->wu);
@@ -352,7 +354,7 @@ s32 execute_super_arts(PLW* wk) {
     }
 
     if (((g_state.Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
-        if (wk->spmv_ng_flag & DIP_UNKNOWN_30) {
+        if (wk->spmv_ng_flag & DIP_GROUND_SUPER_ART_DISABLED) {
             return 0;
         }
 
@@ -369,13 +371,13 @@ s32 execute_super_arts(PLW* wk) {
         wk->sa->ex4th_exec = 0;
         wk->wu.cg_cancel = 0;
         wk->sa->ok = -1;
-        hissatsu_setup_union(wk, wk->cp->waza_r[wk->sa->nmsa_g_ix][0]);
+        hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_g_ix][0]);
         waza_compel_all_init2(wk);
         wk->sa->gt2 = wk->sa->gauge_type;
         return 1;
     }
 
-    if (wk->spmv_ng_flag & DIP_UNKNOWN_31) {
+    if (wk->spmv_ng_flag & DIP_AIR_SUPER_ART_DISABLED) {
         return 0;
     }
 
@@ -392,7 +394,7 @@ s32 execute_super_arts(PLW* wk) {
     wk->sa->ex4th_exec = 0;
     wk->wu.cg_cancel = 0;
     wk->sa->ok = -1;
-    hissatsu_setup_union(wk, wk->cp->waza_r[wk->sa->nmsa_a_ix][0]);
+    hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_a_ix][0]);
     waza_compel_all_init2(wk);
     wk->sa->gt2 = wk->sa->gauge_type;
     return 1;
@@ -418,11 +420,11 @@ s32 check_special_attack(PLW* wk) {
         conpane = (u16*)wk->cp;
 
         for (i = 28; i < 38; i++) {
-            if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_22) && chainex_check[wk->wu.id][i - 20]) {
+            if ((wk->spmv_ng_flag2 & DIP2_CHAIN_INTO_SPECIAL_DISABLED) && chainex_check[wk->wu.id][i - 20]) {
                 continue;
             }
 
-            if (wk->cp->waza_flag[i] == -1) {
+            if (wk->cp->move_state_flags[i] == -1) {
                 continue;
             }
 
@@ -434,7 +436,7 @@ s32 check_special_attack(PLW* wk) {
                 continue;
             }
 
-            if (((wk->cp->btix[i] & 0xFF) == 0x80) || !wk->cp->waza_flag[i]) {
+            if (((wk->cp->btix[i] & 0xFF) == 0x80) || !wk->cp->move_state_flags[i]) {
                 continue;
             }
 
@@ -452,7 +454,7 @@ s32 check_special_attack(PLW* wk) {
                         continue;
                     }
 
-                    if ((wk->cp->btix[i] & 0x200) && (wk->spmv_ng_flag & DIP_UNKNOWN_28)) {
+                    if ((wk->cp->btix[i] & 0x200) && (wk->spmv_ng_flag & DIP_GROUND_SPECIAL_DISABLED)) {
                         continue;
                     }
 
@@ -473,14 +475,14 @@ s32 check_special_attack(PLW* wk) {
                             wk->sa->ex = -1;
                         }
                     }
-                } else if (wk->spmv_ng_flag & DIP_UNKNOWN_28) {
+                } else if (wk->spmv_ng_flag & DIP_GROUND_SPECIAL_DISABLED) {
                     continue;
                 }
 
                 setup_comm_back(&wk->wu);
                 wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(i)][j + (i - 28) * 4];
                 wk->wu.cg_cancel &= 0x40;
-                hissatsu_setup_union(wk, wk->cp->waza_r[i][j]);
+                hissatsu_setup_union(wk, wk->cp->move_state_timers[i][j]);
                 waza_flag_clear_only_1(wk->wu.id, i);
                 grade_add_command_waza(wk->wu.id);
                 chainex_check[wk->wu.id][i - 20] = 1;
@@ -500,11 +502,11 @@ s32 check_special_attack(PLW* wk) {
     conpane = (u16*)wk->cp;
 
     for (i = 46; i < 56; i++) {
-        if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_22) && chainex_check[wk->wu.id][i - 20]) {
+        if ((wk->spmv_ng_flag2 & DIP2_CHAIN_INTO_SPECIAL_DISABLED) && chainex_check[wk->wu.id][i - 20]) {
             continue;
         }
 
-        if (wk->cp->waza_flag[i] == -1) {
+        if (wk->cp->move_state_flags[i] == -1) {
             continue;
         }
 
@@ -517,7 +519,7 @@ s32 check_special_attack(PLW* wk) {
         }
 
         if ((wk->cp->btix[i] & 0xFF) != 0x80) {
-            if (!wk->cp->waza_flag[i]) {
+            if (!wk->cp->move_state_flags[i]) {
                 continue;
             }
 
@@ -535,7 +537,7 @@ s32 check_special_attack(PLW* wk) {
                         continue;
                     }
 
-                    if ((wk->cp->btix[i] & 0x200) && (wk->spmv_ng_flag & DIP_UNKNOWN_29)) {
+                    if ((wk->cp->btix[i] & 0x200) && (wk->spmv_ng_flag & DIP_AIR_SPECIAL_DISABLED)) {
                         continue;
                     }
 
@@ -556,14 +558,14 @@ s32 check_special_attack(PLW* wk) {
                             wk->sa->ex = -1;
                         }
                     }
-                } else if (wk->spmv_ng_flag & DIP_UNKNOWN_29) {
+                } else if (wk->spmv_ng_flag & DIP_AIR_SPECIAL_DISABLED) {
                     continue;
                 }
 
                 setup_comm_back(&wk->wu);
                 wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(i)][j + (i - 46) * 4];
                 wk->wu.cg_cancel &= 0x40;
-                hissatsu_setup_union(wk, wk->cp->waza_r[i][j]);
+                hissatsu_setup_union(wk, wk->cp->move_state_timers[i][j]);
                 waza_flag_clear_only_1(wk->wu.id, i);
                 grade_add_command_waza(wk->wu.id);
                 chainex_check[wk->wu.id][i - 20] = 1;
@@ -574,11 +576,11 @@ s32 check_special_attack(PLW* wk) {
             continue;
         }
 
-        if (wk->cp->waza_flag[i]) {
+        if (wk->cp->move_state_flags[i]) {
             setup_comm_back(&wk->wu);
             wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(i)][(i - 46) * 4];
             wk->wu.cg_cancel &= 0x40;
-            hissatsu_setup_union(wk, wk->cp->waza_r[i][0]);
+            hissatsu_setup_union(wk, wk->cp->move_state_timers[i][0]);
             waza_flag_clear_only_1(wk->wu.id, i);
             grade_add_command_waza(wk->wu.id);
             chainex_check[wk->wu.id][i - 20] = 1;
@@ -620,15 +622,15 @@ s32 check_leap_attack(PLW* wk) {
             return 0;
         }
 
-        if (wk->cp->sw_lvbt & 0xF) {
+        if (wk->cp->input_held & 0xF) {
             return 0;
         }
     } else {
-        if (wk->cp->waza_flag[14] == 0) {
+        if (wk->cp->move_state_flags[14] == 0) {
             return 0;
         }
 
-        if (!(wk->cp->sw_now & 0x770)) {
+        if (!(wk->cp->input_current & 0x770)) {
             return 0;
         }
     }
@@ -639,7 +641,7 @@ s32 check_leap_attack(PLW* wk) {
 
     setup_comm_back(&wk->wu);
     wk->as = &_asstbl_lv_D010[wk->player_number];
-    hissatsu_setup_union(wk, wk->cp->waza_r[14][0]);
+    hissatsu_setup_union(wk, wk->cp->move_state_timers[14][0]);
     return 1;
 }
 
@@ -650,7 +652,7 @@ s32 check_nm_attack(PLW* wk) {
 
     wk->permited_koa |= 4;
 
-    if ((kos = shot_data_convert(wk->cp->sw_now)) < 0) {
+    if ((kos = shot_data_convert(wk->cp->input_current)) < 0) {
         return 0;
     }
 
@@ -741,7 +743,7 @@ s32 check_nm_attack(PLW* wk) {
             return 0;
         }
 
-        if (wk->cp->sw_lvbt & 2) {
+        if (wk->cp->input_held & 2) {
             koa = waza_select(wk, kos, 1);
             wk->as = &_asstbl_lv_1010[wk->player_number][kos][koa];
         } else {
@@ -791,10 +793,10 @@ s32 check_chouhatsu(PLW* wk) {
     }
 
     if (wk->player_number == 6) {
-        if (wk->cp->sw_lvbt & 0xE) {
+        if (wk->cp->input_held & 0xE) {
             return 0;
         }
-    } else if (wk->cp->sw_lvbt & 0xF) {
+    } else if (wk->cp->input_held & 0xF) {
         return 0;
     }
 
@@ -822,11 +824,11 @@ s32 check_nagenuke_cmd(PLW* wk) {
         return 1;
     }
 
-    if ((wk->spmv_ng_flag2 & DIP2_THROW_BREAK_LOCKOUT_ENABLED) && (wk->cp->sw_lvbt & 3)) {
+    if ((wk->spmv_ng_flag2 & DIP2_THROW_BREAK_LOCKOUT_ENABLED) && (wk->cp->input_held & 3)) {
         return 0;
     }
 
-    if (wk->cp->sw_now & 0x660) {
+    if (wk->cp->input_current & 0x660) {
         return 0;
     }
 
@@ -858,10 +860,10 @@ s32 check_catch_attack(PLW* wk) {
         return 0;
     }
 
-    kos = ((wk->cp->sw_new & 4) != 0) + (((wk->cp->sw_new & 8) != 0) * 2);
+    kos = ((wk->cp->input_pressed & 4) != 0) + (((wk->cp->input_pressed & 8) != 0) * 2);
 
     if ((wk->wu.pat_status < 0xE) || (wk->wu.pat_status > 0x1E)) {
-        if (wk->cp->sw_lvbt & 3) {
+        if (wk->cp->input_held & 3) {
             return 0;
         }
 
@@ -998,11 +1000,11 @@ u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
 
     switch (cmd & 0xF000) {
     case 0x4000:
-        rnum = wk->cp->sw_new & lever;
+        rnum = wk->cp->input_pressed & lever;
         break;
 
     case 0x8000:
-        rnum = (lever == (wk->cp->sw_new & 0xF));
+        rnum = (lever == (wk->cp->input_pressed & 0xF));
         break;
 
     case 0x3000:
@@ -1010,14 +1012,14 @@ u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
         break;
 
     case 0x7000:
-        if ((wk->cp->sw_new & lever) && (cmd_ex_check(wk->wu.xyz[1].disp.pos, cmd_ex))) {
+        if ((wk->cp->input_pressed & lever) && (cmd_ex_check(wk->wu.xyz[1].disp.pos, cmd_ex))) {
             rnum = 1;
         }
 
         break;
 
     case 0xB000:
-        if ((lever == (wk->cp->sw_new & 0xF)) && (cmd_ex_check(wk->wu.xyz[1].disp.pos, cmd_ex))) {
+        if ((lever == (wk->cp->input_pressed & 0xF)) && (cmd_ex_check(wk->wu.xyz[1].disp.pos, cmd_ex))) {
             rnum = 1;
         }
 
@@ -1038,7 +1040,7 @@ u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
         break;
 
     case 0xA000:
-        if ((wk->wu.mvxy.a[1].sp > 0) && (lever == (wk->cp->sw_new & 0xF)) &&
+        if ((wk->wu.mvxy.a[1].sp > 0) && (lever == (wk->cp->input_pressed & 0xF)) &&
             (cmd_ex_check(wk->wu.xyz[1].disp.pos, cmd_ex))) {
             rnum = 1;
         }
@@ -1046,7 +1048,7 @@ u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
         break;
 
     case 0x9000:
-        if ((wk->wu.mvxy.a[1].sp <= 0) && (lever == (wk->cp->sw_new & 0xF)) &&
+        if ((wk->wu.mvxy.a[1].sp <= 0) && (lever == (wk->cp->input_pressed & 0xF)) &&
             (cmd_ex_check(wk->wu.xyz[1].disp.pos, cmd_ex))) {
             rnum = 1;
         }
@@ -1055,14 +1057,14 @@ u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
 
     case 0x6000:
         if ((wk->wu.mvxy.a[1].sp > 0) && (cmd_ex_check(wk->wu.xyz[1].disp.pos, cmd_ex))) {
-            rnum = wk->cp->sw_new & lever;
+            rnum = wk->cp->input_pressed & lever;
         }
 
         break;
 
     case 0x5000:
         if ((wk->wu.mvxy.a[1].sp <= 0) && (cmd_ex_check(wk->wu.xyz[1].disp.pos, cmd_ex))) {
-            rnum = wk->cp->sw_new & lever;
+            rnum = wk->cp->input_pressed & lever;
         }
 
         break;
@@ -1173,8 +1175,8 @@ s32 check_renda_cancel(PLW* wk) {
 
     wk->permited_koa |= 32;
 
-    if (wk->wu.pat_status == renda_status_table[(wk->cp->sw_new & 3)] &&
-        wk->current_attack == (wk->cp->sw_now & 0x770)) {
+    if (wk->wu.pat_status == renda_status_table[(wk->cp->input_pressed & 3)] &&
+        wk->current_attack == (wk->cp->input_current & 0x770)) {
         setup_comm_back(&wk->wu);
         wk->wu.cg_ix = wk->wu.cg_eftype * wk->wu.cgd_type - (wk->wu.cgd_type * 2);
         wk->wu.cg_next_ix = 0;
@@ -1226,7 +1228,7 @@ s32 check_meoshi_cancel(PLW* wk) {
 
     switch (tdat) {
     default:
-        wdat = cnmc_conv_data[wk->cp->sw_new & 0xF];
+        wdat = cnmc_conv_data[wk->cp->input_pressed & 0xF];
         tdat &= 0xF;
 
         while (1) {
@@ -1264,13 +1266,13 @@ s32 check_meoshi_cancel(PLW* wk) {
             break;
         }
 
-        wdat = wk->cp->sw_new & 0x770;
+        wdat = wk->cp->input_pressed & 0x770;
 
         if (wdat & ~tdat) {
             return 0;
         }
 
-        if (shot_data_convert(wk->cp->sw_now) >= 0) {
+        if (shot_data_convert(wk->cp->input_current) >= 0) {
             if ((wk->wu.cg_meoshi & 0x800)) {
                 break;
             }
@@ -1282,13 +1284,13 @@ s32 check_meoshi_cancel(PLW* wk) {
             return 0;
         }
 
-        wdat = wk->cp->sw_off & 0x770;
+        wdat = wk->cp->input_released & 0x770;
 
         if (wdat & ~tdat) {
             return 0;
         }
 
-        if (shot_data_convert(wk->cp->sw_off) < 0) {
+        if (shot_data_convert(wk->cp->input_released) < 0) {
             return 0;
         }
 
