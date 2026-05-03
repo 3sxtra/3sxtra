@@ -23,7 +23,7 @@
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect_04_projectile_object.h"
 #include "sf33rd/Source/Game/effect/effect_10_ui_screen_check_data.h"
-#include "sf33rd/Source/Game/effect/effect_18_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_18_visual_misc.h"
 #include "sf33rd/Source/Game/effect/effect_23_quake.h"
 #include "sf33rd/Source/Game/effect/effect_38_quake_base_xy.h"
 #include "sf33rd/Source/Game/effect/effect_39_quake.h"

@@ -22,7 +22,7 @@
 #include "sf33rd/Source/Game/effect/effect_b2_sound_collision.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effect_g0_quake_g_state_score_result.h"
-#include "sf33rd/Source/Game/effect/effect_j4_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_j4_suicide_handler.h"
 #include "sf33rd/Source/Game/ending/end_main.h"
 #include "sf33rd/Source/Game/engine/combo_window.h"
 #include "sf33rd/Source/Game/engine/grade.h"

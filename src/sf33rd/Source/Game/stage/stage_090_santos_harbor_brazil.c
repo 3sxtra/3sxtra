@@ -9,7 +9,7 @@
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/effect/effect_05_background.h"
 #include "sf33rd/Source/Game/effect/effect_06_data_screen_object.h"
-#include "sf33rd/Source/Game/effect/effect_68_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_68_simple_animation.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"

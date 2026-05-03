@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/effect/effect_g3_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_g3_suicide_handler.h"
 #include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 

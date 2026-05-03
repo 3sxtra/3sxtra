@@ -8,7 +8,7 @@
 #include "common.h"
 #include "game_state.h"
 #include "sf33rd/Source/Game/effect/effect_b2_sound_collision.h"
-#include "sf33rd/Source/Game/effect/effect_b9_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_b9_simple_animation.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"

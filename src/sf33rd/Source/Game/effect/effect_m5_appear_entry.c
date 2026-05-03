@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/effect/effect_m6_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_m6_simple_animation.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slow_motion.h"

@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect_i3_background_data.h"
 #include "sf33rd/Source/Game/effect/effect_k7_player_common.h"
-#include "sf33rd/Source/Game/effect/effect_l0_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_l0_suicide_handler.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/cmd_data.h"

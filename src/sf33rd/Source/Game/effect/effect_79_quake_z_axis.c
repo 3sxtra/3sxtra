@@ -8,7 +8,7 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
-#include "sf33rd/Source/Game/effect/effect_80_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_80_simple_animation.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/state_user.h"

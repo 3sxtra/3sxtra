@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/effect/effect_44_screen_object_multiple.h"
 #include "sf33rd/Source/Game/effect/effect_85_quake_character_index.h"
 #include "sf33rd/Source/Game/effect/effect_94_quake_multiple_tables.h"
-#include "sf33rd/Source/Game/effect/effect_i4_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_i4_simple_animation.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"

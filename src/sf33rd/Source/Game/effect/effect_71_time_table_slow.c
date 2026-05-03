@@ -6,7 +6,7 @@
 #include "sf33rd/Source/Game/effect/effect_71_time_table_slow.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/effect_72_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_72_simple_animation.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slow_motion.h"

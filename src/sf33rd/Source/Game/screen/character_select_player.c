@@ -25,7 +25,7 @@
 #include "sf33rd/Source/Game/effect/effect_58_sound_se_request.h"
 #include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h"
 #include "sf33rd/Source/Game/effect/effect_69_quake.h"
-#include "sf33rd/Source/Game/effect/effect_70_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_70_suicide_handler.h"
 #include "sf33rd/Source/Game/effect/effect_75_quake_link.h"
 #include "sf33rd/Source/Game/effect/effect_76_quake.h"
 #include "sf33rd/Source/Game/effect/effect_79_quake_z_axis.h"

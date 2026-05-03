@@ -1,6 +1,6 @@
 /**
  * @file ta_sub.c
- * subroutines for the background (TATE) system
+ * subroutines for the background (vertical) system
  */
 
 #include "sf33rd/Source/Game/stage/target_subroutines.h"

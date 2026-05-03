@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/animation/animation_lose_player.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/effect_c1_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect_c1_simple_animation.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"

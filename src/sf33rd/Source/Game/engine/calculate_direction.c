@@ -57,7 +57,7 @@ void add_pos_dir_064(State* wk, s16 sp) {
 // Target: CPU Branch Prediction (eliminates branching in hot distance paths).
 // Expected Impact: Reduces branch mispredictions during velocity applications.
 s16 cal_move_quantity2(s16 x1, s16 x2, s16 y1, s16 y2) {
-    s16 kakudo;
+    s16 angle;
     MS ms;
 
     y1 -= x1;
@@ -81,9 +81,9 @@ s16 cal_move_quantity2(s16 x1, s16 x2, s16 y1, s16 y2) {
     y1 >>= shift;
     y2 >>= shift;
 
-    kakudo = dir_sel_table[y1][y2];
-    ms.psi = (x1 * rate_256_table[kakudo][0]);
-    ms.psi += (x2 * rate_256_table[kakudo][1]);
+    angle = dir_sel_table[y1][y2];
+    ms.psi = (x1 * rate_256_table[angle][0]);
+    ms.psi += (x2 * rate_256_table[angle][1]);
     return ms.pss.h;
 }
 
