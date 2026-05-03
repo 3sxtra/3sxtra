@@ -245,6 +245,7 @@ static void resolve_advantage(TrainingPlayerState* self, TrainingPlayerState* op
 
 void update_training_state(void) {
     g_training_state.is_in_match = true; // Assuming we're in match when this updates
+    g_training_state.frame_number++;
 
     // Map P1
     update_player_state(&g_training_state.p1, &g_state.plw[0], &g_state.plw[1]);

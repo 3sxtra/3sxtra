@@ -1,31 +1,42 @@
 /* Frame Display — color-coded frame meter with stats */
 
-/* ── Main panel: centered, below life bars ── */
-#frame-panel {
+#frame-wrapper {
     display: block;
     position: absolute;
-    top: 10%;
-    left: 50%;
-    margin-left: -40%;
-    width: 80%;
-    padding: 2dp;
-    background-color: rgba(0, 0, 0, 178);
-    border-radius: 3dp;
+    bottom: 5%;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+#frame-panel {
+    display: inline-block;
+    padding: 8dp 12dp;
+    background-color: rgba(0, 0, 0, 200);
+    border-radius: 4dp;
+    text-align: left;
+}
+
+.player-row {
+    display: block;
+    margin-bottom: 2dp;
+    white-space: nowrap;
 }
 
 /* ── Frame bar container ── */
 .frame-bar {
-    display: block;
-    height: 6dp;
-    margin-bottom: 2dp;
+    display: inline-block;
+    height: 10dp;
+    margin-bottom: 4dp;
     white-space: nowrap;
+    vertical-align: middle;
 }
 
 /* ── Individual frame cell ── */
 .frame-cell {
     display: inline-block;
-    width: 3dp;
-    height: 6dp;
+    width: 4dp;
+    height: 10dp;
     margin-right: 1dp;
 }
 
@@ -54,10 +65,12 @@
 
 /* ── Stats text ── */
 .stats-text {
-    display: block;
-    font-size: 12dp;
-    color: rgba(255, 255, 255, 230);
-    padding: 1dp 0dp;
+    display: inline-block;
+    font-size: 11dp;
+    color: rgba(255, 255, 255, 240);
+    padding: 0dp 8dp;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 /* ── Advantage coloring ── */

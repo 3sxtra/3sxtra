@@ -182,8 +182,15 @@ extern "C" void rmlui_frame_display_update(void) {
     if (!s_model_handle)
         return;
 
-    // Only show frame meter during active fights — not on menus/title screen
-    s_visible = g_training_menu_settings.show_frame_meter && !show_training_menu && (g_state.Play_Game == 1);
+    // Only show frame meter during training mode — not on menus/title screen
+    bool is_in_training = Is_Training_Mode(g_state.Mode_Type);
+    s_visible = g_training_menu_settings.show_frame_meter && !show_training_menu && (g_state.Play_Game == 1 || is_in_training);
+
+    static int log_timer = 0;
+    if (log_timer++ % 60 == 0) {
+        SDL_Log("FrameMeter debug: s_visible=%d, show_frame_meter=%d, show_training_menu=%d, Play_Game=%d, Mode_Type=%d",
+                s_visible, g_training_menu_settings.show_frame_meter, show_training_menu, g_state.Play_Game, g_state.Mode_Type);
+    }
 
     // Show/hide document
     if (s_visible && !rmlui_wrapper_is_document_visible("frame_display")) {
