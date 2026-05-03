@@ -474,3 +474,20 @@
 | `demo/demo01.[c|h]` | `demo/demo_01_instruction.[c|h]` |
 | `demo/demo02.[c|h]` | `demo/demo_02_parry_tutorial.[c|h]` |
 | `demo/demo_dat.[c|h]` | `demo/demo_data.[c|h]` |
+
+## Phase 19: Miscellaneous Subsystems & Case Consistency
+
+| Legacy Identifier | Modern Semantic Identifier |
+| --- | --- |
+| `debug/OBJTEST.[c|h]` | `debug/object_test.[c|h]` |
+| `debug/OTESTDAT.[c|h]` | `debug/object_test_data.[c|h]` |
+| `debug/Deb_Data.[c|h]` | `debug/debug_data.[c|h]` |
+| `debug/Nakai.[c|h]` | `debug/debug_nakai_data.[c|h]` |
+| `opening/op_sub.[c|h]` | `opening/opening_subroutines.[c|h]` |
+| `animation/win_pl.[c|h]` | `animation/animation_win_player.[c|h]` |
+| `animation/lose_pl.[c|h]` | `animation/animation_lose_player.[c|h]` |
+| `menu/dir_data.[c|h]` | `menu/director_data.[c|h]` |
+| `menu/ex_data.[c|h]` | `menu/extra_data.[c|h]` |
+| `Common/MemMan.[c|h]` | `Common/memory_manager.[c|h]` |
+| `Common/PPGFile.[c|h]` | `Common/ppg_file.[c|h]` |
+| `Common/PPGWork.[c|h]` | `Common/ppg_work.[c|h]` |

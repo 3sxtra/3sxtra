@@ -11,7 +11,7 @@
 #include "common.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
-#include "sf33rd/Source/Common/PPGFile.h"
+#include "sf33rd/Source/Common/ppg_file.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/rendering_transform.h"
 #include "structs.h"
@@ -142,7 +142,7 @@ void Renderer_DrawTexturedQuadVtx(const RendererVertex* vertices, int count) {
     PortRenderer_DrawTexturedQuad(&sprite, vertices[0].color);
 }
 
-// Weak declaration for builds that don't link PPGFile.c (like test targets)
+// Weak declaration for builds that don't link ppg_file.c (like test targets)
 
 void PortRenderer_DrawSprite(const Sprite* sprite, unsigned int color) {
     // For PPG texture indices (small values 0-100), use ppgWriteQuadWithST_B2

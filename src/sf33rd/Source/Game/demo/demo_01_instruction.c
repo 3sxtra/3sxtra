@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/demo/demo_states.h"
 #include "sf33rd/Source/Game/io/afs_loader.h"
-#include "sf33rd/Source/Game/opening/op_sub.h"
+#include "sf33rd/Source/Game/opening/opening_subroutines.h"
 #include "sf33rd/Source/Game/opening/opening.h"
 
 #include "sf33rd/Source/Game/sound/sound_effects.h"

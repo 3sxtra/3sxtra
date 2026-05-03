@@ -13,7 +13,7 @@
 #include "sf33rd/AcrSDK/common/plcommon.h"
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
-#include "sf33rd/Source/Common/PPGFile.h"
+#include "sf33rd/Source/Common/ppg_file.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/afs_loader.h"
 #include "sf33rd/Source/Game/rendering/metamorphosis_color.h"

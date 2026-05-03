@@ -4,7 +4,7 @@
  */
 
 #include "port/sdl/renderer/sdl_game_renderer_gpu_lz77.h"
-#include "sf33rd/Source/Common/PPGFile.h"
+#include "sf33rd/Source/Common/ppg_file.h"
 #include "port/config/paths.h"
 #include <SDL3_shadercross/SDL_shadercross.h>
 #include <stdio.h>

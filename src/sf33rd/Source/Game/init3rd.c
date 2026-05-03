@@ -24,7 +24,7 @@
 #include "sf33rd/Source/Game/game.h"
 #include "sf33rd/Source/Game/io/afs_loader.h"
 #include "sf33rd/Source/Game/io/rumble.h"
-#include "sf33rd/Source/Game/menu/dir_data.h"
+#include "sf33rd/Source/Game/menu/director_data.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
 #include "sf33rd/Source/Game/rendering/texture_group.h"

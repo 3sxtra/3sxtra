@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/effect/effect_b6_message_debug_text.h"
 #include "common.h"
-#include "sf33rd/Source/Game/debug/OTESTDAT.h"
+#include "sf33rd/Source/Game/debug/object_test_data.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/message/en/msgtable_en.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"

@@ -9,7 +9,7 @@
  * Originally from the PS2 compression module.
  */
 #include "common.h"
-#include "sf33rd/Source/Common/MemMan.h"
+#include "sf33rd/Source/Common/memory_manager.h"
 #include "structs.h"
 
 struct internal_state {

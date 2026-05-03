@@ -8,7 +8,7 @@
  * Key globals:
  *   save_w[1].extra_option.contents[g_state.Menu_Page][row] — toggle values
  *   g_state.Menu_Page, g_state.Menu_Cursor_Y[0], Ex_Page_Data[], Ex_Title_Data[][],
- *   Ex_Letter_Data[][][] — data tables in ex_data.h / ex_data.c
+ *   Ex_Letter_Data[][][] — data tables in extra_data.h / extra_data.c
  */
 
 #include "port/sdl/rmlui/rmlui_extra_option.h"
@@ -20,7 +20,7 @@
 
 extern "C" {
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/menu/ex_data.h"
+#include "sf33rd/Source/Game/menu/extra_data.h"
 #include "structs.h"
 } // extern "C"
 

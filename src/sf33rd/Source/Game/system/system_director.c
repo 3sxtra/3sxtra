@@ -15,7 +15,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/menu/dir_data.h"
+#include "sf33rd/Source/Game/menu/director_data.h"
 #include "sf33rd/Source/Game/system/system_options.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 

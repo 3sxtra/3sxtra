@@ -1,5 +1,5 @@
 /**
- * @file win_pl.c
+ * @file animation_win_player.c
  * @brief Winning-character post-round animations.
  *
  * Per-character victory poses and special animations dispatched by
@@ -9,7 +9,7 @@
  * Part of the animation module.
  */
 
-#include "sf33rd/Source/Game/animation/win_pl.h"
+#include "sf33rd/Source/Game/animation/animation_win_player.h"
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect_30_object_etc3_character.h"

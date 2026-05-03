@@ -1,5 +1,5 @@
 /**
- * @file op_sub.c
+ * @file opening_subroutines.c
  * @brief Opening subroutines — texture release, tile rendering, palette copy.
  *
  * Helper routines used by the opening cinematic: releasing PPG textures,
@@ -9,12 +9,12 @@
  * Part of the opening module.
  */
 
-#include "sf33rd/Source/Game/opening/op_sub.h"
+#include "sf33rd/Source/Game/opening/opening_subroutines.h"
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
-#include "sf33rd/Source/Common/PPGFile.h"
-#include "sf33rd/Source/Common/PPGWork.h"
+#include "sf33rd/Source/Common/ppg_file.h"
+#include "sf33rd/Source/Common/ppg_work.h"
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"

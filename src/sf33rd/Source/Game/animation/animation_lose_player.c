@@ -1,5 +1,5 @@
 /**
- * @file lose_pl.c
+ * @file animation_lose_player.c
  * @brief Losing-character post-round animations.
  *
  * Dispatches per-character lose poses: standard KO idle, judge verdict,
@@ -8,7 +8,7 @@
  * Part of the animation module.
  */
 
-#include "sf33rd/Source/Game/animation/lose_pl.h"
+#include "sf33rd/Source/Game/animation/animation_lose_player.h"
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect_c1_visual_generic.h"

@@ -66,7 +66,7 @@ SPG_DAT spg_dat[2];
 // Removed duplicate found in vital.c
 // VIT vit[2];
 
-// Removed duplicates found in win_pl.c
+// Removed duplicates found in animation_win_player.c
 /*
 s16 win_free[2];
 s16 win_rno[2];

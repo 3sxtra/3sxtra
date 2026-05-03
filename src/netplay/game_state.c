@@ -24,7 +24,7 @@
  */
 #include "game_state.h"
 #include "sf33rd/Source/Game/animation/appear.h"
-#include "sf33rd/Source/Game/animation/win_pl.h"
+#include "sf33rd/Source/Game/animation/animation_win_player.h"
 #include "sf33rd/Source/Game/effect/effect_56_color_bonus.h"
 #include "sf33rd/Source/Game/effect/effect_b2_sound_collision.h"
 #include "sf33rd/Source/Game/effect/effect_b8_quake.h"

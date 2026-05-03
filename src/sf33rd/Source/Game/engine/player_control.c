@@ -9,7 +9,7 @@
 #include "constants.h"
 #include "main.h"
 #include "arcade/arcade_char_data.h"
-#include "sf33rd/Source/Game/animation/win_pl.h"
+#include "sf33rd/Source/Game/animation/animation_win_player.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect_00_judge_system.h"
 #include "sf33rd/Source/Game/effect/effect_01_parts_overlap.h"

@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
-#include "sf33rd/Source/Game/animation/win_pl.h"
+#include "sf33rd/Source/Game/animation/animation_win_player.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
