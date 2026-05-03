@@ -50,7 +50,7 @@ void Passive01_0002(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -58,7 +58,7 @@ void Passive01_0002(PLW* wk) {
         break;
 
     case 3:
-        EM_Term(wk, 0x7FFF, -1, 1, 1, -1);
+        Check_Enemy_Distance(wk, 0x7FFF, -1, 1, 1, -1);
         break;
 
     default:
@@ -114,7 +114,7 @@ void Passive01_0006(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, 0x7FFF, -1, 1, 1, -1);
+        Check_Enemy_Distance(wk, 0x7FFF, -1, 1, 1, -1);
         break;
 
     default:
@@ -142,7 +142,7 @@ void Passive01_0007(PLW* wk) {
 void Passive01_0008(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -258,7 +258,7 @@ void Passive01_0016(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -310,7 +310,7 @@ void Passive01_0018(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -430,7 +430,7 @@ void Passive01_0024(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -458,7 +458,7 @@ void Passive01_0025(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -490,7 +490,7 @@ void Passive01_0025(PLW* wk) {
 void Passive01_0026(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FB0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FB0, 6, 1, -1);
         break;
 
     case 1:
@@ -554,7 +554,7 @@ void Passive01_0029(PLW* wk) {
 void Passive01_0030(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F80, -0x7FB8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -0x7FB8, 6, 1, -1);
         break;
 
     case 1:
@@ -582,7 +582,7 @@ void Passive01_0031(PLW* wk) {
 void Passive01_0032(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0x2E, 0x2F, 0xFFFF, 0x59);
+        Check_Super_Art_Conditions(wk, 0x2E, 0x2F, 0xFFFF, 0x59);
         break;
 
     case 1:
@@ -598,7 +598,7 @@ void Passive01_0032(PLW* wk) {
 void Passive01_0033(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 6, 0x9D, 0x9D, 0x9E, 0x9E, 1);
+        AI_Random_Action_Select(wk, 6, 0x9D, 0x9D, 0x9E, 0x9E, 1);
         break;
 
     default:
@@ -650,7 +650,7 @@ void Passive01_0036(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 6, 0x42, 0x46, 0x4A, 0x4A, 1);
+        AI_Random_Action_Select(wk, 6, 0x42, 0x46, 0x4A, 0x4A, 1);
         break;
 
     default:
@@ -662,11 +662,11 @@ void Passive01_0036(PLW* wk) {
 void Passive01_0037(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FF8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FF8, 6, 1, -1);
         break;
 
     case 1:
-        Com_Random_Select(wk, 6, 0x9D, 0x9D, 0x9E, 0x9E, 1);
+        AI_Random_Action_Select(wk, 6, 0x9D, 0x9D, 0x9E, 0x9E, 1);
         break;
 
     default:
@@ -682,7 +682,7 @@ void Passive01_0038(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FD8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FD8, 6, 1, -1);
         break;
 
     case 2:
@@ -698,7 +698,7 @@ void Passive01_0038(PLW* wk) {
 void Passive01_0039(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FB8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FB8, 6, 1, -1);
         break;
 
     case 1:
@@ -714,7 +714,7 @@ void Passive01_0039(PLW* wk) {
 void Passive01_0040(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FF8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FF8, 6, 1, -1);
         break;
 
     case 1:
@@ -742,7 +742,7 @@ void Passive01_0041(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -0x7F80, -0x7FC0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -0x7FC0, 6, 1, -1);
         break;
 
     case 2:
@@ -770,7 +770,7 @@ void Passive01_0042(PLW* wk) {
 void Passive01_0043(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F80, -0x7FB0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -0x7FB0, 6, 1, -1);
         break;
 
     case 1:
@@ -790,7 +790,7 @@ void Passive01_0044(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FD8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FD8, 6, 1, -1);
         break;
 
     case 2:
@@ -806,7 +806,7 @@ void Passive01_0044(PLW* wk) {
 void Passive01_0045(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F80, -0x7FD8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -0x7FD8, 6, 1, -1);
         break;
 
     case 1:
@@ -866,7 +866,7 @@ void Passive01_0048(PLW* wk) {
 void Passive01_0049(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F80, -1, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -1, 6, 1, -1);
         break;
 
     case 1:
@@ -882,7 +882,7 @@ void Passive01_0049(PLW* wk) {
 void Passive01_0050(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F80, -1, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -1, 6, 1, -1);
         break;
 
     case 1:
@@ -1022,7 +1022,7 @@ void Passive01_0060(PLW* wk) {
 void Passive01_0061(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0xFFFF, 0x2F, 0xFFFF, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0x2F, 0xFFFF, 0);
         break;
 
     case 1:
@@ -1030,7 +1030,7 @@ void Passive01_0061(PLW* wk) {
         break;
 
     case 2:
-        SA_Term(wk, 0x2E, 0xFFFF, 0xFFFF, 0x59);
+        Check_Super_Art_Conditions(wk, 0x2E, 0xFFFF, 0xFFFF, 0x59);
         break;
 
     case 3:
@@ -1110,7 +1110,7 @@ void Passive01_0065(PLW* wk) {
         break;
 
     case 2:
-        Com_Random_Select(wk, 6, 0x42, 0x46, 0x4A, 0x4A, 1);
+        AI_Random_Action_Select(wk, 6, 0x42, 0x46, 0x4A, 0x4A, 1);
         break;
 
     case 3:
@@ -1202,7 +1202,7 @@ void Passive01_0071(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 6, 0x9D, 0x9D, 0x9E, 0x9E, 1);
+        AI_Random_Action_Select(wk, 6, 0x9D, 0x9D, 0x9E, 0x9E, 1);
         break;
 
     default:
@@ -1214,7 +1214,7 @@ void Passive01_0071(PLW* wk) {
 void Passive01_0072(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -1258,7 +1258,7 @@ void Passive01_0073(PLW* wk) {
 void Passive01_0074(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0x2E, 0x2F, 0x30, 0x59);
+        Check_Super_Art_Conditions(wk, 0x2E, 0x2F, 0x30, 0x59);
         break;
 
     case 1:
@@ -1278,7 +1278,7 @@ void Passive01_0074(PLW* wk) {
 void Passive01_0075(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0xFFFF, 0x2F, 0x30, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0x2F, 0x30, 0);
         break;
 
     case 1:
@@ -1286,7 +1286,7 @@ void Passive01_0075(PLW* wk) {
         break;
 
     case 2:
-        SA_Term(wk, 0x2E, 0xFFFF, 0xFFFF, 0x59);
+        Check_Super_Art_Conditions(wk, 0x2E, 0xFFFF, 0xFFFF, 0x59);
         break;
 
     case 3:
@@ -1306,7 +1306,7 @@ void Passive01_0075(PLW* wk) {
 void Passive01_0076(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0xFFFF, 0xFFFF, 0x30, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0xFFFF, 0x30, 0);
         break;
 
     case 1:
@@ -1482,7 +1482,7 @@ void Passive01_0085(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 6, 5, 9, 0x35, 1, 1);
+        AI_Random_Action_Select(wk, 6, 5, 9, 0x35, 1, 1);
         break;
 
     default:
@@ -1498,11 +1498,11 @@ void Passive01_0086(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FD8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FD8, 6, 1, -1);
         break;
 
     case 2:
-        SA_Term(wk, 0x2E, 0xFFFF, 0xFFFF, 0x59);
+        Check_Super_Art_Conditions(wk, 0x2E, 0xFFFF, 0xFFFF, 0x59);
         break;
 
     case 3:
@@ -1526,11 +1526,11 @@ void Passive01_0087(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FD8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FD8, 6, 1, -1);
         break;
 
     case 2:
-        SA_Term(wk, 0x2E, 0x2F, 0xFFFF, 0x59);
+        Check_Super_Art_Conditions(wk, 0x2E, 0x2F, 0xFFFF, 0x59);
         break;
 
     case 3:
@@ -1550,11 +1550,11 @@ void Passive01_0087(PLW* wk) {
 void Passive01_0088(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FA0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FA0, 6, 1, -1);
         break;
 
     case 1:
-        SA_Term(wk, 0xFFFF, 0xFFFF, 0x30, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0xFFFF, 0x30, 0);
         break;
 
     case 2:
@@ -1610,7 +1610,7 @@ void Passive01_0092(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FA0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FA0, 6, 1, -1);
         break;
 
     case 2:
@@ -1678,7 +1678,7 @@ void Passive01_0096(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -0x7F80, -0x7FD8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -0x7FD8, 6, 1, -1);
         break;
 
     case 2:
@@ -1698,11 +1698,11 @@ void Passive01_0097(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FF8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FF8, 6, 1, -1);
         break;
 
     case 2:
-        Com_Random_Select(wk, 6, 0x9D, 0x9D, 0x9E, 0x9E, 1);
+        AI_Random_Action_Select(wk, 6, 0x9D, 0x9D, 0x9E, 0x9E, 1);
         break;
 
     default:
@@ -1718,7 +1718,7 @@ void Passive01_0098(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FC0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FC0, 6, 1, -1);
         break;
 
     case 2:
@@ -1726,7 +1726,7 @@ void Passive01_0098(PLW* wk) {
         break;
 
     case 3:
-        Com_Random_Select(wk, 6, 0x42, 0x46, 0x4A, 0x4A, 1);
+        AI_Random_Action_Select(wk, 6, 0x42, 0x46, 0x4A, 0x4A, 1);
         break;
 
     default:
@@ -1766,7 +1766,7 @@ void Passive01_0100(PLW* wk) {
         break;
 
     case 2:
-        SA_Term(wk, 0xFFFF, 0x2F, 0x30, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0x2F, 0x30, 0);
         break;
 
     case 3:
@@ -1786,7 +1786,7 @@ void Passive01_0101(PLW* wk) {
         break;
 
     case 1:
-        SA_Term(wk, 0x2E, 0x2F, 0x30, 0x59);
+        Check_Super_Art_Conditions(wk, 0x2E, 0x2F, 0x30, 0x59);
         break;
 
     case 2:
@@ -1802,7 +1802,7 @@ void Passive01_0101(PLW* wk) {
 void Passive01_0102(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F80, -1, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -1, 6, 1, -1);
         break;
 
     case 1:
@@ -1902,7 +1902,7 @@ void Passive01_0109(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -1942,7 +1942,7 @@ void Passive01_0110(PLW* wk) {
 void Passive01_0111(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FB0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FB0, 6, 1, -1);
         break;
 
     case 1:
@@ -1950,7 +1950,7 @@ void Passive01_0111(PLW* wk) {
         break;
 
     case 2:
-        Com_Random_Select(wk, 6, 0x4B, 0x36, 0x3B, 0x70, 1);
+        AI_Random_Action_Select(wk, 6, 0x4B, 0x36, 0x3B, 0x70, 1);
         break;
 
     default:
@@ -1978,7 +1978,7 @@ void Passive01_0113(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 6, 0x4B, 0x36, 0x3B, 0x70, 1);
+        AI_Random_Action_Select(wk, 6, 0x4B, 0x36, 0x3B, 0x70, 1);
         break;
 
     default:
@@ -1990,7 +1990,7 @@ void Passive01_0113(PLW* wk) {
 void Passive01_0114(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FB0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FB0, 6, 1, -1);
         break;
 
     case 1:
@@ -2058,7 +2058,7 @@ void Passive01_0119(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FD0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FD0, 6, 1, -1);
         break;
 
     case 2:
@@ -2150,7 +2150,7 @@ void Passive01_0125(PLW* wk) {
 void Passive01_0126(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, 0x30, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, 0x30, 6, 1, -1);
         break;
 
     case 1:
@@ -2302,7 +2302,7 @@ void Passive01_0136(PLW* wk) {
 void Passive01_0137(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FB0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FB0, 6, 1, -1);
         break;
 
     case 1:
@@ -2358,7 +2358,7 @@ void Passive01_0140(PLW* wk) {
 void Passive01_0141(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FB0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FB0, 6, 1, -1);
         break;
 
     case 1:
@@ -2390,7 +2390,7 @@ void Passive01_0143(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 6, 0x85, 0x86, 0x7F, 0x70, 1);
+        AI_Random_Action_Select(wk, 6, 0x85, 0x86, 0x7F, 0x70, 1);
         break;
 
     default:
@@ -2406,11 +2406,11 @@ void Passive01_0144(PLW* wk) {
         break;
 
     case 1:
-        SA_Term(wk, 0x2E, 0x2F, 0x30, 0x59);
+        Check_Super_Art_Conditions(wk, 0x2E, 0x2F, 0x30, 0x59);
         break;
 
     case 2:
-        Com_Random_Select(wk, 6, 0x85, 0x86, 0x7F, 0x70, 1);
+        AI_Random_Action_Select(wk, 6, 0x85, 0x86, 0x7F, 0x70, 1);
         break;
 
     default:
@@ -2426,11 +2426,11 @@ void Passive01_0145(PLW* wk) {
         break;
 
     case 1:
-        SA_Term(wk, 0xFFFF, 0xFFFF, 0x30, 0xFFFF);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0xFFFF, 0x30, 0xFFFF);
         break;
 
     case 2:
-        Com_Random_Select(wk, 6, 0x85, 0x73, 0x92, 0x93, 1);
+        AI_Random_Action_Select(wk, 6, 0x85, 0x73, 0x92, 0x93, 1);
         break;
 
     default:
@@ -2446,7 +2446,7 @@ void Passive01_0146(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -2546,7 +2546,7 @@ void Passive01_0151(PLW* wk) {
 void Passive01_0152(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F70, -1, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F70, -1, 6, 1, -1);
         break;
 
     case 1:
@@ -2566,7 +2566,7 @@ void Passive01_0152(PLW* wk) {
 void Passive01_0153(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F70, -1, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F70, -1, 6, 1, -1);
         break;
 
     case 1:
@@ -2582,7 +2582,7 @@ void Passive01_0153(PLW* wk) {
 void Passive01_0154(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F70, -1, 6, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F70, -1, 6, 1, -1);
         break;
 
     case 1:
@@ -2774,7 +2774,7 @@ void Passive01_0163(PLW* wk) {
 void Passive01_0164(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -0x7F80, -1, 0, 1, -1);
+        Check_Enemy_Distance(wk, -0x7F80, -1, 0, 1, -1);
         break;
 
     case 1:
@@ -2838,7 +2838,7 @@ void Passive01_0168(PLW* wk) {
 void Passive01_0169(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FC0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FC0, 6, 1, -1);
         break;
 
     case 1:
@@ -2854,7 +2854,7 @@ void Passive01_0169(PLW* wk) {
 void Passive01_0170(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FC0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FC0, 6, 1, -1);
         break;
 
     case 1:
@@ -2934,7 +2934,7 @@ void Passive01_0175(PLW* wk) {
         break;
 
     case 1:
-        SA_Term(wk, 0x2E, 0x2F, 0x30, -1);
+        Check_Super_Art_Conditions(wk, 0x2E, 0x2F, 0x30, -1);
         break;
 
     case 2:

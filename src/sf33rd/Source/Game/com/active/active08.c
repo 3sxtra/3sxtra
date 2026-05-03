@@ -95,7 +95,7 @@ static void Pattern08_0004(PLW* wk) {
         break;
 
     case 2:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 3:
@@ -147,7 +147,7 @@ static void Pattern08_0007(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -355,7 +355,7 @@ static void Pattern08_0018(PLW* wk) {
 static void Pattern08_0019(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, 0x70, -1, 0, 2, 5);
+        Check_Enemy_Distance(wk, 0x70, -1, 0, 2, 5);
         break;
 
     case 1:
@@ -607,7 +607,7 @@ static void Pattern08_0034(PLW* wk) {
         break;
 
     case 3:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 4:
@@ -667,11 +667,11 @@ static void Pattern08_0037(PLW* wk) {
 static void Pattern08_0038(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0x39, 0x3A, 0xFFFF, 0);
+        Check_Super_Art_Conditions(wk, 0x39, 0x3A, 0xFFFF, 0);
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -913,7 +913,7 @@ static void Pattern08_0052(PLW* wk) {
 static void Pattern08_0053(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -949,7 +949,7 @@ static void Pattern08_0055(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -981,7 +981,7 @@ static void Pattern08_0056(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -997,7 +997,7 @@ static void Pattern08_0056(PLW* wk) {
         break;
 
     case 5:
-        SA_Term(wk, -1, -1, 0x3b, 0);
+        Check_Super_Art_Conditions(wk, -1, -1, 0x3b, 0);
         break;
 
     default:
@@ -1057,7 +1057,7 @@ static void Pattern08_0061(PLW* wk) {
         break;
 
     case 1:
-        SA_Term(wk, 0xFFFF, 0xFFFF, 0x3B, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0xFFFF, 0x3B, 0);
         break;
 
     default:
@@ -1069,7 +1069,7 @@ static void Pattern08_0061(PLW* wk) {
 static void Pattern08_0062(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0x39, 0x3A, 0xFFFF, 0);
+        Check_Super_Art_Conditions(wk, 0x39, 0x3A, 0xFFFF, 0);
         break;
 
     default:

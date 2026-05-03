@@ -55,9 +55,9 @@ void Turn_Over_On(PLW* wk);
 void Only_Shot(PLW* wk, s16 Lever_Data);
 void Lever_On(PLW* wk, u16 LR_Lever, u16 UD_Lever);
 void Lever_Off(PLW* wk);
-void Pierce_On(PLW* wk);
+void Enable_Overhead_Attack_Flag(PLW* wk);
 void Setup_DENJIN_LEVEL(PLW* wk);
-void Push_Shot(PLW* wk, s16 Power_Level);
+void Hold_Attack_Button(PLW* wk, s16 Power_Level);
 s32 Check_Exit_DENJIN(PLW* wk);
 void Keep_Away(PLW* wk, s16 Target_Pos, s16 Option);
 void Setup_KA_Jump(PLW* wk);
@@ -78,7 +78,7 @@ void Lever_Attack(PLW* wk, s16 Reaction, u16 Lever, u16 Lever_Data);
 void Lever_Attack_SP(PLW* wk, s16 Reaction, u16 Lever, u16 Lever_Data, s16 Time);
 s32 Setup_Guard_Lever(PLW* wk, u16 Lever);
 s32 Check_Start_Lever_Attack(PLW* wk, u16 Lever, u16 Lever_Data); // extra args
-void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 arg_Term_No);
+void Check_Super_Art_Conditions(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 arg_Term_No);
 s32 DENJIN_Check(PLW* wk, u16 SA2, u16* xx, u16 arg_Term_No);
 s32 YAGYOU_Check(PLW* wk, s16* xx, u16 arg_Term_No);
 s32 SA_Range_Check(PLW* wk, s16 SA_No, u16 Range);
@@ -86,7 +86,7 @@ void Check_SA(PLW* wk, s16 Next_Action, s16 Next_Menu);
 void Check_EX(PLW* wk, s16 Next_Action, s16 Next_Menu);
 void Check_SA_Full(PLW* wk, s16 Next_Action, s16 Next_Menu);
 void Branch_Unit_Area(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03);
-void Com_Random_Select(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03, s16 Rnd_Type);
+void AI_Random_Action_Select(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03, s16 Rnd_Type);
 void Branch_Wait_Area(PLW* wk, s16 Time_00, s16 Time_01, s16 Time_02, s16 Time_03);
 void Wait(PLW* wk, s16 Time); // unused arg
 void Look(PLW* wk, s16 Time);
@@ -98,8 +98,8 @@ s32 Check_Wait_Term(PLW* wk, s16 Option);
 void Wait_Attack_Complete(PLW* wk, u16 Lever_Data, s16 Option);
 s32 Check_Exit_Guard(PLW* wk, s16 Option);
 void Short_Range_Attack(PLW* wk, s16 Reaction, u16 Lever_Data, s16 Next_Action, s16 Next_Menu);
-void EM_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Exit_Number, s16 Next_Action, s16 Next_Menu);
-void SHELL_Term(PLW* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu, s16 unused); // unused arg
+void Check_Enemy_Distance(PLW* wk, s16 Range_X, s16 Range_Y, s16 Exit_Number, s16 Next_Action, s16 Next_Menu);
+void Check_Projectile_Impact_Time(PLW* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu, s16 unused); // unused arg
 s32 Check_Term_Sub_Air(PLW* wk, s16 Distance, s16 Range);
 s32 Check_Term_Sub(PLW* wk, s16 Distance, s16 Range);
 s32 Correct_Unit_PL(PLW* wk);
@@ -166,7 +166,7 @@ s32 Ck_Distance_Height(PLW* wk);
 s32 Ck_Area(PLW* wk);
 s32 Ck_Area_Shell(PLW* wk);
 void Ck_Distance_Lv(PLW* wk);
-void Ck_Distance_LvJ(PLW* wk);
+void Check_Jump_Distance_Level(PLW* wk);
 void Next_End(PLW* wk);
 void Next_Another_Menu(PLW* wk, s16 Next_Action, u16 Next_Menu);
 void Reaction_Sub(PLW* wk, s16 Reaction, s16 Power_Level);
@@ -278,7 +278,7 @@ void Lever_Off(PLW* wk) {
 }
 
 /** @brief Enable the pierce/overhead attack flag (unblockable move setup). */
-void Pierce_On(PLW* wk) {
+void Enable_Overhead_Attack_Flag(PLW* wk) {
     g_state.Disposal_Again[wk->wu.id] = 1;
     g_state.CP_Index[wk->wu.id][0]++;
     g_state.Pierce_Menu[wk->wu.id] = 1;
@@ -298,7 +298,7 @@ void Setup_DENJIN_LEVEL(PLW* wk) {
 }
 
 /** @brief Press attack button(s) at the specified power level. */
-void Push_Shot(PLW* wk, s16 Power_Level) {
+void Hold_Attack_Button(PLW* wk, s16 Power_Level) {
     s16 xx;
 
     switch (g_state.CP_Index[wk->wu.id][1]) {
@@ -958,7 +958,7 @@ s32 Check_Start_Lever_Attack(PLW* wk, u16 Lever, u16 Lever_Data) {
 }
 
 /** @brief Set up a super art (SA) attack with SA meter and range checking. */
-void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 arg_Term_No) {
+void Check_Super_Art_Conditions(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 arg_Term_No) {
     s16 xx[3];
 
     if (((g_state.Passive_Flag[wk->wu.id]) == 0) && (Check_Passive(wk) != 0)) {
@@ -1155,7 +1155,7 @@ void Branch_Unit_Area(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Me
 }
 
 /** @brief Randomly select one of four menus based on difficulty-weighted RNG. */
-void Com_Random_Select(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03, s16 Rnd_Type) {
+void AI_Random_Action_Select(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03, s16 Rnd_Type) {
     s16 xx[4];
     s16 zz;
 
@@ -1525,7 +1525,7 @@ void Short_Range_Attack(PLW* wk, s16 Reaction, u16 Lever_Data, s16 Next_Action, 
             g_state.CP_Index[wk->wu.id][1]++;
             Check_First_Menu(wk);
 
-            Ck_Distance_LvJ(wk);
+            Check_Jump_Distance_Level(wk);
             xx = get_nearing_range(wk->player_number, xx = Lever_Data & 0xFF0);
             if (g_state.PL_Distance[wk->wu.id] > xx) {
                 Next_Another_Menu(wk, Next_Action, Next_Menu);
@@ -1553,7 +1553,7 @@ void Short_Range_Attack(PLW* wk, s16 Reaction, u16 Lever_Data, s16 Next_Action, 
 }
 
 /** @brief Check enemy distance and decide: attack, follow-up menu, or exit. */
-void EM_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Exit_Number, s16 Next_Action, s16 Next_Menu) {
+void Check_Enemy_Distance(PLW* wk, s16 Range_X, s16 Range_Y, s16 Exit_Number, s16 Next_Action, s16 Next_Menu) {
     WORK* em;
 
     em = (WORK*)wk->wu.target_adrs;
@@ -1619,7 +1619,7 @@ void EM_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Exit_Number, s16 Next_Action
 }
 
 /** @brief Check projectile distance and decide: dodge, guard, or counter. */
-void SHELL_Term(PLW* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu, s16 unused) {
+void Check_Projectile_Impact_Time(PLW* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu, s16 unused) {
     WORK* em;
     WORK_Other* tmw;
     s16 xx;
@@ -3923,7 +3923,7 @@ s32 Check_Hit_Shell(PLW* wk, WORK_Other* tmw, u16 Tech_Number) {
 void Jump_Init(PLW* wk, s16 Jump_Dir) {
     switch (Jump_Dir) {
     case 0:
-        Ck_Distance_LvJ(wk);
+        Check_Jump_Distance_Level(wk);
         g_state.Lever_Buff[wk->wu.id] = g_state.Lever_Pool[wk->wu.id];
         break;
     case 2:
@@ -3932,7 +3932,7 @@ void Jump_Init(PLW* wk, s16 Jump_Dir) {
         break;
 
     default:
-        Ck_Distance_LvJ(wk);
+        Check_Jump_Distance_Level(wk);
         g_state.Lever_Pool[wk->wu.id] ^= 0xC;
         g_state.Lever_Buff[wk->wu.id] = g_state.Lever_Pool[wk->wu.id];
         break;
@@ -4339,7 +4339,7 @@ void Ck_Distance_Lv(PLW* wk) {
 }
 
 /** @brief  */
-void Ck_Distance_LvJ(PLW* wk) {
+void Check_Jump_Distance_Level(PLW* wk) {
     g_state.PL_Distance[wk->wu.id] = ((WORK*)wk->wu.target_adrs)->xyz[0].disp.pos - wk->wu.xyz[0].disp.pos;
 
     if (g_state.PL_Distance[wk->wu.id] > 0) {

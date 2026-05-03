@@ -111,7 +111,7 @@ static void Pattern06_0007(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FFC, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FFC, 6, 1, -1);
         break;
 
     case 2:
@@ -131,7 +131,7 @@ static void Pattern06_0008(PLW* wk) {
         break;
 
     case 1:
-        EM_Term(wk, -1, -0x7FFC, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FFC, 6, 1, -1);
         break;
 
     case 2:
@@ -271,7 +271,7 @@ static void Pattern06_0017(PLW* wk) {
 static void Pattern06_0018(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FB8, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FB8, 6, 1, -1);
         break;
 
     case 1:
@@ -566,7 +566,7 @@ static void Pattern06_0041(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -590,7 +590,7 @@ static void Pattern06_0042(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -662,7 +662,7 @@ static void Pattern06_0046(PLW* wk) {
 static void Pattern06_0047(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -686,7 +686,7 @@ static void Pattern06_0047(PLW* wk) {
 static void Pattern06_0048(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -718,7 +718,7 @@ static void Pattern06_0049(PLW* wk) {
 static void Pattern06_0050(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -798,7 +798,7 @@ static void Pattern06_0054(PLW* wk) {
 static void Pattern06_0055(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 2, 0x2F, 0x30, 0x35, 0x36, 1);
+        AI_Random_Action_Select(wk, 2, 0x2F, 0x30, 0x35, 0x36, 1);
         break;
 
     default:
@@ -914,7 +914,7 @@ static void Pattern06_0062(PLW* wk) {
 static void Pattern06_0063(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 2, 0x3A, 0x3A, 0x3A, 0x36, 5);
+        AI_Random_Action_Select(wk, 2, 0x3A, 0x3A, 0x3A, 0x36, 5);
         break;
 
     default:

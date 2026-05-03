@@ -27,7 +27,7 @@ static void Shell11_0000(PLW* wk) {
 static void Shell11_0001(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SHELL_Term(wk, 1, 2, 1, -1, -1);
+        Check_Projectile_Impact_Time(wk, 1, 2, 1, -1, -1);
         break;
 
     case 1:
@@ -43,7 +43,7 @@ static void Shell11_0001(PLW* wk) {
 static void Shell11_0002(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SHELL_Term(wk, 0, 2, 1, -1, -1);
+        Check_Projectile_Impact_Time(wk, 0, 2, 1, -1, -1);
         break;
 
     case 1:
@@ -59,7 +59,7 @@ static void Shell11_0002(PLW* wk) {
 static void Shell11_0003(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SHELL_Term(wk, 0, 2, 1, -1, -1);
+        Check_Projectile_Impact_Time(wk, 0, 2, 1, -1, -1);
         break;
 
     case 1:
@@ -83,7 +83,7 @@ static void Shell11_0003(PLW* wk) {
 static void Shell11_0004(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SHELL_Term(wk, 0, 2, 1, -1, -1);
+        Check_Projectile_Impact_Time(wk, 0, 2, 1, -1, -1);
         break;
 
     case 1:
@@ -103,7 +103,7 @@ static void Shell11_0004(PLW* wk) {
 static void Shell11_0005(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SHELL_Term(wk, 0, 2, 1, -1, -1);
+        Check_Projectile_Impact_Time(wk, 0, 2, 1, -1, -1);
         break;
 
     case 1:
@@ -123,7 +123,7 @@ static void Shell11_0005(PLW* wk) {
 static void Shell11_0006(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SHELL_Term(wk, 1, 2, 1, -1, -1);
+        Check_Projectile_Impact_Time(wk, 1, 2, 1, -1, -1);
         break;
 
     case 1:
@@ -151,7 +151,7 @@ static void Shell11_0007(PLW* wk) {
 static void Shell11_0008(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SHELL_Term(wk, 0, 2, 1, -1, -1);
+        Check_Projectile_Impact_Time(wk, 0, 2, 1, -1, -1);
         break;
 
     case 1:
@@ -175,7 +175,7 @@ static void Shell11_0009(PLW* wk) {
         break;
 
     case 1:
-        SHELL_Term(wk, 2, 2, 1, -1, -1);
+        Check_Projectile_Impact_Time(wk, 2, 2, 1, -1, -1);
         break;
 
     case 2:

@@ -119,7 +119,7 @@ static void Pattern02_0006(PLW* wk) {
 static void Pattern02_0007(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -275,7 +275,7 @@ static void Pattern02_0018(PLW* wk) {
 static void Pattern02_0019(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, 0x88, -1, 0, 2, 5);
+        Check_Enemy_Distance(wk, 0x88, -1, 0, 2, 5);
         break;
 
     case 1:
@@ -291,7 +291,7 @@ static void Pattern02_0019(PLW* wk) {
 static void Pattern02_0020(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 2, 0x41, 0x42, 0x43, 0x44, 1);
+        AI_Random_Action_Select(wk, 2, 0x41, 0x42, 0x43, 0x44, 1);
         break;
 
     default:
@@ -707,7 +707,7 @@ static void Pattern02_0047(PLW* wk) {
 static void Pattern02_0048(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, 0x50, -1, 5, 2, 0);
+        Check_Enemy_Distance(wk, 0x50, -1, 5, 2, 0);
         break;
 
     case 1:
@@ -727,7 +727,7 @@ static void Pattern02_0048(PLW* wk) {
         break;
 
     case 5:
-        SA_Term(wk, 0x35, 0x36, 0x37, 0x47);
+        Check_Super_Art_Conditions(wk, 0x35, 0x36, 0x37, 0x47);
         break;
 
     default:
@@ -755,7 +755,7 @@ static void Pattern02_0049(PLW* wk) {
         break;
 
     case 4:
-        SA_Term(wk, 0x35, 0x36, 0x37, 0x47);
+        Check_Super_Art_Conditions(wk, 0x35, 0x36, 0x37, 0x47);
         break;
 
     default:
@@ -855,7 +855,7 @@ static void Pattern02_0057(PLW* wk) {
         break;
 
     case 1:
-        Push_Shot(wk, 5);
+        Hold_Attack_Button(wk, 5);
         break;
 
     default:
@@ -871,7 +871,7 @@ static void Pattern02_0058(PLW* wk) {
         break;
 
     case 1:
-        Push_Shot(wk, 0xB);
+        Hold_Attack_Button(wk, 0xB);
         break;
 
     default:
@@ -887,7 +887,7 @@ static void Pattern02_0059(PLW* wk) {
         break;
 
     case 1:
-        Push_Shot(wk, 0x10);
+        Hold_Attack_Button(wk, 0x10);
         break;
 
     default:
@@ -903,7 +903,7 @@ static void Pattern02_0060(PLW* wk) {
         break;
 
     case 1:
-        Push_Shot(wk, 0xFF);
+        Hold_Attack_Button(wk, 0xFF);
         break;
 
     default:
@@ -922,11 +922,11 @@ static void Pattern02_0061(PLW* wk) {
 static void Pattern02_0062(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0x35, 0x36, 0xFFFF, 0x47);
+        Check_Super_Art_Conditions(wk, 0x35, 0x36, 0xFFFF, 0x47);
         break;
 
     case 1:
-        SA_Term(wk, 0xFFFF, 0xFFFF, 0x19, 0x3C);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0xFFFF, 0x19, 0x3C);
         break;
 
     default:
@@ -966,7 +966,7 @@ static void Pattern02_0064(PLW* wk) {
         break;
 
     case 4:
-        SA_Term(wk, 0x35, 0x36, 0x37, 0);
+        Check_Super_Art_Conditions(wk, 0x35, 0x36, 0x37, 0);
         break;
 
     default:

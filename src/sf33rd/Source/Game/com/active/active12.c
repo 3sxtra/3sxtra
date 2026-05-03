@@ -379,7 +379,7 @@ static void Pattern12_0027(PLW* wk) {
 static void Pattern12_0028(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -387,7 +387,7 @@ static void Pattern12_0028(PLW* wk) {
         break;
 
     case 2:
-        Com_Random_Select(wk, 6, 2, 4, 0x20, 0xA, 4);
+        AI_Random_Action_Select(wk, 6, 2, 4, 0x20, 0xA, 4);
         break;
 
     default:
@@ -399,7 +399,7 @@ static void Pattern12_0028(PLW* wk) {
 static void Pattern12_0029(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -407,7 +407,7 @@ static void Pattern12_0029(PLW* wk) {
         break;
 
     case 2:
-        Com_Random_Select(wk, 6, 2, 4, 0, 0xD, 3);
+        AI_Random_Action_Select(wk, 6, 2, 4, 0, 0xD, 3);
         break;
 
     default:
@@ -423,7 +423,7 @@ static void Pattern12_0030(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 6, 0x11, 0, 0x10, 0x2F, 3);
+        AI_Random_Action_Select(wk, 6, 0x11, 0, 0x10, 0x2F, 3);
         break;
 
     default:
@@ -439,7 +439,7 @@ static void Pattern12_0031(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 6, 0x11, 0, 0x24, 0x23, 3);
+        AI_Random_Action_Select(wk, 6, 0x11, 0, 0x24, 0x23, 3);
         break;
 
     default:
@@ -471,7 +471,7 @@ static void Pattern12_0033(PLW* wk) {
         break;
 
     case 1:
-        SA_Term(wk, 0x30, 0x31, 0x32, 0);
+        Check_Super_Art_Conditions(wk, 0x30, 0x31, 0x32, 0);
         break;
 
     case 2:
@@ -559,7 +559,7 @@ static void Pattern12_0038(PLW* wk) {
         break;
 
     case 3:
-        Com_Random_Select(wk, 6, 0, 0xA, 0x13, 0x1F, 0);
+        AI_Random_Action_Select(wk, 6, 0, 0xA, 0x13, 0x1F, 0);
         break;
 
     default:
@@ -579,7 +579,7 @@ static void Pattern12_0039(PLW* wk) {
         break;
 
     case 2:
-        SA_Term(wk, 0x30, 0x31, 0x32, 0);
+        Check_Super_Art_Conditions(wk, 0x30, 0x31, 0x32, 0);
         break;
 
     case 3:
@@ -635,7 +635,7 @@ static void Pattern12_0042(PLW* wk) {
         break;
 
     case 1:
-        SA_Term(wk, 0x30, 0x31, 0x32, 0);
+        Check_Super_Art_Conditions(wk, 0x30, 0x31, 0x32, 0);
         break;
 
     case 2:
@@ -723,7 +723,7 @@ static void Pattern12_0046(PLW* wk) {
         break;
 
     case 4:
-        SA_Term(wk, 0x30, 0x31, 0x32, 0);
+        Check_Super_Art_Conditions(wk, 0x30, 0x31, 0x32, 0);
         break;
 
     default:
@@ -735,7 +735,7 @@ static void Pattern12_0046(PLW* wk) {
 static void Pattern12_0047(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -803,7 +803,7 @@ static void Pattern12_0051(PLW* wk) {
 static void Pattern12_0052(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -903,7 +903,7 @@ static void Pattern12_0057(PLW* wk) {
         break;
 
     case 5:
-        Com_Random_Select(wk, 6, 0x2d, 0xff, 0xff, 0xff, 0);
+        AI_Random_Action_Select(wk, 6, 0x2d, 0xff, 0xff, 0xff, 0);
         break;
 
     default:
@@ -1139,7 +1139,7 @@ static void Pattern12_0072(PLW* wk) {
         break;
 
     case 4:
-        SA_Term(wk, 0x30, 0x31, 0x32, 0);
+        Check_Super_Art_Conditions(wk, 0x30, 0x31, 0x32, 0);
         break;
 
     default:
@@ -1175,7 +1175,7 @@ static void Pattern12_0074(PLW* wk) {
         break;
 
     case 1:
-        SA_Term(wk, 0xFFFF, 0x31, 0xFFFF, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0x31, 0xFFFF, 0);
         break;
 
     case 2:
@@ -1199,7 +1199,7 @@ static void Pattern12_0075(PLW* wk) {
         break;
 
     case 2:
-        SA_Term(wk, 0xFFFF, 0x30, 0xFFFF, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0x30, 0xFFFF, 0);
         break;
 
     case 3:

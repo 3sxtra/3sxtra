@@ -99,7 +99,7 @@ static void Pattern17_0005(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 2, 0x3E, 0x3F, 0x40, 0x40, 1);
+        AI_Random_Action_Select(wk, 2, 0x3E, 0x3F, 0x40, 0x40, 1);
         break;
 
     default:
@@ -127,7 +127,7 @@ static void Pattern17_0007(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -807,11 +807,11 @@ static void Pattern17_0051(PLW* wk) {
 static void Pattern17_0052(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FD0, 5, 2, 0);
+        Check_Enemy_Distance(wk, -1, -0x7FD0, 5, 2, 0);
         break;
 
     case 1:
-        SA_Term(wk, 0x2E, 0x2F, 0xFFFF, 0);
+        Check_Super_Art_Conditions(wk, 0x2E, 0x2F, 0xFFFF, 0);
         break;
 
     case 2:
@@ -827,11 +827,11 @@ static void Pattern17_0052(PLW* wk) {
 static void Pattern17_0053(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        EM_Term(wk, -1, -0x7FD0, 5, 2, 0);
+        Check_Enemy_Distance(wk, -1, -0x7FD0, 5, 2, 0);
         break;
 
     case 1:
-        SA_Term(wk, 0x2e, -1, -1, 0);
+        Check_Super_Art_Conditions(wk, 0x2e, -1, -1, 0);
         break;
 
     case 2:
@@ -839,7 +839,7 @@ static void Pattern17_0053(PLW* wk) {
         break;
 
     case 3:
-        SA_Term(wk, -1, 0x2f, -1, 0);
+        Check_Super_Art_Conditions(wk, -1, 0x2f, -1, 0);
         break;
 
     case 4:
@@ -859,7 +859,7 @@ static void Pattern17_0053(PLW* wk) {
 static void Pattern17_0054(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        SA_Term(wk, 0xFFFF, 0xFFFF, 0x30, 0);
+        Check_Super_Art_Conditions(wk, 0xFFFF, 0xFFFF, 0x30, 0);
         break;
 
     case 1:
@@ -1039,7 +1039,7 @@ static void Pattern17_0067(PLW* wk) {
 static void Pattern17_0068(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -1063,7 +1063,7 @@ static void Pattern17_0068(PLW* wk) {
 static void Pattern17_0069(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -1083,7 +1083,7 @@ static void Pattern17_0069(PLW* wk) {
 static void Pattern17_0070(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -1111,7 +1111,7 @@ static void Pattern17_0071(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -1131,7 +1131,7 @@ static void Pattern17_0072(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -1139,7 +1139,7 @@ static void Pattern17_0072(PLW* wk) {
         break;
 
     case 3:
-        Com_Random_Select(wk, 6, 0x85, 0x86, 0x87, 0x70, 1);
+        AI_Random_Action_Select(wk, 6, 0x85, 0x86, 0x87, 0x70, 1);
         break;
 
     default:
@@ -1155,7 +1155,7 @@ static void Pattern17_0073(PLW* wk) {
         break;
 
     case 1:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 2:
@@ -1167,11 +1167,11 @@ static void Pattern17_0073(PLW* wk) {
         break;
 
     case 4:
-        EM_Term(wk, -1, -0x7FD0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FD0, 6, 1, -1);
         break;
 
     case 5:
-        SA_Term(wk, -1, 0x2f, -1, 0);
+        Check_Super_Art_Conditions(wk, -1, 0x2f, -1, 0);
         break;
 
     default:
@@ -1183,7 +1183,7 @@ static void Pattern17_0073(PLW* wk) {
 static void Pattern17_0074(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -1195,7 +1195,7 @@ static void Pattern17_0074(PLW* wk) {
         break;
 
     case 3:
-        EM_Term(wk, -1, -0x7FD0, 6, 1, -1);
+        Check_Enemy_Distance(wk, -1, -0x7FD0, 6, 1, -1);
         break;
 
     case 4:
@@ -1211,7 +1211,7 @@ static void Pattern17_0074(PLW* wk) {
 static void Pattern17_0075(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -1291,7 +1291,7 @@ static void Pattern17_0077(PLW* wk) {
 static void Pattern17_0078(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -1315,7 +1315,7 @@ static void Pattern17_0078(PLW* wk) {
 static void Pattern17_0079(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -1393,7 +1393,7 @@ static void Pattern17_0082(PLW* wk)
 {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
     case 1:
         Hi_Jump_Attack_Term(wk, -1, 0x40, 8, 0x400, 0, -0x7FA0, -1, 0x200);

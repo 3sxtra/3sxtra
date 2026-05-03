@@ -323,7 +323,7 @@ static void Pattern00_0021(PLW* wk) {
 static void Pattern00_0022(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Pierce_On(wk);
+        Enable_Overhead_Attack_Flag(wk);
         break;
 
     case 1:
@@ -699,7 +699,7 @@ static void Pattern00_0045(PLW* wk) {
 static void Pattern00_0046(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 2, 0x39, 0x39, 0x41, 0x41, 0);
+        AI_Random_Action_Select(wk, 2, 0x39, 0x39, 0x41, 0x41, 0);
         break;
 
     default:
@@ -711,7 +711,7 @@ static void Pattern00_0046(PLW* wk) {
 static void Pattern00_0047(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 2, 0x39, 0x39, 0x41, 0x41, 0);
+        AI_Random_Action_Select(wk, 2, 0x39, 0x39, 0x41, 0x41, 0);
         break;
 
     default:
@@ -723,7 +723,7 @@ static void Pattern00_0047(PLW* wk) {
 static void Pattern00_0048(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 2, 0x39, 0x39, 0x41, 0x41, 0);
+        AI_Random_Action_Select(wk, 2, 0x39, 0x39, 0x41, 0x41, 0);
         break;
 
     default:
@@ -775,7 +775,7 @@ static void Pattern00_0052(PLW* wk) {
         break;
 
     case 1:
-        Com_Random_Select(wk, 2, 0x31, 0x31, 0x31, 0x32, 0);
+        AI_Random_Action_Select(wk, 2, 0x31, 0x31, 0x31, 0x32, 0);
         break;
 
     default:
@@ -787,7 +787,7 @@ static void Pattern00_0052(PLW* wk) {
 static void Pattern00_0053(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 2, 0x31, 0x31, 0x32, 0x33, 0);
+        AI_Random_Action_Select(wk, 2, 0x31, 0x31, 0x32, 0x33, 0);
         break;
 
     default:
@@ -799,7 +799,7 @@ static void Pattern00_0053(PLW* wk) {
 static void Pattern00_0054(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Com_Random_Select(wk, 2, 0x31, 0x32, 0x32, 0x33, 0);
+        AI_Random_Action_Select(wk, 2, 0x31, 0x32, 0x32, 0x33, 0);
         break;
 
     default:
