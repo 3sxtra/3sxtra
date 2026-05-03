@@ -814,8 +814,8 @@ s32 check_chouhatsu(PLW* wk) {
     return 1;
 }
 
-/** @brief Checks if a throw-break (nagenuke) input was detected. */
-s32 check_nagenuke_cmd(PLW* wk) {
+/** @brief Checks if a throw-break (throw_escape) input was detected. */
+s32 Check_Throw_Escape_Command(PLW* wk) {
     if (wk->special_move_disabled_flag2 & DIP2_THROW_BREAK_DISABLED) {
         return 0;
     }

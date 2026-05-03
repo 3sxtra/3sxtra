@@ -59,7 +59,7 @@ void effect_13_move(WORK_Other* ewk) {
         ewk->wu.at_koa = tama->koa;
         ewk->wu.vital_new = tama->def_power;
         ewk->wu.damage_vitality = 0;
-        ewk->wu.original_vitality = tama->waza_num;
+        ewk->wu.original_vitality = tama->move_num;
         ewk->wu.shell_vs_refrect = tama->vs_refrect;
         ewk->wu.charset_id = tama->kind_of_tama;
 

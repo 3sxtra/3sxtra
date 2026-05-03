@@ -38,7 +38,7 @@ void check_24();
 void check_25();
 void check_26();
 void command_ok();
-void command_ok_move(s16 waza_num);
+void Command_Ok_Move(s16 move_num);
 s32 dead_lvr_check();
 void pl_lvr_set();
 void sw_pick_up();

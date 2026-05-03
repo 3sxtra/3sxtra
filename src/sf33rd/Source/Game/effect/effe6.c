@@ -1659,10 +1659,10 @@ static const u16 END_COL[20] = {
 };
 
 void ending_obj_load() {
-    make_texcash_work(12);
+    Allocate_Texture_Cache(12);
     load_any_texture_patnum(0x7F30, 23, 0);
     load_any_texture_patnum(0x78B0, 23, 0);
-    make_texcash_work(8);
+    Allocate_Texture_Cache(8);
     load_any_texture_patnum(END_BCB[g_state.End_PL], 23, 0);
     load_any_color(END_COL[g_state.End_PL], 2);
 }

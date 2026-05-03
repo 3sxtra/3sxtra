@@ -97,7 +97,7 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     s16 ix;
 
     task_ptr->r_no[0] = 1;
-    init_texcash_1st();
+    Init_Texture_Cache_Primary();
     Init_texgrplds_work();
     Init_load_on_memory_data();
     Pause_Family_On();

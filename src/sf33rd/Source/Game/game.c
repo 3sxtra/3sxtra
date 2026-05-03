@@ -175,7 +175,7 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
         g_state.system_timer += 1;
     }
 
-    init_texcash_before_process();
+    Init_Texture_Cache_Before_Process();
 
     seqsBeforeProcess();
 
@@ -373,7 +373,7 @@ void Game_Title_Sub2() {
         FadeOut(1, 0xFF, 8);
         FSM_AdvanceSubSubState();
         Purge_mmtm_area(2);
-        Make_texcash_of_list(2);
+        Allocate_Texture_Cache_List(2);
         break;
 
     case 5:
@@ -546,7 +546,7 @@ void Game_CharSelect() {
             }
 
             Purge_texcash_of_list(3);
-            Make_texcash_of_list(3);
+            Allocate_Texture_Cache_List(3);
 
             if (g_state.Demo_Flag) {
                 FSM_SetMode(MODE_FIGHT);
@@ -1124,7 +1124,7 @@ void Game_NextCPU() {
         if (Switch_Screen(0) != 0) {
             g_state.Cover_Timer = 24;
             Purge_texcash_of_list(3);
-            Make_texcash_of_list(3);
+            Allocate_Texture_Cache_List(3);
 
             if (g_state.Bonus_Type == 0) {
                 Game_ResetMatchState();
@@ -1180,7 +1180,7 @@ void Game_GameOver() {
                 g_state.gameover_phase[xx] = 0;
             }
 
-            make_texcash_work(13);
+            Allocate_Texture_Cache(13);
             break;
 
         case 1:
@@ -1250,7 +1250,7 @@ void Game_GameOver() {
                     Menu_Init(MenuTask_GetTaskPtr());
                     MenuTask_GotoPhase(MTP_GOTO_GAME);
                     g_state.Forbid_Reset = 1;
-                    make_texcash_work(12);
+                    Allocate_Texture_Cache(12);
                     g_state.Unsubstantial_BG[0] = 1;
                     Copy_Check_w();
                     cpExitTask(TASK_SAVER);
@@ -1293,7 +1293,7 @@ void Game_GameOver() {
             g_state.Combo_Demo_Flag = 0;
             cpReadyTask(TASK_ENTRY, Entry_Task);
             Purge_mmtm_area(5);
-            Make_texcash_of_list(5);
+            Allocate_Texture_Cache_List(5);
             System_all_clear_Level_B();
             break;
         }
@@ -1687,7 +1687,7 @@ void Game_AfterBonus() {
             g_state.entry_phase[3] = 0;
             g_state.Bonus_Game_Flag = 0;
             Purge_texcash_of_list(3);
-            Make_texcash_of_list(3);
+            Allocate_Texture_Cache_List(3);
         }
 
         break;
@@ -1731,7 +1731,7 @@ void Game_NextQ() {
             Game_ResetMatchState();
             BGM_Stop();
             Purge_texcash_of_list(3);
-            Make_texcash_of_list(3);
+            Allocate_Texture_Cache_List(3);
 
             if (g_state.Bonus_Type == 0) {
                 FSM_SetMode(MODE_FIGHT);

@@ -32,7 +32,7 @@ extern const s16** kizetsu_timer_table[];
 
 extern PLW plw[2];
 extern SA_WORK super_arts[2];
-extern ZanzouTableEntry zanzou_table[2][48];
+extern ZanzouTableEntry afterimage_table[2][48];
 extern PiyoriType stun_type[2];
 extern AppearanceType appear_type;
 extern s16 pcon_rno[4];

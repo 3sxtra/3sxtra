@@ -97,12 +97,12 @@ void effect_E7_move(WORK_Other* ewk) {
 }
 
 static void effe7_get_zanzou_data(WORK_Other* ewk) {
-    ewk->wu.position_x = g_state.zanzou_table[ewk->master_id]->pos_x;
-    ewk->wu.position_y = g_state.zanzou_table[ewk->master_id]->pos_y;
-    ewk->wu.position_z = g_state.zanzou_table[ewk->master_id]->pos_z;
-    ewk->wu.cg_number = g_state.zanzou_table[ewk->master_id]->cg_num;
-    ewk->wu.rl_flag = g_state.zanzou_table[ewk->master_id]->flip;
-    ewk->wu.cg_flip = g_state.zanzou_table[ewk->master_id]->cg_flp;
+    ewk->wu.position_x = g_state.afterimage_table[ewk->master_id]->pos_x;
+    ewk->wu.position_y = g_state.afterimage_table[ewk->master_id]->pos_y;
+    ewk->wu.position_z = g_state.afterimage_table[ewk->master_id]->pos_z;
+    ewk->wu.cg_number = g_state.afterimage_table[ewk->master_id]->cg_num;
+    ewk->wu.rl_flag = g_state.afterimage_table[ewk->master_id]->flip;
+    ewk->wu.cg_flip = g_state.afterimage_table[ewk->master_id]->cg_flp;
 }
 
 s32 effect_E7_init(WORK_Other* ek, PLW* mk) {

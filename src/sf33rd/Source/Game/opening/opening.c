@@ -102,7 +102,7 @@ s16 opening_demo() {
         if (OPBG_Move(0)) {
             g_state.demo_phase[3] += 1;
             reset_dma_group(0x8C40);
-            purge_texcash_work(9);
+            Free_Texture_Cache(9);
             TexRelease_OP();
             TITLE_Init();
             FadeInit();
@@ -268,8 +268,8 @@ void OPBG_Init() {
     printf("[BOOT] OPBG_Init: all tex chunks done\n");
 
     g_state.Opening_Now = 1;
-    printf("[BOOT] OPBG_Init: calling make_texcash_work(9)\n");
-    make_texcash_work(9);
+    printf("[BOOT] OPBG_Init: calling Allocate_Texture_Cache(9)\n");
+    Allocate_Texture_Cache(9);
     printf("[BOOT] OPBG_Init: calling mlt_obj_melt2\n");
     mlt_obj_melt2(&mts[9], 0x8C40);
     printf("[BOOT] OPBG_Init: calling sound_trg_init + opening_init\n");

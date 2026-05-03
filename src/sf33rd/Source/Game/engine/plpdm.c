@@ -1076,7 +1076,7 @@ static void Damage_29000(PLW* wk) {
         wk->wu.cg_type = 0;
         wk->wu.cg_hit_ix = 0;
         wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.cg_hit_ix];
-        set_jugde_area(&wk->wu);
+        Set_Collision_Boxes(&wk->wu);
         break;
 
     case 1:
@@ -1197,7 +1197,7 @@ static void Damage_31000(PLW* wk) {
         wk->wu.dir_timer = 10;
         wk->wu.cg_hit_ix = 1;
         wk->wu.cg_ja = wk->wu.hit_ix_table[1];
-        set_jugde_area(&wk->wu);
+        Set_Collision_Boxes(&wk->wu);
         break;
 
     case 3:
@@ -1207,7 +1207,7 @@ static void Damage_31000(PLW* wk) {
 
         wk->wu.cg_hit_ix = 1;
         wk->wu.cg_ja = wk->wu.hit_ix_table[1];
-        set_jugde_area(&wk->wu);
+        Set_Collision_Boxes(&wk->wu);
 
         if (--wk->wu.dir_timer >= 0) {
             break;

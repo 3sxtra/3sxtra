@@ -40,7 +40,7 @@ void grade_max_combo_check(s16 ix, s16 num);
 void grade_add_leap_attack(s16 ix);
 void grade_add_grap_def(s16 ix);
 void grade_add_quick_stand(s16 ix);
-void grade_add_nml_nage(WORK* wk);
+void Grade_Add_Normal_Throw(WORK* wk);
 void grade_add_reversal(s16 ix);
 void grade_add_target_combo(s16 ix);
 void grade_add_command_move(s16 ix);

@@ -58,7 +58,7 @@ static void ms_win_enter(struct _TASK* tp) {
 
     System_all_clear_Level_B();
     Purge_mmtm_area(4);
-    Make_texcash_of_list(4);
+    Allocate_Texture_Cache_List(4);
     load_any_texture_patnum(0x7F30, 0xC, 0);
     Setup_BG(0, 0x200, 0);
     bg_etc_write(PL_Color_Data[g_state.My_char[g_state.Winner_id]]);
@@ -213,7 +213,7 @@ static void ms_loser_enter(struct _TASK* tp) {
 
     System_all_clear_Level_B();
     Purge_mmtm_area(4);
-    Make_texcash_of_list(4);
+    Allocate_Texture_Cache_List(4);
     load_any_texture_patnum(0x7F30, 0xC, 0);
     Setup_BG(0, 0x200, 0);
     bg_etc_write(PL_Color_Data[g_state.My_char[g_state.Winner_id]]);

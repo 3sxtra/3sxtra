@@ -402,7 +402,7 @@ void checkSelObjFileLoaded() {
     lds->trans_table = ldadr;
     lds->ok = 1;
     omSelObjNowOnMemoryType = mpp_w.language;
-    Clear_texcash_work();
+    Clear_Texture_Cache();
 }
 
 /** @brief Purge the texture group that contains a specific pattern number. */

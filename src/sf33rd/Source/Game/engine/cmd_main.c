@@ -125,7 +125,7 @@ void cmd_move() {
     for (j = 0; j < 56; j++) {
         if ((g_state.wcp[cmd_id].move_state_flags[j] != -1) && (g_state.wcp[cmd_id].move_state_flags[j] != 0)) {
             move_ptr = &g_state.move_work[cmd_id][j];
-            command_ok_move(j);
+            Command_Ok_Move(j);
         }
     }
 }
@@ -409,7 +409,7 @@ void check_4() {
         g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] = g_state.wcp[cmd_id].reset[move_type[cmd_id]];
         move_ptr->uni0.tame.shot_flag2 = 0;
         move_ptr->w_int = 9;
-        chk_pl->waza_no = move_type[cmd_id];
+        chk_pl->move_id = move_type[cmd_id];
         return;
     }
 
@@ -424,7 +424,7 @@ void check_4() {
         g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] = g_state.wcp[cmd_id].reset[move_type[cmd_id]];
         move_ptr->uni0.tame.shot_flag = 0;
         move_ptr->w_int = 12;
-        chk_pl->waza_no = move_type[cmd_id];
+        chk_pl->move_id = move_type[cmd_id];
         return;
     }
 
@@ -438,7 +438,7 @@ void check_4() {
         g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] = g_state.wcp[cmd_id].reset[move_type[cmd_id]];
         move_ptr->uni0.tame.flag = 0;
         move_ptr->w_int = 15;
-        chk_pl->waza_no = move_type[cmd_id];
+        chk_pl->move_id = move_type[cmd_id];
     }
 }
 
@@ -1054,7 +1054,7 @@ void check_13() {
         g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] =
             16 - ukemi_time_tbl[g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]]];
         move_ptr->free3 = 16;
-        chk_pl->waza_no = move_type[cmd_id];
+        chk_pl->move_id = move_type[cmd_id];
     }
 
     sw_w = (chk_pl->input_current | chk_pl->old_now) & CMD_BTN_PUNCHES;
@@ -1063,7 +1063,7 @@ void check_13() {
         g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] =
             16 - ukemi_time_tbl[g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]]];
         move_ptr->free3 = 16;
-        chk_pl->waza_no = move_type[cmd_id];
+        chk_pl->move_id = move_type[cmd_id];
     }
 }
 
@@ -1101,7 +1101,7 @@ void check_14() {
             g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] = g_state.wcp[cmd_id].reset[move_type[cmd_id]];
             move_ptr->uni0.tame.flag = 0;
             move_ptr->w_int = 10;
-            chk_pl->waza_no = move_type[cmd_id];
+            chk_pl->move_id = move_type[cmd_id];
             return;
         }
 
@@ -1114,7 +1114,7 @@ void check_14() {
             g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] = g_state.wcp[cmd_id].reset[move_type[cmd_id]];
             move_ptr->uni0.tame.flag = 0;
             move_ptr->w_int = 6;
-            chk_pl->waza_no = move_type[cmd_id];
+            chk_pl->move_id = move_type[cmd_id];
             return;
         }
 
@@ -1508,18 +1508,18 @@ void command_ok() {
 
     if (move_ptr->w_type != 14) {
         move_ptr->w_type = 0;
-        chk_pl->waza_no = move_type[cmd_id];
+        chk_pl->move_id = move_type[cmd_id];
     }
 }
 
 /** @brief Marks a specific move number as successfully detected. */
-void command_ok_move(s16 waza_num) {
+void Command_Ok_Move(s16 move_num) {
     if (dead_lvr_check()) {
-        g_state.wcp[cmd_id].move_state_flags[waza_num] = 0;
+        g_state.wcp[cmd_id].move_state_flags[move_num] = 0;
         return;
     }
 
-    g_state.wcp[cmd_id].move_state_flags[waza_num]--;
+    g_state.wcp[cmd_id].move_state_flags[move_num]--;
 }
 
 /** @brief Returns 1 if the lever is in a neutral (dead zone) position. */

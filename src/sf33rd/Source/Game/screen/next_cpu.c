@@ -638,7 +638,7 @@ static void After_Bonus_2nd() {
         Switch_Screen(0);
         Purge_mmtm_area(7);
         Purge_com_player_from_mm();
-        Make_texcash_of_list(7);
+        Allocate_Texture_Cache_List(7);
         g_state.next_cpu_phase[1]++;
         effect_76_init(55);
         g_state.Order[55] = 3;
@@ -1098,7 +1098,7 @@ static void Next_Q_1st() {
     Setup_Next_Fighter();
     Purge_mmtm_area(8);
     Purge_com_player_from_mm();
-    Make_texcash_of_list(7);
+    Allocate_Texture_Cache_List(7);
     Push_LDREQ_Queue_Player(g_state.COM_id, 17);
 }
 

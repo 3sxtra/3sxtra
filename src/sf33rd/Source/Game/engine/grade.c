@@ -86,7 +86,7 @@ const s16 grade_t_leap_attack[10][2] = { { 0, 0 },  { 1, 50 }, { 2, 60 },  { 3, 
 const s16 grade_t_target_combo[8][2] = { { 0, 0 },  { 1, 40 },   { 2, 50 },   { 4, 60 },
                                          { 8, 80 }, { 12, 100 }, { 16, 120 }, { 24, 140 } };
 
-const s16 grade_t_nml_nage[10][2] = { { 0, 0 },  { 1, 50 }, { 2, 60 }, { 3, 70 },  { 4, 75 },
+const s16 grade_t_normal_throw[10][2] = { { 0, 0 },  { 1, 50 }, { 2, 60 }, { 3, 70 },  { 4, 75 },
                                       { 5, 80 }, { 6, 60 }, { 8, 40 }, { 10, 20 }, { 12, 0 } };
 
 const s16 grade_t_grap_def[6][2] = { { 0, 0 }, { 1, 60 }, { 2, 80 }, { 4, 100 }, { 8, 120 }, { 16, 140 } };
@@ -98,7 +98,7 @@ const s16 grade_t_personal_act[4][2] = { { 0, 0 }, { 1, 50 }, { 2, 53 }, { 3, 55
 const s16 grade_t_reversal[8][2] = { { 0, 0 },  { 1, 50 }, { 2, 60 }, { 3, 70 },
                                      { 4, 80 }, { 6, 90 }, { 8, 95 }, { 10, 100 } };
 
-const s16 grade_t_command_waza[9][2] = { { 0, 0 },   { 1, 30 },  { 3, 40 },  { 6, 50 },  { 10, 60 },
+const s16 grade_t_command_move[9][2] = { { 0, 0 },   { 1, 30 },  { 3, 40 },  { 6, 50 },  { 10, 60 },
                                          { 15, 70 }, { 21, 80 }, { 28, 90 }, { 36, 100 } };
 
 const s16 grade_t_sa_stock_3[6][2] = { { 0, 0 }, { 1, 50 }, { 2, 60 }, { 3, 70 }, { 4, 80 }, { 5, 90 } };
@@ -207,12 +207,12 @@ void grade_check_work_round_init(s16 ix) {
     g_state.judge_item[ix][g_state.Play_Type].first_attack = 0;
     g_state.judge_item[ix][g_state.Play_Type].leap_attack = 0;
     g_state.judge_item[ix][g_state.Play_Type].target_combo = 0;
-    g_state.judge_item[ix][g_state.Play_Type].nml_nage = 0;
+    g_state.judge_item[ix][g_state.Play_Type].normal_throw = 0;
     g_state.judge_item[ix][g_state.Play_Type].grap_def = 0;
     g_state.judge_item[ix][g_state.Play_Type].quick_stand = 0;
     g_state.judge_item[ix][g_state.Play_Type].personal_act = 0;
     g_state.judge_item[ix][g_state.Play_Type].reversal = 0;
-    g_state.judge_item[ix][g_state.Play_Type].comwaza = 0;
+    g_state.judge_item[ix][g_state.Play_Type].command_move = 0;
     g_state.judge_item[ix][g_state.Play_Type].sa_exec = 0;
     g_state.judge_item[ix][g_state.Play_Type].tairyokusa = 0;
     g_state.judge_item[ix][g_state.Play_Type].kimarite = 0;
@@ -685,7 +685,7 @@ s16 get_tech_pts_total(s16 ix) {
 
     point += grade_table_lookup(grade_t_target_combo, 7, g_state.judge_item[ix][g_state.Play_Type].target_combo);
 
-    point += grade_table_lookup(grade_t_nml_nage, 9, g_state.judge_item[ix][g_state.Play_Type].nml_nage);
+    point += grade_table_lookup(grade_t_normal_throw, 9, g_state.judge_item[ix][g_state.Play_Type].normal_throw);
 
     point += grade_table_lookup(grade_t_grap_def, 5, g_state.judge_item[ix][g_state.Play_Type].grap_def);
 
@@ -695,7 +695,7 @@ s16 get_tech_pts_total(s16 ix) {
 
     point += grade_table_lookup(grade_t_reversal, 7, g_state.judge_item[ix][g_state.Play_Type].reversal);
 
-    point += grade_table_lookup(grade_t_command_waza, 8, g_state.judge_item[ix][g_state.Play_Type].comwaza);
+    point += grade_table_lookup(grade_t_command_move, 8, g_state.judge_item[ix][g_state.Play_Type].command_move);
 
     switch (g_state.plw[ix].sa->store_max) {
     case 1:
@@ -833,14 +833,14 @@ void grade_add_quick_stand(s16 ix) {
 }
 
 /** @brief Increments the normal-throw counter for grading. */
-void grade_add_nml_nage(WORK* wk) {
+void Grade_Add_Normal_Throw(WORK* wk) {
     s16 ix;
 
     if (check_normal_attack(wk->attack_type)) {
         ix = wk->id;
-        g_state.judge_item[ix][g_state.Play_Type].nml_nage += 1;
-        if (g_state.judge_item[ix][g_state.Play_Type].nml_nage > 0xC) {
-            g_state.judge_item[ix][g_state.Play_Type].nml_nage = 0xC;
+        g_state.judge_item[ix][g_state.Play_Type].normal_throw += 1;
+        if (g_state.judge_item[ix][g_state.Play_Type].normal_throw > 0xC) {
+            g_state.judge_item[ix][g_state.Play_Type].normal_throw = 0xC;
         }
     }
 }
@@ -865,10 +865,10 @@ void grade_add_target_combo(s16 ix) {
 
 /** @brief Increments the command-move counter for grading. */
 void grade_add_command_move(s16 ix) {
-    g_state.judge_item[ix][g_state.Play_Type].comwaza += 1;
+    g_state.judge_item[ix][g_state.Play_Type].command_move += 1;
 
-    if (g_state.judge_item[ix][g_state.Play_Type].comwaza > 36) {
-        g_state.judge_item[ix][g_state.Play_Type].comwaza = 36;
+    if (g_state.judge_item[ix][g_state.Play_Type].command_move > 36) {
+        g_state.judge_item[ix][g_state.Play_Type].command_move = 36;
     }
 }
 

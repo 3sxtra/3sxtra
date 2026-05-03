@@ -291,7 +291,7 @@ static void Sel_PL_Cont_1st() {
     }
 
     Purge_mmtm_area(2);
-    Make_texcash_of_list(2);
+    Allocate_Texture_Cache_List(2);
     bg_etc_write(2);
     Setup_Aborigine();
     Initialize_BG();

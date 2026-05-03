@@ -118,9 +118,9 @@ void Hi_Jump_Attack_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Le
                          s16 Range_JY, u16 J_Lever_Data);
 s32 Check_Term_ABS_Distance(PLW* wk);
 s32 Check_Com_Add_Y(PLW* wk, s16 Pos_Y, s16 Range);
-void ORO_JA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
+void Oro_Check_Jump_Attack(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
                  s16 RJY, u16 JLD);
-void ORO_HJA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
+void Oro_Check_High_Jump_Attack(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
                   s16 RJY, u16 JLD);
 void Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot);
 s32 Hadou_Check(PLW* wk, u16 Tech_Number);
@@ -133,9 +133,9 @@ s32 Setup_Rapid_Time(PLW* wk, u16 Tech_Number); // unused all args
 void Rapid_Sub(PLW* wk);
 s32 Check_Rapid_End(PLW* wk);
 s32 Check_Start_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number);
-void ORO_JCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
+void Oro_Check_Jump_Command_Attack(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
                   s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD);
-void ORO_HJCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
+void Oro_Check_High_Jump_Command_Attack(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
                    s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD);
 void Jump_Command_Attack_Term(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX, s16 RY,
                               s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD);
@@ -220,17 +220,17 @@ s32 Check_Drop_Term(WORK* em, s16 Y);
 s32 Check_SHINRYU(PLW* wk);
 void Check_BOSS(PLW* wk, u32 Next_Action, u16 Next_Menu);
 void Check_BOSS_EX(PLW* wk, u32 Next_Action, u16 Next_Menu);
-void ETC_Term(PLW* wk, s16 arg_Exit_No, u32 Next_Action, u16 Next_Menu);
-s32 ETC_Term_0000(PLW* wk, WORK* em);
-s32 ETC_Term_0001(PLW* wk, WORK* em);
-s32 ETC_Term_0002(PLW* wk, WORK* em);
-s32 ETC_Term_0003(PLW* wk, WORK* em);
-s32 ETC_Term_0004(PLW* wk, WORK* em);
-s32 ETC_Term_0005(PLW* wk, WORK* em);
-s32 ETC_Term_0006(PLW* wk, WORK* em);
-s32 ETC_Term_0007(PLW* wk, WORK* em);
-s32 ETC_Term_0008(PLW* wk, WORK* em);
-s32 ETC_Term_0009(PLW* wk, WORK* em);
+void Check_Miscellaneous_Conditions(PLW* wk, s16 arg_Exit_No, u32 Next_Action, u16 Next_Menu);
+s32 Check_Misc_Cond_0000(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0001(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0002(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0003(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0004(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0005(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0006(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0007(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0008(PLW* wk, WORK* em);
+s32 Check_Misc_Cond_0009(PLW* wk, WORK* em);
 s32 emLevelRemake(s32 now, s32 max, s32 exd);
 s32 emGetMaxBlocking();
 
@@ -2536,7 +2536,7 @@ s32 Check_Com_Add_Y(PLW* wk, s16 Pos_Y, s16 Range) {
 }
 
 /** @brief  */
-void ORO_JA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
+void Oro_Check_Jump_Attack(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
                  s16 RJY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
@@ -2673,7 +2673,7 @@ void ORO_JA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16
 }
 
 /** @brief  */
-void ORO_HJA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
+void Oro_Check_High_Jump_Attack(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
                   s16 RJY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
@@ -3325,7 +3325,7 @@ s32 Check_Start_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number) {
 }
 
 /** @brief  */
-void ORO_JCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
+void Oro_Check_Jump_Command_Attack(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
                   s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
@@ -3447,7 +3447,7 @@ void ORO_JCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s1
 }
 
 /** @brief  */
-void ORO_HJCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
+void Oro_Check_High_Jump_Command_Attack(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
                    s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
@@ -5759,8 +5759,8 @@ s32 Check_SHINRYU(PLW* wk) {
     return 1;
 }
 
-const Term_Tbl_t ETC_Term_Tbl[10] = { ETC_Term_0000, ETC_Term_0001, ETC_Term_0002, ETC_Term_0003, ETC_Term_0004,
-                                      ETC_Term_0005, ETC_Term_0006, ETC_Term_0007, ETC_Term_0008, ETC_Term_0009 };
+const Term_Tbl_t Check_Misc_Cond_Tbl[10] = { Check_Misc_Cond_0000, Check_Misc_Cond_0001, Check_Misc_Cond_0002, Check_Misc_Cond_0003, Check_Misc_Cond_0004,
+                                      Check_Misc_Cond_0005, Check_Misc_Cond_0006, Check_Misc_Cond_0007, Check_Misc_Cond_0008, Check_Misc_Cond_0009 };
 
 /** @brief  */
 void Check_BOSS(PLW* wk, u32 Next_Action, u16 Next_Menu) {
@@ -5797,11 +5797,11 @@ void Check_BOSS_EX(PLW* wk, u32 Next_Action, u16 Next_Menu) {
 }
 
 /** @brief  */
-void ETC_Term(PLW* wk, s16 arg_Exit_No, u32 Next_Action, u16 Next_Menu) {
+void Check_Miscellaneous_Conditions(PLW* wk, s16 arg_Exit_No, u32 Next_Action, u16 Next_Menu) {
     s16 xx;
     WORK* em = (WORK*)wk->wu.target_adrs;
 
-    xx = ETC_Term_Tbl[arg_Exit_No](wk, em);
+    xx = Check_Misc_Cond_Tbl[arg_Exit_No](wk, em);
 
     if (xx == -1) {
         return;
@@ -5823,7 +5823,7 @@ void ETC_Term(PLW* wk, s16 arg_Exit_No, u32 Next_Action, u16 Next_Menu) {
 }
 
 /** @brief  */
-s32 ETC_Term_0000(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0000(PLW* wk, WORK* em) {
     if (Check_VS_Squat(wk, em, 0x1D, 0x21, 0x20) != 0) {
         return 1;
     }
@@ -5831,7 +5831,7 @@ s32 ETC_Term_0000(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0001(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0001(PLW* wk, WORK* em) {
     if (wk->sa->ok != -1) {
         return 1;
     }
@@ -5845,7 +5845,7 @@ s32 ETC_Term_0001(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0002(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0002(PLW* wk, WORK* em) {
     if (g_state.plw[wk->wu.id].wu.vital_new < 0x31) {
         return 1;
     }
@@ -5853,7 +5853,7 @@ s32 ETC_Term_0002(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0003(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0003(PLW* wk, WORK* em) {
     if ((em->pat_status != 0x20) && (em->pat_status != 0x21) && (em->pat_status != 2)) {
         return 1;
     }
@@ -5861,7 +5861,7 @@ s32 ETC_Term_0003(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0004(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0004(PLW* wk, WORK* em) {
     if (em->vital_new >= 0x50) {
         return 0;
     }
@@ -5872,7 +5872,7 @@ s32 ETC_Term_0004(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0005(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0005(PLW* wk, WORK* em) {
     if (em->vital_new < g_state.plw[wk->wu.id].wu.vital_new) {
         return 1;
     }
@@ -5880,7 +5880,7 @@ s32 ETC_Term_0005(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0006(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0006(PLW* wk, WORK* em) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
     case 0:
         g_state.CP_Index[wk->wu.id][1]++;
@@ -5900,7 +5900,7 @@ s32 ETC_Term_0006(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0007(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0007(PLW* wk, WORK* em) {
     if (g_state.plw[wk->wu.id].sa->kind_of_arts == 2) {
         return 1;
     }
@@ -5909,7 +5909,7 @@ s32 ETC_Term_0007(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0008(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0008(PLW* wk, WORK* em) {
     if (g_state.plw[wk->wu.id].sa->kind_of_arts == 1) {
         return 1;
     }
@@ -5918,7 +5918,7 @@ s32 ETC_Term_0008(PLW* wk, WORK* em) {
 }
 
 /** @brief  */
-s32 ETC_Term_0009(PLW* wk, WORK* em) {
+s32 Check_Misc_Cond_0009(PLW* wk, WORK* em) {
     if (g_state.plw[wk->wu.id].sa->kind_of_arts == 0) {
         return 1;
     }

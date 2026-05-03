@@ -119,7 +119,7 @@ void Ranking_ScoreEntry() {
 
 /** @brief Ranking_Init phase 1 — build tex-cache, init demo type, and prepare BG/effects. */
 void Ranking_00_1st() {
-    make_texcash_work(14);
+    Allocate_Texture_Cache(14);
     g_state.demo_phase[1]++;
     g_state.Demo_Type = 0;
     g_state.Flash_Sign[0] = 1;
@@ -324,8 +324,8 @@ void Ranking_01_1st() {
     Switch_Screen(1);
     BGM_Request(57);
     Purge_mmtm_area(4);
-    Make_texcash_of_list(2);
-    make_texcash_work(14);
+    Allocate_Texture_Cache_List(2);
+    Allocate_Texture_Cache(14);
     g_state.demo_phase[1]++;
     g_state.Suicide[0] = 0;
     g_state.Present_Rank[0] = 99;

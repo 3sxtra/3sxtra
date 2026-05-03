@@ -62,7 +62,7 @@ void Demo_QuickStart() {
     case DEMO00_SETUP:
         Switch_Screen(1);
         Purge_texcash_of_list(3);
-        Make_texcash_of_list(3);
+        Allocate_Texture_Cache_List(3);
         g_state.demo_phase[1] += 1;
         g_state.fsm[2] = 0;
         g_state.Game_pause = 0;

@@ -1078,7 +1078,7 @@ static void Pattern02_0070(PLW* wk) {
 static void Pattern02_0071(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 5, 2, 0x17);
+        Check_Miscellaneous_Conditions(wk, 5, 2, 0x17);
         break;
 
     case 1:

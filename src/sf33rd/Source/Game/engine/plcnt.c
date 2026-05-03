@@ -341,13 +341,13 @@ const s16 tsuujyou_dageki_00[16] = { 150, 150, 130, 130, 130, 110, 110, 110, 110
 const s16 tsuujyou_dageki_01[16] = { 150, 150, 150, 150, 130, 130, 130, 130, 110, 110, 110, 110, 90, 90, 90, 90 };
 const s16 tsuujyou_dageki_02[16] = { 150, 150, 150, 150, 150, 150, 130, 130, 130, 130, 130, 110, 110, 110, 90, 90 };
 
-const s16* tsuujyou_dageki[4] = { tsuujyou_dageki_00, tsuujyou_dageki_01, tsuujyou_dageki_02, tsuujyou_dageki_02 };
+const s16* normal_strike_stun[4] = { tsuujyou_dageki_00, tsuujyou_dageki_01, tsuujyou_dageki_02, tsuujyou_dageki_02 };
 
 const s16 hissatsu_dageki_00[16] = { 210, 210, 190, 190, 190, 170, 170, 170, 170, 170, 150, 150, 150, 150, 150, 150 };
 const s16 hissatsu_dageki_01[16] = { 210, 210, 210, 210, 190, 190, 190, 190, 170, 170, 170, 170, 150, 150, 150, 150 };
 const s16 hissatsu_dageki_02[16] = { 210, 210, 210, 210, 210, 210, 190, 190, 190, 190, 190, 170, 170, 170, 150, 150 };
 
-const s16* hissatsu_dageki[4] = {
+const s16* special_strike_stun[4] = {
     hissatsu_dageki_00,
     hissatsu_dageki_01,
     hissatsu_dageki_02,
@@ -358,19 +358,19 @@ const s16 tsuujyou_nage_00[16] = { 180, 180, 160, 160, 160, 140, 140, 140, 140, 
 const s16 tsuujyou_nage_01[16] = { 180, 180, 180, 180, 160, 160, 160, 160, 140, 140, 140, 140, 120, 120, 120, 120 };
 const s16 tsuujyou_nage_02[16] = { 180, 180, 180, 180, 180, 180, 160, 160, 160, 160, 160, 140, 140, 140, 120, 120 };
 
-const s16* tsuujyou_nage[4] = { tsuujyou_nage_00, tsuujyou_nage_01, tsuujyou_nage_02, tsuujyou_nage_02 };
+const s16* normal_throw_stun[4] = { tsuujyou_nage_00, tsuujyou_nage_01, tsuujyou_nage_02, tsuujyou_nage_02 };
 
 const s16 hissatsu_nage_00[16] = { 240, 240, 200, 200, 200, 160, 160, 160, 160, 160, 120, 120, 120, 120, 120, 120 };
 const s16 hissatsu_nage_01[16] = { 240, 240, 240, 240, 200, 200, 200, 200, 160, 160, 160, 160, 120, 120, 120, 120 };
 const s16 hissatsu_nage_02[16] = { 240, 240, 240, 240, 240, 240, 200, 200, 200, 200, 200, 160, 160, 160, 120, 120 };
 
-const s16* hissatsu_nage[4] = { hissatsu_nage_00, hissatsu_nage_01, hissatsu_nage_02, hissatsu_nage_02 };
+const s16* special_throw_stun[4] = { hissatsu_nage_00, hissatsu_nage_01, hissatsu_nage_02, hissatsu_nage_02 };
 
 const s16 super_arts_dageki_00[16] = { 240, 240, 200, 200, 200, 160, 160, 160, 160, 160, 120, 120, 120, 120, 120, 120 };
 const s16 super_arts_dageki_01[16] = { 240, 240, 240, 240, 200, 200, 200, 200, 160, 160, 160, 160, 120, 120, 120, 120 };
 const s16 super_arts_dageki_02[16] = { 240, 240, 240, 240, 240, 240, 200, 200, 200, 200, 200, 160, 160, 160, 120, 120 };
 
-const s16* super_arts_dageki[4] = {
+const s16* super_art_strike_stun[4] = {
     super_arts_dageki_00, super_arts_dageki_01, super_arts_dageki_02, super_arts_dageki_02
 };
 
@@ -378,11 +378,11 @@ const s16 super_arts_nage_00[16] = { 270, 270, 230, 230, 230, 190, 190, 190, 190
 const s16 super_arts_nage_01[16] = { 270, 270, 270, 270, 230, 230, 230, 230, 190, 190, 190, 190, 150, 150, 150, 150 };
 const s16 super_arts_nage_02[16] = { 270, 270, 270, 270, 270, 270, 230, 230, 230, 230, 230, 190, 190, 190, 150, 150 };
 
-const s16* super_arts_nage[4] = { super_arts_nage_00, super_arts_nage_01, super_arts_nage_02, super_arts_nage_02 };
+const s16* super_art_throw_stun[4] = { super_arts_nage_00, super_arts_nage_01, super_arts_nage_02, super_arts_nage_02 };
 
-const s16** kizetsu_timer_table[9] = { tsuujyou_dageki,   hissatsu_dageki,   tsuujyou_nage,
-                                       hissatsu_nage,     super_arts_dageki, super_arts_nage,
-                                       super_arts_dageki, super_arts_nage,   super_arts_dageki };
+const s16** kizetsu_timer_table[9] = { normal_strike_stun,   special_strike_stun,   normal_throw_stun,
+                                       special_throw_stun,     super_art_strike_stun, super_art_throw_stun,
+                                       super_art_strike_stun, super_art_throw_stun,   super_art_strike_stun };
 
 /** @brief Main player controller — dispatches per-player state updates for both sides. */
 void Player_control() {
@@ -1000,20 +1000,20 @@ void store_player_after_image_data() {
     s16 i;
 
     for (i = 47; i > 0; i--) {
-        g_state.zanzou_table[0][i] = g_state.zanzou_table[0][i - 1];
-        g_state.zanzou_table[1][i] = g_state.zanzou_table[1][i - 1];
+        g_state.afterimage_table[0][i] = g_state.afterimage_table[0][i - 1];
+        g_state.afterimage_table[1][i] = g_state.afterimage_table[1][i - 1];
     }
 
     for (i = 0; i < 2; i++) {
-        g_state.zanzou_table[i]->pos_x = g_state.plw[i].wu.position_x;
-        g_state.zanzou_table[i]->pos_y = g_state.plw[i].wu.position_y;
-        g_state.zanzou_table[i]->pos_z = g_state.plw[i].wu.position_z;
-        g_state.zanzou_table[i]->cg_num = g_state.plw[i].wu.cg_number;
-        g_state.zanzou_table[i]->renew = g_state.plw[i].wu.renew_attack;
-        g_state.zanzou_table[i]->hit_ix = g_state.plw[i].wu.cg_hit_ix;
-        g_state.zanzou_table[i]->flip = g_state.plw[i].wu.rl_flag;
-        g_state.zanzou_table[i]->cg_flp = g_state.plw[i].wu.cg_flip;
-        g_state.zanzou_table[i]->kowaza = g_state.plw[i].wu.attack_type;
+        g_state.afterimage_table[i]->pos_x = g_state.plw[i].wu.position_x;
+        g_state.afterimage_table[i]->pos_y = g_state.plw[i].wu.position_y;
+        g_state.afterimage_table[i]->pos_z = g_state.plw[i].wu.position_z;
+        g_state.afterimage_table[i]->cg_num = g_state.plw[i].wu.cg_number;
+        g_state.afterimage_table[i]->renew = g_state.plw[i].wu.renew_attack;
+        g_state.afterimage_table[i]->hit_ix = g_state.plw[i].wu.cg_hit_ix;
+        g_state.afterimage_table[i]->flip = g_state.plw[i].wu.rl_flag;
+        g_state.afterimage_table[i]->cg_flp = g_state.plw[i].wu.cg_flip;
+        g_state.afterimage_table[i]->light_attack_flag = g_state.plw[i].wu.attack_type;
     }
 }
 
@@ -1278,9 +1278,9 @@ void erase_extra_plef_work() {
 
 /** @brief Sets up per-character base data and animation/damage tables. */
 void setup_base_and_other_data() {
-    make_texcash_work(3);
-    make_texcash_work(4);
-    make_texcash_work(6);
+    Allocate_Texture_Cache(3);
+    Allocate_Texture_Cache(4);
+    Allocate_Texture_Cache(6);
     g_state.plw[0].wu.my_mts = 3;
     g_state.plw[1].wu.my_mts = 4;
     set_base_data(&g_state.plw[0], 0);
@@ -1361,7 +1361,7 @@ static void set_base_data(PLW* wk, s16 ix) {
     wk->wu.graphic_overlap_index = wk->wu.olc_ix_table[wk->wu.cg_olc_ix];
     wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.cg_hit_ix];
 
-    set_jugde_area(&wk->wu);
+    Set_Collision_Boxes(&wk->wu);
 }
 
 /** @brief Sets base data for a metamorphosed (transformed) character. */

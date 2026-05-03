@@ -700,7 +700,7 @@ void Soft_Reset_Sub() {
     Next_Title_Sub();
     Bg_TexInit();
     Purge_mmtm_area(6);
-    Make_texcash_of_list(6);
+    Allocate_Texture_Cache_List(6);
     pulpul_stop();
     init_pulpul_work();
     pp_operator_check_flag(1);

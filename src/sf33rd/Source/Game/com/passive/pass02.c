@@ -1150,7 +1150,7 @@ void Passive02_0071(PLW* wk) {
         break;
 
     case 2:
-        ETC_Term(wk, 8, 6, 7);
+        Check_Miscellaneous_Conditions(wk, 8, 6, 7);
         break;
 
     case 3:
@@ -1442,7 +1442,7 @@ void Passive02_0082(PLW* wk) {
 void Passive02_0083(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 4, 6, 0x2A);
+        Check_Miscellaneous_Conditions(wk, 4, 6, 0x2A);
         break;
 
     case 1:

@@ -521,7 +521,7 @@ u8 tpu_free_mem[0x2000];
  */
 void distributeScratchPadAddress() {
     dctex_linear = (s16*)dctex_linear_mem;
-    texcash_melt_buffer = (u8*)texcash_melt_buffer_mem;
+    texture_cache_melt_buffer = (u8*)texcash_melt_buffer_mem;
     tpu_free = (TexturePoolUsed*)tpu_free_mem;
 }
 

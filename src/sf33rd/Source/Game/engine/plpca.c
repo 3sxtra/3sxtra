@@ -22,7 +22,7 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-static void check_nagenuke(PLW* wk, PLW* tk);
+static void Check_Throw_Escape(PLW* wk, PLW* tk);
 static s32 cat07_running_check(WORK* wk);
 static void catch_cg_type_check(PLW* wk);
 static void set_char_move_init_ca(PLW* wk, s16 koc, s16 index);
@@ -67,7 +67,7 @@ void Player_catch(PLW* wk) {
 
     if (wk->wu.routine_no[2] < PLPCA_DISPATCH_COUNT)
         plpca_lv_00[wk->wu.routine_no[2]](wk);
-    check_nagenuke(wk, (PLW*)wk->wu.hit_adrs);
+    Check_Throw_Escape(wk, (PLW*)wk->wu.hit_adrs);
 
     if (((WORK*)wk->wu.target_adrs)->routine_no[2] == 3) {
         return;
@@ -87,8 +87,8 @@ void Player_catch(PLW* wk) {
     wk->wu.next_z -= 3;
 }
 
-/** @brief Checks for throw-break (nagenuke) from the grabbed opponent. */
-static void check_nagenuke(PLW* wk, PLW* tk) {
+/** @brief Checks for throw-break (throw_escape) from the grabbed opponent. */
+static void Check_Throw_Escape(PLW* wk, PLW* tk) {
     if (tk->wu.work_id != 1) {
         return;
     }
@@ -105,7 +105,7 @@ static void check_nagenuke(PLW* wk, PLW* tk) {
         return;
     }
 
-    if (!check_nagenuke_cmd(tk)) {
+    if (!Check_Throw_Escape_Command(tk)) {
         return;
     }
 
@@ -526,7 +526,7 @@ static void catch_cg_type_check(PLW* wk) {
         emwk->wu.routine_no[3] = wk->wu.cmyd.pat;
 
     case 9:
-        grade_add_nml_nage(&wk->wu);
+        Grade_Add_Normal_Throw(&wk->wu);
         wk->wu.cg_type = 0;
     }
 }

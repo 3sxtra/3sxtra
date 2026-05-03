@@ -607,7 +607,7 @@ void Load_Replay_Sub(struct _TASK* task_ptr) {
             g_state.appear_type = APPEAR_TYPE_ANIMATED;
             set_hitmark_color();
             Purge_texcash_of_list(3);
-            Make_texcash_of_list(3);
+            Allocate_Texture_Cache_List(3);
             g_state.fsm[1] = 2;
             g_state.fsm[2] = 0;
             g_state.fsm[3] = 0;

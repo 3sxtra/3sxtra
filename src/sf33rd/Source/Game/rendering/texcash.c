@@ -31,7 +31,7 @@ typedef struct {
 } MTSBase;
 
 // sdata
-s8* texcash_name[29] = { "    16x16 (tm)  32x32 (tm) GIX      (mn.nw)",
+s8* texture_cache_name[29] = { "    16x16 (tm)  32x32 (tm) GIX      (mn.nw)",
                          "QA",
                          "HT",
                          "1P",
@@ -62,26 +62,26 @@ s8* texcash_name[29] = { "    16x16 (tm)  32x32 (tm) GIX      (mn.nw)",
                          "--.--" };
 
 // sbss
-u8* texcash_melt_buffer;
+u8* texture_cache_melt_buffer;
 TexturePoolUsed* tpu_free;
 s16 mts_ob_curr_stage;
 
 // forward decls
 extern const s16 mts_OB_page[22][2];
 extern const MTSBase mts_base[24];
-static void clear_texcash_work(s16 ix);
+static void clear_texture_cache_work(s16 ix);
 
 /** @brief Display debug info about free texture cache areas. */
-void disp_texcash_free_area() {
+void disp_texture_cache_free_area() {
     s16 i;
 
     if (Debug_w[DEBUG_TEX_CASH_FREE]) {
         flPrintColor(0xFF8F8F8F);
 
         for (i = 0; i < 24; i++) {
-            flPrintL(13, i + 8, texcash_name[i]);
+            flPrintL(13, i + 8, texture_cache_name[i]);
             if (i) {
-                flPrintL(16, i + 8, texcash_name[24]);
+                flPrintL(16, i + 8, texture_cache_name[24]);
             }
         }
 
@@ -95,10 +95,10 @@ void disp_texcash_free_area() {
                     if (mts[i].mltcshtime16 != 0) {
                         flPrintL(24, i + 8, "%2d", mts[i].mltcshtime16);
                     } else {
-                        flPrintL(24, i + 8, texcash_name[27]);
+                        flPrintL(24, i + 8, texture_cache_name[27]);
                     }
                 } else {
-                    flPrintL(16, i + 8, texcash_name[26]);
+                    flPrintL(16, i + 8, texture_cache_name[26]);
                 }
 
                 if (mts[i].mltnum32 != 0) {
@@ -108,10 +108,10 @@ void disp_texcash_free_area() {
                     if (mts[i].mltcshtime32 != 0) {
                         flPrintL(36, i + 8, "%2d", mts[i].mltcshtime32);
                     } else {
-                        flPrintL(36, i + 8, texcash_name[27]);
+                        flPrintL(36, i + 8, texture_cache_name[27]);
                     }
                 } else {
-                    flPrintL(28, i + 8, texcash_name[26]);
+                    flPrintL(28, i + 8, texture_cache_name[26]);
                 }
 
                 flPrintL(40, i + 8, "%3X", mts[i].mltgidx16);
@@ -127,17 +127,17 @@ void disp_texcash_free_area() {
                     flPrintL(50, i + 8, "%2d", 64 - mts_ok[i].mincg);
                     flPrintL(53, i + 8, "%2d", 64 - mts[i].cpat->kazu);
                 } else {
-                    flPrintL(50, i + 8, texcash_name[28]);
+                    flPrintL(50, i + 8, texture_cache_name[28]);
                 }
             } else {
-                flPrintL(16, i + 8, texcash_name[25]);
+                flPrintL(16, i + 8, texture_cache_name[25]);
             }
         }
     }
 }
 
 /** @brief Search for and report free texture cache slots for a given index. */
-void search_texcash_free_area(s16 ix) {
+void Search_Texture_Cache_Free_Area(s16 ix) {
     PatternState* mc;
     s16 i;
     s16 num = 0;
@@ -169,7 +169,7 @@ void search_texcash_free_area(s16 ix) {
 }
 
 /** @brief First-pass initialization of the texture cache system. */
-void init_texcash_1st() {
+void Init_Texture_Cache_Primary() {
     s16 i;
 
     for (i = 0; i < MULTITEXTURE_MAX; i++) {
@@ -184,18 +184,18 @@ void init_texcash_1st() {
 }
 
 /** @brief Pre-frame texture cache initialization. */
-void init_texcash_before_process() {
+void Init_Texture_Cache_Before_Process() {
     s16 i;
 
     for (i = 1; i < 24; i++) {
         if ((mts_ok[i].be) && (mts[i].ext)) {
-            init_texcash_2nd(i);
+            Init_Texture_Cache_Secondary(i);
         }
     }
 }
 
 /** @brief Second-pass initialization of texture cache for a given index. */
-void init_texcash_2nd(s16 ix) {
+void Init_Texture_Cache_Secondary(s16 ix) {
     PatternState* mc;
     PatternCollection* cp;
     TexturePoolFree* tf;
@@ -259,7 +259,7 @@ void texture_cash_update() {
                             (tpu_free->x32 != mts[num].cpat->adr[i]->x32)) {
                             Debug_w[DEBUG_TEX_CASH_FREE] = 1;
                             do {
-                                disp_texcash_free_area();
+                                disp_texture_cache_free_area();
                                 flPrintL(2, 3, "MAPPING MISS : %2d : &2d", num, i);
                                 njWaitVSync_with_N();
                             } while (1);
@@ -275,11 +275,11 @@ void texture_cash_update() {
             }
 
             if (Debug_w[DEBUG_TEX_CASH_FREE]) {
-                search_texcash_free_area(num);
+                Search_Texture_Cache_Free_Area(num);
             }
         }
     }
-    disp_texcash_free_area();
+    disp_texture_cache_free_area();
 }
 
 /** @brief Update pattern states using the free texture pool. */
@@ -291,7 +291,7 @@ void update_with_tpu_free(PatternState* mc16, PatternState* mc32) {
         if (mc16[tpu_free->x16_used[i]].time < 0) {
             Debug_w[DEBUG_TEX_CASH_FREE] = 1;
             do {
-                disp_texcash_free_area();
+                disp_texture_cache_free_area();
                 flPrintL(2, 3, "CACHE MISS x16 : %3d", tpu_free->x16_used[i]);
                 njWaitVSync_with_N();
             } while (1);
@@ -307,7 +307,7 @@ void update_with_tpu_free(PatternState* mc16, PatternState* mc32) {
         if (mc32[tpu_free->x32_used[i]].time < 0) {
             Debug_w[DEBUG_TEX_CASH_FREE] = 1;
             do {
-                disp_texcash_free_area();
+                disp_texture_cache_free_area();
                 flPrintL(2, 3, "CACHE MISS x32 : %3d", tpu_free->x32_used[i]);
                 njWaitVSync_with_N();
             } while (1);
@@ -329,7 +329,7 @@ s16 get_my_trans_mode(s16 curr) {
 }
 
 /** @brief Allocate and initialize a texture cache work entry. */
-void make_texcash_work(s16 ix) {
+void Allocate_Texture_Cache(s16 ix) {
     size_t memreq;
     u8* adrs;
     // For some reason page16 is reused later as a pointer.
@@ -388,7 +388,7 @@ void make_texcash_work(s16 ix) {
             I_ZeroPointer(mts[ix].cpat);
             I_ZeroPointer(mts[ix].tpf);
             I_ZeroPointer(mts[ix].tpu);
-            init_texcash_2nd(ix);
+            Init_Texture_Cache_Secondary(ix);
         } else {
             memreq = mts[ix].mltnum16 * 8 + mts[ix].mltnum32 * 8;
             mts_ok[ix].key0 = Pull_ramcnt_key(memreq, mts_base[ix].type, 0, 0);
@@ -398,7 +398,7 @@ void make_texcash_work(s16 ix) {
             mts[ix].mltcsh32 = (PatternState*)adrs;
         }
 
-        mts[ix].mltbuf = texcash_melt_buffer;
+        mts[ix].mltbuf = texture_cache_melt_buffer;
         memreq = ((mts_base[ix].mode & 4) != 0) + 1;
         memreq *= (mts[ix].mltnum << 0x10);
         mts_ok[ix].key1 = Pull_ramcnt_key(memreq, mts_base[ix].type, 0, 0);
@@ -407,7 +407,7 @@ void make_texcash_work(s16 ix) {
         mlt_obj_trans_init(&mts[ix], mts_base[ix].mode, (u8*)page16);
 
         if (mts[ix].ext) {
-            init_texcash_2nd(ix);
+            Init_Texture_Cache_Secondary(ix);
         }
 
         mts[ix].id = ix;
@@ -420,16 +420,16 @@ void make_texcash_work(s16 ix) {
 }
 
 /** @brief Clear all texture cache work entries. */
-void Clear_texcash_work() {
+void Clear_Texture_Cache() {
     s16 i;
 
     for (i = 1; i < 24; i++) {
-        clear_texcash_work(i);
+        clear_texture_cache_work(i);
     }
 }
 
 /** @brief Clear a single texture cache work entry by index. */
-static void clear_texcash_work(s16 ix) {
+static void clear_texture_cache_work(s16 ix) {
     s16 i;
 
     if (((mts_ok[ix].be) != 0) && ((mts_base[ix].mode & 0x20) == 0)) {
@@ -447,7 +447,7 @@ static void clear_texcash_work(s16 ix) {
             I_ZeroPointer(mts[ix].cpat);
             I_ZeroPointer(mts[ix].tpf);
             I_ZeroPointer(mts[ix].tpu);
-            init_texcash_2nd(ix);
+            Init_Texture_Cache_Secondary(ix);
         }
 
         mts_ok[ix].mincg = 0;
@@ -457,7 +457,7 @@ static void clear_texcash_work(s16 ix) {
 }
 
 /** @brief Purge a texture cache work entry and free its resources. */
-void purge_texcash_work(s16 ix) {
+void Free_Texture_Cache(s16 ix) {
     if (mts_ok[ix].be == 0) {
         return;
     }

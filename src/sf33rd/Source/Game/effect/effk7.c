@@ -122,7 +122,7 @@ static void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
         mwk->wu.cg_type = 0;
         mwk->wu.cg_hit_ix = 0;
         mwk->wu.cg_ja = mwk->wu.hit_ix_table[mwk->wu.cg_hit_ix];
-        set_jugde_area(&mwk->wu);
+        Set_Collision_Boxes(&mwk->wu);
         break;
 
     case 4:

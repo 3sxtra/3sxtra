@@ -351,7 +351,7 @@ static void Pattern11_0026(PLW* wk) {
         break;
 
     case 1:
-        ETC_Term(wk, 4, 2, 0x13);
+        Check_Miscellaneous_Conditions(wk, 4, 2, 0x13);
         break;
 
     case 2:
@@ -371,7 +371,7 @@ static void Pattern11_0027(PLW* wk) {
         break;
 
     case 1:
-        ETC_Term(wk, 4, 2, 0x13);
+        Check_Miscellaneous_Conditions(wk, 4, 2, 0x13);
         break;
 
     case 2:
@@ -967,7 +967,7 @@ static void Pattern11_0061(PLW* wk) {
 static void Pattern11_0062(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 3, 2, 0x11);
+        Check_Miscellaneous_Conditions(wk, 3, 2, 0x11);
         break;
 
     case 1:
@@ -983,7 +983,7 @@ static void Pattern11_0062(PLW* wk) {
 static void Pattern11_0063(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 3, 2, 0x12);
+        Check_Miscellaneous_Conditions(wk, 3, 2, 0x12);
         break;
 
     case 1:
@@ -999,7 +999,7 @@ static void Pattern11_0063(PLW* wk) {
 static void Pattern11_0064(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 3, 2, 0x13);
+        Check_Miscellaneous_Conditions(wk, 3, 2, 0x13);
         break;
 
     case 1:
@@ -1111,7 +1111,7 @@ static void Pattern11_0068(PLW* wk) {
 static void Pattern11_0069(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 3, 2, 0);
+        Check_Miscellaneous_Conditions(wk, 3, 2, 0);
         break;
 
     case 1:
@@ -1127,7 +1127,7 @@ static void Pattern11_0069(PLW* wk) {
 static void Pattern11_0070(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 3, 2, 0);
+        Check_Miscellaneous_Conditions(wk, 3, 2, 0);
         break;
 
     case 1:
@@ -1143,7 +1143,7 @@ static void Pattern11_0070(PLW* wk) {
 static void Pattern11_0071(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 3, 2, 0);
+        Check_Miscellaneous_Conditions(wk, 3, 2, 0);
         break;
 
     case 1:
@@ -1207,7 +1207,7 @@ static void Pattern11_0075(PLW* wk) {
 static void Pattern11_0076(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 5, 6, 0);
+        Check_Miscellaneous_Conditions(wk, 5, 6, 0);
         break;
 
     case 1:
@@ -1391,7 +1391,7 @@ static void Pattern11_0088(PLW* wk) {
 static void Pattern11_0089(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 5, 6, 0x57);
+        Check_Miscellaneous_Conditions(wk, 5, 6, 0x57);
         break;
 
     case 1:

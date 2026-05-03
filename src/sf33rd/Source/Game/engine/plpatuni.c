@@ -90,7 +90,7 @@ void Att_METAMOR_REBIRTH(PLW* wk) {
             wk->wu.cg_type = 0;
             wk->caution_flag = 0;
             wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.cg_hit_ix];
-            set_jugde_area(&wk->wu);
+            Set_Collision_Boxes(&wk->wu);
             break;
         }
 

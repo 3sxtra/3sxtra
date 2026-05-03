@@ -83,18 +83,18 @@ void Purge_texcash_of_list(s16 ix) {
 
     for (i = 0; i < 0x18; i++) {
         if (pto_list[ix][i]) {
-            purge_texcash_work(i);
+            Free_Texture_Cache(i);
         }
     }
 }
 
 /** @brief Create texture cache entries according to the MTO list. */
-void Make_texcash_of_list(s16 ix) {
+void Allocate_Texture_Cache_List(s16 ix) {
     s16 i;
 
     for (i = 0; i < 0x18; i++) {
         if (mto_list[ix][i]) {
-            make_texcash_work(TM_num[i]);
+            Allocate_Texture_Cache(TM_num[i]);
         }
     }
 }

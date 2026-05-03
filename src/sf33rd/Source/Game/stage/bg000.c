@@ -48,7 +48,7 @@ void bg0001_init00() {
     g_state.Gill_Appear_Flag = gill_appear_check();
 
     if (g_state.Gill_Appear_Flag == 0) {
-        make_texcash_work(0x10);
+        Allocate_Texture_Cache(0x10);
         setup_GILL_Opening_Ceremony();
     }
 

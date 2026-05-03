@@ -17,7 +17,7 @@ s32 check_leap_attack(PLW* wk);
 s32 check_nm_attack(PLW* wk);
 s16 hikusugi_check(WORK* wk);
 s32 check_chouhatsu(PLW* wk);
-s32 check_nagenuke_cmd(PLW* wk);
+s32 Check_Throw_Escape_Command(PLW* wk);
 s32 check_catch_attack(PLW* wk);
 void set_attack_routine_number(PLW* wk);
 u16 get_nearing_range(s16 pnum, s16 kos);

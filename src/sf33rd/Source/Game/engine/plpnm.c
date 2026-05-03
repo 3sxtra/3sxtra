@@ -868,7 +868,7 @@ static void Normal_47000(PLW* wk) {
         wk->wu.hit_stop = -18;
         wk->wu.hit_quake = 0;
         wk->wu.damage_hit_stop = wk->wu.damage_screen_shake = 0;
-        add_sp_arts_gauge_nagenuke(wk);
+        Add_Super_Gauge_Throw_Escape(wk);
         grade_add_grap_def(wk->wu.id);
         break;
 

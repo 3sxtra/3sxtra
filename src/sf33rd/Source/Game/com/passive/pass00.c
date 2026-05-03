@@ -646,7 +646,7 @@ void Passive00_0036(PLW* wk) {
         break;
 
     case 3:
-        ETC_Term(wk, 0, 6, 0x99);
+        Check_Miscellaneous_Conditions(wk, 0, 6, 0x99);
         break;
 
     case 4:
@@ -1022,7 +1022,7 @@ void Passive00_0058(PLW* wk) {
 void Passive00_0059(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 0, 6, 0x34);
+        Check_Miscellaneous_Conditions(wk, 0, 6, 0x34);
         break;
 
     case 1:
@@ -1050,7 +1050,7 @@ void Passive00_0060(PLW* wk) {
 void Passive00_0061(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 0, 6, 0x99);
+        Check_Miscellaneous_Conditions(wk, 0, 6, 0x99);
         break;
 
     case 1:
@@ -1122,7 +1122,7 @@ void Passive00_0065(PLW* wk) {
 void Passive00_0066(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 0, 6, 0x99);
+        Check_Miscellaneous_Conditions(wk, 0, 6, 0x99);
         break;
 
     case 1:
@@ -1558,7 +1558,7 @@ void Passive00_0087(PLW* wk) {
         break;
 
     case 5:
-        ETC_Term(wk, 2, 6, 1);
+        Check_Miscellaneous_Conditions(wk, 2, 6, 1);
         break;
 
     case 6:
@@ -1594,7 +1594,7 @@ void Passive00_0088(PLW* wk) {
         break;
 
     case 5:
-        ETC_Term(wk, 2, 6, 1);
+        Check_Miscellaneous_Conditions(wk, 2, 6, 1);
         break;
 
     case 6:
@@ -2110,7 +2110,7 @@ void Passive00_0115(PLW* wk) {
         break;
 
     case 4:
-        ETC_Term(wk, 2, 6, 1);
+        Check_Miscellaneous_Conditions(wk, 2, 6, 1);
         break;
 
     case 5:
@@ -2770,7 +2770,7 @@ void Passive00_0156(PLW* wk) {
 void Passive00_0157(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        ETC_Term(wk, 0, 6, 0x9A);
+        Check_Miscellaneous_Conditions(wk, 0, 6, 0x9A);
         break;
 
     case 1:

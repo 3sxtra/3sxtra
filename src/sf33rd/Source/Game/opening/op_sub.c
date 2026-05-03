@@ -53,7 +53,7 @@ void TexRelease_OP() {
     ppgSourceDataReleased(&ppgOpnBgList);
     ppgReleaseTextureHandle(&ppgOpnBgTex, -1);
     reset_dma_group(0x8C40);
-    purge_texcash_work(9);
+    Free_Texture_Cache(9);
 }
 
 /** @brief Render a single 256×256 opening tile quad with scaling and priority. */

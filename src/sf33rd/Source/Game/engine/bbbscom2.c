@@ -29,15 +29,15 @@ void bbbs_com_execute2(PLW* wk) {
         }
 
         if (wk->wu.id) {
-            purge_texcash_work(4);
+            Free_Texture_Cache(4);
             wk->wu.my_mts = 3;
 
         } else {
-            purge_texcash_work(3);
+            Free_Texture_Cache(3);
             wk->wu.my_mts = 4;
         }
 
-        make_texcash_work(5);
+        Allocate_Texture_Cache(5);
         wk->wu.xyz[0].disp.pos = 468;
         wk->wu.xyz[1].disp.pos = 0;
         effect_C2_init(&wk->wu, 0);

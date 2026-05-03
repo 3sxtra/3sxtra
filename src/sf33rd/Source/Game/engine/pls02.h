@@ -47,7 +47,7 @@ s16 get_sel_adjust_tbl_ix(s16 plnum);
 s16 check_work_position_bonus(WORK* hm, s16 tx);
 void set_hit_stop_hit_quake(WORK* wk);
 void add_sp_arts_gauge_paring(PLW* wk);
-void add_sp_arts_gauge_nagenuke(PLW* wk);
+void Add_Super_Gauge_Throw_Escape(PLW* wk);
 void add_sp_arts_gauge_ukemi(PLW* wk);
 s8 get_weight_point(WORK* wk);
 void setup_butt_own_data(WORK* wk);

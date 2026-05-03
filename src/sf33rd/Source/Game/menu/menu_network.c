@@ -1721,8 +1721,8 @@ void Menu_ReenterNetworkLobby(void) {
     // mto_list[6] is all-zeros so nothing is recreated automatically.
     // Menu effects need:  slot 12 (MS) for effect_45 (message display),
     //                     slot 13 (SL) for effect_57/61/66/04 (banners/text).
-    make_texcash_work(12);
-    make_texcash_work(13);
+    Allocate_Texture_Cache(12);
+    Allocate_Texture_Cache(13);
 
     // Replicate Menu_Init setup.  Menu_Init (r_no[1]=0) normally runs once
     // before Mode_Select to configure background layers, cursor state, and

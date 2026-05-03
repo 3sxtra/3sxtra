@@ -97,12 +97,12 @@ static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
             ewk->wu.position_x = mwk->wu.position_x;
             ewk->wu.position_y = mwk->wu.position_y;
         } else {
-            ewk->wu.position_x = g_state.zanzou_table[ewk->master_id][ewk->wu.type - 1].pos_x;
-            ewk->wu.position_y = g_state.zanzou_table[ewk->master_id][ewk->wu.type - 1].pos_y;
+            ewk->wu.position_x = g_state.afterimage_table[ewk->master_id][ewk->wu.type - 1].pos_x;
+            ewk->wu.position_y = g_state.afterimage_table[ewk->master_id][ewk->wu.type - 1].pos_y;
         }
     } else {
-        ewk->wu.position_x = g_state.zanzou_table[ewk->master_id][ewk->wu.type].pos_x;
-        ewk->wu.position_y = g_state.zanzou_table[ewk->master_id][ewk->wu.type].pos_y;
+        ewk->wu.position_x = g_state.afterimage_table[ewk->master_id][ewk->wu.type].pos_x;
+        ewk->wu.position_y = g_state.afterimage_table[ewk->master_id][ewk->wu.type].pos_y;
     }
 
     ewk->wu.position_z = mwk->wu.position_z;
@@ -112,9 +112,9 @@ static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
         ewk->wu.rl_flag = mwk->wu.rl_flag;
         ewk->wu.cg_flip = mwk->wu.cg_flip;
     } else {
-        ewk->wu.cg_number = g_state.zanzou_table[ewk->master_id][ewk->wu.type].cg_num;
-        ewk->wu.rl_flag = g_state.zanzou_table[ewk->master_id][ewk->wu.type].flip;
-        ewk->wu.cg_flip = g_state.zanzou_table[ewk->master_id][ewk->wu.type].cg_flp;
+        ewk->wu.cg_number = g_state.afterimage_table[ewk->master_id][ewk->wu.type].cg_num;
+        ewk->wu.rl_flag = g_state.afterimage_table[ewk->master_id][ewk->wu.type].flip;
+        ewk->wu.cg_flip = g_state.afterimage_table[ewk->master_id][ewk->wu.type].cg_flp;
     }
 
     if (ewk->wu.old_routine_no[0]) {

@@ -1002,7 +1002,7 @@ void add_sp_arts_gauge_paring(PLW* wk) {
 /**
  * @brief Common helper: adds SA gauge for self-initiated actions.
  * Checks work_id, applies difficulty adjustment, clamps, and calls
- * add_super_arts_gauge. Used by tokushu, ukemi, and nagenuke.
+ * add_super_arts_gauge. Used by tokushu, ukemi, and throw_escape.
  */
 static void add_sp_arts_gauge_self(PLW* wk, s16 asag) {
     if (wk->wu.work_id != 1) {
@@ -1035,7 +1035,7 @@ void add_sp_arts_gauge_ukemi(PLW* wk) {
 }
 
 /** @brief Adds SA gauge on successful throw break. */
-void add_sp_arts_gauge_nagenuke(PLW* wk) {
+void Add_Super_Gauge_Throw_Escape(PLW* wk) {
     add_sp_arts_gauge_self(wk, 6);
 }
 

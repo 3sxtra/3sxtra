@@ -170,7 +170,7 @@ static void setup_vs_mode() {
     // to advance the game state machine (g_state.fsm[1]: 12→1).
     // ====================================================================
     SDL_zeroa(g_state.plw);
-    SDL_zeroa(g_state.zanzou_table);
+    SDL_zeroa(g_state.afterimage_table);
     SDL_zeroa(g_state.super_arts);
 
     // Task timers and scratch data evolve independently per peer during menus.

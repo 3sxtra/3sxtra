@@ -1688,12 +1688,12 @@ typedef struct {
     s16 first_attack;
     s16 leap_attack;
     s16 target_combo;
-    s16 nml_nage;
+    s16 normal_throw;
     s16 grap_def;
     s16 quick_stand;
     s16 personal_act;
     s16 reversal;
-    s16 comwaza;
+    s16 command_move;
     s16 sa_exec;
     s16 tairyokusa;
     s16 kimarite;
@@ -2060,7 +2060,7 @@ typedef struct {
     u16 hit_ix;
     s8 flip;
     u8 cg_flp;
-    s16 kowaza;
+    s16 light_attack_flag;
 } ZanzouTableEntry;
 
 typedef struct _anon6 {
@@ -2102,8 +2102,8 @@ typedef struct {
     s16 ld_cnt;
     s16 ru_cnt;
     s16 rd_cnt;
-    s16 waza_num;
-    s16 waza_no;
+    s16 move_num;
+    s16 move_id;
     s16 wait_cnt;
     s16 cmd_r_no;
 } T_PL_LVR;
@@ -2165,7 +2165,7 @@ typedef struct {
 
 typedef struct {
     s16 my_wkid;
-    u8 waza_num;
+    u8 move_num;
     u8 vs_refrect;
     u16 koa;
     u8 kind_of_tama;

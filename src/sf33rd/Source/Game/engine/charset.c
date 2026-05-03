@@ -2632,7 +2632,7 @@ void check_cgd_patdat(WORK* wk) {
 
     if (wk->work_id < 16) {
         wk->cg_ja = wk->hit_ix_table[wk->cg_hit_ix];
-        set_jugde_area(wk);
+        Set_Collision_Boxes(wk);
     }
 
     if ((wk->cg_type != 0xFF) && (wk->cg_type & 0x80)) {
@@ -2797,7 +2797,7 @@ static void check_cgd_patdat2(WORK* wk) {
     wk->graphic_overlap_index = wk->olc_ix_table[wk->cg_olc_ix];
     wk->cg_ja = wk->hit_ix_table[wk->cg_hit_ix];
 
-    set_jugde_area(wk);
+    Set_Collision_Boxes(wk);
 
     if (wk->cg_type != 0xFF && wk->cg_type & 0x80) {
         wk->cg_wca_ix = wk->cg_type & 0x7F;
@@ -2868,7 +2868,7 @@ static void setup_metamor_kezuri(WORK* wk) {
 }
 
 /** @brief Sets up the judge (collision) area for the work object. */
-void set_jugde_area(WORK* wk) {
+void Set_Collision_Boxes(WORK* wk) {
     wk->body_hurtbox = wk->body_adrs + wk->cg_ja.boix;
     wk->catch_box = wk->catch_adrs + wk->cg_ja.caix;
     wk->caught_box = wk->caught_adrs + wk->cg_ja.cuix;
@@ -2884,7 +2884,7 @@ void get_char_data_zanzou(WORK* wk) {
     }
 
     wk->cg_ja = wk->hit_ix_table[wk->cg_hit_ix];
-    set_jugde_area(wk);
+    Set_Collision_Boxes(wk);
 }
 
 const s16 jphos_table[16] = { 0x0000, 0xFFF0, 0xFFF4, 0xFFF8, 0xFFFC, 0x0004, 0x0008, 0x000C,
