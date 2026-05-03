@@ -886,11 +886,11 @@ s16 check_dm_att_guard(State* as, State* ds, s16 kom) {
 /** @brief Checks whether a damage source can be parried (blocked) given the defender's state. */
 s16 check_dm_att_blocking(State* as, State* ds, s16 dnum) {
     s16 rnum = 0;
-    TAMA* tama = (TAMA*)as->my_effadrs;
+    ProjectileEntity* projectile = (ProjectileEntity*)as->my_effadrs;
 
     ds->is_taking_chip_damage = 0;
 
-    if (as->work_id == 4 && as->id == 13 && tama->kz_blocking != 0 && as->chip_damage_power) {
+    if (as->work_id == 4 && as->id == 13 && projectile->chip_damage_blocking != 0 && as->chip_damage_power) {
         if (ds->damage_vitality != 0) {
             ds->is_taking_chip_damage = 1;
 

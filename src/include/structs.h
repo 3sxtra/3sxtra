@@ -2164,29 +2164,29 @@ typedef struct {
 } HS;
 
 typedef struct {
-    s16 my_wkid;
-    u8 move_num;
-    u8 vs_refrect;
-    u16 koa;
-    u8 kind_of_tama;
-    u8 kage_index;
-    u8 chix;
-    u8 ernm;
-    u8 erht;
-    u8 erdf;
-    u8 erex;
-    u8 col_1p;
-    u8 col_2p;
-    u8 data00;
-    u8 data01;
-    u8 disp_type;
-    s16 def_power;
+    s16 owner_work_id;
+    u8 movement_type;
+    u8 vs_reflect;
+    u16 kind_of_arts;
+    u8 projectile_type;
+    u8 shadow_index;
+    u8 char_index;
+    u8 anim_normal;
+    u8 anim_hit;
+    u8 anim_defended;
+    u8 anim_expire;
+    u8 color_1p;
+    u8 color_2p;
+    u8 custom_data_0;
+    u8 custom_data_1;
+    u8 display_type;
+    s16 base_damage;
     s16 life_time;
-    s16 hos_x;
-    s16 hos_y;
-    u8 kz_blocking;
-    u8 free;
-} TAMA;
+    s16 pushbox_x;
+    s16 pushbox_y;
+    u8 chip_damage_blocking;
+    u8 reserved_bytes;
+} ProjectileEntity;
 
 typedef struct {
     s16 cyerw;

@@ -27,21 +27,21 @@
 static void tama_display(State* wk);
 static void set_tengu_init_pos(State* ewk, State* mwk);
 static void set_tengu_my_home(State* ewk, State* mwk);
-static s32 check_tengu_attack(State* ewk, State* mwk, TAMA* twk);
+static s32 check_tengu_attack(State* ewk, State* mwk, ProjectileEntity* projectile);
 static void make_speed_xy_att(State* ewk, State* mwk, s16 tm, u8 xsw, u8 ysw);
-static void make_speed_xy_back(State* ewk, State* mwk, TAMA* twk);
+static void make_speed_xy_back(State* ewk, State* mwk, ProjectileEntity* projectile);
 
-const s16 kotp_07_dm_vital[4];
-const TAMA tama_data[243];
+const s16 projectile_process_07_dm_vital[4];
+const ProjectileEntity projectile_data[243];
 const s16 tcct[36];
-void (*const kind_of_tama_process[17])();
+void (*const projectile_process[17])();
 const s16 kage_tbl[6][4];
 const s16 homing_empos_hos[1][20][2];
 const s16 enemy_pos_hos[1][20][2];
 const s16 X_F_L_A_T_pos_hos[1][20][2];
 
 void effect_13_move(State_Other* ewk) {
-    TAMA* tama = (TAMA*)ewk->wu.my_effadrs;
+    ProjectileEntity* projectile = (ProjectileEntity*)ewk->wu.my_effadrs;
     PlayerEntity* mwk;
     PlayerEntity* emwk;
 
@@ -52,48 +52,48 @@ void effect_13_move(State_Other* ewk) {
         ewk->wu.charset_id = 11;
         set_char_base_data(&ewk->wu);
         ewk->wu.hf.hit_flag = 0;
-        ewk->wu.work_id = tama->my_wkid;
-        ewk->wu.dir_timer = tama->life_time;
-        ewk->wu.disp_flag = tama->disp_type;
+        ewk->wu.work_id = projectile->owner_work_id;
+        ewk->wu.dir_timer = projectile->life_time;
+        ewk->wu.disp_flag = projectile->display_type;
         ewk->wu.blink_timing = ewk->master_id;
-        ewk->wu.attack_art_type = tama->koa;
-        ewk->wu.vital_new = tama->def_power;
+        ewk->wu.attack_art_type = projectile->kind_of_arts;
+        ewk->wu.vital_new = projectile->base_damage;
         ewk->wu.damage_vitality = 0;
-        ewk->wu.original_vitality = tama->move_num;
-        ewk->wu.shell_vs_refrect = tama->vs_refrect;
-        ewk->wu.charset_id = tama->kind_of_tama;
+        ewk->wu.original_vitality = projectile->movement_type;
+        ewk->wu.shell_vs_refrect = projectile->vs_reflect;
+        ewk->wu.charset_id = projectile->projectile_type;
 
         if (ewk->master_id) {
-            if (tama->col_2p == 0) {
+            if (projectile->color_2p == 0) {
                 ewk->wu.my_col_code = ewk->wu.old_routine_no[7];
             } else {
-                ewk->wu.my_col_code = tcct[tama->col_2p];
+                ewk->wu.my_col_code = tcct[projectile->color_2p];
             }
-        } else if (tama->col_1p == 0) {
+        } else if (projectile->color_1p == 0) {
             ewk->wu.my_col_code = ewk->wu.old_routine_no[7];
         } else {
-            ewk->wu.my_col_code = tcct[tama->col_1p];
+            ewk->wu.my_col_code = tcct[projectile->color_1p];
         }
 
-        if (tama->kage_index) {
+        if (projectile->shadow_index) {
             ewk->wu.shadow_flag = 1;
-            ewk->wu.shadow_x = kage_tbl[tama->kage_index][0];
-            ewk->wu.shadow_y = kage_tbl[tama->kage_index][1];
-            ewk->wu.shadow_prio = kage_tbl[tama->kage_index][2];
-            ewk->wu.shadow_char = kage_tbl[tama->kage_index][3];
+            ewk->wu.shadow_x = kage_tbl[projectile->shadow_index][0];
+            ewk->wu.shadow_y = kage_tbl[projectile->shadow_index][1];
+            ewk->wu.shadow_prio = kage_tbl[projectile->shadow_index][2];
+            ewk->wu.shadow_char = kage_tbl[projectile->shadow_index][3];
         } else {
             ewk->wu.shadow_flag = 0;
         }
 
-        if (tama->kind_of_tama == 2) {
+        if (projectile->projectile_type == 2) {
             set_tengu_init_pos(&ewk->wu, (State*)ewk->my_master);
             ewk->wu.disp_flag = 0;
             ewk->wu.dir_old = ((PlayerEntity*)ewk->my_master)->sa->super_art_id;
-            set_char_move_init2(&ewk->wu, 0, tama->chix, random_16() & 7, 0);
-        } else if (tama->kind_of_tama == 0xF) {
+            set_char_move_init2(&ewk->wu, 0, projectile->char_index, random_16() & 7, 0);
+        } else if (projectile->projectile_type == 0xF) {
             mwk = (PlayerEntity*)ewk->my_master;
 
-            if (tama->data01) {
+            if (projectile->custom_data_1) {
                 ewk->wu.mvxy.a[0].sp = mwk->wu.mvxy.a[0].sp;
                 ewk->wu.mvxy.a[1].sp = mwk->wu.mvxy.a[1].sp ? mwk->wu.mvxy.a[1].sp : -0x80000;
                 ewk->wu.mvxy.d[0].sp = mwk->wu.mvxy.d[0].sp;
@@ -101,43 +101,43 @@ void effect_13_move(State_Other* ewk) {
                 ewk->wu.mvxy.physics_curve_type[1] = 0;
             } else {
                 emwk = (PlayerEntity*)mwk->wu.target_adrs;
-                ewk->wu.xyz[0].disp.pos = tama->hos_x;
+                ewk->wu.xyz[0].disp.pos = projectile->pushbox_x;
                 ewk->wu.xyz[0].disp.pos += emwk->wu.xyz[0].disp.pos;
                 ewk->wu.xyz[0].disp.pos += X_F_L_A_T_pos_hos[0][emwk->player_number][0];
-                ewk->wu.xyz[1].disp.pos = tama->hos_y;
+                ewk->wu.xyz[1].disp.pos = projectile->pushbox_y;
                 ewk->wu.xyz[1].disp.pos += emwk->wu.xyz[1].disp.pos;
                 ewk->wu.xyz[1].disp.pos += X_F_L_A_T_pos_hos[0][emwk->player_number][1];
                 ewk->wu.facing_flag = ewk->wu.xyz[0].disp.pos > emwk->wu.xyz[0].disp.pos ? 0 : 1;
-                setup_mvxy_data(&ewk->wu, tama->data00);
+                setup_mvxy_data(&ewk->wu, projectile->custom_data_0);
             }
 
-            set_char_move_init(&ewk->wu, 0, tama->chix);
+            set_char_move_init(&ewk->wu, 0, projectile->char_index);
         } else {
             if (ewk->wu.facing_flag) {
-                ewk->wu.xyz[0].disp.pos -= tama->hos_x;
+                ewk->wu.xyz[0].disp.pos -= projectile->pushbox_x;
             } else {
-                ewk->wu.xyz[0].disp.pos += tama->hos_x;
+                ewk->wu.xyz[0].disp.pos += projectile->pushbox_x;
             }
 
-            ewk->wu.xyz[1].disp.pos += tama->hos_y;
+            ewk->wu.xyz[1].disp.pos += projectile->pushbox_y;
             ewk->wu.position_z = ewk->wu.my_priority;
 
-            if (tama->kind_of_tama == 7) {
+            if (projectile->projectile_type == 7) {
                 ewk->wu.position_z += 2;
             }
 
-            setup_mvxy_data(&ewk->wu, tama->data00);
-            set_char_move_init(&ewk->wu, 0, tama->chix);
+            setup_mvxy_data(&ewk->wu, projectile->custom_data_0);
+            set_char_move_init(&ewk->wu, 0, projectile->char_index);
         }
 
-        if (tama->kind_of_tama == 11) {
+        if (projectile->projectile_type == 11) {
             ewk->wu.next_z = 71;
             ewk->wu.mirror_flag = 1;
             ewk->wu.mirror_scale.size.x = 127;
             ewk->wu.mirror_scale.size.y = 127;
         }
 
-        if (tama->kind_of_tama == 10) {
+        if (projectile->projectile_type == 10) {
             ewk->wu.facing_flag = ((State*)ewk->my_master)->active_move;
         }
 
@@ -157,7 +157,7 @@ void effect_13_move(State_Other* ewk) {
         }
 
         if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
-            kind_of_tama_process[tama->kind_of_tama](ewk, tama);
+            projectile_process[projectile->projectile_type](ewk, projectile);
         }
 
         tama_display(&ewk->wu);
@@ -290,7 +290,7 @@ static void set_tengu_init_pos(State* ewk, State* mwk) {
     ewk->xyz[1].disp.pos = ewk->direction;
 }
 
-static void kotp_00000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_00000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -313,7 +313,7 @@ static void kotp_00000(State_Other* ewk, TAMA* twk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type == 0xFF) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
             break;
@@ -324,7 +324,7 @@ static void kotp_00000(State_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = 0;
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
             ewk->wu.xyz[1].disp.pos = -ewk->wu.cg_jphos;
@@ -337,7 +337,7 @@ static void kotp_00000(State_Other* ewk, TAMA* twk) {
 
         ewk->wu.mvxy.a[0].sp /= 4;
         ewk->wu.mvxy.a[1].sp /= 4;
-        set_char_move_init(&ewk->wu, 0, twk->ernm);
+        set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
         break;
@@ -349,12 +349,12 @@ static void kotp_00000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 0x100) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -366,12 +366,12 @@ static void kotp_00000(State_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    effect_96_init(&ewk->wu, twk->erdf, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_defended, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 } else {
-                    effect_96_init(&ewk->wu, twk->erht, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_hit, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 }
             } else {
-                effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                effect_96_init(&ewk->wu, projectile->anim_expire, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
             if (ewk->damage_reflect) {
@@ -407,7 +407,7 @@ static void kotp_00000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_01000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_01000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -422,7 +422,7 @@ static void kotp_01000(State_Other* ewk, TAMA* twk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type == 0xFF) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
             break;
@@ -438,12 +438,12 @@ static void kotp_01000(State_Other* ewk, TAMA* twk) {
     case 1:
         if (ewk->wu.hf.hit.player) {
             if (ewk->wu.hf.hit.player & 0xF0) {
-                set_char_move_init(&ewk->wu, 0, twk->erdf);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erht);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
             }
         } else {
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
         }
 
         ewk->wu.routine_no[1] = 2;
@@ -464,7 +464,7 @@ static void kotp_01000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_02000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_02000(State_Other* ewk, ProjectileEntity* projectile) {
     PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
@@ -484,7 +484,7 @@ static void kotp_02000(State_Other* ewk, TAMA* twk) {
         case 0:
             ewk->wu.routine_no[2] = 1;
             ewk->wu.disp_flag = 1;
-            ewk->wu.dir_timer = twk->data00;
+            ewk->wu.dir_timer = projectile->custom_data_0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = -0x7000;
             cal_initial_speed(&ewk->wu,
@@ -497,7 +497,7 @@ static void kotp_02000(State_Other* ewk, TAMA* twk) {
             add_mvxy_speed_no_use_rl(&ewk->wu);
             cal_mvxy_speed(&ewk->wu);
 
-            if (check_tengu_attack(&ewk->wu, &mwk->wu, twk) == 0 && --ewk->wu.dir_timer < 0) {
+            if (check_tengu_attack(&ewk->wu, &mwk->wu, projectile) == 0 && --ewk->wu.dir_timer < 0) {
                 ewk->wu.routine_no[2] = 2;
             }
 
@@ -510,11 +510,11 @@ static void kotp_02000(State_Other* ewk, TAMA* twk) {
                 ewk->wu.routine_no[1] = 2;
                 ewk->wu.routine_no[2] = 0;
                 ewk->wu.anim_hurtbox_index = 0;
-                make_speed_xy_back(&ewk->wu, &mwk->wu, twk);
+                make_speed_xy_back(&ewk->wu, &mwk->wu, projectile);
                 break;
             }
 
-            if (check_tengu_attack(&ewk->wu, &mwk->wu, twk)) {
+            if (check_tengu_attack(&ewk->wu, &mwk->wu, projectile)) {
                 break;
             }
 
@@ -535,7 +535,7 @@ static void kotp_02000(State_Other* ewk, TAMA* twk) {
             if (--ewk->wu.dir_timer < 0) {
                 ewk->wu.routine_no[2] = 4;
                 ewk->wu.att_hit_ok = 0;
-                ewk->wu.dir_timer = twk->hos_x;
+                ewk->wu.dir_timer = projectile->pushbox_x;
                 set_tengu_my_home(&ewk->wu, &mwk->wu);
                 cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider, 2, 2);
             }
@@ -557,7 +557,7 @@ static void kotp_02000(State_Other* ewk, TAMA* twk) {
             set_tengu_my_home(&ewk->wu, &mwk->wu);
             ewk->wu.routine_no[2] = 4;
             ewk->wu.anim_hurtbox_index = 0;
-            ewk->wu.dir_timer = twk->hos_y;
+            ewk->wu.dir_timer = projectile->pushbox_y;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = -0x4000;
             cal_initial_speed(&ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider);
@@ -599,7 +599,7 @@ static void set_tengu_my_home(State* ewk, State* mwk) {
     ewk->dir_step = cal_move_quantity2(ewk->xyz[0].disp.pos, ewk->xyz[1].disp.pos, ewk->damage_calc_multiplier, ewk->damage_calc_divider);
 }
 
-static s32 check_tengu_attack(State* ewk, State* mwk, TAMA* twk) {
+static s32 check_tengu_attack(State* ewk, State* mwk, ProjectileEntity* projectile) {
     if (mwk->cg_ja.attack_box_index == 0) {
         return 0;
     }
@@ -607,7 +607,7 @@ static s32 check_tengu_attack(State* ewk, State* mwk, TAMA* twk) {
     ewk->routine_no[2] = 3;
     ewk->att_hit_ok = 1;
     ewk->facing_flag = mwk->facing_flag;
-    ewk->dir_timer = twk->life_time;
+    ewk->dir_timer = projectile->life_time;
     grade_add_att_renew((State_Other*)ewk);
 
     if (mwk->xyz[1].disp.pos > 0) {
@@ -627,7 +627,7 @@ static void make_speed_xy_att(State* ewk, State* mwk, s16 tm, u8 xsw, u8 ysw) {
     cal_all_speed_data(ewk, tm, ax, ay, xsw, ysw);
 }
 
-static void make_speed_xy_back(State* ewk, State* mwk, TAMA* twk) {
+static void make_speed_xy_back(State* ewk, State* mwk, ProjectileEntity* projectile) {
     s16 bx;
     s16 by;
 
@@ -635,7 +635,7 @@ static void make_speed_xy_back(State* ewk, State* mwk, TAMA* twk) {
     ewk->damage_calc_divider = ewk->xyz[1].disp.pos;
     ewk->mvxy.d[0].sp = 0;
     ewk->mvxy.d[1].sp = -0x7000;
-    ewk->dir_timer = twk->data01;
+    ewk->dir_timer = projectile->custom_data_1;
     set_tengu_init_pos(ewk, mwk);
     bx = ewk->xyz[0].disp.pos;
     by = ewk->xyz[1].disp.pos;
@@ -644,7 +644,7 @@ static void make_speed_xy_back(State* ewk, State* mwk, TAMA* twk) {
     cal_initial_speed(ewk, ewk->dir_timer, bx, by);
 }
 
-static void kotp_03000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_03000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -665,7 +665,7 @@ static void kotp_03000(State_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = 0;
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
             ewk->wu.xyz[1].disp.pos = -ewk->wu.cg_jphos;
@@ -688,9 +688,9 @@ static void kotp_03000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 0x100) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                     ewk->wu.routine_no[1] = 2;
                     ewk->wu.routine_no[2] = 1;
                     ewk->wu.mvxy.a[0].sp = 0;
@@ -702,7 +702,7 @@ static void kotp_03000(State_Other* ewk, TAMA* twk) {
                     break;
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -743,12 +743,12 @@ static void kotp_03000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_04000(State_Other* ewk, TAMA* /* unused */) {
+static void projectile_process_04000(State_Other* ewk, ProjectileEntity* /* unused */) {
     ewk->wu.disp_flag = 0;
     ewk->wu.routine_no[0] = 2;
 }
 
-static void kotp_05000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_05000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -774,7 +774,7 @@ static void kotp_05000(State_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = 0;
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
             ewk->wu.xyz[1].disp.pos = -ewk->wu.cg_jphos;
@@ -787,7 +787,7 @@ static void kotp_05000(State_Other* ewk, TAMA* twk) {
 
         ewk->wu.mvxy.a[0].sp /= 4;
         ewk->wu.mvxy.a[1].sp /= 4;
-        set_char_move_init(&ewk->wu, 0, twk->ernm);
+        set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
         break;
@@ -799,12 +799,12 @@ static void kotp_05000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -816,12 +816,12 @@ static void kotp_05000(State_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    effect_96_init(&ewk->wu, twk->erdf, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_defended, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 } else {
-                    effect_96_init(&ewk->wu, twk->erht, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_hit, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 }
             } else {
-                effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                effect_96_init(&ewk->wu, projectile->anim_expire, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
         }
 
@@ -851,7 +851,7 @@ static void kotp_05000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_06000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_06000(State_Other* ewk, ProjectileEntity* projectile) {
     PlayerEntity* mwk;
     PlayerEntity* emwk;
     s16 dir;
@@ -879,7 +879,7 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
         case 0:
             ewk->wu.routine_no[3]++;
             ewk->wu.is_taking_chip_damage = 6;
-            ewk->wu.direction = ewk->wu.facing_flag ? twk->data01 : 256 - twk->data01 & 0xFF;
+            ewk->wu.direction = ewk->wu.facing_flag ? projectile->custom_data_1 : 256 - projectile->custom_data_1 & 0xFF;
             effect_I9_init(ewk, 2, 3, 0x77);
             break;
 
@@ -923,7 +923,7 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = 0;
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
             ewk->wu.xyz[1].disp.pos = -ewk->wu.cg_jphos;
@@ -933,7 +933,7 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
         if (--ewk->wu.dir_timer < 0 || screen_range_check(&ewk->wu) != 0) {
             ewk->wu.mvxy.a[0].sp /= 4;
             ewk->wu.mvxy.a[1].sp /= 4;
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
         }
@@ -947,12 +947,12 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -964,12 +964,12 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    effect_96_init(&ewk->wu, twk->erdf, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_defended, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 } else {
-                    effect_96_init(&ewk->wu, twk->erht, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_hit, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 }
             } else {
-                effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                effect_96_init(&ewk->wu, projectile->anim_expire, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
         }
 
@@ -999,7 +999,7 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_07000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_07000(State_Other* ewk, ProjectileEntity* projectile) {
     State* awk;
     s16 dsst;
     PlayerEntity* mwk;
@@ -1043,7 +1043,7 @@ static void kotp_07000(State_Other* ewk, TAMA* twk) {
         }
 
         if (--ewk->wu.dir_timer < 0) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
         }
@@ -1061,9 +1061,9 @@ static void kotp_07000(State_Other* ewk, TAMA* twk) {
                     dsst = (ewk->wu.damage_attack_type / 2) & 3;
                 }
 
-                ewk->wu.damage_vitality = kotp_07_dm_vital[dsst];
+                ewk->wu.damage_vitality = projectile_process_07_dm_vital[dsst];
             } else {
-                ewk->wu.damage_vitality = kotp_07_dm_vital[2];
+                ewk->wu.damage_vitality = projectile_process_07_dm_vital[2];
             }
         }
 
@@ -1073,12 +1073,12 @@ static void kotp_07000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 0x100) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -1090,12 +1090,12 @@ static void kotp_07000(State_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    effect_96_init(&ewk->wu, twk->erdf, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_defended, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 } else {
-                    effect_96_init(&ewk->wu, twk->erht, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_hit, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 }
             } else {
-                effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                effect_96_init(&ewk->wu, projectile->anim_expire, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
             if (ewk->damage_reflect) {
@@ -1131,7 +1131,7 @@ static void kotp_07000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_08000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_08000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1152,7 +1152,7 @@ static void kotp_08000(State_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = 0;
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
             ewk->wu.xyz[1].disp.pos = -ewk->wu.cg_jphos;
@@ -1165,7 +1165,7 @@ static void kotp_08000(State_Other* ewk, TAMA* twk) {
 
         ewk->wu.mvxy.a[0].sp /= 4;
         ewk->wu.mvxy.a[1].sp /= 4;
-        set_char_move_init(&ewk->wu, 0, twk->ernm);
+        set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
         break;
@@ -1177,12 +1177,12 @@ static void kotp_08000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -1194,14 +1194,14 @@ static void kotp_08000(State_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    effect_96_init(&ewk->wu, twk->erdf, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_defended, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 } else {
-                    effect_96_init(&ewk->wu, twk->erht, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_hit, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 }
             } else if (ewk->damage_reflect) {
-                effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                effect_96_init(&ewk->wu, projectile->anim_expire, ewk->wu.disp_flag, ewk->wu.hit_stop);
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
                 ewk->wu.routine_no[1] = 2;
                 ewk->wu.routine_no[2] = 1;
                 ewk->wu.shadow_flag = 0;
@@ -1239,7 +1239,7 @@ static void kotp_08000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_09000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_09000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1256,7 +1256,7 @@ static void kotp_09000(State_Other* ewk, TAMA* twk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type == 0xFF) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
             break;
@@ -1267,7 +1267,7 @@ static void kotp_09000(State_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = 0;
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
             ewk->wu.xyz[1].disp.pos = -ewk->wu.cg_jphos;
@@ -1280,7 +1280,7 @@ static void kotp_09000(State_Other* ewk, TAMA* twk) {
 
         ewk->wu.mvxy.a[0].sp /= 4;
         ewk->wu.mvxy.a[1].sp /= 4;
-        set_char_move_init(&ewk->wu, 0, twk->ernm);
+        set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
         break;
@@ -1292,12 +1292,12 @@ static void kotp_09000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -1309,9 +1309,9 @@ static void kotp_09000(State_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
 
                 ewk->wu.routine_no[1] = 2;
@@ -1319,7 +1319,7 @@ static void kotp_09000(State_Other* ewk, TAMA* twk) {
                 ewk->wu.shadow_flag = 0;
                 ewk->wu.hit_stop = 0;
             } else {
-                effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                effect_96_init(&ewk->wu, projectile->anim_expire, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
             if (ewk->damage_reflect) {
@@ -1355,7 +1355,7 @@ static void kotp_09000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_10000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_10000(State_Other* ewk, ProjectileEntity* projectile) {
     char_move(&ewk->wu);
 
     if (ewk->wu.cg_type == 0xFF) {
@@ -1364,7 +1364,7 @@ static void kotp_10000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_11000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_11000(State_Other* ewk, ProjectileEntity* projectile) {
     PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
@@ -1380,7 +1380,7 @@ static void kotp_11000(State_Other* ewk, TAMA* twk) {
 
         if (ewk->wu.xyz[1].disp.pos <= 0) {
             ewk->wu.mvxy.a[1].sp = ewk->wu.mvxy.d[1].sp = ewk->wu.mvxy.physics_curve_type[1] = 0;
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             ewk->wu.xyz[1].disp.pos = 0;
             ewk->wu.routine_no[1] = 2;
         }
@@ -1412,7 +1412,7 @@ static void kotp_11000(State_Other* ewk, TAMA* twk) {
     ewk->wu.position_z = ewk->wu.next_z;
 }
 
-static void kotp_12000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_12000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1435,13 +1435,13 @@ static void kotp_12000(State_Other* ewk, TAMA* twk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type == 10) {
-            add_to_mvxy_data(&ewk->wu, twk->data01);
+            add_to_mvxy_data(&ewk->wu, projectile->custom_data_1);
             ewk->wu.cg_type = 0;
             break;
         }
 
         if (ewk->wu.cg_type == 0xFF) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
             break;
@@ -1452,7 +1452,7 @@ static void kotp_12000(State_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = 0;
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
             ewk->wu.xyz[1].disp.pos = -ewk->wu.cg_jphos;
@@ -1465,7 +1465,7 @@ static void kotp_12000(State_Other* ewk, TAMA* twk) {
 
         ewk->wu.mvxy.a[0].sp /= 4;
         ewk->wu.mvxy.a[1].sp /= 4;
-        set_char_move_init(&ewk->wu, 0, twk->ernm);
+        set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
         break;
@@ -1477,12 +1477,12 @@ static void kotp_12000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -1494,12 +1494,12 @@ static void kotp_12000(State_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    effect_96_init(&ewk->wu, twk->erdf, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_defended, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 } else {
-                    effect_96_init(&ewk->wu, twk->erht, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_hit, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 }
             } else {
-                effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                effect_96_init(&ewk->wu, projectile->anim_expire, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
             if (ewk->damage_reflect) {
@@ -1535,7 +1535,7 @@ static void kotp_12000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_13000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_13000(State_Other* ewk, ProjectileEntity* projectile) {
     PlayerEntity* mwk;
     PlayerEntity* emwk;
     s16 ipos_x;
@@ -1563,7 +1563,7 @@ static void kotp_13000(State_Other* ewk, TAMA* twk) {
             ewk->wu.xyz[1].disp.pos = 0;
             ewk->wu.routine_no[3]++;
 
-            if (twk->data00) {
+            if (projectile->custom_data_0) {
                 mwk = (PlayerEntity*)ewk->my_master;
                 emwk = (PlayerEntity*)mwk->wu.target_adrs;
                 ipos_x = enemy_pos_hos[0][emwk->player_number][0];
@@ -1575,7 +1575,7 @@ static void kotp_13000(State_Other* ewk, TAMA* twk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type == 0xFF) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
             break;
@@ -1620,7 +1620,7 @@ static void kotp_13000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_14000(State_Other* ewk, TAMA* /* unused */) {
+static void projectile_process_14000(State_Other* ewk, ProjectileEntity* /* unused */) {
     char_move(&ewk->wu);
 
     if (ewk->wu.hf.hit_flag) {
@@ -1634,7 +1634,7 @@ static void kotp_14000(State_Other* ewk, TAMA* /* unused */) {
     }
 }
 
-static void kotp_15000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_15000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1651,7 +1651,7 @@ static void kotp_15000(State_Other* ewk, TAMA* twk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type == 0xFF) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
             break;
@@ -1665,7 +1665,7 @@ static void kotp_15000(State_Other* ewk, TAMA* twk) {
         ewk->wu.mvxy.a[1].sp = 0;
         ewk->wu.mvxy.d[0].sp = 0;
         ewk->wu.mvxy.d[1].sp = 0;
-        set_char_move_init(&ewk->wu, 0, twk->ernm);
+        set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
         break;
@@ -1675,7 +1675,7 @@ static void kotp_15000(State_Other* ewk, TAMA* twk) {
         ewk->wu.damage_vitality = 0;
 
         if (ewk->wu.vital_new < 256) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
         } else {
@@ -1709,7 +1709,7 @@ static void kotp_15000(State_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_16000(State_Other* ewk, TAMA* twk) {
+static void projectile_process_16000(State_Other* ewk, ProjectileEntity* projectile) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1737,7 +1737,7 @@ static void kotp_16000(State_Other* ewk, TAMA* twk) {
         char_move(&ewk->wu);
 
         if (ewk->wu.cg_type == 0xFF) {
-            set_char_move_init(&ewk->wu, 0, twk->ernm);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 0;
             break;
@@ -1748,7 +1748,7 @@ static void kotp_16000(State_Other* ewk, TAMA* twk) {
             ewk->wu.mvxy.a[1].sp = 0;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = 0;
-            set_char_move_init(&ewk->wu, 0, twk->erex);
+            set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.routine_no[2] = 1;
             ewk->wu.xyz[1].disp.pos = -ewk->wu.cg_jphos;
@@ -1759,7 +1759,7 @@ static void kotp_16000(State_Other* ewk, TAMA* twk) {
             break;
         }
 
-        set_char_move_init(&ewk->wu, 0, twk->ernm);
+        set_char_move_init(&ewk->wu, 0, projectile->anim_normal);
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
         break;
@@ -1771,12 +1771,12 @@ static void kotp_16000(State_Other* ewk, TAMA* twk) {
         if (ewk->wu.vital_new < 256) {
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    set_char_move_init(&ewk->wu, 0, twk->erdf);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_defended);
                 } else {
-                    set_char_move_init(&ewk->wu, 0, twk->erht);
+                    set_char_move_init(&ewk->wu, 0, projectile->anim_hit);
                 }
             } else {
-                set_char_move_init(&ewk->wu, 0, twk->erex);
+                set_char_move_init(&ewk->wu, 0, projectile->anim_expire);
             }
 
             ewk->wu.routine_no[1] = 2;
@@ -1788,12 +1788,12 @@ static void kotp_16000(State_Other* ewk, TAMA* twk) {
 
             if (ewk->wu.hf.hit.player) {
                 if (ewk->wu.hf.hit.player & 0xF0) {
-                    effect_96_init(&ewk->wu, twk->erdf, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_defended, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 } else {
-                    effect_96_init(&ewk->wu, twk->erht, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                    effect_96_init(&ewk->wu, projectile->anim_hit, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 }
             } else {
-                effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
+                effect_96_init(&ewk->wu, projectile->anim_expire, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
             if (ewk->damage_reflect) {
@@ -1873,7 +1873,7 @@ s32 effect_13_init(State* wk, u8 data) {
 
     ewk->wu.xyz[0] = wk->xyz[0];
     ewk->wu.xyz[1] = wk->xyz[1];
-    ewk->wu.my_effadrs = &tama_data[data];
+    ewk->wu.my_effadrs = &projectile_data[data];
 
     if (wk->work_id == 1) {
         ewk->wu.floor = ((PlayerEntity*)wk)->metamorphose;
@@ -1882,9 +1882,9 @@ s32 effect_13_init(State* wk, u8 data) {
     return 0;
 }
 
-const s16 kotp_07_dm_vital[4] = { 96, 240, 384, 384 };
+const s16 projectile_process_07_dm_vital[4] = { 96, 240, 384, 384 };
 
-const TAMA tama_data[243] = {
+const ProjectileEntity projectile_data[243] = {
     { 4, 29, 0, 16, 0, 1, 0, 1, 2, 3, 4, 11, 12, 0, 0, 1, 384, 999, -64, 66, 0, 0 },
     { 4, 29, 0, 16, 0, 1, 0, 1, 2, 3, 4, 11, 12, 1, 0, 1, 384, 999, -64, 66, 0, 0 },
     { 4, 29, 0, 16, 0, 1, 0, 1, 2, 3, 4, 11, 12, 2, 0, 1, 384, 999, -64, 66, 0, 0 },
@@ -2134,9 +2134,9 @@ const s16 tcct[36] = { 8192, 8192, 8192, 8208, 8192, 8192, 8192, 8208, 8192, 820
                        8212, 8196, 8212, 8196, 8212, 8196, 8212, 8196, 8212, 8196, 8212, 8196,
                        8212, 8196, 8212, 8192, 8196, 8212, 8198, 8214, 8196, 8212, 8196, 8212 };
 
-void (*const kind_of_tama_process[17])() = { kotp_00000, kotp_01000, kotp_02000, kotp_03000, kotp_04000, kotp_05000,
-                                             kotp_06000, kotp_07000, kotp_08000, kotp_09000, kotp_10000, kotp_11000,
-                                             kotp_12000, kotp_13000, kotp_14000, kotp_15000, kotp_16000 };
+void (*const projectile_process[17])() = { projectile_process_00000, projectile_process_01000, projectile_process_02000, projectile_process_03000, projectile_process_04000, projectile_process_05000,
+                                             projectile_process_06000, projectile_process_07000, projectile_process_08000, projectile_process_09000, projectile_process_10000, projectile_process_11000,
+                                             projectile_process_12000, projectile_process_13000, projectile_process_14000, projectile_process_15000, projectile_process_16000 };
 
 const s16 kage_tbl[6][4] = { { 0, 0, 71, 0 }, { 0, 0, 71, 3 }, { 0, 0, 71, 4 },
                              { 0, 0, 71, 9 }, { 0, 0, 71, 1 }, { 0, 0, 71, 0 } };

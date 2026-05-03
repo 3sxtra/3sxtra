@@ -519,3 +519,35 @@
 | `effK4_isp_x_hosei` | `effK4_isp_x_offset` |
 | `effK4_isp_y_hosei` | `effK4_isp_y_offset` |
 | `panel_pos_hosei` | `panel_pos_offset` |
+
+## Phase 21: TAMA (Projectile) Subsystem
+
+| Legacy Identifier | Modern Semantic Identifier |
+| --- | --- |
+| `TAMA` | `ProjectileEntity` |
+| `tama` | `projectile` |
+| `tama_data` | `projectile_data` |
+| `kotp_` | `projectile_process_` |
+| `kind_of_tama_process` | `projectile_process` |
+| `my_wkid` | `owner_work_id` |
+| `move_num` | `movement_type` |
+| `vs_refrect` | `vs_reflect` |
+| `koa` | `kind_of_arts` |
+| `kind_of_tama` | `projectile_type` |
+| `kage_index` | `shadow_index` |
+| `chix` | `char_index` |
+| `ernm` | `anim_normal` |
+| `erht` | `anim_hit` |
+| `erdf` | `anim_defended` |
+| `erex` | `anim_expire` |
+| `col_1p` | `color_1p` |
+| `col_2p` | `color_2p` |
+| `data00` | `custom_data_0` |
+| `data01` | `custom_data_1` |
+| `disp_type` | `display_type` |
+| `def_power` | `base_damage` |
+| `life_time` | `life_time` |
+| `hos_x` | `pushbox_x` |
+| `hos_y` | `pushbox_y` |
+| `kz_blocking` | `chip_damage_blocking` |
+| `free` | `reserved_bytes` |
