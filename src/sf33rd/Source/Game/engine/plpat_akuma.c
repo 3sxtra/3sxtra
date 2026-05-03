@@ -181,7 +181,7 @@ static void Att_PL14_AT3(PLW* wk) {
 
         if (wk->wu.cg_type == 30) {
             setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
-            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
             wk->wu.mvxy.index++;
             wk->wu.routine_no[3] = 3;
             wk->wu.cg_type = 0;
@@ -234,7 +234,7 @@ static void Att_PL14_AT3(PLW* wk) {
 
         if (wk->wu.cg_type == 30) {
             setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
-            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
             wk->wu.mvxy.index++;
             wk->wu.cg_type = 0;
         }

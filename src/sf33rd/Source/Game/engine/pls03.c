@@ -1314,7 +1314,7 @@ s32 check_target_combo_cancel(PLW* wk) {
     wk->wu.frame_link_hit_flag = 0;
     wk->wu.cg_cancel &= 0x60;
 
-    if ((wk->tc_1st_flag == 0) && (wk->wu.now_koc == 4)) {
+    if ((wk->tc_1st_flag == 0) && (wk->wu.current_char_type == 4)) {
         grade_add_target_combo(wk->wu.id);
     }
 
@@ -1323,7 +1323,7 @@ s32 check_target_combo_cancel(PLW* wk) {
     return 1;
 
 end:
-    if ((wk->tc_1st_flag == 0) && wk->wu.now_koc == 4) {
+    if ((wk->tc_1st_flag == 0) && wk->wu.current_char_type == 4) {
         grade_add_target_combo(wk->wu.id);
     }
 

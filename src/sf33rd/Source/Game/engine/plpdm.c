@@ -335,7 +335,7 @@ static void Damage_04000(PLW* wk) {
     case 1:
         wk->wu.routine_no[3]++;
         setup_smoke_type(wk);
-        wk->wu.cmwk[14] = _guard_pause_table[0][wk->wu.dm_attlv];
+        wk->wu.script_register_bank[14] = _guard_pause_table[0][wk->wu.dm_attlv];
         char_move_wca(&wk->wu);
         add_dm_step_tbl(wk, 1);
         break;
@@ -343,7 +343,7 @@ static void Damage_04000(PLW* wk) {
     case 2:
         add_dm_step_tbl(wk, 1);
 
-        if (--wk->wu.cmwk[14] <= 0) {
+        if (--wk->wu.script_register_bank[14] <= 0) {
             wk->wu.routine_no[3]++;
             char_move_wca(&wk->wu);
             break;
@@ -387,7 +387,7 @@ static void Damage_07000(PLW* wk) {
 
     case 1:
         wk->wu.routine_no[3]++;
-        wk->wu.cmwk[14] = _guard_pause_table[1][wk->wu.dm_attlv];
+        wk->wu.script_register_bank[14] = _guard_pause_table[1][wk->wu.dm_attlv];
         wk->dm_step_tbl = _dm_step_data[_select_grd_dsd[wk->wu.dm_impact][get_weight_point(&wk->wu)]];
         char_move_wca(&wk->wu);
         /* fallthrough */
@@ -396,11 +396,11 @@ static void Damage_07000(PLW* wk) {
         jumping_union_process(&wk->wu, 3);
         set_dm_hos_flag_grd(wk);
         add_dm_step_tbl(wk, 0);
-        wk->wu.cmwk[14]--;
+        wk->wu.script_register_bank[14]--;
 
         if (wk->wu.routine_no[3] == 3) {
-            if (wk->wu.cmwk[14] <= 0) {
-                wk->wu.cmwk[14] = 1;
+            if (wk->wu.script_register_bank[14] <= 0) {
+                wk->wu.script_register_bank[14] = 1;
             }
 
             wk->wu.routine_no[2] = 5;
@@ -409,7 +409,7 @@ static void Damage_07000(PLW* wk) {
             break;
         }
 
-        if (wk->wu.cmwk[14] <= 0) {
+        if (wk->wu.script_register_bank[14] <= 0) {
             wk->wu.routine_no[1] = 0;
             wk->wu.routine_no[2] = 38;
             wk->wu.routine_no[3] = 1;
@@ -521,12 +521,12 @@ static void Damage_12000(PLW* wk) {
         setup_smoke_type(wk);
 
         if (wk->wu.pat_status == 32) {
-            wk->wu.cmwk[14] = _damage_pause_table[1][wk->wu.dm_attlv];
+            wk->wu.script_register_bank[14] = _damage_pause_table[1][wk->wu.dm_attlv];
         } else {
-            wk->wu.cmwk[14] = _damage_pause_table[0][wk->wu.dm_attlv];
+            wk->wu.script_register_bank[14] = _damage_pause_table[0][wk->wu.dm_attlv];
         }
         if (wk->wu.dm_jump_att_flag) {
-            wk->wu.cmwk[14] = _damage_pause_table[2][wk->wu.dm_attlv];
+            wk->wu.script_register_bank[14] = _damage_pause_table[2][wk->wu.dm_attlv];
         }
 
         char_move_wca(&wk->wu);
@@ -536,7 +536,7 @@ static void Damage_12000(PLW* wk) {
     case 2:
         add_dm_step_tbl(wk, 1);
 
-        if (--wk->wu.cmwk[14] <= 0) {
+        if (--wk->wu.script_register_bank[14] <= 0) {
             wk->wu.routine_no[3]++;
             char_move_wca(&wk->wu);
             break;
@@ -564,7 +564,7 @@ static void Damage_14000(PLW* wk) {
         wk->dm_ix = wk->as->char_ix + wk->wu.dm_attlv;
         set_char_move_init(&wk->wu, 1, wk->dm_ix);
         setup_butt_own_data(&wk->wu);
-        wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+        wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
         wk->slide_timer = 0;
         wk->slide_index_counter = 0;
         break;
@@ -637,7 +637,7 @@ static void Damage_17000(PLW* wk) {
     case 1:
         wk->wu.routine_no[3]++;
         char_move_wca_init(&wk->wu);
-        wk->wu.cmwk[14] = _damage_pause_table[3][wk->wu.dm_attlv];
+        wk->wu.script_register_bank[14] = _damage_pause_table[3][wk->wu.dm_attlv];
         /* fallthrough */
 
     case 2:
@@ -655,7 +655,7 @@ static void Damage_17000(PLW* wk) {
             break;
         }
 
-        if (wk->wu.cmwk[14] > 0 && --wk->wu.cmwk[14] == 0) {
+        if (wk->wu.script_register_bank[14] > 0 && --wk->wu.script_register_bank[14] == 0) {
             char_move_wca(&wk->wu);
         }
 
@@ -663,7 +663,7 @@ static void Damage_17000(PLW* wk) {
             wk->wu.routine_no[1] = 0;
             wk->wu.routine_no[2] = 23;
             wk->wu.routine_no[3] = 1;
-            exset_char_move_init(&wk->wu, wk->wu.now_koc, dm17_to_nm23_change[wk->player_number]);
+            exset_char_move_init(&wk->wu, wk->wu.current_char_type, dm17_to_nm23_change[wk->player_number]);
         }
 
         wk->throw_invuln_flag = 7;
@@ -797,7 +797,7 @@ static void Damage_21000(PLW* wk) {
         wk->dm_ix = wk->as->char_ix + wk->wu.dm_attlv;
         set_char_move_init(&wk->wu, 1, wk->dm_ix);
         setup_butt_own_data(&wk->wu);
-        wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+        wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
         wk->slide_timer = 0;
         wk->slide_index_counter = 0;
         break;
@@ -870,7 +870,7 @@ static void Damage_24000(PLW* wk) {
 
     case 1:
         wk->wu.routine_no[3]++;
-        wk->wu.cmwk[14] = _damage_pause_table[0][wk->wu.dm_attlv];
+        wk->wu.script_register_bank[14] = _damage_pause_table[0][wk->wu.dm_attlv];
         char_move_wca(&wk->wu);
         add_dm_step_tbl(wk, 1);
         break;
@@ -878,7 +878,7 @@ static void Damage_24000(PLW* wk) {
     case 2:
         add_dm_step_tbl(wk, 1);
 
-        if (--wk->wu.cmwk[14] <= 0) {
+        if (--wk->wu.script_register_bank[14] <= 0) {
             wk->wu.routine_no[3]++;
             char_move_wca(&wk->wu);
             break;
@@ -1001,7 +1001,7 @@ static void Damage_27000(PLW* wk) {
         wk->dm_ix = wk->as->char_ix + wk->wu.dm_attlv;
         set_char_move_init(&wk->wu, 1, wk->dm_ix);
         setup_butt_own_data(&wk->wu);
-        wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+        wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
         wk->slide_timer = 0;
         wk->slide_index_counter = 0;
         break;
@@ -1234,8 +1234,8 @@ static void first_flight_union(PLW* wk, s16 num, s16 dv) {
     }
 
     wk->wu.mvxy.a[0].sp /= dv;
-    wk->wu.mvxy.d[0].sp = wk->wu.mvxy.kop[0] = 0;
-    wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+    wk->wu.mvxy.d[0].sp = wk->wu.mvxy.physics_curve_type[0] = 0;
+    wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
 
     if (wk->recovery_roll_ok_timer) {
         wk->uot_cd_ok_flag = 1;
@@ -1259,7 +1259,7 @@ static void first_TtktV_union(PLW* wk, s16 num, s16 dv) {
     if (wk->wu.cg_type) {
         wk->wu.routine_no[3] = num;
         wk->wu.mvxy.a[0].sp /= dv;
-        wk->wu.mvxy.d[0].sp = wk->wu.mvxy.kop[0] = 0;
+        wk->wu.mvxy.d[0].sp = wk->wu.mvxy.physics_curve_type[0] = 0;
 
         if (wk->recovery_roll_ok_timer) {
             wk->uot_cd_ok_flag = 1;
@@ -1414,7 +1414,7 @@ static void set_dm_hos_flag_sky(PLW* wk) {
         return;
     }
 
-    if (twk->player_number == 0 && twk->wu.now_koc == 5 && twk->wu.char_index == 59) {
+    if (twk->player_number == 0 && twk->wu.current_char_type == 5 && twk->wu.char_index == 59) {
         return;
     }
 
@@ -1451,7 +1451,7 @@ static void set_dm_hos_flag_grd(PLW* wk) {
         return;
     }
 
-    if (twk->player_number == 0 && twk->wu.now_koc == 5 && twk->wu.char_index == 59) {
+    if (twk->player_number == 0 && twk->wu.current_char_type == 5 && twk->wu.char_index == 59) {
         return;
     }
 

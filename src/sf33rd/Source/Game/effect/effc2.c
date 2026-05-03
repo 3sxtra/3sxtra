@@ -742,7 +742,7 @@ static void setup_vital_bonus2(WORK* wk) {
 
     for (i = 0; i < 8; i++) {
         wk->shell_ix[i] = bs2_data_table[i].vital;
-        wk->cmwk[i] = 0;
+        wk->script_register_bank[i] = 0;
     }
 }
 
@@ -776,7 +776,7 @@ void c3_new_damage(WORK* wk) {
     if (c2wk->shell_ix[ix] <= 0) {
         c2wk->damage_vitality += wk->damage_vitality;
         c2wk->shell_ix[ix] = 0;
-    } else if (c2wk->cmwk[ix] >= brlv) {
+    } else if (c2wk->script_register_bank[ix] >= brlv) {
         c2wk->damage_vitality += wk->damage_vitality / 2;
     }
 
@@ -794,7 +794,7 @@ s16 bs2_sync_bomb(WORK* wk) {
 
 void bs2_get_parts_break(WORK* wk) {
     wk->scr_mv_x = ((WORK*)wk->my_effadrs)->cg_number;
-    wk->scr_mv_y = ((WORK*)wk->my_effadrs)->cmwk[wk->type];
+    wk->scr_mv_y = ((WORK*)wk->my_effadrs)->script_register_bank[wk->type];
 }
 
 static void setup_parts_break(WORK* wk) {
@@ -813,7 +813,7 @@ static void setup_parts_break(WORK* wk) {
             }
         }
 
-        wk->cmwk[i] = j;
+        wk->script_register_bank[i] = j;
     }
 }
 
@@ -827,24 +827,24 @@ static void setup_parts_break2(WORK* wk) {
         }
     }
 
-    wk->cmwk[0] = j;
+    wk->script_register_bank[0] = j;
 }
 
 s32 check_parts_break_level(WORK* wk) {
     WORK* c2wk = (WORK*)wk->my_effadrs;
     s16 i;
 
-    if (wk->vital_old == c2wk->cmwk[wk->type]) {
+    if (wk->vital_old == c2wk->script_register_bank[wk->type]) {
         return 0;
     }
 
-    if ((wk->id != 0x7A || c2wk->dir_timer != 0) && wk->vital_old < c2wk->cmwk[wk->type]) {
-        for (i = wk->vital_old; i < c2wk->cmwk[wk->type]; i++) {
+    if ((wk->id != 0x7A || c2wk->dir_timer != 0) && wk->vital_old < c2wk->script_register_bank[wk->type]) {
+        for (i = wk->vital_old; i < c2wk->script_register_bank[wk->type]; i++) {
             Additinal_Score_DM((WORK_Other*)wk->target_adrs, pbs_table[wk->type][i]);
         }
     }
 
-    wk->vital_old = c2wk->cmwk[wk->type];
+    wk->vital_old = c2wk->script_register_bank[wk->type];
     return 1;
 }
 
@@ -852,7 +852,7 @@ static void bs2_score_add_next(WORK* wk) {
     s16 i;
 
     for (i = 1; i < 8; i++) {
-        Additinal_Score_DM((WORK_Other*)wk->target_adrs, pbs_table[i][wk->cmwk[i]]);
+        Additinal_Score_DM((WORK_Other*)wk->target_adrs, pbs_table[i][wk->script_register_bank[i]]);
     }
 }
 
@@ -861,7 +861,7 @@ static void set_1st_Bonus_Game_result(WORK* wk) {
     s16 num = 0;
 
     for (i = 1; i < 8; i++) {
-        num += wk->cmwk[i];
+        num += wk->script_register_bank[i];
     }
 
     if (num == 49) {

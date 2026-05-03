@@ -47,7 +47,7 @@ static void setup_metamor_kezuri(WORK* wk);
 
 /** @brief Initializes character animation move with a given index. */
 void set_char_move_init(WORK* wk, s16 kind_of_char, s16 index) {
-    wk->now_koc = kind_of_char;
+    wk->current_char_type = kind_of_char;
     wk->char_index = index;
 
 #if CPS3
@@ -72,24 +72,24 @@ void set_char_move_init(WORK* wk, s16 kind_of_char, s16 index) {
     wk->cg_next_ix = 0;
     wk->old_cgnum = 0;
     wk->cg_wca_ix = 0;
-    wk->cmd_roa_state.kind_of_char = wk->now_koc;
+    wk->cmd_roa_state.kind_of_char = wk->current_char_type;
     wk->cmd_roa_state.ix = wk->char_index;
     wk->cmd_roa_state.pat = 1;
-    wk->cmwk[8] = 0;
-    wk->cmwk[15] = 0;
+    wk->script_register_bank[8] = 0;
+    wk->script_register_bank[15] = 0;
 
 #if !CPS3
     wk->move_type = wk->attack_type;
 #endif
 
     if (wk->work_id & 0xF) {
-        wk->at_koa = acatkoa_table[wk->attack_type];
+        wk->attack_art_type = acatkoa_table[wk->attack_type];
     }
 
     if (wk->work_id == 1) {
         ((PLW*)wk)->tc_1st_flag = 0; // TODO: Confirm CPS3 match
 
-        if (wk->now_koc == 4 || wk->now_koc == 5) {
+        if (wk->current_char_type == 4 || wk->current_char_type == 5) {
             grade_add_same_move(wk->id);
         }
 
@@ -153,7 +153,7 @@ void set_char_move_init2(WORK* wk, s16 kind_of_char, s16 index, s16 ip, s16 scf)
 
     pst = wk->pat_status;
     move_type = wk->attack_type;
-    wk->now_koc = kind_of_char;
+    wk->current_char_type = kind_of_char;
     wk->char_index = index;
 
 #if CPS3
@@ -180,7 +180,7 @@ void set_char_move_init2(WORK* wk, s16 kind_of_char, s16 index, s16 ip, s16 scf)
     wk->cg_wca_ix = 0;
 
     if (wk->cmd_roa_state.pat == 0) {
-        wk->cmd_roa_state.kind_of_char = wk->now_koc;
+        wk->cmd_roa_state.kind_of_char = wk->current_char_type;
         wk->cmd_roa_state.ix = wk->char_index;
         wk->cmd_roa_state.pat = 1;
     }
@@ -195,7 +195,7 @@ void set_char_move_init2(WORK* wk, s16 kind_of_char, s16 index, s16 ip, s16 scf)
     }
 
     if (wk->work_id & 0xF) {
-        wk->at_koa = acatkoa_table[wk->attack_type];
+        wk->attack_art_type = acatkoa_table[wk->attack_type];
     }
 
     wk->phase_k5_init_flag = 1; // TODO: Confirm CPS3 match
@@ -206,7 +206,7 @@ void set_char_move_init2(WORK* wk, s16 kind_of_char, s16 index, s16 ip, s16 scf)
 void exset_char_move_init(WORK* wk, s16 kind_of_char, s16 index) {
     u8 now_ctr;
 
-    wk->now_koc = kind_of_char;
+    wk->current_char_type = kind_of_char;
     wk->char_index = index;
 
 #if CPS3
@@ -230,7 +230,7 @@ void exset_char_move_init(WORK* wk, s16 kind_of_char, s16 index) {
 #endif
 
     wk->cg_ctr = now_ctr;
-    wk->cmd_roa_state.kind_of_char = wk->now_koc;
+    wk->cmd_roa_state.kind_of_char = wk->current_char_type;
     wk->cmd_roa_state.ix = wk->char_index;
     wk->cmd_roa_state.pat = 1;
     wk->phase_k5_init_flag = 1;  // TODO: Confirm CPS3 match
@@ -323,11 +323,11 @@ void char_move_cmms2(WORK* wk) {
 
     setup_comm_back(wk);
     now_cgd = wk->char_graphic_data_type;
-    wk->now_koc = wk->cmd_move_jump_addr.kind_of_char;
+    wk->current_char_type = wk->cmd_move_jump_addr.kind_of_char;
     wk->char_index = wk->cmd_move_jump_addr.ix;
 
 #if CPS3
-    wk->set_char_ad = (u32*)wk->char_table[wk->now_koc][wk->char_index];
+    wk->set_char_ad = (u32*)wk->char_table[wk->current_char_type][wk->char_index];
 
     const u32* src = wk->set_char_ad;
     u32* dst = (u32*)&wk->cg_ctr;
@@ -335,7 +335,7 @@ void char_move_cmms2(WORK* wk) {
     dst[-1] = src[-1];
     dst[-2] = src[-2];
 #else
-    wk->set_char_ad = &wk->char_table[wk->now_koc][wk->char_table[wk->now_koc][wk->char_index] / 4];
+    wk->set_char_ad = &wk->char_table[wk->current_char_type][wk->char_table[wk->current_char_type][wk->char_index] / 4];
     setupCharTableData(wk, 0, 1);
 #endif
 
@@ -370,11 +370,11 @@ s32 char_move_cmms3(PLW* wk) {
     setup_comm_retmj(&wk->wu);
     setup_comm_back(&wk->wu);
     now_cgd = wk->wu.char_graphic_data_type;
-    wk->wu.now_koc = wk->wu.cmd_move_jump_addr.kind_of_char;
+    wk->wu.current_char_type = wk->wu.cmd_move_jump_addr.kind_of_char;
     wk->wu.char_index = wk->wu.cmd_move_jump_addr.ix;
 
 #if CPS3
-    wk->wu.set_char_ad = (u32*)wk->wu.char_table[wk->wu.now_koc][wk->wu.char_index];
+    wk->wu.set_char_ad = (u32*)wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_index];
 
     const u32* src = wk->wu.set_char_ad;
     u32* dst = (u32*)&wk->wu.cg_ctr;
@@ -382,7 +382,7 @@ s32 char_move_cmms3(PLW* wk) {
     dst[-1] = src[-1];
     dst[-2] = src[-2];
 #else
-    wk->wu.set_char_ad = &wk->wu.char_table[wk->wu.now_koc][wk->wu.char_table[wk->wu.now_koc][wk->wu.char_index] / 4];
+    wk->wu.set_char_ad = &wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_index] / 4];
     setupCharTableData(&wk->wu, 0, 1);
 #endif
 
@@ -477,7 +477,7 @@ static s32 comm_dummy(WORK* /* unused */, CommandState* /* unused */) {
 /** @brief Script command: ROA — read-once-and-advance. */
 static s32 comm_roa(WORK* wk, CommandState* /* unused */) {
     if (wk->cmd_roa_state.pat == 0) {
-        wk->cmd_roa_state.kind_of_char = wk->now_koc;
+        wk->cmd_roa_state.kind_of_char = wk->current_char_type;
         wk->cmd_roa_state.ix = wk->char_index;
         wk->cmd_roa_state.pat = 1;
     }
@@ -508,7 +508,7 @@ static s32 comm_jpss(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: JSR — jump-to-subroutine (push return). */
 static s32 comm_jsr(WORK* wk, CommandState* ctc) {
-    wk->cmd_subroutine_return.kind_of_char = wk->now_koc;
+    wk->cmd_subroutine_return.kind_of_char = wk->current_char_type;
     wk->cmd_subroutine_return.ix = wk->char_index;
     wk->cmd_subroutine_return.pat = (wk->graphic_index / wk->char_graphic_data_type) + 2;
     set_char_move_init2(wk, ctc->kind_of_char, ctc->ix, ctc->pat, 0);
@@ -545,7 +545,7 @@ static s32 comm_if_l(WORK* wk, CommandState* ctc) {
     u16 my_lvdat;
 
     if (ctc->kind_of_char & 0x4000) {
-        my_lvdat = wk->cmwk[ctc->kind_of_char & 0xF];
+        my_lvdat = wk->script_register_bank[ctc->kind_of_char & 0xF];
     } else {
         my_lvdat = ctc->kind_of_char;
     }
@@ -591,12 +591,12 @@ static s32 comm_djmp(WORK* wk, CommandState* ctc) {
 /** @brief Script command: FOR — begin counted loop. */
 static s32 comm_for(WORK* wk, CommandState* ctc) {
     if (ctc->pat & 0x4000) {
-        wk->cmd_loop_counter_1.code = wk->cmwk[ctc->pat & 0xF];
+        wk->cmd_loop_counter_1.code = wk->script_register_bank[ctc->pat & 0xF];
     } else {
         wk->cmd_loop_counter_1.code = ctc->pat;
     }
 
-    wk->cmd_loop_counter_1.kind_of_char = wk->now_koc;
+    wk->cmd_loop_counter_1.kind_of_char = wk->current_char_type;
     wk->cmd_loop_counter_1.ix = wk->char_index;
     wk->cmd_loop_counter_1.pat = wk->graphic_index / wk->char_graphic_data_type + 2;
     return 1;
@@ -615,12 +615,12 @@ static s32 comm_nex(WORK* wk, CommandState* ctc) {
 /** @brief Script command: FOR2 — begin counted loop (variant 2). */
 static s32 comm_for2(WORK* wk, CommandState* ctc) {
     if (ctc->pat & 0x4000) {
-        wk->cmd_loop_counter_2.code = wk->cmwk[ctc->pat & 0xF];
+        wk->cmd_loop_counter_2.code = wk->script_register_bank[ctc->pat & 0xF];
     } else {
         wk->cmd_loop_counter_2.code = ctc->pat;
     }
 
-    wk->cmd_loop_counter_2.kind_of_char = wk->now_koc;
+    wk->cmd_loop_counter_2.kind_of_char = wk->current_char_type;
     wk->cmd_loop_counter_2.ix = wk->char_index;
     wk->cmd_loop_counter_2.pat = (wk->graphic_index / wk->char_graphic_data_type) + 2;
     return 1;
@@ -1096,7 +1096,7 @@ static s32 comm_if_s(WORK* wk, CommandState* ctc) {
     u16 my_shdat;
 
     if (ctc->kind_of_char & 0x4000) {
-        my_shdat = wk->cmwk[ctc->kind_of_char & 0xF];
+        my_shdat = wk->script_register_bank[ctc->kind_of_char & 0xF];
     } else {
         my_shdat = ctc->kind_of_char;
     }
@@ -1264,7 +1264,7 @@ static s32 comm_iflb(WORK* wk, CommandState* ctc) {
     u16 my_shdat;
 
     if (ctc->kind_of_char & 0x4000) {
-        my_shdat = wk->cmwk[ctc->kind_of_char & 0xF];
+        my_shdat = wk->script_register_bank[ctc->kind_of_char & 0xF];
     } else {
         my_shdat = ctc->kind_of_char;
     }
@@ -1382,31 +1382,31 @@ static s32 comm_ccch(WORK* wk, CommandState* ctc) {
 static s32 comm_wset(WORK* wk, CommandState* ctc) {
     switch (ctc->ix) {
     default:
-        wk->cmwk[ctc->kind_of_char & 0xF] = ctc->pat;
+        wk->script_register_bank[ctc->kind_of_char & 0xF] = ctc->pat;
         break;
 
     case 1:
-        wk->cmwk[ctc->kind_of_char & 0xF] &= ctc->pat;
+        wk->script_register_bank[ctc->kind_of_char & 0xF] &= ctc->pat;
         break;
 
     case 2:
-        wk->cmwk[ctc->kind_of_char & 0xF] |= ctc->pat;
+        wk->script_register_bank[ctc->kind_of_char & 0xF] |= ctc->pat;
         break;
 
     case 3:
-        wk->cmwk[ctc->kind_of_char & 0xF] += ctc->pat;
+        wk->script_register_bank[ctc->kind_of_char & 0xF] += ctc->pat;
         break;
 
     case 4:
-        wk->cmwk[ctc->kind_of_char & 0xF] -= ctc->pat;
+        wk->script_register_bank[ctc->kind_of_char & 0xF] -= ctc->pat;
         break;
 
     case 5:
-        wk->cmwk[ctc->kind_of_char & 0xF] *= ctc->pat;
+        wk->script_register_bank[ctc->kind_of_char & 0xF] *= ctc->pat;
         break;
 
     case 6:
-        wk->cmwk[ctc->kind_of_char & 0xF] /= ctc->pat;
+        wk->script_register_bank[ctc->kind_of_char & 0xF] /= ctc->pat;
         break;
     }
 
@@ -1417,31 +1417,31 @@ static s32 comm_wset(WORK* wk, CommandState* ctc) {
 static s32 comm_wswk(WORK* wk, CommandState* ctc) {
     switch (ctc->ix) {
     default:
-        wk->cmwk[ctc->kind_of_char & 0xF] = wk->cmwk[ctc->pat & 0xF];
+        wk->script_register_bank[ctc->kind_of_char & 0xF] = wk->script_register_bank[ctc->pat & 0xF];
         break;
 
     case 1:
-        wk->cmwk[ctc->kind_of_char & 0xF] &= wk->cmwk[ctc->pat & 0xF];
+        wk->script_register_bank[ctc->kind_of_char & 0xF] &= wk->script_register_bank[ctc->pat & 0xF];
         break;
 
     case 2:
-        wk->cmwk[ctc->kind_of_char & 0xF] |= wk->cmwk[ctc->pat & 0xF];
+        wk->script_register_bank[ctc->kind_of_char & 0xF] |= wk->script_register_bank[ctc->pat & 0xF];
         break;
 
     case 3:
-        wk->cmwk[ctc->kind_of_char & 0xF] += wk->cmwk[ctc->pat & 0xF];
+        wk->script_register_bank[ctc->kind_of_char & 0xF] += wk->script_register_bank[ctc->pat & 0xF];
         break;
 
     case 4:
-        wk->cmwk[ctc->kind_of_char & 0xF] -= wk->cmwk[ctc->pat & 0xF];
+        wk->script_register_bank[ctc->kind_of_char & 0xF] -= wk->script_register_bank[ctc->pat & 0xF];
         break;
 
     case 5:
-        wk->cmwk[ctc->kind_of_char & 0xF] *= wk->cmwk[ctc->pat & 0xF];
+        wk->script_register_bank[ctc->kind_of_char & 0xF] *= wk->script_register_bank[ctc->pat & 0xF];
         break;
 
     case 6:
-        wk->cmwk[ctc->kind_of_char & 0xF] /= wk->cmwk[ctc->pat & 0xF];
+        wk->script_register_bank[ctc->kind_of_char & 0xF] /= wk->script_register_bank[ctc->pat & 0xF];
         break;
     }
 
@@ -1450,14 +1450,14 @@ static s32 comm_wswk(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: WADD — add to work register. */
 static s32 comm_wadd(WORK* wk, CommandState* ctc) {
-    wk->cmwk[ctc->kind_of_char & 0xF] += ctc->ix;
-    wk->cmwk[ctc->kind_of_char & 0xF] &= ctc->pat;
+    wk->script_register_bank[ctc->kind_of_char & 0xF] += ctc->ix;
+    wk->script_register_bank[ctc->kind_of_char & 0xF] &= ctc->pat;
     return 1;
 }
 
 /** @brief Script command: WCEQ — work compare-equal. */
 static s32 comm_wceq(WORK* wk, CommandState* ctc) {
-    if (wk->cmwk[ctc->kind_of_char & 0xF] == ctc->ix) {
+    if (wk->script_register_bank[ctc->kind_of_char & 0xF] == ctc->ix) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -1466,7 +1466,7 @@ static s32 comm_wceq(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: WCNE — work compare-not-equal. */
 static s32 comm_wcne(WORK* wk, CommandState* ctc) {
-    if (wk->cmwk[ctc->kind_of_char & 0xF] != ctc->ix) {
+    if (wk->script_register_bank[ctc->kind_of_char & 0xF] != ctc->ix) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
     return 1;
@@ -1474,7 +1474,7 @@ static s32 comm_wcne(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: WCGT — work compare-greater-than. */
 static s32 comm_wcgt(WORK* wk, CommandState* ctc) {
-    if (wk->cmwk[ctc->kind_of_char & 0xF] > ctc->ix) {
+    if (wk->script_register_bank[ctc->kind_of_char & 0xF] > ctc->ix) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -1483,7 +1483,7 @@ static s32 comm_wcgt(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: WCLT — work compare-less-than. */
 static s32 comm_wclt(WORK* wk, CommandState* ctc) {
-    if (wk->cmwk[ctc->kind_of_char & 0xF] < ctc->ix) {
+    if (wk->script_register_bank[ctc->kind_of_char & 0xF] < ctc->ix) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -1492,14 +1492,14 @@ static s32 comm_wclt(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: WADD2 — add to work register (variant 2). */
 static s32 comm_wadd2(WORK* wk, CommandState* ctc) {
-    wk->cmwk[ctc->kind_of_char & 0xF] += wk->cmwk[ctc->ix & 0xF];
-    wk->cmwk[ctc->kind_of_char & 0xF] &= ctc->pat;
+    wk->script_register_bank[ctc->kind_of_char & 0xF] += wk->script_register_bank[ctc->ix & 0xF];
+    wk->script_register_bank[ctc->kind_of_char & 0xF] &= ctc->pat;
     return 1;
 }
 
 /** @brief Script command: WCEQ2 — work compare-equal (variant 2). */
 static s32 comm_wceq2(WORK* wk, CommandState* ctc) {
-    if (wk->cmwk[ctc->kind_of_char & 0xF] == wk->cmwk[ctc->ix & 0xF]) {
+    if (wk->script_register_bank[ctc->kind_of_char & 0xF] == wk->script_register_bank[ctc->ix & 0xF]) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -1508,7 +1508,7 @@ static s32 comm_wceq2(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: WCNE2 — compare-not-equal (variant 2). */
 static s32 comm_wcne2(WORK* wk, CommandState* ctc) {
-    if (wk->cmwk[ctc->kind_of_char & 0xF] != wk->cmwk[ctc->ix & 0xF]) {
+    if (wk->script_register_bank[ctc->kind_of_char & 0xF] != wk->script_register_bank[ctc->ix & 0xF]) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -1517,7 +1517,7 @@ static s32 comm_wcne2(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: WCGT2 — compare-greater-than (variant 2). */
 static s32 comm_wcgt2(WORK* wk, CommandState* ctc) {
-    if (wk->cmwk[ctc->kind_of_char & 0xF] > wk->cmwk[ctc->ix & 0xF]) {
+    if (wk->script_register_bank[ctc->kind_of_char & 0xF] > wk->script_register_bank[ctc->ix & 0xF]) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -1526,7 +1526,7 @@ static s32 comm_wcgt2(WORK* wk, CommandState* ctc) {
 
 /** @brief Script command: WCLT2 — compare-less-than (variant 2). */
 static s32 comm_wclt2(WORK* wk, CommandState* ctc) {
-    if (wk->cmwk[ctc->kind_of_char & 0xF] < wk->cmwk[ctc->ix & 0xF]) {
+    if (wk->script_register_bank[ctc->kind_of_char & 0xF] < wk->script_register_bank[ctc->ix & 0xF]) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -1578,14 +1578,14 @@ static s32 comm_rapk2(WORK* wk, CommandState* ctc) {
 /** @brief Script command: IFLG — conditional on flag state. */
 static s32 comm_iflg(WORK* wk, CommandState* ctc) {
     if (ctc->kind_of_char == 0) {
-        if (wk->cmwk[11] < ctc->ix) {
+        if (wk->script_register_bank[11] < ctc->ix) {
             return 1;
         }
 
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
-    if (((WORK*)wk->target_adrs)->cmwk[11] < ctc->ix) {
+    if (((WORK*)wk->target_adrs)->script_register_bank[11] < ctc->ix) {
         return 1;
     }
 
@@ -1912,10 +1912,10 @@ static s32 comm_chkwf(PLW* wk, CommandState* ctc) {
 
 /** @brief Script command: RETMJ — return from move-jump. */
 static s32 comm_retmj(PLW* wk, CommandState* /* unused */) {
-    wk->wu.now_koc = wk->wu.cmd_state_backup_2.kind_of_char;
+    wk->wu.current_char_type = wk->wu.cmd_state_backup_2.kind_of_char;
     wk->wu.char_index = wk->wu.cmd_state_backup_2.ix;
     wk->wu.graphic_index = wk->wu.cmd_state_backup_2.pat;
-    wk->wu.set_char_ad = &wk->wu.char_table[wk->wu.now_koc][wk->wu.char_table[wk->wu.now_koc][wk->wu.char_index] / 4];
+    wk->wu.set_char_ad = &wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_index] / 4];
     setupCharTableData(&wk->wu, 0, 1);
     wk->link_jump_flag = 0;
     return 0;
@@ -2030,7 +2030,7 @@ static s32 comm_sstx(WORK* wk, CommandState* ctc) {
         break;
 
     default:
-        wk->mvxy.kop[0] = ctc->pat;
+        wk->mvxy.physics_curve_type[0] = ctc->pat;
         break;
     }
 
@@ -2146,7 +2146,7 @@ static s32 comm_ssty(WORK* wk, CommandState* ctc) {
         break;
 
     default:
-        wk->mvxy.kop[1] = ctc->pat;
+        wk->mvxy.physics_curve_type[1] = ctc->pat;
         break;
     }
 
@@ -2249,7 +2249,7 @@ static s32 comm_ifs2(WORK* wk, CommandState* ctc) {
     u16 my_shdat;
 
     if (ctc->kind_of_char & 0x4000) {
-        my_shdat = wk->cmwk[ctc->kind_of_char & 0xF];
+        my_shdat = wk->script_register_bank[ctc->kind_of_char & 0xF];
     } else {
         my_shdat = ctc->kind_of_char;
     }
@@ -2293,7 +2293,7 @@ static s32 comm_s_chg(WORK* wk, CommandState* ctc) {
     u16 my_shdat;
 
     if (ctc->kind_of_char & 0x4000) {
-        my_shdat = wk->cmwk[ctc->kind_of_char & 0xF];
+        my_shdat = wk->script_register_bank[ctc->kind_of_char & 0xF];
     } else {
         my_shdat = ctc->kind_of_char;
     }
@@ -2313,7 +2313,7 @@ static s32 comm_schg2(WORK* wk, CommandState* ctc) {
     u16 my_shdat;
 
     if (ctc->kind_of_char & 0x4000) {
-        my_shdat = wk->cmwk[ctc->kind_of_char & 0xF];
+        my_shdat = wk->script_register_bank[ctc->kind_of_char & 0xF];
     } else {
         my_shdat = ctc->kind_of_char;
     }
@@ -2385,7 +2385,7 @@ static s32 comm_ifs3(WORK* wk, CommandState* ctc) {
     u16 my_shdat;
 
     if (ctc->kind_of_char & 0x4000) {
-        my_shdat = wk->cmwk[ctc->kind_of_char & 0xF];
+        my_shdat = wk->script_register_bank[ctc->kind_of_char & 0xF];
     } else {
         my_shdat = ctc->kind_of_char;
     }
@@ -2520,21 +2520,21 @@ static u8 get_comm_djmp_lever_dir(PLW* wk) {
 /** @brief Stores the backup state for comm_back. */
 void setup_comm_back(WORK* wk) {
     wk->phase_k5_init_flag = 1;
-    wk->cmd_state_backup_1.kind_of_char = wk->now_koc;
+    wk->cmd_state_backup_1.kind_of_char = wk->current_char_type;
     wk->cmd_state_backup_1.ix = wk->char_index;
     wk->cmd_state_backup_1.pat = (wk->graphic_index / wk->char_graphic_data_type) + 2;
 }
 
 /** @brief Stores the return-move-jump state. */
 static void setup_comm_retmj(WORK* wk) {
-    wk->cmd_state_backup_2.kind_of_char = wk->now_koc;
+    wk->cmd_state_backup_2.kind_of_char = wk->current_char_type;
     wk->cmd_state_backup_2.ix = wk->char_index;
     wk->cmd_state_backup_2.pat = wk->graphic_index;
 }
 
 /** @brief Stores the absolute-backup state. */
 void setup_comm_abbak(WORK* wk) {
-    wk->cmd_state_backup_3.kind_of_char = wk->now_koc;
+    wk->cmd_state_backup_3.kind_of_char = wk->current_char_type;
     wk->cmd_state_backup_3.ix = wk->char_index;
     wk->cmd_state_backup_3.pat = (wk->graphic_index / wk->char_graphic_data_type) + 2;
 }

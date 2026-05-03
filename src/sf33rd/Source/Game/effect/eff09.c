@@ -753,7 +753,7 @@ static void eff09_11000(WORK_Other* ewk) {
 
             if (ewk->wu.old_routine_no[0] <= 0) {
                 ewk->wu.routine_no[1]++;
-                oya_ptr->cmwk[0] = 9;
+                oya_ptr->script_register_bank[0] = 9;
             }
         }
 
@@ -1228,7 +1228,7 @@ static void eff09_20000(WORK_Other* ewk) {
                 pos_work -= 64;
 
                 if (ewk->wu.xyz[0].disp.pos < pos_work) {
-                    oya_ptr->cmwk[1] = 1;
+                    oya_ptr->script_register_bank[1] = 1;
                     ewk->wu.routine_no[1]++;
                 }
             } else {
@@ -1236,7 +1236,7 @@ static void eff09_20000(WORK_Other* ewk) {
                 pos_work += 64;
 
                 if (ewk->wu.xyz[0].disp.pos > pos_work) {
-                    oya_ptr->cmwk[1] = 1;
+                    oya_ptr->script_register_bank[1] = 1;
                     ewk->wu.routine_no[1]++;
                 }
             }
@@ -1317,7 +1317,7 @@ static void eff09_21000(WORK_Other* ewk) {
             if (ewk->wu.cg_type) {
                 ewk->wu.routine_no[1]++;
                 ewk->wu.disp_flag = 0;
-                g_state.plw[g_state.Winner_id].wu.cmwk[0] = 1;
+                g_state.plw[g_state.Winner_id].wu.script_register_bank[0] = 1;
             }
         }
 
@@ -1612,7 +1612,7 @@ static void eff09_26000(WORK_Other* ewk) {
 
             if (ewk->wu.cg_type == 9) {
                 ewk->wu.routine_no[1]++;
-                oya_ptr->cmwk[0] = 1;
+                oya_ptr->script_register_bank[0] = 1;
             }
         }
 
@@ -1638,7 +1638,7 @@ static void eff09_26000(WORK_Other* ewk) {
         if (!g_state.EXE_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
-            if (oya_ptr->cmwk[0] == 2) {
+            if (oya_ptr->script_register_bank[0] == 2) {
                 ewk->wu.routine_no[1]++;
             }
         }
@@ -1854,9 +1854,9 @@ s32 effect_09_init2(WORK* wk, u8 data) {
     case 41:
         ewk->wu.my_col_code = *data_ptr++;
         ewk->wu.my_col_code += wk->my_col_code;
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 127;
-        ewk->wu.my_mr.size.y = 127;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 127;
+        ewk->wu.mirror_scale.size.y = 127;
         break;
 
     default:

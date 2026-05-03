@@ -56,7 +56,7 @@ static void effm1_move(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (oya_ptr->cmwk[0]) {
+        if (oya_ptr->script_register_bank[0]) {
             ewk->wu.routine_no[1]++;
             set_char_move_init(&ewk->wu, 0, 13);
         } else {
@@ -72,7 +72,7 @@ static void effm1_move(WORK_Other* ewk) {
             break;
         }
 
-        oya_ptr->cmwk[0] = 2;
+        oya_ptr->script_register_bank[0] = 2;
         ewk->wu.routine_no[1]++;
         set_char_move_init2(&ewk->wu, 0, 0, 3, 0);
         ewk->wu.rl_flag ^= 1;

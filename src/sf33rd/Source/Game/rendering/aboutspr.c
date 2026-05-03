@@ -248,8 +248,8 @@ s32 set_conn_sprite(WORK_Other_CONN* wk, s16 bsy) {
     dmwk_moji.my_bright_level = wk->wu.my_bright_level;
     dmwk_moji.my_clear_level = wk->wu.my_clear_level;
     dmwk_moji.my_mts = wk->wu.my_mts;
-    dmwk_moji.my_mr_flag = wk->wu.my_mr_flag;
-    dmwk_moji.my_mr = wk->wu.my_mr;
+    dmwk_moji.mirror_flag = wk->wu.mirror_flag;
+    dmwk_moji.mirror_scale = wk->wu.mirror_scale;
     dmwk_moji.rl_flag = wk->wu.rl_flag;
     dmwk_moji.cg_flip = 0;
 

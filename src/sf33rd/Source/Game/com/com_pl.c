@@ -659,7 +659,7 @@ static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
             return 1;
         }
 
-        if (wk->wu.routine_no[2] >= 4 && wk->wu.routine_no[2] < 8 && wk->wu.cmwk[0xE] == 0 &&
+        if (wk->wu.routine_no[2] >= 4 && wk->wu.routine_no[2] < 8 && wk->wu.script_register_bank[0xE] == 0 &&
             g_state.Attack_Flag[wk->wu.id] == 0) {
             return 0;
         }

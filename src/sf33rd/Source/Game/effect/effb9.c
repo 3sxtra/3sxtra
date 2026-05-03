@@ -31,12 +31,12 @@ void effect_B9_move(WORK_Other* ewk) {
             ewk->wu.routine_no[1] += 1;
             ewk->wu.disp_flag = 1;
             set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
-            ewk->wu.my_mr_flag = 1;
+            ewk->wu.mirror_flag = 1;
             /* fallthrough */
 
         case 1:
-            ewk->wu.my_mr.size.x = oya_p->wu.my_mr.size.x;
-            ewk->wu.my_mr.size.y = oya_p->wu.my_mr.size.y;
+            ewk->wu.mirror_scale.size.x = oya_p->wu.mirror_scale.size.x;
+            ewk->wu.mirror_scale.size.y = oya_p->wu.mirror_scale.size.y;
             disp_pos_trans_entry5(ewk);
             break;
         }
@@ -44,8 +44,8 @@ void effect_B9_move(WORK_Other* ewk) {
         break;
 
     case 3:
-        ewk->wu.my_mr.size.x = oya_p->wu.my_mr.size.x;
-        ewk->wu.my_mr.size.y = oya_p->wu.my_mr.size.y;
+        ewk->wu.mirror_scale.size.x = oya_p->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_p->wu.mirror_scale.size.y;
         disp_pos_trans_entry5(ewk);
         break;
 

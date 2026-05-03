@@ -47,10 +47,10 @@ void effect_01_move(WORK_Other* ewk) {
         if (!g_state.Game_pause && !g_state.EXE_flag) {
             if (ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] != mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type]) {
                 ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] = ewk->wu.graphic_index = mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type];
-                ewk->wu.now_koc = ewk->wu.graphic_index;
+                ewk->wu.current_char_type = ewk->wu.graphic_index;
 
                 if (ewk->wu.type == 0 && ((PLW*)mwk)->player_number == 0 && mwk->rl_flag) {
-                    ewk->wu.now_koc++;
+                    ewk->wu.current_char_type++;
                 }
 
                 get_new_parts_data(ewk, (PLW*)mwk);
@@ -62,7 +62,7 @@ void effect_01_move(WORK_Other* ewk) {
                         ewk->wu.graphic_index++;
                     }
 
-                    ewk->wu.now_koc = ewk->wu.graphic_index;
+                    ewk->wu.current_char_type = ewk->wu.graphic_index;
                     get_new_parts_data(ewk, (PLW*)mwk);
                 }
             }
@@ -133,13 +133,13 @@ void effect_01_move(WORK_Other* ewk) {
 }
 
 static void get_new_parts_data(WORK_Other* ewk, PLW* mwk) {
-    ewk->wu.now_koc = ewk->wu.graphic_index;
+    ewk->wu.current_char_type = ewk->wu.graphic_index;
 
     if (ewk->wu.type == 0 && mwk->player_number == 0 && mwk->wu.rl_flag) {
-        ewk->wu.now_koc++;
+        ewk->wu.current_char_type++;
     }
 
-    ewk->wu.overlap_char_tbl = mwk->wu.overlap_char_tbl + ewk->wu.now_koc;
+    ewk->wu.overlap_char_tbl = mwk->wu.overlap_char_tbl + ewk->wu.current_char_type;
     ewk->wu.cg_ctr = ewk->wu.overlap_char_tbl->parts_timer;
 
     if (ewk->wu.overlap_char_tbl->parts_colmd) {

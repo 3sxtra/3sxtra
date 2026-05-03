@@ -212,7 +212,7 @@ static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk) {
     ewk->wu.mvxy.a[0].sp = 0;
     ewk->wu.mvxy.a[1].real.h = range_isp_table[rix];
     cal_delta_speed(&ewk->wu, range_time_table[rix], tx, 0, 2, 1);
-    ewk->wu.mvxy.kop[0] = 1;
+    ewk->wu.mvxy.physics_curve_type[0] = 1;
 
     if (ewk->wu.rl_flag == 0) {
         ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
@@ -252,7 +252,7 @@ s32 effect_D5_init(WORK* wk, s32 /* unused */) {
 
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = wk->position_y + 124;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos = 28;
-    wk->cmwk[0] = 1;
+    wk->script_register_bank[0] = 1;
     return 0;
 }
 

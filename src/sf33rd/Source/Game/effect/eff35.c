@@ -82,9 +82,9 @@ static void eff35_0001(WORK_Other* ewk) {
         if (ewk->wu.old_routine_no[1] <= 0) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 1;
-            ewk->wu.my_mr_flag = 1;
-            ewk->wu.my_mr.size.x = 127;
-            ewk->wu.my_mr.size.y = 63;
+            ewk->wu.mirror_flag = 1;
+            ewk->wu.mirror_scale.size.x = 127;
+            ewk->wu.mirror_scale.size.y = 63;
             set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.old_routine_no[3], 0);
         }
 
@@ -96,11 +96,11 @@ static void eff35_0001(WORK_Other* ewk) {
             break;
         }
 
-        ewk->wu.my_mr.size.x -= 12;
+        ewk->wu.mirror_scale.size.x -= 12;
 
-        if (ewk->wu.my_mr.size.x <= 0) {
+        if (ewk->wu.mirror_scale.size.x <= 0) {
             ewk->wu.routine_no[1]++;
-            ewk->wu.my_mr.size.x = 0;
+            ewk->wu.mirror_scale.size.x = 0;
         }
 
         disp_pos_trans_entry5(ewk);
@@ -112,11 +112,11 @@ static void eff35_0001(WORK_Other* ewk) {
             break;
         }
 
-        ewk->wu.my_mr.size.x += 12;
+        ewk->wu.mirror_scale.size.x += 12;
 
-        if (ewk->wu.my_mr.size.x >= 63) {
+        if (ewk->wu.mirror_scale.size.x >= 63) {
             ewk->wu.routine_no[1]++;
-            ewk->wu.my_mr.size.x = 63;
+            ewk->wu.mirror_scale.size.x = 63;
         }
 
         disp_pos_trans_entry5(ewk);

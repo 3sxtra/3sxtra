@@ -62,9 +62,9 @@ void effect_70_move(WORK_Other* ewk) {
     case 3:
         if (--ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[0]++;
-            ewk->wu.my_mr_flag = 1;
-            ewk->wu.my_mr.size.x = 63;
-            ewk->wu.my_mr.size.y = 63;
+            ewk->wu.mirror_flag = 1;
+            ewk->wu.mirror_scale.size.x = 63;
+            ewk->wu.mirror_scale.size.y = 63;
             ewk->wu.mvxy.a[0].sp = 0x80000;
         }
 
@@ -72,17 +72,17 @@ void effect_70_move(WORK_Other* ewk) {
         break;
 
     case 4:
-        if ((ewk->wu.my_mr.size.x -= ewk->wu.mvxy.a[0].real.h) <= 0) {
-            ewk->wu.my_mr.size.x = 0;
+        if ((ewk->wu.mirror_scale.size.x -= ewk->wu.mvxy.a[0].real.h) <= 0) {
+            ewk->wu.mirror_scale.size.x = 0;
         }
 
-        if ((ewk->wu.my_mr.size.y -= ewk->wu.mvxy.a[0].real.h) <= 0) {
-            ewk->wu.my_mr.size.y = 0;
+        if ((ewk->wu.mirror_scale.size.y -= ewk->wu.mvxy.a[0].real.h) <= 0) {
+            ewk->wu.mirror_scale.size.y = 0;
         }
 
-        if (ewk->wu.my_mr.size.x <= 0 && ewk->wu.my_mr.size.y <= 0) {
+        if (ewk->wu.mirror_scale.size.x <= 0 && ewk->wu.mirror_scale.size.y <= 0) {
             ewk->wu.routine_no[1]++;
-            ewk->wu.my_mr_flag = 0;
+            ewk->wu.mirror_flag = 0;
             ewk->wu.disp_flag = 0;
             break;
         }

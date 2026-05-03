@@ -1155,14 +1155,14 @@ static void nm_34000(PLW* wk) {
 /** @brief Normal input handler 36 — taunt input. */
 static void nm_36000(PLW* wk) {
     if (wk->wu.cg_type == 0xFF) {
-        if (wk->wu.now_koc == 0 && wk->wu.char_index == 0) {
+        if (wk->wu.current_char_type == 0 && wk->wu.char_index == 0) {
             wk->wu.routine_no[2] = 1;
             wk->wu.routine_no[3] = 1;
         } else {
             wk->wu.routine_no[2] = 1;
             wk->wu.routine_no[3] = 0;
         }
-    } else if (wk->player_number == 8 && wk->wu.now_koc == 0 && wk->wu.char_index == 36) {
+    } else if (wk->player_number == 8 && wk->wu.current_char_type == 0 && wk->wu.char_index == 36) {
         exset_char_move_init(&wk->wu, 0, 0);
         wk->wu.routine_no[2] = 1;
         wk->wu.routine_no[3] = 1;
@@ -1231,7 +1231,7 @@ static void nm_38000(PLW* wk) {
 /** @brief Normal input handler 39 — high-jump landing. */
 static void nm_39000(PLW* wk) {
     if (wk->wu.cg_type == 0xFF) {
-        if (wk->wu.now_koc == 0 && wk->wu.char_index == 0) {
+        if (wk->wu.current_char_type == 0 && wk->wu.char_index == 0) {
             wk->wu.routine_no[2] = 1;
             wk->wu.routine_no[3] = 1;
         } else {

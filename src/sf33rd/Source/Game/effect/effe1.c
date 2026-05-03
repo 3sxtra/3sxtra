@@ -19,8 +19,8 @@ void effect_E1_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        ewk->wu.my_mr.size.x = 63;
-        ewk->wu.my_mr.size.y = 63;
+        ewk->wu.mirror_scale.size.x = 63;
+        ewk->wu.mirror_scale.size.y = 63;
         break;
     }
 
@@ -46,8 +46,8 @@ s32 effect_E1_init(s16 id, s16 Time, s16 /* unused */) {
     ewk->wu.my_family = 1;
     ewk->wu.dir_timer = Time;
     ewk->wu.char_table[0] = _etc_char_table;
-    ewk->wu.my_mr.size.x = 0x3F;
-    ewk->wu.my_mr.size.y = 0x3F;
+    ewk->wu.mirror_scale.size.x = 0x3F;
+    ewk->wu.mirror_scale.size.y = 0x3F;
 
     switch (id) {
     case 0:

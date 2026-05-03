@@ -34,8 +34,8 @@ static void Att_PL12_TOKUSHUKOUDOU(PLW* wk) {
         wk->wu.rl_flag = wk->wu.active_move;
         force_grounded_state(wk);
         wk->wu.mvxy.index = wk->as->data_ix;
-        wk->wu.cmwk[6] = 0;
-        wk->wu.cmwk[7] = 0;
+        wk->wu.script_register_bank[6] = 0;
+        wk->wu.script_register_bank[7] = 0;
         wk->tk_success++;
 
         if (wk->metamorphose) {
@@ -64,9 +64,9 @@ static void Att_PL12_TOKUSHUKOUDOU(PLW* wk) {
         break;
 
     case 2:
-        if (wk->wu.cmwk[7] != 0) {
+        if (wk->wu.script_register_bank[7] != 0) {
             char_move_cmj4(&wk->wu);
-            wk->wu.cmwk[7] = 0;
+            wk->wu.script_register_bank[7] = 0;
             wk->wu.mvxy.index++;
             add_sp_arts_gauge_tokushu(wk);
         }
@@ -108,8 +108,8 @@ static void Att_PL12_BONUS_STAGE(PLW* wk) {
     case 0:
         wk->wu.routine_no[3]++;
         wk->wu.rl_flag = wk->wu.active_move;
-        wk->wu.cmwk[6] = 0;
-        wk->wu.cmwk[7] = 0;
+        wk->wu.script_register_bank[6] = 0;
+        wk->wu.script_register_bank[7] = 0;
         set_char_move_init(&wk->wu, 5, wk->wu.char_index);
         break;
 
@@ -123,9 +123,9 @@ static void Att_PL12_BONUS_STAGE(PLW* wk) {
         break;
 
     case 2:
-        if (wk->wu.cmwk[7] != 0) {
+        if (wk->wu.script_register_bank[7] != 0) {
             char_move_cmj4(&wk->wu);
-            wk->wu.cmwk[7] = 0;
+            wk->wu.script_register_bank[7] = 0;
         }
 
         jumping_union_process(&wk->wu, 3);

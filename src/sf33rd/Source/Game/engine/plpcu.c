@@ -89,7 +89,7 @@ static void Caught_01000(PLW* wk, PLW* emwk) {
         wk->wu.routine_no[3]++;
         set_char_move_init(&wk->wu, 3, emwk->wu.cmd_y_axis_data.ix);
         emwk->kind_of_catch = 0;
-        wk->wu.cmwk[11] = 0;
+        wk->wu.script_register_bank[11] = 0;
         /* fallthrough */
 
     case 1:
@@ -135,7 +135,7 @@ static void Caught_02000(PLW* wk, PLW* emwk) {
         wk->wu.routine_no[3]++;
         set_char_move_init(&wk->wu, 3, emwk->wu.cmd_y_axis_data.ix);
         emwk->kind_of_catch = 1;
-        wk->wu.cmwk[11] = 0;
+        wk->wu.script_register_bank[11] = 0;
         /* fallthrough */
 
     case 1:
@@ -192,7 +192,7 @@ static void caught_cg_type_check(PLW* wk, PLW* emwk) {
         break;
 
     case 9:
-        if (wk->wu.now_koc == 3 && wk->wu.char_index == 60) {
+        if (wk->wu.current_char_type == 3 && wk->wu.char_index == 60) {
             if (wk->dead_flag) {
                 char_move_cmms(&wk->wu);
             } else {
@@ -269,7 +269,7 @@ static void scdmd_12000(PLW* wk) {
 /** @brief Sets up caught-damage init data for states 14–15, 21–22, 27 (launch/stagger/zero-Y). */
 static void scdmd_14000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
-    wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+    wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
 }
 
 /** @brief Sets up caught-damage init data for states 16, 19, 30 (blow-away/ground-to-air/extended). */

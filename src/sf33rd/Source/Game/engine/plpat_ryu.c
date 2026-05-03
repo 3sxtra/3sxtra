@@ -42,7 +42,7 @@ static void Att_DENJINHADOUKEN(PLW* wk) {
     case 1:
         char_move(&wk->wu);
 
-        if (wk->wu.now_koc == 8 && wk->wu.char_index == 13) {
+        if (wk->wu.current_char_type == 8 && wk->wu.char_index == 13) {
             if (wk->cp->lgp > 13) {
                 lgix = 5;
             } else {

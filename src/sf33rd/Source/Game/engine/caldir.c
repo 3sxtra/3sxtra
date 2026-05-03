@@ -239,7 +239,7 @@ void cal_all_speed_data(WORK* wk, s16 tm, s16 x1, s16 y1, s8 xsw, s8 ysw) {
     wk->mvxy.d[1].sp = bb.dly;
     wk->xyz[0].cal += bb.amx;
     wk->xyz[1].cal += bb.amy;
-    wk->mvxy.kop[0] = wk->mvxy.kop[1] = 0;
+    wk->mvxy.physics_curve_type[0] = wk->mvxy.physics_curve_type[1] = 0;
 }
 
 /** @brief Calculates initial speed to reach a target position in a given time. */

@@ -117,9 +117,9 @@ void effect_A7_move(WORK_Other* ewk) {
         }
 
         if (ewk->wu.char_index == 75) {
-            ewk->wu.my_mr_flag = 1;
-            ewk->wu.my_mr.size.x = 127;
-            ewk->wu.my_mr.size.y = 63;
+            ewk->wu.mirror_flag = 1;
+            ewk->wu.mirror_scale.size.x = 127;
+            ewk->wu.mirror_scale.size.y = 63;
             ewk->wu.my_col_code |= (ewk->master_id == 1) * 16;
         }
 
@@ -191,7 +191,7 @@ s32 effect_A7_init(PLW* wk) {
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_family = 2;
-    ewk->wu.my_mr_flag = 0;
+    ewk->wu.mirror_flag = 0;
     ewk->wu.xyz[0].disp.pos = ewk->wu.position_x = wk->wu.xyz[0].disp.pos;
     ewk->wu.xyz[1].disp.pos = ewk->wu.position_y = wk->wu.xyz[1].disp.pos;
     ewk->wu.xyz[2].disp.pos = 26;

@@ -563,9 +563,9 @@ static void Setup_Char_76(WORK_Other* ewk) {
         break;
 
     case 0x3D:
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 0x5F;
-        ewk->wu.my_mr.size.y = 0x3F;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 0x5F;
+        ewk->wu.mirror_scale.size.y = 0x3F;
         ewk->wu.my_family = 2;
         ewk->wu.char_index = 0x53;
         ewk->wu.dir_step = ewk->wu.dir_old - 0x3B;

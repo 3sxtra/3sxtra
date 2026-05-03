@@ -147,9 +147,9 @@ void effect_03_move(WORK_Other* ewk) {
         }
 
         if (ewk->wu.type == 146) {
-            ewk->wu.my_mr_flag = 1;
-            ewk->wu.my_mr.size.x = 127;
-            ewk->wu.my_mr.size.y = 63;
+            ewk->wu.mirror_flag = 1;
+            ewk->wu.mirror_scale.size.x = 127;
+            ewk->wu.mirror_scale.size.y = 63;
         }
 
         /* fallthrough */

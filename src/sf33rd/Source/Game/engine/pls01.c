@@ -631,7 +631,7 @@ s16 check_attbox_dir(PLW* wk) {
         emdir = dir32_rl_conv[emdir];
     }
 
-    if ((wk->wu.now_koc == 0) && ((wk->wu.char_index) == 29)) {
+    if ((wk->wu.current_char_type == 0) && ((wk->wu.char_index) == 29)) {
         emdir = dir32_sel_tbl[1][emdir];
     } else {
         emdir = dir32_sel_tbl[0][emdir];

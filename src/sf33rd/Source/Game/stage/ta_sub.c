@@ -425,7 +425,7 @@ void cal_bg_speed_data_x(s16 bg_num, s16 tm, s16 unk) {
     g_state.bg_mvxy.a[0].sp = ms.spx;
     g_state.bg_mvxy.d[0].sp = ms.dlx;
     g_state.bg_w.bgw[bg_num].chase_xy[0].cal += ms.amx;
-    g_state.bg_mvxy.kop[0] = 0;
+    g_state.bg_mvxy.physics_curve_type[0] = 0;
 }
 
 /** @brief Calculate vertical interpolation speed data. */
@@ -450,5 +450,5 @@ void cal_bg_speed_data_y(s16 bg_num, s16 tm, s16 unk) {
     g_state.bg_mvxy.a[1].sp = ms.spy;
     g_state.bg_mvxy.d[1].sp = ms.dly;
     g_state.bg_w.bgw[bg_num].chase_xy[1].cal += ms.amy;
-    g_state.bg_mvxy.kop[1] = 0;
+    g_state.bg_mvxy.physics_curve_type[1] = 0;
 }

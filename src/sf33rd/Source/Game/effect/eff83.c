@@ -64,7 +64,7 @@ void effect_83_move(WORK_Other* ewk) {
 
             if (ewk->wu.old_routine_no[0] <= 0) {
                 ewk->wu.routine_no[0]++;
-                oya_ptr->cmwk[1] = 9;
+                oya_ptr->script_register_bank[1] = 9;
                 set_char_move_init(&ewk->wu, 0, 35);
             }
         }

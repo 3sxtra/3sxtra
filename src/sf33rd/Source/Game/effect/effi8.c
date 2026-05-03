@@ -163,7 +163,7 @@ static void effI8_main_process(WORK_Other* ewk) {
             if (ewk->wu.shadow_flag != 0 && ewk->refrected == 0 && mwk->wu.routine_no[1] == 4 &&
                 mwk->wu.routine_no[2] == 31 && mwk->wu.cg_type == 0x28 &&
                 hit_check_subroutine(&ewk->wu, (WORK*)ewk->my_master, effI8_hit_box[0], effI8_hit_box[1])) {
-                mwk->wu.cmwk[7] = 1;
+                mwk->wu.script_register_bank[7] = 1;
                 ewk->wu.type = 0;
                 ewk->wu.routine_no[2] = 1;
             }
@@ -183,9 +183,9 @@ static void effI8_main_process(WORK_Other* ewk) {
                 ewk->wu.mvxy.d[0].sp = 0;
                 ewk->wu.mvxy.a[1].sp = 0x20000;
                 ewk->wu.mvxy.d[1].sp = -0x6800;
-            } else if (mwk->wu.cmwk[6]) {
+            } else if (mwk->wu.script_register_bank[6]) {
                 ewk->wu.routine_no[2] = 0;
-                mwk->wu.cmwk[6] = 0;
+                mwk->wu.script_register_bank[6] = 0;
 
                 if (mwk->wu.rl_flag) {
                     ewk->wu.xyz[0].disp.pos = mwk->wu.xyz[0].disp.pos + 10;

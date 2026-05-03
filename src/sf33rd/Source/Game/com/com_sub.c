@@ -307,7 +307,7 @@ void Hold_Attack_Button(PLW* wk, s16 Power_Level) {
             Reaction_Exit_Sub(wk);
         } else {
             g_state.Lever_Buff[wk->wu.id] = g_state.Lever_LR[wk->wu.id];
-            if ((wk->wu.now_koc == 8) && (wk->wu.char_index == 0xD)) {
+            if ((wk->wu.current_char_type == 8) && (wk->wu.char_index == 0xD)) {
 
                 xx = wk->wu.graphic_index / wk->wu.char_graphic_data_type;
                 if (xx >= Power_Level) {

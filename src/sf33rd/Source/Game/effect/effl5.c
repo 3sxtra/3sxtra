@@ -56,9 +56,9 @@ static void hukuromoji_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1] += 1;
         ewk->wu.disp_flag = 1;
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 127;
-        ewk->wu.my_mr.size.y = 127;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 127;
+        ewk->wu.mirror_scale.size.y = 127;
         set_char_move_init2(&ewk->wu, 0, 2, 6, 0);
         ewk->wu.hit_stop = 2;
         break;
@@ -75,13 +75,13 @@ static void hukuromoji_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        ewk->wu.my_mr.size.x -= 6;
-        ewk->wu.my_mr.size.y -= 6;
+        ewk->wu.mirror_scale.size.x -= 6;
+        ewk->wu.mirror_scale.size.y -= 6;
 
-        if (ewk->wu.my_mr.size.x < 64) {
+        if (ewk->wu.mirror_scale.size.x < 64) {
             ewk->wu.routine_no[1] += 1;
-            ewk->wu.my_mr.size.x = 63;
-            ewk->wu.my_mr.size.y = 63;
+            ewk->wu.mirror_scale.size.x = 63;
+            ewk->wu.mirror_scale.size.y = 63;
             ewk->wu.hit_stop = 4;
             set_char_move_init2(&ewk->wu, 0, 2, 7, 0);
             return;

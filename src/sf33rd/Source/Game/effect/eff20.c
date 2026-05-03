@@ -21,9 +21,9 @@ void effect_20_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 63;
-        ewk->wu.my_mr.size.y = 63;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 63;
+        ewk->wu.mirror_scale.size.y = 63;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         oya->wu.old_routine_no[0] = 0;
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;

@@ -155,14 +155,14 @@ void add_to_mvxy_data(WORK* wk, u16 ix) {
     sp = adrs[1];
     sp *= 256;
     wk->mvxy.d[0].sp += sp;
-    wk->mvxy.kop[0] = adrs[2];
+    wk->mvxy.physics_curve_type[0] = adrs[2];
     sp = adrs[3];
     sp *= 256;
     wk->mvxy.a[1].sp += sp;
     sp = adrs[4];
     sp *= 256;
     wk->mvxy.d[1].sp += sp;
-    wk->mvxy.kop[1] = adrs[5];
+    wk->mvxy.physics_curve_type[1] = adrs[5];
 }
 
 /** @brief Sets up easy-mode movement data from address. */
@@ -171,12 +171,12 @@ void setup_move_data_easy(WORK* wk, const s16* adrs, s16 prx, s16 pry) {
     wk->mvxy.a[0].sp <<= 8;
     wk->mvxy.d[0].sp = adrs[1];
     wk->mvxy.d[0].sp <<= 8;
-    wk->mvxy.kop[0] = prx;
+    wk->mvxy.physics_curve_type[0] = prx;
     wk->mvxy.a[1].sp = adrs[2];
     wk->mvxy.a[1].sp <<= 8;
     wk->mvxy.d[1].sp = adrs[3];
     wk->mvxy.d[1].sp <<= 8;
-    wk->mvxy.kop[1] = pry;
+    wk->mvxy.physics_curve_type[1] = pry;
 }
 
 /** @brief Sets up movement XY data from a table index. */
@@ -198,12 +198,12 @@ static void read_adrs_store_mvxy(WORK* wk, s16* adrs) {
     wk->mvxy.a[0].sp <<= 8;
     wk->mvxy.d[0].sp = adrs[1];
     wk->mvxy.d[0].sp <<= 8;
-    wk->mvxy.kop[0] = adrs[2];
+    wk->mvxy.physics_curve_type[0] = adrs[2];
     wk->mvxy.a[1].sp = adrs[3];
     wk->mvxy.a[1].sp <<= 8;
     wk->mvxy.d[1].sp = adrs[4];
     wk->mvxy.d[1].sp <<= 8;
-    wk->mvxy.kop[1] = adrs[5];
+    wk->mvxy.physics_curve_type[1] = adrs[5];
 }
 
 /** @brief Returns the weight-class index for the character. */
@@ -216,7 +216,7 @@ void cal_mvxy_speed(WORK* wk) {
     s16 i;
 
     for (i = 0; i < 2; i++) {
-        switch (wk->mvxy.kop[i]) {
+        switch (wk->mvxy.physics_curve_type[i]) {
         case 0:
             wk->mvxy.a[i].sp += wk->mvxy.d[i].sp;
             break;
@@ -290,8 +290,8 @@ void add_mvxy_speed_direct(WORK* wk, s16 sx, s16 sy) {
 
 /** @brief Clears all movement XY data. */
 void reset_mvxy_data(WORK* wk) {
-    wk->mvxy.a[0].sp = wk->mvxy.d[0].sp = wk->mvxy.kop[0] = 0;
-    wk->mvxy.a[1].sp = wk->mvxy.d[1].sp = wk->mvxy.kop[1] = 0;
+    wk->mvxy.a[0].sp = wk->mvxy.d[0].sp = wk->mvxy.physics_curve_type[0] = 0;
+    wk->mvxy.a[1].sp = wk->mvxy.d[1].sp = wk->mvxy.physics_curve_type[1] = 0;
 }
 
 /** @brief Rebuilds movement data for push-back (PoSB). */

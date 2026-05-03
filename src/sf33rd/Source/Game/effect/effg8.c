@@ -26,9 +26,9 @@ void effect_G8_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0] += 1;
         ewk->wu.disp_flag = 0;
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 0;
-        ewk->wu.my_mr.size.y = 0;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 0;
+        ewk->wu.mirror_scale.size.y = 0;
         set_char_move_init(&ewk->wu, 0, 17);
         ewk->wu.old_routine_no[3] = random_16();
         ewk->wu.old_routine_no[0] = 192;
@@ -53,10 +53,10 @@ void effect_G8_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 2:
-        ewk->wu.my_mr.size.x += 2;
-        ewk->wu.my_mr.size.y += 2;
+        ewk->wu.mirror_scale.size.x += 2;
+        ewk->wu.mirror_scale.size.y += 2;
 
-        if (ewk->wu.my_mr.size.x >= 63) {
+        if (ewk->wu.mirror_scale.size.x >= 63) {
             ewk->wu.routine_no[0] += 1;
         }
 

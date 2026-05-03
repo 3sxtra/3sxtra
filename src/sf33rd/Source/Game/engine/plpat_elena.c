@@ -43,12 +43,12 @@ static void Att_PL08_HEALING(PLW* wk) {
     case 1:
         char_move(&wk->wu);
 
-        if (wk->wu.cmwk[0]) {
+        if (wk->wu.script_register_bank[0]) {
             cpsw = (wk->cp->input_current & 0x770);
             cpsw >>= 4;
 
             if (pl08_hcs_tbl[cpsw & 7] || pl08_hcs_tbl[(cpsw >> 4) & 7]) {
-                wk->wu.cmwk[0] = 0;
+                wk->wu.script_register_bank[0] = 0;
                 char_move_cmms(&wk->wu);
             }
         }

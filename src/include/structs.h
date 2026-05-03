@@ -185,7 +185,7 @@ typedef struct {
 typedef struct {
     Reg32SpReal a[2];
     Reg32SpReal d[2];
-    s16 kop[2];
+    s16 physics_curve_type[2];
     u16 index;
 } MVXY;
 
@@ -375,7 +375,7 @@ typedef struct {
     CommandState cmd_register_1;
     CommandState cmd_register_2;
     CommandState cmd_register_3;
-    s16 cmwk[32];
+    s16 script_register_bank[32];
     u32* char_table[12];
     u32* se_random_table;
     s16* step_xy_table;
@@ -387,7 +387,7 @@ typedef struct {
     CatchTable* curr_rca;
     u32* set_char_ad;
     s16 graphic_index;
-    s16 now_koc;
+    s16 current_char_type;
     s16 char_index;
     s16 current_colcd; ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
 
@@ -429,7 +429,7 @@ typedef struct {
 
     u16 old_cgnum;
     s16 floor;
-    u16 ccoff;
+    u16 collision_center_offset;
     s16 colcd; ///< @netplay_sync Rendering-derived — fully zeroed for checksum
     s16 my_col_mode;
     s16 my_col_code; ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
@@ -440,13 +440,13 @@ typedef struct {
     s16 my_bright_level;
     s16 my_clear_level;
     s16 my_mts;
-    s16 my_mr_flag;
+    s16 mirror_flag;
     struct {
         struct {
             s16 x;
             s16 y;
         } size;
-    } my_mr;
+    } mirror_scale;
     s16 my_trans_mode;
     s16 bbox_work_index;
     s16 olc_work_ix[4];
@@ -480,7 +480,7 @@ typedef struct {
     s16 vs_id;
     u8 att_hit_ok;
     u8 frame_link_hit_flag;
-    u16 at_koa;
+    u16 attack_art_type;
     u8 paring_attack_flag;
     s8 no_death_attack;
     u8 jump_att_flag;

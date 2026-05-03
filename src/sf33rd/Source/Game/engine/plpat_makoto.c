@@ -78,7 +78,7 @@ static void Att_PL17_AT1(PLW* wk) {
 
         if (wk->wu.cg_type == 30) {
             setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
-            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
             wk->wu.mvxy.index++;
             wk->wu.routine_no[3] = 4;
             wk->wu.cg_type = 0;
@@ -134,7 +134,7 @@ static void Att_PL17_AT1(PLW* wk) {
 
         if (wk->wu.cg_type == 30) {
             setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
-            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
             wk->wu.mvxy.index++;
             wk->wu.cg_type = 0;
         }
@@ -203,7 +203,7 @@ static void set_kabe_move_spd(WORK* wk, s16 tm) {
         wk->mvxy.d[0].sp = -wk->mvxy.d[0].sp;
     }
 
-    wk->mvxy.kop[0] = 1;
+    wk->mvxy.physics_curve_type[0] = 1;
 }
 
 /** @brief Makoto: checks if character has reached a stage wall. */

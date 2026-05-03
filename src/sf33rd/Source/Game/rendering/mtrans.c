@@ -1936,8 +1936,8 @@ void mlt_obj_matrix(WORK* wk, s32 base_y) {
     njSetMatrix(NULL, &BgMATRIX[wk->my_family]);
     njTranslate(NULL, wk->position_x, wk->position_y + base_y, PrioBase[wk->position_z]);
 
-    if (wk->my_mr_flag) {
-        njScale(NULL, (1.0f / 64.0f) * (wk->my_mr.size.x + 1), (1.0f / 64.0f) * (wk->my_mr.size.y + 1), 1.0f);
+    if (wk->mirror_flag) {
+        njScale(NULL, (1.0f / 64.0f) * (wk->mirror_scale.size.x + 1), (1.0f / 64.0f) * (wk->mirror_scale.size.y + 1), 1.0f);
     }
 
     // ⚡ Opt3: Cache matrix elements for inlined transform.

@@ -82,11 +82,11 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
         move_check(wk);
     }
 
-    wk->wu.cmwk[10] = wk->cp->lgp;
-    wk->wu.cmwk[11] += wk->cp->lgp;
-    wk->wu.cmwk[11] &= 0x7FFF;
-    wk->wu.cmwk[12] = wk->cp->input_pressed;
-    wk->wu.cmwk[13] = wk->cp->input_current;
+    wk->wu.script_register_bank[10] = wk->cp->lgp;
+    wk->wu.script_register_bank[11] += wk->cp->lgp;
+    wk->wu.script_register_bank[11] &= 0x7FFF;
+    wk->wu.script_register_bank[12] = wk->cp->input_pressed;
+    wk->wu.script_register_bank[13] = wk->cp->input_current;
     plmain_b_lv_00[wk->wu.routine_no[0]](wk);
 }
 
@@ -136,7 +136,7 @@ static void player_mvbs_0000(PLW* wk) {
     clear_tk_flags(wk);
     wk->wu.routine_no[0] = 1;
     wk->wu.routine_no[6] = 0;
-    wk->wu.cmwk[0] = 0;
+    wk->wu.script_register_bank[0] = 0;
     about_gauge_process(wk);
 
     if (wk->player_number == 18) {

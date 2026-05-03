@@ -982,7 +982,7 @@ void Grade_Check_Health_Difference() {
 void grade_add_same_move(s16 ix) {
     s16 num;
 
-    num = g_state.plw[ix].wu.char_index + ((g_state.plw[ix].wu.now_koc == 5) * 0xF0);
+    num = g_state.plw[ix].wu.char_index + ((g_state.plw[ix].wu.current_char_type == 5) * 0xF0);
     if (num < 0x180) {
         if (g_state.ji_sat[ix][num] != 0xFF) {
             g_state.ji_sat[ix][num]++;

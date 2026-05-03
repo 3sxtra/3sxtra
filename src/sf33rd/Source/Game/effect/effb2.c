@@ -46,8 +46,8 @@ void effect_B2_move(WORK_Other* ewk) {
         work = random_16();
         work &= 3;
         ewk->wu.dir_old = effb2_sound_tbl[work];
-        ewk->wu.my_mr.size.x = 63;
-        ewk->wu.my_mr.size.y = 63;
+        ewk->wu.mirror_scale.size.x = 63;
+        ewk->wu.mirror_scale.size.y = 63;
         break;
 
     case 1:
@@ -55,7 +55,7 @@ void effect_B2_move(WORK_Other* ewk) {
 
         if (ewk->wu.hit_stop < 0) {
             ewk->wu.routine_no[0] += 1;
-            ewk->wu.my_mr.size.y = 0;
+            ewk->wu.mirror_scale.size.y = 0;
             effect_I6_init(ewk);
             return;
         }
@@ -63,11 +63,11 @@ void effect_B2_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        ewk->wu.my_mr.size.y += 10;
+        ewk->wu.mirror_scale.size.y += 10;
 
-        if (ewk->wu.my_mr.size.y >= 63) {
+        if (ewk->wu.mirror_scale.size.y >= 63) {
             ewk->wu.routine_no[0] += 1;
-            ewk->wu.my_mr.size.y = 63;
+            ewk->wu.mirror_scale.size.y = 63;
             ewk->wu.hit_stop = 64;
             g_state.rf_b2_flag = 0;
             return;
@@ -89,8 +89,8 @@ void effect_B2_move(WORK_Other* ewk) {
         break;
 
     case 4:
-        ewk->wu.my_mr.size.x = 63;
-        ewk->wu.my_mr.size.y = 0;
+        ewk->wu.mirror_scale.size.x = 63;
+        ewk->wu.mirror_scale.size.y = 0;
         ewk->wu.hit_stop -= 1;
 
         if (ewk->wu.hit_stop < 0) {
@@ -103,11 +103,11 @@ void effect_B2_move(WORK_Other* ewk) {
         break;
 
     case 5:
-        ewk->wu.my_mr.size.y += 6;
+        ewk->wu.mirror_scale.size.y += 6;
 
-        if (ewk->wu.my_mr.size.y >= 63) {
+        if (ewk->wu.mirror_scale.size.y >= 63) {
             ewk->wu.routine_no[0] += 1;
-            ewk->wu.my_mr.size.y = 63;
+            ewk->wu.mirror_scale.size.y = 63;
             return;
         }
 

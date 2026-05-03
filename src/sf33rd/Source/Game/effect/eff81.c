@@ -96,8 +96,8 @@ s32 effect_81_init(s16 Time) {
     g_state.Appear_Q = 1;
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
-    ewk->wu.my_mr_flag = 1;
-    ewk->wu.my_mr.size.x = 127;
-    ewk->wu.my_mr.size.y = 127;
+    ewk->wu.mirror_flag = 1;
+    ewk->wu.mirror_scale.size.x = 127;
+    ewk->wu.mirror_scale.size.y = 127;
     return 0;
 }

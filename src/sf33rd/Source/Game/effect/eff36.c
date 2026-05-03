@@ -77,21 +77,21 @@ static void eff36_move00(WORK_Other* ewk) {
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
         set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 63;
-        ewk->wu.my_mr.size.y = 63;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 63;
+        ewk->wu.mirror_scale.size.y = 63;
         push_color_trans_req(ewk->wu.my_col_code & 0x1FF, 0);
         ewk->wu.my_col_code = 0;
         break;
 
     case 1:
-        ewk->wu.my_mr.size.x += 1;
-        ewk->wu.my_mr.size.y += 1;
+        ewk->wu.mirror_scale.size.x += 1;
+        ewk->wu.mirror_scale.size.y += 1;
 
-        if (ewk->wu.my_mr.size.x >= 88) {
+        if (ewk->wu.mirror_scale.size.x >= 88) {
             ewk->wu.routine_no[2] += 1;
-            ewk->wu.my_mr.size.x = 88;
-            ewk->wu.my_mr.size.y = 88;
+            ewk->wu.mirror_scale.size.x = 88;
+            ewk->wu.mirror_scale.size.y = 88;
         }
 
         disp_pos_trans_entry5(ewk);
@@ -271,9 +271,9 @@ static void eff36_move06(WORK_Other* ewk) {
         push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 0x15, 8);
         push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 0x16, 9);
         ewk->wu.my_col_code = 8;
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 66;
-        ewk->wu.my_mr.size.y = 66;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 66;
+        ewk->wu.mirror_scale.size.y = 66;
         disp_pos_trans_entry5(ewk);
         ewk->wu.old_routine_no[6] = 2;
         break;
@@ -283,13 +283,13 @@ static void eff36_move06(WORK_Other* ewk) {
 
         if (ewk->wu.old_routine_no[6] <= 0) {
             ewk->wu.old_routine_no[6] = 2;
-            ewk->wu.my_mr.size.x += 1;
-            ewk->wu.my_mr.size.y += 1;
+            ewk->wu.mirror_scale.size.x += 1;
+            ewk->wu.mirror_scale.size.y += 1;
 
-            if (ewk->wu.my_mr.size.x >= 127) {
+            if (ewk->wu.mirror_scale.size.x >= 127) {
                 ewk->wu.routine_no[2] += 1;
-                ewk->wu.my_mr.size.x = 127;
-                ewk->wu.my_mr.size.y = 127;
+                ewk->wu.mirror_scale.size.x = 127;
+                ewk->wu.mirror_scale.size.y = 127;
             }
         }
 

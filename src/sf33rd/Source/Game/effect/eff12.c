@@ -107,9 +107,9 @@ s32 effect_12_init(s16 type) {
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
 
         if (type == 3 && i == 2) {
-            ewk->wu.my_mr_flag = 1;
-            ewk->wu.my_mr.size.x = 127;
-            ewk->wu.my_mr.size.y = 127;
+            ewk->wu.mirror_flag = 1;
+            ewk->wu.mirror_scale.size.x = 127;
+            ewk->wu.mirror_scale.size.y = 127;
         }
     }
 

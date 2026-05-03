@@ -51,8 +51,8 @@ void effect_M3_move(WORK_Other* ewk) {
             ewk->wu.mvxy.a[0].real.l = -1;
             ewk->wu.mvxy.d[0].real.h = -1;
             ewk->wu.mvxy.d[0].real.l = M3_bahn_data[4] * 16;
-            ewk->wu.mvxy.kop[0] = 1;
-            ewk->wu.my_mr_flag = 1;
+            ewk->wu.mvxy.physics_curve_type[0] = 1;
+            ewk->wu.mirror_flag = 1;
             /* fallthrough */
 
         case 1:
@@ -85,7 +85,7 @@ void effect_M3_move(WORK_Other* ewk) {
             break;
         }
 
-        ewk->wu.my_mr.size.x = ewk->wu.my_mr.size.y = ewk->wu.mvxy.a[0].real.h + 63;
+        ewk->wu.mirror_scale.size.x = ewk->wu.mirror_scale.size.y = ewk->wu.mvxy.a[0].real.h + 63;
         effM3_trans(&ewk->wu);
         break;
 

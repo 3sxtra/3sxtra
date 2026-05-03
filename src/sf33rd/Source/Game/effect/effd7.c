@@ -155,7 +155,7 @@ static void effD7_main_process(WORK_Other* ewk) {
             if (ewk->wu.shadow_flag && mwk->wu.routine_no[1] == 4 && mwk->wu.routine_no[2] == 30 &&
                 mwk->wu.cg_type == 0x28 && mwk->tk_success == ewk->wu.shell_ix[0] &&
                 hit_check_subroutine(&ewk->wu, (WORK*)ewk->my_master, effD7_hit_box[0], effD7_hit_box[1])) {
-                mwk->wu.cmwk[7] = 1;
+                mwk->wu.script_register_bank[7] = 1;
                 ewk->wu.type = 0;
                 ewk->wu.routine_no[2] = 1;
             }
@@ -175,7 +175,7 @@ static void effD7_main_process(WORK_Other* ewk) {
                 ewk->wu.mvxy.d[0].sp = 0;
                 ewk->wu.mvxy.a[1].sp = 0x20000;
                 ewk->wu.mvxy.d[1].sp = -0x6800;
-            } else if (mwk->wu.cmwk[6]) {
+            } else if (mwk->wu.script_register_bank[6]) {
                 ewk->wu.routine_no[2] = 0;
 
                 if (mwk->wu.rl_flag) {

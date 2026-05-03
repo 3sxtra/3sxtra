@@ -164,7 +164,7 @@ static void Win_01000(PLW* wk) {
         if (g_state.Round_num >= (CurrentSave()->Battle_Number[g_state.Play_Type] * 2) ||
             g_state.PL_Wins[wk->wu.id] >= CurrentSave()->Battle_Number[g_state.Play_Type] + 1) {
             if (g_state.Round_Result & 0x800) {
-                wk->wu.cmwk[0] = 0;
+                wk->wu.script_register_bank[0] = 0;
                 set_char_move_init(&wk->wu, 9, 42);
                 g_state.win_rno[0] = 3;
                 break;
@@ -351,7 +351,7 @@ static void jijii_full(PLW* wk) {
     switch (g_state.win_rno[1]) {
     case 0:
         char_move(&wk->wu);
-        if (wk->wu.cmwk[0] == 1) {
+        if (wk->wu.script_register_bank[0] == 1) {
             g_state.win_rno[1]++;
             break;
         }
@@ -364,7 +364,7 @@ static void jijii_full(PLW* wk) {
 
         if (wk->wu.xyz[1].disp.pos >= 42) {
             g_state.win_rno[1]++;
-            wk->wu.cmwk[0] = 2;
+            wk->wu.script_register_bank[0] = 2;
             set_char_move_init(&wk->wu, 9, 43);
             break;
         }
@@ -496,7 +496,7 @@ static void Win_04000(PLW* wk) {
         switch (work) {
         case 1:
         case 3:
-            if (wk->wu.now_koc == 0 && wk->wu.char_index == 0) {
+            if (wk->wu.current_char_type == 0 && wk->wu.char_index == 0) {
                 work2 = wk->wu.graphic_index / wk->wu.char_graphic_data_type;
                 work2 += 2;
                 set_char_move_init2(&wk->wu, 9, work + 32, work2, 0);
@@ -694,7 +694,7 @@ static void Win_07000(PLW* wk) {
                 effect_82_init(&wk->wu);
                 g_state.win_rno[0] = 1;
                 set_char_move_init(&wk->wu, 9, 60);
-                wk->wu.cmwk[1] = 0;
+                wk->wu.script_register_bank[1] = 0;
                 break;
             }
 
@@ -707,7 +707,7 @@ static void Win_07000(PLW* wk) {
             effect_83_init(&wk->wu);
             g_state.win_rno[0] = 2;
             set_char_move_init(&wk->wu, 9, 60);
-            wk->wu.cmwk[1] = 0;
+            wk->wu.script_register_bank[1] = 0;
             break;
         }
 
@@ -724,7 +724,7 @@ static void Win_07000(PLW* wk) {
 
         default:
             if (g_state.win_rno[1] == 0) {
-                if (wk->wu.cmwk[1]) {
+                if (wk->wu.script_register_bank[1]) {
                     g_state.win_rno[1]++;
 
                     if (g_state.win_rno[0] == 1) {
@@ -828,7 +828,7 @@ static void Win_09000(PLW* wk) {
             break;
 
         case 7:
-            wk->wu.cmwk[0] = 0;
+            wk->wu.script_register_bank[0] = 0;
             effect_L6_init(&wk->wu, 1);
             set_char_move_init(&wk->wu, 0, 0);
             g_state.win_rno[0] = 1;
@@ -843,7 +843,7 @@ static void Win_09000(PLW* wk) {
             case 0:
                 char_move(&wk->wu);
 
-                if (wk->wu.cmwk[0]) {
+                if (wk->wu.script_register_bank[0]) {
                     g_state.win_rno[1]++;
                     set_char_move_init(&wk->wu, 9, 39);
                 }

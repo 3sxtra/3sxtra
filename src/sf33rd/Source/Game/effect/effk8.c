@@ -27,9 +27,9 @@ void effect_K8_move(WORK_Other* ewk) {
         g_state.seraph_flag = 1;
         Bg_Disp_Switch(1);
         ewk->wu.my_priority = ewk->wu.position_z = 67;
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 127;
-        ewk->wu.my_mr.size.y = 127;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 127;
+        ewk->wu.mirror_scale.size.y = 127;
         set_char_move_init(&ewk->wu, 0, 0x8F);
         break;
 
@@ -46,7 +46,7 @@ void effect_K8_move(WORK_Other* ewk) {
         if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
-            if (ewk->wu.dir_old != mwk->now_koc || ewk->wu.dir_step != mwk->char_index) {
+            if (ewk->wu.dir_old != mwk->current_char_type || ewk->wu.dir_step != mwk->char_index) {
                 ewk->wu.routine_no[0] = 2;
                 Bg_Y_Sitei(0, 0);
                 g_state.seraph_flag = 0;
@@ -90,7 +90,7 @@ s32 effect_K8_init(WORK* wk, u8 data) {
     ewk->wu.my_col_code = 2;
     ewk->wu.position_x = -8;
     ewk->wu.position_y = 240 - g_state.base_y_pos;
-    ewk->wu.dir_old = wk->now_koc;
+    ewk->wu.dir_old = wk->current_char_type;
     ewk->wu.dir_step = wk->char_index;
     *ewk->wu.char_table = _plef_char_table;
     return 0;

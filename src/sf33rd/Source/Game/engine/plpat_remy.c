@@ -125,8 +125,8 @@ static void Att_PL20_AT2(PLW* wk) {
         jumping_union_process(&wk->wu, 4);
 
         if (wk->wu.routine_no[3] == 4) {
-            if (wk->wu.mvxy.kop[0] == 2) {
-                wk->wu.mvxy.kop[0] = 1;
+            if (wk->wu.mvxy.physics_curve_type[0] == 2) {
+                wk->wu.mvxy.physics_curve_type[0] = 1;
             }
 
             wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = 0;

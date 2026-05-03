@@ -28,8 +28,8 @@ void effect_I6_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 3:
-        ewk->wu.my_mr.size.x = oya_ptr->wu.my_mr.size.x;
-        ewk->wu.my_mr.size.y = oya_ptr->wu.my_mr.size.y;
+        ewk->wu.mirror_scale.size.x = oya_ptr->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_ptr->wu.mirror_scale.size.y;
         disp_pos_trans_entry5(ewk);
         break;
 
@@ -50,9 +50,9 @@ static void effi6_line_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1] += 1;
         ewk->wu.disp_flag = 1;
-        ewk->wu.my_mr_flag = 1;
-        ewk->wu.my_mr.size.x = 0;
-        ewk->wu.my_mr.size.y = 0;
+        ewk->wu.mirror_flag = 1;
+        ewk->wu.mirror_scale.size.x = 0;
+        ewk->wu.mirror_scale.size.y = 0;
         set_char_move_init2(&ewk->wu, 0, 2, 3, 0);
         /* fallthrough */
 

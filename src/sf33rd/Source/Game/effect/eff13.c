@@ -56,7 +56,7 @@ void effect_13_move(WORK_Other* ewk) {
         ewk->wu.dir_timer = tama->life_time;
         ewk->wu.disp_flag = tama->disp_type;
         ewk->wu.blink_timing = ewk->master_id;
-        ewk->wu.at_koa = tama->koa;
+        ewk->wu.attack_art_type = tama->koa;
         ewk->wu.vital_new = tama->def_power;
         ewk->wu.damage_vitality = 0;
         ewk->wu.original_vitality = tama->move_num;
@@ -98,7 +98,7 @@ void effect_13_move(WORK_Other* ewk) {
                 ewk->wu.mvxy.a[1].sp = mwk->wu.mvxy.a[1].sp ? mwk->wu.mvxy.a[1].sp : -0x80000;
                 ewk->wu.mvxy.d[0].sp = mwk->wu.mvxy.d[0].sp;
                 ewk->wu.mvxy.d[1].sp = mwk->wu.mvxy.d[1].sp;
-                ewk->wu.mvxy.kop[1] = 0;
+                ewk->wu.mvxy.physics_curve_type[1] = 0;
             } else {
                 emwk = (PLW*)mwk->wu.target_adrs;
                 ewk->wu.xyz[0].disp.pos = tama->hos_x;
@@ -132,9 +132,9 @@ void effect_13_move(WORK_Other* ewk) {
 
         if (tama->kind_of_tama == 11) {
             ewk->wu.next_z = 71;
-            ewk->wu.my_mr_flag = 1;
-            ewk->wu.my_mr.size.x = 127;
-            ewk->wu.my_mr.size.y = 127;
+            ewk->wu.mirror_flag = 1;
+            ewk->wu.mirror_scale.size.x = 127;
+            ewk->wu.mirror_scale.size.y = 127;
         }
 
         if (tama->kind_of_tama == 10) {
@@ -164,7 +164,7 @@ void effect_13_move(WORK_Other* ewk) {
 
         if (ewk->wu.floor) {
             ewk->wu.attack_type |= 0x20;
-            ewk->wu.at_koa = 0x80;
+            ewk->wu.attack_art_type = 0x80;
         }
 
         hit_push_request(&ewk->wu);
@@ -1379,7 +1379,7 @@ static void kotp_11000(WORK_Other* ewk, TAMA* twk) {
         cal_mvxy_speed(&ewk->wu);
 
         if (ewk->wu.xyz[1].disp.pos <= 0) {
-            ewk->wu.mvxy.a[1].sp = ewk->wu.mvxy.d[1].sp = ewk->wu.mvxy.kop[1] = 0;
+            ewk->wu.mvxy.a[1].sp = ewk->wu.mvxy.d[1].sp = ewk->wu.mvxy.physics_curve_type[1] = 0;
             set_char_move_init(&ewk->wu, 0, twk->erex);
             ewk->wu.xyz[1].disp.pos = 0;
             ewk->wu.routine_no[1] = 2;

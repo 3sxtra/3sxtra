@@ -148,23 +148,23 @@ static int l_read_player(lua_State* L) {
     // Animation g_state.ID: compute from char_table byte offset
     // In CPS3, action_address = char_table_base + char_table[kind_of_char][index]
     // The low 16 bits of action_address = framedata key.
-    // On host, byte_offset = (u8*)set_char_ad - (u8*)char_table[now_koc]
-    // which equals char_table[now_koc][char_index] bytes.
+    // On host, byte_offset = (u8*)set_char_ad - (u8*)char_table[current_char_type]
+    // which equals char_table[current_char_type][char_index] bytes.
     // We also need the CPS3 base to get the absolute address.
     // For now, output the byte offset and the raw table value for diagnosis.
     {
         static bool printed = false;
         u32 byte_offset = 0;
         u32 raw_table_val = 0;
-        if (wu->set_char_ad && wu->char_table[wu->now_koc]) {
-            byte_offset = (u32)((u8*)wu->set_char_ad - (u8*)wu->char_table[wu->now_koc]);
-            raw_table_val = wu->char_table[wu->now_koc][wu->char_index];
+        if (wu->set_char_ad && wu->char_table[wu->current_char_type]) {
+            byte_offset = (u32)((u8*)wu->set_char_ad - (u8*)wu->char_table[wu->current_char_type]);
+            raw_table_val = wu->char_table[wu->current_char_type][wu->char_index];
 
             if (!printed) {
                 printed = true;
                 // printf("[ANIM_DIAG] char_table[%d] base=%p, set_char_ad=%p\n",
-                //        wu->now_koc,
-                //        (void*)wu->char_table[wu->now_koc],
+                //        wu->current_char_type,
+                //        (void*)wu->char_table[wu->current_char_type],
                 //        (void*)wu->set_char_ad);
                 // printf("[ANIM_DIAG] byte_offset=0x%X, raw_table_val=0x%X, cg_number=%d\n",
                 //        byte_offset,
@@ -178,7 +178,7 @@ static int l_read_player(lua_State* L) {
         PUSH_INT(L, t, "animation_byte_offset", byte_offset);
         PUSH_INT(L, t, "animation_raw_table_val", raw_table_val);
         PUSH_INT(L, t, "cg_number_value", wu->cg_number);
-        PUSH_INT(L, t, "now_koc", wu->now_koc);
+        PUSH_INT(L, t, "current_char_type", wu->current_char_type);
     }
 
     // --- Attack state ---

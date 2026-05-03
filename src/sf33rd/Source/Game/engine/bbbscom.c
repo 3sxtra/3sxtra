@@ -98,7 +98,7 @@ void bbbs_com_execute(PLW* wk) {
             wk->wu.routine_no[2] = 31;
             wk->wu.routine_no[3] = 0;
             wk->wu.char_index = 71;
-            wk->wu.cmwk[5] = bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].kosuu;
+            wk->wu.script_register_bank[5] = bbbs_table[g_state.bbbs_type][g_state.Bonus_Stage_Level][g_state.Bonus_Stage_Tix].kosuu;
             wk->wu.mvxy.d[0].sp = 0;
             wk->wu.mvxy.a[0].sp = 0;
             wk->wu.mvxy.a[1].sp =

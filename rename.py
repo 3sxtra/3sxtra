@@ -80,7 +80,14 @@ renames = {
     'mkh_ix': 'hit_mark_index',
     'but_ix': 'button_index',
     'hs_me': 'hitstop_me',
-    'hs_you': 'hitstop_you'
+    'hs_you': 'hitstop_you',
+    'cmwk': 'script_register_bank',
+    'now_koc': 'current_char_type',
+    'my_mr_flag': 'mirror_flag',
+    'my_mr': 'mirror_scale',
+    'ccoff': 'collision_center_offset',
+    'at_koa': 'attack_art_type',
+    'kop': 'physics_curve_type'
 }
 
 def process_file(filepath):

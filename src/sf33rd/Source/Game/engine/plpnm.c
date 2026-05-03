@@ -739,7 +739,7 @@ static void Normal_40000(PLW* wk) {
     if ((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING)) {
         switch (wk->wu.routine_no[3]) {
         case 0:
-            if (wk->wu.now_koc != 0 || (wk->wu.char_index != 0)) {
+            if (wk->wu.current_char_type != 0 || (wk->wu.char_index != 0)) {
                 set_char_move_init(&wk->wu, 0, 0);
             }
 
@@ -761,7 +761,7 @@ static void Normal_41000(PLW* wk) {
     if ((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING)) {
         switch (wk->wu.routine_no[3]) {
         case 0:
-            if (wk->wu.vital_new >= 0 && (wk->wu.now_koc != 0 || wk->wu.char_index != 0)) {
+            if (wk->wu.vital_new >= 0 && (wk->wu.current_char_type != 0 || wk->wu.char_index != 0)) {
                 set_char_move_init(&wk->wu, 0, 0);
             }
 

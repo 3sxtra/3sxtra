@@ -13,7 +13,7 @@ void effect_F0_move(WORK_Other* ewk) {
     WORK* mwk = (WORK*)ewk->my_master;
 
     if (!ewk->wu.routine_no[0]) {
-        if ((ewk->wu.dead_f == 1) || (ewk->wu.dir_old != mwk->now_koc)) {
+        if ((ewk->wu.dead_f == 1) || (ewk->wu.dir_old != mwk->current_char_type)) {
             ewk->wu.disp_flag = 0;
             Release_Effect(&ewk->wu);
             return;
@@ -53,7 +53,7 @@ s32 effect_F0_init(WORK* wk) {
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.disp_flag = 0;
-    ewk->wu.dir_old = wk->now_koc;
+    ewk->wu.dir_old = wk->current_char_type;
     effect_F0_move(ewk);
     return 0;
 }

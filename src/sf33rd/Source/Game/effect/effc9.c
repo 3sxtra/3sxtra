@@ -123,7 +123,7 @@ void effect_C9_move(WORK_Other* ewk) {
                         ewk->wu.mvxy.d[0].sp = efy_data[3];
                         ewk->wu.mvxy.a[1].sp = efy_data[4];
                         ewk->wu.mvxy.d[1].sp = efy_data[5];
-                        ewk->wu.mvxy.kop[0] = 2;
+                        ewk->wu.mvxy.physics_curve_type[0] = 2;
                         ewk->wu.routine_no[2] += 1;
                         /* fallthrough */
 
@@ -136,7 +136,7 @@ void effect_C9_move(WORK_Other* ewk) {
                             ewk->wu.xyz[1].disp.pos = ewk->wu.next_y;
                             ewk->wu.mvxy.d[1].sp = 0;
                             ewk->wu.mvxy.a[1].sp = 0;
-                            ewk->wu.mvxy.kop[0] = 1;
+                            ewk->wu.mvxy.physics_curve_type[0] = 1;
                             effect_03_init(&ewk->wu, 110);
                             Se_Dispatch(309, 309, ewk);
                             char_move_z(&ewk->wu);

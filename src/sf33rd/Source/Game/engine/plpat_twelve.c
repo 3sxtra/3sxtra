@@ -106,8 +106,8 @@ static void Att_SA__D_R_A(PLW* wk) {
         }
 
         if (wk->wu.routine_no[3] == 3) {
-            if (wk->wu.mvxy.kop[0] == 2) {
-                wk->wu.mvxy.kop[0] = 1;
+            if (wk->wu.mvxy.physics_curve_type[0] == 2) {
+                wk->wu.mvxy.physics_curve_type[0] = 1;
             }
 
             wk->wu.mvxy.d[1].sp = 0;
@@ -165,8 +165,8 @@ static void Att_SA__D_R_A(PLW* wk) {
         }
 
         if (wk->wu.routine_no[3] == 5) {
-            if (wk->wu.mvxy.kop[0] == 2) {
-                wk->wu.mvxy.kop[0] = 1;
+            if (wk->wu.mvxy.physics_curve_type[0] == 2) {
+                wk->wu.mvxy.physics_curve_type[0] = 1;
             }
 
             wk->wu.mvxy.d[1].sp = 0;
@@ -221,7 +221,7 @@ static void Att_EX__D_R_A(PLW* wk) {
             wk->wu.routine_no[3]++;
             wk->wu.cg_type = 0;
             add_mvxy_speed(&wk->wu);
-            wk->wu.mvxy.kop[1] = 2;
+            wk->wu.mvxy.physics_curve_type[1] = 2;
         }
 
         break;
@@ -236,8 +236,8 @@ static void Att_EX__D_R_A(PLW* wk) {
         }
 
         if (wk->wu.routine_no[3] == 3) {
-            if (wk->wu.mvxy.kop[0] == 2) {
-                wk->wu.mvxy.kop[0] = 1;
+            if (wk->wu.mvxy.physics_curve_type[0] == 2) {
+                wk->wu.mvxy.physics_curve_type[0] = 1;
             }
 
             wk->wu.mvxy.d[1].sp = 0;
@@ -290,8 +290,8 @@ static void Att_KUUCHUUHISSATU(PLW* wk) {
         }
 
         if (wk->wu.routine_no[3] == 2) {
-            if (wk->wu.mvxy.kop[0] == 2) {
-                wk->wu.mvxy.kop[0] = 1;
+            if (wk->wu.mvxy.physics_curve_type[0] == 2) {
+                wk->wu.mvxy.physics_curve_type[0] = 1;
             }
 
             wk->wu.mvxy.d[1].sp = 0;
@@ -490,7 +490,7 @@ static void Att_AIR_A_X_E(PLW* wk) {
             wk->wu.mvxy.d[1].sp <<= 8;
         }
 
-        wk->wu.mvxy.kop[1] = 0;
+        wk->wu.mvxy.physics_curve_type[1] = 0;
         break;
 
     case 1:

@@ -110,11 +110,11 @@ void Player_move(PLW* wk, u16 lv_data) {
         key_thru(wk);
     }
 
-    wk->wu.cmwk[10] = wk->cp->lgp;
-    wk->wu.cmwk[11] += wk->cp->lgp;
-    wk->wu.cmwk[11] &= 0x7FFF;
-    wk->wu.cmwk[12] = wk->cp->input_pressed;
-    wk->wu.cmwk[13] = wk->cp->input_current;
+    wk->wu.script_register_bank[10] = wk->cp->lgp;
+    wk->wu.script_register_bank[11] += wk->cp->lgp;
+    wk->wu.script_register_bank[11] &= 0x7FFF;
+    wk->wu.script_register_bank[12] = wk->cp->input_pressed;
+    wk->wu.script_register_bank[13] = wk->cp->input_current;
     plmain_lv_00[wk->wu.routine_no[0]](wk);
 }
 
@@ -190,7 +190,7 @@ static void player_mv_0000(PLW* wk) {
 #endif
 
     wk->wu.routine_no[6] = 0;
-    wk->wu.cmwk[0] = 0;
+    wk->wu.script_register_bank[0] = 0;
 
 #if !CPS3
     wk->omop_vital_timer = 40;
@@ -769,22 +769,22 @@ void sag_union_1(PLW* wk) {
         } else {
             if (g_state.My_char[wk->wu.id] == CHAR_YUN) {
                 wk->wu.attack_type |= 0x20;
-                wk->wu.at_koa = 0x80;
+                wk->wu.attack_art_type = 0x80;
             }
 
             if (g_state.My_char[wk->wu.id] == CHAR_YANG) {
                 wk->wu.attack_type |= 0x20;
-                wk->wu.at_koa = 0x80;
+                wk->wu.attack_art_type = 0x80;
             }
 
             if (g_state.My_char[wk->wu.id] == CHAR_MAKOTO) {
                 wk->wu.attack_type |= 0x20;
-                wk->wu.at_koa = 0x80;
+                wk->wu.attack_art_type = 0x80;
             }
 
             if (g_state.My_char[wk->wu.id] == CHAR_TWELVE) {
                 wk->wu.attack_type |= 0x20;
-                wk->wu.at_koa = 0x80;
+                wk->wu.attack_art_type = 0x80;
             }
 
             if ((g_state.My_char[wk->wu.id] == CHAR_ORO) && (wk->sa->kind_of_arts == 2)) {
@@ -965,13 +965,13 @@ void sag_union_ps2(PLW* wk) {
                 }
 
                 if (g_state.My_char[wk->wu.id] == 3) {
-                    addSAAttribute(&wk->wu.attack_type, &wk->wu.at_koa);
+                    addSAAttribute(&wk->wu.attack_type, &wk->wu.attack_art_type);
                 }
 
                 if (g_state.My_char[wk->wu.id] == 10 || g_state.My_char[wk->wu.id] == 16 ||
                     g_state.My_char[wk->wu.id] == 18) {
                     wk->wu.attack_type |= 32;
-                    wk->wu.at_koa = 128;
+                    wk->wu.attack_art_type = 128;
                 }
 
                 if ((g_state.My_char[wk->wu.id] == 9) && (wk->sa->kind_of_arts == 2)) {

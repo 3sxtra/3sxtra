@@ -52,7 +52,7 @@ void effect_I3_move(WORK_Other* ewk) {
 
         if ((i3_data[ewk->wu.type].flag & 1 && --ewk->wu.dir_timer < 0) ||
             (i3_data[ewk->wu.type].flag & 2 &&
-             (ewk->wu.now_koc != mwk->now_koc || ewk->wu.char_index != mwk->char_index))) {
+             (ewk->wu.current_char_type != mwk->current_char_type || ewk->wu.char_index != mwk->char_index))) {
             ewk->wu.routine_no[0] = 2;
         }
 
@@ -82,7 +82,7 @@ s32 effect_I3_init(WORK* wk, u8 tix) {
     ewk->wu.type = tix;
     ewk->wu.cg_type = wk->cg_type;
     ewk->wu.hit_stop = wk->hit_stop;
-    ewk->wu.now_koc = wk->now_koc;
+    ewk->wu.current_char_type = wk->current_char_type;
     ewk->wu.char_index = wk->char_index;
     return 0;
 }

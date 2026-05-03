@@ -350,8 +350,8 @@ void set_caught_status(s16 ix) {
     dm_status_copy(&as->wu, &ds->wu);
     ds->wu.damage_vitality = 0;
     as->wu.hit_stop = ds->wu.damage_hit_stop = 0;
-    as->wu.cmwk[8]++;
-    as->wu.cmwk[0xF]++;
+    as->wu.script_register_bank[8]++;
+    as->wu.script_register_bank[0xF]++;
     ds->wu.dm_count_up++;
     hit_pattern_extdat_check(&as->wu);
     g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
@@ -568,8 +568,8 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
     effect_02_init(&as->wu, ds->dm_point, 1, ds->wu.dm_rl);
     dm_status_copy(&as->wu, &ds->wu);
     same_dm_stop(&as->wu, &ds->wu);
-    as->wu.cmwk[8]++;
-    as->wu.cmwk[15]++;
+    as->wu.script_register_bank[8]++;
+    as->wu.script_register_bank[15]++;
     ds->wu.dm_count_up++;
 
     if (ds->wu.xyz[1].disp.pos < 0) {
@@ -636,7 +636,7 @@ void set_guard_status(PLW* as, PLW* ds) {
         }
 
         ds->wu.damage_stun_value = 0;
-        as->wu.cmwk[8]++;
+        as->wu.script_register_bank[8]++;
         add_sp_arts_gauge_guard(as);
         ds->wu.dm_arts_point = 0;
         grade_add_guard_success(ds->wu.id);
@@ -707,7 +707,7 @@ void set_paring_status(PLW* as, PLW* ds) {
                 parisucc_pts[g_state.Play_Type][g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] - 1];
         }
 
-        as->wu.cmwk[8]++;
+        as->wu.script_register_bank[8]++;
     }
 
     hit_pattern_extdat_check(&as->wu);
@@ -1318,7 +1318,7 @@ void dm_status_copy(WORK* as, WORK* ds) {
     ds->damage_invuln = as->attack_invuln;
     ds->dm_attribute = as->at_attribute;
     ds->dm_ten_ix = as->at_ten_ix;
-    ds->damage_kind_of_arts = as->at_koa;
+    ds->damage_kind_of_arts = as->attack_art_type;
     ds->hm_dm_side = as->att.dmg_mark;
     ds->dm_work_id = as->work_id;
     as->hit_stop = as->att.hitstop_me;

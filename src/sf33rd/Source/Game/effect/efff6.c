@@ -43,10 +43,10 @@ void efff6_move(WORK_Other* ewk) {
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
         set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
-        if (ewk->wu.my_mr.size.x == 0x3F) {
-            ewk->wu.my_mr_flag = 0;
+        if (ewk->wu.mirror_scale.size.x == 0x3F) {
+            ewk->wu.mirror_flag = 0;
         } else {
-            ewk->wu.my_mr_flag = 1;
+            ewk->wu.mirror_flag = 1;
         }
         if (ewk->wu.type == 0x36) {
             push_color_trans_req((ewk->wu.my_col_code & 0x1FF) + 0x3C, 8);
@@ -186,10 +186,10 @@ void efff6_move01(WORK_Other* ewk) {
         ewk->wu.routine_no[2] += 1;
         ewk->wu.disp_flag = 1;
         set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[0], ewk->wu.char_index, 0);
-        if (ewk->wu.my_mr.size.x == 0x3F) {
-            ewk->wu.my_mr_flag = 0;
+        if (ewk->wu.mirror_scale.size.x == 0x3F) {
+            ewk->wu.mirror_flag = 0;
         } else {
-            ewk->wu.my_mr_flag = 1;
+            ewk->wu.mirror_flag = 1;
         }
         ewk->wu.old_routine_no[5] = 1;
         ewk->wu.old_routine_no[6] = 0;
@@ -252,8 +252,8 @@ s32 effect_F6_init(u8 typenum) {
     ewk->wu.direction = efff6_etc_data[typenum].dir;
     ewk->wu.old_routine_no[3] = efff6_etc_data[typenum].limit_x_pos;
     ewk->wu.old_routine_no[4] = efff6_etc_data[typenum].limit_y_pos;
-    ewk->wu.my_mr.size.x = efff6_etc_data[typenum].zoom_v;
-    ewk->wu.my_mr.size.y = efff6_etc_data[typenum].zoom_v;
+    ewk->wu.mirror_scale.size.x = efff6_etc_data[typenum].zoom_v;
+    ewk->wu.mirror_scale.size.y = efff6_etc_data[typenum].zoom_v;
     ewk->wu.mvxy.a[0].sp = efff6_etc_data[typenum].sp_x_a;
     ewk->wu.mvxy.d[0].sp = efff6_etc_data[typenum].sp_x_d;
     ewk->wu.mvxy.a[1].sp = efff6_etc_data[typenum].sp_y_a;

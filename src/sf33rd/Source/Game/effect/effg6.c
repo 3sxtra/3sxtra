@@ -139,7 +139,7 @@ void effect_G6_move(WORK_Other* ewk) {
         ewk->wu.next_y = effg6_data[ewk->wu.type][3];
         ewk->wu.mvxy.a[0].sp = effg6_data[ewk->wu.type][4];
         ewk->wu.mvxy.a[1].sp = effg6_data[ewk->wu.type][5];
-        ewk->wu.now_koc = effg6_data[ewk->wu.type][6];
+        ewk->wu.current_char_type = effg6_data[ewk->wu.type][6];
         ewk->wu.direction = effg6_data[ewk->wu.type][7];
 
         if (ewk->wu.rl_flag) {
@@ -148,8 +148,8 @@ void effect_G6_move(WORK_Other* ewk) {
 
         ewk->wu.mvxy.a[0].sp *= 256;
         ewk->wu.mvxy.a[1].sp *= 256;
-        ewk->wu.disp_flag = ewk->wu.now_koc / 256;
-        ewk->wu.now_koc &= 0xFF;
+        ewk->wu.disp_flag = ewk->wu.current_char_type / 256;
+        ewk->wu.current_char_type &= 0xFF;
         /* fallthrough */
 
     case 1:
@@ -179,7 +179,7 @@ void effect_G6_move(WORK_Other* ewk) {
             }
         }
 
-        if (ewk->wu.now_koc & (g_state.players_timer + ewk->wu.blink_timing)) {
+        if (ewk->wu.current_char_type & (g_state.players_timer + ewk->wu.blink_timing)) {
             break;
         }
 

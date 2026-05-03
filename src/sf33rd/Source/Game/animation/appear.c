@@ -382,7 +382,7 @@ void Appear_06000(PLW* wk) {
         if (g_state.demo_car_flag[wk->wu.id]) {
             wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.disp_flag = 1;
-            wk->wu.my_mr_flag = 0;
+            wk->wu.mirror_flag = 0;
             set_char_move_init(&wk->wu, 9, 0x13);
             wk->wu.position_z = wk->wu.next_z = 0x6E;
             wk->wu.mvxy.d[0].sp = 0;
@@ -1117,9 +1117,9 @@ void Appear_19000(PLW* wk) {
         wk->wu.xyz[0].disp.pos = 0x275;
         wk->wu.xyz[1].disp.pos = 0x154;
         wk->wu.next_z = 0x56;
-        wk->wu.my_mr_flag = 1;
-        wk->wu.my_mr.size.x = 0x35;
-        wk->wu.my_mr.size.y = 0x35;
+        wk->wu.mirror_flag = 1;
+        wk->wu.mirror_scale.size.x = 0x35;
+        wk->wu.mirror_scale.size.y = 0x35;
         g_state.appear_work[wk->wu.id] = 0x82;
         break;
 
@@ -1130,9 +1130,9 @@ void Appear_19000(PLW* wk) {
 
         if (g_state.appear_work[wk->wu.id] < 0) {
             wk->wu.routine_no[APPEAR_RNO_PHASE]++;
-            wk->wu.my_mr_flag = 0;
-            wk->wu.my_mr.size.x = 0x3F;
-            wk->wu.my_mr.size.y = 0x3F;
+            wk->wu.mirror_flag = 0;
+            wk->wu.mirror_scale.size.x = 0x3F;
+            wk->wu.mirror_scale.size.y = 0x3F;
 
             set_char_move_init2(&wk->wu, 9, 0x3D, 4, 0);
 
@@ -1248,7 +1248,7 @@ void Appear_22000(PLW* wk) {
     case 0:
         wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
-        wk->wu.cmwk[1] = 0;
+        wk->wu.script_register_bank[1] = 0;
         set_char_move_init(&wk->wu, 9, 0);
         g_state.bg_app_stop = 1;
         break;
@@ -1279,14 +1279,14 @@ void Appear_23000(PLW* wk) {
         wk->wu.disp_flag = 1;
         work = random_16();
         work &= 3;
-        wk->wu.cmwk[1] = 0;
+        wk->wu.script_register_bank[1] = 0;
         set_char_move_init(&wk->wu, 9, work + 4);
         g_state.bg_app_stop = 1;
         break;
 
     case 1:
         char_move(&wk->wu);
-        if ((wk->wu.cmwk[1]) && wk->wu.cg_type == 9) {
+        if ((wk->wu.script_register_bank[1]) && wk->wu.cg_type == 9) {
             wk->wu.routine_no[APPEAR_RNO_PHASE] += 1;
             set_char_move_init(&wk->wu, 9, wk->wu.char_index + 8);
             return;
@@ -1498,11 +1498,11 @@ void Appear_29000(PLW* wk) {
         wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         g_state.bg_app_stop = 1;
         wk->wu.disp_flag = 1;
-        wk->wu.cmwk[1] = 0;
-        wk->wu.cmwk[2] = 0;
+        wk->wu.script_register_bank[1] = 0;
+        wk->wu.script_register_bank[2] = 0;
         work = random_16();
         work &= 3;
-        wk->wu.cmwk[2] = work;
+        wk->wu.script_register_bank[2] = work;
         set_char_move_init(&wk->wu, 9, 0);
         work = random_16();
 
@@ -1517,8 +1517,8 @@ void Appear_29000(PLW* wk) {
         break;
 
     case 1:
-        if (wk->wu.cmwk[1]) {
-            switch (wk->wu.cmwk[2]) {
+        if (wk->wu.script_register_bank[1]) {
+            switch (wk->wu.script_register_bank[2]) {
             case 0:
             case 1:
                 wk->wu.routine_no[APPEAR_RNO_PHASE] = 2;
@@ -1821,7 +1821,7 @@ void Appear_36000(PLW* wk) {
     case 1:
         char_move(&wk->wu);
 
-        if (g_state.plw[id_w].wu.cmwk[0] == 3) {
+        if (g_state.plw[id_w].wu.script_register_bank[0] == 3) {
             wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x11);
             g_state.app_counter[wk->wu.id] = 0x10;
@@ -1889,7 +1889,7 @@ void Appear_37000(PLW* wk) {
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x11);
         g_state.bg_app_stop = 1;
-        wk->wu.cmwk[0] = 0;
+        wk->wu.script_register_bank[0] = 0;
         effect_M1_init(&wk->wu);
         break;
 
@@ -1898,14 +1898,14 @@ void Appear_37000(PLW* wk) {
 
         if (wk->wu.cg_type == 0xFF) {
             wk->wu.routine_no[APPEAR_RNO_PHASE]++;
-            wk->wu.cmwk[0] = 1;
+            wk->wu.script_register_bank[0] = 1;
         }
         break;
 
     case 2:
         char_move(&wk->wu);
 
-        if (wk->wu.cmwk[0] == 2) {
+        if (wk->wu.script_register_bank[0] == 2) {
             wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x12);
         }
@@ -1927,7 +1927,7 @@ void Appear_37000(PLW* wk) {
 
         if (wk->wu.cg_type == 9) {
             wk->wu.routine_no[APPEAR_RNO_PHASE]++;
-            wk->wu.cmwk[0] = 3;
+            wk->wu.script_register_bank[0] = 3;
             wk->wu.next_z = g_state.plw[id_w].wu.my_priority;
         }
 
@@ -2082,7 +2082,7 @@ void Appear_41000(PLW* wk) {
 
 /** @brief Gouki (Akuma) teleport entrance animation. */
 void gouki_appear(PLW* wk) {
-    if (!wk->wu.cmwk[0]) {
+    if (!wk->wu.script_register_bank[0]) {
         char_move(&wk->wu);
         return;
     }

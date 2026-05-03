@@ -301,7 +301,7 @@ void get_attdata_of_illusion(WORK_Other* ewk) {
     ewk->wu.att.hitstop_you = 0;
     ewk->wu.add_arts_point = 0;
     ewk->wu.attack_type = g_state.afterimage_table[ewk->master_id][ewk->wu.type].light_attack_flag;
-    ewk->wu.at_koa = acatkoa_table[ewk->wu.attack_type];
+    ewk->wu.attack_art_type = acatkoa_table[ewk->wu.attack_type];
 
     if (ewk->wu.anim_hurtbox_index) {
         hit_push_request(&ewk->wu);

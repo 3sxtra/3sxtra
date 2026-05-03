@@ -39,7 +39,7 @@ void Att_METAMOR_WAIT(PLW* wk) {
             wk->wu.mvxy.a[1].sp = 0;
             wk->wu.mvxy.d[0].sp = 0;
             wk->wu.mvxy.d[1].sp = -0x8000;
-            wk->wu.mvxy.kop[0] = wk->wu.mvxy.kop[1] = 0;
+            wk->wu.mvxy.physics_curve_type[0] = wk->wu.mvxy.physics_curve_type[1] = 0;
         }
 
         break;
@@ -100,7 +100,7 @@ void Att_METAMOR_REBIRTH(PLW* wk) {
             wk->wu.mvxy.a[1].sp = 0;
             wk->wu.mvxy.d[0].sp = 0;
             wk->wu.mvxy.d[1].sp = -0x8000;
-            wk->wu.mvxy.kop[0] = wk->wu.mvxy.kop[1] = 0;
+            wk->wu.mvxy.physics_curve_type[0] = wk->wu.mvxy.physics_curve_type[1] = 0;
             wk->scr_pos_set_flag = 1;
         }
 
@@ -303,8 +303,8 @@ void Att_ABISEGERI(PLW* wk) {
         jumping_union_process(&wk->wu, 3);
 
         if (wk->wu.routine_no[3] == 3) {
-            if (wk->wu.mvxy.kop[0] == 2) {
-                wk->wu.mvxy.kop[0] = 1;
+            if (wk->wu.mvxy.physics_curve_type[0] == 2) {
+                wk->wu.mvxy.physics_curve_type[0] = 1;
             }
 
             wk->wu.mvxy.d[1].sp = 0;
@@ -659,7 +659,7 @@ void Att_SLIDE_and_JUMP(PLW* wk) {
 
         if (wk->wu.cg_type == 30) {
             setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
-            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
             wk->wu.mvxy.index++;
             wk->wu.routine_no[3] = 3;
             wk->wu.cg_type = 0;
@@ -702,7 +702,7 @@ void Att_SLIDE_and_JUMP(PLW* wk) {
 
         if (wk->wu.cg_type == 30) {
             setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
-            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
+            wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.physics_curve_type[1] = 0;
             wk->wu.mvxy.index++;
             wk->wu.cg_type = 0;
         }

@@ -49,7 +49,7 @@ void effect_34_move(WORK_Other* ewk) {
         if (ewk->wu.cg_type == 1) {
             ewk->wu.routine_no[0]++;
             ewk->wu.cg_type = 0;
-            oya_ptr->cmwk[1] = 9;
+            oya_ptr->script_register_bank[1] = 9;
         }
 
         break;

@@ -53,8 +53,8 @@ void effect_B3_move(WORK_Other* ewk) {
     case 3:
     case 5:
     case 6:
-        ewk->wu.my_mr.size.x = oya_adrs->wu.my_mr.size.x;
-        ewk->wu.my_mr.size.y = oya_adrs->wu.my_mr.size.y;
+        ewk->wu.mirror_scale.size.x = oya_adrs->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_adrs->wu.mirror_scale.size.y;
         disp_pos_trans_entry5(ewk);
         break;
 
@@ -87,13 +87,13 @@ static void round_move_init(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1] += 1;
         ewk->wu.disp_flag = 1;
-        ewk->wu.my_mr_flag = 1;
+        ewk->wu.mirror_flag = 1;
         set_char_move_init2(&ewk->wu, 0, 2, 1, 0);
         /* fallthrough */
 
     case 1:
-        ewk->wu.my_mr.size.x = oya_adrs->wu.my_mr.size.x;
-        ewk->wu.my_mr.size.y = oya_adrs->wu.my_mr.size.y;
+        ewk->wu.mirror_scale.size.x = oya_adrs->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_adrs->wu.mirror_scale.size.y;
         disp_pos_trans_entry5(ewk);
         break;
     }
@@ -120,8 +120,8 @@ static void round_move(WORK_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        ewk->wu.my_mr.size.x = oya_adrs->wu.my_mr.size.x;
-        ewk->wu.my_mr.size.y = oya_adrs->wu.my_mr.size.y;
+        ewk->wu.mirror_scale.size.x = oya_adrs->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_adrs->wu.mirror_scale.size.y;
         disp_pos_trans_entry5(ewk);
         break;
     }
@@ -132,16 +132,16 @@ static void fight_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1] += 1;
         set_char_move_init2(&ewk->wu, 0, 2, 5, 0);
-        ewk->wu.my_mr.size.x = 63;
-        ewk->wu.my_mr.size.y = 0;
+        ewk->wu.mirror_scale.size.x = 63;
+        ewk->wu.mirror_scale.size.y = 0;
         ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
         ewk->wu.xyz[1].disp.pos = 144;
         disp_pos_trans_entry5(ewk);
         break;
 
     case 1:
-        ewk->wu.my_mr.size.x = oya_adrs->wu.my_mr.size.x;
-        ewk->wu.my_mr.size.y = oya_adrs->wu.my_mr.size.y;
+        ewk->wu.mirror_scale.size.x = oya_adrs->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_adrs->wu.mirror_scale.size.y;
         disp_pos_trans_entry5(ewk);
         break;
     }

@@ -318,7 +318,7 @@ s32 effect_E2_init(PLW* wk, const s16* data, s16 color_code, u8 ff) {
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = color_code | 0x2000;
     ewk->wu.my_family = 2;
-    ewk->wu.my_mr_flag = 0;
+    ewk->wu.mirror_flag = 0;
     *ewk->wu.char_table = _plef_char_table;
     ewk->wu.old_pos[0] = bxt[0] + (bxt[1] >> 1) + data[1];
     ewk->wu.old_pos[1] = bxt[2] + (bxt[3] >> 1) + data[2];
