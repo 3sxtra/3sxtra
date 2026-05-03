@@ -99,7 +99,7 @@ void Player_move(PLW* wk, u16 lv_data) {
         wk->wu.old_pos[i] = wk->wu.xyz[i].disp.pos;
     }
 
-    get_saikinnno_idouryou(wk);
+    get_recent_movement_delta(wk);
     wk->old_gdflag = wk->guard_flag;
     wk->wu.renew_attack = 0;
     wk->wu.vital_old = wk->wu.vital_new;
@@ -1071,7 +1071,7 @@ void demo_set_sa_full(SA_WORK* sa) {
 }
 
 /** @brief Records recent movement amount for gameplay calculations. */
-void get_saikinnno_idouryou(PLW* wk) {
+void get_recent_movement_delta(PLW* wk) {
     s16 i;
 
     for (i = 0; i < 7; i++) {

@@ -755,12 +755,12 @@ void hit_pattern_extdat_check(WORK* as) {
         if ((((PLW*)as)->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && as->cg_cancel & 8 && !(as->move_type & 0xF8)) {
             if (as->move_type & 6) {
                 as->cg_cancel &= 0xF7;
-                as->cg_meoshi = 0;
-            } else if (as->cg_meoshi & 0x110) {
-                as->cg_meoshi &= 0xF99F;
+                as->cg_tc_state = 0;
+            } else if (as->cg_tc_state & 0x110) {
+                as->cg_tc_state &= 0xF99F;
             } else {
                 as->cg_cancel &= 0xF7;
-                as->cg_meoshi = 0;
+                as->cg_tc_state = 0;
             }
         }
 
@@ -811,10 +811,10 @@ void hit_pattern_extdat_check(WORK* as) {
                     i = 0;
 
                     if (((PLW*)as)->player_number == 4) {
-                        as->cg_meoshi = chain_hidou_nm_ground_table[as->move_type & 7];
+                        as->cg_tc_state = ground_knockback_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     } else {
-                        as->cg_meoshi = i | chain_normal_ground_table[as->move_type & 7];
+                        as->cg_tc_state = i | chain_normal_ground_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     }
                 }
@@ -826,10 +826,10 @@ void hit_pattern_extdat_check(WORK* as) {
                     i = 0;
 
                     if (((PLW*)as)->player_number == 7) {
-                        as->cg_meoshi = chain_hidou_nm_air_table[as->move_type & 7];
+                        as->cg_tc_state = air_knockback_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     } else {
-                        as->cg_meoshi = i | chain_normal_air_table[as->move_type & 7];
+                        as->cg_tc_state = i | chain_normal_air_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     }
                 }
@@ -1986,9 +1986,9 @@ u8 check_ttk_damage_request(s16 ix) {
 }
 
 const u16 chain_normal_ground_table[8] = { 0x760, 0x660, 0x640, 0x440, 0x400, 0x0, 0x0, 0x0 };
-const u16 chain_hidou_nm_ground_table[8] = { 0x770, 0x770, 0x740, 0x470, 0x600, 0x60, 0x0, 0x0 };
+const u16 ground_knockback_table[8] = { 0x770, 0x770, 0x740, 0x470, 0x600, 0x60, 0x0, 0x0 };
 const u16 chain_normal_air_table[8] = { 0x660, 0x660, 0x440, 0x440, 0x0, 0x0, 0x0, 0x0 };
-const u16 chain_hidou_nm_air_table[8] = { 0x320, 0x220, 0x640, 0x440, 0x510, 0x110, 0x0, 0x0 };
+const u16 air_knockback_table[8] = { 0x320, 0x220, 0x640, 0x440, 0x510, 0x110, 0x0, 0x0 };
 const u8 plpat_rno_filter[16] = { 1, 9, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 const s16 rsix_r_table[17][2] = { { 61, 1 },   { 121, 2 },  { 181, 3 },  { 241, 4 },  { 301, 5 },  { 361, 6 },

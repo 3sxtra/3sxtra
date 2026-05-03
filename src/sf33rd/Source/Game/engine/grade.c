@@ -57,11 +57,11 @@ const s16 grade_t_max_combo[19][2] = { { 0, 0 },    { 2, 10 },   { 3, 30 },   { 
                                        { 12, 150 }, { 14, 160 }, { 16, 170 }, { 18, 175 }, { 19, 180 },
                                        { 20, 185 }, { 24, 190 }, { 28, 195 }, { 32, 200 } };
 
-const s16 grade_t_bougyoritsu2[14][2] = { { 0, 10 },   { 10, 20 },  { 20, 40 },  { 30, 60 },  { 40, 80 },
+const s16 grade_defense_multiplier2[14][2] = { { 0, 10 },   { 10, 20 },  { 20, 40 },  { 30, 60 },  { 40, 80 },
                                           { 50, 100 }, { 60, 120 }, { 70, 140 }, { 80, 160 }, { 85, 180 },
                                           { 90, 200 }, { 95, 220 }, { 98, 230 }, { 100, 250 } };
 
-const s16 grade_t_bougyoritsu3[13][2] = { { 0, 10 },   { 10, 20 },  { 20, 30 },  { 30, 40 }, { 40, 50 },
+const s16 grade_defense_multiplier3[13][2] = { { 0, 10 },   { 10, 20 },  { 20, 30 },  { 30, 40 }, { 40, 50 },
                                           { 50, 60 },  { 60, 70 },  { 70, 80 },  { 80, 90 }, { 85, 100 },
                                           { 90, 110 }, { 95, 130 }, { 100, 150 } };
 
@@ -642,7 +642,7 @@ s16 get_defence_total(s16 ix, s16 wf) {
 
     g_state.last_judge_dada[ix][3] = remake_2_10(point2, 3);
 
-    num += grade_table_lookup(grade_t_bougyoritsu2, 13, point2);
+    num += grade_table_lookup(grade_defense_multiplier2, 13, point2);
     point2 =
         g_state.judge_item[ix][g_state.Play_Type].clean_hits + g_state.judge_item[ix2][g_state.Play_Type].guard_succ;
 
@@ -654,7 +654,7 @@ s16 get_defence_total(s16 ix, s16 wf) {
 
     g_state.last_judge_dada[ix][4] = remake_2_10(point2, 3);
 
-    point = grade_table_lookup(grade_t_bougyoritsu3, 12, point2);
+    point = grade_table_lookup(grade_defense_multiplier3, 12, point2);
 
     if (g_state.judge_item[ix2][g_state.Play_Type].att_renew == 0) {
         point = (point * 200) / 100;

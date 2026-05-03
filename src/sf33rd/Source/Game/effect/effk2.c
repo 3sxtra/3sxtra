@@ -20,7 +20,7 @@
 static void disp_effK2(WORK* wk, WORK* mk, DADD* hk);
 static void set_next_next_y(WORK* wk, u8 flag);
 
-const DADD hahen_dummy[1] = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+const DADD debris_dummy[1] = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
 
 const DADD p_05_lv_02[3] = { { 1, 100, -64, 88, -2, -2, 0, 0, 1, 2, 1, 2, 1, 0, 0 },
                              { 6, 132, -60, 86, 0, 0, 17, 1, 44, 0, 0, 0, 1, 0, 0 },
@@ -134,76 +134,76 @@ const DADD p_00_lv_05[2] = { { 0, 126, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 1, 0, 0 }
 const DADD p_00_lv_06[2] = { { 4, 128, 64, -55, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0 },
                              { 7, 144, 64, -7, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0 } };
 
-const HAHEN hahen_data[8][8] = { { { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy } },
+const DEBRIS_DEF debris_data[8][8] = { { { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy } },
                                  { { 5, 0, p_00_lv_02 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
                                    { 2, 1, p_04_lv_02 },
                                    { 3, 0, p_05_lv_02 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy } },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy } },
                                  { { 4, 0, p_00_lv_03 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
                                    { 3, 0, p_04_lv_03 },
                                    { 3, 0, p_05_lv_03 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy } },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy } },
                                  { { 5, 0, p_00_lv_04 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
                                    { 3, 0, p_04_lv_04 },
                                    { 4, 0, p_05_lv_04 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy } },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy } },
                                  { { 2, 0, p_00_lv_05 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
                                    { 3, 0, p_04_lv_05 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy } },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy } },
                                  { { 2, 0, p_00_lv_06 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
                                    { 2, 1, p_04_lv_06 },
                                    { 8, 1, p_05_lv_06 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy } },
-                                 { { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy } },
+                                 { { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
                                    { 2, 1, p_03_lv_07 },
                                    { 3, 0, p_04_lv_07 },
                                    { 3, 0, p_05_lv_07 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy } },
-                                 { { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy } },
+                                 { { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy },
                                    { 2, 0, p_03_lv_08 },
                                    { 3, 0, p_04_lv_08 },
                                    { 2, 1, p_05_lv_08 },
-                                   { 0, 0, hahen_dummy },
-                                   { 0, 0, hahen_dummy } } };
+                                   { 0, 0, debris_dummy },
+                                   { 0, 0, debris_dummy } } };
 
-const HAHEN ill_hahen_data[5] = {
+const DEBRIS_DEF ill_debris_data[5] = {
     { 8, 0, p_00_lv_F0 }, { 6, 0, p_00_lv_F1 }, { 4, 0, p_00_lv_F2 }, { 9, 0, p_00_lv_F3 }, { 3, 0, p_00_lv_F4 }
 };
 
-const s16 k2_kidou[83][4] = {
+const s16 k2_trajectory[83][4] = {
     { 0, 0, 0, 0 },           { 512, 0, 1280, -112 },  { 512, 0, 1536, -112 },   { 1536, 0, 0, -112 },
     { 512, 0, 1536, -112 },   { 256, 0, 1536, -112 },  { 512, 0, 768, -112 },    { 768, 0, 256, -112 },
     { 256, 0, 0, -112 },      { -256, 0, 1280, -112 }, { -512, 0, 1024, -112 },  { -768, 0, 512, -112 },
@@ -230,7 +230,7 @@ const s16 k2_kidou[83][4] = {
 void (*const effK2_main_process[9])();
 
 void effect_K2_move(WORK_Other* ewk) {
-    DADD* hahen = (DADD*)ewk->wu.target_adrs;
+    DADD* debris = (DADD*)ewk->wu.target_adrs;
     WORK* mwk = (WORK*)ewk->my_master;
 
     if (ewk->wu.dir_old == 0 && (mwk->id != ewk->master_work_id || mwk->dir_old != 0)) {
@@ -240,18 +240,18 @@ void effect_K2_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        ewk->wu.routine_no[1] = hahen->rno;
-        ewk->wu.disp_flag = hahen->init_dsp;
+        ewk->wu.routine_no[1] = debris->rno;
+        ewk->wu.disp_flag = debris->init_dsp;
         ewk->wu.blink_timing = ewk->master_id;
-        ewk->wu.xyz[0].disp.pos += hahen->hx;
-        ewk->wu.xyz[1].disp.pos += hahen->hy;
+        ewk->wu.xyz[0].disp.pos += debris->hx;
+        ewk->wu.xyz[1].disp.pos += debris->hy;
         ewk->wu.position_z = 24;
         ewk->wu.shadow_y = 0;
 
-        if ((ewk->wu.next_y = hahen->gr1st) == 0) {
+        if ((ewk->wu.next_y = debris->gr1st) == 0) {
             ewk->wu.next_y = (random_16() & 7) + 4;
 
-            if (hahen->shadow_char) {
+            if (debris->shadow_char) {
                 ewk->wu.next_y = -ewk->wu.next_y;
             }
             if ((ewk->wu.xyz[1].disp.pos) < 0) {
@@ -259,14 +259,14 @@ void effect_K2_move(WORK_Other* ewk) {
             }
         }
 
-        setup_move_data_easy(&ewk->wu, k2_kidou[hahen->ispix], 1, 0);
-        set_char_move_init(&ewk->wu, 0, (hahen->cix));
+        setup_move_data_easy(&ewk->wu, k2_trajectory[debris->ispix], 1, 0);
+        set_char_move_init(&ewk->wu, 0, (debris->cix));
 
-        if (hahen->cix == 0x78) {
+        if (debris->cix == 0x78) {
             setup_demojump((PLW*)ewk->wu.hit_adrs, 1);
         }
 
-        disp_effK2(&ewk->wu, mwk, hahen);
+        disp_effK2(&ewk->wu, mwk, debris);
         break;
 
     case 1:
@@ -277,10 +277,10 @@ void effect_K2_move(WORK_Other* ewk) {
         }
 
         if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
-            effK2_main_process[ewk->wu.routine_no[1]](ewk, hahen);
+            effK2_main_process[ewk->wu.routine_no[1]](ewk, debris);
         }
 
-        disp_effK2(&ewk->wu, mwk, hahen);
+        disp_effK2(&ewk->wu, mwk, debris);
         break;
 
     case 2:
@@ -349,7 +349,7 @@ static void effK2_parts_move_type_0(WORK_Other* ewk, DADD*) {
     }
 }
 
-static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
+static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* debris) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         switch (ewk->wu.dm_attlv) {
@@ -376,7 +376,7 @@ static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
             if (ewk->wu.xyz[1].disp.pos <= ewk->wu.next_y) {
                 ewk->wu.xyz[1].disp.pos = ewk->wu.next_y;
 
-                if (++ewk->wu.shadow_y > hahen->bau) {
+                if (++ewk->wu.shadow_y > debris->bau) {
                     ewk->wu.routine_no[2] = 10;
                 } else {
                     ewk->wu.routine_no[2] = 1;
@@ -396,11 +396,11 @@ static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
         ewk->wu.mvxy.d[0].sp /= 2;
         ewk->wu.mvxy.a[1].sp = -ewk->wu.mvxy.a[1].sp;
         ewk->wu.mvxy.a[1].sp /= 3;
-        set_next_next_y(&ewk->wu, hahen->shadow_char);
+        set_next_next_y(&ewk->wu, debris->shadow_char);
         break;
 
     case 10:
-        switch (hahen->doa) {
+        switch (debris->doa) {
         case 0:
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[2] = 20;
@@ -455,7 +455,7 @@ static void effK2_parts_move_type_2(WORK_Other* ewk, DADD* /* unused */) {
     }
 }
 
-static void effK2_parts_move_type_3(WORK_Other* ewk, DADD* hahen) {
+static void effK2_parts_move_type_3(WORK_Other* ewk, DADD* debris) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -469,7 +469,7 @@ static void effK2_parts_move_type_3(WORK_Other* ewk, DADD* hahen) {
         if (ewk->wu.xyz[1].disp.pos <= ewk->wu.next_y) {
             ewk->wu.xyz[1].disp.pos = ewk->wu.next_y;
 
-            if (++ewk->wu.shadow_y > hahen->bau) {
+            if (++ewk->wu.shadow_y > debris->bau) {
                 ewk->wu.routine_no[2] = 10;
             } else {
                 ewk->wu.routine_no[2] = 1;
@@ -564,7 +564,7 @@ static void effK2_parts_move_type_7(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
+static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* debris) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         switch (ewk->wu.dm_attlv) {
@@ -594,7 +594,7 @@ static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
         if (ewk->wu.xyz[1].disp.pos <= ewk->wu.next_y) {
             ewk->wu.xyz[1].disp.pos = ewk->wu.next_y;
 
-            if (++ewk->wu.shadow_y > hahen->bau) {
+            if (++ewk->wu.shadow_y > debris->bau) {
                 ewk->wu.routine_no[2] = 10;
             } else {
                 ewk->wu.routine_no[2] = 1;
@@ -615,11 +615,11 @@ static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
         ewk->wu.mvxy.d[0].sp /= 2;
         ewk->wu.mvxy.a[1].sp = -ewk->wu.mvxy.a[1].sp;
         ewk->wu.mvxy.a[1].sp /= 3;
-        set_next_next_y(&ewk->wu, hahen->shadow_char);
+        set_next_next_y(&ewk->wu, debris->shadow_char);
         break;
 
     case 10:
-        switch (hahen->doa) {
+        switch (debris->doa) {
         case 0:
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[2] = 20;
@@ -701,11 +701,11 @@ void setup_effK2(WORK* wk) {
     s16 i;
     s16 num;
 
-    if (!(num = hahen_data[wk->vital_old][wk->type].kosuu)) {
+    if (!(num = debris_data[wk->vital_old][wk->type].kosuu)) {
         return;
     }
 
-    dhead = hahen_data[wk->vital_old][wk->type].dadd;
+    dhead = debris_data[wk->vital_old][wk->type].dadd;
 
     for (i = 0; i < num; i++) {
         effect_K2_init((WORK_Other*)wk, (u32*)&dhead[i]);
@@ -719,11 +719,11 @@ void setup_effK2_sync_bomb(WORK* wk) {
     s16 num;
 
     for (j = wk->vital_old + 1; j < 8; j++) {
-        if (!(num = hahen_data[j][wk->type].kosuu) || hahen_data[j][wk->type].bomb != 0) {
+        if (!(num = debris_data[j][wk->type].kosuu) || debris_data[j][wk->type].bomb != 0) {
             continue;
         }
 
-        dhead = hahen_data[j][wk->type].dadd;
+        dhead = debris_data[j][wk->type].dadd;
 
         for (i = 0; i < num; i++) {
             if (dhead[i].bomb == 0) {
@@ -736,9 +736,9 @@ void setup_effK2_sync_bomb(WORK* wk) {
 void illegal_setup_effK2(WORK* wk, s16 ix) {
     const DADD* dhead;
     s16 i;
-    s16 num = ill_hahen_data[ix].kosuu;
+    s16 num = ill_debris_data[ix].kosuu;
 
-    dhead = ill_hahen_data[ix].dadd;
+    dhead = ill_debris_data[ix].dadd;
 
     for (i = 0; i < num; i++) {
         effect_K2_init((WORK_Other*)wk, (u32*)&dhead[i]);

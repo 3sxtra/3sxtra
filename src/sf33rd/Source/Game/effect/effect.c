@@ -467,7 +467,7 @@ s32 flip_my_rl_flag(WORK* wk, u8 /* unused */) {
     return 0;
 }
 
-s32 setup_meoshi_hit_flag(WORK* wk, u8 data) {
+s32 setup_tc_hit_flag(WORK* wk, u8 data) {
     wk->frame_link_hit_flag = data;
     return 0;
 }

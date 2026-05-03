@@ -265,7 +265,7 @@ typedef struct {
             u8 cg_status;
             s16 cg_wca_ix;
             s16 cg_jphos;
-            u16 cg_meoshi;
+            u16 cg_tc_state;
             u8 cg_prio;
             u8 cg_flip;
         } fields;
@@ -421,7 +421,7 @@ typedef struct {
 
             s16 cg_wca_ix;
             s16 cg_jphos;
-            u16 cg_meoshi;
+            u16 cg_tc_state;
             u8 cg_prio;
             u8 cg_flip;
         };
@@ -2327,7 +2327,7 @@ typedef struct {
     s16 kosuu;
     s16 bomb;
     const DADD* dadd;
-} HAHEN;
+} DEBRIS_DEF;
 
 typedef struct {
     s16 hx;

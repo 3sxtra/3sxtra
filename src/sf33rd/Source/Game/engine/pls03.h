@@ -12,7 +12,7 @@ s16 check_super_arts_attack(PLW* wk);
 s32 check_super_arts_attack_dc(PLW* wk);
 s32 execute_super_arts(PLW* wk);
 s32 check_special_attack(PLW* wk);
-void chainex_spat_cancel_kidou(WORK* wk);
+void chainex_spat_cancel_trajectory(WORK* wk);
 s32 check_leap_attack(PLW* wk);
 s32 check_nm_attack(PLW* wk);
 s16 hikusugi_check(WORK* wk);
@@ -30,8 +30,8 @@ s16 shot_data_refresh(s16 sw);
 s16 renbanshot_conpaneshot(const s16* dadr, s16 pow);
 s16 datacmd_conpanecmd(s16 dat);
 s32 check_renda_cancel(PLW* wk);
-s32 check_meoshi_cancel(PLW* wk);
-s16 get_meoshi_lever(s16 data);
-s16 get_meoshi_shot(s16 data);
+s32 check_target_combo_cancel(PLW* wk);
+s16 get_tc_input_dir(s16 data);
+s16 get_tc_input_button(s16 data);
 
 #endif

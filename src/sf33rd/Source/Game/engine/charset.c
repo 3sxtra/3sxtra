@@ -2587,7 +2587,7 @@ void check_cgd_patdat(WORK* wk) {
         /* fallthrough */
 
     case 4:
-        wk->cg_meoshi = wk->cg_hit_ix & 0x1FFF;
+        wk->cg_tc_state = wk->cg_hit_ix & 0x1FFF;
         st.w.h = wk->cg_att_ix;
         st.w.l = wk->cg_hit_ix;
         wk->cg_att_ix >>= 6;
@@ -2644,12 +2644,12 @@ void check_cgd_patdat(WORK* wk) {
         if ((WK_AS_PLW->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) && !(wk->move_type & 0xF8)) {
             if (wk->move_type & 6) {
                 wk->cg_cancel &= 0xF7;
-                wk->cg_meoshi = 0;
-            } else if (wk->cg_meoshi & 0x110) {
-                wk->cg_meoshi &= 0xF99F;
+                wk->cg_tc_state = 0;
+            } else if (wk->cg_tc_state & 0x110) {
+                wk->cg_tc_state &= 0xF99F;
             } else {
                 wk->cg_cancel &= 0xF7;
-                wk->cg_meoshi = 0;
+                wk->cg_tc_state = 0;
             }
         }
 
@@ -2686,12 +2686,12 @@ void check_cgd_patdat(WORK* wk) {
 
                 if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_GROUND_CHAIN_COMBO_DISABLED)) {
                     if (WK_AS_PLW->player_number == 4) {
-                        wk->cg_meoshi = chain_hidou_nm_ground_table[wk->move_type & 7];
+                        wk->cg_tc_state = ground_knockback_table[wk->move_type & 7];
                         wk->cg_cancel |= 8;
                         return;
                     }
 
-                    wk->cg_meoshi = chain_normal_ground_table[wk->move_type & 7];
+                    wk->cg_tc_state = chain_normal_ground_table[wk->move_type & 7];
                     wk->cg_cancel |= 8;
                     return;
                 }
@@ -2701,12 +2701,12 @@ void check_cgd_patdat(WORK* wk) {
             case 2:
                 if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(wk)) {
                     if (WK_AS_PLW->player_number == 7) {
-                        wk->cg_meoshi = chain_hidou_nm_air_table[wk->move_type & 7];
+                        wk->cg_tc_state = air_knockback_table[wk->move_type & 7];
                         wk->cg_cancel |= 8;
                         return;
                     }
 
-                    wk->cg_meoshi = chain_normal_air_table[wk->move_type & 7];
+                    wk->cg_tc_state = chain_normal_air_table[wk->move_type & 7];
                     wk->cg_cancel |= 8;
                 }
 
@@ -2761,7 +2761,7 @@ static void check_cgd_patdat2(WORK* wk) {
         /* fallthrough */
 
     case 4:
-        wk->cg_meoshi = wk->cg_hit_ix & 0x1FFF;
+        wk->cg_tc_state = wk->cg_hit_ix & 0x1FFF;
         st.w.h = wk->cg_att_ix;
         st.w.l = wk->cg_hit_ix;
         wk->cg_att_ix >>= 6;

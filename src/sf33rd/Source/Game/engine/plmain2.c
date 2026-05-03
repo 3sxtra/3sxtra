@@ -73,7 +73,7 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
         wk->wu.old_pos[(i)] = wk->wu.xyz[(i)].disp.pos;
     }
 
-    get_saikinnno_idouryou(wk);
+    get_recent_movement_delta(wk);
     wk->old_gdflag = wk->guard_flag;
     wk->wu.renew_attack = 0;
     wk->wu.vital_old = wk->wu.vital_new;

@@ -114,7 +114,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
                     hissatsu_setup_union(wk, wk->cp->move_state_timers[g_ix][j]);
                     move_compel_all_init2(wk);
                     chainex_check[wk->wu.id][g_ix - 20] = 1;
-                    chainex_spat_cancel_kidou(&wk->wu);
+                    chainex_spat_cancel_trajectory(&wk->wu);
                     return 1;
                 }
             }
@@ -171,7 +171,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
                 hissatsu_setup_union(wk, wk->cp->move_state_timers[a_ix][j]);
                 move_compel_all_init2(wk);
                 chainex_check[wk->wu.id][a_ix - 20] = 1;
-                chainex_spat_cancel_kidou(&wk->wu);
+                chainex_spat_cancel_trajectory(&wk->wu);
                 return 1;
             }
         }
@@ -280,7 +280,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
                     hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_g_ix][j]);
                     move_compel_all_init2(wk);
                     chainex_check[wk->wu.id][wk->sa->nmsa_g_ix - 20] = 1;
-                    chainex_spat_cancel_kidou(&wk->wu);
+                    chainex_spat_cancel_trajectory(&wk->wu);
                     return 1;
                 }
             }
@@ -334,7 +334,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
                 hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_a_ix][j]);
                 move_compel_all_init2(wk);
                 chainex_check[wk->wu.id][wk->sa->nmsa_a_ix - 20] = 1;
-                chainex_spat_cancel_kidou(&wk->wu);
+                chainex_spat_cancel_trajectory(&wk->wu);
                 return 1;
             }
         }
@@ -486,7 +486,7 @@ s32 check_special_attack(PLW* wk) {
                 move_flag_clear_only_1(wk->wu.id, i);
                 grade_add_command_move(wk->wu.id);
                 chainex_check[wk->wu.id][i - 20] = 1;
-                chainex_spat_cancel_kidou(&wk->wu);
+                chainex_spat_cancel_trajectory(&wk->wu);
                 return 1;
             }
         }
@@ -569,7 +569,7 @@ s32 check_special_attack(PLW* wk) {
                 move_flag_clear_only_1(wk->wu.id, i);
                 grade_add_command_move(wk->wu.id);
                 chainex_check[wk->wu.id][i - 20] = 1;
-                chainex_spat_cancel_kidou(&wk->wu);
+                chainex_spat_cancel_trajectory(&wk->wu);
                 return 1;
             }
 
@@ -584,7 +584,7 @@ s32 check_special_attack(PLW* wk) {
             move_flag_clear_only_1(wk->wu.id, i);
             grade_add_command_move(wk->wu.id);
             chainex_check[wk->wu.id][i - 20] = 1;
-            chainex_spat_cancel_kidou(&wk->wu);
+            chainex_spat_cancel_trajectory(&wk->wu);
             return 1;
         }
     }
@@ -593,7 +593,7 @@ s32 check_special_attack(PLW* wk) {
 }
 
 /** @brief Activates chain-combo cancel into special move. */
-void chainex_spat_cancel_kidou(WORK* wk) {
+void chainex_spat_cancel_trajectory(WORK* wk) {
     MVXY curr;
 
     if (wk->old_routine_no[1] == 4 && wk->old_routine_no[2] > 15) {
@@ -1213,7 +1213,7 @@ const s16 cnmc_z_lever_data[16][8] = { { -1, -1, -1, -1, -1, -1, -1, -1 }, { 4, 
                                        { 1, 4, 7, 3, 6, 9, -1, -1 },       { 1, 4, 7, 5, 3, 6, 9, -1 } };
 
 /** @brief Checks for target-combo (meoshi) cancel opportunity. */
-s32 check_meoshi_cancel(PLW* wk) {
+s32 check_target_combo_cancel(PLW* wk) {
     s16 i;
     s16 tdat;
     s16 wdat;
@@ -1224,7 +1224,7 @@ s32 check_meoshi_cancel(PLW* wk) {
         return 0;
     }
 
-    tdat = wk->wu.cg_meoshi & 0x8F;
+    tdat = wk->wu.cg_tc_state & 0x8F;
 
     switch (tdat) {
     default:
@@ -1232,7 +1232,7 @@ s32 check_meoshi_cancel(PLW* wk) {
         tdat &= 0xF;
 
         while (1) {
-            if (wk->wu.cg_meoshi & 0x80) {
+            if (wk->wu.cg_tc_state & 0x80) {
                 for (i = 0; i < 6; i++) {
                     if (cnmc_Z_lever_data[tdat][i] == -1) {
                         return 0;
@@ -1258,8 +1258,8 @@ s32 check_meoshi_cancel(PLW* wk) {
 
     case 0:
     case_0:
-        if ((tdat = wk->wu.cg_meoshi & 0x770) == 0) {
-            if (!(wk->wu.cg_meoshi & 0x800)) {
+        if ((tdat = wk->wu.cg_tc_state & 0x770) == 0) {
+            if (!(wk->wu.cg_tc_state & 0x800)) {
                 return 0;
             }
 
@@ -1273,7 +1273,7 @@ s32 check_meoshi_cancel(PLW* wk) {
         }
 
         if (shot_data_convert(wk->cp->input_current) >= 0) {
-            if ((wk->wu.cg_meoshi & 0x800)) {
+            if ((wk->wu.cg_tc_state & 0x800)) {
                 break;
             }
 
@@ -1294,14 +1294,14 @@ s32 check_meoshi_cancel(PLW* wk) {
             return 0;
         }
 
-        if (!(wk->wu.cg_meoshi & 0x800)) {
+        if (!(wk->wu.cg_tc_state & 0x800)) {
             return 0;
         }
 
         break;
     }
 
-    if (wk->wu.cg_meoshi & 0x1000) {
+    if (wk->wu.cg_tc_state & 0x1000) {
         if (char_move_cmms3(wk) == 0) {
             return 0;
         }
@@ -1335,11 +1335,11 @@ end:
 const s16 gml_real_lever_data[16] = { 0, 6, 2, 10, 4, 0, 8, 5, 1, 9, 0, 0, 4, 8, 4, 8 };
 
 /** @brief Converts target-combo lever data to real direction. */
-s16 get_meoshi_lever(s16 data) {
+s16 get_tc_input_dir(s16 data) {
     return gml_real_lever_data[data & 0xF];
 }
 
-s16 get_meoshi_shot(s16 data) {
+s16 get_tc_input_button(s16 data) {
     return ((data & 0x700) >> 1) + (data & 0x70);
 }
 

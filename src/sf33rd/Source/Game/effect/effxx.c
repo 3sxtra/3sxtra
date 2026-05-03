@@ -293,7 +293,7 @@ const s32 (*effinitjptbl[59])() = {
     effect_G4_init,
     setup_ase_extra,
     effect_G6_init,
-    setup_meoshi_hit_flag,
+    setup_tc_hit_flag,
     exec_char_asxy,
     set_caution_flag,
     setup_my_clear_level,

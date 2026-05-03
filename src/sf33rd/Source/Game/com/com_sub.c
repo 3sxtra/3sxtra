@@ -170,8 +170,8 @@ void Check_Jump_Distance_Level(PLW* wk);
 void Next_End(PLW* wk);
 void Next_Another_Menu(PLW* wk, s16 Next_Action, u16 Next_Menu);
 void Reaction_Sub(PLW* wk, s16 Reaction, s16 Power_Level);
-s32 Check_Meoshi_Attack(PLW* wk, s16 Reaction, s16 Power_Level); // unused last 2 args
-s32 Get_Meoshi_Data(PLW* wk);
+s32 Check_Target_Combo_Attack(PLW* wk, s16 Reaction, s16 Power_Level); // unused last 2 args
+s32 Get_Target_Combo_Data(PLW* wk);
 void Reaction_Exit_Sub(PLW* wk);
 void Check_First_Menu(PLW* wk);
 void Select_Active(PLW* wk);
@@ -2309,7 +2309,7 @@ void Hi_Jump_Attack(PLW* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Ju
             break;
         }
 
-        g_state.Lever_Buff[wk->wu.id] = Get_Meoshi_Data(wk);
+        g_state.Lever_Buff[wk->wu.id] = Get_Target_Combo_Data(wk);
 
         break;
 
@@ -2480,7 +2480,7 @@ void Hi_Jump_Attack_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Le
         }
 
         if (wk->wu.cg_cancel & 8) {
-            g_state.Lever_Buff[wk->wu.id] = Get_Meoshi_Data(wk);
+            g_state.Lever_Buff[wk->wu.id] = Get_Target_Combo_Data(wk);
         }
         break;
     }
@@ -4456,7 +4456,7 @@ void Reaction_Sub(PLW* wk, s16 Reaction, s16 Power_Level) {
             break;
         }
         if (wk->permited_koa & 0x10) {
-            if (Check_Meoshi_Attack(wk, Reaction, Power_Level) != 0) {
+            if (Check_Target_Combo_Attack(wk, Reaction, Power_Level) != 0) {
                 break;
             }
         }
@@ -4502,15 +4502,15 @@ void Reaction_Sub(PLW* wk, s16 Reaction, s16 Power_Level) {
 }
 
 /** @brief  */
-s32 Check_Meoshi_Attack(PLW* wk, s16 Reaction, s16 Power_Level) {
-    if (wk->wu.cg_meoshi == g_state.Last_Eftype[wk->wu.id]) {
+s32 Check_Target_Combo_Attack(PLW* wk, s16 Reaction, s16 Power_Level) {
+    if (wk->wu.cg_tc_state == g_state.Last_Eftype[wk->wu.id]) {
         return 0;
     }
 
     if (wk->permited_koa & 0x10) {
-        g_state.Last_Eftype[wk->wu.id] = wk->wu.cg_meoshi;
+        g_state.Last_Eftype[wk->wu.id] = wk->wu.cg_tc_state;
 
-        g_state.M_Lv[wk->wu.id] = Get_Meoshi_Data(wk);
+        g_state.M_Lv[wk->wu.id] = Get_Target_Combo_Data(wk);
 
         if (g_state.Pattern_Index[wk->wu.id] != 0) {
             g_state.Return_CP_No[wk->wu.id] = g_state.CP_No[wk->wu.id][0];
@@ -4532,12 +4532,12 @@ s32 Check_Meoshi_Attack(PLW* wk, s16 Reaction, s16 Power_Level) {
 }
 
 /** @brief  */
-s32 Get_Meoshi_Data(PLW* wk) {
+s32 Get_Target_Combo_Data(PLW* wk) {
     u16 lever;
     u16 shot;
 
-    lever = get_meoshi_lever(wk->wu.cg_meoshi);
-    shot = get_meoshi_shot(wk->wu.cg_meoshi);
+    lever = get_tc_input_dir(wk->wu.cg_tc_state);
+    shot = get_tc_input_button(wk->wu.cg_tc_state);
 
     if (wk->wu.rl_flag) {
         lever ^= 0xC;
