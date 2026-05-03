@@ -9,7 +9,7 @@
  * in character_select_player.c, called synchronously from Game_CharSelect().  This file provides
  * the MenuScreen lifecycle layer so Select_Player() can delegate to
  * the registry, following the same thin-wrapper pattern used by
- * Continue_Scene() (continue.c) and Play_Demo() (demo02.c).
+ * Continue_Scene() (continue.c) and Play_Demo() (demo_02_parry_tutorial.c).
  *
  * The internal jump tables and state arrays remain untouched inside
  * character_select_player.c — only the top-level dispatcher is wrapped.

@@ -15,7 +15,7 @@
  * only handles the lifecycle gate (enter→active→exit).
  *
  * The public helpers (Setup_Demo_PL, Setup_Demo_Arts, Setup_Demo_Stage)
- * remain in demo02.c — they are called externally by ranking.c.
+ * remain in demo_02_parry_tutorial.c — they are called externally by ranking.c.
  */
 
 #include "port/menu_screen.h"
@@ -23,7 +23,7 @@
 
 #include "sf33rd/Source/Game/engine/state_user.h"
 
-/* Forward declarations for the legacy demo functions (defined in demo02.c) */
+/* Forward declarations for the legacy demo functions (defined in demo_02_parry_tutorial.c) */
 extern void Demo_QuickStart(void);
 extern void Demo_FullAttract(void);
 

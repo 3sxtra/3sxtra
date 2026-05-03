@@ -27,7 +27,7 @@
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/demo/demo00.h"
+#include "sf33rd/Source/Game/demo/demo_00_attract_mode.h"
 #include "sf33rd/Source/Game/effect/effect_36_data_table_debug.h"
 #include "sf33rd/Source/Game/effect/effect_48_numeric_counter.h"
 #include "sf33rd/Source/Game/effect/effect_e1_visual_generic.h"

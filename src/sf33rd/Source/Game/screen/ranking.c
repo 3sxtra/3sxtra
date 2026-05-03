@@ -9,7 +9,7 @@
 #include "main.h"
 #include "port/menu_screen.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/demo/demo02.h"
+#include "sf33rd/Source/Game/demo/demo_02_parry_tutorial.h"
 #include "sf33rd/Source/Game/effect/effect_58_sound_se_request.h"
 #include "sf33rd/Source/Game/effect/effect_67_visual_generic.h"
 #include "sf33rd/Source/Game/effect/effect_76_quake.h"

@@ -445,3 +445,32 @@
 | wkey_flag | wakeup_key_flag |
 | dm_point | damage_point |
 | dm_ix | damage_index |
+
+## Phase 18: Ending and Demo Modules
+
+| Legacy Identifier | Modern Semantic Identifier |
+| --- | --- |
+| `ending/end_00.[c|h]` | `ending/ending_00_gill.[c|h]` |
+| `ending/end_01.[c|h]` | `ending/ending_01_alex.[c|h]` |
+| `ending/end_02.[c|h]` | `ending/ending_02_ryu.[c|h]` |
+| `ending/end_03.[c|h]` | `ending/ending_03_yun.[c|h]` |
+| `ending/end_04.[c|h]` | `ending/ending_04_dudley.[c|h]` |
+| `ending/end_05.[c|h]` | `ending/ending_05_necro.[c|h]` |
+| `ending/end_06.[c|h]` | `ending/ending_06_hugo.[c|h]` |
+| `ending/end_07.[c|h]` | `ending/ending_07_ibuki.[c|h]` |
+| `ending/end_08.[c|h]` | `ending/ending_08_elena.[c|h]` |
+| `ending/end_09.[c|h]` | `ending/ending_09_oro.[c|h]` |
+| `ending/end_10.[c|h]` | `ending/ending_10_yang.[c|h]` |
+| `ending/end_11.[c|h]` | `ending/ending_11_ken.[c|h]` |
+| `ending/end_12.[c|h]` | `ending/ending_12_sean.[c|h]` |
+| `ending/end_13.[c|h]` | `ending/ending_13_urien.[c|h]` |
+| `ending/end_14.[c|h]` | `ending/ending_14_akuma.[c|h]` |
+| `ending/end_16.[c|h]` | `ending/ending_16_chun_li.[c|h]` |
+| `ending/end_17.[c|h]` | `ending/ending_17_makoto.[c|h]` |
+| `ending/end_18.[c|h]` | `ending/ending_18_q.[c|h]` |
+| `ending/end_19.[c|h]` | `ending/ending_19_twelve.[c|h]` |
+| `ending/end_20.[c|h]` | `ending/ending_20_remy.[c|h]` |
+| `demo/demo00.[c|h]` | `demo/demo_00_attract_mode.[c|h]` |
+| `demo/demo01.[c|h]` | `demo/demo_01_instruction.[c|h]` |
+| `demo/demo02.[c|h]` | `demo/demo_02_parry_tutorial.[c|h]` |
+| `demo/demo_dat.[c|h]` | `demo/demo_data.[c|h]` |

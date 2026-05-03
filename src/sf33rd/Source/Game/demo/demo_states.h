@@ -11,7 +11,7 @@
 #ifndef DEMO_STATES_H
 #define DEMO_STATES_H
 
-/* Warning() — boot warning overlay (demo00.c) */
+/* Warning() — boot warning overlay (demo_00_attract_mode.c) */
 typedef enum {
     WARN_INIT = 0,      /* set up, jump to fade-in                     */
     WARN_FADE_IN = 5,   /* FadeIn + Put_Warning                        */
@@ -21,7 +21,7 @@ typedef enum {
     WARN_DONE = 9       /* TexRelease, signal Next_Demo                */
 } WarningState;
 
-/* CAPCOM_Logo() — logo animation sequence (demo00.c) */
+/* CAPCOM_Logo() — logo animation sequence (demo_00_attract_mode.c) */
 typedef enum {
     CAPLOGO_INIT = 0,      /* check ADX/sel files loaded          */
     CAPLOGO_LOAD_BGM = 1,  /* Standby_BGM, PPG init, queue tex   */
@@ -33,7 +33,7 @@ typedef enum {
     CAPLOGO_FADE_OUT = 7   /* FadeOut                             */
 } CapLogoState;
 
-/* Title() — title screen opening demo (demo01.c) */
+/* Title() — title screen opening demo (demo_01_instruction.c) */
 typedef enum {
     TITLE_WAIT_LOAD = 0,      /* poll LDREQ, standby BGM         */
     TITLE_PLAY_OPENING = 1,   /* run opening_demo, wait for done */
@@ -42,13 +42,13 @@ typedef enum {
     TITLE_DONE = 4            /* final Switch_Screen tick         */
 } TitleState;
 
-/* Title_At_a_Dash() — quick title after attract (demo01.c) */
+/* Title_At_a_Dash() — quick title after attract (demo_01_instruction.c) */
 typedef enum {
     TITLE_DASH_INIT = 0, /* TITLE_Init if needed, set timer */
     TITLE_DASH_SHOW = 1  /* countdown, TITLE_Move           */
 } TitleDashState;
 
-/* Demo00() — quick-start attract gameplay (demo02.c) */
+/* Demo00() — quick-start attract gameplay (demo_02_parry_tutorial.c) */
 typedef enum {
     DEMO00_SETUP = 0,     /* texcash, Game_pause, random Weak_PL */
     DEMO00_COVER = 1,     /* Switch_Screen + Game_Fight, cover timer */
@@ -59,7 +59,7 @@ typedef enum {
     DEMO00_FADE_OUT = 6   /* Switch_Screen + BGM_Stop            */
 } Demo00State;
 
-/* Demo01() — full attract: char select → gameplay (demo02.c) */
+/* Demo01() — full attract: char select → gameplay (demo_02_parry_tutorial.c) */
 typedef enum {
     DEMO01_SETUP = 0,   /* Before_Select_Sub, char/arts setup */
     DEMO01_SELECT = 1,  /* Game_CharSelect char select, Demo_Time_Stop */

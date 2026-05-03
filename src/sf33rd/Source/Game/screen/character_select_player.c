@@ -15,7 +15,7 @@
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/com/ai_data_tables.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/demo/demo_dat.h"
+#include "sf33rd/Source/Game/demo/demo_data.h"
 #include "sf33rd/Source/Game/effect/effect_38_quake_base_xy.h"
 #include "sf33rd/Source/Game/effect/effect_39_quake.h"
 #include "sf33rd/Source/Game/effect/effect_42_quake.h"
