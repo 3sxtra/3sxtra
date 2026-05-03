@@ -30,7 +30,7 @@
 extern "C" {
 
 #include "character_names.h"
-#include "sf33rd/Source/Game/rendering/color3rd.h"
+#include "sf33rd/Source/Game/rendering/color_palette.h"
 
 extern bool mods_menu_palmod_enabled;
 

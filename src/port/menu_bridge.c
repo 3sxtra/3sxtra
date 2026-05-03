@@ -30,8 +30,8 @@
 #include "game_state.h" // Includes headers for all the globals (state_user.h etc)
 #include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
-#include "sf33rd/Source/Game/rendering/color3rd.h"
-#include "sf33rd/Source/Game/system/sys_sub.h"
+#include "sf33rd/Source/Game/rendering/color_palette.h"
+#include "sf33rd/Source/Game/system/system_subroutines.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include <stdio.h>
 #include <string.h>

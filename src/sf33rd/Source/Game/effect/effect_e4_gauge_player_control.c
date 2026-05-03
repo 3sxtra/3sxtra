@@ -1,0 +1,123 @@
+/**
+ * @file effe4.c
+ * Effect: Gauge / Player Control Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_e4_gauge_player_control.h"
+#include "game_state.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_main.h"
+#include "sf33rd/Source/Game/engine/super_gauge.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/system/system_director.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+
+void effect_E4_move(State_Other* ewk) {
+    PLW* mwk = (PLW*)ewk->my_master;
+    s16 num;
+
+    switch (ewk->wu.routine_no[0]) {
+    case 0:
+        if (mwk->wu.effect_e4_index != ewk->wu.myself || ewk->wu.dead_f != 0 ||
+            (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
+             g_state.Mode_Type != MODE_TRIALS)) {
+            ewk->wu.routine_no[0] = 2;
+            break;
+        }
+
+        if (mwk->init_effect_e4_flag == 0) {
+            break;
+        }
+
+        mwk->init_effect_e4_flag = 0;
+
+        if (g_state.Mode_Type != MODE_PARRY_TRAINING) {
+            break;
+        }
+
+        if (Training->contents[1][1][3] == 0 || mwk->wu.id == g_state.New_Challenger) {
+            vib_sel[mwk->wu.id] = 0;
+        }
+
+        omop_vital_ix[mwk->wu.id] = 1;
+        mwk->spmv_ng_flag &= 0xFFFEFFFF;
+        num = 0;
+
+        if (g_state.New_Challenger == mwk->wu.id) {
+            num = Training->contents[1][0][1];
+        } else {
+            num = Training->contents[1][0][3];
+        }
+
+        switch (num) {
+        case 1:
+            mwk->special_move_disabled_flag2 &= 0xFFFBFFFF;
+            mwk->special_move_disabled_flag2 |= 0x90000;
+            demo_set_sa_full(mwk->sa);
+            tr_spgauge_cont_init2(mwk->wu.id);
+            break;
+
+        case 3:
+            mwk->special_move_disabled_flag2 &= 0xFFF7FFFF;
+            mwk->special_move_disabled_flag2 |= 0x50000;
+            demo_set_sa_full(mwk->sa);
+            tr_spgauge_cont_init2(mwk->wu.id);
+            break;
+
+        case 2:
+            mwk->special_move_disabled_flag2 &= 0xFFFEFFFF;
+            mwk->special_move_disabled_flag2 |= 0xC0000;
+            clear_super_arts_point(mwk);
+            tr_spgauge_cont_init(mwk->wu.id);
+            break;
+
+        case 0:
+            mwk->special_move_disabled_flag2 |= 0xD0000;
+            clear_super_arts_point(mwk);
+            tr_spgauge_cont_init(mwk->wu.id);
+            break;
+        }
+
+        if (mwk->wu.id == g_state.New_Challenger || Training->contents[1][0][2] == 0) {
+            mwk->spmv_ng_flag |= 0x80;
+        } else {
+            mwk->spmv_ng_flag &= ~0x80;
+            mwk->spmv_ng_flag &= ~0xF00;
+        }
+
+        omop_spmv_ng_table[mwk->wu.id] = mwk->spmv_ng_flag;
+        omop_spmv_ng_table2[mwk->wu.id] = mwk->special_move_disabled_flag2;
+        break;
+
+    case 1:
+    case 2:
+    default:
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+s32 effect_E4_init(PLW* wk) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(3)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 144;
+    ewk->wu.work_id = 16;
+    ewk->my_master = wk;
+    ewk->master_work_id = wk->wu.work_id;
+    ewk->master_id = wk->wu.id;
+    ewk->master_player = wk->player_number;
+    ewk->master_special_move_disabled_flag = wk->spmv_ng_flag;
+    ewk->master_special_move_disabled_flag2 = wk->special_move_disabled_flag2;
+    wk->init_effect_e4_flag = 1;
+    wk->wu.effect_e4_index = ewk->wu.myself;
+    return 0;
+}

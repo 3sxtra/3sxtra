@@ -10,7 +10,7 @@
 #include "common.h"
 #include "constants.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/effect/effxx.h"
+#include "sf33rd/Source/Game/effect/effect_xx_move_and_init_jumptables.h"
 #include "sf33rd/Source/Game/engine/cmd_data.h"
 #include "sf33rd/Source/Game/engine/cmd_main.h"
 #include "sf33rd/Source/Game/engine/grade.h"
@@ -22,7 +22,7 @@
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 
 #define LO_2_BYTES(_val) (((s16*)&(_val))[0])
 #define HI_2_BYTES(_val) (((s16*)&(_val))[1])

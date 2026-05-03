@@ -9,7 +9,7 @@
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/pow_pow.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 
 static void setup_dm_rl_pldm(State* as, State* ds);
 

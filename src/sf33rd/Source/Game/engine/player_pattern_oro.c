@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/engine/player_pattern_oro.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/eff13.h"
+#include "sf33rd/Source/Game/effect/effect_13_quake_shadow_homing.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"

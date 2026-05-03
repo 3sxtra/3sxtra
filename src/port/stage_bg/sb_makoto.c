@@ -4,7 +4,7 @@
  */
 
 #include "port/stage_bg_registry.h"
-#include "sf33rd/Source/Game/stage/bg160.h"
+#include "sf33rd/Source/Game/stage/stage_160_the_dojo_of_rindo_kan_japan.h"
 
 __attribute__((constructor)) static void sb_makoto_register(void) {
     StageBg_Register(STAGE_BG_MAKOTO,

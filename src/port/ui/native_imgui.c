@@ -4,11 +4,11 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/engine/state_select.h"
 #include "sf33rd/Source/Game/effect/effect.h" // For frw pool and Release_Effect
-#include "sf33rd/Source/Game/effect/eff04.h"
-#include "sf33rd/Source/Game/effect/eff45.h"
-#include "sf33rd/Source/Game/effect/eff57.h"
-#include "sf33rd/Source/Game/effect/eff61.h"
-#include "sf33rd/Source/Game/rendering/texgroup.h"
+#include "sf33rd/Source/Game/effect/effect_04_projectile_object.h"
+#include "sf33rd/Source/Game/effect/effect_45_debug_game_state.h"
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"
+#include "sf33rd/Source/Game/effect/effect_61_menu_options.h"
+#include "sf33rd/Source/Game/rendering/texture_group.h"
 
 #include <string.h>
 

@@ -9,15 +9,15 @@
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/effect/eff49.h"
-#include "sf33rd/Source/Game/effect/eff58.h"
-#include "sf33rd/Source/Game/effect/eff76.h"
-#include "sf33rd/Source/Game/effect/eff95.h"
-#include "sf33rd/Source/Game/effect/effa9.h"
+#include "sf33rd/Source/Game/effect/effect_49_work_user_character_state.h"
+#include "sf33rd/Source/Game/effect/effect_58_sound_se_request.h"
+#include "sf33rd/Source/Game/effect/effect_76_quake.h"
+#include "sf33rd/Source/Game/effect/effect_95_data_table.h"
+#include "sf33rd/Source/Game/effect/effect_a9_visual_generic.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "sf33rd/Source/Game/stage/bg_data.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 #include "main.h" /* For TASK_MENU enum */

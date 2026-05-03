@@ -1,0 +1,88 @@
+/**
+ * @file effi3.c
+ * Effect: Background Data / Stage Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_i3_background_data.h"
+#include "game_state.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
+
+const I3_Data i3_data[6] = { { 3, 2, 0 }, { 1, 1, 0 }, { 2, 0, 0 }, { 2, 0, 0 }, { 2, 0, 0 }, { 2, 0, 0 } };
+
+void effect_I3_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
+
+    switch (ewk->wu.routine_no[0]) {
+    case 0:
+        ewk->wu.routine_no[0]++;
+        g_state.bg_stop = 1;
+
+        switch (i3_data[ewk->wu.type].sour) {
+        case 1:
+            if ((ewk->wu.dir_timer = ewk->wu.hit_stop) < 0) {
+                ewk->wu.dir_timer = -ewk->wu.dir_timer;
+            }
+
+            break;
+
+        case 2:
+            ewk->wu.dir_timer = ewk->wu.cg_type;
+            break;
+
+        default:
+            ewk->wu.dir_timer = i3_data[ewk->wu.type].tm;
+            break;
+        }
+
+        /* fallthrough */
+
+    case 1:
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+            ewk->wu.routine_no[0]++;
+            break;
+        }
+
+        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
+            break;
+        }
+
+        if ((i3_data[ewk->wu.type].flag & 1 && --ewk->wu.dir_timer < 0) ||
+            (i3_data[ewk->wu.type].flag & 2 &&
+             (ewk->wu.current_char_type != mwk->current_char_type || ewk->wu.char_index != mwk->char_index))) {
+            ewk->wu.routine_no[0] = 2;
+        }
+
+        break;
+
+    case 2:
+    default:
+        g_state.bg_stop = 0;
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+s32 effect_I3_init(State* wk, u8 tix) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(3)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 183;
+    ewk->wu.work_id = 16;
+    ewk->my_master = wk;
+    ewk->wu.type = tix;
+    ewk->wu.cg_type = wk->cg_type;
+    ewk->wu.hit_stop = wk->hit_stop;
+    ewk->wu.current_char_type = wk->current_char_type;
+    ewk->wu.char_index = wk->char_index;
+    return 0;
+}

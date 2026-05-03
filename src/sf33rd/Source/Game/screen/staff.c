@@ -8,7 +8,7 @@
 #include "sf33rd/Source/Game/screen/staff_constants.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/common/pad.h"
-#include "sf33rd/Source/Game/effect/effh6.h"
+#include "sf33rd/Source/Game/effect/effect_h6_code_table_ending.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/se.h"

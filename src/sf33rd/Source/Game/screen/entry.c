@@ -11,7 +11,7 @@
 #include "main.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/effect/effa2.h"
+#include "sf33rd/Source/Game/effect/effect_a2_color_table.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
@@ -23,9 +23,9 @@
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/system/reset.h"
-#include "sf33rd/Source/Game/system/sys_sub.h"
+#include "sf33rd/Source/Game/system/system_subroutines.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 #include "structs.h"
 
 /* RmlUi Phase 3 bypass */

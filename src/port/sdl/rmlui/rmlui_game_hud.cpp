@@ -21,7 +21,7 @@
 
 /* ─── Real game headers — all types come from here ─── */
 extern "C" {
-#include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
+#include "sf33rd/Source/Game/effect/effect_76_quake.h" /* chkNameAkuma */
 #include "sf33rd/Source/Game/engine/combo_window.h" /* CMST_BUFF, g_state.cmst_buff[2][5], g_state.cmb_stock[2], g_state.cst_read[2] */
 #include "sf33rd/Source/Game/engine/player_control.h"    /* g_state.stun_state[2] (StunState), g_state.plw[2] */
 #include "sf33rd/Source/Game/engine/super_gauge.h"  /* SPG_DAT, g_state.spg_dat[2] — SA gauge */

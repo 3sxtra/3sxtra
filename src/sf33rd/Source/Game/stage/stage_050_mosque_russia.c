@@ -1,0 +1,92 @@
+/**
+ * @file bg_050.c
+ * Mosque, Russia
+ */
+
+#include "sf33rd/Source/Game/stage/stage_050_mosque_russia.h"
+#include "common.h"
+#include "game_state.h"
+#include "sf33rd/Source/Game/effect/effect_05_background.h"
+#include "sf33rd/Source/Game/effect/effect_06_data_screen_object.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/stage/bg.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
+#include "sf33rd/Source/Game/stage/target_subroutines.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+
+/** @brief Main handler for Mosque, Russia stage. */
+void BG050() {
+    bgw_ptr = &g_state.bg_w.bgw[1];
+    bg0502();
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    bg0501();
+    bgw_ptr = &g_state.bg_w.bgw[2];
+    bg050_sync_common();
+    zoom_ud_check();
+    bg_pos_adjust2();
+    Bg_Family_Set();
+}
+
+/** @brief Background layer handler for Mosque, Russia. */
+void bg0501() {
+    void (*bg0501_jmp[2])() = { bg0501_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bg0501_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Mosque, Russia. */
+void bg0501_init00() {
+    bgw_ptr->r_no_0++;
+    bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+}
+
+/** @brief Background layer handler for Mosque, Russia. */
+void bg0502() {
+    void (*bg0502_jmp[2])() = { bg0502_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bg0502_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Mosque, Russia. */
+void bg0502_init00() {
+    bgw_ptr->r_no_0++;
+    bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+    effect_05_init();
+    effect_06_init();
+}
+
+/** @brief Synchronized parallax common handler for Mosque, Russia. */
+void bg050_sync_common() {
+    void (*bg050_sync_jmp[2])() = { bg050_sync_init, bg050_sync_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bg050_sync_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize synchronized parallax layer for Mosque, Russia. */
+void bg050_sync_init() {
+    bgw_ptr->r_no_0++;
+    bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+    bgw_ptr->y_limit = bgw_ptr->y_limit2 = 0xF0;
+    bgw_ptr->pos_y_work = 0;
+    bgw_ptr->xy[1].disp.pos = 0;
+    bgw_ptr->speed_x = 0xE000;
+    bgw_ptr->speed_y = 0xE000;
+    sync_fam_set3(2);
+}
+
+/** @brief Per-frame movement handler for Mosque, Russia layer. */
+void bg050_sync_move() {
+    bg_x_move_check();
+    bg_y_move_check();
+    sync_fam_set3(2);
+}

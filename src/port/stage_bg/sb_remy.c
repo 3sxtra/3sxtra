@@ -4,7 +4,7 @@
  */
 
 #include "port/stage_bg_registry.h"
-#include "sf33rd/Source/Game/stage/bg190.h"
+#include "sf33rd/Source/Game/stage/stage_190_club_metro_france.h"
 
 __attribute__((constructor)) static void sb_remy_register(void) {
     StageBg_Register(STAGE_BG_REMY,

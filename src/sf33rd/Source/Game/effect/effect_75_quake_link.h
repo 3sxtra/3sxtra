@@ -1,0 +1,10 @@
+#ifndef EFFECT_75_QUAKE_LINK_H
+#define EFFECT_75_QUAKE_LINK_H
+
+#include "structs.h"
+#include "types.h"
+
+void effect_75_move(State_Other* ewk);
+s32 effect_75_init(s16 dir_old, s16 arg_ID, s16 Target_BG);
+
+#endif

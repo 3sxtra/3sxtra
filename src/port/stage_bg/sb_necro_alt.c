@@ -5,7 +5,7 @@
  */
 
 #include "port/stage_bg_registry.h"
-#include "sf33rd/Source/Game/stage/bg180.h"
+#include "sf33rd/Source/Game/stage/stage_180_mosque_russia.h"
 
 __attribute__((constructor)) static void sb_necro_alt_register(void) {
     StageBgCallbacks cb = {

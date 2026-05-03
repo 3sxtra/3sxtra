@@ -22,20 +22,20 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
-#include "sf33rd/Source/Game/effect/eff64.h"       /* effect_64_init */
-#include "sf33rd/Source/Game/effect/eff66.h"       /* effect_66_init */
+#include "sf33rd/Source/Game/effect/effect_04_projectile_object.h"       /* effect_04_init */
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"       /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/effect_61_menu_options.h"       /* effect_61_init */
+#include "sf33rd/Source/Game/effect/effect_64_quake.h"       /* effect_64_init */
+#include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h"       /* effect_66_init */
 #include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/io/vm_sub.h"          /* Setup_File_Property */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Memory_Card_Sub, Button_Exit_Check, etc. */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
 #include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"     /* Save_Game_Data */
+#include "sf33rd/Source/Game/system/system_subroutines.h"     /* Save_Game_Data */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* save_w */
-#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 
 /* RmlUi Phase 3 */

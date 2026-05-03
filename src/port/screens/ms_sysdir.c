@@ -24,12 +24,12 @@
 #include "game_state.h"
 
 #include "port/ui/native_imgui.h"                      /* NativeUI */
-#include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff45.h"           /* Message_Data */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
-#include "sf33rd/Source/Game/effect/eff64.h"           /* effect_64_init */
-#include "sf33rd/Source/Game/effect/eff66.h"           /* effect_66_init */
+#include "sf33rd/Source/Game/effect/effect_04_projectile_object.h"           /* effect_04_init */
+#include "sf33rd/Source/Game/effect/effect_45_debug_game_state.h"           /* Message_Data */
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"           /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/effect_61_menu_options.h"           /* effect_61_init */
+#include "sf33rd/Source/Game/effect/effect_64_quake.h"           /* effect_64_init */
+#include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h"           /* effect_66_init */
 #include "sf33rd/Source/Game/engine/state_user.h"        /* g_state.Menu_Cursor_Y, g_state.Convert_Buff, etc. */
 #include "sf33rd/Source/Game/menu/dir_data.h"          /* Page_Data */
 #include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
@@ -37,9 +37,9 @@
 #include "sf33rd/Source/Game/message/en/msgtable_en.h" /* msgSysDirTbl */
 #include "sf33rd/Source/Game/sound/sound3rd.h"         /* SE_selected, SE_dir_selected, SE_cursor_move */
 #include "sf33rd/Source/Game/system/reset.h"           /* g_state.Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"         /* Check_SysDir_Page */
-#include "sf33rd/Source/Game/system/sysdir.h"          /* system_dir, g_state.Direction_Working */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/system/system_subroutines.h"         /* Check_SysDir_Page */
+#include "sf33rd/Source/Game/system/system_director.h"          /* system_dir, g_state.Direction_Working */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"              /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                                   /* struct _TASK */
 
 /* RmlUi Phase 3 */

@@ -6,7 +6,7 @@
 #include "sf33rd/Source/Game/engine/player_pattern_gill.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/effi3.h"
+#include "sf33rd/Source/Game/effect/effect_i3_background_data.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
@@ -18,7 +18,7 @@
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
 static s16 get_life_add_point(u8 num, s16 ori_add);
 

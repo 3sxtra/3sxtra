@@ -4,7 +4,7 @@
  */
 
 #include "port/stage_bg_registry.h"
-#include "sf33rd/Source/Game/stage/bns_bg2.h"
+#include "sf33rd/Source/Game/stage/stage_bonus_2.h"
 
 __attribute__((constructor)) static void sb_bonus2_register(void) {
     StageBg_Register(STAGE_BG_BONUS2,

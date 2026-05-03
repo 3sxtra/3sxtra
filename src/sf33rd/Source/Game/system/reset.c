@@ -17,11 +17,11 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
-#include "sf33rd/Source/Game/rendering/texgroup.h"
+#include "sf33rd/Source/Game/rendering/texture_group.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
-#include "sf33rd/Source/Game/system/sys_sub.h"
+#include "sf33rd/Source/Game/system/system_subroutines.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 #include "structs.h"
 
 #define RESET_STATUS_PENDING 0x62

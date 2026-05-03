@@ -40,7 +40,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/screen/vs_shell.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
 

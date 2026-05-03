@@ -16,11 +16,11 @@
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/opening/opening.h"
-#include "sf33rd/Source/Game/rendering/aboutspr.h"
-#include "sf33rd/Source/Game/rendering/color3rd.h"
-#include "sf33rd/Source/Game/rendering/mtrans.h"
-#include "sf33rd/Source/Game/rendering/texcash.h"
-#include "sf33rd/Source/Game/system/ramcnt.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/rendering/color_palette.h"
+#include "sf33rd/Source/Game/rendering/rendering_transform.h"
+#include "sf33rd/Source/Game/rendering/texture_cache.h"
+#include "sf33rd/Source/Game/system/ram_control.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 /** @brief Release PPG texture/palette handles for a given asset group. */

@@ -24,13 +24,13 @@
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/opening/opening.h"
-#include "sf33rd/Source/Game/rendering/mtrans.h"
-#include "sf33rd/Source/Game/rendering/texgroup.h"
+#include "sf33rd/Source/Game/rendering/rendering_transform.h"
+#include "sf33rd/Source/Game/rendering/texture_group.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
-#include "sf33rd/Source/Game/system/ramcnt.h"
-#include "sf33rd/Source/Game/system/sys_sub2.h"
+#include "sf33rd/Source/Game/system/ram_control.h"
+#include "sf33rd/Source/Game/system/system_subroutines_2.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 #include "structs.h"
 
 static void CAPLOGO_Init();

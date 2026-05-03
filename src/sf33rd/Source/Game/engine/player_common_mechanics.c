@@ -13,8 +13,8 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/stage/bg_sub.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 
 #define CLAMP_MIN_ZERO(val)                                                                                            \
     do {                                                                                                               \

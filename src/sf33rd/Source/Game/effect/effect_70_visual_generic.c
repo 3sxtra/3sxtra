@@ -1,0 +1,137 @@
+/**
+ * @file eff70.c
+ * Effect: Visual Effect (Generic)
+ */
+
+#include "sf33rd/Source/Game/effect/effect_70_visual_generic.h"
+#include "game_state.h"
+#include "bin2obj/char_table.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/rendering/texture_cache.h"
+#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+
+static void Setup_Eff70(State_Other* ewk);
+
+void effect_70_move(State_Other* ewk) {
+    if (g_state.Suicide[0] == 1) {
+        ewk->wu.routine_no[0] = 99;
+        ewk->wu.disp_flag = 0;
+        return;
+    }
+
+    switch (ewk->wu.routine_no[0]) {
+    case 0:
+        if (--ewk->wu.dir_timer == 0) {
+            ewk->wu.routine_no[0]++;
+            ewk->wu.disp_flag = 1;
+            ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
+            ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
+            set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
+            sort_push_request4(&ewk->wu);
+        }
+
+        break;
+
+    case 1:
+        char_move(&ewk->wu);
+
+        if (ewk->wu.cg_type) {
+            g_state.Complete_Face--;
+            ewk->wu.routine_no[0]++;
+            ewk->wu.char_index = 0;
+            set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
+        }
+
+        sort_push_request4(&ewk->wu);
+        /* fallthrough */
+
+    case 2:
+        if (g_state.Play_Type == 1 && g_state.Sel_PL_Complete[0] & 0x8000 && g_state.Sel_PL_Complete[1] & 0x8000) {
+            ewk->wu.routine_no[0]++;
+            ewk->wu.dir_timer = 30;
+        }
+
+        sort_push_request4(&ewk->wu);
+        break;
+
+    case 3:
+        if (--ewk->wu.dir_timer == 0) {
+            ewk->wu.routine_no[0]++;
+            ewk->wu.mirror_flag = 1;
+            ewk->wu.mirror_scale.size.x = 63;
+            ewk->wu.mirror_scale.size.y = 63;
+            ewk->wu.mvxy.a[0].sp = 0x80000;
+        }
+
+        sort_push_request4(&ewk->wu);
+        break;
+
+    case 4:
+        if ((ewk->wu.mirror_scale.size.x -= ewk->wu.mvxy.a[0].real.h) <= 0) {
+            ewk->wu.mirror_scale.size.x = 0;
+        }
+
+        if ((ewk->wu.mirror_scale.size.y -= ewk->wu.mvxy.a[0].real.h) <= 0) {
+            ewk->wu.mirror_scale.size.y = 0;
+        }
+
+        if (ewk->wu.mirror_scale.size.x <= 0 && ewk->wu.mirror_scale.size.y <= 0) {
+            ewk->wu.routine_no[1]++;
+            ewk->wu.mirror_flag = 0;
+            ewk->wu.disp_flag = 0;
+            break;
+        }
+
+        sort_push_request4(&ewk->wu);
+        break;
+
+    default:
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+s32 effect_70_init(s16 id) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(4)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    Setup_Eff70(ewk);
+    ewk->wu.xyz[0].disp.pos = Face_Pos_Data[id][0] + 512;
+    ewk->wu.xyz[1].disp.pos = Face_Pos_Data[id][1] + 0;
+    ewk->wu.position_z = 62;
+    ewk->wu.dir_step = id;
+    ewk->wu.dir_timer = 10;
+
+    // permission_player is menu/UI state (character unlock flags), not gameplay state.
+    // It's initialized at startup and set before gameplay begins, so both netplay
+    // clients will have identical values. No GameState serialization needed.
+    if (permission_player[g_state.Present_Mode].ok[id] == 0) {
+        ewk->wu.my_bright_type = 1;
+        ewk->wu.my_bright_level = 7;
+        ewk->wu.my_clear_level = 80;
+    }
+
+    return 0;
+}
+
+static void Setup_Eff70(State_Other* ewk) {
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 70;
+    ewk->wu.work_id = 16;
+    ewk->wu.my_col_code = 0x2090;
+    ewk->wu.my_family = 2;
+    ewk->wu.char_index = 13;
+    *ewk->wu.char_table = _sel_pl_char_table;
+    ewk->wu.my_mts = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+}

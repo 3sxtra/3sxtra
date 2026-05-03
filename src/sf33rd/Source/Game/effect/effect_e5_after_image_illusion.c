@@ -1,0 +1,352 @@
+/**
+ * @file effe5.c
+ * Effect: After Image / Illusion Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_e5_after_image_illusion.h"
+#include "game_state.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect_e7_after_image_slow.h"
+#include "sf33rd/Source/Game/effect/effect_e8_after_image_work_user.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/engine/hitcheck.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/rendering/color_palette.h"
+
+const u16 after_image_data[39][10] = {
+    { 28, 14, 5, 3, 0, 80, 8, 0, 1, 4 },   { 24, 11, 6, 2, 0, 4, 10, 0, 1, 4 },  { 28, 18, 4, 2, 0, 80, 8, 0, 1, 4 },
+    { 28, 22, 4, 1, 0, 40, 8, 0, 1, 4 },   { 0, 0, 2, 2, 8, 3, 2, 0, 1, 0 },     { 28, 2, 4, 1, 0, 208, 8, 0, 1, 4 },
+    { 28, 2, 3, 2, 0, 80, 8, 0, 1, 4 },    { 13, 9, 4, 2, 0, 4, 10, 0, 1, 4 },   { 8, 0, 2, 4, 28, 1, 10, 0, 1, 0 },
+    { 12, 14, 6, 2, 48, 209, 8, 0, 1, 4 }, { 28, 14, 4, 2, 0, 208, 8, 0, 1, 4 }, { 33, 30, 1, 2, 12, 3, 4, 0, 1, 4 },
+    { 12, 26, 3, 2, 24, 81, 6, 0, 1, 4 },  { 33, 9, 1, 2, 12, 3, 4, 0, 1, 4 },   { 33, 7, 1, 2, 12, 3, 4, 0, 1, 4 },
+    { 9, 0, 5, 3, 0, 82, 4, 0, 1, 0 },     { 15, 0, 10, 2, 0, 4, 10, 0, 1, 0 },  { 12, 0, 4, 1, 20, 211, 4, 0, 1, 0 },
+    { 28, 2, 3, 2, 0, 80, 8, 0, 1, 4 },    { 12, 26, 3, 2, 24, 81, 6, 0, 1, 4 }, { 16, 0, 3, 3, 13, 211, 6, 0, 1, 0 },
+    { 16, 0, 3, 3, 16, 211, 6, 0, 1, 0 },  { 16, 0, 3, 3, 21, 211, 6, 0, 1, 0 }, { 16, 0, 3, 3, 21, 211, 6, 0, 1, 0 },
+    { 16, 0, 3, 3, 25, 211, 6, 0, 1, 0 },  { 16, 0, 3, 3, 28, 211, 6, 0, 1, 0 }, { 16, 0, 3, 3, 13, 211, 6, 0, 1, 0 },
+    { 16, 0, 3, 3, 16, 211, 6, 0, 1, 0 },  { 16, 0, 3, 3, 21, 211, 6, 0, 1, 0 }, { 24, 1, 6, 3, 0, 80, 8, 0, 1, 4 },
+    { 28, 1, 1, 3, 0, 80, 8, 0, 1, 4 },    { 28, 2, 3, 2, 0, 80, 8, 1, 1, 4 },   { 28, 2, 3, 2, 48, 81, 8, 1, 1, 4 },
+    { 33, 32, 1, 2, 12, 3, 4, 0, 0, 0 },   { 24, 1, 6, 3, 0, 80, 8, 0, 1, 4 },   { 28, 14, 6, 3, 0, 80, 8, 0, 1, 4 },
+    { 28, 18, 1, 2, 0, 80, 8, 0, 1, 4 },   { 28, 22, 1, 1, 0, 40, 8, 0, 1, 4 },  { 28, 2, 2, 3, 0, 80, 8, 0, 1, 4 },
+};
+
+const u16 after_image_color[34][2] = { { 0x0000, 0x0010 }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC },
+                                       { 0x01F8, 0x01FC }, { 0x01F9, 0x01FD }, { 0x01F9, 0x01FD }, { 0x01F9, 0x01FD },
+                                       { 0x01F9, 0x01FD }, { 0x01F9, 0x01FD }, { 0x01F9, 0x01FD }, { 0x01F8, 0x01FC },
+                                       { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC },
+                                       { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC },
+                                       { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC },
+                                       { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC }, { 0x01F7, 0x01FB }, { 0x01F7, 0x01FB },
+                                       { 0x01F7, 0x01FB }, { 0x01F7, 0x01FB }, { 0x01F8, 0x01FC }, { 0x01F8, 0x01FC },
+                                       { 0x0001, 0x0011 }, { 0x0001, 0x0011 } };
+
+const u16 illusion_setup_table[13][2] = {
+    { 0, 0 },  { 2, 0 },  { 0, 4 }, { 0, 5 },  { 0, 2 },  { 1, 3 },  { 0, 11 },
+    { 0, 12 }, { 0, 13 }, { 0, 0 }, { 0, 15 }, { 0, 17 }, { 0, 18 },
+};
+
+static s32 check_new_after_image(State_Other* ewk, PLW* mwk);
+static void setup_illusion_data(State_Other* ewk, PLW* mwk);
+
+void effect_E5_move(State_Other* ewk) {
+    PLW* mwk = (PLW*)ewk->my_master;
+    s16 i;
+
+    switch (ewk->wu.routine_no[0]) {
+    case 0:
+        if (ewk->wu.dead_f == 1) {
+            ewk->wu.routine_no[0] = 2;
+            mwk->image_setup_flag = 0;
+            break;
+        }
+
+        if (mwk->image_setup_flag == 0) {
+            break;
+        }
+
+        if (mwk->image_data_index == 11 && mwk->kind_of_blocking == 2) {
+            mwk->image_data_index = 33;
+        }
+
+        setup_illusion_data(ewk, mwk);
+
+        if (ewk->wu.old_routine_no[2]) {
+            ewk->wu.routine_no[1] = 1;
+        } else {
+            ewk->wu.routine_no[1] = 0;
+        }
+
+        ewk->wu.routine_no[0] = 1;
+        ewk->wu.routine_no[2] = 0;
+        /* fallthrough */
+
+    case 1:
+        if (ewk->wu.dead_f == 1) {
+            ewk->wu.routine_no[0] = 2;
+            mwk->image_setup_flag = 0;
+            break;
+        }
+
+        if (check_new_after_image(ewk, mwk) != 0) {
+            goto jump;
+        }
+
+        if ((ewk->wu.dir_old & 1 && g_state.EXE_flag == 0 && g_state.Game_pause == 0 && mwk->wu.hit_stop <= 0 &&
+             --ewk->wu.direction == 0) ||
+            (ewk->wu.dir_old & 2 &&
+             (ewk->wu.routine_no[5] != mwk->wu.routine_no[1] || ewk->wu.routine_no[6] != mwk->wu.routine_no[2]) &&
+             (mwk->image_data_index != 11 || mwk->wu.routine_no[1] != 4 || mwk->wu.routine_no[3] != 0)) ||
+            (ewk->wu.dir_old & 4 && mwk->sa->ok != -1) ||
+            (ewk->wu.dir_old & 8 && ((State*)mwk->wu.target_adrs)->routine_no[1] != 4 &&
+             ((State*)mwk->wu.target_adrs)->routine_no[1] != 2) ||
+            (ewk->wu.dir_old & 0x10 && mwk->wu.routine_no[1] != 4 && mwk->wu.routine_no[1] != 2) ||
+            (ewk->wu.dir_old & 0x20 && ewk->wu.total_att_set != ((State*)mwk->wu.target_adrs)->attack_type) ||
+            (ewk->wu.dir_old & 0x40 && ewk->wu.total_paring != mwk->wu.attack_type) ||
+            (ewk->wu.dir_old & 0x80 && g_state.pcon_dp_flag) || !mwk->image_setup_flag) {
+            mwk->image_setup_flag = 0;
+        jump:
+            ewk->wu.routine_no[0] = ewk->wu.routine_no[1] = ewk->wu.routine_no[2] = 0;
+            break;
+        }
+
+        switch (ewk->wu.routine_no[1]) {
+        case 0:
+            if (mwk->image_setup_flag == 0) {
+                ewk->wu.routine_no[0] = 0;
+                ewk->wu.routine_no[1] = 0;
+                break;
+            }
+
+            switch (ewk->wu.routine_no[2]) {
+            case 0:
+                ewk->wu.routine_no[2]++;
+                effect_E7_init(ewk, mwk);
+                /* fallthrough */
+
+            case 1:
+                ewk->wu.routine_no[2]++;
+                ewk->wu.dir_step = ewk->wu.damage_calc_multiplier;
+                /* fallthrough */
+
+            case 2:
+                if (g_state.EXE_flag == 0 && g_state.Game_pause == 0 && --ewk->wu.dir_step <= 0) {
+                    effect_E7_init(ewk, mwk);
+                    ewk->wu.routine_no[2] = 1;
+                }
+
+                break;
+            }
+
+            break;
+
+        case 1:
+            if (mwk->image_setup_flag == 0) {
+                ewk->wu.routine_no[0] = 0;
+                ewk->wu.routine_no[1] = 0;
+                break;
+            }
+
+            switch (ewk->wu.routine_no[2]) {
+            case 0:
+                ewk->wu.routine_no[2]++;
+                ewk->wu.dir_step = 0;
+
+                if (ewk->wu.old_routine_no[5]) {
+                    for (i = 0; i < ewk->wu.damage_calc_divider; i++) {
+                        effect_E8_init(ewk, mwk, ewk->wu.dir_step);
+                        ewk->wu.dir_step += ewk->wu.damage_calc_multiplier;
+                    }
+                } else {
+                    for (i = 0; i < ewk->wu.damage_calc_divider; i++) {
+                        ewk->wu.dir_step += ewk->wu.damage_calc_multiplier;
+                        effect_E8_init(ewk, mwk, ewk->wu.dir_step);
+                    }
+                }
+
+                break;
+            }
+
+            break;
+        }
+
+        break;
+
+    default:
+    case 2:
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+static void setup_illusion_data(State_Other* ewk, PLW* mwk) {
+    const u16* tblh = after_image_data[mwk->image_data_index];
+
+    if (tblh[0] & 0x10) {
+        ewk->wu.disp_flag = 1;
+    } else {
+        ewk->wu.disp_flag = 2;
+    }
+
+    ewk->wu.old_routine_no[5] = tblh[0] & 0x20;
+    ewk->wu.old_routine_no[3] = tblh[0] & 8;
+    ewk->wu.old_routine_no[2] = tblh[0] & 4;
+    ewk->wu.old_routine_no[1] = tblh[0] & 2;
+    ewk->wu.old_routine_no[0] = tblh[0] & 1;
+    ewk->wu.old_routine_no[4] = tblh[1];
+    ewk->wu.damage_calc_multiplier = tblh[2];
+    ewk->wu.damage_calc_divider = tblh[3];
+    ewk->wu.direction = tblh[4];
+    ewk->wu.dir_old = tblh[5];
+    ewk->wu.bbox_work_index = mwk->image_data_index;
+    ewk->wu.olc_work_ix[0] = tblh[6] - 1;
+    ewk->wu.olc_work_ix[1] = tblh[7];
+    ewk->wu.olc_work_ix[2] = tblh[8];
+    ewk->wu.my_bright_type = tblh[9];
+    ewk->wu.routine_no[5] = mwk->wu.routine_no[1];
+    ewk->wu.routine_no[6] = mwk->wu.routine_no[2];
+    ewk->wu.total_paring = mwk->wu.attack_type;
+    ewk->wu.total_att_set = ((State*)mwk->wu.target_adrs)->attack_type;
+    push_color_trans_req(after_image_color[ewk->wu.old_routine_no[4]][mwk->wu.id], (mwk->wu.id * 8) + 4);
+    mwk->image_setup_flag = 1;
+}
+
+static s32 check_new_after_image(State_Other* ewk, PLW* mwk) {
+    if (mwk->image_setup_flag != 2) {
+        return 0;
+    }
+
+    if (after_image_data[mwk->image_data_index][6] < ewk->wu.olc_work_ix[0]) {
+        return 0;
+    }
+
+    return 1;
+}
+
+s32 effect_E5_init(PLW* wk) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(3)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 145;
+    ewk->wu.work_id = 16;
+    ewk->wu.my_family = wk->wu.my_family;
+    ewk->wu.graphic_rom_type = wk->wu.graphic_rom_type;
+    ewk->wu.my_col_mode = wk->wu.my_col_mode;
+    ewk->wu.my_col_code = wk->wu.my_col_code;
+    ewk->my_master = wk;
+    ewk->master_work_id = wk->wu.work_id;
+    ewk->master_id = wk->wu.id;
+    ewk->master_player = wk->player_number;
+    ewk->wu.blink_timing = ewk->master_id;
+    return 0;
+}
+
+void effect_e7_e8_init_union(State_Other* nwk, State_Other* ek, PLW* mk) {
+    nwk->wu.old_routine_no[4] = ek->wu.old_routine_no[4];
+    nwk->wu.old_routine_no[3] = ek->wu.old_routine_no[3];
+    nwk->wu.old_routine_no[1] = ek->wu.old_routine_no[1];
+    nwk->wu.old_routine_no[0] = ek->wu.old_routine_no[0];
+    nwk->wu.old_routine_no[5] = ek->wu.old_routine_no[5];
+    nwk->wu.olc_work_ix[2] = ek->wu.olc_work_ix[2];
+    nwk->wu.my_bright_type = ek->wu.my_bright_type;
+    nwk->wu.my_mts = mk->wu.my_mts;
+    nwk->wu.my_family = mk->wu.my_family;
+    nwk->wu.graphic_rom_type = mk->wu.graphic_rom_type;
+    nwk->wu.my_col_mode = mk->wu.my_col_mode;
+    nwk->wu.my_col_code = mk->wu.my_col_code;
+    nwk->wu.dir_timer = ek->wu.damage_calc_divider * ek->wu.damage_calc_multiplier;
+    nwk->wu.damage_calc_divider = ek->wu.damage_calc_divider;
+    nwk->wu.damage_calc_multiplier = ek->wu.damage_calc_multiplier;
+    nwk->wu.blink_timing = mk->wu.blink_timing;
+    nwk->wu.target_adrs = ek;
+    nwk->my_master = mk;
+    nwk->master_work_id = mk->wu.work_id;
+    nwk->master_id = mk->wu.id;
+    nwk->wu.hit_ix_table = mk->wu.hit_ix_table;
+    nwk->wu.body_adrs = mk->wu.body_adrs;
+    nwk->wu.hand_adrs = mk->wu.hand_adrs;
+    nwk->wu.catch_adrs = mk->wu.catch_adrs;
+    nwk->wu.caught_adrs = mk->wu.caught_adrs;
+    nwk->wu.attack_adrs = mk->wu.attack_adrs;
+    nwk->wu.adjust_adrs = mk->wu.adjust_adrs;
+    nwk->wu.att_ix_table = mk->wu.att_ix_table;
+    nwk->wu.weight_level = mk->wu.weight_level;
+}
+
+void get_attdata_of_illusion(State_Other* ewk) {
+    ewk->wu.anim_hurtbox_index = g_state.afterimage_table[ewk->master_id][ewk->wu.type].hit_ix;
+    ewk->wu.anim_hitbox_index = g_state.afterimage_table[ewk->master_id][ewk->wu.type].renew;
+    ewk->wu.xyz[0].disp.pos = ewk->wu.position_x;
+    ewk->wu.xyz[1].disp.pos = ewk->wu.position_y;
+    ewk->wu.xyz[2].disp.pos = ewk->wu.position_z;
+    get_char_data_zanzou(&ewk->wu);
+    ewk->wu.att.guard = 0x3F;
+    ewk->wu.att.dipsw = 1;
+    ewk->wu.chip_damage_power = 0;
+    ewk->wu.at_attribute = 0;
+    ewk->wu.att.pow /= 4;
+
+    if (ewk->wu.att.pow <= 0) {
+        ewk->wu.att.pow = 1;
+    }
+
+    ewk->wu.att.stun_effect = 0;
+    ewk->wu.att.hitstop_you = 0;
+    ewk->wu.add_arts_point = 0;
+    ewk->wu.attack_type = g_state.afterimage_table[ewk->master_id][ewk->wu.type].light_attack_flag;
+    ewk->wu.attack_art_type = acatkoa_table[ewk->wu.attack_type];
+
+    if (ewk->wu.anim_hurtbox_index) {
+        hit_push_request(&ewk->wu);
+    }
+}
+
+s32 setup_after_images(PLW* wk, u8 ix) {
+    PLW* tk = (PLW*)wk->wu.target_adrs;
+
+    switch (illusion_setup_table[ix][0]) {
+    case 0:
+        wk->image_setup_flag = 2;
+        wk->image_data_index = illusion_setup_table[ix][1];
+        break;
+
+    default:
+        wk->image_setup_flag = 2;
+        wk->image_data_index = illusion_setup_table[ix][1];
+        /* fallthrough */
+
+    case 1:
+        tk->image_setup_flag = 2;
+        tk->image_data_index = illusion_setup_table[ix][1];
+        break;
+    }
+
+    return 0;
+}
+
+s32 erase_after_images(PLW* wk, u8 who) {
+    PLW* tk = (PLW*)wk->wu.target_adrs;
+
+    switch (who) {
+    case 0:
+        wk->image_setup_flag = 0;
+        break;
+
+    default:
+        wk->image_setup_flag = 0;
+        /* fallthrough */
+
+    case 1:
+        tk->image_setup_flag = 0;
+        break;
+    }
+
+    return 0;
+}

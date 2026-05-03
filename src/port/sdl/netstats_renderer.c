@@ -1,6 +1,6 @@
 #include "port/sdl/netstats_renderer.h"
 #include "netplay/netplay.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
 #include <SDL3/SDL.h>
 

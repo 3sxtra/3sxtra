@@ -1,8 +1,8 @@
 #ifndef BG_H
 #define BG_H
 
-#include "sf33rd/Source/Game/stage/bg_load.h"
-#include "sf33rd/Source/Game/stage/bg_rewrite.h"
+#include "sf33rd/Source/Game/stage/stage_load.h"
+#include "sf33rd/Source/Game/stage/stage_rewrite.h"
 #include "structs.h"
 #include "types.h"
 

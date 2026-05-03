@@ -12,8 +12,8 @@
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/PPGFile.h"
-#include "sf33rd/Source/Game/rendering/aboutspr.h"
-#include "sf33rd/Source/Game/rendering/mtrans.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/rendering/rendering_transform.h"
 #include "structs.h"
 #include <stddef.h>
 #include <string.h>

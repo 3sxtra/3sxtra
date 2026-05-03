@@ -21,9 +21,9 @@
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
 #define PAGE_COUNT 13
 #define FRAMES_PER_PAGE 596 /* ~10 seconds at 59.6 FPS */

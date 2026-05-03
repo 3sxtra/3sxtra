@@ -1,0 +1,215 @@
+/**
+ * @file effb3.c
+ * Effect: Quake Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_b3_quake.h"
+#include "bin2obj/char_table.h"
+#include "common.h"
+#include "game_state.h"
+#include "sf33rd/Source/Game/effect/effect_b2_sound_collision.h"
+#include "sf33rd/Source/Game/effect/effect_b9_visual_generic.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/rendering/texture_cache.h"
+#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/stage/bg.h"
+#include "sf33rd/Source/Game/stage/target_subroutines.h"
+#include "structs.h"
+
+// sbss
+
+State_Other* oya_adrs = NULL;
+
+// Forward decls
+
+static void round_move_init(State_Other* ewk);
+static void round_move(State_Other* ewk);
+static void fight_move(State_Other* ewk);
+static void fight_col_move(State_Other* ewk);
+static void fight_vanish(State_Other* ewk);
+
+// Funcs
+
+void effect_B3_move(State_Other* ewk) {
+    oya_adrs = (State_Other*)ewk->my_master;
+
+    if (ewk->wu.old_routine_no[1] != oya_adrs->wu.routine_no[0]) {
+        ewk->wu.routine_no[1] = 0;
+        ewk->wu.routine_no[2] = 0;
+    }
+
+    ewk->wu.old_routine_no[1] = oya_adrs->wu.routine_no[0];
+
+    switch (oya_adrs->wu.routine_no[0]) {
+    case 1:
+        round_move_init(ewk);
+        break;
+
+    case 2:
+        round_move(ewk);
+        break;
+
+    case 3:
+    case 5:
+    case 6:
+        ewk->wu.mirror_scale.size.x = oya_adrs->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_adrs->wu.mirror_scale.size.y;
+        disp_pos_trans_entry5(ewk);
+        break;
+
+    case 4:
+        fight_move(ewk);
+        break;
+
+    case 7:
+        fight_col_move(ewk);
+        break;
+
+    case 8:
+        fight_vanish(ewk);
+        break;
+
+    case 9:
+    case 10:
+    case 99:
+        ewk->wu.disp_flag = 0;
+        break;
+
+    default:
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+static void round_move_init(State_Other* ewk) {
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        ewk->wu.routine_no[1] += 1;
+        ewk->wu.disp_flag = 1;
+        ewk->wu.mirror_flag = 1;
+        set_char_move_init2(&ewk->wu, 0, 2, 1, 0);
+        /* fallthrough */
+
+    case 1:
+        ewk->wu.mirror_scale.size.x = oya_adrs->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_adrs->wu.mirror_scale.size.y;
+        disp_pos_trans_entry5(ewk);
+        break;
+    }
+}
+
+static void round_move(State_Other* ewk) {
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        ewk->wu.routine_no[1] += 1;
+
+        if (ewk->wu.hit_quake) {
+            Sound_SE(138);
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
+            ewk->wu.xyz[0].disp.pos -= 96;
+            ewk->wu.xyz[1].disp.pos = 144;
+            set_char_move_init2(&ewk->wu, 0, 2, 4, 0);
+        } else {
+            Sound_SE(oya_adrs->wu.dir_old);
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
+            ewk->wu.xyz[0].disp.pos -= 32;
+            set_char_move_init2(&ewk->wu, 0, 2, 2, 0);
+        }
+
+        /* fallthrough */
+
+    case 1:
+        ewk->wu.mirror_scale.size.x = oya_adrs->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_adrs->wu.mirror_scale.size.y;
+        disp_pos_trans_entry5(ewk);
+        break;
+    }
+}
+
+static void fight_move(State_Other* ewk) {
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        ewk->wu.routine_no[1] += 1;
+        set_char_move_init2(&ewk->wu, 0, 2, 5, 0);
+        ewk->wu.mirror_scale.size.x = 63;
+        ewk->wu.mirror_scale.size.y = 0;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
+        ewk->wu.xyz[1].disp.pos = 144;
+        disp_pos_trans_entry5(ewk);
+        break;
+
+    case 1:
+        ewk->wu.mirror_scale.size.x = oya_adrs->wu.mirror_scale.size.x;
+        ewk->wu.mirror_scale.size.y = oya_adrs->wu.mirror_scale.size.y;
+        disp_pos_trans_entry5(ewk);
+        break;
+    }
+}
+
+static void fight_col_move(State_Other* ewk) {
+    ewk->wu.extra_col = oya_adrs->wu.extra_col;
+    disp_pos_trans_entry5(ewk);
+}
+
+static void fight_vanish(State_Other* ewk) {
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        ewk->wu.routine_no[1] += 1;
+        set_char_move_init2(&ewk->wu, 0, 4, 1, 0);
+        disp_pos_trans_entry5(ewk);
+        ewk->wu.my_col_code = 0x52;
+        ewk->wu.extra_col = 0;
+        break;
+
+    case 1:
+        char_move(&ewk->wu);
+
+        if (ewk->wu.cg_type == 0xFF) {
+            ewk->wu.routine_no[1] += 1;
+        }
+
+        disp_pos_trans_entry5(ewk);
+        break;
+
+    case 2:
+        g_state.rf_b2_flag = 1;
+        disp_pos_trans_entry5(ewk);
+        break;
+    }
+}
+
+s32 effect_B3_init(State_Other* oya) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(3)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 0x71;
+    ewk->wu.work_id = 0x10;
+    ewk->my_master = oya;
+    ewk->wu.my_family = 4;
+    ewk->wu.my_col_code = 0x52;
+    ewk->wu.my_priority = ewk->wu.position_z = 10;
+    ewk->wu.my_mts = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.xyz[1].cal = 0x780000;
+    ewk->wu.xyz[0].disp.low = 0;
+    *ewk->wu.char_table = _etc_char_table;
+    ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
+    ewk->wu.xyz[1].disp.pos = 0x90;
+    ewk->wu.old_routine_no[1] = 0;
+
+    if (oya->wu.type) {
+        ewk->wu.hit_quake = 1;
+    } else {
+        ewk->wu.hit_quake = 0;
+    }
+
+    effect_B9_init(oya);
+    return 0;
+}

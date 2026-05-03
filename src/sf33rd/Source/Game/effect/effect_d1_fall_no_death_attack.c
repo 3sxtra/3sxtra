@@ -1,0 +1,175 @@
+/**
+ * @file effd1.c
+ * Effect: Fall / No Death Attack Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_d1_fall_no_death_attack.h"
+#include "game_state.h"
+#include "bin2obj/char_table.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/rendering/texture_cache.h"
+#include "sf33rd/Source/Game/stage/target_subroutines.h"
+
+static void fall_data_set(State_Other* ewk);
+
+void effect_D1_move(State_Other* ewk) {
+    if (g_state.Exec_Wipe) {
+        ewk->wu.no_death_attack = 1;
+    }
+
+    switch (ewk->wu.routine_no[0]) {
+    case 0:
+        ewk->wu.routine_no[0]++;
+        ewk->wu.disp_flag = 1;
+        set_char_move_init(&ewk->wu, 0, (s16)(ewk->wu.char_index));
+        fall_data_set(ewk);
+        pl_eff_trans_entry(ewk);
+        break;
+
+    case 1:
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
+            ewk->wu.routine_no[0] = 99;
+        } else {
+            if (!ewk->wu.cg_type) {
+                char_move(&ewk->wu);
+            }
+
+            ewk->wu.old_routine_no[0]--;
+
+            if (ewk->wu.old_routine_no[0] < 36) {
+                ewk->wu.routine_no[0]++;
+                ewk->wu.my_priority = ewk->wu.position_z = 20;
+            }
+
+            add_x_sub(&ewk->wu);
+            add_y_sub(&ewk->wu);
+        }
+
+        pl_eff_trans_entry(ewk);
+        break;
+
+    case 2:
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
+            ewk->wu.routine_no[0] = 99;
+        } else {
+            if (!ewk->wu.cg_type) {
+                char_move(&ewk->wu);
+            }
+
+            ewk->wu.old_routine_no[0]--;
+
+            if (ewk->wu.old_routine_no[0] != 0) {
+                add_x_sub(&ewk->wu);
+                add_y_sub(&ewk->wu);
+            } else {
+                ewk->wu.routine_no[0]++;
+            }
+        }
+
+        pl_eff_trans_entry(ewk);
+        break;
+
+    case 3:
+        if (ewk->wu.no_death_attack && !g_state.Exec_Wipe) {
+            ewk->wu.routine_no[0] = 99;
+        } else {
+            char_move(&ewk->wu);
+        }
+
+        pl_eff_trans_entry(ewk);
+        break;
+
+    case 99:
+        ewk->wu.disp_flag = 0;
+        ewk->wu.routine_no[0]++;
+        break;
+
+    default:
+        all_cgps_put_back(&ewk->wu);
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+static void fall_data_set(State_Other* ewk) {
+    State_Other* oya_ef = (State_Other*)ewk->my_master;
+    s16 pos_work;
+    s16 id_work;
+
+    ewk->wu.old_routine_no[0] = 44;
+    id_work = oya_ef->master_id ^ 1;
+    pos_work = g_state.plw[oya_ef->master_id].wu.xyz[0].disp.pos - g_state.plw[id_work].wu.xyz[0].disp.pos;
+    ewk->wu.old_routine_no[2] = -8;
+
+    if (ewk->wu.rl_flag) {
+        ewk->wu.xyz[0].disp.pos += 32;
+
+        if (pos_work > 0) {
+            pos_work = 32;
+        } else if (pos_work > -32) {
+            pos_work = 32;
+        } else {
+            pos_work = -pos_work;
+        }
+
+        ewk->wu.old_routine_no[1] = oya_ef->wu.xyz[0].disp.pos + pos_work;
+    } else {
+        ewk->wu.xyz[0].disp.pos -= 32;
+
+        if (pos_work > 0) {
+            if (pos_work < 32) {
+                pos_work = 32;
+            }
+        } else {
+            pos_work = 32;
+        }
+
+        ewk->wu.old_routine_no[1] = oya_ef->wu.xyz[0].disp.pos - pos_work;
+    }
+
+    cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], ewk->wu.old_routine_no[2], 2, 1);
+}
+
+s32 effect_D1_init(State_Other* oya, s32 /* unused */) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(3)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 131;
+    ewk->wu.work_id = 16;
+    ewk->wu.graphic_rom_type = 1;
+    ewk->wu.disp_flag = 0;
+    ewk->my_master = oya;
+    ewk->wu.my_family = 2;
+    ewk->wu.char_index = 17;
+    ewk->master_id = oya->master_id;
+    ewk->wu.my_col_mode = 0x4200;
+    ewk->wu.my_priority = ewk->wu.position_z = oya->wu.position_z;
+    ewk->wu.sync_bg_strip = 0;
+    ewk->wu.rl_flag = oya->wu.rl_flag;
+
+    if (oya->master_id) {
+        ewk->wu.my_col_code = 22;
+    } else {
+        ewk->wu.my_col_code = 6;
+    }
+
+    *ewk->wu.char_table = _etc_char_table;
+    ewk->wu.xyz[1].disp.pos = oya->wu.xyz[1].disp.pos + 138;
+    ewk->wu.xyz[0].disp.pos = oya->wu.xyz[0].disp.pos;
+    ewk->wu.no_death_attack = 0;
+    ewk->wu.my_mts = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    return 0;
+}

@@ -1,0 +1,98 @@
+/**
+ * @file eff75.c
+ * Effect: Quake Link Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_75_quake_link.h"
+#include "game_state.h"
+#include "bin2obj/char_table.h"
+#include "common.h"
+#include "port/sdl/rmlui/rmlui_char_select.h"
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/rendering/texture_cache.h"
+#include "sf33rd/Source/Game/stage/bg.h"
+
+void (*const EFF75_Jmp_Tbl[5])();
+
+/* eff75 draws the SA plate background oval on the char/stage select screen. */
+void effect_75_move(State_Other* ewk) {
+    EFF75_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
+
+    if (ewk->wu.be_flag != 0) {
+        ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
+        ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
+        if (!rmlui_char_select_visible)
+            sort_push_request4(&ewk->wu);
+    }
+}
+
+static void EFF75_WAIT(State_Other* ewk) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
+        ewk->wu.routine_no[1] = 0;
+    }
+}
+
+void EFF75_SLIDE_IN(State_Other* /* unused */) {}
+
+static void EFF75_CHAR_CHANGE(State_Other* ewk) {
+    if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
+        return;
+    }
+
+    ewk->wu.routine_no[0] = 0;
+    g_state.Order[ewk->wu.dir_old] = 0;
+    ewk->wu.dir_step = g_state.Order_Dir[ewk->wu.dir_old];
+    set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
+}
+
+static void EFF75_SUDDENLY(State_Other* ewk) {
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
+            break;
+        }
+
+        ewk->wu.routine_no[1]++;
+        ewk->wu.disp_flag = 1;
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 1;
+        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 1;
+        ewk->wu.position_z = 76;
+        ewk->wu.dir_step = g_state.Order_Dir[ewk->wu.dir_old];
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
+        break;
+
+    default:
+        ewk->wu.routine_no[0] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
+        break;
+    }
+}
+
+s32 effect_75_init(s16 dir_old, s16 arg_ID, s16 Target_BG) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(4)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 75;
+    ewk->wu.work_id = 16;
+    ewk->wu.my_col_code = 0x90;
+    ewk->wu.my_family = Target_BG + 1;
+    *ewk->wu.char_table = _sel_pl_char_table;
+    ewk->wu.char_index = 19;
+    ewk->wu.dir_step = arg_ID;
+    ewk->wu.dir_old = dir_old;
+    ewk->wu.my_mts = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    return 0;
+}
+
+void (*const EFF75_Jmp_Tbl[5])() = { EFF75_WAIT, EFF75_SLIDE_IN, EFF75_CHAR_CHANGE, EFF75_SUDDENLY, EFF57_KILL };

@@ -11,9 +11,9 @@
 
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/reset.h"
-#include "sf33rd/Source/Game/system/saver.h"
+#include "sf33rd/Source/Game/system/save_manager.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
 #define SAVER_IDLE_THRESHOLD 18000
 

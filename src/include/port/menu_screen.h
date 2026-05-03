@@ -14,7 +14,7 @@
 #ifndef MENU_SCREEN_H
 #define MENU_SCREEN_H
 
-#include "sf33rd/Source/Game/effect/eff57.h" /* MenuHeader enum */
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h" /* MenuHeader enum */
 #include "structs.h"                         /* struct _TASK   */
 #include "types.h"                           /* u8, s16, etc.  */
 

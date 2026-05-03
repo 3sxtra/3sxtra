@@ -18,8 +18,8 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/rendering/meta_col.h"
-#include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "sf33rd/Source/Game/rendering/metamorphosis_color.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
 static void player_mvbs_0000(PLW* wk);
 static void player_mvbs_1000(PLW* wk);

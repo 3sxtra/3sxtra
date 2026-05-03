@@ -20,12 +20,12 @@
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
-#include "sf33rd/Source/Game/rendering/mmtmcnt.h"
+#include "sf33rd/Source/Game/rendering/memory_texture_control.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "sf33rd/Source/Game/system/sys_sub.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/system/system_subroutines.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 #include "port/menu_task.h"
 
 void Setup_Demo_Arts();

@@ -6,7 +6,7 @@
 #include "sf33rd/Source/Game/engine/player_pattern.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/effg6.h"
+#include "sf33rd/Source/Game/effect/effect_g6_data_g6.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/player_control.h"

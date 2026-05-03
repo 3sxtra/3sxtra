@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/engine/player_pattern_sean.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/effd7.h"
+#include "sf33rd/Source/Game/effect/effect_d7_sound_hit_box.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/player_pattern.h"

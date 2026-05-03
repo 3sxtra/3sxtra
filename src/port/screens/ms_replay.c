@@ -25,13 +25,13 @@
 #include "game_state.h"
 #include <stdio.h>
 
-#include "sf33rd/Source/Game/effect/eff45.h"                /* Message_Data */
+#include "sf33rd/Source/Game/effect/effect_45_debug_game_state.h"                /* Message_Data */
 #include "sf33rd/Source/Game/menu/menu_network_constants.h" /* NET_BG_MODE_BLUE, EFF_Z_BLUE_BG */
 #include "sf33rd/Source/Game/engine/state_user.h" /* g_state.Menu_Cursor_X, g_state.Decide_ID, Interface_Type, etc. */
 #include "sf33rd/Source/Game/menu/menu.h" /* Menu_Common_Init, Setup_Replay_Sub, Setup_Final_Cursor_Pos, Load_Replay_MC_Sub */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub */
-#include "sf33rd/Source/Game/system/sys_sub.h"     /* Setup_BG, Clear_Flash_Sub, Clear_Flash_Init */
-#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/system/system_subroutines.h"     /* Setup_BG, Clear_Flash_Sub, Clear_Flash_Init */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 
 /* Native save */

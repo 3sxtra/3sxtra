@@ -6,8 +6,8 @@
 #include "sf33rd/Source/Game/engine/player_pattern_makoto.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/effi3.h"
-#include "sf33rd/Source/Game/effect/effl8.h"
+#include "sf33rd/Source/Game/effect/effect_i3_background_data.h"
+#include "sf33rd/Source/Game/effect/effect_l8_color_player_17.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
@@ -16,7 +16,7 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
 static void set_kabe_move_spd(State* wk, s16 tm);
 static s32 kabe_check(State* wk);

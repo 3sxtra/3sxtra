@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/engine/hit_player_effect.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/eff02.h"
+#include "sf33rd/Source/Game/effect/effect_02_hit_marks_sparks.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/pow_pow.h"
 #include "sf33rd/Source/Game/io/pulpul.h"

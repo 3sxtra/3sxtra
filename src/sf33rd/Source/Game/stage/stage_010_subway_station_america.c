@@ -1,0 +1,90 @@
+/**
+ * @file bg_010.c
+ * Subway Station, America
+ */
+
+#include "sf33rd/Source/Game/stage/stage_010_subway_station_america.h"
+#include "common.h"
+#include "game_state.h"
+#include "sf33rd/Source/Game/effect/effect_05_background.h"
+#include "sf33rd/Source/Game/effect/effect_06_data_screen_object.h"
+#include "sf33rd/Source/Game/effect/effect_07_water_liquid.h"
+#include "sf33rd/Source/Game/effect/effect_11_quake_directional.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/stage/bg.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
+#include "sf33rd/Source/Game/stage/target_subroutines.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+
+/** @brief Main handler for Subway Station, America stage. */
+void BG010() {
+    bgw_ptr = &g_state.bg_w.bgw[1];
+    bg0102();
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    bg0101();
+    bgw_ptr = &g_state.bg_w.bgw[2];
+    bg0103();
+    zoom_ud_check();
+    bg_pos_adjust2();
+    Bg_Family_Set();
+}
+
+/** @brief Background layer handler for Subway Station, America. */
+void bg0101() {
+    void (*bg0101_jmp[2])() = { bg0101_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bg0101_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Subway Station, America. */
+void bg0101_init00() {
+    bgw_ptr->r_no_0++;
+    bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
+    bgw_ptr->hos_xy[0].disp.pos = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+    effect_07_init();
+    effect_05_init();
+    effect_06_init();
+    effect_11_init();
+}
+
+/** @brief Background layer handler for Subway Station, America. */
+void bg0102() {
+    void (*bg0102_jmp[2])() = { bg0102_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bg0102_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Subway Station, America. */
+void bg0102_init00() {
+    bgw_ptr->r_no_0++;
+    bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+}
+
+/** @brief Background layer handler for Subway Station, America. */
+void bg0103() {
+    switch (bgw_ptr->r_no_0) {
+    case 0:
+        bgw_ptr->r_no_0++;
+        bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
+        bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+        bgw_ptr->xy[1].disp.pos = bgw_ptr->pos_y_work = 0;
+        bgw_ptr->fam_no = 2;
+        bgw_ptr->xy[0].disp.low = bgw_ptr->xy[1].disp.low = 0;
+        bgw_ptr->y_limit = bgw_ptr->y_limit2 = 0xF0;
+        bgw_ptr->speed_x = 0xB000;
+        bgw_ptr->speed_y = 0xE000;
+        sync_fam_set3(2);
+        break;
+
+    case 1:
+        bg_x_move_check();
+        bg_y_move_check();
+        sync_fam_set3(2);
+    }
+}

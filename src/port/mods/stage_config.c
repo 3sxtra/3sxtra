@@ -9,7 +9,7 @@
 #include "port/mods/stage_config.h"
 #include "game_state.h"
 #include "port/config/paths.h"
-#include "sf33rd/Source/Game/stage/bg_data.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

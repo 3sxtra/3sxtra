@@ -20,7 +20,7 @@
 
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
-#include "sf33rd/Source/Game/system/sys_sub.h"
+#include "sf33rd/Source/Game/system/system_subroutines.h"
 
 /** @brief Title screen state machine — load, play opening, fade to game. */
 s16 Title() {

@@ -1,0 +1,178 @@
+/**
+ * @file effm7.c
+ * Effect: Data Table Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_m7_data_table.h"
+#include "game_state.h"
+#include "bin2obj/char_table.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/rendering/texture_cache.h"
+#include "sf33rd/Source/Game/stage/target_subroutines.h"
+
+static void effm7_move(State_Other* ewk);
+
+void effect_M7_move(State_Other* ewk) {
+    switch (ewk->wu.routine_no[0]) {
+    case 0:
+        if (!g_state.EXE_flag && !g_state.Game_pause) {
+            effm7_move(ewk);
+        }
+
+        pl_eff_trans_entry(ewk);
+        break;
+
+    default:
+        all_cgps_put_back(&ewk->wu);
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+static void effm7_move(State_Other* ewk) {
+    s16 id_w;
+
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        ewk->wu.routine_no[1]++;
+        ewk->wu.disp_flag = 1;
+        id_w = ewk->master_id ^ 1;
+        ewk->wu.rl_flag ^= g_state.plw[id_w].wu.rl_flag;
+
+        if (g_state.plw[id_w].wu.rl_flag) {
+            ewk->wu.xyz[0].disp.pos = g_state.plw[id_w].wu.xyz[0].disp.pos - ewk->wu.xyz[0].disp.pos;
+        } else {
+            ewk->wu.xyz[0].disp.pos = g_state.plw[id_w].wu.xyz[0].disp.pos + ewk->wu.xyz[0].disp.pos;
+        }
+
+        set_char_move_init(&ewk->wu, 0, 0);
+        break;
+
+    case 1:
+        ewk->wu.old_routine_no[1]--;
+        ewk->wu.old_routine_no[0]--;
+
+        if (ewk->wu.old_routine_no[0] < 0) {
+            ewk->wu.routine_no[1]++;
+        }
+
+        break;
+
+    case 2:
+        char_move(&ewk->wu);
+
+        ewk->wu.old_routine_no[1]--;
+
+        if (ewk->wu.old_routine_no[1] < 0) {
+            ewk->wu.routine_no[1]++;
+            set_char_move_init(&ewk->wu, 1, 0x6C);
+        }
+
+        break;
+
+    case 3:
+        char_move(&ewk->wu);
+
+        if (ewk->wu.cg_type != 1) {
+            break;
+        }
+
+        ewk->wu.routine_no[1]++;
+        ewk->wu.mvxy.a[0].sp = 0;
+        ewk->wu.mvxy.d[0].sp = 0;
+        ewk->wu.mvxy.a[1].sp = 0x78000;
+        ewk->wu.mvxy.d[1].sp = -0x6000;
+        break;
+
+    case 4:
+        add_y_sub(&ewk->wu);
+        char_move(&ewk->wu);
+
+        if (ewk->wu.cg_type != 2) {
+            break;
+        }
+
+        ewk->wu.routine_no[1]++;
+        ewk->wu.mvxy.d[0].sp = 0;
+
+        if (ewk->wu.rl_flag) {
+            ewk->wu.mvxy.a[0].sp = 0x80000;
+        } else {
+            ewk->wu.mvxy.a[0].sp = -0x80000;
+        }
+
+        ewk->wu.mvxy.a[1].sp = -0x8000;
+        ewk->wu.mvxy.d[1].sp = 0x4000;
+        break;
+
+    case 5:
+        add_x_sub(&ewk->wu);
+        add_y_sub(&ewk->wu);
+
+        if (!range_x_check3(ewk, 208)) {
+            ewk->wu.routine_no[0] = 99;
+            ewk->wu.disp_flag = 0;
+            ewk->wu.routine_no[1]++;
+        }
+
+        break;
+    }
+}
+
+const s16 effm7_data_tbl[42] = {
+    48,  -8, -1, 0, 18, 30, 90, 64,   2,  1,  0, 17, 16, 98,  -32,  -8, -1, 1, 18, 4,  92,
+    -64, 2,  1,  1, 17, 24, 96, -112, -8, -1, 1, 18, 8,  102, -224, 2,  1,  1, 17, 10, 106
+};
+
+s32 effect_M7_init(PLW* oya) {
+    State_Other* ewk;
+    s16 ix;
+    s16 i;
+    const s16* data_ptr = effm7_data_tbl;
+    s16 em_id = oya->wu.id ^ 1;
+
+    for (i = 0; i < 6; i++) {
+        if ((ix = Acquire_Effect(3)) == -1) {
+            return -1;
+        }
+
+        ewk = (State_Other*)frw[ix];
+        ewk->wu.be_flag = 1;
+        ewk->wu.id = 227;
+        ewk->wu.work_id = 16;
+        ewk->wu.graphic_rom_type = 1;
+        ewk->wu.disp_flag = 0;
+        ewk->my_master = oya;
+        ewk->master_id = oya->wu.id;
+        ewk->wu.my_family = 2;
+        ewk->wu.my_col_mode = 0x4200;
+        ewk->wu.my_col_code = oya->wu.id ? 8 : 0;
+        ewk->wu.xyz[0].disp.pos = *data_ptr++;
+        ewk->wu.xyz[1].cal = g_state.plw[em_id].wu.xyz[1].cal;
+        ewk->wu.xyz[1].disp.pos += *(s16*)data_ptr++;
+        ewk->wu.position_z = g_state.plw[em_id].wu.my_priority;
+        ewk->wu.position_z += *(s16*)data_ptr++;
+        ewk->wu.my_priority = ewk->wu.position_z;
+        ewk->wu.rl_flag = *data_ptr++;
+        ewk->wu.shadow_char = *data_ptr++;
+        ewk->wu.old_routine_no[0] = *data_ptr++;
+        ewk->wu.old_routine_no[1] = *data_ptr++;
+        ewk->wu.char_table[0] = *oya->wu.char_table;
+        ewk->wu.char_table[1] = _etc_char_table;
+        ewk->wu.char_index = 0;
+        ewk->wu.shadow_flag = 1;
+        ewk->wu.shadow_x = 6;
+        ewk->wu.shadow_y = 0;
+        ewk->wu.shadow_prio = ewk->wu.position_z + 5;
+        ewk->wu.my_mts = oya->wu.my_mts;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    }
+
+    return 0;
+}

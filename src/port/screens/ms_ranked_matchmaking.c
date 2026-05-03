@@ -10,12 +10,12 @@
 
 #include "port/sdl/rmlui/rmlui_ranked_matchmaking.h"
 #include "structs.h"
-#include "sf33rd/Source/Game/effect/eff45.h"
+#include "sf33rd/Source/Game/effect/effect_45_debug_game_state.h"
 #include "sf33rd/Source/Game/menu/menu_network_constants.h"
 
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/effect/eff57.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
 #include <SDL3/SDL_log.h>
 

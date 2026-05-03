@@ -1,0 +1,104 @@
+/**
+ * @file effj4.c
+ * Effect: Visual Effect (Generic)
+ */
+
+#include "sf33rd/Source/Game/effect/effect_j4_visual_generic.h"
+#include "game_state.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
+
+void effect_J4_move(State_Other* ewk) {
+    switch (ewk->wu.routine_no[0]) {
+    case 0:
+        ewk->wu.routine_no[0]++;
+        ewk->wu.disp_flag = 1;
+        ewk->wu.blink_timing = 0;
+        ewk->wu.rl_flag = 0;
+
+        if (ewk->wu.type) {
+            g_state.SA_shadow_on = 1;
+        }
+
+        if (ewk->wu.dir_timer == 0xFF) {
+            ewk->wu.dir_timer = 0x7FFF;
+            ewk->wu.my_clear_level = 160;
+        }
+
+        ewk->wu.my_priority = ewk->wu.position_z = 71;
+        ewk->wu.shell_ix[0] = 0;
+        ewk->wu.shell_ix[1] = 384;
+        ewk->wu.shell_ix[2] = -g_state.base_y_pos;
+        ewk->wu.shell_ix[3] = 224;
+        ewk->wu.position_x = 0;
+        ewk->wu.position_y = 0;
+        break;
+
+    case 1:
+        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+            goto jump;
+        }
+
+        if (g_state.Game_pause == 129 && !g_state.pcon_dp_flag) {
+            break;
+        }
+
+        if (ewk->wu.dir_timer != 0x7FFF && !g_state.Game_pause && !g_state.EXE_flag && --ewk->wu.dir_timer <= 0) {
+        jump:
+            ewk->wu.routine_no[0]++;
+
+            if (ewk->wu.type) {
+                g_state.SA_shadow_on = 0;
+            }
+        }
+
+        sort_push_requestA(&ewk->wu);
+        break;
+
+    case 2:
+        ewk->wu.disp_flag = 0;
+        ewk->wu.routine_no[0]++;
+        break;
+
+    default:
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+s32 effect_J4_init(u8 data2) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(5)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 194;
+    ewk->wu.dir_timer = data2;
+    ewk->wu.work_id = 16;
+    ewk->wu.my_family = 8;
+
+    if (data2 != 0xFF) {
+        ewk->wu.type = 1;
+    }
+
+    ewk->wu.my_col_code = 1;
+    ewk->wu.my_clear_level = 144;
+    return 0;
+}
+
+s32 setup_sa_shadow(u8 /* unused */, u8 data) {
+    if (g_state.test_flag) {
+        return -1;
+    }
+
+    return effect_J4_init(data);
+}

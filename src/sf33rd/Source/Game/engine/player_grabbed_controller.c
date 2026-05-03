@@ -7,16 +7,16 @@
 #include "bin2obj/buttobi.h"
 #include "bin2obj/etc.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/effa7.h"
-#include "sf33rd/Source/Game/effect/effd9.h"
-#include "sf33rd/Source/Game/effect/effe2.h"
+#include "sf33rd/Source/Game/effect/effect_a7_quake_hit_spark.h"
+#include "sf33rd/Source/Game/effect/effect_d9_collision_table_1p_2p.h"
+#include "sf33rd/Source/Game/effect/effect_e2_flame_freeze_status.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_damage_controller.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
-#include "sf33rd/Source/Game/rendering/mtrans.h"
+#include "sf33rd/Source/Game/rendering/rendering_transform.h"
 
 static void setup_caught_process_flags(PLW* wk);
 static void caught_cg_type_check(PLW* wk, PLW* emwk);

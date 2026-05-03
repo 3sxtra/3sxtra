@@ -12,8 +12,8 @@
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"
-#include "sf33rd/Source/Game/rendering/aboutspr.h"
-#include "sf33rd/Source/Game/rendering/color3rd.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/rendering/color_palette.h"
 
 #define PPG_BG_COUNT 4    /**< Number of background texture/list slots. */
 #define MTS_SLOT_COUNT 24 /**< Number of per-character metamorphose texture slots. */

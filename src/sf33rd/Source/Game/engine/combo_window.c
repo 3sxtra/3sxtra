@@ -11,9 +11,9 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
-#include "sf33rd/Source/Game/system/sys_sub.h"
-#include "sf33rd/Source/Game/ui/sc_data.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/system/system_subroutines.h"
+#include "sf33rd/Source/Game/ui/hud_data.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"

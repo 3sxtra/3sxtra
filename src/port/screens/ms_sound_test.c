@@ -24,20 +24,20 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/effect/eff04.h"         /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff57.h"         /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"         /* effect_61_init */
-#include "sf33rd/Source/Game/effect/eff64.h"         /* effect_64_init */
-#include "sf33rd/Source/Game/effect/effa8.h"         /* effect_A8_init */
+#include "sf33rd/Source/Game/effect/effect_04_projectile_object.h"         /* effect_04_init */
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"         /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/effect_61_menu_options.h"         /* effect_61_init */
+#include "sf33rd/Source/Game/effect/effect_64_quake.h"         /* effect_64_init */
+#include "sf33rd/Source/Game/effect/effect_a8_position_data.h"         /* effect_A8_init */
 #include "sf33rd/Source/Game/engine/state_user.h"      /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"            /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"   /* Sound_Cursor_Sub, Return_Option_Mode_Sub, etc. */
 #include "sf33rd/Source/Game/sound/se.h"             /* BGM_Request_Code_Check, BGM_Stop */
 #include "sf33rd/Source/Game/sound/sound3rd.h"       /* bgm_level, se_level, SsBgmHalfVolume, SsRequest, etc. */
 #include "sf33rd/Source/Game/system/reset.h"         /* g_state.Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"       /* Save_Game_Data, Clear_Flash_Sub, Clear_Flash_Init */
+#include "sf33rd/Source/Game/system/system_subroutines.h"       /* Save_Game_Data, Clear_Flash_Sub, Clear_Flash_Init */
 #include "sf33rd/Source/Game/system/work_sys.h"      /* save_w, sys_w */
-#include "sf33rd/Source/Game/ui/sc_sub.h"            /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"            /* FadeOut, FadeIn, FadeInit */
 #include "port/sdl/input/controller_image_overlay.h" /* ControllerImageOverlay_Init/Shutdown */
 #include "structs.h"                                 /* struct _TASK */
 

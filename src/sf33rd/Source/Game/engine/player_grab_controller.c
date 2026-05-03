@@ -6,7 +6,7 @@
 #include "sf33rd/Source/Game/engine/player_grab_controller.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/eff02.h"
+#include "sf33rd/Source/Game/effect/effect_02_hit_marks_sparks.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
@@ -19,8 +19,8 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/system/system_director.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
 static void Check_Throw_Escape(PLW* wk, PLW* tk);
 static s32 cat07_running_check(State* wk);

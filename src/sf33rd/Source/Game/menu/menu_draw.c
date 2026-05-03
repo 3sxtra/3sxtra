@@ -9,14 +9,14 @@
 #include "common.h"
 #include "game_state.h"
 #include "port/sdl/input/controller_image_overlay.h"
-#include "sf33rd/Source/Game/effect/eff10.h"
-#include "sf33rd/Source/Game/effect/eff66.h"
+#include "sf33rd/Source/Game/effect/effect_10_ui_screen_check_data.h"
+#include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
 #include "sf33rd/Source/Game/system/pause.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 #include "structs.h"
 
 /* RmlUi Phase 3 bypass */

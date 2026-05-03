@@ -1,0 +1,96 @@
+/**
+ * @file eff74.c
+ * Effect: Position Data / Quake Link Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_74_position_data_quake_link.h"
+#include "game_state.h"
+#include "bin2obj/char_table.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/stage/bg.h"
+
+const s16 EFF74_Pos_Data[3][2][2] = { { { 0, 148 }, { 0, 116 } },
+                                      { { -48, 104 }, { 48, 104 } },
+                                      { { -48, 80 }, { 48, 80 } } };
+
+void (*const EFF74_Jmp_Tbl[5])();
+
+void effect_74_move(State_Other* ewk) {
+    if (g_state.Menu_Suicide[ewk->master_player]) {
+        Release_Effect(&ewk->wu);
+        return;
+    }
+
+    if (g_state.Order[ewk->wu.dir_old] == 4) {
+        ewk->wu.routine_no[0] = 4;
+    }
+
+    EFF74_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
+
+    if (ewk->wu.be_flag == 0) {
+        return;
+    }
+
+    if (g_state.Menu_Cursor_Y[0] == ewk->master_id) {
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, 2, 0);
+    } else {
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, 1, 0);
+    }
+
+    sort_push_request4(&ewk->wu);
+}
+
+static void EFF74_WAIT(State_Other* ewk) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
+        ewk->wu.routine_no[1] = 0;
+    }
+}
+
+static void EFF74_SUDDENLY(State_Other* ewk) {
+    s16 pos_y;
+
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
+            break;
+        }
+
+        ewk->wu.routine_no[1]++;
+        ewk->wu.disp_flag = 1;
+
+        if (ewk->master_id) {
+            pos_y = 104;
+        } else {
+            pos_y = 136;
+        }
+
+        ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + 0;
+        ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + pos_y + 12;
+        ewk->wu.position_z = 64;
+
+        if (ewk->master_id) {
+            pos_y = 104;
+        } else {
+            pos_y = 136;
+        }
+
+        ewk->wu.position_x =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF74_Pos_Data[ewk->wu.type][ewk->master_id][0];
+        ewk->wu.position_y =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + EFF74_Pos_Data[ewk->wu.type][ewk->master_id][1];
+        ewk->wu.position_z = 64;
+        break;
+
+    default:
+        ewk->wu.routine_no[0] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
+        break;
+    }
+}
+
+void (*const EFF74_Jmp_Tbl[5])() = { EFF74_WAIT, EFF74_SUDDENLY, EFF74_SUDDENLY, EFF74_SUDDENLY, EFF57_KILL };

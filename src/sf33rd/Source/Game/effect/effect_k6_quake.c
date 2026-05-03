@@ -1,0 +1,419 @@
+/**
+ * @file effk6.c
+ * Effect: Quake Effect
+ */
+
+#include "sf33rd/Source/Game/effect/effect_k6_quake.h"
+#include "game_state.h"
+#include "bin2obj/char_table.h"
+#include "common.h"
+#include "port/sdl/rmlui/rmlui_char_select.h"
+#include "sf33rd/Source/Game/debug/Debug.h"
+#include "sf33rd/Source/Game/effect/effect_76_quake.h"
+#include "sf33rd/Source/Game/effect/effect.h"
+#include "sf33rd/Source/Game/engine/charset.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/system/country_region.h"
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h"
+#include "sf33rd/Source/Game/rendering/texture_cache.h"
+#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/stage/bg.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
+
+static void EFFK6_WAIT(State_Other* ewk);
+static void EFFK6_SLIDE_IN(State_Other* ewk);
+static void EFFK6_SLIDE_OUT(State_Other* ewk);
+static void EFFK6_SUDDENLY(State_Other* ewk);
+static void EFFK6_KILL(State_Other* ewk);
+static void EFFK6_MOVE(State_Other* ewk);
+static void Setup_1st_PosK6(State_Other* ewk, s16 Who, s16 Play_Style);
+static s16 Get_PosK6(State_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style);
+static void Setup_CharK6(State_Other* ewk, s16 damage_vitality);
+static s16 Setup_K6_Index(State_Other* ewk);
+
+void (*const EFFK6_Jmp_Tbl[6])() = {
+    EFFK6_WAIT, EFFK6_SLIDE_IN, EFFK6_SLIDE_OUT, EFFK6_SUDDENLY, EFFK6_MOVE, EFFK6_KILL
+};
+
+/* effk6 draws 1P/2P badges and name covers on the char select screen.
+ * Suppress rendering when the RmlUI overlay is active. */
+void effect_K6_move(State_Other* ewk) {
+    Check_Pos_OBJ(ewk);
+    EFFK6_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
+    ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
+    ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
+    if (!rmlui_char_select_visible)
+        sort_push_request4(&ewk->wu);
+}
+
+static void EFFK6_WAIT(State_Other* ewk) {
+    if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
+        ewk->wu.routine_no[1] = 0;
+    }
+}
+
+static void EFFK6_SLIDE_IN(State_Other* ewk) {
+    s16 xx;
+
+    if ((g_state.Order[ewk->wu.dir_old]) == 5) {
+        ewk->wu.routine_no[0] = 5;
+        ewk->wu.routine_no[1] = 0;
+        return;
+    }
+
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
+            break;
+        }
+
+        ewk->wu.routine_no[1]++;
+        ewk->wu.disp_flag = 1;
+
+        if (ewk->wu.dir_old == 27 || ewk->wu.dir_old == 28) {
+            xx = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
+            Setup_1st_PosK6(ewk, xx, g_state.Play_Type);
+        } else {
+            xx = ewk->wu.dir_step;
+            Setup_1st_PosK6(ewk, xx, g_state.Play_Type);
+
+            if (ewk->wu.direction == 25 && xx != 0) {
+                ewk->wu.xyz[0].disp.pos += 8;
+                ewk->wu.hit_quake += 8;
+
+                if (ewk->wu.mvxy.a[0].sp > 0) {
+                    ewk->wu.xyz[0].disp.pos += 8;
+                    ewk->wu.hit_quake += 8;
+                }
+            }
+        }
+
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
+        break;
+
+    default:
+        ewk->wu.xyz[0].cal += ewk->wu.mvxy.a[0].sp;
+        ewk->wu.mvxy.a[0].sp += ewk->wu.mvxy.d[0].sp;
+
+        if (0 < ewk->wu.mvxy.a[0].sp) {
+            if (ewk->wu.hit_quake <= ewk->wu.xyz[0].disp.pos) {
+                if (g_state.Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
+                    g_state.Order[ewk->wu.dir_old] = 0;
+                }
+
+                ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
+
+                if (ewk->wu.dir_old < 31) {
+                    g_state.Order[ewk->wu.dir_old] = 4;
+                    ewk->wu.routine_no[0] = 4;
+                    ewk->wu.routine_no[6] = 0;
+                    break;
+                }
+
+                ewk->wu.routine_no[0] = 0;
+            }
+
+            break;
+        }
+
+        if (ewk->wu.hit_quake >= ewk->wu.xyz[0].disp.pos) {
+            if (g_state.Order[ewk->wu.dir_old] == ewk->wu.routine_no[0]) {
+                g_state.Order[ewk->wu.dir_old] = 0;
+            }
+
+            ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
+
+            if (ewk->wu.dir_old < 31) {
+                g_state.Order[ewk->wu.dir_old] = 4;
+                ewk->wu.routine_no[0] = 4;
+                ewk->wu.routine_no[6] = 0;
+                break;
+            }
+
+            ewk->wu.routine_no[0] = 0;
+        }
+
+        break;
+    }
+}
+
+static void EFFK6_SLIDE_OUT(State_Other* ewk) {
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        if (ewk->wu.disp_flag == 0) {
+            ewk->wu.routine_no[1] = 99;
+        } else {
+            if (--g_state.Order_Timer[ewk->wu.dir_old]) {
+                break;
+            }
+
+            ewk->wu.routine_no[1]++;
+        }
+
+        if (g_state.Order_Dir[ewk->wu.dir_old] == 4) {
+            ewk->wu.mvxy.a[0].sp = -0xF0000;
+            ewk->wu.mvxy.d[0].sp = 0;
+        } else {
+            ewk->wu.mvxy.a[0].sp = 0xF0000;
+            ewk->wu.mvxy.d[0].sp = 0;
+        }
+
+        break;
+
+    case 1:
+        ewk->wu.xyz[0].cal += ewk->wu.mvxy.a[0].sp;
+        ewk->wu.mvxy.a[0].sp += ewk->wu.mvxy.d[0].sp;
+
+        if (Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, 64)) {
+            ewk->wu.routine_no[1]++;
+            ewk->wu.disp_flag = 0;
+        }
+
+        break;
+
+    default:
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+static void EFFK6_SUDDENLY(State_Other* ewk) {
+    s16 xx;
+
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        if (--g_state.Order_Timer[ewk->wu.dir_old]) {
+            break;
+        }
+
+        ewk->wu.routine_no[1]++;
+        ewk->wu.disp_flag = 1;
+        xx = Setup_K6_Index(ewk);
+        ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_PosK6(ewk, xx, 0, 1);
+        ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_PosK6(ewk, xx, 1, 1);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
+        break;
+
+    default:
+        if (ewk->wu.dir_old == 27 || ewk->wu.dir_old == 28) {
+            g_state.Order[ewk->wu.dir_old] = 4;
+            ewk->wu.routine_no[0] = 4;
+            ewk->wu.routine_no[6] = 0;
+            break;
+        }
+
+        ewk->wu.routine_no[0] = 0;
+        g_state.Order[ewk->wu.dir_old] = 0;
+        break;
+    }
+}
+
+static void EFFK6_KILL(State_Other* ewk) {
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
+            ewk->wu.routine_no[1]++;
+            ewk->wu.disp_flag = 0;
+        }
+
+        break;
+
+    default:
+        Release_Effect(&ewk->wu);
+        break;
+    }
+}
+
+static void EFFK6_MOVE(State_Other* ewk) {
+    if (g_state.Order[ewk->wu.dir_old] != 4) {
+        ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
+        ewk->wu.routine_no[1] = 0;
+        ewk->wu.routine_no[6] = 0;
+        return;
+    }
+
+    switch (ewk->wu.routine_no[1]) {
+    case 0:
+        if (g_state.Sel_PL_Complete[ewk->master_id] || g_state.plw[ewk->master_id].wu.pl_operator == 0) {
+            ewk->wu.routine_no[1] = 2;
+        } else {
+            ewk->wu.routine_no[1]++;
+        }
+
+        /* fallthrough */
+
+    case 1:
+        if (ewk->wu.dir_step !=
+            g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]]) {
+            ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
+            ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
+                                      Get_PosK6(ewk, ewk->wu.dir_step, 0, g_state.Play_Type);
+            ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos +
+                                      Get_PosK6(ewk, ewk->wu.dir_step, 1, g_state.Play_Type);
+
+            if (ewk->wu.direction == 19) {
+                set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, (ewk->wu.dir_step) + 1, 0);
+            }
+        }
+
+        if (g_state.Sel_PL_Complete[ewk->master_id]) {
+            ewk->wu.routine_no[1]++;
+        }
+
+        break;
+
+    case 2:
+        break;
+    }
+}
+
+s32 effect_K6_init(s16 PL_id, s16 dir_old, s16 damage_vitality, s16 Target_BG) {
+    State_Other* ewk;
+    s16 ix;
+
+    if ((ix = Acquire_Effect(4)) == -1) {
+        return -1;
+    }
+
+    ewk = (State_Other*)frw[ix];
+    ewk->wu.be_flag = 1;
+    ewk->wu.id = 206;
+    ewk->wu.work_id = 16;
+    ewk->wu.my_col_code = 0x2090;
+    ewk->wu.my_family = Target_BG + 1;
+    *ewk->wu.char_table = _sel_pl_char_table;
+    ewk->master_id = PL_id;
+    ewk->wu.direction = damage_vitality;
+    ewk->wu.dir_old = dir_old;
+    ewk->wu.my_mts = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    Setup_CharK6(ewk, damage_vitality);
+    set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
+    return 0;
+}
+
+static void Setup_1st_PosK6(State_Other* ewk, s16 Who, s16 Play_Style) {
+    if (ewk->master_id) {
+        ewk->wu.mvxy.a[0].sp = -0xF0000;
+        ewk->wu.mvxy.d[0].sp = 0;
+        ewk->wu.hit_quake =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_PosK6(ewk, Who, 0, Play_Style);
+        ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake + 256;
+        ewk->wu.xyz[1].disp.pos =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_PosK6(ewk, Who, 1, Play_Style);
+    } else {
+        ewk->wu.mvxy.a[0].sp = 0xF0000;
+        ewk->wu.mvxy.d[0].sp = 0;
+        ewk->wu.hit_quake =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Get_PosK6(ewk, Who, 0, Play_Style);
+        ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake - 256;
+        ewk->wu.xyz[1].disp.pos =
+            g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Get_PosK6(ewk, Who, 1, Play_Style);
+    }
+}
+
+static s16 Get_PosK6(State_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style) {
+    if (ewk->master_id == 0) {
+        switch (ewk->wu.direction) {
+        default:
+        case 25:
+        case 29:
+            Who += chkNameAkuma(Who, 9);
+            Who += chkNameSuv(Who, 2);
+            return Name_Cover_Pos_Data[ewk->master_id][Play_Style][Who][Get_Type];
+
+        case 31:
+        case 35:
+            if (Play_Style == 1) {
+                if (Get_Type == 0) {
+                    return -160;
+                } else {
+                    return 44;
+                }
+            } else {
+                if (Get_Type == 0) {
+                    return -152;
+                } else {
+                    return 208;
+                }
+            }
+        }
+    } else {
+        switch (ewk->wu.direction) {
+        default:
+        case 25:
+        case 29:
+            Who += chkNameAkuma(Who, 9);
+            return Name_Cover_Pos_Data[ewk->master_id][Play_Style][Who][Get_Type];
+
+        case 31:
+        case 35:
+            if (Play_Style == 1) {
+                if (Get_Type == 0) {
+                    return 160;
+                } else {
+                    return 189;
+                }
+            } else {
+                if (Get_Type == 0) {
+                    return -152;
+                } else {
+                    return 208;
+                }
+            }
+        }
+    }
+}
+
+static void Setup_CharK6(State_Other* ewk, s16 damage_vitality) {
+    s16 x;
+
+    switch (damage_vitality) {
+    case 25:
+    case 29:
+        ewk->wu.char_index = 16;
+        ewk->wu.dir_step = 0;
+        ewk->wu.position_z = 71;
+        break;
+
+    case 31:
+        ewk->wu.char_index = 15;
+        x = g_state.Play_Type & 1;
+        ewk->wu.dir_step = ewk->master_id + (x * 2);
+        ewk->wu.position_z = 71;
+        break;
+
+    case 35:
+        ewk->wu.char_index = 15;
+        ewk->wu.dir_step = ewk->master_id + 2;
+        ewk->wu.position_z = 71;
+        break;
+    }
+}
+
+static s16 Setup_K6_Index(State_Other* ewk) {
+    switch (ewk->wu.dir_old) {
+    case 25:
+    case 26:
+    case 27:
+    case 28:
+        return g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
+
+    case 29:
+    case 30:
+        return g_state.My_char[ewk->master_id];
+
+    default:
+        return ewk->wu.dir_step;
+    }
+}
+
+s32 chkNameSuv(s32 plnum, s32 rnum) {
+    if (plnum == 20 &&
+        (g_state.Country == COUNTRY_EUROPE || g_state.Country == COUNTRY_USA || g_state.Country == COUNTRY_ASIA)) {
+        return rnum;
+    }
+
+    return 0;
+}

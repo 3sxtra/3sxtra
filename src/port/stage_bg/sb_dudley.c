@@ -4,7 +4,7 @@
  */
 
 #include "port/stage_bg_registry.h"
-#include "sf33rd/Source/Game/stage/bg040.h"
+#include "sf33rd/Source/Game/stage/stage_040_main_street_england.h"
 
 __attribute__((constructor)) static void sb_dudley_register(void) {
     StageBg_Register(STAGE_BG_DUDLEY,

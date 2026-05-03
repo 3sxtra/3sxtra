@@ -1,0 +1,123 @@
+/**
+ * @file bns_bg2.c
+ * Car Crush Minigame Stage
+ */
+
+#include "sf33rd/Source/Game/stage/stage_bonus_2.h"
+#include "game_state.h"
+#include "common.h"
+#include "sf33rd/Source/Game/effect/effect_05_background.h"
+#include "sf33rd/Source/Game/effect/effect_12_screen_object_flash.h"
+#include "sf33rd/Source/Game/effect/effect_35_data_table_general.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/stage/bg.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+
+/** @brief Main handler for Bonus Stage 2. */
+void Bonus_bg2() {
+    bgw_ptr = &g_state.bg_w.bgw[1];
+    bns11();
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    bns12();
+    bgw_ptr = &g_state.bg_w.bgw[2];
+    bns13();
+    bg_pos_adjust_sub3(2);
+    Bg_Family_Set_appoint(2);
+    bg_pos_adjust2();
+    Bg_Family_Set();
+}
+
+/** @brief Background layer handler for Bonus Stage 2. */
+void bns11() {
+    void (*bns11_jmp[2])() = { bns11_init00, bns11_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bns11_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Bonus Stage 2. */
+void bns11_init00() {
+    bgw_ptr->r_no_0++;
+
+    if (g_state.Player_id == 0) {
+        bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = 0x223;
+    } else {
+        bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = 0x1EB;
+    }
+
+    bgw_ptr->pos_x_work = 0x200;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+    g_state.bg_app = 0;
+    effect_05_init();
+    effect_12_init(4);
+
+    if (!g_state.plw->wu.pl_operator) {
+        effect_35_init(2, 1);
+    } else {
+        effect_35_init(2, 0);
+    }
+
+    effect_35_init(0xC, 2);
+    effect_35_init(0x12, 3);
+    effect_35_init(2, 4);
+}
+
+/** @brief Per-frame movement handler for Bonus Stage 2 layer. */
+void bns11_move() {
+    bg_base_x_move_check();
+    bg_base_y_move_check();
+}
+
+/** @brief Background layer handler for Bonus Stage 2. */
+void bns12() {
+    void (*bns12_jmp[2])() = { bns12_init00, bns12_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bns12_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Bonus Stage 2. */
+void bns12_init00() {
+    bgw_ptr->r_no_0++;
+
+    if (g_state.Player_id == 0) {
+        bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = 0x211;
+    } else {
+        bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = 0x1F5;
+    }
+
+    bgw_ptr->pos_x_work = 0x200;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+}
+
+/** @brief Per-frame movement handler for Bonus Stage 2 layer. */
+void bns12_move() {
+    bg_x_move_check();
+    bg_y_move_check();
+}
+
+/** @brief Background layer handler for Bonus Stage 2. */
+void bns13() {
+    void (*bns13_jmp[2])() = { bns13_init00, bns13_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bns13_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Bonus Stage 2. */
+void bns13_init00() {
+    bgw_ptr->r_no_0++;
+    bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+}
+
+/** @brief Per-frame movement handler for Bonus Stage 2 layer. */
+void bns13_move() {
+    // Do nothing
+}

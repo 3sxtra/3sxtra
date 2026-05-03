@@ -19,7 +19,7 @@
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop()  */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init(), Check_Menu_Lever() */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub(), Exit_Sub(), Back_to_Mode_Select() */
-#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 
 /* ═══════════════════════════════════════════════════════════════════════════

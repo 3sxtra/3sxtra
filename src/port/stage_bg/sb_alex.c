@@ -5,7 +5,7 @@
  */
 
 #include "port/stage_bg_registry.h"
-#include "sf33rd/Source/Game/stage/bg010.h"
+#include "sf33rd/Source/Game/stage/stage_010_subway_station_america.h"
 
 __attribute__((constructor)) static void sb_alex_register(void) {
     StageBgCallbacks cb = {

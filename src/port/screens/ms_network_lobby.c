@@ -27,11 +27,11 @@
 #include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, g_state.Order, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Network_Lobby, Menu_Sub_case1 */
-#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"
 
 /* Blue background */
-#include "sf33rd/Source/Game/effect/eff45.h"
+#include "sf33rd/Source/Game/effect/effect_45_debug_game_state.h"
 #include "sf33rd/Source/Game/menu/menu_network_constants.h"
 
 /* RmlUi Phase 3 */

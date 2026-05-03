@@ -1,0 +1,10 @@
+#ifndef EFFECT_G7_ENDING_DATA_H
+#define EFFECT_G7_ENDING_DATA_H
+
+#include "structs.h"
+#include "types.h"
+
+void effect_G7_move(State_Other* ewk);
+s32 effect_G7_init(s32 /* unused */, s32 /* unused */);
+
+#endif

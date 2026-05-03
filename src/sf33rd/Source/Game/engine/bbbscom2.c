@@ -6,11 +6,11 @@
 #include "sf33rd/Source/Game/engine/bbbscom2.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/eff16.h"
-#include "sf33rd/Source/Game/effect/effc2.h"
+#include "sf33rd/Source/Game/effect/effect_16_decomposition_part_break_bunkai.h"
+#include "sf33rd/Source/Game/effect/effect_c2_quake_bs2_data.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/rendering/texcash.h"
+#include "sf33rd/Source/Game/rendering/texture_cache.h"
 
 /** @brief Executes the AI for the car-crush bonus stage opponent. */
 void bbbs_com_execute2(PLW* wk) {

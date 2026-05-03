@@ -4,7 +4,7 @@
  */
 
 #include "port/stage_bg_registry.h"
-#include "sf33rd/Source/Game/stage/bg050.h"
+#include "sf33rd/Source/Game/stage/stage_050_mosque_russia.h"
 
 __attribute__((constructor)) static void sb_necro_register(void) {
     StageBg_Register(STAGE_BG_NECRO,

@@ -11,13 +11,13 @@
 #include "sf33rd/Source/Game/animation/lose_pl.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/effc1.h"
+#include "sf33rd/Source/Game/effect/effect_c1_visual_generic.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/country_region.h"
-#include "sf33rd/Source/Game/stage/bg_data.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 s16 lose_rno[3];

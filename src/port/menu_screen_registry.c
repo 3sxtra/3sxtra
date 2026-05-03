@@ -16,8 +16,8 @@
 #include "port/menu_screen.h"
 
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* AT_JMP_COUNT */
-#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut/FadeIn/FadeInit */
-#include "sf33rd/Source/Game/rendering/texgroup.h" /* load_any_texture_patnum */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut/FadeIn/FadeInit */
+#include "sf33rd/Source/Game/rendering/texture_group.h" /* load_any_texture_patnum */
 
 #include <string.h> /* memset (if needed) */
 

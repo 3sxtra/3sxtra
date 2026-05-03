@@ -26,9 +26,9 @@
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/super_gauge.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/rendering/meta_col.h"
-#include "sf33rd/Source/Game/stage/bg_sub.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/rendering/metamorphosis_color.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 
 static void plmv_1010(PLW* wk);

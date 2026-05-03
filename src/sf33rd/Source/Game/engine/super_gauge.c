@@ -13,8 +13,8 @@ s16 col;
 #include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/se.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/system/system_director.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"

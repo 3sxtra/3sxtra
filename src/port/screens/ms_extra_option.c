@@ -22,8 +22,8 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/effect/eff45.h"           /* Message_Data */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/effect_45_debug_game_state.h"           /* Message_Data */
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"           /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/engine/state_user.h"        /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/menu/ex_data.h"           /* Ex_Account_Data, Ex_Page_Data */
 #include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
@@ -32,7 +32,7 @@
 #include "sf33rd/Source/Game/sound/sound3rd.h"         /* SE_selected, SE_dir_selected, SE_cursor_move */
 #include "sf33rd/Source/Game/system/pause.h"           /* g_state.Pause_ID */
 #include "sf33rd/Source/Game/system/work_sys.h"        /* save_w, g_state.Present_Mode */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"              /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                                   /* struct _TASK */
 
 /* RmlUi Phase 3 */

@@ -14,25 +14,25 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/system/sys_sub.h"     /* Clear_Personal_Data */
-#include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff45.h"       /* Message_Data */
-#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
+#include "sf33rd/Source/Game/system/system_subroutines.h"     /* Clear_Personal_Data */
+#include "sf33rd/Source/Game/effect/effect_04_projectile_object.h"       /* effect_04_init */
+#include "sf33rd/Source/Game/effect/effect_45_debug_game_state.h"       /* Message_Data */
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"       /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/effect_61_menu_options.h"       /* effect_61_init */
 #include "sf33rd/Source/Game/engine/grade.h"       /* grade_check_work_1st_init */
 #include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, g_state.Mode_Type, etc. */
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Decide_PL, Exit_Sub */
-#include "sf33rd/Source/Game/rendering/texcash.h"  /* checkAdxFileLoaded */
-#include "sf33rd/Source/Game/rendering/texgroup.h" /* checkSelObjFileLoaded, load_any_texture_patnum */
+#include "sf33rd/Source/Game/rendering/texture_cache.h"  /* checkAdxFileLoaded */
+#include "sf33rd/Source/Game/rendering/texture_group.h" /* checkSelObjFileLoaded, load_any_texture_patnum */
 #include "sf33rd/Source/Game/screen/entry.h"       /* Entry_Task, TASK_ENTRY */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
 #include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
-#include "sf33rd/Source/Game/system/saver.h"       /* Saver_Task, TASK_SAVER */
-#include "sf33rd/Source/Game/system/sysdir.h"      /* Setup_Training_Difficulty */
+#include "sf33rd/Source/Game/system/save_manager.h"       /* Saver_Task, TASK_SAVER */
+#include "sf33rd/Source/Game/system/system_director.h"      /* Setup_Training_Difficulty */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* cpExitTask */
-#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 #include "main.h"                                  /* TASK_MENU, TASK_ENTRY */
 #include "port/task_api.h"                         /* Task_IsActive */

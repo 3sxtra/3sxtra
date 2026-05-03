@@ -8,7 +8,7 @@
 #include "bin2obj/exchange.h"
 #include "bin2obj/gauge.h"
 #include "common.h"
-#include "sf33rd/Source/Game/effect/eff02.h"
+#include "sf33rd/Source/Game/effect/effect_02_hit_marks_sparks.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/combo_window.h"
@@ -28,7 +28,7 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 u8 last_parry_red[2];
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 #include "sf33rd/Source/Game/training/trials.h"
 

@@ -5,15 +5,15 @@
 
 #include "common.h"
 #include "game_state.h"
-#include "sf33rd/Source/Game/effect/effe6.h"
-#include "sf33rd/Source/Game/effect/efff9.h"
+#include "sf33rd/Source/Game/effect/effect_e6_ending_scene_gill_general.h"
+#include "sf33rd/Source/Game/effect/effect_f9_text_message.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/ending/end_main.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "sf33rd/Source/Game/stage/bg_data.h"
-#include "sf33rd/Source/Game/system/sys_sub.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
+#include "sf33rd/Source/Game/system/system_subroutines.h"
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
 static void end_1600_move();
 

@@ -1,0 +1,93 @@
+/**
+ * @file bg_190.c
+ * Club Metro, France
+ */
+
+#include "sf33rd/Source/Game/stage/stage_190_club_metro_france.h"
+#include "common.h"
+#include "game_state.h"
+#include "sf33rd/Source/Game/effect/effect_05_background.h"
+#include "sf33rd/Source/Game/effect/effect_06_data_screen_object.h"
+#include "sf33rd/Source/Game/effect/effect_12_screen_object_flash.h"
+#include "sf33rd/Source/Game/effect/effect_44_screen_object_multiple.h"
+#include "sf33rd/Source/Game/effect/effect_l4_data_table.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/stage/bg.h"
+#include "sf33rd/Source/Game/stage/stage_data.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
+#include "sf33rd/Source/Game/stage/target_subroutines.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+
+/** @brief Main handler for Village in Mongolia stage. */
+void BG190() {
+    bgw_ptr = &g_state.bg_w.bgw[1];
+    bg1902();
+    bgw_ptr = &g_state.bg_w.bgw[0];
+    bg1901();
+    bgw_ptr = &g_state.bg_w.bgw[2];
+    sync_bg14_common();
+    zoom_ud_check();
+    bg_pos_adjust2();
+    Bg_Family_Set();
+}
+
+/** @brief Background layer handler for Village in Mongolia. */
+void bg1901() {
+    void (*bg1901_jmp[2])() = { bg1901_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bg1901_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Village in Mongolia. */
+void bg1901_init00() {
+    bgw_ptr->r_no_0++;
+    bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x1D0;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+}
+
+/** @brief Background layer handler for Village in Mongolia. */
+void bg1902() {
+    void (*bg1902_jmp[2])() = { bg1902_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
+    bg1902_jmp[bgw_ptr->r_no_0]();
+}
+
+/** @brief Initialize background layer for Village in Mongolia. */
+void bg1902_init00() {
+    bgw_ptr->r_no_0++;
+    bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x1D0;
+    bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+    bgw_ptr->zuubun = 0;
+    effect_05_init();
+    effect_06_init();
+    effect_L4_init();
+    effect_44_init(6);
+    effect_12_init(3);
+}
+
+/** @brief Background layer handler for Village in Mongolia. */
+void sync_bg14_common() {
+    switch (bgw_ptr->r_no_0) {
+    case 0:
+        bgw_ptr->r_no_0++;
+        bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x1D0;
+        bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
+        bgw_ptr->xy[1].disp.pos = bgw_ptr->pos_y_work = 0;
+        bgw_ptr->fam_no = 2;
+        bgw_ptr->xy[0].disp.low = bgw_ptr->xy[1].disp.low = 0;
+        bgw_ptr->y_limit = bgw_ptr->y_limit2 = 0xF0;
+        bgw_ptr->speed_x = 0xD000;
+        bgw_ptr->speed_y = 0xE000;
+        sync_fam_set3(2);
+        break;
+
+    case 1:
+        bg_x_move_check();
+        bg_y_move_check();
+        sync_fam_set3(2);
+        break;
+    }
+}

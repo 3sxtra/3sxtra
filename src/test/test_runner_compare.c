@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/engine/combo_window.h"
-#include "sf33rd/Source/Game/ui/count.h"
+#include "sf33rd/Source/Game/ui/round_timer.h"
 #include "test/test_runner_utils.h"
 #include "types.h"
 

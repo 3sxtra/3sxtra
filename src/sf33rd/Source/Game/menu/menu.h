@@ -8,7 +8,7 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include "sf33rd/Source/Game/effect/eff57.h"
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"
 #include "structs.h"
 #include "types.h"
 

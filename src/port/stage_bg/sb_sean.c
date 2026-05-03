@@ -4,7 +4,7 @@
  */
 
 #include "port/stage_bg_registry.h"
-#include "sf33rd/Source/Game/stage/bg120.h"
+#include "sf33rd/Source/Game/stage/stage_120_santos_harbor_brazil.h"
 
 __attribute__((constructor)) static void sb_sean_register(void) {
     StageBg_Register(STAGE_BG_SEAN,

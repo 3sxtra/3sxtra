@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
 #include "sf33rd/Source/Game/system/work_sys.h" /* Interface_Type, g_state.Decide_ID */
 #include "sf33rd/Source/Game/sound/sound3rd.h"  /* SE_selected */
-#include "sf33rd/Source/Game/ui/sc_sub.h"       /* FadeOut */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"       /* FadeOut */
 #include "structs.h"                            /* struct _TASK */
 
 /* RmlUi player profile bindings */

@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/engine/player_damage_controller.h"
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_special_attacks.h"
-#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/system/system_director.h"
 
 static void nm_01000(PLW* wk);
 static void nm_09000(PLW* wk);

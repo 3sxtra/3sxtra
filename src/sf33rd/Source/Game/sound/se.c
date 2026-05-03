@@ -21,7 +21,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
-#include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "sf33rd/Source/Game/stage/stage_subroutines.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
 #include "port/sound/modded_bgm.h"
