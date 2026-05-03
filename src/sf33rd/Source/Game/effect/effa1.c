@@ -18,7 +18,7 @@ void effect_A1_move(WORK_Other* ewk) {
     ewk->wu.disp_flag = 0;
 
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 

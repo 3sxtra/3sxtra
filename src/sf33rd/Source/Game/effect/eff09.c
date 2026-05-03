@@ -111,7 +111,7 @@ static void eff09_0000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -187,7 +187,7 @@ static void eff09_1000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -307,7 +307,7 @@ static void eff09_2000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -418,7 +418,7 @@ static void eff09_3000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -482,7 +482,7 @@ static void eff09_4000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -509,7 +509,7 @@ static void eff09_5000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -553,7 +553,7 @@ static void eff09_6000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -600,7 +600,7 @@ static void eff09_7000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -632,7 +632,7 @@ static void eff09_8000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -667,7 +667,7 @@ static void eff09_9000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -708,7 +708,7 @@ static void eff09_10000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -780,7 +780,7 @@ static void eff09_11000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -842,7 +842,7 @@ static void eff09_12000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -898,7 +898,7 @@ static void eff09_13000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -941,7 +941,7 @@ static void eff09_14000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -983,7 +983,7 @@ static void eff09_15000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1019,7 +1019,7 @@ static void eff09_16000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1072,7 +1072,7 @@ static void eff09_17000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1133,7 +1133,7 @@ static void eff09_18000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1190,7 +1190,7 @@ static void eff09_19000(WORK_Other* ewk) {
         return;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1246,7 +1246,7 @@ static void eff09_20000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1329,7 +1329,7 @@ static void eff09_21000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1381,7 +1381,7 @@ static void eff09_22000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1451,7 +1451,7 @@ static void eff09_23000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1533,7 +1533,7 @@ static void eff09_24000(WORK_Other* ewk) {
         return;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 }
@@ -1582,7 +1582,7 @@ static void eff09_25000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1659,7 +1659,7 @@ static void eff09_26000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1737,7 +1737,7 @@ static void eff09_27000(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1747,7 +1747,7 @@ s32 effect_09_init(WORK* wk, u8 data) {
     s16 ix;
     const s16* data_ptr;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
@@ -1792,7 +1792,7 @@ s32 effect_09_init2(WORK* wk, u8 data) {
         return 0;
     }
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

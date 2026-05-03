@@ -154,7 +154,7 @@ static void EFF57_SUDDENLY(WORK_Other* ewk) {
 
 void EFF57_KILL(WORK_Other* ewk) {
     if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
     }
 }
 
@@ -162,7 +162,7 @@ s32 effect_57_init(s16 dir_old, MenuHeader ID, s16 Target_BG, s16 char_ix, s16 o
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

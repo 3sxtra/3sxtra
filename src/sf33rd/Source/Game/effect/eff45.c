@@ -31,7 +31,7 @@ void effect_45_move(WORK_Other_CONN* ewk) {
     Check_Pos_OBJ2((WORK_Other*)ewk);
 
     if (Check_Die_61((WORK_Other*)ewk) != 0 || Message_Data[ewk->wu.dir_old].order == 3) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -91,7 +91,7 @@ s32 effect_45_init(u8 id, s16 sync_bg, s16 master_player) {
     WORK_Other_CONN* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

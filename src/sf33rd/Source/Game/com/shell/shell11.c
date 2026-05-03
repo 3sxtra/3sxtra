@@ -63,7 +63,7 @@ static void Shell11_0003(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -0x7F20, -0x7FD0, 9, 0x400, 0, -0x7FB0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F20, -0x7FD0, 9, 0x400, 0, -0x7FB0, -1, 0x200);
         break;
 
     case 2:
@@ -87,7 +87,7 @@ static void Shell11_0004(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -0x7F20, -0x7FD0, 0xB, 0x400, 0, -0x7FB0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F20, -0x7FD0, 0xB, 0x400, 0, -0x7FB0, -1, 0x20);
         break;
 
     case 2:
@@ -107,7 +107,7 @@ static void Shell11_0005(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -0x7F20, -0x7FC0, 0xB, 0x400, 0, -0x7FB0, -1, 0x400);
+        Check_Jump_Attack_Conditions(wk, -0x7F20, -0x7FC0, 0xB, 0x400, 0, -0x7FB0, -1, 0x400);
         break;
 
     case 2:
@@ -127,7 +127,7 @@ static void Shell11_0006(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -1, 0x30, 8, 0x400, 2, -1, -1, -1);
+        Check_Jump_Attack_Conditions(wk, -1, 0x30, 8, 0x400, 2, -1, -1, -1);
         break;
 
     default:
@@ -155,7 +155,7 @@ static void Shell11_0008(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -0x7FA8, -0x7FD0, 0xB, 0x20, 0, -0x7FB0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7FA8, -0x7FD0, 0xB, 0x20, 0, -0x7FB0, -1, 0x200);
         break;
 
     case 2:

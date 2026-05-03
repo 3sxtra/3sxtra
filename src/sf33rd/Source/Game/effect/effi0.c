@@ -77,7 +77,7 @@ void effect_I0_move(WORK_Other* ewk) {
         return;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 }
@@ -86,7 +86,7 @@ s32 effect_I0_init(WORK* wk, s16 hsx, s16 hsy, s16 spx, s16 spy, s16 nxy) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 

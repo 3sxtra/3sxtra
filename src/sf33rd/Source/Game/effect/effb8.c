@@ -77,7 +77,7 @@ void effect_B8_move(WORK_Other_CONN* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -91,7 +91,7 @@ s32 effect_B8_init(s8 WIN_PL_NO, s16 timer) {
     g_state.test_in = 0;
     wk = &g_state.plw[WIN_PL_NO];
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

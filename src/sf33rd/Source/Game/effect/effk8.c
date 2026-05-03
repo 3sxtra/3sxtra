@@ -64,7 +64,7 @@ void effect_K8_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -73,7 +73,7 @@ s32 effect_K8_init(WORK* wk, u8 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(5)) == -1) {
+    if ((ix = Acquire_Effect(5)) == -1) {
         return -1;
     }
 

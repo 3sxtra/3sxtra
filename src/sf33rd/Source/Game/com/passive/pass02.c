@@ -30,7 +30,7 @@ void Passive02_0000(PLW* wk) {
 void Passive02_0001(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 1:
@@ -50,7 +50,7 @@ void Passive02_0001(PLW* wk) {
 void Passive02_0002(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1E, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 0xA, -1);
         break;
 
     default:
@@ -90,7 +90,7 @@ void Passive02_0004(PLW* wk) {
 void Passive02_0005(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1E, 0xA, 0x700);
+        Jump_Command_Attack(wk, 8, 0x1E, 0xA, 0x700);
         break;
 
     default:
@@ -118,7 +118,7 @@ void Passive02_0007(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     default:
@@ -134,7 +134,7 @@ void Passive02_0008(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     default:
@@ -154,7 +154,7 @@ void Passive02_0009(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -182,7 +182,7 @@ void Passive02_0010(PLW* wk) {
 void Passive02_0011(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FD0, 8, 0x200, 0, -0x7F70, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FD0, 8, 0x200, 0, -0x7F70, -1, 0x20);
         break;
 
     default:
@@ -210,7 +210,7 @@ void Passive02_0012(PLW* wk) {
 void Passive02_0013(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 1:
@@ -354,7 +354,7 @@ void Passive02_0021(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1E, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 8, -1);
         break;
 
     default:
@@ -370,7 +370,7 @@ void Passive02_0022(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -0x7F90, -0x7FC0, 8, 0x400, 0, -0x7F68, -1, 0x400);
+        Check_Jump_Attack_Conditions(wk, -0x7F90, -0x7FC0, 8, 0x400, 0, -0x7F68, -1, 0x400);
         break;
 
     default:
@@ -386,7 +386,7 @@ void Passive02_0023(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC8, 8, 0x40, 0, -0x7F78, -1, 0x40);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC8, 8, 0x40, 0, -0x7F78, -1, 0x40);
         break;
 
     default:
@@ -622,7 +622,7 @@ void Passive02_0039(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     default:
@@ -662,7 +662,7 @@ void Passive02_0041(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -698,7 +698,7 @@ void Passive02_0043(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -762,7 +762,7 @@ void Passive02_0047(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     default:
@@ -850,7 +850,7 @@ void Passive02_0052(PLW* wk) {
 void Passive02_0053(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1E, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 8, -1);
         break;
 
     default:
@@ -874,7 +874,7 @@ void Passive02_0054(PLW* wk) {
 void Passive02_0055(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1E, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 9, -1);
         break;
 
     default:
@@ -886,7 +886,7 @@ void Passive02_0055(PLW* wk) {
 void Passive02_0056(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, 0x40, 8, 0x400, 0, -0x7F68, -1, 0x400);
+        Check_Jump_Attack_Conditions(wk, -1, 0x40, 8, 0x400, 0, -0x7F68, -1, 0x400);
         break;
 
     default:
@@ -898,7 +898,7 @@ void Passive02_0056(PLW* wk) {
 void Passive02_0057(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC8, 8, 0x100, 0, -0x7F78, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC8, 8, 0x100, 0, -0x7F78, -1, 0x20);
         break;
 
     default:
@@ -926,7 +926,7 @@ void Passive02_0059(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 9, -1);
         break;
 
     default:
@@ -1006,7 +1006,7 @@ void Passive02_0064(PLW* wk) {
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -1250,7 +1250,7 @@ void Passive02_0075(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     default:
@@ -1326,7 +1326,7 @@ void Passive02_0078(PLW* wk) {
         break;
 
     case 8:
-        J_Command_Attack(wk, 8, 0x1C, 10, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 10, -1);
         break;
 
     default:
@@ -1350,7 +1350,7 @@ void Passive02_0079(PLW* wk) {
 void Passive02_0080(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 9, 0x400, 0, -0x7FB0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 9, 0x400, 0, -0x7FB0, -1, 0x200);
         break;
 
     case 1:
@@ -1378,7 +1378,7 @@ void Passive02_0080(PLW* wk) {
 void Passive02_0081(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 9, 0x40, 0, -0x7FB0, -1, 0x400);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 9, 0x40, 0, -0x7FB0, -1, 0x400);
         break;
 
     case 1:
@@ -1458,7 +1458,7 @@ void Passive02_0083(PLW* wk) {
 void Passive02_0084(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, -0x7FC0, 9, 0x100, 1, -0x7FB0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -1, -0x7FC0, 9, 0x100, 1, -0x7FB0, -1, 0x20);
         break;
 
     default:
@@ -1522,7 +1522,7 @@ void Passive02_0087(PLW* wk) {
 void Passive02_0088(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA8, -0x7FC0, 9, 0x200, 0, -0x7FB0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7FA8, -0x7FC0, 9, 0x200, 0, -0x7FB0, -1, 0x200);
         break;
 
     case 1:
@@ -1562,7 +1562,7 @@ void Passive02_0089(PLW* wk) {
         break;
 
     case 2:
-        Branch_Unit_Area(wk, 6, 0x20, 0x3B, 0x36, 0x5A);
+        Branch_By_Distance(wk, 6, 0x20, 0x3B, 0x36, 0x5A);
         break;
 
     default:
@@ -1626,7 +1626,7 @@ void Passive02_0092(PLW* wk) {
 void Passive02_0093(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 9, 0x40, 0, -0x7FB0, -1, 0x400);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 9, 0x40, 0, -0x7FB0, -1, 0x400);
         break;
 
     case 1:
@@ -1742,7 +1742,7 @@ void Passive02_0101(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -1758,7 +1758,7 @@ void Passive02_0102(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FD0, 8, 0x200, 0, -0x7F70, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FD0, 8, 0x200, 0, -0x7F70, -1, 0x20);
         break;
 
     default:
@@ -1774,7 +1774,7 @@ void Passive02_0103(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     default:
@@ -1790,7 +1790,7 @@ void Passive02_0104(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     default:
@@ -1810,7 +1810,7 @@ void Passive02_0105(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -1822,7 +1822,7 @@ void Passive02_0105(PLW* wk) {
 void Passive02_0106(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 9);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 9);
         break;
 
     case 1:
@@ -1878,7 +1878,7 @@ void Passive02_0109(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -1998,7 +1998,7 @@ void Passive02_0115(PLW* wk) {
 void Passive02_0116(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F90, -0x7FC0, 9, 0x400, 0, -0x7FB0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F90, -0x7FC0, 9, 0x400, 0, -0x7FB0, -1, 0x200);
         break;
 
     case 1:
@@ -2038,7 +2038,7 @@ void Passive02_0118(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1E, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 8, -1);
         break;
 
     default:
@@ -2054,7 +2054,7 @@ void Passive02_0119(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1E, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 9, -1);
         break;
 
     default:
@@ -2070,7 +2070,7 @@ void Passive02_0120(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1E, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 0xA, -1);
         break;
 
     default:
@@ -2082,7 +2082,7 @@ void Passive02_0120(PLW* wk) {
 void Passive02_0121(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F90, -0x7FC0, 0xB, 0x400, 0, -0x7FB0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F90, -0x7FC0, 0xB, 0x400, 0, -0x7FB0, -1, 0x20);
         break;
 
     case 1:
@@ -2094,7 +2094,7 @@ void Passive02_0121(PLW* wk) {
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -2122,7 +2122,7 @@ void Passive02_0123(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1E, 0xA, 0x700);
+        Jump_Command_Attack(wk, 8, 0x1E, 0xA, 0x700);
         break;
 
     case 2:
@@ -2182,7 +2182,7 @@ void Passive02_0126(PLW* wk) {
 void Passive02_0127(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F90, -0x7FC0, 9, 0x40, 0, -0x7FB0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F90, -0x7FC0, 9, 0x40, 0, -0x7FB0, -1, 0x200);
         break;
 
     case 1:
@@ -2190,7 +2190,7 @@ void Passive02_0127(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -2218,7 +2218,7 @@ void Passive02_0128(PLW* wk) {
 void Passive02_0129(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -2230,7 +2230,7 @@ void Passive02_0129(PLW* wk) {
 void Passive02_0130(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1C, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 9, -1);
         break;
 
     default:

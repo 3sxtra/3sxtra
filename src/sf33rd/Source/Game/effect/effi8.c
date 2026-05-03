@@ -91,7 +91,7 @@ void effect_I8_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -350,7 +350,7 @@ static s32 effect_I8_init(PLW* wk, s16 top, const s16* sptr) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 

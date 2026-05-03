@@ -74,7 +74,7 @@ void (*const EFF64_Jmp_Tbl[4])() = { EFF64_WAIT, EFF64_SLIDE_IN, EFF64_CHAR_CHAN
 
 void effect_64_move(WORK_Other_CONN* ewk) {
     if (Check_Die_61((WORK_Other*)ewk)) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -157,7 +157,7 @@ s32 effect_64_init(u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, 
     WORK_Other_CONN* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

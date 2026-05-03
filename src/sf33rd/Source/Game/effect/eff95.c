@@ -119,7 +119,7 @@ void effect_95_move(WORK_Other* ewk) {
         return;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -132,7 +132,7 @@ s32 effect_95_init(s16 vital_new) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

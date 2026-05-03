@@ -81,7 +81,7 @@ void effect_F2_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -93,7 +93,7 @@ s32 effect_F2_init() {
     const s16* data_ptr = &efff2_data_tbl1[0][0];
 
     for (i = 0; i < 10; i++) {
-        if ((ix = pull_effect_work(4)) == -1) {
+        if ((ix = Acquire_Effect(4)) == -1) {
             return -1;
         }
 

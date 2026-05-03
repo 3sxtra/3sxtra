@@ -17,7 +17,7 @@ void effect_62_move(WORK_Other* ewk) {
     WORK_Other* mwk = (WORK_Other*)ewk->my_master;
 
     if (mwk->wu.be_flag == 0) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -31,7 +31,7 @@ s32 effect_62_init(WORK_Other* mwk, s16 arg_ID) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

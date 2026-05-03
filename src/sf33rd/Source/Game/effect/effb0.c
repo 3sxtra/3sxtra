@@ -59,7 +59,7 @@ void effect_B0_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -71,7 +71,7 @@ s32 effect_B0_init() {
     s16 work;
 
     for (i = 0; i < 8; i++) {
-        if ((ix = pull_effect_work(4)) == -1) {
+        if ((ix = Acquire_Effect(4)) == -1) {
             return -1;
         }
 

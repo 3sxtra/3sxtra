@@ -64,7 +64,7 @@ void effect_L2_move(WORK_Other* ewk) {
 
     default:
         all_cgps_put_back(&ewk->wu);
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -102,7 +102,7 @@ s32 effect_L2_init() {
         return -1;
     }
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 

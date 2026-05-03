@@ -64,7 +64,7 @@ void effect_L0_move(WORK_Other* ewk) {
 
     default:
     case 2:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -73,7 +73,7 @@ s32 effect_L0_init(WORK* wk, s16 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 

@@ -127,7 +127,7 @@ void effect_D9_move(WORK_Other* ewk) {
         } else {
             mwk->wu.extra_col_2 = 0;
         }
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -136,7 +136,7 @@ s32 effect_D9_init(PLW* wk, u8 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(6)) == -1) {
+    if ((ix = Acquire_Effect(6)) == -1) {
         return -1;
     }
 

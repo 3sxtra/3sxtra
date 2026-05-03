@@ -127,7 +127,7 @@ void effect_01_move(WORK_Other* ewk) {
 
     case 2:
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -208,7 +208,7 @@ s32 effect_01_init(WORK* wk, u8 koolc) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(1)) == -1) {
+    if ((ix = Acquire_Effect(1)) == -1) {
         return -1;
     }
 

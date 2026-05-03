@@ -17,7 +17,7 @@ static void Check_TenTen(WORK_Other_CONN* ewk);
 
 void effect_18_move(WORK_Other_CONN* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -34,7 +34,7 @@ s32 effect_18_init(s16 disp_index, s16 cursor_id, s16 sync_bg, s16 master_player
     WORK_Other_CONN* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

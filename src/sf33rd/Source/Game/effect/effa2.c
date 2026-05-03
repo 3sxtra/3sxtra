@@ -96,7 +96,7 @@ void effect_A2_move(WORK_Other* ewk) {
     case 5:
     default:
         if (hnc_wipeout(hnc_col)) {
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
         }
     }
 
@@ -115,7 +115,7 @@ s32 effect_A2_init(s32 arg) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

@@ -248,7 +248,7 @@ s32 effect_76_init(s16 dir_old) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

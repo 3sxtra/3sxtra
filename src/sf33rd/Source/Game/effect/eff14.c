@@ -14,7 +14,7 @@
 
 void effect_14_move(WORK_Other* ewk) {
     if (g_state.Suicide[5] & 0x80) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -54,7 +54,7 @@ s32 effect_14_init(s16 id, s16 x, s16 y, s16 atr) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

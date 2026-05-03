@@ -19,7 +19,7 @@ static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_routine_no, s16 zero);
 
 void effect_A0_move(WORK_Other_CONN* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -30,7 +30,7 @@ s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_routine_no,
     WORK_Other_CONN* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

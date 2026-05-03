@@ -66,7 +66,7 @@ void effect_36_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -326,7 +326,7 @@ s32 effect_36_init(u8 typenum) {
         return 0;
     }
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 

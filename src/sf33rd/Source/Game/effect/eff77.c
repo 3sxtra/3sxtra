@@ -146,7 +146,7 @@ void effect_77_move(WORK_Other* ewk) {
         if (!g_state.Game_pause && !g_state.EXE_flag) {
             g_state.sa_pa_flag = 0;
             all_cgps_put_back(&ewk->wu);
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
         }
 
         break;
@@ -159,7 +159,7 @@ s32 effect_77_init(u8 /* unused */, u8 data) {
 
     chk77_flag = 0;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

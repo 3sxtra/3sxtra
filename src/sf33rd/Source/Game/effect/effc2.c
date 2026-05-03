@@ -213,7 +213,7 @@ void effect_C2_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -896,7 +896,7 @@ s32 effect_C2_init(WORK* wk, u8 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(1)) == -1) {
+    if ((ix = Acquire_Effect(1)) == -1) {
         return -1;
     }
 

@@ -36,7 +36,7 @@ void effect_59_move(WORK_Other* ewk) {
     if (mwk->wu.be_flag == 0) {
         ewk->wu.disp_flag = 0;
         ewk->wu.routine_no[0] = 3;
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -80,7 +80,7 @@ void effect_59_move(WORK_Other* ewk) {
         return;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -125,7 +125,7 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

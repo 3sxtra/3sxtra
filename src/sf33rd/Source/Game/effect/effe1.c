@@ -33,7 +33,7 @@ s32 effect_E1_init(s16 id, s16 Time, s16 /* unused */) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

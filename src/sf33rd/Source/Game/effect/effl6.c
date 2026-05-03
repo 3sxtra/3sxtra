@@ -37,7 +37,7 @@ void effect_L6_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -130,7 +130,7 @@ s32 effect_L6_init(WORK* wk, u8 typel6) {
     s16 ix;
     WORK_Other* ewk;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

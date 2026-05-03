@@ -38,7 +38,7 @@ void effect_07_move(WORK_Other* ewk) {
 
     default:
         all_cgps_put_back(&ewk->wu);
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -50,7 +50,7 @@ s32 effect_07_init() {
     const s16* data_ptr = &eff07_data_tbl[0][0];
 
     for (i = 0; i < 2; i++) {
-        if ((ix = pull_effect_work(4)) == -1) {
+        if ((ix = Acquire_Effect(4)) == -1) {
             return -1;
         }
 

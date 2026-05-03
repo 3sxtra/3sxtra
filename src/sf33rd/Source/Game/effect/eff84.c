@@ -16,7 +16,7 @@ const u8 Time_Data[5] = { 80, 90, 50, 50, 50 };
 
 void effect_84_move(WORK_Other* ewk) {
     if (g_state.Suicide[0]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -107,7 +107,7 @@ s32 effect_84_init() {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

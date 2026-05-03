@@ -268,7 +268,7 @@ void effect_H6_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -280,7 +280,7 @@ s32 effect_H6_init(s16 timer, s8* str, s16 X, s16 Y, s16 Original_Color, s32 /* 
     s16 c;
     s8* su = str;
 
-    if ((x = pull_effect_work(4)) == -1) {
+    if ((x = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

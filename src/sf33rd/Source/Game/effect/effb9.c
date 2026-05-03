@@ -56,7 +56,7 @@ void effect_B9_move(WORK_Other* ewk) {
 
     case 5:
     case 99:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -65,7 +65,7 @@ s32 effect_B9_init(WORK_Other* oya) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 

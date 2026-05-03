@@ -30,7 +30,7 @@ void effect_M7_move(WORK_Other* ewk) {
 
     default:
         all_cgps_put_back(&ewk->wu);
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -138,7 +138,7 @@ s32 effect_M7_init(PLW* oya) {
     s16 em_id = oya->wu.id ^ 1;
 
     for (i = 0; i < 6; i++) {
-        if ((ix = pull_effect_work(3)) == -1) {
+        if ((ix = Acquire_Effect(3)) == -1) {
             return -1;
         }
 

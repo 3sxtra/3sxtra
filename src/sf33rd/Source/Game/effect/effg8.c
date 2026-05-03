@@ -78,7 +78,7 @@ void effect_G8_move(WORK_Other* ewk) {
 
     default:
         all_cgps_put_back(&ewk->wu);
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -109,7 +109,7 @@ s32 effect_G8_init() {
     s16 i;
 
     for (i = 0; i < 16; i++) {
-        if ((ix = pull_effect_work(4)) == -1) {
+        if ((ix = Acquire_Effect(4)) == -1) {
             return -1;
         }
 

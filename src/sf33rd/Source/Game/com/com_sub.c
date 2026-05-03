@@ -61,8 +61,8 @@ void Hold_Attack_Button(PLW* wk, s16 Power_Level);
 s32 Check_Exit_DENJIN(PLW* wk);
 void Keep_Away(PLW* wk, s16 Target_Pos, s16 Option);
 void Setup_KA_Jump(PLW* wk);
-void Setup_KA_Walk(PLW* wk);
-void Search_Back_Term(PLW* wk, s16 Move_Value, s16 Next_Action, s16 Next_Menu);
+void Setup_Keep_Away_Walk(PLW* wk);
+void Check_Safe_Retreat_Space(PLW* wk, s16 Move_Value, s16 Next_Action, s16 Next_Menu);
 void Approach_Walk(PLW* wk, s16 Target_Pos, s16 Option);
 s32 Check_Arrival(PLW* wk, s16 Target_Pos, s16 Option);
 void Walk(PLW* wk, u16 Lever, s16 Time, s16 unused);
@@ -85,7 +85,7 @@ s32 SA_Range_Check(PLW* wk, s16 SA_No, u16 Range);
 void Check_SA(PLW* wk, s16 Next_Action, s16 Next_Menu);
 void Check_EX(PLW* wk, s16 Next_Action, s16 Next_Menu);
 void Check_SA_Full(PLW* wk, s16 Next_Action, s16 Next_Menu);
-void Branch_Unit_Area(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03);
+void Branch_By_Distance(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03);
 void AI_Random_Action_Select(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03, s16 Rnd_Type);
 void Branch_Wait_Area(PLW* wk, s16 Time_00, s16 Time_01, s16 Time_02, s16 Time_03);
 void Wait(PLW* wk, s16 Time); // unused arg
@@ -109,7 +109,7 @@ void Hi_Jump(PLW* wk, s16 Pl_Number, s16 Jump_Dir);
 s32 Check_Start_Hi_Jump(PLW* wk);
 s32 Check_Air_Guard(PLW* wk);
 void Jump_Attack(PLW* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Jump_Dir);
-void Jump_Attack_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
+void Check_Jump_Attack_Conditions(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
                       s16 Range_JY, s16 J_Lever_Data);
 s32 Check_SP_Jump_Attack(PLW* wk, s16 Lever_Data);
 s32 Check_VS_Air_Attack(PLW* wk, s16 Range_JX, s16 Range_JY, s16 J_Lever_Data);
@@ -125,7 +125,7 @@ void ORO_HJA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s1
 void Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot);
 s32 Hadou_Check(PLW* wk, u16 Tech_Number);
 s32 Check_Resume_Lever(PLW* wk);
-void J_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot);
+void Jump_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot);
 void Rapid_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Shot, u16 Time);
 void Check_Rapid(PLW* wk, u16 Tech_Number);
 void Setup_Rapid_End_Term(PLW* wk, s16 Tech_Number);
@@ -420,7 +420,7 @@ void Keep_Away(PLW* wk, s16 Target_Pos, s16 Option) {
             if (random_16_com() < 4) {
                 Setup_KA_Jump(wk);
             } else {
-                Setup_KA_Walk(wk);
+                Setup_Keep_Away_Walk(wk);
             }
         } else {
             if (Option == 1) {
@@ -464,12 +464,12 @@ void Setup_KA_Jump(PLW* wk) {
 }
 
 /** @brief Set up backward walk for Keep_Away movement. */
-void Setup_KA_Walk(PLW* wk) {
+void Setup_Keep_Away_Walk(PLW* wk) {
     g_state.CP_Index[wk->wu.id][3] = 4;
 }
 
 /** @brief Search for a safe position behind the CPU then walk/jump there. */
-void Search_Back_Term(PLW* wk, s16 Move_Value, s16 Next_Action, s16 Next_Menu) {
+void Check_Safe_Retreat_Space(PLW* wk, s16 Move_Value, s16 Next_Action, s16 Next_Menu) {
     if (wk->wu.active_move) {
         Move_Value = wk->wu.xyz[0].disp.pos - Move_Value;
         if ((g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset) > Move_Value) {
@@ -1140,7 +1140,7 @@ void Check_SA_Full(PLW* wk, s16 Next_Action, s16 Next_Menu) {
 }
 
 /** @brief Branch to different menus based on the current distance area (close/mid/far). */
-void Branch_Unit_Area(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03) {
+void Branch_By_Distance(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03) {
     s16 xx[4];
 
     g_state.CP_No[wk->wu.id][0] = Next_Action;
@@ -2024,7 +2024,7 @@ void Jump_Attack(PLW* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Jump_
 }
 
 /** @brief  */
-void Jump_Attack_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
+void Check_Jump_Attack_Conditions(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
                       s16 Range_JY, s16 J_Lever_Data) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
@@ -2982,7 +2982,7 @@ s32 Check_Resume_Lever(PLW* wk) {
 }
 
 /** @brief  */
-void J_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot) {
+void Jump_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:

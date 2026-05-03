@@ -19,7 +19,7 @@ void effect_90_move(WORK_Other_CONN* ewk) {
     Check_Pos_OBJ2((WORK_Other*)ewk);
 
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 

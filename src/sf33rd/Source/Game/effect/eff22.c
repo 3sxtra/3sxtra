@@ -121,7 +121,7 @@ void effect_22_move(WORK_Other* ewk) {
 
     default:
         all_cgps_put_back(&ewk->wu);
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -132,7 +132,7 @@ s32 effect_22_init() {
     WORK_Other* ewk;
 
     for (i = 0; i < 12; i++) {
-        if ((ix = pull_effect_work(4)) == -1) {
+        if ((ix = Acquire_Effect(4)) == -1) {
             return -1;
         }
 

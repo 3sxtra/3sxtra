@@ -18,7 +18,7 @@ static void Setup_Letter_C4(WORK_Other_CONN* ewk);
 
 void effect_C4_move(WORK_Other_CONN* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -40,7 +40,7 @@ s32 effect_C4_init(s16 id, s16 letter_type, s16 cursor_index, s16 master_player)
     s16 ix;
     s16 x;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

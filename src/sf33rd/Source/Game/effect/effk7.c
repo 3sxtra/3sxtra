@@ -53,7 +53,7 @@ void effect_K7_move(WORK_Other* ewk) {
         /* fallthrough */
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -188,7 +188,7 @@ s32 effect_K7_init(PLW* wk) {
         return -1;
     }
 
-    if ((ix = pull_effect_work(6)) == -1) {
+    if ((ix = Acquire_Effect(6)) == -1) {
         return -1;
     }
 

@@ -57,8 +57,8 @@ void effect_I9_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
-        push_effect_work(sub_w);
+        Release_Effect(&ewk->wu);
+        Release_Effect(sub_w);
         break;
     }
 }
@@ -89,7 +89,7 @@ s32 effect_I9_init(WORK_Other* wk, s16 total, s16 interval, s16 life) {
     s16 ix2;
     WORK* sub_w;
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
@@ -112,8 +112,8 @@ s32 effect_I9_init(WORK_Other* wk, s16 total, s16 interval, s16 life) {
     ewk->wu.dir_timer = life;
     ewk->wu.blink_timing = ewk->master_id;
 
-    if ((ix2 = pull_effect_work(7)) == -1) {
-        push_effect_work(&ewk->wu);
+    if ((ix2 = Acquire_Effect(7)) == -1) {
+        Release_Effect(&ewk->wu);
         return -1;
     }
 

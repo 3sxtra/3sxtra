@@ -129,11 +129,11 @@ void effect_k5_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        push_effect_work((WORK*)ewk->wu.target_adrs);
+        Release_Effect((WORK*)ewk->wu.target_adrs);
         /* fallthrough */
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -427,7 +427,7 @@ static s32 get_cal_work(WORK* wk) {
     WORK* fwk;
     s16 ix;
 
-    if ((ix = pull_effect_work(7)) == -1) {
+    if ((ix = Acquire_Effect(7)) == -1) {
         return -1;
     }
 
@@ -458,7 +458,7 @@ s32 effect_k5_init(PLW* wk) {
         return -1;
     }
 
-    if ((ix = pull_effect_work(0)) == -1) {
+    if ((ix = Acquire_Effect(0)) == -1) {
         return -1;
     }
 

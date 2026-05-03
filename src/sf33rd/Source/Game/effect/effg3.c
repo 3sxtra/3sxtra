@@ -76,7 +76,7 @@ void effect_G3_move(WORK_Other* ewk) {
     default:
     case 2:
     case 3:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -86,7 +86,7 @@ s32 effect_G3_init(WORK* wk, u8 data) {
     WORK_Other* ewk2;
     s16 ix;
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 

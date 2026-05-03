@@ -41,7 +41,7 @@ void effect_A7_move(WORK_Other* ewk) {
                 pp_screen_quake(g_state.bg_w.quake_y_index);
             }
 
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
             break;
         }
 
@@ -163,7 +163,7 @@ void effect_A7_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -177,7 +177,7 @@ s32 effect_A7_init(PLW* wk) {
         return -1;
     }
 
-    if ((ix = pull_effect_work(2)) == -1) {
+    if ((ix = Acquire_Effect(2)) == -1) {
         return -1;
     }
 

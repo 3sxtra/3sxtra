@@ -107,7 +107,7 @@ void effect_D8_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -130,7 +130,7 @@ s32 effect_D8_init(s16 PL_id, s16 Type) {
     s16 ix;
     s16 offset_x;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

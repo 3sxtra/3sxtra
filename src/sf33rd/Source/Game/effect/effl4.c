@@ -41,7 +41,7 @@ void effect_L4_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -54,7 +54,7 @@ s32 effect_L4_init() {
     const s16* data_ptr = effl4_data_tbl;
 
     for (i = 0; i < 6; i++) {
-        if ((ix = pull_effect_work(3)) == -1) {
+        if ((ix = Acquire_Effect(3)) == -1) {
             return -1;
         }
 

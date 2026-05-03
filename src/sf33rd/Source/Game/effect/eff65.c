@@ -18,7 +18,7 @@ void effect_65_move(WORK_Other* ewk) {
     ewk->wu.my_clear_level = 0x80;
 
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 

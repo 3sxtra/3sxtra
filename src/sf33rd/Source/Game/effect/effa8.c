@@ -166,7 +166,7 @@ void effect_A8_move(WORK_Other_CONN* ewk) {
     s16 ix;
 
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -233,7 +233,7 @@ s32 effect_A8_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 curso
     WORK_Other_CONN* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

@@ -162,7 +162,7 @@ void effect_work_list_init(s16 lix, s16 iid) {
         while (curr_ix != -1) {
             c_addr = (WORK*)frw[curr_ix];
             next_ix = c_addr->behind;
-            push_effect_work(c_addr);
+            Release_Effect(c_addr);
             curr_ix = next_ix;
         }
 
@@ -173,7 +173,7 @@ void effect_work_list_init(s16 lix, s16 iid) {
             next_ix = c_addr->behind;
 
             if (c_addr->id == iid) {
-                push_effect_work(c_addr);
+                Release_Effect(c_addr);
             }
 
             curr_ix = next_ix;
@@ -181,7 +181,7 @@ void effect_work_list_init(s16 lix, s16 iid) {
     }
 }
 
-s16 pull_effect_work(s16 index) {
+s16 Acquire_Effect(s16 index) {
     s16 qix;
     WORK* tadr;
     WORK* wrk;
@@ -251,7 +251,7 @@ s16 search_effect_index(s16 index, s16 flag, s16 tid) {
     return aix;
 }
 
-void push_effect_work(WORK* wkhd) {
+void Release_Effect(WORK* wkhd) {
     WORK* c_addr;
     WORK* c_addr2;
     s16 qix;

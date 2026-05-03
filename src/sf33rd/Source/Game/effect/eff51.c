@@ -24,7 +24,7 @@ static void Setup_Letter_51(WORK_Other_CONN* ewk);
 
 void effect_51_move(WORK_Other_CONN* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -42,7 +42,7 @@ s32 effect_51_init(s16 letter_type, s16 cursor_index, s16 master_player) {
     WORK_Other_CONN* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

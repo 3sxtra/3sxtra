@@ -87,7 +87,7 @@ void effect_00_move(WORK_Other_JUDGE* ewk) {
 
     default:
     case 2:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -190,7 +190,7 @@ s32 effect_00_init(WORK* wk) {
         return 0;
     }
 
-    if ((ix = pull_effect_work(0)) == -1) {
+    if ((ix = Acquire_Effect(0)) == -1) {
         return -1;
     }
 

@@ -15,7 +15,7 @@ void effect_F0_move(WORK_Other* ewk) {
     if (!ewk->wu.routine_no[0]) {
         if ((ewk->wu.dead_f == 1) || (ewk->wu.dir_old != mwk->now_koc)) {
             ewk->wu.disp_flag = 0;
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
             return;
         }
 
@@ -30,14 +30,14 @@ void effect_F0_move(WORK_Other* ewk) {
         return;
     }
 
-    push_effect_work(&ewk->wu);
+    Release_Effect(&ewk->wu);
 }
 
 s32 effect_F0_init(WORK* wk) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

@@ -14,7 +14,7 @@
 
 void effect_17_move(WORK_Other* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
     } else if (g_state.Menu_Cursor_Y[0] == ewk->wu.type) {
         EFF17_Bowan(ewk);
     } else {

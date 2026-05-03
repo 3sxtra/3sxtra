@@ -386,7 +386,7 @@ void effect_B6_move(WORK_Other_CONN* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }

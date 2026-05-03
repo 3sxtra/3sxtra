@@ -87,11 +87,11 @@ static void Pattern08_0003(PLW* wk) {
 static void Pattern08_0004(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 0xB, 0x1E, 9, -1);
+        Jump_Command_Attack(wk, 0xB, 0x1E, 9, -1);
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 9, -1);
         break;
 
     case 2:
@@ -119,7 +119,7 @@ static void Pattern08_0005(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1E, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 9, -1);
         break;
 
     default:
@@ -143,7 +143,7 @@ static void Pattern08_0006(PLW* wk) {
 static void Pattern08_0007(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x70, 2, 3);
+        Check_Safe_Retreat_Space(wk, 0x70, 2, 3);
         break;
 
     case 1:
@@ -163,7 +163,7 @@ static void Pattern08_0007(PLW* wk) {
 static void Pattern08_0008(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F90, -0x7FC0, 8, 0x200, 0, -0x7F98, -1, 0x10);
+        Check_Jump_Attack_Conditions(wk, -0x7F90, -0x7FC0, 8, 0x200, 0, -0x7F98, -1, 0x10);
         break;
 
     case 1:
@@ -171,7 +171,7 @@ static void Pattern08_0008(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1E, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 0xA, -1);
         break;
 
     default:
@@ -183,19 +183,19 @@ static void Pattern08_0008(PLW* wk) {
 static void Pattern08_0009(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 8, -1);
         break;
 
     case 2:
-        J_Command_Attack(wk, 9, 0x1E, 0xA, -1);
+        Jump_Command_Attack(wk, 9, 0x1E, 0xA, -1);
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -227,11 +227,11 @@ static void Pattern08_0011(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 9, 0x1E, 0xA, -1);
+        Jump_Command_Attack(wk, 9, 0x1E, 0xA, -1);
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -275,7 +275,7 @@ static void Pattern08_0013(PLW* wk) {
 static void Pattern08_0014(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC8, 8, 0x200, 2, -1, -0x7FF0, 0x100);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC8, 8, 0x200, 2, -1, -0x7FF0, 0x100);
         break;
 
     case 1:
@@ -315,7 +315,7 @@ static void Pattern08_0016(PLW* wk) {
 static void Pattern08_0017(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1D, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1D, 0xA, -1);
         break;
 
     default:
@@ -327,7 +327,7 @@ static void Pattern08_0017(PLW* wk) {
 static void Pattern08_0018(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 1:
@@ -371,11 +371,11 @@ static void Pattern08_0019(PLW* wk) {
 static void Pattern08_0020(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 9, 0x1D, 0xA, -1);
+        Jump_Command_Attack(wk, 9, 0x1D, 0xA, -1);
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -387,7 +387,7 @@ static void Pattern08_0020(PLW* wk) {
 static void Pattern08_0021(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1D, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1D, 0xA, -1);
         break;
 
     default:
@@ -399,11 +399,11 @@ static void Pattern08_0021(PLW* wk) {
 static void Pattern08_0022(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F98, -0x7FC0, 9, 0x40, 0, -0x7F90, -1, 0x100);
+        Check_Jump_Attack_Conditions(wk, -0x7F98, -0x7FC0, 9, 0x40, 0, -0x7F90, -1, 0x100);
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -499,7 +499,7 @@ static void Pattern08_0029(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1E, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 9, -1);
         break;
 
     case 2:
@@ -531,7 +531,7 @@ static void Pattern08_0030(PLW* wk) {
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -543,7 +543,7 @@ static void Pattern08_0030(PLW* wk) {
 static void Pattern08_0031(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F98, -0x7FC0, 8, 0x200, 0, -0x7F68, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F98, -0x7FC0, 8, 0x200, 0, -0x7F68, -1, 0x200);
         break;
 
     case 1:
@@ -699,7 +699,7 @@ static void Pattern08_0039(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 9, -1);
         break;
 
     default:
@@ -715,7 +715,7 @@ static void Pattern08_0040(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 9, -1);
         break;
 
     default:
@@ -731,7 +731,7 @@ static void Pattern08_0041(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1E, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 0xA, -1);
         break;
 
     case 2:
@@ -747,7 +747,7 @@ static void Pattern08_0041(PLW* wk) {
 static void Pattern08_0042(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F90, -0x7FC0, 8, 0x200, 0, -0x7F70, -1, 0x400);
+        Check_Jump_Attack_Conditions(wk, -0x7F90, -0x7FC0, 8, 0x200, 0, -0x7F70, -1, 0x400);
         break;
 
     default:
@@ -759,7 +759,7 @@ static void Pattern08_0042(PLW* wk) {
 static void Pattern08_0043(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F98, -0x7FC0, 8, 0x40, 0, -1, -0x7FE0, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F98, -0x7FC0, 8, 0x40, 0, -1, -0x7FE0, 0x200);
         break;
 
     default:
@@ -771,7 +771,7 @@ static void Pattern08_0043(PLW* wk) {
 static void Pattern08_0044(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F98, -0x7FC0, 8, 0x40, 0, -0x7F70, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F98, -0x7FC0, 8, 0x40, 0, -0x7F70, -1, 0x200);
         break;
     case 1:
         Normal_Attack(wk, 8, 0x402);
@@ -785,7 +785,7 @@ static void Pattern08_0044(PLW* wk) {
 static void Pattern08_0045(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F98, -0x7FC0, 0xB, 0x400, 0, -0x7F70, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F98, -0x7FC0, 0xB, 0x400, 0, -0x7F70, -1, 0x20);
         break;
 
     case 1:
@@ -917,7 +917,7 @@ static void Pattern08_0053(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1D, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1D, 0xA, -1);
         break;
 
     case 2:
@@ -933,7 +933,7 @@ static void Pattern08_0053(PLW* wk) {
 static void Pattern08_0054(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -945,7 +945,7 @@ static void Pattern08_0054(PLW* wk) {
 static void Pattern08_0055(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 1:
@@ -957,7 +957,7 @@ static void Pattern08_0055(PLW* wk) {
         break;
 
     case 3:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 4:
@@ -965,7 +965,7 @@ static void Pattern08_0055(PLW* wk) {
         break;
 
     case 5:
-        J_Command_Attack(wk, 8, 0x1d, 10, -1);
+        Jump_Command_Attack(wk, 8, 0x1d, 10, -1);
         break;
 
     default:
@@ -977,7 +977,7 @@ static void Pattern08_0055(PLW* wk) {
 static void Pattern08_0056(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 1:
@@ -989,7 +989,7 @@ static void Pattern08_0056(PLW* wk) {
         break;
 
     case 3:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 4:
@@ -1009,7 +1009,7 @@ static void Pattern08_0056(PLW* wk) {
 static void Pattern08_0057(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x8014, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x8014, 0xA, -1);
         break;
 
     default:
@@ -1021,7 +1021,7 @@ static void Pattern08_0057(PLW* wk) {
 static void Pattern08_0058(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x8015, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x8015, 0xA, -1);
         break;
 
     default:
@@ -1165,7 +1165,7 @@ static void Pattern08_0069(PLW* wk) {
 static void Pattern08_0070(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F98, -0x7FC0, 9, 0x400, 0, -0x7F90, -1, 0x100);
+        Check_Jump_Attack_Conditions(wk, -0x7F98, -0x7FC0, 9, 0x400, 0, -0x7F90, -1, 0x100);
         break;
 
     case 1:

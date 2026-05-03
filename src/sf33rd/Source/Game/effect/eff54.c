@@ -37,7 +37,7 @@ s32 effect_54_init(WORK_Other* oya) {
     const s16* data_ptr = eff29_data_tbl;
 
     for (i = 0; i < 2; i++) {
-        if ((ix = pull_effect_work(4)) == -1) {
+        if ((ix = Acquire_Effect(4)) == -1) {
             return -1;
         }
 

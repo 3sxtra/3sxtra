@@ -165,7 +165,7 @@ void effect_D4_move(WORK_Other* ewk) {
 
     case 2:
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -211,7 +211,7 @@ s32 effect_D4_init(WORK* wk, u8 data) {
         return 0;
     }
 
-    if ((ix = pull_effect_work(3)) == -1) {
+    if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 

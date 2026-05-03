@@ -41,7 +41,7 @@ void effect_M8_move(WORK_Other* ewk) {
 
     default:
         all_cgps_put_back(&ewk->wu);
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -124,7 +124,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
             return 0;
         }
 
-        if ((ix = pull_effect_work(3)) == -1) {
+        if ((ix = Acquire_Effect(3)) == -1) {
             return -1;
         }
 
@@ -169,7 +169,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
 
         for (i = 0; i < 4; i++) {
-            if ((ix = pull_effect_work(3)) == -1) {
+            if ((ix = Acquire_Effect(3)) == -1) {
                 return -1;
             }
 
@@ -214,7 +214,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
             ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
         }
     } else {
-        if ((ix = pull_effect_work(3)) == -1) {
+        if ((ix = Acquire_Effect(3)) == -1) {
             return -1;
         }
 

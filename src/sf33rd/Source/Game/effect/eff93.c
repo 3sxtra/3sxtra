@@ -58,7 +58,7 @@ static void Eff93_SLIDE_L(WORK_Other* ewk) {
             g_state.bg_w.bgw[1].wxy[1].disp.pos = ewk->wu.direction;
             g_state.bg_w.bgw[1].xy[1].disp.pos = ewk->wu.direction;
             g_state.Face_Move = 0;
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
         }
 
         break;
@@ -108,7 +108,7 @@ static void Eff93_SLIDE_R(WORK_Other* ewk) {
 
         if ((arrived_x != 0) && (arrived_y != 0)) {
             g_state.Face_Move = 0;
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
         }
 
         break;
@@ -134,7 +134,7 @@ static void Eff93_SLIDE_L_OUT(WORK_Other* ewk) {
         if (ewk->wu.hit_quake <= g_state.bg_w.bgw[1].wxy[0].disp.pos) {
             g_state.bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
             g_state.Face_Move = 0;
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
         }
 
         break;
@@ -161,7 +161,7 @@ static void Eff93_SLIDE_R_OUT(WORK_Other* ewk) {
         if (ewk->wu.hit_quake >= g_state.bg_w.bgw[1].wxy[0].disp.pos) {
             g_state.bg_w.bgw[1].wxy[0].disp.pos = ewk->wu.hit_quake;
             g_state.Face_Move = 0;
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
         }
 
         break;
@@ -186,7 +186,7 @@ s32 effect_93_init(s8 Move_Type, s16 Time) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

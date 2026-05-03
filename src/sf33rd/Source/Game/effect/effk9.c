@@ -48,7 +48,7 @@ void effect_K9_move(WORK_Other* ewk) {
 
     default:
     case 2:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 }
@@ -57,7 +57,7 @@ s32 effect_K9_init(WORK* wk, u8 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(5)) == -1) {
+    if ((ix = Acquire_Effect(5)) == -1) {
         return -1;
     }
 

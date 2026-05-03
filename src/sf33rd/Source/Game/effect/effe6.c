@@ -137,7 +137,7 @@ void effect_E6_move(WORK_Other* ewk) {
         break;
 
     case 100:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
 
     case 4649:
@@ -1147,7 +1147,7 @@ static void effe6_0025(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1177,7 +1177,7 @@ static void effe6_0026(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1208,7 +1208,7 @@ static void effe6_0027(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1237,7 +1237,7 @@ static void effe6_0028(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1286,7 +1286,7 @@ static void effe6_0029(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1364,7 +1364,7 @@ static void effe6_0030(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -1610,7 +1610,7 @@ s32 effect_E6_init(u8 char_num) {
     s16 ix;
     const s16* data_ptr;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

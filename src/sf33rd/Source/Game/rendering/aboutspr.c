@@ -120,7 +120,7 @@ s32 setup_GILL_exsa_obj() {
     s16 i;
     s16 ix;
 
-    if ((ix = pull_effect_work(5)) == -1) {
+    if ((ix = Acquire_Effect(5)) == -1) {
         return -1;
     }
     ewk = (WORK*)frw[ix];
@@ -138,7 +138,7 @@ s32 setup_GILL_exsa_obj() {
         ewk->cg_number = effk8k9_pattern[i];
         sort_push_request(ewk);
     }
-    push_effect_work(ewk);
+    Release_Effect(ewk);
     return 1;
 }
 

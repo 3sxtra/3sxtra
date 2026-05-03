@@ -123,7 +123,7 @@ static void Pattern17_0006(PLW* wk) {
 static void Pattern17_0007(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x30, 2, 1);
+        Check_Safe_Retreat_Space(wk, 0x30, 2, 1);
         break;
 
     case 1:
@@ -155,7 +155,7 @@ static void Pattern17_0008(PLW* wk) {
 static void Pattern17_0009(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x10);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x10);
         break;
 
     case 1:
@@ -223,7 +223,7 @@ static void Pattern17_0013(PLW* wk) {
 static void Pattern17_0014(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, -0x7FB0, 0xB, 0x20, 2, -0x7FA0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -1, -0x7FB0, 0xB, 0x20, 2, -0x7FA0, -1, 0x20);
         break;
 
     default:
@@ -311,7 +311,7 @@ static void Pattern17_0020(PLW* wk) {
 static void Pattern17_0021(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, -0x7FA0, 0xB, 0x200, 0, -0x7FA0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -1, -0x7FA0, 0xB, 0x200, 0, -0x7FA0, -1, 0x200);
         break;
 
     default:
@@ -447,7 +447,7 @@ static void Pattern17_0030(PLW* wk) {
 static void Pattern17_0031(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, 0x40, 0xB, 0x40, 0, -0x7FA0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -1, 0x40, 0xB, 0x40, 0, -0x7FA0, -1, 0x200);
         break;
 
     case 1:
@@ -647,7 +647,7 @@ static void Pattern17_0042(PLW* wk) {
 static void Pattern17_0043(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x30, 2, 0xF);
+        Check_Safe_Retreat_Space(wk, 0x30, 2, 0xF);
         break;
 
     case 1:
@@ -679,7 +679,7 @@ static void Pattern17_0043(PLW* wk) {
 static void Pattern17_0044(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x20, 2, 0x1B);
+        Check_Safe_Retreat_Space(wk, 0x20, 2, 0x1B);
         break;
 
     case 1:
@@ -691,7 +691,7 @@ static void Pattern17_0044(PLW* wk) {
         break;
 
     case 3:
-        Search_Back_Term(wk, 0x30, 2, 0x1B);
+        Check_Safe_Retreat_Space(wk, 0x30, 2, 0x1B);
         break;
 
     case 4:
@@ -711,7 +711,7 @@ static void Pattern17_0045(PLW* wk) {
         break;
 
     case 1:
-        Search_Back_Term(wk, 0x30, 2, 6);
+        Check_Safe_Retreat_Space(wk, 0x30, 2, 6);
         break;
 
     case 2:
@@ -771,7 +771,7 @@ static void Pattern17_0048(PLW* wk) {
 static void Pattern17_0049(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x8016, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x8016, 8, -1);
         break;
 
     default:
@@ -783,7 +783,7 @@ static void Pattern17_0049(PLW* wk) {
 static void Pattern17_0050(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x8016, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x8016, 9, -1);
         break;
 
     default:
@@ -795,7 +795,7 @@ static void Pattern17_0050(PLW* wk) {
 static void Pattern17_0051(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x8016, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x8016, 0xA, -1);
         break;
 
     default:

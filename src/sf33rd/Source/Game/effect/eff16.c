@@ -109,7 +109,7 @@ void effect_16_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -147,7 +147,7 @@ s32 effect_16_init(PLW* wk, s16 flag) {
     s16 ix;
     s16 i;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

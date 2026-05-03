@@ -80,7 +80,7 @@ void effect_C7_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -93,7 +93,7 @@ s32 effect_C7_init(PLW* wk, u8 data) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(2)) == -1) {
+    if ((ix = Acquire_Effect(2)) == -1) {
         return -1;
     }
 

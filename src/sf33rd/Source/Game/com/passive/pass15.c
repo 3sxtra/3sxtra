@@ -82,7 +82,7 @@ void Passive15_0003(PLW* wk) {
 void Passive15_0004(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x53);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x53);
         break;
 
     case 1:
@@ -178,7 +178,7 @@ void Passive15_0010(PLW* wk) {
 void Passive15_0011(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, -0x7FB0, 0xB, 0x20, 2, -0x7FA0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -1, -0x7FB0, 0xB, 0x20, 2, -0x7FA0, -1, 0x20);
         break;
 
     default:
@@ -202,7 +202,7 @@ void Passive15_0012(PLW* wk) {
 void Passive15_0013(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x6C);
         break;
 
     case 1:
@@ -218,7 +218,7 @@ void Passive15_0013(PLW* wk) {
 void Passive15_0014(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Branch_Unit_Area(wk, 6, 0x59, 0x5A, 0x5B, 1);
+        Branch_By_Distance(wk, 6, 0x59, 0x5A, 0x5B, 1);
         break;
 
     default:
@@ -242,7 +242,7 @@ void Passive15_0015(PLW* wk) {
 void Passive15_0016(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x6C);
         break;
 
     case 1:
@@ -258,7 +258,7 @@ void Passive15_0016(PLW* wk) {
         break;
 
     case 4:
-        Branch_Unit_Area(wk, 6, 0x69, 0x6A, 1, 1);
+        Branch_By_Distance(wk, 6, 0x69, 0x6A, 1, 1);
         break;
 
     default:
@@ -294,7 +294,7 @@ void Passive15_0017(PLW* wk) {
 void Passive15_0018(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x6C);
         break;
 
     case 1:
@@ -314,7 +314,7 @@ void Passive15_0018(PLW* wk) {
         break;
 
     case 5:
-        Branch_Unit_Area(wk, 6, 0x69, 0x6A, 1, 1);
+        Branch_By_Distance(wk, 6, 0x69, 0x6A, 1, 1);
         break;
 
     default:
@@ -370,7 +370,7 @@ void Passive15_0022(PLW* wk) {
         break;
 
     case 1:
-        Jump_Attack_Term(wk, -0x7F80, -0x7FB0, 0xB, 0x100, 0, -0x7FA0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F80, -0x7FB0, 0xB, 0x100, 0, -0x7FA0, -1, 0x200);
         break;
 
     case 2:
@@ -390,7 +390,7 @@ void Passive15_0022(PLW* wk) {
 void Passive15_0023(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F60, -0x7FB0, 0xB, 0x20, 0, -0x7FA0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F60, -0x7FB0, 0xB, 0x20, 0, -0x7FA0, -1, 0x200);
         break;
 
     case 1:
@@ -410,7 +410,7 @@ void Passive15_0023(PLW* wk) {
 void Passive15_0024(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x6C);
         break;
 
     case 1:
@@ -438,7 +438,7 @@ void Passive15_0024(PLW* wk) {
 void Passive15_0025(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x6C);
         break;
 
     case 1:
@@ -546,7 +546,7 @@ void Passive15_0030(PLW* wk) {
 void Passive15_0031(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x40, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x40, 6, 0x6C);
         break;
 
     case 1:
@@ -934,7 +934,7 @@ void Passive15_0055(PLW* wk) {
 void Passive15_0056(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F60, -0x7FA0, 8, 0x200, 0, -0x7FA0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F60, -0x7FA0, 8, 0x200, 0, -0x7FA0, -1, 0x20);
         break;
 
     default:
@@ -946,7 +946,7 @@ void Passive15_0056(PLW* wk) {
 void Passive15_0057(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F60, -0x7FA0, 8, 0x20, 0, -0x7FA0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F60, -0x7FA0, 8, 0x20, 0, -0x7FA0, -1, 0x20);
         break;
 
     default:
@@ -1126,7 +1126,7 @@ void Passive15_0067(PLW* wk) {
 void Passive15_0068(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F60, -0x7FA0, 8, 0x200, 0, -0x7FA0, -1, 0x400);
+        Check_Jump_Attack_Conditions(wk, -0x7F60, -0x7FA0, 8, 0x200, 0, -0x7FA0, -1, 0x400);
         break;
 
     default:
@@ -1214,7 +1214,7 @@ void Passive15_0073(PLW* wk) {
         break;
 
     case 2:
-        Branch_Unit_Area(wk, 6, 0x69, 0x6A, 1, 1);
+        Branch_By_Distance(wk, 6, 0x69, 0x6A, 1, 1);
         break;
 
     default:
@@ -1298,7 +1298,7 @@ void Passive15_0076(PLW* wk) {
 void Passive15_0077(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F60, -0x7FA0, 0xB, 0x40, 0, -0x7FA0, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F60, -0x7FA0, 0xB, 0x40, 0, -0x7FA0, -1, 0x200);
         break;
 
     case 1:
@@ -1314,7 +1314,7 @@ void Passive15_0077(PLW* wk) {
 void Passive15_0078(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F60, -0x7FB0, 0xB, 0x100, 0, -0x7FA0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F60, -0x7FB0, 0xB, 0x100, 0, -0x7FA0, -1, 0x20);
         break;
 
     case 1:
@@ -1334,7 +1334,7 @@ void Passive15_0078(PLW* wk) {
 void Passive15_0079(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F60, -0x7FB0, 0xB, 0x20, 0, -0x7FA0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F60, -0x7FB0, 0xB, 0x20, 0, -0x7FA0, -1, 0x20);
         break;
 
     case 1:
@@ -1562,7 +1562,7 @@ void Passive15_0088(PLW* wk) {
 void Passive15_0089(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1F, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1F, 8, -1);
         break;
 
     default:
@@ -1574,7 +1574,7 @@ void Passive15_0089(PLW* wk) {
 void Passive15_0090(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1F, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1F, 9, -1);
         break;
 
     default:
@@ -1586,7 +1586,7 @@ void Passive15_0090(PLW* wk) {
 void Passive15_0091(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1F, 10, -1);
+        Jump_Command_Attack(wk, 8, 0x1F, 10, -1);
         break;
 
     default:
@@ -1650,7 +1650,7 @@ void Passive15_0095(PLW* wk) {
         break;
 
     case 2:
-        Branch_Unit_Area(wk, 6, 0x68, 0x69, 0x6A, 1);
+        Branch_By_Distance(wk, 6, 0x68, 0x69, 0x6A, 1);
         break;
 
     default:
@@ -1850,7 +1850,7 @@ void Passive15_0106(PLW* wk) {
 void Passive15_0107(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x6C);
         break;
 
     case 1:
@@ -1882,7 +1882,7 @@ void Passive15_0108(PLW* wk) {
 void Passive15_0109(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x6C);
         break;
 
     case 1:
@@ -1906,7 +1906,7 @@ void Passive15_0109(PLW* wk) {
 void Passive15_0110(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 6, 0x6C);
+        Check_Safe_Retreat_Space(wk, 0x60, 6, 0x6C);
         break;
 
     case 1:
@@ -2002,7 +2002,7 @@ void Passive15_0115(PLW* wk) {
 void Passive15_0116(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, -0x7FA0, 0xB, 0x400, 0, -0x7FA0, -1, 0x20);
+        Check_Jump_Attack_Conditions(wk, -1, -0x7FA0, 0xB, 0x400, 0, -0x7FA0, -1, 0x20);
         break;
 
     default:
@@ -2050,7 +2050,7 @@ void Passive15_0119(PLW* wk) {
         break;
 
     case 3:
-        Branch_Unit_Area(wk, 6, 0x69, 0x6A, 1, 1);
+        Branch_By_Distance(wk, 6, 0x69, 0x6A, 1, 1);
         break;
 
     default:
@@ -2062,7 +2062,7 @@ void Passive15_0119(PLW* wk) {
 void Passive15_0120(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, 0x20, 8, 0x400, 1, -1, 0x20, 0x400);
+        Check_Jump_Attack_Conditions(wk, -1, 0x20, 8, 0x400, 1, -1, 0x20, 0x400);
         break;
 
     default:
@@ -2074,7 +2074,7 @@ void Passive15_0120(PLW* wk) {
 void Passive15_0121(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, 0x20, 8, 0x20, 1, -1, 0x20, 0x20);
+        Check_Jump_Attack_Conditions(wk, -1, 0x20, 8, 0x20, 1, -1, 0x20, 0x20);
         break;
 
     default:
@@ -2086,7 +2086,7 @@ void Passive15_0121(PLW* wk) {
 void Passive15_0122(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, 0x20, 8, 0x40, 1, -1, 0x20, 0x40);
+        Check_Jump_Attack_Conditions(wk, -1, 0x20, 8, 0x40, 1, -1, 0x20, 0x40);
         break;
 
     default:
@@ -2098,7 +2098,7 @@ void Passive15_0122(PLW* wk) {
 void Passive15_0123(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, 0x20, 8, 0x400, 2, -1, 0x20, 0x400);
+        Check_Jump_Attack_Conditions(wk, -1, 0x20, 8, 0x400, 2, -1, 0x20, 0x400);
         break;
 
     default:
@@ -2110,7 +2110,7 @@ void Passive15_0123(PLW* wk) {
 void Passive15_0124(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, 0x20, 8, 0x20, 2, -1, 0x20, 0x20);
+        Check_Jump_Attack_Conditions(wk, -1, 0x20, 8, 0x20, 2, -1, 0x20, 0x20);
         break;
 
     default:
@@ -2122,7 +2122,7 @@ void Passive15_0124(PLW* wk) {
 void Passive15_0125(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, 0x20, 8, 0x40, 2, -1, 0x20, 0x40);
+        Check_Jump_Attack_Conditions(wk, -1, 0x20, 8, 0x40, 2, -1, 0x20, 0x40);
         break;
 
     default:
@@ -2214,7 +2214,7 @@ void Passive15_0131(PLW* wk) {
 void Passive15_0132(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Branch_Unit_Area(wk, 6, 0x81, 0x82, 0x82, 0x83);
+        Branch_By_Distance(wk, 6, 0x81, 0x82, 0x82, 0x83);
         break;
 
     default:
@@ -2258,7 +2258,7 @@ void Passive15_0135(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 10, 0x700);
+        Jump_Command_Attack(wk, 8, 0x1C, 10, 0x700);
         break;
 
     default:
@@ -2274,7 +2274,7 @@ void Passive15_0136(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 10, 0x700);
+        Jump_Command_Attack(wk, 8, 0x1C, 10, 0x700);
         break;
 
     default:
@@ -2306,7 +2306,7 @@ void Passive15_0138(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1F, 10, 0x700);
+        Jump_Command_Attack(wk, 8, 0x1F, 10, 0x700);
         break;
 
     default:
@@ -2462,7 +2462,7 @@ void Passive15_0147(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 10, 0x700);
+        Jump_Command_Attack(wk, 8, 0x1C, 10, 0x700);
         break;
 
     default:
@@ -2490,7 +2490,7 @@ void Passive15_0148(PLW* wk) {
 void Passive15_0149(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F70, -1, 8, 0x20, 1, -1, 0x20, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F70, -1, 8, 0x20, 1, -1, 0x20, 0x20);
         break;
 
     default:
@@ -2502,7 +2502,7 @@ void Passive15_0149(PLW* wk) {
 void Passive15_0150(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F70, -0x7FB0, 8, 0x20, 2, -1, -0x7FB0, 0x20);
+        Check_Jump_Attack_Conditions(wk, -0x7F70, -0x7FB0, 8, 0x20, 2, -1, -0x7FB0, 0x20);
         break;
 
     case 1:
@@ -2594,7 +2594,7 @@ void Passive15_0155(PLW* wk) {
         break;
 
     case 1:
-        Branch_Unit_Area(wk, 6, 0x59, 0x5A, 0x5B, 1);
+        Branch_By_Distance(wk, 6, 0x59, 0x5A, 0x5B, 1);
         break;
 
     default:
@@ -2614,7 +2614,7 @@ void Passive15_0156(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x1F, 9, 0x700);
+        Jump_Command_Attack(wk, 8, 0x1F, 9, 0x700);
         break;
 
     default:
@@ -2662,7 +2662,7 @@ void Passive15_0159(PLW* wk) {
 void Passive15_0160(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x30, 2, 0xF);
+        Check_Safe_Retreat_Space(wk, 0x30, 2, 0xF);
         break;
 
     case 1:
@@ -2694,7 +2694,7 @@ void Passive15_0160(PLW* wk) {
 void Passive15_0161(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x20, 2, 0x1B);
+        Check_Safe_Retreat_Space(wk, 0x20, 2, 0x1B);
         break;
 
     case 1:
@@ -2706,7 +2706,7 @@ void Passive15_0161(PLW* wk) {
         break;
 
     case 3:
-        Search_Back_Term(wk, 0x30, 2, 0x1B);
+        Check_Safe_Retreat_Space(wk, 0x30, 2, 0x1B);
         break;
 
     case 4:
@@ -2726,7 +2726,7 @@ void Passive15_0162(PLW* wk) {
         break;
 
     case 1:
-        Search_Back_Term(wk, 0x30, 2, 6);
+        Check_Safe_Retreat_Space(wk, 0x30, 2, 6);
         break;
 
     case 2:
@@ -2750,7 +2750,7 @@ void Passive15_0162(PLW* wk) {
 void Passive15_0163(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -1, -0x7FA0, 8, 0x400, 2, -1, 0x20, 0x400);
+        Check_Jump_Attack_Conditions(wk, -1, -0x7FA0, 8, 0x400, 2, -1, 0x20, 0x400);
         break;
 
     default:

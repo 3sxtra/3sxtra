@@ -44,7 +44,7 @@ void effect_56_move(WORK_Other* ewk) {
     default:
     case 2:
         if (g_state.Message_Suicide[ewk->wu.charset_id]) {
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
             return;
         }
 
@@ -74,7 +74,7 @@ s32 effect_56_init(u8 type, u8 kill) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

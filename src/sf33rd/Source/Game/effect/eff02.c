@@ -162,7 +162,7 @@ void effect_02_move(WORK_Other* ewk) {
                 pp_screen_quake(g_state.bg_w.quake_y_index);
             }
 
-            push_effect_work(&ewk->wu);
+            Release_Effect(&ewk->wu);
             break;
         }
 
@@ -295,7 +295,7 @@ void effect_02_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -320,7 +320,7 @@ s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl) {
         return 0;
     }
 
-    if ((ix = pull_effect_work(2)) == -1) {
+    if ((ix = Acquire_Effect(2)) == -1) {
         return -1;
     }
 

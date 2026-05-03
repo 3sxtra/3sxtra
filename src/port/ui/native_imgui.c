@@ -3,7 +3,7 @@
 
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/engine/workuser_select.h"
-#include "sf33rd/Source/Game/effect/effect.h" // For frw pool and push_effect_work
+#include "sf33rd/Source/Game/effect/effect.h" // For frw pool and Release_Effect
 #include "sf33rd/Source/Game/effect/eff04.h"
 #include "sf33rd/Source/Game/effect/eff45.h"
 #include "sf33rd/Source/Game/effect/eff57.h"
@@ -131,7 +131,7 @@ void NativeUI_Clear(void) {
             for (int k = 0; k < EFFECT_MAX; k++) {
                 WORK_Other* w = (WORK_Other*)frw[k];
                 if (w->wu.be_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
-                    push_effect_work((WORK*)w);
+                    Release_Effect((WORK*)w);
                 }
             }
             g_state.Order[slot] = 0;
@@ -173,7 +173,7 @@ void NativeUI_End(void) {
             for (int k = 0; k < EFFECT_MAX; k++) {
                 WORK_Other* w = (WORK_Other*)frw[k];
                 if (w->wu.be_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
-                    push_effect_work((WORK*)w);
+                    Release_Effect((WORK*)w);
                 }
             }
 

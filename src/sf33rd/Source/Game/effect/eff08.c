@@ -39,7 +39,7 @@ const u8 Rewrite_Color_Data_08[2][13][2] = { { { 30, 2 },
 
 void effect_08_move(WORK_Other* ewk) {
     if (g_state.Suicide[5] & 0x80) {
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         return;
     }
 
@@ -79,7 +79,7 @@ s32 effect_08_init(s8 sc_num, s8 x, s8 y, u16 atr, s16 color_type) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

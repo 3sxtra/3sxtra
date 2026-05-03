@@ -36,7 +36,7 @@ void effect_92_move(WORK_Other* ewk) {
 
     default:
         g_state.flash_win_type[ewk->master_id][ewk->wu.dir_step] = g_state.win_type[ewk->master_id][ewk->wu.dir_step];
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -45,7 +45,7 @@ s32 effect_92_init(s16 PL_id, s16 win_number) {
     WORK_Other* ewk;
     s16 ix;
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

@@ -455,7 +455,7 @@ void effect_J7_move(WORK_Other* ewk) {
         break;
 
     default:
-        push_effect_work(&ewk->wu);
+        Release_Effect(&ewk->wu);
         break;
     }
 }
@@ -506,7 +506,7 @@ s32 effect_J7_init(PLW* wk) {
         return 0;
     }
 
-    if ((ix = pull_effect_work(6)) == -1) {
+    if ((ix = Acquire_Effect(6)) == -1) {
         return -1;
     }
 

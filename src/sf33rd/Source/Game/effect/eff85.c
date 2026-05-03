@@ -251,7 +251,7 @@ s32 swallow_sprize_check(WORK_Other* ewk) {
 
 void eff85_0200(WORK_Other* ewk) {
     all_cgps_put_back(&ewk->wu);
-    push_effect_work(&ewk->wu);
+    Release_Effect(&ewk->wu);
 }
 
 s32 effect_85_init() {
@@ -262,7 +262,7 @@ s32 effect_85_init() {
         return 0;
     }
 
-    if ((ix = pull_effect_work(4)) == -1) {
+    if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 

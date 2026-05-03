@@ -55,11 +55,11 @@ static void Pattern07_0001(PLW* wk) {
 static void Pattern07_0002(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 0xB, 0x1C, 8, -1);
+        Jump_Command_Attack(wk, 0xB, 0x1C, 8, -1);
         break;
 
     case 1:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 2:
@@ -99,7 +99,7 @@ static void Pattern07_0003(PLW* wk) {
 static void Pattern07_0004(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1E, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 8, -1);
         break;
 
     case 1:
@@ -147,7 +147,7 @@ static void Pattern07_0006(PLW* wk) {
 static void Pattern07_0007(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 1:
@@ -167,7 +167,7 @@ static void Pattern07_0007(PLW* wk) {
 static void Pattern07_0008(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F90, -0x7FC0, 8, 0x40, 0, -0x7F90, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F90, -0x7FC0, 8, 0x40, 0, -0x7F90, -1, 0x200);
         break;
 
     case 1:
@@ -195,7 +195,7 @@ static void Pattern07_0009(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1E, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1E, 9, -1);
         break;
 
     default:
@@ -207,7 +207,7 @@ static void Pattern07_0009(PLW* wk) {
 static void Pattern07_0010(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F90, -0x7FC0, 8, 0x40, 0, -0x7F90, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F90, -0x7FC0, 8, 0x40, 0, -0x7F90, -1, 0x200);
         break;
     case 1:
         Normal_Attack(wk, 9, 0x102);
@@ -264,11 +264,11 @@ static void Pattern07_0013(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 9, 0x1E, 9, -1);
+        Jump_Command_Attack(wk, 9, 0x1E, 9, -1);
         break;
 
     case 2:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 3:
@@ -284,7 +284,7 @@ static void Pattern07_0013(PLW* wk) {
 static void Pattern07_0014(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 8, 0x200, 2, -0x7F80, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 8, 0x200, 2, -0x7F80, -1, 0x200);
         break;
 
     case 1:
@@ -328,7 +328,7 @@ static void Pattern07_0016(PLW* wk) {
 static void Pattern07_0017(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x20, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x20, 0xA, -1);
         break;
 
     default:
@@ -340,7 +340,7 @@ static void Pattern07_0017(PLW* wk) {
 static void Pattern07_0018(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Search_Back_Term(wk, 0x50, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x50, 1, -1);
         break;
 
     case 1:
@@ -364,7 +364,7 @@ static void Pattern07_0018(PLW* wk) {
 static void Pattern07_0019(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F9C, -0x7FC0, 8, 0x100, 0, -0x7F90, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F9C, -0x7FC0, 8, 0x100, 0, -0x7F90, -1, 0x200);
         break;
 
     case 1:
@@ -376,7 +376,7 @@ static void Pattern07_0019(PLW* wk) {
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x20, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x20, 9, -1);
         break;
 
     default:
@@ -392,7 +392,7 @@ static void Pattern07_0020(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 9, -1);
         break;
 
     default:
@@ -404,7 +404,7 @@ static void Pattern07_0020(PLW* wk) {
 static void Pattern07_0021(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7F9C, -0x7FC0, 8, 0x20, 0, -0x7F90, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7F9C, -0x7FC0, 8, 0x20, 0, -0x7F90, -1, 0x200);
         break;
 
     case 1:
@@ -416,7 +416,7 @@ static void Pattern07_0021(PLW* wk) {
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x1C, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 9, -1);
         break;
 
     default:
@@ -428,7 +428,7 @@ static void Pattern07_0021(PLW* wk) {
 static void Pattern07_0022(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 8, 0x40, 0, -0x7F90, -1, 0x100);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 8, 0x40, 0, -0x7F90, -1, 0x100);
         break;
 
     case 1:
@@ -520,7 +520,7 @@ static void Pattern07_0027(PLW* wk) {
         break;
 
     case 4:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 5:
@@ -552,7 +552,7 @@ static void Pattern07_0029(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1F, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1F, 9, -1);
         break;
 
     default:
@@ -584,7 +584,7 @@ static void Pattern07_0030(PLW* wk) {
 static void Pattern07_0031(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 9, 0x200, 0, -0x7F68, -1, 0x200);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 9, 0x200, 0, -0x7F68, -1, 0x200);
         break;
 
     case 1:
@@ -612,7 +612,7 @@ static void Pattern07_0032(PLW* wk) {
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x1F, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1F, 9, -1);
         break;
 
     default:
@@ -628,7 +628,7 @@ static void Pattern07_0033(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x20, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x20, 0xA, -1);
         break;
 
     default:
@@ -696,7 +696,7 @@ static void Pattern07_0037(PLW* wk) {
         break;
 
     case 1:
-        Search_Back_Term(wk, 0x60, 1, -1);
+        Check_Safe_Retreat_Space(wk, 0x60, 1, -1);
         break;
 
     case 2:
@@ -744,7 +744,7 @@ static void Pattern07_0039(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -760,7 +760,7 @@ static void Pattern07_0040(PLW* wk) {
         break;
 
     case 1:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -780,7 +780,7 @@ static void Pattern07_0041(PLW* wk) {
         break;
 
     case 2:
-        J_Command_Attack(wk, 8, 0x20, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x20, 0xA, -1);
         break;
 
     default:
@@ -804,7 +804,7 @@ static void Pattern07_0042(PLW* wk) {
         break;
 
     case 3:
-        J_Command_Attack(wk, 8, 0x1C, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1C, 0xA, -1);
         break;
 
     default:
@@ -816,7 +816,7 @@ static void Pattern07_0042(PLW* wk) {
 static void Pattern07_0043(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 8, 0x40, 0, -1, 0x30, 0x4020);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 8, 0x40, 0, -1, 0x30, 0x4020);
         break;
 
     default:
@@ -828,7 +828,7 @@ static void Pattern07_0043(PLW* wk) {
 static void Pattern07_0044(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 8, 0x40, 0, -1, 0x30, 0x400);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 8, 0x40, 0, -1, 0x30, 0x400);
         break;
 
     default:
@@ -840,7 +840,7 @@ static void Pattern07_0044(PLW* wk) {
 static void Pattern07_0045(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 8, 0x400, 0, -1, -1, -1);
+        Check_Jump_Attack_Conditions(wk, -0x7FA0, -0x7FC0, 8, 0x400, 0, -1, -1, -1);
         break;
 
     default:
@@ -956,7 +956,7 @@ static void Pattern07_0052(PLW* wk) {
 static void Pattern07_0053(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Branch_Unit_Area(wk, 2, 0x38, 0x3A, 0x3A, 0x3A);
+        Branch_By_Distance(wk, 2, 0x38, 0x3A, 0x3A, 0x3A);
         break;
 
     default:
@@ -1136,7 +1136,7 @@ static void Pattern07_0063(PLW* wk) {
 static void Pattern07_0064(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1F, 0xA, -1);
+        Jump_Command_Attack(wk, 8, 0x1F, 0xA, -1);
         break;
 
     default:
@@ -1148,7 +1148,7 @@ static void Pattern07_0064(PLW* wk) {
 static void Pattern07_0065(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1F, 9, -1);
+        Jump_Command_Attack(wk, 8, 0x1F, 9, -1);
         break;
 
     default:
@@ -1160,7 +1160,7 @@ static void Pattern07_0065(PLW* wk) {
 static void Pattern07_0066(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        J_Command_Attack(wk, 8, 0x1F, 8, -1);
+        Jump_Command_Attack(wk, 8, 0x1F, 8, -1);
         break;
 
     default:
@@ -1256,7 +1256,7 @@ static void Pattern07_0071(PLW* wk) {
 static void Pattern07_0072(PLW* wk) {
     switch (g_state.CP_Index[wk->wu.id][0]) {
     case 0:
-        Branch_Unit_Area(wk, 2, 0x49, 0x49, 0x4A, 0x4B);
+        Branch_By_Distance(wk, 2, 0x49, 0x49, 0x4A, 0x4B);
         break;
 
     default:
