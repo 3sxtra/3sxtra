@@ -53,7 +53,7 @@ void effect_M5_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -69,7 +69,7 @@ void effect_M5_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -91,7 +91,7 @@ void effect_M5_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -106,7 +106,7 @@ void effect_M5_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -149,7 +149,7 @@ s32 effect_M5_init(PLW* oya) {
     ewk->wu.my_priority = ewk->wu.position_z = 57;
     *ewk->wu.char_table = _etc_char_table;
     ewk->wu.my_col_code = oya->wu.my_col_code + 4;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->master_id = oya->wu.id;
 
     if (oya->wu.id) {

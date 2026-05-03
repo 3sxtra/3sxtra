@@ -239,10 +239,10 @@ static int l_read_player(lua_State* L) {
     // Ukemi
     PUSH_INT(L, t, "recovery_roll_ok_timer", wk->recovery_roll_ok_timer);
 
-    // --- Stun (PiyoriType) ---
+    // --- Stun (StunState) ---
     if (wk->py) {
         PUSH_INT(L, t, "stun_flag", wk->py->flag);
-        PUSH_INT(L, t, "stun_genkai", wk->py->genkai);
+        PUSH_INT(L, t, "stun_genkai", wk->py->stun_threshold);
         PUSH_INT(L, t, "stun_time", wk->py->time);
         PUSH_INT(L, t, "stun_now", wk->py->now.timer);
         PUSH_INT(L, t, "stun_recover", wk->py->recover);

@@ -206,7 +206,7 @@ static const void* read_char_table(SDL_IOStream* rom, Location location, Charact
                 *p++ = cg_ctr;
 
                 for (int i = 0; i < 2; i++) {
-                    SDL_ReadU16BE(rom, p); // cg_se ... cg_olc_ix
+                    SDL_ReadU16BE(rom, p); // cg_se ... anim_overlap_col_index
                     p += 2;
                 }
 
@@ -217,14 +217,14 @@ static const void* read_char_table(SDL_IOStream* rom, Location location, Charact
                 p += 2;
 
                 if (cgd_type >= 4) {
-                    Sint16 cg_att_ix = 0;
-                    Uint16 cg_hit_ix = 0;
-                    SDL_ReadS16BE(rom, &cg_att_ix);
-                    SDL_ReadU16BE(rom, &cg_hit_ix);
+                    Sint16 anim_hitbox_index = 0;
+                    Uint16 anim_hurtbox_index = 0;
+                    SDL_ReadS16BE(rom, &anim_hitbox_index);
+                    SDL_ReadU16BE(rom, &anim_hurtbox_index);
 
-                    *(Uint16*)p = cg_hit_ix;
+                    *(Uint16*)p = anim_hurtbox_index;
                     p += 2;
-                    *(Sint16*)p = cg_att_ix;
+                    *(Sint16*)p = anim_hitbox_index;
                     p += 2;
 
                     for (int i = 0; i < 4; i++) {

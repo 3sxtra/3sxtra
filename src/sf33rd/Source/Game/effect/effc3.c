@@ -1142,7 +1142,7 @@ static void set_display_car_parts(WORK_Other* wk) {
     bs2_get_parts_break(&wk->wu);
     adrs = car_parts[wk->wu.type - 1][wk->wu.scr_mv_y][wk->wu.scr_mv_x - 1];
     wk->wu.cg_number = adrs[0];
-    wk->wu.body_hurtbox = wk->wu.body_adrs + (wk->wu.cg_hit_ix = adrs[1]);
+    wk->wu.body_hurtbox = wk->wu.body_adrs + (wk->wu.anim_hurtbox_index = adrs[1]);
 }
 
 static void clear_parts_hit_data(WORK* wk) {

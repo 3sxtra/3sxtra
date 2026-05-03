@@ -59,7 +59,7 @@ s32 effect_54_init(WORK_Other* oya) {
         ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
-        ewk->wu.sync_suzi = 0;
+        ewk->wu.sync_bg_strip = 0;
         ewk->wu.char_table[0] = _eng_char_table;
         suzi_offset_set(ewk);
     }

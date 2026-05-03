@@ -156,7 +156,7 @@ s32 effect_D1_init(WORK_Other* oya, s32 /* unused */) {
     ewk->master_id = oya->master_id;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_priority = ewk->wu.position_z = oya->wu.position_z;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->wu.rl_flag = oya->wu.rl_flag;
 
     if (oya->master_id) {

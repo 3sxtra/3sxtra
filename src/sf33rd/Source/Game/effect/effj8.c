@@ -547,7 +547,7 @@ s32 effect_J8_init() {
 
         ewk->wu.my_priority = ewk->wu.position_z = 83;
         ewk->wu.char_index = 4;
-        ewk->wu.sync_suzi = 0;
+        ewk->wu.sync_bg_strip = 0;
         ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
         suzi_offset_set(ewk);
     }

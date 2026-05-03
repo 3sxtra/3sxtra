@@ -268,7 +268,7 @@ static void wwwk_set(WORK_Other_CONN* ewk) {
     ewk->wu.work_id = 16;
     ewk->wu.rl_flag = 0;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_mts = 12;
     ewk->wu.my_col_code = 55;

@@ -32,7 +32,7 @@ void effect_L6_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -151,7 +151,7 @@ s32 effect_L6_init(WORK* wk, u8 typel6) {
     ewk->wu.char_table[0] = _etc3_char_table;
     ewk->wu.char_table[1] = _etc_char_table;
     ewk->wu.char_index = 0;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
 
     if (typel6) {
         ewk->wu.rl_flag = wk->rl_flag ^ 1;

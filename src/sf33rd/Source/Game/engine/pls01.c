@@ -183,7 +183,7 @@ s16 check_rl_on_car(PLW* wk) {
 }
 
 /** @brief Returns latest bonus-stage car area check result. */
-s32 saishin_bs2_area_car(PLW* wk) {
+s32 latest_bs2_area_car(PLW* wk) {
     wk->bs2_area_car2 = 0;
     wk->bs2_over_car2 = 0;
 
@@ -215,7 +215,7 @@ s32 saishin_bs2_area_car(PLW* wk) {
 }
 
 /** @brief Returns whether the player is standing on the car in bonus stage 2. */
-s8 saishin_bs2_on_car(PLW* wk) {
+s8 latest_bs2_on_car(PLW* wk) {
     if (wk->bs2_on_car && (wk->wu.xyz[1].disp.pos > (g_state.bs2_floor[2] + 2))) {
         wk->bs2_on_car = 0;
     }
@@ -269,7 +269,7 @@ s32 check_sankaku_tobi(PLW* wk) {
         return 0;
     }
 
-    if (wk->micchaku_wall_time == 8 || wk->micchaku_wall_time == 0) {
+    if (wk->corner_stuck_timer == 8 || wk->corner_stuck_timer == 0) {
         return 0;
     }
 
@@ -291,19 +291,19 @@ void check_extra_jump_timer(PLW* wk) {
 
     if (wk->wu.xyz[1].disp.pos > 48 && wk->close_proximity_flag) {
         if (wk->wu.routine_no[1] == 1) {
-            wk->micchaku_wall_time = 0;
+            wk->corner_stuck_timer = 0;
         }
 
-        wk->micchaku_wall_time++;
+        wk->corner_stuck_timer++;
 
-        if (wk->micchaku_wall_time > 8) {
-            wk->micchaku_wall_time = 8;
+        if (wk->corner_stuck_timer > 8) {
+            wk->corner_stuck_timer = 8;
         }
 
         return;
     }
 
-    wk->micchaku_wall_time = 0;
+    wk->corner_stuck_timer = 0;
 }
 
 /** @brief Rebuilds movement X/Y speeds after a wall-kick. */
@@ -697,7 +697,7 @@ void jumping_union_process(WORK* wk, s16 num) {
     cal_mvxy_speed(wk);
     char_move(wk);
 
-    if ((g_state.Bonus_Game_Flag == 20) && (wk->pl_operator != 0) && (saishin_bs2_area_car((PLW*)wk) == 0)) {
+    if ((g_state.Bonus_Game_Flag == 20) && (wk->pl_operator != 0) && (latest_bs2_area_car((PLW*)wk) == 0)) {
         if (!(wk->xyz[1].disp.pos + wk->cg_jphos > g_state.bs2_floor[2])) {
             wk->position_y = wk->xyz[1].disp.pos = g_state.bs2_floor[2];
             wk->mvxy.a[1].sp = 0;

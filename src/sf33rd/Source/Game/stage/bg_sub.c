@@ -874,7 +874,7 @@ void zoom_ud_check() {
 
 /** @brief Set suzi (tile strip) offset for a background object. */
 void suzi_offset_set(WORK_Other* ewk) {
-    if (ewk->wu.sync_suzi == 1) {
+    if (ewk->wu.sync_bg_strip == 1) {
         suzi_offset_set_sub(ewk);
     }
 }
@@ -895,15 +895,15 @@ static s32 suzi_offset_set_sub(WORK_Other* ewk) {
 }
 
 /** @brief Synchronize object position with suzi tile strip data. */
-void suzi_sync_pos_set(WORK_Other* ewk) {
+void sync_bg_strip_position(WORK_Other* ewk) {
     s16 work;
 
-    if (ewk->wu.sync_suzi) {
-        if (ewk->wu.sync_suzi == 2) {
+    if (ewk->wu.sync_bg_strip) {
+        if (ewk->wu.sync_bg_strip == 2) {
             suzi_offset_set_sub(ewk);
         }
 
-        work = *ewk->wu.suzi_offset;
+        work = *ewk->wu.bg_strip_offset;
         work -= 0x200;
     } else {
         work = 0;

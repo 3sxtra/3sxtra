@@ -86,7 +86,7 @@ s32 effect_72_init(WORK_Other* oya, u8 type_id) {
         ewk->wu.char_index = 9;
     }
 
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
     return 0;
 }

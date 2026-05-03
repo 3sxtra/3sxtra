@@ -165,7 +165,7 @@ s32 effect_19_init() {
         ewk->wu.my_family = 2;
         ewk->wu.char_index = 6;
         ewk->wu.char_table[0] = _jp3_char_table;
-        ewk->wu.sync_suzi = 0;
+        ewk->wu.sync_bg_strip = 0;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = 8492;
         ewk->wu.my_mts = 7;

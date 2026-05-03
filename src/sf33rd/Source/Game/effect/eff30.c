@@ -46,7 +46,7 @@ void effect_30_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -56,7 +56,7 @@ void effect_30_move(WORK_Other* ewk) {
             set_char_move_init(&ewk->wu, 0, 2);
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -66,7 +66,7 @@ void effect_30_move(WORK_Other* ewk) {
             ewk->wu.shadow_x -= 4;
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -129,7 +129,7 @@ s32 effect_30_init(WORK* wk) {
     ewk->wu.position_z = 28;
     ewk->wu.char_table[0] = _etc3_char_table;
     ewk->wu.char_index = 0;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

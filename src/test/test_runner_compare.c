@@ -145,8 +145,8 @@ static void compare_main_values(SDL_IOStream* io) {
         const s16 vital_new_cps3 = read_s16(io, plw_offset + WORK_VITAL_NEW_OFFSET);
         stop_if(vital_new_3sx != vital_new_cps3);
 
-        const s16 stun_3sx = g_state.stun_type[i].now.quantity.h;
-        const s16 stun_cps3 = read_s16(io, PIYORI_TYPE_OFFSET + i * sizeof(PiyoriType) + offsetof(PiyoriType, now));
+        const s16 stun_3sx = g_state.stun_state[i].now.quantity.h;
+        const s16 stun_cps3 = read_s16(io, PIYORI_TYPE_OFFSET + i * sizeof(StunState) + offsetof(StunState, now));
         stop_if(stun_3sx != stun_cps3);
 
         const s16 sa_gauge_3sx = g_state.super_arts[i].gauge.s.h;

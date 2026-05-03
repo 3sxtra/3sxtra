@@ -136,7 +136,7 @@ s32 effect_06_init() {
         ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
-        ewk->wu.sync_suzi = *data_ptr++;
+        ewk->wu.sync_bg_strip = *data_ptr++;
         suzi_offset_set(ewk);
         ewk->wu.my_mts = 7;
         ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

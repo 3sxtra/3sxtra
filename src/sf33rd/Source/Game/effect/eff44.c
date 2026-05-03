@@ -121,7 +121,7 @@ s32 effect_44_init(s16 type) {
         ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
-        ewk->wu.sync_suzi = *data_ptr++;
+        ewk->wu.sync_bg_strip = *data_ptr++;
         ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
         suzi_offset_set(ewk);
         ewk->wu.my_mts = 7;

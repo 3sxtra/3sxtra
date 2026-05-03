@@ -88,7 +88,7 @@ s32 effect_29_init() {
     ewk->wu.xyz[1].disp.pos = 0;
     ewk->wu.my_priority = ewk->wu.position_z = 82;
     ewk->wu.char_index = 0;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->wu.char_table[0] = _hkg_char_table;
     suzi_offset_set(ewk);
     ewk->wu.old_routine_no[0] = 120;

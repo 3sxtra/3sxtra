@@ -87,7 +87,7 @@ void player_at_vs_player_dm(s16 ix2, s16 ix) {
     pp_pulpara_hit(&as->wu);
     ds->dm_point = hs[ix].dm_body;
     gddir = get_guard_direction(&as->wu, &ds->wu);
-    setup_saishin_lvdir(ds, gddir);
+    setup_latest_stick_dir(ds, gddir);
     setup_dm_rl(&as->wu, &ds->wu);
     cal_hit_mark_pos(&as->wu, &ds->wu, ix2, ix);
     set_damage_and_piyo(as, ds);

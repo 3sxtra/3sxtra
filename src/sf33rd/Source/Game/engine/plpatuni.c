@@ -89,7 +89,7 @@ void Att_METAMOR_REBIRTH(PLW* wk) {
         if (wk->wu.cg_type == 31) {
             wk->wu.cg_type = 0;
             wk->caution_flag = 0;
-            wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.cg_hit_ix];
+            wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.anim_hurtbox_index];
             Set_Collision_Boxes(&wk->wu);
             break;
         }

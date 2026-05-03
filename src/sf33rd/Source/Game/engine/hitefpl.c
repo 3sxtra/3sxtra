@@ -22,7 +22,7 @@ void effect_at_vs_player_dm(s16 ix2, s16 ix) {
 
     ds->dm_point = hs[ix].dm_body;
     gddir = get_guard_direction(&as->wu, &ds->wu);
-    setup_saishin_lvdir(ds, gddir);
+    setup_latest_stick_dir(ds, gddir);
     setup_dm_rl_pldm(&as->wu, &ds->wu);
     cal_hit_mark_pos(&as->wu, &ds->wu, ix2, ix);
     cal_damage_vitality_eff(as, ds);

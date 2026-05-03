@@ -199,7 +199,7 @@ static void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.damage_calc_divider = tblh[3];
     ewk->wu.direction = tblh[4];
     ewk->wu.dir_old = tblh[5];
-    ewk->wu.waku_work_index = mwk->image_data_index;
+    ewk->wu.bbox_work_index = mwk->image_data_index;
     ewk->wu.olc_work_ix[0] = tblh[6] - 1;
     ewk->wu.olc_work_ix[1] = tblh[7];
     ewk->wu.olc_work_ix[2] = tblh[8];
@@ -281,8 +281,8 @@ void effect_e7_e8_init_union(WORK_Other* nwk, WORK_Other* ek, PLW* mk) {
 }
 
 void get_attdata_of_illusion(WORK_Other* ewk) {
-    ewk->wu.cg_hit_ix = g_state.afterimage_table[ewk->master_id][ewk->wu.type].hit_ix;
-    ewk->wu.cg_att_ix = g_state.afterimage_table[ewk->master_id][ewk->wu.type].renew;
+    ewk->wu.anim_hurtbox_index = g_state.afterimage_table[ewk->master_id][ewk->wu.type].hit_ix;
+    ewk->wu.anim_hitbox_index = g_state.afterimage_table[ewk->master_id][ewk->wu.type].renew;
     ewk->wu.xyz[0].disp.pos = ewk->wu.position_x;
     ewk->wu.xyz[1].disp.pos = ewk->wu.position_y;
     ewk->wu.xyz[2].disp.pos = ewk->wu.position_z;
@@ -303,7 +303,7 @@ void get_attdata_of_illusion(WORK_Other* ewk) {
     ewk->wu.attack_type = g_state.afterimage_table[ewk->master_id][ewk->wu.type].light_attack_flag;
     ewk->wu.at_koa = acatkoa_table[ewk->wu.attack_type];
 
-    if (ewk->wu.cg_hit_ix) {
+    if (ewk->wu.anim_hurtbox_index) {
         hit_push_request(&ewk->wu);
     }
 }

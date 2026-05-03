@@ -98,7 +98,7 @@ s32 effect_60_init(s16 type) {
     ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
     ewk->wu.char_index = *data_ptr++;
     ewk->wu.hit_stop = *data_ptr++;
-    ewk->wu.sync_suzi = *data_ptr++;
+    ewk->wu.sync_bg_strip = *data_ptr++;
     ewk->wu.old_routine_no[0] = *data_ptr++;
     ewk->wu.old_routine_no[1] = ewk->wu.old_routine_no[0];
     ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];

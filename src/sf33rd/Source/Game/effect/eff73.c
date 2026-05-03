@@ -126,7 +126,7 @@ s32 effect_73_init(WORK_Other* oya) {
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.dead_f = 1;
         ewk->wu.my_family = 2;
-        ewk->wu.sync_suzi = 0;
+        ewk->wu.sync_bg_strip = 0;
         *ewk->wu.char_table = _hkg_char_table;
         ewk->wu.xyz[0].disp.pos = oya->wu.xyz[0].disp.pos + 0;
         ewk->wu.xyz[1].disp.pos = oya->wu.xyz[1].disp.pos + 64;

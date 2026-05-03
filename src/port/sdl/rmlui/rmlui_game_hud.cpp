@@ -23,7 +23,7 @@
 extern "C" {
 #include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
 #include "sf33rd/Source/Game/engine/cmb_win.h" /* CMST_BUFF, g_state.cmst_buff[2][5], g_state.cmb_stock[2], g_state.cst_read[2] */
-#include "sf33rd/Source/Game/engine/plcnt.h"    /* g_state.stun_type[2] (PiyoriType), g_state.plw[2] */
+#include "sf33rd/Source/Game/engine/plcnt.h"    /* g_state.stun_state[2] (StunState), g_state.plw[2] */
 #include "sf33rd/Source/Game/engine/spgauge.h"  /* SPG_DAT, g_state.spg_dat[2] — SA gauge */
 #include "sf33rd/Source/Game/engine/workuser.h" /* PLW, g_state.Super_Arts, g_state.My_char, g_state.Win_Record, g_state.Max_vitality, g_state.Mode_Type … (pulls structs.h) */
 #include "sf33rd/Source/Game/training/training_state.h" /* g_training_state — combo stun */
@@ -238,8 +238,8 @@ extern "C" void rmlui_game_hud_init(void) {
     // ── Stun ──
     ctor.BindFunc("p1_stun", [](Rml::Variant& v) { v = (int)g_state.sdat[0].cstn; });
     ctor.BindFunc("p2_stun", [](Rml::Variant& v) { v = (int)g_state.sdat[1].cstn; });
-    ctor.BindFunc("p1_stun_max", [](Rml::Variant& v) { v = (int)g_state.stun_type[0].genkai; });
-    ctor.BindFunc("p2_stun_max", [](Rml::Variant& v) { v = (int)g_state.stun_type[1].genkai; });
+    ctor.BindFunc("p1_stun_max", [](Rml::Variant& v) { v = (int)g_state.stun_state[0].stun_threshold; });
+    ctor.BindFunc("p2_stun_max", [](Rml::Variant& v) { v = (int)g_state.stun_state[1].stun_threshold; });
     ctor.BindFunc("p1_stun_active", [](Rml::Variant& v) { v = (bool)(g_state.sdat[0].sflag != 0); });
     ctor.BindFunc("p2_stun_active", [](Rml::Variant& v) { v = (bool)(g_state.sdat[1].sflag != 0); });
 
@@ -283,12 +283,12 @@ extern "C" void rmlui_game_hud_init(void) {
     });
     ctor.BindFunc("p1_stun_width", [](Rml::Variant& v) {
         char b[32];
-        snprintf(b, sizeof(b), "%ddp", g_state.stun_type[0].genkai);
+        snprintf(b, sizeof(b), "%ddp", g_state.stun_state[0].stun_threshold);
         v = Rml::String(b);
     });
     ctor.BindFunc("p2_stun_width", [](Rml::Variant& v) {
         char b[32];
-        snprintf(b, sizeof(b), "%ddp", g_state.stun_type[1].genkai);
+        snprintf(b, sizeof(b), "%ddp", g_state.stun_state[1].stun_threshold);
         v = Rml::String(b);
     });
     ctor.BindFunc("p1_sa_width", [](Rml::Variant& v) {
@@ -463,8 +463,8 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_BOOL(cockpit_visible, g_state.Disp_Cockpit != 0);
     DIRTY_INT(p1_stun, (int)g_state.sdat[0].cstn);
     DIRTY_INT(p2_stun, (int)g_state.sdat[1].cstn);
-    DIRTY_INT(p1_stun_max, (int)g_state.stun_type[0].genkai);
-    DIRTY_INT(p2_stun_max, (int)g_state.stun_type[1].genkai);
+    DIRTY_INT(p1_stun_max, (int)g_state.stun_state[0].stun_threshold);
+    DIRTY_INT(p2_stun_max, (int)g_state.stun_state[1].stun_threshold);
     DIRTY_BOOL(p1_stun_active, g_state.sdat[0].sflag != 0);
     DIRTY_BOOL(p2_stun_active, g_state.sdat[1].sflag != 0);
     DIRTY_INT(p1_sa_stocks, (int)g_state.spg_dat[0].spg_level);
@@ -494,9 +494,9 @@ extern "C" void rmlui_game_hud_update(void) {
     }
 
     char dwb[32];
-    snprintf(dwb, sizeof(dwb), "%ddp", g_state.stun_type[0].genkai);
+    snprintf(dwb, sizeof(dwb), "%ddp", g_state.stun_state[0].stun_threshold);
     DIRTY_STR(p1_stun_width, Rml::String(dwb));
-    snprintf(dwb, sizeof(dwb), "%ddp", g_state.stun_type[1].genkai);
+    snprintf(dwb, sizeof(dwb), "%ddp", g_state.stun_state[1].stun_threshold);
     DIRTY_STR(p2_stun_width, Rml::String(dwb));
     snprintf(dwb, sizeof(dwb), "%ddp", g_state.spg_dat[0].spg_dotlen);
     DIRTY_STR(p1_sa_width, Rml::String(dwb));

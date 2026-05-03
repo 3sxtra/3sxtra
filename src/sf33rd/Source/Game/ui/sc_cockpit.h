@@ -19,7 +19,7 @@ void stun_put(u8 Pl_Num, u8 stun);
 void stun_base_put(u8 Pl_Num, s16 len);
 void stun_mark_write(u8 Pl_Num, s16 Len);
 void max_mark_write(s8 Pl_Num, u8 Gauge_Len, u8 Mchar, u8 Mass_Len);
-void stun_gauge_waku_write(s16 p1len, s16 p2len);
+void render_stun_gauge_frame(s16 p1len, s16 p2len);
 void sa_stock_trans(s16 St_Num, s16 Spg_Col, s8 Stpl_Num);
 void sa_fullstock_trans(s16 St_Num, s16 Spg_Col, s8 Stpl_Num);
 void sa_number_write(s8 Stpl_Num, u16 x);

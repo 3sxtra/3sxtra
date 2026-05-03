@@ -61,7 +61,7 @@ static void eff15_koishi(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -75,7 +75,7 @@ static void eff15_koishi(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -121,7 +121,7 @@ s32 effect_15_init(WORK* wk, u8 data) {
         ewk->wu.char_index = 39;
     }
 
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

@@ -238,7 +238,7 @@ s32 effect_24_init() {
 
         ewk->wu.my_col_mode = 0x4200;
         *ewk->wu.char_table = _grm_char_table;
-        ewk->wu.sync_suzi = 0;
+        ewk->wu.sync_bg_strip = 0;
         ewk->wu.my_col_code = *data_ptr++;
         ewk->wu.xyz[0].disp.pos = *data_ptr++;
         ewk->wu.xyz[1].disp.pos = *data_ptr++;

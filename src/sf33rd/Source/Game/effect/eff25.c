@@ -307,7 +307,7 @@ s32 effect_25_init(s8 num) {
     ewk->wu.my_priority = *data_ptr++;
     ewk->wu.char_index = *data_ptr++;
     ewk->wu.hit_stop = *data_ptr++;
-    ewk->wu.sync_suzi = *data_ptr++;
+    ewk->wu.sync_bg_strip = *data_ptr++;
     ewk->wu.old_routine_no[0] = *data_ptr++;
     ewk->wu.old_routine_no[1] = *data_ptr++;
     ewk->wu.old_routine_no[7] = *data_ptr++;

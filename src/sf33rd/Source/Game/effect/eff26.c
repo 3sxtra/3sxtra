@@ -424,7 +424,7 @@ s32 effect_26_init(WORK_Other* oya, s16 type26) {
         ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
         ewk->wu.hit_stop = *data_ptr++;
-        ewk->wu.sync_suzi = *data_ptr++;
+        ewk->wu.sync_bg_strip = *data_ptr++;
         ewk->wu.old_routine_no[0] = *data_ptr++;
         ewk->wu.old_routine_no[1] = *data_ptr++;
         ewk->wu.old_routine_no[2] = *data_ptr++;

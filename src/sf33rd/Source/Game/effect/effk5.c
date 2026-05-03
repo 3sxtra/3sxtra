@@ -88,7 +88,7 @@ void effect_k5_move(WORK_Other* ewk) {
         mvj = (MVJ*)(((WORK*)ewk->wu.target_adrs)->routine_no);
 
         init_k5_work(&ewk->wu, mwk, mvj);
-        ewk->wu.old_routine_no[1] = mwk->cg_hit_ix;
+        ewk->wu.old_routine_no[1] = mwk->anim_hurtbox_index;
         get_table_adrs_K5(mwk);
         k5_init_data(mwk, mvj, (u16*)(&mwk->cg_ja));
         break;
@@ -100,7 +100,7 @@ void effect_k5_move(WORK_Other* ewk) {
             return;
         }
 
-        if (((PLW*)mwk)->waku_ram_index != ewk->wu.myself) {
+        if (((PLW*)mwk)->bbox_ram_index != ewk->wu.myself) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             return;
@@ -112,9 +112,9 @@ void effect_k5_move(WORK_Other* ewk) {
         if (mwk->phase_k5_exec_ok) {
             mwk->phase_k5_exec_ok = 0;
 
-            if (mwk->phase_k5_init_flag || (ewk->wu.old_routine_no[1] != mwk->cg_hit_ix)) {
+            if (mwk->phase_k5_init_flag || (ewk->wu.old_routine_no[1] != mwk->anim_hurtbox_index)) {
                 mwk->phase_k5_init_flag = 0;
-                ewk->wu.old_routine_no[1] = mwk->cg_hit_ix;
+                ewk->wu.old_routine_no[1] = mwk->anim_hurtbox_index;
                 ewk->wu.routine_no[1] = 0;
                 k5_init_data(mwk, mvj, (u16*)(&mwk->cg_ja));
             }
@@ -182,9 +182,9 @@ static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
             if (gotcp.cps[0] >= 0x100) {
                 st.l = gotcp.cpl[2];
                 st.l *= 8;
-                ewk->cg_hit_ix = st.w.h & 0x1FF;
+                ewk->anim_hurtbox_index = st.w.h & 0x1FF;
 
-                if (ewk->old_routine_no[1] == ewk->cg_hit_ix) {
+                if (ewk->old_routine_no[1] == ewk->anim_hurtbox_index) {
                     if ((gotcp.cpc[1] != 0xFF) || (gotcp.cpc[1] < 0xC8)) {
                         ewk->old_routine_no[0] += gotcp.cpc[1];
                     }
@@ -364,7 +364,7 @@ static u32 decode_mvsw(u16 flag) {
 }
 
 static void get_table_adrs_K5(WORK* wk) {
-    wk->cg_ja = wk->hit_ix_table[wk->cg_hit_ix];
+    wk->cg_ja = wk->hit_ix_table[wk->anim_hurtbox_index];
     wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.boix];
     wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
 }
@@ -376,7 +376,7 @@ static void init_k5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
         mvj[i].index = mvj[i].rno = 0;
     }
 
-    ewk->cg_hit_ix = mwk->cg_hit_ix;
+    ewk->anim_hurtbox_index = mwk->anim_hurtbox_index;
     ewk->hit_ix_table = mwk->hit_ix_table;
     ewk->body_adrs = mwk->body_adrs;
     ewk->hand_adrs = mwk->hand_adrs;
@@ -467,6 +467,6 @@ s32 effect_k5_init(PLW* wk) {
     ewk->wu.id = 0xCD;
     ewk->wu.work_id = 0x10;
     ewk->my_master = wk;
-    wk->waku_ram_index = ewk->wu.myself;
+    wk->bbox_ram_index = ewk->wu.myself;
     return 0;
 }

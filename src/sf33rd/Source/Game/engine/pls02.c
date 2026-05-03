@@ -64,7 +64,7 @@ static s32 random_16_ex();
 s8 get_guard_direction(WORK* as, WORK* ds);
 void add_sp_arts_gauge_guard(PLW* wk);
 static s16 cal_sa_gauge_waribiki(PLW* wk, s16 asag);
-void setup_saishin_lvdir(PLW* ds, s8 gddir);
+void setup_latest_stick_dir(PLW* ds, s8 gddir);
 void dead_voice_request();
 static void dead_voice_request2(PLW* wk);
 
@@ -133,7 +133,7 @@ const s16 dir32_skydm[32] = { 88, 88, 88, 88, 88, 88, 88, 88, 88, 88, 88, 97, 97
 const s16 dir32_grddm[32] = { 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 39, 39, 39, 39, 40,
                               40, 40, 39, 39, 39, 39, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91 };
 
-const u8 convert_saishin_lvdir[2][16] = { { 0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 2, 0, 0, 0, 0, 0 },
+const u8 convert_latest_stick_dir[2][16] = { { 0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 2, 0, 0, 0, 0, 0 },
                                           { 0, 0, 0, 0, 2, 2, 2, 0, 1, 1, 1, 0, 0, 0, 0, 0 } };
 
 const s16 dead_voice_table[20][2] = { { 864, 865 }, { 928, 929 }, { 512, 513 }, { 608, 609 }, { 896, 897 },
@@ -422,7 +422,7 @@ void check_body_touch2() {
         cmw = &g_state.plw[0];
     }
 
-    if (!saishin_bs2_on_car(hmw)) {
+    if (!latest_bs2_on_car(hmw)) {
         efw = (WORK*)cmw->wu.my_effadrs;
         ix = (sel_adjust_tbl_ix[hmw->player_number]) + 1 + ((efw->dir_timer == 1) * 2);
         dad0 = &hmw->wu.adjust_adrs[1].hos_box[0];
@@ -1129,32 +1129,32 @@ s16 check_buttobi_type2(PLW* wk) {
 }
 
 /** @brief Sets up latest lever direction for defender. */
-void setup_saishin_lvdir(PLW* ds, s8 gddir) {
+void setup_latest_stick_dir(PLW* ds, s8 gddir) {
     if ((ds->sa_stop_flag) == 1) {
         if (ds->wu.rl_flag) {
-            ds->saishin_lvdir = convert_saishin_lvdir[1][ds->sa_stop_lvdir & 0xC];
+            ds->latest_stick_dir = convert_latest_stick_dir[1][ds->sa_stop_lvdir & 0xC];
         } else {
-            ds->saishin_lvdir = convert_saishin_lvdir[0][ds->sa_stop_lvdir & 0xC];
+            ds->latest_stick_dir = convert_latest_stick_dir[0][ds->sa_stop_lvdir & 0xC];
         }
     } else if (ds->wu.rl_flag) {
-        ds->saishin_lvdir = convert_saishin_lvdir[1][ds->cp->input_held & 0xC];
+        ds->latest_stick_dir = convert_latest_stick_dir[1][ds->cp->input_held & 0xC];
     } else {
-        ds->saishin_lvdir = convert_saishin_lvdir[0][ds->cp->input_held & 0xC];
+        ds->latest_stick_dir = convert_latest_stick_dir[0][ds->cp->input_held & 0xC];
     }
 
     if (!(ds->spmv_ng_flag & DIP_ABSOLUTE_GUARD_DISABLED) && (ds->guard_active != 0) && ((ds->guard_active) < 5)) {
-        ds->saishin_lvdir = gddir;
+        ds->latest_stick_dir = gddir;
     }
 }
 
 /** @brief Sets up lever direction after auto-direction adjustment. */
 void setup_lvdir_after_autodir(PLW* wk) {
     if (wk->wu.rl_flag) {
-        wk->cp->lever_dir = convert_saishin_lvdir[1][wk->cp->input_held & 0xC];
+        wk->cp->lever_dir = convert_latest_stick_dir[1][wk->cp->input_held & 0xC];
         return;
     }
 
-    wk->cp->lever_dir = convert_saishin_lvdir[0][wk->cp->input_held & 0xC];
+    wk->cp->lever_dir = convert_latest_stick_dir[0][wk->cp->input_held & 0xC];
 }
 
 /** @brief Requests the death voice sound for both players. */

@@ -150,7 +150,7 @@ static void sanitize_work_pointers(WORK* w) {
     w->target_adrs = NULL;
     w->hit_adrs = NULL;
     w->dmg_adrs = NULL;
-    w->suzi_offset = NULL;
+    w->bg_strip_offset = NULL;
     SDL_zeroa(w->char_table);
     w->se_random_table = NULL;
     w->step_xy_table = NULL;
@@ -377,7 +377,7 @@ uint32_t save_current_state(void* buffer, int frame) {
 
         // Super gauge / stun
         h = djb2_update_mem(h, (const uint8_t*)&gs->super_arts, sizeof(gs->super_arts));
-        h = djb2_update_mem(h, (const uint8_t*)&gs->stun_type, sizeof(gs->stun_type));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->stun_state, sizeof(gs->stun_state));
         h = djb2_update_mem(h, (const uint8_t*)&gs->Max_vitality, sizeof(gs->Max_vitality));
 
 #if DEBUG

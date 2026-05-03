@@ -36,7 +36,7 @@ void effect_M6_move(WORK_Other* ewk) {
         }
 
         ewk->wu.xyz[0].cal = oya->wu.xyz[0].cal;
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -51,7 +51,7 @@ void effect_M6_move(WORK_Other* ewk) {
         }
 
         ewk->wu.xyz[0].cal = oya->wu.xyz[0].cal;
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 

@@ -37,13 +37,13 @@ void effect_34_move(WORK_Other* ewk) {
 
     case 1:
         if (g_state.EXE_flag || g_state.Game_pause || g_state.bg_w.bgw[1].xy[1].disp.pos >= 104) {
-            suzi_sync_pos_set(ewk);
+            sync_bg_strip_position(ewk);
             sort_push_request(&ewk->wu);
             break;
         }
 
         char_move(&ewk->wu);
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
 
         if (ewk->wu.cg_type == 1) {
@@ -56,13 +56,13 @@ void effect_34_move(WORK_Other* ewk) {
 
     case 2:
         if (g_state.EXE_flag || g_state.Game_pause) {
-            suzi_sync_pos_set(ewk);
+            sync_bg_strip_position(ewk);
             sort_push_request(&ewk->wu);
             break;
         }
 
         char_move(&ewk->wu);
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
 
         if (ewk->wu.cg_type == 0xFF) {
@@ -75,7 +75,7 @@ void effect_34_move(WORK_Other* ewk) {
 
     case 3:
         if (g_state.EXE_flag || g_state.Game_pause) {
-            suzi_sync_pos_set(ewk);
+            sync_bg_strip_position(ewk);
             sort_push_request(&ewk->wu);
             break;
         }
@@ -83,7 +83,7 @@ void effect_34_move(WORK_Other* ewk) {
         if (ewk->wu.old_routine_no[0]--) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
-            suzi_sync_pos_set(ewk);
+            sync_bg_strip_position(ewk);
             sort_push_request(&ewk->wu);
             break;
         }
@@ -127,7 +127,7 @@ s32 effect_34_init(WORK* wk, s32 /* unused */) {
     ewk->wu.my_priority = wk->my_priority - 12;
     ewk->wu.position_z = ewk->wu.my_priority - 12;
     ewk->wu.char_table[0] = _etc3_char_table;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->wu.char_index = g_state.bg_w.stage == 6 ? 4 : 8;
 
     if (wk->rl_flag) {

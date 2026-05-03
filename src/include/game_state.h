@@ -548,7 +548,7 @@ typedef struct GameState {
     PLW plw[2]; ///< @netplay_sync The two player structs — checksummed
     ZanzouTableEntry afterimage_table[2][48];
     SA_WORK super_arts[2]; ///< @netplay_sync Super gauge state — checksummed
-    PiyoriType stun_type[2];
+    StunState stun_state[2];
     AppearanceType appear_type;
     s16 pcon_rno[4];
     bool round_slow_flag;

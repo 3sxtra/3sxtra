@@ -1088,7 +1088,7 @@ void check_guard_miss(WORK* as, PLW* ds, s8 gddir) {
 
     if ((ds->guard_flag != 3) && (as->att.guard & 0x3F) && (ds->wu.xyz[1].disp.pos < 2) &&
         (as->work_id != 1 || !as->jump_att_flag || !(ds->cp->input_pressed & 0xF)) && (!(ds->cp->input_pressed & 1)) &&
-        (!(ds->saishin_lvdir & gddir)) && ((ds->cp->move_state_flags[3] + ds->cp->move_state_flags[4]) == 0)) {
+        (!(ds->latest_stick_dir & gddir)) && ((ds->cp->move_state_flags[3] + ds->cp->move_state_flags[4]) == 0)) {
         return;
     }
 

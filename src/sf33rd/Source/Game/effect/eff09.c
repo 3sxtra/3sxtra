@@ -232,7 +232,7 @@ static void eff09_2000(WORK_Other* ewk) {
         }
 
         ewk->wu.old_routine_no[0] = ewk->wu.old_routine_no[1] = ewk->wu.old_routine_no[2] = ewk->wu.old_routine_no[3] = 0;
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         return;
 
@@ -283,7 +283,7 @@ static void eff09_2000(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -298,7 +298,7 @@ static void eff09_2000(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -400,7 +400,7 @@ static void eff09_3000(WORK_Other* ewk) {
             char_move(&ewk->wu);
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -413,7 +413,7 @@ static void eff09_3000(WORK_Other* ewk) {
             char_move(&ewk->wu);
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -468,7 +468,7 @@ static void eff09_4000(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -477,7 +477,7 @@ static void eff09_4000(WORK_Other* ewk) {
             char_move(&ewk->wu);
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -504,7 +504,7 @@ static void eff09_5000(WORK_Other* ewk) {
             char_move(&ewk->wu);
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -531,7 +531,7 @@ static void eff09_6000(WORK_Other* ewk) {
             ewk->wu.blink_timing = 1;
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -544,7 +544,7 @@ static void eff09_6000(WORK_Other* ewk) {
             break;
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -591,7 +591,7 @@ static void eff09_7000(WORK_Other* ewk) {
         char_move(&ewk->wu);
         add_x_sub(&ewk->wu);
         add_y_sub(&ewk->wu);
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -757,7 +757,7 @@ static void eff09_11000(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -775,7 +775,7 @@ static void eff09_11000(WORK_Other* ewk) {
         /* fallthrough */
 
     case 3:
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -802,7 +802,7 @@ static void eff09_12000(WORK_Other* ewk) {
             ewk->wu.mvxy.a[0].sp = 0x20000;
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -818,7 +818,7 @@ static void eff09_12000(WORK_Other* ewk) {
             ewk->wu.old_routine_no[1] = 20;
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -833,7 +833,7 @@ static void eff09_12000(WORK_Other* ewk) {
         char_move(&ewk->wu);
         add_x_sub(&ewk->wu);
         add_y_sub(&ewk->wu);
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -872,7 +872,7 @@ static void eff09_13000(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -889,7 +889,7 @@ static void eff09_13000(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -1010,7 +1010,7 @@ static void eff09_16000(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request4(&ewk->wu);
         break;
 
@@ -1772,7 +1772,7 @@ s32 effect_09_init(WORK* wk, u8 data) {
     ;
     ewk->wu.char_index = *data_ptr++;
     ewk->wu.hit_stop = *data_ptr++;
-    ewk->wu.sync_suzi = *data_ptr++;
+    ewk->wu.sync_bg_strip = *data_ptr++;
     suzi_offset_set(ewk);
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
@@ -1888,7 +1888,7 @@ s32 effect_09_init2(WORK* wk, u8 data) {
     ewk->wu.position_z = ewk->wu.my_priority;
     ewk->wu.char_index = *data_ptr++;
     ewk->wu.hit_stop = *data_ptr++;
-    ewk->wu.sync_suzi = *data_ptr++;
+    ewk->wu.sync_bg_strip = *data_ptr++;
     suzi_offset_set(ewk);
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     return 0;

@@ -35,7 +35,7 @@ void effect_46_move(WORK_Other* ewk) {
             eff46_move(ewk);
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -162,7 +162,7 @@ s32 effect_46_init(WORK* wk, s32 /* unused */) {
     ewk->wu.position_z = ewk->wu.my_priority - 12;
     *ewk->wu.char_table = _etc2_char_table;
     ewk->wu.char_index = 43;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

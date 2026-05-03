@@ -1068,14 +1068,14 @@ static void Damage_29000(PLW* wk) {
 
         wk->wu.xyz[1].disp.pos = twk->wu.xyz[1].disp.pos + datadrs[1];
         wk->wu.rl_flag = (wk->wu.dm_rl + datadrs[2]) & 1;
-        wk->wu.cg_olc_ix = datadrs[3];
-        wk->wu.graphic_overlap_index = wk->wu.olc_ix_table[wk->wu.cg_olc_ix];
+        wk->wu.anim_overlap_col_index = datadrs[3];
+        wk->wu.graphic_overlap_index = wk->wu.olc_ix_table[wk->wu.anim_overlap_col_index];
         wk->wu.cg_number = datadrs[4];
         wk->wu.cg_ctr = 0xFA;
         wk->wu.cg_flip = 0;
         wk->wu.cg_type = 0;
-        wk->wu.cg_hit_ix = 0;
-        wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.cg_hit_ix];
+        wk->wu.anim_hurtbox_index = 0;
+        wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.anim_hurtbox_index];
         Set_Collision_Boxes(&wk->wu);
         break;
 
@@ -1195,7 +1195,7 @@ static void Damage_31000(PLW* wk) {
         }
 
         wk->wu.dir_timer = 10;
-        wk->wu.cg_hit_ix = 1;
+        wk->wu.anim_hurtbox_index = 1;
         wk->wu.cg_ja = wk->wu.hit_ix_table[1];
         Set_Collision_Boxes(&wk->wu);
         break;
@@ -1205,7 +1205,7 @@ static void Damage_31000(PLW* wk) {
             char_move(&wk->wu);
         }
 
-        wk->wu.cg_hit_ix = 1;
+        wk->wu.anim_hurtbox_index = 1;
         wk->wu.cg_ja = wk->wu.hit_ix_table[1];
         Set_Collision_Boxes(&wk->wu);
 
@@ -1533,7 +1533,7 @@ static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
     } else if (wk->py->flag == 0) {
         wk->py->now.quantity.h += wk->wu.damage_stun_value;
 
-        if (wk->py->now.quantity.h >= wk->py->genkai) {
+        if (wk->py->now.quantity.h >= wk->py->stun_threshold) {
             wk->py->now.timer = 0;
             wk->py->flag = 1;
         }
@@ -1637,9 +1637,9 @@ static void get_damage_reaction_data(PLW* wk) {
 
 /** @brief Sets up the counter-hit (atemi) flag based on attacker and defender state. */
 static void damage_atemi_setup(PLW* wk, PLW* ek) {
-    wk->wu.routine_no[1] = wk->wu.cmmd.koc;
-    wk->wu.routine_no[2] = wk->wu.cmmd.ix;
-    wk->wu.routine_no[3] = wk->wu.cmmd.pat;
+    wk->wu.routine_no[1] = wk->wu.cmd_move_data.koc;
+    wk->wu.routine_no[2] = wk->wu.cmd_move_data.ix;
+    wk->wu.routine_no[3] = wk->wu.cmd_move_data.pat;
     char_move_cmms(&wk->wu);
     wk->parry_flag = 9;
     wk->wu.damage_hit_stop = wk->wu.damage_screen_shake = 0;

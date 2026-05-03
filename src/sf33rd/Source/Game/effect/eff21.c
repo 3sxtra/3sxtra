@@ -94,7 +94,7 @@ s32 effect_21_init(s16 sync_index) {
         ewk->wu.old_routine_no[2] = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = *data_ptr++;
-        ewk->wu.sync_suzi = *data_ptr++;
+        ewk->wu.sync_bg_strip = *data_ptr++;
         ewk->wu.mvxy.a[0].sp = eff21_sp_tbl[*data_ptr][0];
         ewk->wu.mvxy.a[1].sp = eff21_sp_tbl[*data_ptr][1];
         data_ptr++;

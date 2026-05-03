@@ -58,7 +58,7 @@ static void sa_gauge_trans(s8 pl_kind);
 static void spgauge_sound_request(s8 Stpl_Num);
 static void spgauge_work_clear(s8 Stpl_Num);
 static void spgauge_wipe_write(s8 Stpl_Num);
-static void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col);
+static void render_sa_gauge_frame(s8 Stpl_Num, s8 Spg_Col);
 
 /**
  * @brief Shared SA gauge initialization for a single player.
@@ -143,8 +143,8 @@ void spgauge_cont_init() {
     g_state.spg_dat[1].spgcol_number = spg_player_colors[1][SPG_COL_DEFAULT];
     sa_stock_trans(0, 0, 0);
     sa_stock_trans(0, 0, 1);
-    sa_waku_trans(0, 0);
-    sa_waku_trans(1, 0);
+    render_sa_gauge_frame(0, 0);
+    render_sa_gauge_frame(1, 0);
     sa_gauge_trans(0);
     sa_gauge_trans(1);
     g_state.Old_Stop_SG = 0;
@@ -171,8 +171,8 @@ void spgauge_cont_demo_init() {
     g_state.spg_dat[1].spgcol_number = spg_player_colors[1][SPG_COL_DEFAULT];
     sa_stock_trans(g_state.spg_dat[0].spg_maxlevel, 1, 0);
     sa_stock_trans(g_state.spg_dat[1].spg_maxlevel, 1, 1);
-    sa_waku_trans(0, 1);
-    sa_waku_trans(1, 1);
+    render_sa_gauge_frame(0, 1);
+    render_sa_gauge_frame(1, 1);
     sa_gauge_trans(0);
     sa_gauge_trans(1);
     sa_moji_trans(0, 0, 1);
@@ -428,7 +428,7 @@ static void samoji_control(s8 Stpl_Num) {
         sa_moji_trans(Stpl_Num, 0, 1);
         g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->store;
         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 1, Stpl_Num);
-        sa_waku_trans(Stpl_Num, 1);
+        render_sa_gauge_frame(Stpl_Num, 1);
         sagauge_color_chenge(Stpl_Num);
         g_state.spg_dat[Stpl_Num].max_rno = 1;
         break;
@@ -449,11 +449,11 @@ static void samoji_control(s8 Stpl_Num) {
                 g_state.spg_dat[Stpl_Num].kind = 0;
             }
 
-            sa_waku_trans(Stpl_Num, g_state.spg_dat[Stpl_Num].kind);
+            render_sa_gauge_frame(Stpl_Num, g_state.spg_dat[Stpl_Num].kind);
             sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, g_state.spg_dat[Stpl_Num].kind, Stpl_Num);
             g_state.spg_dat[Stpl_Num].timer2 = 1;
         } else {
-            sa_waku_trans(Stpl_Num, 1);
+            render_sa_gauge_frame(Stpl_Num, 1);
             sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 1, Stpl_Num);
             g_state.spg_dat[Stpl_Num].max = 0;
             g_state.spg_dat[Stpl_Num].max_old = 1;
@@ -505,13 +505,13 @@ static void sast_control(s8 Stpl_Num) {
                 if (g_state.spg_dat[Stpl_Num].kind == 0) {
                     if (g_state.spg_dat[Stpl_Num].timer2 == 0) {
                         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 0, Stpl_Num);
-                        sa_waku_trans(Stpl_Num, 0);
+                        render_sa_gauge_frame(Stpl_Num, 0);
                         g_state.spg_dat[Stpl_Num].kind = 1;
                         g_state.spg_dat[Stpl_Num].timer2 = 2;
                     }
                 } else if (g_state.spg_dat[Stpl_Num].timer2 == 0) {
                     sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 1, Stpl_Num);
-                    sa_waku_trans(Stpl_Num, 1);
+                    render_sa_gauge_frame(Stpl_Num, 1);
                     g_state.spg_dat[Stpl_Num].kind = 0;
                     g_state.spg_dat[Stpl_Num].timer2 = 2;
                 }
@@ -520,7 +520,7 @@ static void sast_control(s8 Stpl_Num) {
             }
 
             if (g_state.spg_dat[Stpl_Num].sa_flag != 0 && g_state.spg_dat[Stpl_Num].sa_mukou == 0) {
-                sa_waku_trans(Stpl_Num, 1);
+                render_sa_gauge_frame(Stpl_Num, 1);
                 sa_moji_trans(Stpl_Num, 1, 1);
                 g_state.time_operate[Stpl_Num] = 1;
                 sast_color_chenge(Stpl_Num);
@@ -557,14 +557,14 @@ static void sast_control(s8 Stpl_Num) {
                 if (g_state.spg_dat[Stpl_Num].kind == 0) {
                     if (g_state.spg_dat[Stpl_Num].timer2 == 0) {
                         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 0, Stpl_Num);
-                        sa_waku_trans(Stpl_Num, 0);
+                        render_sa_gauge_frame(Stpl_Num, 0);
                         g_state.spg_dat[Stpl_Num].kind = 1;
                         g_state.spg_dat[Stpl_Num].timer2 = 2;
                     }
                 } else {
                     if (g_state.spg_dat[Stpl_Num].timer2 == 0) {
                         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 1, Stpl_Num);
-                        sa_waku_trans(Stpl_Num, 1);
+                        render_sa_gauge_frame(Stpl_Num, 1);
                         g_state.spg_dat[Stpl_Num].kind = 0;
                         g_state.spg_dat[Stpl_Num].timer2 = 2;
                     }
@@ -600,7 +600,7 @@ static void sast_control(s8 Stpl_Num) {
             sast_color_chenge(Stpl_Num);
             g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->store;
             sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
-            sa_waku_trans(Stpl_Num, col);
+            render_sa_gauge_frame(Stpl_Num, col);
 
             if (g_state.max2[Stpl_Num] == 0 && g_state.spg_dat[Stpl_Num].sa_mukou == 0) {
                 sa_gauge_trans(Stpl_Num);
@@ -626,7 +626,7 @@ static void sast_control(s8 Stpl_Num) {
 
         sast_color_chenge(Stpl_Num);
         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
-        sa_waku_trans(Stpl_Num, col);
+        render_sa_gauge_frame(Stpl_Num, col);
 
         g_state.spg_dat[Stpl_Num].flag = 1;
         g_state.spg_dat[Stpl_Num].time_rno = 5;
@@ -664,13 +664,13 @@ static void sast_control(s8 Stpl_Num) {
             if (g_state.spg_dat[Stpl_Num].kind == 0) {
                 if (g_state.spg_dat[Stpl_Num].timer2 == 0) {
                     sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 0, Stpl_Num);
-                    sa_waku_trans(Stpl_Num, 0);
+                    render_sa_gauge_frame(Stpl_Num, 0);
                     g_state.spg_dat[Stpl_Num].kind = 1;
                     g_state.spg_dat[Stpl_Num].timer2 = 2;
                 }
             } else if (g_state.spg_dat[Stpl_Num].timer2 == 0) {
                 sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 1, Stpl_Num);
-                sa_waku_trans(Stpl_Num, 1);
+                render_sa_gauge_frame(Stpl_Num, 1);
                 g_state.spg_dat[Stpl_Num].kind = 0;
                 g_state.spg_dat[Stpl_Num].timer2 = 2;
             }
@@ -699,7 +699,7 @@ static void sast_control(s8 Stpl_Num) {
         sast_color_chenge(Stpl_Num);
         g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->store;
         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
-        sa_waku_trans(Stpl_Num, col);
+        render_sa_gauge_frame(Stpl_Num, col);
 
         if (g_state.max2[Stpl_Num] == 0 && g_state.spg_dat[Stpl_Num].max_old == 0 &&
             g_state.spg_dat[Stpl_Num].sa_mukou == 0) {
@@ -724,7 +724,7 @@ static void sast_control(s8 Stpl_Num) {
 
     sast_color_chenge(Stpl_Num);
     sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
-    sa_waku_trans(Stpl_Num, col);
+    render_sa_gauge_frame(Stpl_Num, col);
 
     g_state.spg_dat[Stpl_Num].flag = 1;
     g_state.spg_dat[Stpl_Num].max_old = 1;
@@ -949,11 +949,11 @@ static void spgauge_work_clear(s8 Stpl_Num) {
 static void spgauge_wipe_write(s8 Stpl_Num) {
     sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
     sa_gauge_trans(Stpl_Num);
-    sa_waku_trans(Stpl_Num, col);
+    render_sa_gauge_frame(Stpl_Num, col);
 }
 
 /** @brief Transfers the SA gauge frame (waku) sprites with color setting. */
-static void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col) {
+static void render_sa_gauge_frame(s8 Stpl_Num, s8 Spg_Col) {
     s8 lpy;
 
     sc_ram_to_vram(Stpl_Num + (Spg_Col * 2));
@@ -994,7 +994,7 @@ void tr_spgauge_cont_init(s8 pl) {
     g_state.spg_dat[pl].spgcol_number = spg_player_colors[pl][SPG_COL_DEFAULT];
 
     sa_stock_trans(0, 0, pl);
-    sa_waku_trans(pl, 0);
+    render_sa_gauge_frame(pl, 0);
     sa_gauge_trans(pl);
     g_state.Old_Stop_SG = 0;
     g_state.Exec_Wipe_F = 0;
@@ -1013,7 +1013,7 @@ void tr_spgauge_cont_init2(s8 pl) {
     g_state.spg_dat[pl].spgcol_number = spg_player_colors[pl][SPG_COL_DEFAULT];
 
     sa_stock_trans(g_state.spg_dat[pl].spg_maxlevel, 1, pl);
-    sa_waku_trans(pl, 1);
+    render_sa_gauge_frame(pl, 1);
     sa_gauge_trans(pl);
     sa_moji_trans(pl, 0, 1);
     g_state.Old_Stop_SG = 0;

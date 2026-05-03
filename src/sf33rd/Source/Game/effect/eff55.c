@@ -109,7 +109,7 @@ s32 effect_55_init() {
     ewk->wu.my_priority = 86;
     ewk->wu.position_z = 86;
     ewk->wu.hit_stop = 0;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->wu.char_table[0] = _brz_char_table;
     suzi_offset_set(ewk);
     return 0;

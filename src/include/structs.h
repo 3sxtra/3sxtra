@@ -164,7 +164,7 @@ typedef struct {
 } CollisionOverlapBox;
 
 typedef struct {
-    s16 olc_ix[4];
+    s16 overlap_col_index[4];
 } CollisionOverlapIndex;
 
 typedef struct {
@@ -209,7 +209,7 @@ typedef struct {
     s8 flag;
 
     /// Maximum stun threshold
-    s16 genkai;
+    s16 stun_threshold;
 
     s16 time;
     union {
@@ -219,7 +219,7 @@ typedef struct {
     s32 recover;
     s16 store;
     s16 again;
-} PiyoriType;
+} StunState;
 
 typedef struct {
     // Offset -2 (relative to old cg_type)
@@ -250,10 +250,10 @@ typedef struct {
             u8 cg_type;
             u8 cg_ctr;
             u16 cg_se;
-            u16 cg_olc_ix;
+            u16 anim_overlap_col_index;
             u16 cg_number;
-            u16 cg_hit_ix;
-            s16 cg_att_ix;
+            u16 anim_hurtbox_index;
+            s16 anim_hitbox_index;
             u8 cg_extdat;
             u8 cg_cancel;
             u8 cg_effect;
@@ -337,8 +337,8 @@ typedef struct {
     s16 scr_mv_y;
     XY xyz[3];
     s16 old_pos[3];
-    s16 sync_suzi;
-    u16* suzi_offset;
+    s16 sync_bg_strip;
+    u16* bg_strip_offset;
     MVXY mvxy;
     s16 direction;
     s16 dir_old;
@@ -351,22 +351,22 @@ typedef struct {
     s16 damage_calc_multiplier;
     s16 damage_calc_divider;
     s8 weight_level;
-    CommandState cmoa;
-    CommandState cmsw;
-    CommandState cmlp;
-    CommandState cml2;
-    CommandState cmja;
-    CommandState cmj2;
-    CommandState cmj3;
-    CommandState cmj4;
-    CommandState cmj5;
-    CommandState cmj6;
-    CommandState cmj7;
-    CommandState cmms;
-    CommandState cmmd;
-    CommandState cmyd;
-    CommandState cmcf;
-    CommandState cmcr;
+    CommandState cmd_roa_state;
+    CommandState cmd_subroutine_return;
+    CommandState cmd_loop_counter_1;
+    CommandState cmd_loop_counter_2;
+    CommandState cmd_jump_addr_1;
+    CommandState cmd_jump_addr_2;
+    CommandState cmd_jump_addr_3;
+    CommandState cmd_jump_addr_4;
+    CommandState cmd_jump_addr_5;
+    CommandState cmd_jump_addr_6;
+    CommandState cmd_jump_addr_7;
+    CommandState cmd_move_jump_addr;
+    CommandState cmd_move_data;
+    CommandState cmd_y_axis_data;
+    CommandState cmd_catch_frame;
+    CommandState cmd_catch_release;
     CommandState cmd_state_backup_1;
     CommandState cmd_state_backup_2;
     CommandState cmd_state_backup_3;
@@ -405,10 +405,10 @@ typedef struct {
             u8 cg_type;
             u8 cg_ctr;
             u16 cg_se;
-            u16 cg_olc_ix;
+            u16 anim_overlap_col_index;
             u16 cg_number;
-            u16 cg_hit_ix;
-            s16 cg_att_ix;
+            u16 anim_hurtbox_index;
+            s16 anim_hitbox_index;
             u8 cg_extdat;
             u8 cg_cancel;
             u8 cg_effect;
@@ -448,7 +448,7 @@ typedef struct {
         } size;
     } my_mr;
     s16 my_trans_mode;
-    s16 waku_work_index;
+    s16 bbox_work_index;
     s16 olc_work_ix[4];
     HitIndexTable* hit_ix_table;
     HitIndexTable cg_ja;
@@ -670,7 +670,7 @@ typedef struct {
     const AS* as;
     SA_WORK* sa;
     ComboType combo_type;
-    PiyoriType* py;
+    StunState* py;
     s8 wkey_flag;
     s8 dead_flag;
     s16 recovery_roll_ok_timer;
@@ -681,7 +681,7 @@ typedef struct {
     s16 move_distance;
     s16 move_power;
     s16 sa_stop_sai;
-    u8 saishin_lvdir;
+    u8 latest_stick_dir;
     u8 sa_stop_lvdir;
     u8 sa_stop_flag;
     u8 chip_death_flag;
@@ -732,10 +732,10 @@ typedef struct {
     s8 bs2_over_car;
     s8 bs2_area_car2;
     s8 bs2_over_car2;
-    u8 micchaku_wall_time;
+    u8 corner_stuck_timer;
     u8 extra_jump;
     u8 air_jump_ok_time;
-    s16 waku_ram_index;
+    s16 bbox_ram_index;
     u16 permited_koa;
     u8 jump_attack_routine;
     u8 jump_attack_timer;

@@ -48,7 +48,7 @@ void effect_00_move(WORK_Other_JUDGE* ewk) {
             break;
         }
 
-        if (((WORK*)ewk->my_master)->waku_work_index != ewk->wu.myself) {
+        if (((WORK*)ewk->my_master)->bbox_work_index != ewk->wu.myself) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
@@ -202,6 +202,6 @@ s32 effect_00_init(WORK* wk) {
     ewk->my_master = wk;
     ewk->master_work_id = wk->work_id;
     ewk->master_id = wk->id;
-    wk->waku_work_index = ewk->wu.myself;
+    wk->bbox_work_index = ewk->wu.myself;
     return 0;
 }

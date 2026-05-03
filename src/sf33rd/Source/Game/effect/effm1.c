@@ -92,7 +92,7 @@ static void effm1_move(WORK_Other* ewk) {
 
         char_move(&ewk->wu);
         add_x_sub(&ewk->wu);
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
     }
@@ -123,7 +123,7 @@ s32 effect_M1_init(WORK* wk) {
     ewk->wu.position_z = wk->my_priority - 12;
     ewk->wu.my_priority = wk->my_priority - 12;
     *ewk->wu.char_table = _etc3_char_table;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
 
     if (wk->rl_flag) {
         ewk->wu.old_routine_no[1] = g_state.bg_w.bgw[1].wxy[0].disp.pos - (g_state.bg_w.pos_offset + 32);

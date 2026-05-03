@@ -227,7 +227,7 @@ void disp_pos_trans_entry_r4(WORK_Other* ewk) {
 /** @brief Transform and register a scaled object for display. */
 void disp_pos_trans_entry_s(WORK_Other* ewk) {
     if (obr_no_disp_check() == 0) {
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         ewk->wu.position_x++;
         sort_push_request4(&ewk->wu);
     }
@@ -236,7 +236,7 @@ void disp_pos_trans_entry_s(WORK_Other* ewk) {
 /** @brief Transform and register a reversed scaled object for display. */
 void disp_pos_trans_entry_rs(WORK_Other* ewk) {
     if ((obr_no_disp_check() == 0) && (range_x_check(ewk) != 0)) {
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         ewk->wu.position_x++;
         sort_push_request4(&ewk->wu);
     }

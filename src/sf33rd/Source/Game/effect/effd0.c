@@ -154,7 +154,7 @@ s32 effect_D0_init(PLW* oya, s32 /* unused */) {
     ewk->wu.char_index = 14;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_priority = ewk->wu.position_z = oya->wu.my_priority + 1;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->master_id = oya->wu.id;
     ewk->wu.xyz[0].cal = oya->wu.xyz[0].cal;
     ewk->wu.xyz[1].cal = oya->wu.xyz[1].cal;

@@ -39,7 +39,7 @@ void effect_B4_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -80,7 +80,7 @@ s32 effect_B4_init(WORK_Other* oya) {
     ewk->wu.position_z = oya->wu.position_z - 1;
     ewk->wu.char_table[0] = _etc_char_table;
     ewk->wu.char_index = 34;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->wu.rl_flag = 0;
     ewk->wu.xyz[0].disp.pos = oya->wu.xyz[0].disp.pos;
     ewk->wu.xyz[1].disp.pos = oya->wu.xyz[1].disp.pos;

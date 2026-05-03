@@ -10,7 +10,7 @@
  *   - cmd_main.c check_10() requires neutral→forward TRANSITION (case 0→1)
  *   - hitcheck.c defense_ground() checks move_state_flags[3] (high), move_state_flags[4] (low)
  *   - Red parry needs guard_active != 0 && guard_active < 5 (just_now flag)
- *   - Guard (blocking) uses saishin_lvdir, computed from cp->input_held from g_state.Lever_Buff
+ *   - Guard (blocking) uses latest_stick_dir, computed from cp->input_held from g_state.Lever_Buff
  */
 
 #include "training_dummy.h"

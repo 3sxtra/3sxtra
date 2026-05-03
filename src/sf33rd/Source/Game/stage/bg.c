@@ -69,7 +69,7 @@ void scr_trans(u8 bgnm) {
     s32 global_index_real;
     s32 palOffset;
     u32 vtxColor;
-    s32 suzi_pos;
+    s32 bg_strip_pos;
 
     njUnitMatrix(0);
     njScale(0, 1.0f, -1.0f, 1.0f);
@@ -532,12 +532,12 @@ void scr_trans(u8 bgnm) {
 
     case 4:
         if (bgnm == 2) {
-            suzi_pos = g_state.bg_pos[2].scr_x_buff.word_pos.h - 320;
-            suzi_pos = suzi_pos * -0.5f;
+            bg_strip_pos = g_state.bg_pos[2].scr_x_buff.word_pos.h - 320;
+            bg_strip_pos = bg_strip_pos * -0.5f;
             ppgSetupCurrentDataList(&ppgAkaneList);
 
             for (x = 0; x < 3; x = x + 1) {
-                scr_trans_sub2(x * 256 + 128, 128, suzi_pos);
+                scr_trans_sub2(x * 256 + 128, 128, bg_strip_pos);
 
                 if (No_Trans == 0) {
                     ppgSetupCurrentPaletteNumber(0, x);

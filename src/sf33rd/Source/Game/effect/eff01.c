@@ -29,7 +29,7 @@ void effect_01_move(WORK_Other* ewk) {
         ewk->wu.graphic_rom_type = mwk->graphic_rom_type;
         ewk->wu.cg_number = ewk->wu.old_cgnum = 0;
         ewk->wu.blink_timing = mwk->blink_timing;
-        ewk->wu.graphic_overlap_index.olc_ix[ewk->wu.type] = 0;
+        ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] = 0;
         return;
 
     case 1:
@@ -39,14 +39,14 @@ void effect_01_move(WORK_Other* ewk) {
             return;
         }
 
-        if (mwk->graphic_overlap_index.olc_ix[ewk->wu.type] == 0) {
-            ewk->wu.graphic_overlap_index.olc_ix[ewk->wu.type] = 0;
+        if (mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type] == 0) {
+            ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] = 0;
             return;
         }
 
         if (!g_state.Game_pause && !g_state.EXE_flag) {
-            if (ewk->wu.graphic_overlap_index.olc_ix[ewk->wu.type] != mwk->graphic_overlap_index.olc_ix[ewk->wu.type]) {
-                ewk->wu.graphic_overlap_index.olc_ix[ewk->wu.type] = ewk->wu.graphic_index = mwk->graphic_overlap_index.olc_ix[ewk->wu.type];
+            if (ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] != mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type]) {
+                ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] = ewk->wu.graphic_index = mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type];
                 ewk->wu.now_koc = ewk->wu.graphic_index;
 
                 if (ewk->wu.type == 0 && ((PLW*)mwk)->player_number == 0 && mwk->rl_flag) {

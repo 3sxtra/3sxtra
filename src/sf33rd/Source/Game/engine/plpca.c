@@ -449,7 +449,7 @@ void subtract_cu_vital(PLW* wk) {
             } else if (wk->py->flag == 0) {
                 wk->py->now.quantity.h += wk->wu.damage_stun_value;
 
-                if (wk->py->now.quantity.h >= wk->py->genkai) {
+                if (wk->py->now.quantity.h >= wk->py->stun_threshold) {
                     wk->py->now.timer = 0;
                     wk->py->flag = 1;
                 }
@@ -514,16 +514,16 @@ static void catch_cg_type_check(PLW* wk) {
 
     case 7:
         wk->wu.cg_type = 0;
-        wk->wu.routine_no[1] = wk->wu.cmmd.koc;
-        wk->wu.routine_no[2] = wk->wu.cmmd.ix;
-        wk->wu.routine_no[3] = wk->wu.cmmd.pat;
+        wk->wu.routine_no[1] = wk->wu.cmd_move_data.koc;
+        wk->wu.routine_no[2] = wk->wu.cmd_move_data.ix;
+        wk->wu.routine_no[3] = wk->wu.cmd_move_data.pat;
         break;
 
     case 8:
         wk->wu.cg_type = 0;
-        emwk->wu.routine_no[1] = wk->wu.cmyd.koc;
-        emwk->wu.routine_no[2] = wk->wu.cmyd.ix;
-        emwk->wu.routine_no[3] = wk->wu.cmyd.pat;
+        emwk->wu.routine_no[1] = wk->wu.cmd_y_axis_data.koc;
+        emwk->wu.routine_no[2] = wk->wu.cmd_y_axis_data.ix;
+        emwk->wu.routine_no[3] = wk->wu.cmd_y_axis_data.pat;
 
     case 9:
         Grade_Add_Normal_Throw(&wk->wu);
@@ -534,8 +534,8 @@ static void catch_cg_type_check(PLW* wk) {
 /** @brief Sets up character move init with catch-specific facing logic. */
 static void set_char_move_init_ca(PLW* wk, s16 koc, s16 index) {
     set_char_move_init(&wk->wu, koc, index);
-    wk->cat_break_ok_timer = wk->wu.cmyd.koc >> 8;
-    wk->wu.cmyd.koc &= 0xFF;
+    wk->cat_break_ok_timer = wk->wu.cmd_y_axis_data.koc >> 8;
+    wk->wu.cmd_y_axis_data.koc &= 0xFF;
 }
 
 void (*const plpca_lv_00[9])(PLW*) = { Catch_00000, Catch_01000, Catch_02000, Catch_03000, Catch_04000,

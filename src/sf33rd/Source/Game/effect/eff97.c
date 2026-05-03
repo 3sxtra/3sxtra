@@ -36,7 +36,7 @@ void effect_97_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request4(&ewk->wu);
         break;
 
@@ -62,7 +62,7 @@ void effect_97_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request4(&ewk->wu);
         break;
 
@@ -79,7 +79,7 @@ void effect_97_move(WORK_Other* ewk) {
             }
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request4(&ewk->wu);
         break;
 
@@ -113,7 +113,7 @@ s32 effect_97_init(PLW* oya) {
     ewk->wu.my_col_code = oya->wu.my_col_code;
     ewk->wu.my_family = 2;
     ewk->wu.my_priority = ewk->wu.position_z = oya->wu.my_priority;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->wu.xyz[1].disp.pos = 40;
     ewk->wu.shadow_flag = 1;
     ewk->wu.shadow_x = 0;

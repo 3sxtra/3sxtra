@@ -165,7 +165,7 @@ s32 effect_68_init() {
         ewk->wu.routine_no[6] = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.routine_no[4] = *data_ptr++;
-        ewk->wu.sync_suzi = 0;
+        ewk->wu.sync_bg_strip = 0;
         ewk->wu.char_table[0] = _brz_char_table;
         suzi_offset_set(ewk);
     }

@@ -321,7 +321,7 @@ static void silver_stun_put(u8 Pl_Num, s16 len) {
     Renderer_DrawSpriteVtx(scrscrntex, 4);
 }
 
-void stun_gauge_waku_write(s16 p1len, s16 p2len) {
+void render_stun_gauge_frame(s16 p1len, s16 p2len) {
     if (omop_cockpit == 0) {
         return;
     }

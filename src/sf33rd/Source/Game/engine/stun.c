@@ -27,7 +27,7 @@ void stngauge_cont_init() {
         g_state.sdat[i].osflag = 0;
         g_state.sdat[i].g_or_s = 0;
         g_state.sdat[i].stimer = 2;
-        g_state.sdat[i].slen = (g_state.stun_type[i].genkai / 8);
+        g_state.sdat[i].slen = (g_state.stun_state[i].stun_threshold / 8);
         g_state.sdat[i].proccess_dead = 0;
 
         if (omop_st_bar_disp[i]) {
@@ -37,7 +37,7 @@ void stngauge_cont_init() {
     }
 
     if (!use_rmlui || !rmlui_hud_stun)
-        stun_gauge_waku_write(g_state.sdat[0].slen, g_state.sdat[1].slen);
+        render_stun_gauge_frame(g_state.sdat[0].slen, g_state.sdat[1].slen);
 }
 
 /** @brief Per-frame stun gauge update — drives the animated stun bar display. */
@@ -60,7 +60,7 @@ void stngauge_cont_main() {
         }
 
         if (!use_rmlui || !rmlui_hud_stun)
-            stun_gauge_waku_write(g_state.sdat[0].slen, g_state.sdat[1].slen);
+            render_stun_gauge_frame(g_state.sdat[0].slen, g_state.sdat[1].slen);
     }
 }
 
@@ -79,7 +79,7 @@ void stngauge_control(u8 pl) {
             g_state.sdat[pl].sflag = 1;
 
             if (g_state.sdat[pl].osflag == 0) {
-                g_state.sdat[pl].cstn = g_state.stun_type[pl].genkai;
+                g_state.sdat[pl].cstn = g_state.stun_state[pl].stun_threshold;
             }
 
             if (!g_state.EXE_flag && !g_state.Game_pause) {

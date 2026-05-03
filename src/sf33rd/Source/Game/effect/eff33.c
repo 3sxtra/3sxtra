@@ -32,7 +32,7 @@ void effect_33_move(WORK_Other* ewk) {
         break;
 
     case 1:
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
 
         if (g_state.EXE_flag || g_state.Game_pause || g_state.pcon_rno[2] != 1 || g_state.Event_Judge_Gals != -1 ||
@@ -50,7 +50,7 @@ void effect_33_move(WORK_Other* ewk) {
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -65,7 +65,7 @@ void effect_33_move(WORK_Other* ewk) {
             char_move(&ewk->wu);
         }
 
-        suzi_sync_pos_set(ewk);
+        sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         break;
 
@@ -106,7 +106,7 @@ s32 effect_33_init(WORK* wk) {
     ewk->wu.position_z = ewk->wu.my_priority - 12;
     ewk->wu.char_table[0] = _etc3_char_table;
     ewk->wu.char_index = 7;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
     ewk->wu.my_mts = 0xE;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

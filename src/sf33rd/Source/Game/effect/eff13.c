@@ -509,7 +509,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
             if (mwk->sa->ok != -1 || ewk->wu.dir_old != mwk->sa->id_arts) {
                 ewk->wu.routine_no[1] = 2;
                 ewk->wu.routine_no[2] = 0;
-                ewk->wu.cg_hit_ix = 0;
+                ewk->wu.anim_hurtbox_index = 0;
                 make_speed_xy_back(&ewk->wu, &mwk->wu, twk);
                 break;
             }
@@ -545,7 +545,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
         case 4:
             add_mvxy_speed_no_use_rl(&ewk->wu);
             cal_mvxy_speed(&ewk->wu);
-            ewk->wu.cg_hit_ix = 0;
+            ewk->wu.anim_hurtbox_index = 0;
 
             if (--ewk->wu.dir_timer < 0) {
                 ewk->wu.routine_no[2] = 2;
@@ -556,7 +556,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
         case 5:
             set_tengu_my_home(&ewk->wu, &mwk->wu);
             ewk->wu.routine_no[2] = 4;
-            ewk->wu.cg_hit_ix = 0;
+            ewk->wu.anim_hurtbox_index = 0;
             ewk->wu.dir_timer = twk->hos_y;
             ewk->wu.mvxy.d[0].sp = 0;
             ewk->wu.mvxy.d[1].sp = -0x4000;
@@ -570,7 +570,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[2] = 5;
         ewk->wu.hf.hit_flag = 0;
-        ewk->wu.cg_hit_ix = 0;
+        ewk->wu.anim_hurtbox_index = 0;
         set_hit_stop_hit_quake(&ewk->wu);
         break;
 
@@ -583,7 +583,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
             ewk->wu.disp_flag = 0;
         }
 
-        ewk->wu.cg_hit_ix = 0;
+        ewk->wu.anim_hurtbox_index = 0;
         break;
     }
 }

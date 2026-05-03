@@ -258,7 +258,7 @@ void set_caught_status(s16 ix) {
     ds->wu.dmg_work_id = as->wu.work_id;
     ds->dm_point = 1;
     gddir = get_guard_direction(&as->wu, &ds->wu);
-    setup_saishin_lvdir(ds, gddir);
+    setup_latest_stick_dir(ds, gddir);
     setup_dm_rl(&as->wu, &ds->wu);
     set_catch_hit_mark_pos(&as->wu, &ds->wu);
     set_damage_and_piyo(as, ds);
@@ -314,15 +314,15 @@ void set_caught_status(s16 ix) {
     switch (var_s4 + (((as->wu.rl_flag + ds->wu.rl_flag) & 1) * 2)) {
     case 0:
     case 3:
-        as->wu.routine_no[1] = as->wu.cmcr.koc;
-        as->wu.routine_no[2] = as->wu.cmcr.ix;
-        as->wu.char_index = as->wu.cmcr.pat;
+        as->wu.routine_no[1] = as->wu.cmd_catch_release.koc;
+        as->wu.routine_no[2] = as->wu.cmd_catch_release.ix;
+        as->wu.char_index = as->wu.cmd_catch_release.pat;
         break;
 
     default:
-        as->wu.routine_no[1] = as->wu.cmcf.koc;
-        as->wu.routine_no[2] = as->wu.cmcf.ix;
-        as->wu.char_index = as->wu.cmcf.pat;
+        as->wu.routine_no[1] = as->wu.cmd_catch_frame.koc;
+        as->wu.routine_no[2] = as->wu.cmd_catch_frame.ix;
+        as->wu.char_index = as->wu.cmd_catch_frame.pat;
         break;
     }
 
@@ -1092,7 +1092,7 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
 
     if (!ds->auto_guard && !ags) {
         if ((ds->spmv_ng_flag & DIP_ABSOLUTE_GUARD_DISABLED) || !just_now) {
-            if (!(ds->saishin_lvdir & gddir)) {
+            if (!(ds->latest_stick_dir & gddir)) {
                 return 2;
             }
             if (ds->cp->input_held & 3) {
@@ -1224,7 +1224,7 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
     }
 
     if (!ds->auto_guard && !ags && (ds->spmv_ng_flag & DIP_ABSOLUTE_GUARD_DISABLED || !just_now)) {
-        if (!(ds->saishin_lvdir & gddir)) {
+        if (!(ds->latest_stick_dir & gddir)) {
             return 2;
         }
 
@@ -1898,7 +1898,7 @@ s16 get_att_head_position(WORK* wk) {
 
 /** @brief Enqueues a work item into the hit-push processing queue. */
 void hit_push_request(WORK* hpr_wk) {
-    if (hpq_in < 31 && hpr_wk->cg_hit_ix != 0) {
+    if (hpq_in < 31 && hpr_wk->anim_hurtbox_index != 0) {
         q_hit_push[hpq_in++] = hpr_wk;
     }
 }

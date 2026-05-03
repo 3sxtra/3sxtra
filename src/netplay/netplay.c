@@ -385,7 +385,7 @@ static void setup_vs_mode() {
     g_state.EXE_flag = 0;
 
     // Stun gauge / vitality
-    SDL_zeroa(g_state.stun_type);
+    SDL_zeroa(g_state.stun_state);
     g_state.Max_vitality = 160; // MAX_VITALITY_DEFAULT — must not be 0 (setup_vitality divides by it)
 
     clean_input_buffers();

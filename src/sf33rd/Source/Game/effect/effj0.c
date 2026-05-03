@@ -20,8 +20,8 @@ void effect_J0_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        ewk->wu.cg_att_ix = 0;
-        ewk->wu.cg_hit_ix = 0;
+        ewk->wu.anim_hitbox_index = 0;
+        ewk->wu.anim_hurtbox_index = 0;
         sort_push_request(&ewk->wu);
         break;
 

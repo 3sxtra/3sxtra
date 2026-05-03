@@ -120,8 +120,8 @@ static void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
         mwk->wu.routine_no[2] = 33;
         mwk->wu.routine_no[3] = 0;
         mwk->wu.cg_type = 0;
-        mwk->wu.cg_hit_ix = 0;
-        mwk->wu.cg_ja = mwk->wu.hit_ix_table[mwk->wu.cg_hit_ix];
+        mwk->wu.anim_hurtbox_index = 0;
+        mwk->wu.cg_ja = mwk->wu.hit_ix_table[mwk->wu.anim_hurtbox_index];
         Set_Collision_Boxes(&mwk->wu);
         break;
 

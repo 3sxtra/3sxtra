@@ -201,7 +201,7 @@ s32 effect_L7_init(WORK* wk, s32 /* unused */) {
     ewk->wu.char_table[0] = _etc3_char_table;
     ewk->wu.char_table[1] = _etc_char_table;
     ewk->wu.char_index = 0;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
     kind_w = random_16();
     ewk->wu.old_routine_no[2] = effl7_data_tbl[kind_w];

@@ -281,7 +281,7 @@ s32 effect_85_init() {
     ewk->wu.xyz[0].cal = 0x1EB0000;
     ewk->wu.xyz[1].cal = 0x2C0000;
     ewk->wu.my_priority = ewk->wu.position_z = 10;
-    ewk->wu.sync_suzi = 0;
+    ewk->wu.sync_bg_strip = 0;
     ewk->wu.char_table[0] = _chn_char_table;
     return 0;
 }

@@ -1010,7 +1010,7 @@ void store_player_after_image_data() {
         g_state.afterimage_table[i]->pos_z = g_state.plw[i].wu.position_z;
         g_state.afterimage_table[i]->cg_num = g_state.plw[i].wu.cg_number;
         g_state.afterimage_table[i]->renew = g_state.plw[i].wu.renew_attack;
-        g_state.afterimage_table[i]->hit_ix = g_state.plw[i].wu.cg_hit_ix;
+        g_state.afterimage_table[i]->hit_ix = g_state.plw[i].wu.anim_hurtbox_index;
         g_state.afterimage_table[i]->flip = g_state.plw[i].wu.rl_flag;
         g_state.afterimage_table[i]->cg_flp = g_state.plw[i].wu.cg_flip;
         g_state.afterimage_table[i]->light_attack_flag = g_state.plw[i].wu.attack_type;
@@ -1287,8 +1287,8 @@ void setup_base_and_other_data() {
     set_base_data(&g_state.plw[1], 1);
     g_state.plw[0].sa = &g_state.super_arts[0];
     g_state.plw[1].sa = &g_state.super_arts[1];
-    g_state.plw[0].py = &g_state.stun_type[0];
-    g_state.plw[1].py = &g_state.stun_type[1];
+    g_state.plw[0].py = &g_state.stun_state[0];
+    g_state.plw[1].py = &g_state.stun_state[1];
     setup_other_data(&g_state.plw[0]);
     setup_other_data(&g_state.plw[1]);
     effect_work_list_init(6, 0xC5);
@@ -1357,9 +1357,9 @@ static void set_base_data(PLW* wk, s16 ix) {
     wk->special_move_disabled_flag2 = omop_spmv_ng_table2[wk->wu.id];
     wk->wu.weight_level = weight_lv_table[wk->player_number];
     set_player_shadow(wk);
-    wk->wu.cg_olc_ix = wk->wu.cg_hit_ix = 0;
-    wk->wu.graphic_overlap_index = wk->wu.olc_ix_table[wk->wu.cg_olc_ix];
-    wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.cg_hit_ix];
+    wk->wu.anim_overlap_col_index = wk->wu.anim_hurtbox_index = 0;
+    wk->wu.graphic_overlap_index = wk->wu.olc_ix_table[wk->wu.anim_overlap_col_index];
+    wk->wu.cg_ja = wk->wu.hit_ix_table[wk->wu.anim_hurtbox_index];
 
     Set_Collision_Boxes(&wk->wu);
 }
@@ -1435,19 +1435,19 @@ void clear_chainex_check(s16 ix) {
 void set_kizetsu_status(s16 ix) {
     s16 plnum = g_state.My_char[ix];
 
-    g_state.stun_type[ix].flag = 0;
-    g_state.stun_type[ix].time = 0;
-    g_state.stun_type[ix].now.timer = 0;
-    g_state.stun_type[ix].store = 0;
-    g_state.stun_type[ix].recover = pl_nr_piyo_tbl[plnum];
-    g_state.stun_type[ix].genkai = pl_piyo_tbl[plnum] + stun_gauge_len_omake[omop_stun_gauge_len[ix]];
+    g_state.stun_state[ix].flag = 0;
+    g_state.stun_state[ix].time = 0;
+    g_state.stun_state[ix].now.timer = 0;
+    g_state.stun_state[ix].store = 0;
+    g_state.stun_state[ix].recover = pl_nr_piyo_tbl[plnum];
+    g_state.stun_state[ix].stun_threshold = pl_piyo_tbl[plnum] + stun_gauge_len_omake[omop_stun_gauge_len[ix]];
 
-    if (g_state.stun_type[ix].genkai < 56) {
-        g_state.stun_type[ix].genkai = 56;
+    if (g_state.stun_state[ix].stun_threshold < 56) {
+        g_state.stun_state[ix].stun_threshold = 56;
     }
 
-    if (g_state.stun_type[ix].genkai > 72) {
-        g_state.stun_type[ix].genkai = 72;
+    if (g_state.stun_state[ix].stun_threshold > 72) {
+        g_state.stun_state[ix].stun_threshold = 72;
     }
 }
 
