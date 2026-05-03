@@ -7,12 +7,12 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-typedef void (*Eff93_Jmp_Tbl_t)(WORK_Other* ewk);
+typedef void (*Eff93_Jmp_Tbl_t)(State_Other* ewk);
 
 // Forward decls
 
@@ -20,11 +20,11 @@ extern const Eff93_Jmp_Tbl_t Eff93_Jmp_Tbl[4];
 
 // Funcs
 
-void effect_93_move(WORK_Other* ewk) {
+void effect_93_move(State_Other* ewk) {
     Eff93_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 }
 
-static void Eff93_SLIDE_L(WORK_Other* ewk) {
+static void Eff93_SLIDE_L(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
@@ -65,7 +65,7 @@ static void Eff93_SLIDE_L(WORK_Other* ewk) {
     }
 }
 
-static void Eff93_SLIDE_R(WORK_Other* ewk) {
+static void Eff93_SLIDE_R(State_Other* ewk) {
     s16 arrived_x;
     s16 arrived_y;
 
@@ -115,7 +115,7 @@ static void Eff93_SLIDE_R(WORK_Other* ewk) {
     }
 }
 
-static void Eff93_SLIDE_L_OUT(WORK_Other* ewk) {
+static void Eff93_SLIDE_L_OUT(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
@@ -141,7 +141,7 @@ static void Eff93_SLIDE_L_OUT(WORK_Other* ewk) {
     }
 }
 
-static void Eff93_SLIDE_R_OUT(WORK_Other* ewk) {
+static void Eff93_SLIDE_R_OUT(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
@@ -183,14 +183,14 @@ void Bg_Family_Set_Ex(s16 xx) {
 }
 
 s32 effect_93_init(s8 Move_Type, s16 Time) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0x5D;
     ewk->wu.dir_timer = Time;

@@ -12,19 +12,19 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void (*eff26_jp_tbl[6])(WORK_Other*);
+void (*eff26_jp_tbl[6])(State_Other*);
 
 const s16 eff26_num[1] = { 1 };
 
 const s16 eff26_data_0000[1] = { 0 };
 
-void effect_26_move(WORK_Other* ewk) {
+void effect_26_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -67,8 +67,8 @@ void effect_26_move(WORK_Other* ewk) {
     }
 }
 
-static void eff26_00(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+static void eff26_00(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     if (oya->wu.routine_no[1] > 1) {
         ewk->wu.routine_no[0] = 2;
@@ -81,8 +81,8 @@ static void eff26_00(WORK_Other* ewk) {
     }
 }
 
-static void eff26_01(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+static void eff26_01(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -121,8 +121,8 @@ static void eff26_01(WORK_Other* ewk) {
     }
 }
 
-static void eff26_02(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+static void eff26_02(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -170,8 +170,8 @@ static void eff26_02(WORK_Other* ewk) {
     }
 }
 
-static void eff26_03(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+static void eff26_03(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -231,8 +231,8 @@ static void eff26_03(WORK_Other* ewk) {
     }
 }
 
-static void eff26_04(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+static void eff26_04(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -301,8 +301,8 @@ static void eff26_04(WORK_Other* ewk) {
     }
 }
 
-static void eff26_05(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+static void eff26_05(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -387,12 +387,12 @@ static void eff26_05(WORK_Other* ewk) {
     }
 }
 
-void (*eff26_jp_tbl[6])(WORK_Other*) = { eff26_00, eff26_01, eff26_02, eff26_03, eff26_04, eff26_05 };
+void (*eff26_jp_tbl[6])(State_Other*) = { eff26_00, eff26_01, eff26_02, eff26_03, eff26_04, eff26_05 };
 
 const s16* scr_obj_data26[1] = { eff26_data_0000 };
 
-s32 effect_26_init(WORK_Other* oya, s16 type26) {
-    WORK_Other* ewk;
+s32 effect_26_init(State_Other* oya, s16 type26) {
+    State_Other* ewk;
     s16 ix;
     s16 lp_cnt = eff26_num[type26];
     s16 i;
@@ -407,7 +407,7 @@ s32 effect_26_init(WORK_Other* oya, s16 type26) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 26;
         ewk->wu.work_id = 16;

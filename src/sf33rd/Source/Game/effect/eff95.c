@@ -9,8 +9,8 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -22,7 +22,7 @@ s16 END_OF_95;
 const s16 eff95_data_tbl[10][4] = { { 0, 0, 0, 0 }, { 0, 0, 1, 1 }, { 2, 2, 3, 3 }, { 4, 4, 5, 5 }, { 6, 6, 6, 7 },
                                     { 7, 7, 8, 8 }, { 8, 9, 9, 9 }, { 9, 9, 9, 9 }, { 9, 9, 9, 9 }, { 9, 9, 9, 9 } };
 
-void effect_95_move(WORK_Other* ewk) {
+void effect_95_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (!g_state.Continue_Count_Down[g_state.LOSER]) {
@@ -129,14 +129,14 @@ void effect_95_move(WORK_Other* ewk) {
 }
 
 s32 effect_95_init(s16 vital_new) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 95;
     ewk->wu.work_id = 16;

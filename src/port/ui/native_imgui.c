@@ -1,8 +1,8 @@
 #include "port/ui/native_imgui.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"
-#include "sf33rd/Source/Game/engine/workuser_select.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/engine/state_select.h"
 #include "sf33rd/Source/Game/effect/effect.h" // For frw pool and Release_Effect
 #include "sf33rd/Source/Game/effect/eff04.h"
 #include "sf33rd/Source/Game/effect/eff45.h"
@@ -129,9 +129,9 @@ void NativeUI_Clear(void) {
         if (s_elements[i].id_hash != 0) {
             int slot = s_elements[i].effect_slot;
             for (int k = 0; k < EFFECT_MAX; k++) {
-                WORK_Other* w = (WORK_Other*)frw[k];
+                State_Other* w = (State_Other*)frw[k];
                 if (w->wu.be_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
-                    Release_Effect((WORK*)w);
+                    Release_Effect((State*)w);
                 }
             }
             g_state.Order[slot] = 0;
@@ -171,9 +171,9 @@ void NativeUI_End(void) {
             // JUDGE PETROV FIX: Hunt down and explicitly kill the CPS3 task
             // instead of spamming g_state.Suicide[0]=1 and risking collateral damage.
             for (int k = 0; k < EFFECT_MAX; k++) {
-                WORK_Other* w = (WORK_Other*)frw[k];
+                State_Other* w = (State_Other*)frw[k];
                 if (w->wu.be_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
-                    Release_Effect((WORK*)w);
+                    Release_Effect((State*)w);
                 }
             }
 

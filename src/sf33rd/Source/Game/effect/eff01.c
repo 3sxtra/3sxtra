@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const s16 parts_colmd_table[2] = { 0x4000, 0x0 };
@@ -17,11 +17,11 @@ const s16 parts_colcd_table[14] = {
     0x2000, 0x0, 0x6, 0x2000, 0x4, 0x2020, 0x4, 0x4, 0x0, 0x6, 0x5, 0x4, 0x203C, 0x202A
 };
 
-static void get_new_parts_data(WORK_Other* ewk, PLW* mwk);
-static void set_parts_disp_flag(WORK_Other* ewk, PLW* mwk);
+static void get_new_parts_data(State_Other* ewk, PLW* mwk);
+static void set_parts_disp_flag(State_Other* ewk, PLW* mwk);
 
-void effect_01_move(WORK_Other* ewk) {
-    WORK* mwk = (WORK*)ewk->my_master;
+void effect_01_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -132,7 +132,7 @@ void effect_01_move(WORK_Other* ewk) {
     }
 }
 
-static void get_new_parts_data(WORK_Other* ewk, PLW* mwk) {
+static void get_new_parts_data(State_Other* ewk, PLW* mwk) {
     ewk->wu.current_char_type = ewk->wu.graphic_index;
 
     if (ewk->wu.type == 0 && mwk->player_number == 0 && mwk->wu.rl_flag) {
@@ -144,7 +144,7 @@ static void get_new_parts_data(WORK_Other* ewk, PLW* mwk) {
 
     if (ewk->wu.overlap_char_tbl->parts_colmd) {
         if (ewk->wu.overlap_char_tbl->parts_colmd == 1) {
-            ewk->wu.my_col_mode = ((WORK*)mwk->wu.target_adrs)->my_col_mode;
+            ewk->wu.my_col_mode = ((State*)mwk->wu.target_adrs)->my_col_mode;
         } else {
             ewk->wu.my_col_mode = parts_colmd_table[ewk->wu.overlap_char_tbl->parts_colmd];
         }
@@ -170,7 +170,7 @@ static void get_new_parts_data(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.cg_number = ewk->wu.overlap_char_tbl->parts_char;
 }
 
-static void set_parts_disp_flag(WORK_Other* ewk, PLW* mwk) {
+static void set_parts_disp_flag(State_Other* ewk, PLW* mwk) {
     switch (ewk->wu.overlap_char_tbl->parts_disp) {
     case 1:
         if (mwk->wu.disp_flag) {
@@ -204,15 +204,15 @@ static void set_parts_disp_flag(WORK_Other* ewk, PLW* mwk) {
     }
 }
 
-s32 effect_01_init(WORK* wk, u8 koolc) {
-    WORK_Other* ewk;
+s32 effect_01_init(State* wk, u8 koolc) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(1)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 1;
     ewk->wu.work_id = 32;

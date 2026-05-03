@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/effect/eff85.h"
 #include "sf33rd/Source/Game/effect/eff94.h"
 #include "sf33rd/Source/Game/effect/effi4.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"

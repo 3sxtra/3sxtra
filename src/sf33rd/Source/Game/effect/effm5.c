@@ -10,10 +10,10 @@
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effm6.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/sound/se.h"
@@ -23,7 +23,7 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effect_M5_move(WORK_Other* ewk) {
+void effect_M5_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
@@ -128,7 +128,7 @@ void effect_M5_move(WORK_Other* ewk) {
 }
 
 s32 effect_M5_init(PLW* oya) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 work;
 
@@ -136,7 +136,7 @@ s32 effect_M5_init(PLW* oya) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     g_state.demo_car_flag[oya->wu.id] = 0;
     ewk->wu.be_flag = 1;
     ewk->wu.id = 225;

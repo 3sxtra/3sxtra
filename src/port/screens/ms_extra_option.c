@@ -24,7 +24,7 @@
 
 #include "sf33rd/Source/Game/effect/eff45.h"           /* Message_Data */
 #include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* g_state.Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/engine/state_user.h"        /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/menu/ex_data.h"           /* Ex_Account_Data, Ex_Page_Data */
 #include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"     /* Dir_Move_Sub, Setup_Next_Page, etc. */
@@ -43,7 +43,7 @@
  *  Extern data
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-/* g_state.Menu_Page, g_state.Page_Max, g_state.Menu_Page_Buff, g_state.Menu_Max — declared in workuser.h */
+/* g_state.Menu_Page, g_state.Page_Max, g_state.Menu_Page_Buff, g_state.Menu_Max — declared in state_user.h */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state

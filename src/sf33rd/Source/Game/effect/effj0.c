@@ -8,13 +8,13 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void effect_J0_move(WORK_Other* ewk) {
-    WORK_Other* mwk = (WORK_Other*)ewk->my_master;
-    WORK_Other* cwk = (WORK_Other*)ewk->wu.target_adrs;
-    WORK* sub_w = (WORK*)cwk->wu.target_adrs;
+void effect_J0_move(State_Other* ewk) {
+    State_Other* mwk = (State_Other*)ewk->my_master;
+    State_Other* cwk = (State_Other*)ewk->wu.target_adrs;
+    State* sub_w = (State*)cwk->wu.target_adrs;
     ImageBuff* image_buff = (ImageBuff*)sub_w + 9;
 
     switch (ewk->wu.routine_no[0]) {
@@ -64,15 +64,15 @@ void effect_J0_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_J0_init(WORK_Other* ek, WORK_Other* mk, s16 data) {
-    WORK_Other* ewk;
+s32 effect_J0_init(State_Other* ek, State_Other* mk, s16 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.disp_flag = 2;
     ewk->wu.id = 190;

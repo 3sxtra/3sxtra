@@ -10,10 +10,10 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void effc7_sort_push(WORK* ewk, WORK*);
+static void effc7_sort_push(State* ewk, State*);
 
 const s16 paring_mark_data[3][20][2] = {
     { { 64, 96 }, { 66, 82 }, { 50, 72 }, { 32, 60 }, { 36, 82 }, { 42, 70 }, { 34, 100 },
@@ -27,8 +27,8 @@ const s16 paring_mark_data[3][20][2] = {
       { 28, 76 }, { 25, 77 }, { 34, 79 }, { 47, 74 }, { 21, 84 }, { 22, 73 } }
 };
 
-void effect_C7_move(WORK_Other* ewk) {
-    WORK* mwk = (WORK*)ewk->my_master;
+void effect_C7_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -85,19 +85,19 @@ void effect_C7_move(WORK_Other* ewk) {
     }
 }
 
-static void effc7_sort_push(WORK* ewk, WORK* /* unused */) {
+static void effc7_sort_push(State* ewk, State* /* unused */) {
     sort_push_request8(ewk);
 }
 
 s32 effect_C7_init(PLW* wk, u8 data) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(2)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 127;
     ewk->wu.work_id = 64;

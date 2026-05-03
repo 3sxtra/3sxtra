@@ -9,9 +9,9 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -28,7 +28,7 @@ const s8 effect_19_m_tbl[16] = { 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1 
 
 const s8 effect_19_l_tbl[16] = { 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1 };
 
-void effect_19_move(WORK_Other* ewk) {
+void effect_19_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -55,7 +55,7 @@ void effect_19_move(WORK_Other* ewk) {
     }
 }
 
-void eff19_quake_sub(WORK_Other* ewk) {
+void eff19_quake_sub(State_Other* ewk) {
     s16 work;
     s8 fall_go;
 
@@ -144,7 +144,7 @@ void eff19_quake_sub(WORK_Other* ewk) {
 }
 
 s32 effect_19_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = &eff19_data_tbl[0];
@@ -154,7 +154,7 @@ s32 effect_19_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 19;
         ewk->wu.graphic_rom_type = 1;

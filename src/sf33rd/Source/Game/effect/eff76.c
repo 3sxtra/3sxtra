@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
@@ -24,23 +24,23 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
-void effect_76_move(WORK_Other* ewk);
-static void EFF76_WAIT(WORK_Other* ewk);
-static void EFF76_WAIT_BREAK_INTO(WORK_Other* ewk);
-static void EFF76_SLIDE_IN(WORK_Other* ewk);
-static void EFF76_SLIDE_OUT(WORK_Other* /* unused */);
-static void EFF76_SUDDENLY(WORK_Other* ewk);
-static void EFF76_BEFORE(WORK_Other* ewk);
-static void EFF76_SHIFT(WORK_Other* ewk);
-static void Setup_Pos_76(WORK_Other* ewk);
-static void Setup_Char_76(WORK_Other* ewk);
-static s16 Check_Range_Out(WORK_Other* ewk);
-static void Setup_Color_76(WORK_Other* ewk);
+void effect_76_move(State_Other* ewk);
+static void EFF76_WAIT(State_Other* ewk);
+static void EFF76_WAIT_BREAK_INTO(State_Other* ewk);
+static void EFF76_SLIDE_IN(State_Other* ewk);
+static void EFF76_SLIDE_OUT(State_Other* /* unused */);
+static void EFF76_SUDDENLY(State_Other* ewk);
+static void EFF76_BEFORE(State_Other* ewk);
+static void EFF76_SHIFT(State_Other* ewk);
+static void Setup_Pos_76(State_Other* ewk);
+static void Setup_Char_76(State_Other* ewk);
+static s16 Check_Range_Out(State_Other* ewk);
+static void Setup_Color_76(State_Other* ewk);
 
 void (*const EFF76_Jmp_Tbl[8])() = { EFF76_WAIT, EFF76_SLIDE_IN, EFF76_SLIDE_OUT,       EFF76_SUDDENLY,
                                      EFF57_KILL, EFF76_SHIFT,    EFF76_WAIT_BREAK_INTO, EFF76_BEFORE };
 
-void effect_76_move(WORK_Other* ewk) {
+void effect_76_move(State_Other* ewk) {
     EFF76_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
     if (ewk->wu.be_flag == 0) {
@@ -66,7 +66,7 @@ void effect_76_move(WORK_Other* ewk) {
     }
 }
 
-static void EFF76_WAIT(WORK_Other* ewk) {
+static void EFF76_WAIT(State_Other* ewk) {
     if (Check_Range_Out(ewk)) {
         g_state.Order[ewk->wu.dir_old] = 4;
         ewk->wu.routine_no[0] = 4;
@@ -83,7 +83,7 @@ static void EFF76_WAIT(WORK_Other* ewk) {
     }
 }
 
-static void EFF76_WAIT_BREAK_INTO(WORK_Other* ewk) {
+static void EFF76_WAIT_BREAK_INTO(State_Other* ewk) {
     if (g_state.Suicide[ewk->wu.direction] != 0) {
         g_state.Order[ewk->wu.dir_old] = 4;
         ewk->wu.routine_no[0] = 4;
@@ -95,7 +95,7 @@ static void EFF76_WAIT_BREAK_INTO(WORK_Other* ewk) {
     }
 }
 
-static void EFF76_SLIDE_IN(WORK_Other* ewk) {
+static void EFF76_SLIDE_IN(State_Other* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -138,11 +138,11 @@ static void EFF76_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-static void EFF76_SLIDE_OUT(WORK_Other* /* unused */) {
+static void EFF76_SLIDE_OUT(State_Other* /* unused */) {
     // Do nothing
 }
 
-static void EFF76_SUDDENLY(WORK_Other* ewk) {
+static void EFF76_SUDDENLY(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
@@ -201,7 +201,7 @@ static void EFF76_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-static void EFF76_BEFORE(WORK_Other* ewk) {
+static void EFF76_BEFORE(State_Other* ewk) {
     if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
@@ -215,7 +215,7 @@ static void EFF76_BEFORE(WORK_Other* ewk) {
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
 }
 
-static void EFF76_SHIFT(WORK_Other* ewk) {
+static void EFF76_SHIFT(State_Other* ewk) {
     s16 cut;
 
     switch (ewk->wu.routine_no[1]) {
@@ -245,14 +245,14 @@ static void EFF76_SHIFT(WORK_Other* ewk) {
 }
 
 s32 effect_76_init(s16 dir_old) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 76;
     ewk->wu.work_id = 16;
@@ -269,7 +269,7 @@ s32 effect_76_init(s16 dir_old) {
     return 0;
 }
 
-static void Setup_Pos_76(WORK_Other* ewk) {
+static void Setup_Pos_76(State_Other* ewk) {
     s16 ix;
     u8 my_char;
 
@@ -443,7 +443,7 @@ static void Setup_Pos_76(WORK_Other* ewk) {
     }
 }
 
-static void Setup_Char_76(WORK_Other* ewk) {
+static void Setup_Char_76(State_Other* ewk) {
     switch (ewk->wu.dir_old) {
     case 0x38:
     case 0x42:
@@ -615,7 +615,7 @@ static void Setup_Char_76(WORK_Other* ewk) {
     }
 }
 
-static s16 Check_Range_Out(WORK_Other* ewk) {
+static s16 Check_Range_Out(State_Other* ewk) {
     if (ewk->wu.disp_flag == 0) {
         return 0;
     }
@@ -623,12 +623,12 @@ static s16 Check_Range_Out(WORK_Other* ewk) {
     return Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, ewk->wu.damage_vitality);
 }
 
-static void Setup_Color_76(WORK_Other* ewk) {
+static void Setup_Color_76(State_Other* ewk) {
     ewk->wu.my_col_code = Victory_Color_Data[g_state.My_char[g_state.Winner_id]] + 0x2000;
     ewk->wu.my_col_code = Victory_Color_Data[g_state.My_char[g_state.Winner_id]] + 0x2090;
 }
 
-void Setup_Color_L1(WORK_Other* ewk) {
+void Setup_Color_L1(State_Other* ewk) {
     ewk->wu.my_col_code = Victory_Color_Data[g_state.My_char[g_state.Winner_id]];
     ewk->wu.my_col_code = Victory_Color_Data[g_state.My_char[g_state.Winner_id]] + 0x90;
 }

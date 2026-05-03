@@ -7,14 +7,14 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 const CONN bbbs_nando_small[2][2] = { { { 176, -16, 0, 32490 }, { 132, -16, 0, 32489 } },
                                       { { -104, -16, 0, 32490 }, { -148, -16, 0, 32489 } } };
 
-static void effH0_trans(WORK* ewk);
+static void effH0_trans(State* ewk);
 
 void effect_H0_move(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -62,13 +62,13 @@ void effect_H0_move(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effH0_trans(WORK* ewk) {
+static void effH0_trans(State* ewk) {
     ewk->position_x = g_state.bg_w.bgw[2].wxy[0].disp.pos;
     ewk->position_y = g_state.bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);
 }
 
-s32 effect_H0_init(WORK* wk) {
+s32 effect_H0_init(State* wk) {
     WORK_Other_CONN* ewk;
     s16 ix;
 

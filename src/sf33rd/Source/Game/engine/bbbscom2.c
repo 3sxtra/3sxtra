@@ -8,8 +8,8 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff16.h"
 #include "sf33rd/Source/Game/effect/effc2.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 
 /** @brief Executes the AI for the car-crush bonus stage opponent. */
@@ -48,7 +48,7 @@ void bbbs_com_execute2(PLW* wk) {
         break;
 
     case 1:
-        if (((WORK*)wk->wu.my_effadrs)->routine_no[0] == 2 && ((WORK*)wk->wu.my_effadrs)->routine_no[1] == 9) {
+        if (((State*)wk->wu.my_effadrs)->routine_no[0] == 2 && ((State*)wk->wu.my_effadrs)->routine_no[1] == 9) {
             g_state.Bonus_Stage_RNO[0] = 2;
             g_state.Bonus_Stage_RNO[1] = 0;
             g_state.Allow_a_battle_f = 0;

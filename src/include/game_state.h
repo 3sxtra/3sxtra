@@ -31,13 +31,13 @@ extern "C" {
 
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
-#include "sf33rd/Source/Game/engine/cmb_win.h"
+#include "sf33rd/Source/Game/engine/combo_window.h"
 #include "sf33rd/Source/Game/engine/grade.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/spgauge.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/super_gauge.h"
 #include "sf33rd/Source/Game/engine/stun.h"
 #include "sf33rd/Source/Game/engine/vital.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/select_timer.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -75,7 +75,7 @@ typedef struct GameState {
     SelectTimerState select_timer_state;
 
     // ======================================================================
-    // Character select rendering layers & scoring (workuser globals)
+    // Character select rendering layers & scoring (state_user globals)
     // Order[]: rendering layer visibility during character select UI.
     // Score/Bonus: match scoring — UI-only but kept in sync.
     // ======================================================================
@@ -539,7 +539,7 @@ typedef struct GameState {
 
     // ======================================================================
     // Player state (plcnt) — GAMEPLAY-CRITICAL
-    // PLW[2] holds the full per-player simulation state (WORK base + player
+    // PLW[2] holds the full per-player simulation state (State base + player
     // extensions). This is the single largest and most desync-sensitive
     // section. Both PLW structs are checksummed (after sanitizing pointers
     // and rendering bits) during desync detection.
@@ -783,10 +783,10 @@ typedef struct GameState {
     u32 state_checksum;
 } GameState;
 
-typedef struct State {
+typedef struct RollbackState {
     GameState gs;
     EffectState es;
-} State;
+} RollbackState;
 
 void GameState_Save(GameState* dst);
 void GameState_Load(const GameState* src);
@@ -796,7 +796,7 @@ int Netplay_GetPlayerHandle(void);
 int Netplay_GetBattleStartFrame(void);
 void save_state(const struct GekkoGameEvent* event);
 uint32_t save_current_state(void* buffer, int frame);
-void load_state(const struct State* src);
+void load_state(const struct RollbackState* src);
 void load_state_from_event(const struct GekkoGameEvent* event);
 
 #if DEBUG

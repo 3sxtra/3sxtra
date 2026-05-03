@@ -8,9 +8,9 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
-void effect_L0_move(WORK_Other* ewk) {
+void effect_L0_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
@@ -69,15 +69,15 @@ void effect_L0_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_L0_init(WORK* wk, s16 data) {
-    WORK_Other* ewk;
+s32 effect_L0_init(State* wk, s16 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->my_master = wk;
     ewk->wu.be_flag = 1;
     ewk->wu.id = 210;

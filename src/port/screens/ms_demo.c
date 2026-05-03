@@ -21,7 +21,7 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 /* Forward declarations for the legacy demo functions (defined in demo02.c) */
 extern void Demo_QuickStart(void);

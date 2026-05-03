@@ -10,8 +10,8 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effi6.h"
 #include "sf33rd/Source/Game/effect/effl5.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
@@ -26,12 +26,12 @@ const s16 fight_col_move_tbl[18] = { 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1
 
 // Forward decls
 
-static s32 b3_Break_Into_check(WORK_Other* ewk);
-static s32 fight_col_chg_sub(WORK_Other* ewk);
+static s32 b3_Break_Into_check(State_Other* ewk);
+static s32 fight_col_chg_sub(State_Other* ewk);
 
 // Funcs
 
-void effect_B2_move(WORK_Other* ewk) {
+void effect_B2_move(State_Other* ewk) {
     s16 work;
 
     b3_Break_Into_check(ewk);
@@ -163,7 +163,7 @@ void effect_B2_move(WORK_Other* ewk) {
     }
 }
 
-static s32 b3_Break_Into_check(WORK_Other* ewk) {
+static s32 b3_Break_Into_check(State_Other* ewk) {
     if (g_state.Break_Into) {
         ewk->wu.routine_no[0] = 99;
         return 1;
@@ -172,7 +172,7 @@ static s32 b3_Break_Into_check(WORK_Other* ewk) {
     }
 }
 
-static s32 fight_col_chg_sub(WORK_Other* ewk) {
+static s32 fight_col_chg_sub(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -218,14 +218,14 @@ static s32 fight_col_chg_sub(WORK_Other* ewk) {
 }
 
 s32 effect_B2_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0x70;
     ewk->wu.work_id = 0x10;

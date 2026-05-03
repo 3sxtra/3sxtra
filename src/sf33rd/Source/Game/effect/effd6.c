@@ -8,12 +8,12 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls01.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_common_mechanics.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const s16 num_of_hana[4] = { 3, 4, 5, 6 };
@@ -32,7 +32,7 @@ const s16 hana_delta_hosei[4][6] = { { -64, -72, -80, -72, -88, -80 },
                                      { -64, -72, -80, -72, -88, -80 },
                                      { -64, -72, -80, -72, -88, -80 } };
 
-void effect_D6_move(WORK_Other* ewk) {
+void effect_D6_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -104,15 +104,15 @@ void effect_D6_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_D6_init(WORK_Other* wk, s16 dr, s16 sp, s16 dl, s16 acc) {
-    WORK_Other* ewk;
+s32 effect_D6_init(State_Other* wk, s16 dr, s16 sp, s16 dl, s16 acc) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 136;
     ewk->wu.work_id = 16;
@@ -133,7 +133,7 @@ s32 effect_D6_init(WORK_Other* wk, s16 dr, s16 sp, s16 dl, s16 acc) {
     return 0;
 }
 
-void setup_hana_extra(WORK* wk, s16 num, s16 acc) {
+void setup_hana_extra(State* wk, s16 num, s16 acc) {
     s16 i;
     s16 way = wk->direction * 4;
     s16 rnd_00 = random_16() & 3;
@@ -141,7 +141,7 @@ void setup_hana_extra(WORK* wk, s16 num, s16 acc) {
 
     for (i = 0; i < num_of_hana[num]; i++) {
         rnd_01 = random_16() & 3;
-        effect_D6_init((WORK_Other*)wk,
+        effect_D6_init((State_Other*)wk,
                        way + hana_dir_hosei[rnd_00][i] & 0x3F,
                        hana_speed_hosei[rnd_01][i],
                        hana_delta_hosei[rnd_01][i],

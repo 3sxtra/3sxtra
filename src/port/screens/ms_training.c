@@ -32,7 +32,7 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, etc. */
+#include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, etc. */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* training functions, TRAINING_JMP_COUNT */
 #include "structs.h"
 

@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
@@ -48,10 +48,10 @@ const CONN bbbs_score[4][8] = { { { -64, 164, 0, 32474 },
                                   { 0, 0, 0, 0 },
                                   { 0, 0, 0, 0 } } };
 
-static void eff16_trans(WORK* ewk);
+static void eff16_trans(State* ewk);
 static s16 score_bunkai_eff16(WORK_Other_CONN* ewk, u32 tsc);
 
-void effect_16_move(WORK_Other* ewk) {
+void effect_16_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         switch (ewk->wu.routine_no[1]) {
@@ -114,7 +114,7 @@ void effect_16_move(WORK_Other* ewk) {
     }
 }
 
-static void eff16_trans(WORK* ewk) {
+static void eff16_trans(State* ewk) {
     ewk->position_x = g_state.bg_w.bgw[2].wxy[0].disp.pos;
     ewk->position_y = g_state.bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);

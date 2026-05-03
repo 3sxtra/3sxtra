@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-void effect_59_move(WORK_Other* ewk);
-s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction);
+void effect_59_move(State_Other* ewk);
+s32 effect_59_init(State_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction);
 
 #endif

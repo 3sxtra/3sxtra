@@ -6,7 +6,7 @@
  * with an RmlUi overlay showing winner name, score, win streak, and
  * a subdued loser variant.
  *
- * Key globals (from workuser.h):
+ * Key globals (from state_user.h):
  *   g_state.Winner_id, g_state.WGJ_Score, g_state.WGJ_Win, g_state.Win_Record[], g_state.VS_Win_Record[],
  *   g_state.Continue_Coin[], g_state.Score[][3], g_state.My_char[], g_state.Mode_Type, g_state.Play_Type
  */
@@ -20,7 +20,7 @@
 
 extern "C" {
 #include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 } // extern "C"
 
 // ─── Character name table (SF3:3S roster, index matches g_state.My_char) ───

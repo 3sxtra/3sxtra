@@ -9,16 +9,16 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-static u8 Setup_Char_49(WORK_Other* ewk);
+static u8 Setup_Char_49(State_Other* ewk);
 
-void effect_49_move(WORK_Other* ewk) {
+void effect_49_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -63,14 +63,14 @@ void effect_49_move(WORK_Other* ewk) {
 }
 
 s32 effect_49_init(s16 vital_new) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 49;
     ewk->wu.work_id = 16;
@@ -100,7 +100,7 @@ s32 effect_49_init(s16 vital_new) {
     return 0;
 }
 
-static u8 Setup_Char_49(WORK_Other* ewk) {
+static u8 Setup_Char_49(State_Other* ewk) {
     s16 xx;
 
     if (ewk->wu.vital_new == 4) {

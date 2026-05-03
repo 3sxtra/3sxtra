@@ -9,16 +9,16 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 
 const s8 effl2_dir_tbl[2][16] = { { 0, 0, 0, 1, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 },
                                   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 3 } };
 
-void effect_L2_move(WORK_Other* ewk) {
+void effect_L2_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -69,7 +69,7 @@ void effect_L2_move(WORK_Other* ewk) {
     }
 }
 
-void effl2_dir_check(WORK_Other* ewk) {
+void effl2_dir_check(State_Other* ewk) {
     s16 work = (g_state.plw[ewk->master_id].wu.xyz[0].disp.pos);
 
     work >>= 6;
@@ -82,7 +82,7 @@ void effl2_dir_check(WORK_Other* ewk) {
 }
 
 s32 effect_L2_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 oya_id;
 
@@ -106,7 +106,7 @@ s32 effect_L2_init() {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 212;
     ewk->wu.work_id = 16;

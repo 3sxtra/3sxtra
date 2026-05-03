@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/effect/eff57.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -19,7 +19,7 @@
 void (*const EFF75_Jmp_Tbl[5])();
 
 /* eff75 draws the SA plate background oval on the char/stage select screen. */
-void effect_75_move(WORK_Other* ewk) {
+void effect_75_move(State_Other* ewk) {
     EFF75_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
     if (ewk->wu.be_flag != 0) {
@@ -30,15 +30,15 @@ void effect_75_move(WORK_Other* ewk) {
     }
 }
 
-static void EFF75_WAIT(WORK_Other* ewk) {
+static void EFF75_WAIT(State_Other* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-void EFF75_SLIDE_IN(WORK_Other* /* unused */) {}
+void EFF75_SLIDE_IN(State_Other* /* unused */) {}
 
-static void EFF75_CHAR_CHANGE(WORK_Other* ewk) {
+static void EFF75_CHAR_CHANGE(State_Other* ewk) {
     if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
@@ -49,7 +49,7 @@ static void EFF75_CHAR_CHANGE(WORK_Other* ewk) {
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
 }
 
-static void EFF75_SUDDENLY(WORK_Other* ewk) {
+static void EFF75_SUDDENLY(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old]) {
@@ -73,14 +73,14 @@ static void EFF75_SUDDENLY(WORK_Other* ewk) {
 }
 
 s32 effect_75_init(s16 dir_old, s16 arg_ID, s16 Target_BG) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 75;
     ewk->wu.work_id = 16;

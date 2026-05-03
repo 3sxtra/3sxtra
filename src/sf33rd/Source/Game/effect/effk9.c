@@ -10,13 +10,13 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void effect_K9_move(WORK_Other* ewk) {
-    WORK* mwk = (WORK*)ewk->my_master;
+void effect_K9_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -53,15 +53,15 @@ void effect_K9_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_K9_init(WORK* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_K9_init(State* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(5)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->my_master = wk;
     ewk->wu.be_flag = 1;
     ewk->wu.id = 209;

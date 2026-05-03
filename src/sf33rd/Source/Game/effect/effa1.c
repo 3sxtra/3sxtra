@@ -8,11 +8,11 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void effect_A1_move(WORK_Other* ewk) {
+void effect_A1_move(State_Other* ewk) {
     s16 x;
 
     ewk->wu.disp_flag = 0;

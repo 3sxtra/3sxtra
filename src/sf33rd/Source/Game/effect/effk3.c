@@ -9,12 +9,12 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void set_init_posspeed_effK3(WORK* wk);
+static void set_init_posspeed_effK3(State* wk);
 
 const s16 numof_effK3[4] = { 2, 4, 6, 6 };
 
@@ -35,7 +35,7 @@ const s16 effK3_isp_y_hosei[4][8] = { { 0, 128, 256, 384, 512, 0, -128, -256 },
 
 const s16 effK3_life_time[4] = { 24, 20, 16, 12 };
 
-void effect_K3_move(WORK_Other* ewk) {
+void effect_K3_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -85,7 +85,7 @@ void effect_K3_move(WORK_Other* ewk) {
     }
 }
 
-static void set_init_posspeed_effK3(WORK* wk) {
+static void set_init_posspeed_effK3(State* wk) {
     s16 data[4];
     s16 ix;
     s16 flag;
@@ -116,15 +116,15 @@ static void set_init_posspeed_effK3(WORK* wk) {
     wk->shadow_y = wk->shadow_prio / 2;
 }
 
-static s32 effect_K3_init(WORK_Other* wk) {
-    WORK_Other* ewk;
+static s32 effect_K3_init(State_Other* wk) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(1)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 203;
     ewk->wu.work_id = 16;
@@ -143,7 +143,7 @@ static s32 effect_K3_init(WORK_Other* wk) {
     return 0;
 }
 
-s32 setup_effK3(WORK* wk) {
+s32 setup_effK3(State* wk) {
     s16 i;
 
     if (wk->type != 3) {
@@ -155,7 +155,7 @@ s32 setup_effK3(WORK* wk) {
     }
 
     for (i = 0; i < numof_effK3[wk->dm_attlv]; i++) {
-        effect_K3_init((WORK_Other*)wk);
+        effect_K3_init((State_Other*)wk);
     }
 
     return 1;

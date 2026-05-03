@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/effect/eff80.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
@@ -19,7 +19,7 @@
 
 void (*const EFF98_Jmp_Tbl[5])();
 
-void effect_98_move(WORK_Other* ewk) {
+void effect_98_move(State_Other* ewk) {
     EFF98_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
@@ -28,13 +28,13 @@ void effect_98_move(WORK_Other* ewk) {
     }
 }
 
-static void EFF98_WAIT(WORK_Other* ewk) {
+static void EFF98_WAIT(State_Other* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-static void EFF98_SLIDE_IN(WORK_Other* ewk) {
+static void EFF98_SLIDE_IN(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old]) {
@@ -84,9 +84,9 @@ static void EFF98_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-void EFF98_SLIDE_OUT(WORK_Other* /* unused */) {}
+void EFF98_SLIDE_OUT(State_Other* /* unused */) {}
 
-static void EFF98_SUDDENLY(WORK_Other* ewk) {
+static void EFF98_SUDDENLY(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old]) {
@@ -109,7 +109,7 @@ static void EFF98_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-static void EFF98_KILL(WORK_Other* ewk) {
+static void EFF98_KILL(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
@@ -126,14 +126,14 @@ static void EFF98_KILL(WORK_Other* ewk) {
 }
 
 s32 effect_98_init(s16 PL_id, s16 dir_old, s16 master_player, s16 Target_BG) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->master_player = master_player;
     ewk->wu.be_flag = 1;
     ewk->wu.id = 98;

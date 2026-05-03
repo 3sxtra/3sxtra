@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 const s16 coltbl_000_1P[10] = { 1, 8192, 2, 8193, 1, 8195, 2, 8193, 0, 0 };
 const s16 coltbl_000_2P[10] = { 1, 8208, 2, 8209, 1, 8211, 2, 8209, 0, 0 };
@@ -52,7 +52,7 @@ const ColorTableIndex color_table_index[11] = {
     { 17, 24, coltbl_010_1P, coltbl_010_2P }
 };
 
-void effect_D9_move(WORK_Other* ewk) {
+void effect_D9_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
@@ -133,14 +133,14 @@ void effect_D9_move(WORK_Other* ewk) {
 }
 
 s32 effect_D9_init(PLW* wk, u8 data) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(6)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 139;
     ewk->wu.work_id = 16;

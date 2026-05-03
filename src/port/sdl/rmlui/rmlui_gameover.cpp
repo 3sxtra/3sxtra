@@ -6,7 +6,7 @@
  * GameOver_1st()/GameOver_2nd() with an RmlUi overlay showing the
  * "GAME OVER" red banner (phase 1) and then score/results (phase 2).
  *
- * Key globals (from workuser.h):
+ * Key globals (from state_user.h):
  *   g_state.Score[2][3], g_state.My_char[], g_state.Win_Record[], g_state.Player_id, g_state.Play_Type,
  * g_state.gameover_phase[]
  */
@@ -20,7 +20,7 @@
 
 extern "C" {
 #include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 } // extern "C"
 
 // ─── Character name table (SF3:3S roster, index matches g_state.My_char) ───

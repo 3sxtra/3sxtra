@@ -9,15 +9,15 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effj0.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
-static void push_image_buff(WORK_Other* wk, ImageBuff* image_buff);
-static void init_image_buff(WORK_Other* wk, ImageBuff* image_buff);
+static void push_image_buff(State_Other* wk, ImageBuff* image_buff);
+static void init_image_buff(State_Other* wk, ImageBuff* image_buff);
 
-void effect_I9_move(WORK_Other* ewk) {
-    WORK* sub_w = (WORK*)ewk->wu.target_adrs;
+void effect_I9_move(State_Other* ewk) {
+    State* sub_w = (State*)ewk->wu.target_adrs;
     ImageBuff* image_buff = (ImageBuff*)sub_w + 9;
-    WORK_Other* mwk = (WORK_Other*)ewk->my_master;
+    State_Other* mwk = (State_Other*)ewk->my_master;
     s16 i;
 
     switch (ewk->wu.routine_no[0]) {
@@ -63,7 +63,7 @@ void effect_I9_move(WORK_Other* ewk) {
     }
 }
 
-static void push_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
+static void push_image_buff(State_Other* wk, ImageBuff* image_buff) {
     s16 i;
 
     for (i = 16; i > 0; i--) {
@@ -74,7 +74,7 @@ static void push_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
     image_buff->pos_y = wk->wu.position_y;
 }
 
-static void init_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
+static void init_image_buff(State_Other* wk, ImageBuff* image_buff) {
     s16 i;
 
     for (i = 16; i >= 0; i--) {
@@ -83,17 +83,17 @@ static void init_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
     }
 }
 
-s32 effect_I9_init(WORK_Other* wk, s16 total, s16 interval, s16 life) {
-    WORK_Other* ewk;
+s32 effect_I9_init(State_Other* wk, s16 total, s16 interval, s16 life) {
+    State_Other* ewk;
     s16 ix;
     s16 ix2;
-    WORK* sub_w;
+    State* sub_w;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 189;
     ewk->wu.work_id = 16;
@@ -117,7 +117,7 @@ s32 effect_I9_init(WORK_Other* wk, s16 total, s16 interval, s16 life) {
         return -1;
     }
 
-    sub_w = (WORK*)frw[ix2];
+    sub_w = (State*)frw[ix2];
     ewk->wu.target_adrs = sub_w;
     return 0;
 }

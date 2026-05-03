@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
@@ -16,7 +16,7 @@ static s32 Check_Disp_90(WORK_Other_CONN* ewk);
 static s16 Check_Disp_Pos_90(WORK_Other_CONN* ewk);
 
 void effect_90_move(WORK_Other_CONN* ewk) {
-    Check_Pos_OBJ2((WORK_Other*)ewk);
+    Check_Pos_OBJ2((State_Other*)ewk);
 
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);

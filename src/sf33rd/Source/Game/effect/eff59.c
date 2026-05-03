@@ -10,7 +10,7 @@
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -26,12 +26,12 @@ const s16 EFF59_ID05_Data[24][4] = {
     { 0, 0, 0, 0 },        { 0, 0, 0, 0 },        { 0, 0, 0, 0 },        { -72, 144, -40, 16 }
 };
 
-static void EFF59_Trans(WORK_Other* ewk);
-static void Check_Under_Name(WORK_Other* ewk);
-static s32 Check_Break_Into_59(WORK_Other* ewk);
+static void EFF59_Trans(State_Other* ewk);
+static void Check_Under_Name(State_Other* ewk);
+static s32 Check_Break_Into_59(State_Other* ewk);
 
-void effect_59_move(WORK_Other* ewk) {
-    WORK_Other* mwk = (WORK_Other*)ewk->my_master;
+void effect_59_move(State_Other* ewk) {
+    State_Other* mwk = (State_Other*)ewk->my_master;
 
     if (mwk->wu.be_flag == 0) {
         ewk->wu.disp_flag = 0;
@@ -93,7 +93,7 @@ void effect_59_move(WORK_Other* ewk) {
 /* eff59 draws the grey transparent rectangles on the char select screen:
  * arg_ID 4 = banner behind PLAYER SELECT, arg_ID 5 = rect behind character name.
  * Suppress rendering when the RmlUI overlay provides the same UI. */
-static void EFF59_Trans(WORK_Other* ewk) {
+static void EFF59_Trans(State_Other* ewk) {
     if (rmlui_char_select_visible)
         return;
     if (ewk->wu.damage_vitality == 4 || ewk->wu.damage_vitality == 5) {
@@ -103,14 +103,14 @@ static void EFF59_Trans(WORK_Other* ewk) {
     }
 }
 
-static void Check_Under_Name(WORK_Other* ewk) {
-    WORK_Other* mwk;
+static void Check_Under_Name(State_Other* ewk) {
+    State_Other* mwk;
 
     if (ewk->wu.damage_vitality != 5) {
         return;
     }
 
-    mwk = (WORK_Other*)ewk->my_master;
+    mwk = (State_Other*)ewk->my_master;
 
     if (ewk->wu.dir_step != mwk->wu.dir_step) {
         ewk->wu.dir_step = mwk->wu.dir_step;
@@ -121,15 +121,15 @@ static void Check_Under_Name(WORK_Other* ewk) {
     }
 }
 
-s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) {
-    WORK_Other* ewk;
+s32 effect_59_init(State_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 59;
     ewk->wu.work_id = 16;
@@ -176,7 +176,7 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) {
     return 0;
 }
 
-static s32 Check_Break_Into_59(WORK_Other* ewk) {
+static s32 Check_Break_Into_59(State_Other* ewk) {
     if (ewk->wu.damage_vitality != 4 || ewk->wu.routine_no[0] == 4) {
         return 0;
     }

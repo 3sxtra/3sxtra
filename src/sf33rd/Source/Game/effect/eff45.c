@@ -28,9 +28,9 @@ MessageData Message_Data[4];
 void (*const EFF45_Jmp_Tbl[3])() = { EFF45_DISP, EFF45_CHANGE, EFF45_SUSPEND };
 
 void effect_45_move(WORK_Other_CONN* ewk) {
-    Check_Pos_OBJ2((WORK_Other*)ewk);
+    Check_Pos_OBJ2((State_Other*)ewk);
 
-    if (Check_Die_61((WORK_Other*)ewk) != 0 || Message_Data[ewk->wu.dir_old].order == 3) {
+    if (Check_Die_61((State_Other*)ewk) != 0 || Message_Data[ewk->wu.dir_old].order == 3) {
         Release_Effect(&ewk->wu);
         return;
     }

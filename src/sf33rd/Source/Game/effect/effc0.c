@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const s16 hok_table_ef[8] = { 1, 1, 2, 2, 3, 3, 3, 3 };
@@ -20,7 +20,7 @@ const s16 plhos_data[20][3] = { { 2, 136, 4 }, { 40, 92, 3 },  { -4, 104, 2 },  
                                 { 2, 92, 5 },  { -4, 104, 2 }, { -4, 104, 5 },  { 2, 136, 4 },  { -4, 104, 2 },
                                 { 6, 90, 2 },  { -4, 104, 2 }, { -41, 127, 5 }, { -4, 104, 4 }, { -4, 104, 4 } };
 
-void effect_C0_move(WORK_Other* ewk) {
+void effect_C0_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
     s16 i;
     s16 hok;
@@ -83,14 +83,14 @@ void effect_C0_move(WORK_Other* ewk) {
 }
 
 s32 effect_C0_init(PLW* wk, s32 /* unused */) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 120;
     ewk->wu.work_id = 16;

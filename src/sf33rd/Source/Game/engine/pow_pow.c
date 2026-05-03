@@ -6,18 +6,18 @@
 #include "sf33rd/Source/Game/engine/pow_pow.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/pow_data.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 /**
  * @brief Core damage calculation shared by player-vs-player and effect-vs-player paths.
  *
- * @param att_wu    Attacker's WORK data (for pow lookup and work_id check).
+ * @param att_wu    Attacker's State data (for pow lookup and work_id check).
  * @param att_plus  Attacker's attack multiplier (from the owning PLW).
  * @param ds        Defender player work (receives damage_vitality and applies def_plus).
  */
-static void cal_damage_core(WORK* att_wu, s16 att_plus, PLW* ds) {
+static void cal_damage_core(State* att_wu, s16 att_plus, PLW* ds) {
     s16 power = Power_Data[att_wu->att.pow];
     s16 yy = (g_state.Play_Type == 1) ? Pow_Control_Data_1[0][3] : Pow_Control_Data_1[0][g_state.Round_Level];
 
@@ -38,18 +38,18 @@ void cal_damage_vitality(PLW* as, PLW* ds) {
 }
 
 /** @brief Calculates damage vitality for an effect-vs-player attack. */
-void cal_damage_vitality_eff(WORK_Other* as, PLW* ds) {
+void cal_damage_vitality_eff(State_Other* as, PLW* ds) {
     cal_damage_core(&as->wu, ((PLW*)as)->att_plus, ds);
 }
 
 /** @brief Awards additional score for specific damage types (KO, special finish). */
-void Additinal_Score_DM(WORK_Other* wk, u16 ix) {
+void Additinal_Score_DM(State_Other* wk, u16 ix) {
     s16 id;
 
     if (wk->wu.work_id == 1) {
         id = wk->wu.id;
     } else {
-        if (((WORK*)wk->my_master)->work_id != 1) {
+        if (((State*)wk->my_master)->work_id != 1) {
             return;
         }
 

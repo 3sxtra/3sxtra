@@ -7,11 +7,11 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void effJ2_trans(WORK* ewk);
+static void effJ2_trans(State* ewk);
 
 const CONN bbbs_nando_large[2] = { { 92, 78, 0, 0x7EC7 }, { -20, 78, 0, 0x7EC6 } };
 
@@ -59,7 +59,7 @@ void effect_J2_move(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effJ2_trans(WORK* ewk) {
+static void effJ2_trans(State* ewk) {
     ewk->position_x = g_state.bg_w.bgw[1].wxy[0].disp.pos;
     ewk->position_y = g_state.bg_w.bgw[1].wxy[1].disp.pos;
     sort_push_request3(ewk);

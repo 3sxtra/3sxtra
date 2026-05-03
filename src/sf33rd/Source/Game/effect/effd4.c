@@ -9,9 +9,9 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effg3.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
-static s32 distance2speed(WORK_Other* ewk, WORK* wk, s32 dir);
+static s32 distance2speed(State_Other* ewk, State* wk, s32 dir);
 
 const s8 sel_suikomi_tbl[2][5] = { { 0, 0, 0, 1, 90 }, { 0, 0, 0, 255, 60 } };
 
@@ -48,10 +48,10 @@ const s8 swallow_areas_y[12][32] = {
 const s32 swallow_speeds[16] = { 0,       0x8000,  0x10000, 0x18000, 0x20000, 0x28000, 0x30000, 0x38000,
                                  0x40000, 0x48000, 0x50000, 0x58000, 0x60000, 0x68000, 0x70000, 0x78000 };
 
-void effect_D4_move(WORK_Other* ewk) {
+void effect_D4_move(State_Other* ewk) {
     PLW* wk = (PLW*)ewk->wu.target_adrs;
     PLW* mwk = (PLW*)ewk->my_master;
-    WORK* swk;
+    State* swk;
     s32 rl;
     s32 add_x;
     s32 add_y;
@@ -136,7 +136,7 @@ void effect_D4_move(WORK_Other* ewk) {
                 continue;
             }
 
-            swk = (WORK*)frw[wk->wu.shell_ix[j]];
+            swk = (State*)frw[wk->wu.shell_ix[j]];
 
             if (!swk->be_flag) {
                 continue;
@@ -170,7 +170,7 @@ void effect_D4_move(WORK_Other* ewk) {
     }
 }
 
-static s32 distance2speed(WORK_Other* ewk, WORK* wk, s32 dir) {
+static s32 distance2speed(State_Other* ewk, State* wk, s32 dir) {
     s32 y = 0;
     s32 x = 0;
 
@@ -203,8 +203,8 @@ static s32 distance2speed(WORK_Other* ewk, WORK* wk, s32 dir) {
     return swallow_areas_y[y][x];
 }
 
-s32 effect_D4_init(WORK* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_D4_init(State* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.Bonus_Game_Flag != 0) {
@@ -215,7 +215,7 @@ s32 effect_D4_init(WORK* wk, u8 data) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 134;
     ewk->wu.work_id = 16;

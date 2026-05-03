@@ -9,8 +9,8 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 
-void effect_F0_move(WORK_Other* ewk) {
-    WORK* mwk = (WORK*)ewk->my_master;
+void effect_F0_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
 
     if (!ewk->wu.routine_no[0]) {
         if ((ewk->wu.dead_f == 1) || (ewk->wu.dir_old != mwk->current_char_type)) {
@@ -33,15 +33,15 @@ void effect_F0_move(WORK_Other* ewk) {
     Release_Effect(&ewk->wu);
 }
 
-s32 effect_F0_init(WORK* wk) {
-    WORK_Other* ewk;
+s32 effect_F0_init(State* wk) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 150;
     ewk->wu.work_id = 16;

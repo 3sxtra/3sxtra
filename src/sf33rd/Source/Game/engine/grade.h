@@ -32,15 +32,15 @@ s16 get_offence_total(s16 ix);
 s16 get_defence_total(s16 ix, s16 wf);
 s16 get_tech_pts_total(s16 ix);
 s16 get_ex_point_total(s16 ix, s16 wf);
-void grade_add_clean_hits(WORK_Other* wk);
-void grade_add_att_renew(WORK_Other* wk);
+void grade_add_clean_hits(State_Other* wk);
+void grade_add_att_renew(State_Other* wk);
 void grade_add_guard_success(s16 ix);
 void grade_add_em_stun(s16 ix);
 void grade_max_combo_check(s16 ix, s16 num);
 void grade_add_leap_attack(s16 ix);
 void grade_add_grap_def(s16 ix);
 void grade_add_quick_stand(s16 ix);
-void Grade_Add_Normal_Throw(WORK* wk);
+void Grade_Add_Normal_Throw(State* wk);
 void grade_add_reversal(s16 ix);
 void grade_add_target_combo(s16 ix);
 void grade_add_command_move(s16 ix);
@@ -56,6 +56,6 @@ s16 grade_get_my_grade(s16 ix);
 s16 grade_get_my_point_percentage(s16 ix, s16 flag);
 s16 grade_get_cm_point_percentage(s16 ix, s16 flag);
 s16 get_grade_ix(s16 pts);
-void check_guard_miss(WORK* as, PLW* ds, s8 gddir);
+void check_guard_miss(State* as, PLW* ds, s8 gddir);
 
 #endif

@@ -32,7 +32,7 @@ extern const EXPLEM explem[];
 extern const EXPLEM explem2[][20];
 extern const s16 hit_mark_adjust_table[][2];
 
-void effect_02_move(WORK_Other* ewk);
-s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl);
+void effect_02_move(State_Other* ewk);
+s32 effect_02_init(State* wk, s8 dmgp, s8 mkst, s8 dmrl);
 
 #endif

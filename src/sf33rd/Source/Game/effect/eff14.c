@@ -9,10 +9,10 @@
 #include "sf33rd/Source/Game/effect/eff08.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/manage.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
-void effect_14_move(WORK_Other* ewk) {
+void effect_14_move(State_Other* ewk) {
     if (g_state.Suicide[5] & 0x80) {
         Release_Effect(&ewk->wu);
         return;
@@ -51,14 +51,14 @@ void effect_14_move(WORK_Other* ewk) {
 }
 
 s32 effect_14_init(s16 id, s16 x, s16 y, s16 atr) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 14;
     ewk->wu.work_id = 16;
@@ -67,6 +67,6 @@ s32 effect_14_init(s16 id, s16 x, s16 y, s16 atr) {
     ewk->wu.position_y = y;
     ewk->wu.my_col_code = atr;
     Disp_Bonus_Contents = 0;
-    effect_14_move((WORK_Other*)ewk);
+    effect_14_move((State_Other*)ewk);
     return 0;
 }

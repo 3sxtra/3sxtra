@@ -11,14 +11,14 @@
 #include "sf33rd/Source/Game/effect/eff76.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-static void Setup_Char_52(WORK_Other* ewk);
-static void Setup_Pos_52(WORK_Other* ewk);
+static void Setup_Char_52(State_Other* ewk);
+static void Setup_Pos_52(State_Other* ewk);
 
 void (*const EFF52_Jmp_Tbl[5])();
 
@@ -27,7 +27,7 @@ void (*const EFF52_Jmp_Tbl[5])();
  * separator line — gate that variant when RmlUI is active.
  * dir_old == 38/39 (2P mode) use char_index 18 (portrait face only)
  * and must NOT be gated. */
-void effect_52_move(WORK_Other* ewk) {
+void effect_52_move(State_Other* ewk) {
     EFF52_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
     if (ewk->wu.be_flag != 0) {
@@ -38,14 +38,14 @@ void effect_52_move(WORK_Other* ewk) {
     }
 }
 
-static void EFF52_WAIT(WORK_Other* ewk) {
+static void EFF52_WAIT(State_Other* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
     }
 }
 
-static void EFF52_SUDDENLY(WORK_Other* ewk) {
+static void EFF52_SUDDENLY(State_Other* ewk) {
     s16 x;
 
     switch (ewk->wu.routine_no[6]) {
@@ -83,7 +83,7 @@ static void EFF52_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-static void EFF52_SLIDE_IN(WORK_Other* ewk) {
+static void EFF52_SLIDE_IN(State_Other* ewk) {
     if (g_state.Order[ewk->wu.dir_old] == 4) {
         ewk->wu.routine_no[0] = 4;
         ewk->wu.routine_no[1] = 0;
@@ -122,7 +122,7 @@ static void EFF52_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-static void EFF52_SLIDE_OUT(WORK_Other* ewk) {
+static void EFF52_SLIDE_OUT(State_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (ewk->wu.disp_flag == 0) {
@@ -160,7 +160,7 @@ static void EFF52_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-static void EFF52_KILL(WORK_Other* ewk) {
+static void EFF52_KILL(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
@@ -177,14 +177,14 @@ static void EFF52_KILL(WORK_Other* ewk) {
 }
 
 s32 effect_52_init(s16 PL_id, s16 dir_old) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 52;
     ewk->wu.work_id = 16;
@@ -204,7 +204,7 @@ s32 effect_52_init(s16 PL_id, s16 dir_old) {
     return 0;
 }
 
-static void Setup_Char_52(WORK_Other* ewk) {
+static void Setup_Char_52(State_Other* ewk) {
     s16 ix;
 
     if (ewk->wu.dir_old == 37) {
@@ -219,7 +219,7 @@ static void Setup_Char_52(WORK_Other* ewk) {
     ewk->wu.direction = Pattern_Data_52[ewk->wu.dir_step + ix][1];
 }
 
-static void Setup_Pos_52(WORK_Other* ewk) {
+static void Setup_Pos_52(State_Other* ewk) {
     s16 ix;
 
     if (ewk->wu.dir_old == 37) {

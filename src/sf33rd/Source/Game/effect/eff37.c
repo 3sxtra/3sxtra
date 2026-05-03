@@ -10,8 +10,8 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effh2.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const s16 panel_pos_hosei[8][4][2] = {
@@ -21,8 +21,8 @@ const s16 panel_pos_hosei[8][4][2] = {
     { { -23, 112 }, { 0, 0 }, { 0, 0 }, { -23, 112 } }, { { -86, 60 }, { 0, 0 }, { 0, 0 }, { -86, 60 } }
 };
 
-void effect_37_move(WORK_Other* ewk) {
-    WORK* mwk = (WORK*)ewk->my_master;
+void effect_37_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
     s16 ix;
 
     switch (ewk->wu.routine_no[0]) {
@@ -80,15 +80,15 @@ void effect_37_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_37_init(WORK* wk, u8 gal, u8 ohen) {
-    WORK_Other* ewk;
+s32 effect_37_init(State* wk, u8 gal, u8 ohen) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 37;
     ewk->wu.work_id = 16;

@@ -40,7 +40,7 @@ extern "C" {
 #include "port/config/paths.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/qr_texture.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 extern int g_lobby_peer_idx;
 extern int g_net_peer_idx;

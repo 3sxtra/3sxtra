@@ -9,7 +9,7 @@ extern const u8* ci_pointer;
 extern u8 ci_col;
 extern u8 ci_timer;
 
-void effect_56_move(WORK_Other* ewk);
+void effect_56_move(State_Other* ewk);
 s32 effect_56_init(u8 type, u8 kill);
 
 #endif

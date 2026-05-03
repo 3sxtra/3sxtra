@@ -78,10 +78,10 @@
 #include "sf33rd/Source/Game/engine/cmd_data.h"
 #include "sf33rd/Source/Game/engine/cmd_main.h"
 #include "sf33rd/Source/Game/engine/getup.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/plmain.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_main.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/training/training_dummy.h"
@@ -91,9 +91,9 @@ void Main_Program(PLW* wk);
 static u16 CPU_Sub(PLW* wk);
 static s32 Check_Counter_Attack(PLW* wk);
 static s16 Check_Spam_Trap(PLW* wk);
-static s32 Check_No12_Shell_Guard(PLW* wk, WORK_Other* tmw);
-static s32 Ck_Exit_Guard(PLW* wk, WORK* em);
-static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em);
+static s32 Check_No12_Shell_Guard(PLW* wk, State_Other* tmw);
+static s32 Ck_Exit_Guard(PLW* wk, State* em);
+static s32 Ck_Exit_Guard_Sub(PLW* wk, State* em);
 
 void Com_Initialize(PLW* wk);
 void Com_Free(PLW* wk);
@@ -183,7 +183,7 @@ u16 cpu_algorithm(PLW* wk) {
 
 /** @brief Core AI tick — updates state, runs the main program, and returns lever data. */
 static u16 CPU_Sub(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (g_state.Allow_a_battle_f == 0 || g_state.pcon_dp_flag) {
         return 0;
@@ -412,7 +412,7 @@ void Com_Before_Passive(PLW* wk) {
 
 /** @brief AI state 7: Guard state — decide whether to continue blocking or counter-attack. */
 void Com_Guard(PLW* wk) {
-    WORK* em;
+    State* em;
 
     if (Check_Damage(wk)) {
         return;
@@ -431,7 +431,7 @@ void Com_Guard(PLW* wk) {
         return;
     }
 
-    em = (WORK*)wk->wu.target_adrs;
+    em = (State*)wk->wu.target_adrs;
 
     if (Ck_Exit_Guard(wk, em)) {
         Check_Guard_Type(wk, em);
@@ -522,7 +522,7 @@ static s16 Check_Spam_Trap(PLW* wk) {
 
 /** @brief AI state 9: Guard against incoming projectiles (shells). */
 void Com_Guard_VS_Shell(PLW* wk) {
-    WORK_Other* tmw;
+    State_Other* tmw;
 
     if (Check_Caught(wk)) {
         return;
@@ -532,7 +532,7 @@ void Com_Guard_VS_Shell(PLW* wk) {
         return;
     }
 
-    tmw = (WORK_Other*)Shell_Address[wk->wu.id];
+    tmw = (State_Other*)Shell_Address[wk->wu.id];
 
     Check_Guard_Type(wk, &tmw->wu);
 
@@ -561,7 +561,7 @@ void Com_Guard_VS_Shell(PLW* wk) {
 }
 
 /** @brief Check if Twelve (NO12) should continue guarding against a projectile by position. */
-static s32 Check_No12_Shell_Guard(PLW* wk, WORK_Other* tmw) {
+static s32 Check_No12_Shell_Guard(PLW* wk, State_Other* tmw) {
     s16 pos_x;
 
     if (wk->wu.rl_flag) {
@@ -582,7 +582,7 @@ static s32 Check_No12_Shell_Guard(PLW* wk, WORK_Other* tmw) {
 }
 
 /** @brief Set the guard lever input based on the current guard type (stand/crouch/auto). */
-void Check_Guard_Type(PLW* wk, WORK* em) {
+void Check_Guard_Type(PLW* wk, State* em) {
     g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
 
     switch (g_state.Guard_Type[wk->wu.id]) {
@@ -608,7 +608,7 @@ void Check_Guard_Type(PLW* wk, WORK* em) {
 }
 
 /** @brief Check whether the CPU should remain in guard state or exit. */
-static s32 Ck_Exit_Guard(PLW* wk, WORK* em) {
+static s32 Ck_Exit_Guard(PLW* wk, State* em) {
     s16 Lv;
 
     if (--g_state.Timer_00[wk->wu.id]) {
@@ -649,7 +649,7 @@ static s32 Ck_Exit_Guard(PLW* wk, WORK* em) {
 }
 
 /** @brief Sub-check for guard exit — tests whether the opponent is still attacking. */
-static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
+static s32 Ck_Exit_Guard_Sub(PLW* wk, State* em) {
     if (g_state.Attack_Flag[wk->wu.id] == 0) {
         return 0;
     }
@@ -777,7 +777,7 @@ void Damage_1st(PLW* wk) {
     u8 Lv;
     u8 Rnd;
     u8 xx;
-    WORK* em;
+    State* em;
 
     g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
     g_state.Lever_Buff[wk->wu.id] |= 2;
@@ -857,7 +857,7 @@ void Damage_1st(PLW* wk) {
         Rnd = random_16_com();
         Lv += g_state.CC_Value[0];
         Lv = emLevelRemake(Lv, 11, 1);
-        em = (WORK*)wk->wu.target_adrs;
+        em = (State*)wk->wu.target_adrs;
 
         if (g_state.EM_Rank != 0) {
             g_state.Guard_Type[wk->wu.id] = Guard_Data[17][Lv][Rnd];
@@ -872,7 +872,7 @@ void Damage_1st(PLW* wk) {
 
 /** @brief Damage sub-state 1: Continue guarding after hit; check for ukemi (tech) opportunity. */
 void Damage_2nd(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     Check_Guard_Type(wk, em);
 
@@ -1020,7 +1020,7 @@ void Damage_6th(PLW* wk) {
 
 /** @brief Damage sub-state 6/7/8: Guard on wake-up with guard type selection. */
 void Damage_7th(PLW* wk) {
-    WORK* em;
+    State* em;
 
     switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
@@ -1048,7 +1048,7 @@ void Damage_7th(PLW* wk) {
         break;
 
     default:
-        em = (WORK*)wk->wu.target_adrs;
+        em = (State*)wk->wu.target_adrs;
         Check_Guard_Type(wk, em);
 
         if (wk->wu.cg_type != 0x40 && wk->wu.routine_no[1] != 0) {
@@ -1249,7 +1249,7 @@ void Com_Flip(PLW* wk) {
 
 /** @brief Flip sub-state 0: Ground parry — wait for attack hit, then guard. */
 void Flip_Zero(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     switch (g_state.CP_No[wk->wu.id][2]) {
     case 0:
@@ -1282,7 +1282,7 @@ void Flip_Zero(PLW* wk) {
 
 /** @brief Check if parry input should be committed — sets guard lever if attack is incoming. */
 s32 Check_Flip_GO(PLW* wk, s16 xx) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (em->att_hit_ok || xx) {
         if (em->pat_status == 0x21 || em->pat_status == 0x20) {
@@ -1359,7 +1359,7 @@ void Flip_3rd(PLW* wk) {
         dash_flag_clear(wk->wu.id);
         g_state.Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
 
-        if (((WORK*)wk->wu.dmg_adrs)->att.guard & 0x10) {
+        if (((State*)wk->wu.dmg_adrs)->att.guard & 0x10) {
             break;
         }
 
@@ -1392,10 +1392,10 @@ void Flip_4th(PLW* wk) {
 
 /** @brief Set the guard lever for parrying an incoming projectile. Returns 0 if no shell. */
 s32 SetShellFlipLever(PLW* wk) {
-    WORK* tmw;
+    State* tmw;
 
     g_state.Lever_Buff[wk->wu.id] = 0;
-    tmw = (WORK*)Shell_Address[wk->wu.id];
+    tmw = (State*)Shell_Address[wk->wu.id];
 
     if (tmw == NULL) {
         return 0;
@@ -1420,7 +1420,7 @@ s32 SetShellFlipLever(PLW* wk) {
 
 /** @brief Decide the next action after parrying a projectile (continue, guard, or exit). */
 static s32 Check_Shell_Flip(PLW* wk) {
-    WORK* shell;
+    State* shell;
     s32 Rnd;
     s32 Lv;
     s32 xx;
@@ -1433,7 +1433,7 @@ static s32 Check_Shell_Flip(PLW* wk) {
         return 0;
     }
 
-    shell = (WORK*)wk->wu.dmg_adrs;
+    shell = (State*)wk->wu.dmg_adrs;
 
     if (shell == NULL) {
         res = 1;
@@ -1457,7 +1457,7 @@ static s32 Check_Shell_Flip(PLW* wk) {
         }
 
         res = 1;
-        shell = (WORK*)Shell_Address[wk->wu.id];
+        shell = (State*)Shell_Address[wk->wu.id];
         wk->wu.dmg_adrs = shell;
     }
 
@@ -1553,7 +1553,7 @@ static s32 Check_Flip_Attack(PLW* wk) {
 void Com_Caught(PLW* wk) {
     s16 Rnd;
     s16 Lv;
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     switch (g_state.CP_No[wk->wu.id][1]) {
     case 0:
@@ -1652,7 +1652,7 @@ static s32 Check_Caught(PLW* wk) {
 
 /** @brief AI state 15: Catching the opponent — mash buttons during throw animation. */
 void Com_Catch(PLW* wk) {
-    WORK* em;
+    State* em;
     s16 Rnd;
     s16 Lv;
 
@@ -1671,7 +1671,7 @@ void Com_Catch(PLW* wk) {
         break;
 
     case 1:
-        em = (WORK*)wk->wu.target_adrs;
+        em = (State*)wk->wu.target_adrs;
 
         if (wk->wu.routine_no[1] != 2 || em->routine_no[1] != 3) {
             Next_Be_Free(wk);
@@ -1694,7 +1694,7 @@ void Be_Catch(PLW* wk) {
 
 /** @brief AI state 14: Lying on ground — check for opponent blow-off then exit damage. */
 void Com_Wait_Lie(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Blow_Off(wk, em, 0)) {
         return;
@@ -1807,7 +1807,7 @@ void Clear_Com_Flag(PLW* wk) {
 
 /** @brief Track the opponent's attack frequency and type for counter-attack decisions. */
 void Check_At_Count(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
     s16 ix;
 
     if (g_state.Attack_Count_No0[wk->wu.id] == 0) {

@@ -16,8 +16,8 @@
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/Source/Game/debug/OBJTEST.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/ioconv.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -445,7 +445,7 @@ void Disp_Lever(u16* /* unused */, u32 /* unused */, u32 /* unused */) {
 }
 
 /** @brief Adjust and display object position using P4 pad (debug inspection). */
-void Check_Pos_OBJ(WORK_Other* ewk) {
+void Check_Pos_OBJ(State_Other* ewk) {
     if (Debug_w[DEBUG_YOSHIZUMI_EXP]) {
         if (p4sw_0 & 1) {
             ewk->wu.xyz[1].disp.pos += 3;
@@ -476,7 +476,7 @@ void Check_Pos_OBJ(WORK_Other* ewk) {
 }
 
 /** @brief Adjust and display object position variant 2 (uses position_x/y directly). */
-void Check_Pos_OBJ2(WORK_Other* ewk) {
+void Check_Pos_OBJ2(State_Other* ewk) {
     if (Debug_w[DEBUG_YOSHIZUMI_EXP]) {
         if (p4sw_0 & 1) {
             ewk->wu.position_y += 3;

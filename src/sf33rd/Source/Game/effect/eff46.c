@@ -9,19 +9,19 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void eff46_move(WORK_Other* ewk);
-static s16 eff46_appear_check(WORK_Other* ewk);
+static void eff46_move(State_Other* ewk);
+static s16 eff46_appear_check(State_Other* ewk);
 
-void effect_46_move(WORK_Other* ewk) {
+void effect_46_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -45,7 +45,7 @@ void effect_46_move(WORK_Other* ewk) {
     }
 }
 
-static void eff46_move(WORK_Other* ewk) {
+static void eff46_move(State_Other* ewk) {
     s16 work2;
 
     switch (ewk->wu.routine_no[1]) {
@@ -97,8 +97,8 @@ static void eff46_move(WORK_Other* ewk) {
     }
 }
 
-static s16 eff46_appear_check(WORK_Other* ewk) {
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+static s16 eff46_appear_check(State_Other* ewk) {
+    State* oya_ptr = (State*)ewk->my_master;
     s16 work = oya_ptr->xyz[0].disp.pos - ewk->wu.xyz[0].disp.pos;
 
     if (work < 0) {
@@ -122,15 +122,15 @@ static s16 eff46_appear_check(WORK_Other* ewk) {
     return 1;
 }
 
-s32 effect_46_init(WORK* wk, s32 /* unused */) {
-    WORK_Other* ewk;
+s32 effect_46_init(State* wk, s32 /* unused */) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 46;
     ewk->master_id = wk->id;

@@ -17,7 +17,7 @@
 extern "C" {
 
 /* Game globals — g_state.Menu_Cursor_Y, g_state.IO_Result, save_w, g_state.Present_Mode */
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
 

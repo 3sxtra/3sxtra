@@ -10,14 +10,14 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
 const s32 effc8_data_tbl[4] = { 0x30000, 0x200, 0, -0x1800 };
 
-void effect_C8_move(WORK_Other* ewk) {
+void effect_C8_move(State_Other* ewk) {
     PLW* oya_pl = (PLW*)ewk->my_master;
     s16 work;
     const s32* ptr;
@@ -104,14 +104,14 @@ void effect_C8_move(WORK_Other* ewk) {
 }
 
 s32 effect_C8_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(2)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 128;
     ewk->wu.work_id = 16;

@@ -55,7 +55,7 @@ void PortRenderer_DrawSolidQuad(const Quad* quad, unsigned int color);
  * Corresponds to legacy njdp2d_sort / njDrawPolygon2D
  * @param pos Array of floats. If type is 0: {x0,y0, x1,y1, x2,y2, x3,y3}. If type is 1: {bsy} (y-offset)
  * @param priority Z-depth/Priority
- * @param data Color (u32) if type is 0, or WORK* (uintptr_t) if type is 1
+ * @param data Color (u32) if type is 0, or State* (uintptr_t) if type is 1
  * @param type 0 for normal, 1 for shadow/work
  */
 void Renderer_Queue2DPrimitive(const f32* pos, f32 priority, uintptr_t data, int type);

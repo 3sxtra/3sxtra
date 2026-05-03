@@ -16,17 +16,17 @@
 #include "sf33rd/Source/Game/sound/se.h"
 #include "common.h"
 #include "structs.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 /* Forward declarations - handlers defined in se.c, called only from Se_Dispatch */
-void Se_Dummy(WORK_Other* ewk, u16 Code);
-void Se_Shock(WORK_Other* ewk, u16 Code);
-void Se_Myself(WORK_Other* ewk, u16 Code);
-void Se_Myself_Die(WORK_Other* ewk, u16 Code);
-void Se_Let(WORK_Other* ewk, u16 Code);
-void Se_Let_SP(WORK_Other* ewk, u16 Code);
-void Call_Se(WORK_Other* ewk, u16 Code);
-void Se_Term(WORK_Other* ewk, u16 Code);
+void Se_Dummy(State_Other* ewk, u16 Code);
+void Se_Shock(State_Other* ewk, u16 Code);
+void Se_Myself(State_Other* ewk, u16 Code);
+void Se_Myself_Die(State_Other* ewk, u16 Code);
+void Se_Let(State_Other* ewk, u16 Code);
+void Se_Let_SP(State_Other* ewk, u16 Code);
+void Call_Se(State_Other* ewk, u16 Code);
+void Se_Term(State_Other* ewk, u16 Code);
 
 #define BONUS_VOICE_DATA_SIZE 768
 #define BONUS_SE_CODE_BASE 0x100
@@ -201,7 +201,7 @@ static u16 Check_Bonus_SE(u16 Code) {
     return Bonus_Voice_Data[Code - BONUS_SE_CODE_BASE];
 }
 
-void Se_Dispatch(u16 index, u16 code, WORK_Other* ewk) {
+void Se_Dispatch(u16 index, u16 code, State_Other* ewk) {
     if (index >= SE_DISPATCH_TABLE_SIZE) {
         return;
     }

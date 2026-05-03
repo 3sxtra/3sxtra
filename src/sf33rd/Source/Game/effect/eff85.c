@@ -8,10 +8,10 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -19,12 +19,12 @@
 
 const s16 eff85_char_index_tbl[9] = { 0, 30, 0, 32, 29, 33, 0, 0, 0 };
 
-void effect_85_move(WORK_Other* ewk) {
-    void (*const eff85_jp_tbl[3])(WORK_Other*) = { eff85_0000, eff85_0100, eff85_0200 };
+void effect_85_move(State_Other* ewk) {
+    void (*const eff85_jp_tbl[3])(State_Other*) = { eff85_0000, eff85_0100, eff85_0200 };
     eff85_jp_tbl[ewk->wu.routine_no[0]](ewk);
 };
 
-void eff85_0000(WORK_Other* ewk) {
+void eff85_0000(State_Other* ewk) {
     ewk->wu.routine_no[0]++;
     ewk->wu.routine_no[1] = 0;
     ewk->wu.routine_no[2] = 0;
@@ -32,8 +32,8 @@ void eff85_0000(WORK_Other* ewk) {
     ewk->wu.old_routine_no[0] = 0;
 }
 
-void eff85_0100(WORK_Other* ewk) {
-    void (*const eff85_move_tbl[9])(WORK_Other*) = { eff85_1000,   eff85_common, eff85_3000, eff85_common, eff85_5000,
+void eff85_0100(State_Other* ewk) {
+    void (*const eff85_move_tbl[9])(State_Other*) = { eff85_1000,   eff85_common, eff85_3000, eff85_common, eff85_5000,
                                                      eff85_common, eff85_7000,   eff85_8000, eff85_9000 };
 
     if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
@@ -43,7 +43,7 @@ void eff85_0100(WORK_Other* ewk) {
     disp_pos_trans_entry(ewk);
 }
 
-void eff85_1000(WORK_Other* ewk) {
+void eff85_1000(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -77,7 +77,7 @@ void eff85_1000(WORK_Other* ewk) {
     }
 }
 
-void eff85_common(WORK_Other* ewk) {
+void eff85_common(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -96,7 +96,7 @@ void eff85_common(WORK_Other* ewk) {
     }
 }
 
-void eff85_3000(WORK_Other* ewk) {
+void eff85_3000(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -125,7 +125,7 @@ void eff85_3000(WORK_Other* ewk) {
     }
 }
 
-void eff85_5000(WORK_Other* ewk) {
+void eff85_5000(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -148,7 +148,7 @@ void eff85_5000(WORK_Other* ewk) {
     }
 }
 
-void eff85_7000(WORK_Other* ewk) {
+void eff85_7000(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -175,7 +175,7 @@ void eff85_7000(WORK_Other* ewk) {
     }
 }
 
-void eff85_8000(WORK_Other* ewk) {
+void eff85_8000(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -194,7 +194,7 @@ void eff85_8000(WORK_Other* ewk) {
     }
 }
 
-void eff85_9000(WORK_Other* ewk) {
+void eff85_9000(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -239,7 +239,7 @@ void eff85_9000(WORK_Other* ewk) {
     }
 }
 
-s32 swallow_sprize_check(WORK_Other* ewk) {
+s32 swallow_sprize_check(State_Other* ewk) {
     if (g_state.bg_w.quake_y_index > 3) {
         ewk->wu.routine_no[1] = 8;
         ewk->wu.routine_no[2] = 0;
@@ -249,13 +249,13 @@ s32 swallow_sprize_check(WORK_Other* ewk) {
     return 1;
 }
 
-void eff85_0200(WORK_Other* ewk) {
+void eff85_0200(State_Other* ewk) {
     all_cgps_put_back(&ewk->wu);
     Release_Effect(&ewk->wu);
 }
 
 s32 effect_85_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.EXE_obroll) {
@@ -266,7 +266,7 @@ s32 effect_85_init() {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 85;
     ewk->wu.work_id = 16;

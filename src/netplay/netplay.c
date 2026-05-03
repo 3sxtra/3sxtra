@@ -12,8 +12,8 @@
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/grade.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
@@ -427,7 +427,7 @@ static void configure_gekko() {
 
     config.num_players = PLAYER_COUNT;
     config.input_size = sizeof(u16);
-    config.state_size = sizeof(State);
+    config.state_size = sizeof(RollbackState);
     config.input_prediction_window = 8; // Absolute max 8 per recommendations
 
     config.desync_detection = true;

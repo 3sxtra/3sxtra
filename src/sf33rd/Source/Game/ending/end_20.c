@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/ending/end_main.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/stage/bg.h"

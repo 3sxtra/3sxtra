@@ -16,8 +16,8 @@
 #include "common.h"
 #include "sf33rd/Source/Game/com/com_data.h"
 #include "sf33rd/Source/Game/com/com_sub.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 static s32 Check_PL_Unit_AS(PLW* wk);
@@ -40,7 +40,7 @@ s32 Ck_Passive_Term(PLW* wk) {
 
 /** @brief Ken-specific passive AI pattern dispatcher. */
 void KEN_vs(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     switch (g_state.Passive_Mode + g_state.Area_Number[wk->wu.id]) {
     case 0:
@@ -200,7 +200,7 @@ void KEN_vs(PLW* wk) {
 
 /** @brief Hugo-specific passive AI pattern dispatcher. */
 void HUGO_vs(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     switch (g_state.Passive_Mode + g_state.Area_Number[wk->wu.id]) {
     case 0:
@@ -330,7 +330,7 @@ void HUGO_vs(PLW* wk) {
 
 /** @brief Gill-specific passive AI pattern dispatcher. */
 void GILL_vs(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     switch (g_state.Passive_Mode + g_state.Area_Number[wk->wu.id]) {
     case 0:
@@ -475,7 +475,7 @@ void GILL_vs(PLW* wk) {
 }
 
 /** @brief Check if the opponent is performing a specific special technique. */
-s32 Check_Special_Technique(PLW* wk, WORK* em, s16 VS_Technique, u8 Kind_of_Tech, u8 SP_Tech_ID, s16 Option,
+s32 Check_Special_Technique(PLW* wk, State* em, s16 VS_Technique, u8 Kind_of_Tech, u8 SP_Tech_ID, s16 Option,
                             s16 Option2) {
     u8 xx;
 
@@ -520,7 +520,7 @@ s32 Check_Special_Technique(PLW* wk, WORK* em, s16 VS_Technique, u8 Kind_of_Tech
 }
 
 /** @brief Check the direction of the opponent's attack for guard. */
-s32 Check_Attack_Direction(PLW* wk, WORK* em) {
+s32 Check_Attack_Direction(PLW* wk, State* em) {
     if (wk->wu.xyz[0].disp.pos < em->xyz[0].disp.pos) {
         if (em->xyz[0].disp.pos > em->old_pos[0]) {
             return 1;
@@ -577,7 +577,7 @@ s32 Check_VS_Jump(PLW* wk, PLW* em, s16 Height) {
 }
 
 /** @brief Check if the opponent is performing a rolling attack. */
-s32 Check_Rolling(PLW* wk, WORK* em) {
+s32 Check_Rolling(PLW* wk, State* em) {
     if (em->pat_status != 34) {
         return 0;
     }
@@ -592,7 +592,7 @@ s32 Check_Rolling(PLW* wk, WORK* em) {
 }
 
 /** @brief Check if opponent is performing a personal action. */
-s32 Check_Personal_Action(PLW* wk, WORK* em) {
+s32 Check_Personal_Action(PLW* wk, State* em) {
     if (em->routine_no[1] != 4) {
         return 0;
     }
@@ -606,7 +606,7 @@ s32 Check_Personal_Action(PLW* wk, WORK* em) {
 }
 
 /** @brief Check for a specific technique from the opponent and react. */
-s32 Check_Specific_Term(PLW* wk, WORK* em, s16 VS_Technique, u8 Status_00, u8 Status_01, u8 Status_02) {
+s32 Check_Specific_Term(PLW* wk, State* em, s16 VS_Technique, u8 Status_00, u8 Status_01, u8 Status_02) {
     g_state.VS_Tech[wk->wu.id] = VS_Technique;
 
     if (em->pat_status == Status_00) {
@@ -625,7 +625,7 @@ s32 Check_Specific_Term(PLW* wk, WORK* em, s16 VS_Technique, u8 Status_00, u8 St
 }
 
 /** @brief Check if the opponent is dashing, decide counter response. */
-s32 Check_Dash(PLW* wk, WORK* em, s16 VS_Technique) {
+s32 Check_Dash(PLW* wk, State* em, s16 VS_Technique) {
     if ((em->routine_no[1] == 0) && (em->routine_no[2] == 5) && (em->routine_no[3] != 0)) {
         g_state.VS_Tech[wk->wu.id] = VS_Technique;
 
@@ -636,7 +636,7 @@ s32 Check_Dash(PLW* wk, WORK* em, s16 VS_Technique) {
 }
 
 /** @brief Check if opponent is doing a limited (restricted) attack. */
-s32 Check_Limited_Attack(PLW* wk, WORK* em, s16 VS_Technique, u8 PL_Status, s8 Status_00, s16 Limit_Number) {
+s32 Check_Limited_Attack(PLW* wk, State* em, s16 VS_Technique, u8 PL_Status, s8 Status_00, s16 Limit_Number) {
     s16 xx;
 
     if (g_state.Attack_Flag[wk->wu.id] == 0) {
@@ -677,7 +677,7 @@ s32 Check_Limited_Attack(PLW* wk, WORK* em, s16 VS_Technique, u8 PL_Status, s8 S
 }
 
 /** @brief Check if opponent is doing a limited jump attack. */
-s32 Check_Limited_Jump_Attack(PLW* wk, WORK* em, u8 PL_Status, s8 Status_00) {
+s32 Check_Limited_Jump_Attack(PLW* wk, State* em, u8 PL_Status, s8 Status_00) {
     if ((em->pat_status != PL_Status) || (em->attack_type != Status_00)) {
         return 0;
     }
@@ -686,7 +686,7 @@ s32 Check_Limited_Jump_Attack(PLW* wk, WORK* em, u8 PL_Status, s8 Status_00) {
 }
 
 /** @brief Check if opponent is standing, decide AI response. */
-s32 Check_Stand(PLW* wk, WORK* em, s16 VS_Technique) {
+s32 Check_Stand(PLW* wk, State* em, s16 VS_Technique) {
     if (g_state.Attack_Flag[wk->wu.id]) {
         return 0;
     }
@@ -715,7 +715,7 @@ s32 Setup_Next_Stand_Timer(PLW* wk) {
 }
 
 /** @brief Check if opponent is crouching, decide AI response. */
-s32 Check_VS_Squat(PLW* wk, WORK* em, s16 VS_Technique, u8 Status_00, u8 Status_01) {
+s32 Check_VS_Squat(PLW* wk, State* em, s16 VS_Technique, u8 Status_00, u8 Status_01) {
     if (g_state.Attack_Flag[wk->wu.id]) {
         return g_state.Squat_Timer[wk->wu.id] = 0;
     }
@@ -748,7 +748,7 @@ s32 Setup_Next_Squat_Timer(PLW* wk) {
 }
 
 /** @brief Check if opponent performed a throw (tech window). */
-s32 Check_Thrown(PLW* wk, WORK* em) {
+s32 Check_Thrown(PLW* wk, State* em) {
     s16 Rnd;
     s16 x;
 
@@ -786,7 +786,7 @@ s32 Check_Thrown(PLW* wk, WORK* em) {
 }
 
 /** @brief Check if the CPU should attempt a throw (catch). */
-s32 Check_Catch(PLW* wk, WORK* em, s16 VS_Technique) {
+s32 Check_Catch(PLW* wk, State* em, s16 VS_Technique) {
     u16 xx;
 
     if (g_state.Demo_Flag == 0) {
@@ -823,10 +823,10 @@ s32 Check_Catch(PLW* wk, WORK* em, s16 VS_Technique) {
 
 /** @brief Check if opponent is lying down (knocked down). */
 s32 Check_Lie(PLW* wk) {
-    WORK* em;
+    State* em;
     PLW* enemy;
 
-    em = (WORK*)wk->wu.target_adrs;
+    em = (State*)wk->wu.target_adrs;
     enemy = (PLW*)wk->wu.target_adrs;
 
     if (Check_Faint(wk, enemy, 2)) {
@@ -853,7 +853,7 @@ s32 Check_Faint(PLW* wk, PLW* enemy, s16 VS_Technique) {
 }
 
 /** @brief Check if opponent has been blown off (launched). */
-s32 Check_Blow_Off(PLW* wk, WORK* em, s16 VS_Technique) {
+s32 Check_Blow_Off(PLW* wk, State* em, s16 VS_Technique) {
     if (em->routine_no[1] != 1) {
         return 0;
     }
@@ -872,7 +872,7 @@ s32 Check_Blow_Off(PLW* wk, WORK* em, s16 VS_Technique) {
 }
 
 /** @brief Check what opponent did after an attack (recovery window). */
-s32 Check_After_Attack(PLW* wk, WORK* em, s16 VS_Technique) {
+s32 Check_After_Attack(PLW* wk, State* em, s16 VS_Technique) {
     u8 xx;
 
     if (g_state.CP_No[wk->wu.id][0] == 7) {
@@ -912,7 +912,7 @@ s32 Check_After_Attack(PLW* wk, WORK* em, s16 VS_Technique) {
 }
 
 /** @brief Check for Hugo's Flying Cross Chop approach. */
-s32 Check_F_Cross_Chop(PLW* wk, WORK* em, s16 VS_Technique) {
+s32 Check_F_Cross_Chop(PLW* wk, State* em, s16 VS_Technique) {
     if (g_state.Last_Attack_Counter[wk->wu.id] == g_state.Attack_Counter[wk->wu.id]) {
         return 0;
     }
@@ -937,7 +937,7 @@ static s32 Check_PL_Unit_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Gill. */
 s32 VS_GILL_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 61, -1, -1)) {
         return 1;
@@ -952,7 +952,7 @@ s32 VS_GILL_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Alex. */
 s32 VS_ALEX_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 24, 23, -1, -1)) {
         return 1;
@@ -975,7 +975,7 @@ s32 VS_ALEX_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Ryu. */
 s32 VS_RYU_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, 0)) {
         return 1;
@@ -998,7 +998,7 @@ s32 VS_RYU_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Yun. */
 s32 VS_YUN_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 29, -1, -1)) {
         return 1;
@@ -1017,7 +1017,7 @@ s32 VS_YUN_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Dudley. */
 s32 VS_DUDLEY_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, -1)) {
         return 1;
@@ -1049,7 +1049,7 @@ s32 VS_NECRO_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Hugo. */
 s32 VS_HUGO_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 14, 8, 61, -1, -1)) {
         return 1;
@@ -1076,7 +1076,7 @@ s32 VS_HUGO_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Ibuki. */
 s32 VS_IBUKI_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 28, -1, 0)) {
         return 1;
@@ -1091,7 +1091,7 @@ s32 VS_IBUKI_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Elena. */
 s32 VS_ELENA_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 17, -1, -1)) {
         return 1;
@@ -1114,7 +1114,7 @@ s32 VS_ELENA_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Oro. */
 s32 VS_ORO_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 39, -1, 0)) {
         return 1;
@@ -1125,7 +1125,7 @@ s32 VS_ORO_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Ken. */
 s32 VS_KEN_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1148,7 +1148,7 @@ s32 VS_KEN_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Sean. */
 s32 VS_SEAN_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 32, 8, -1, -1)) {
         return 1;
@@ -1159,7 +1159,7 @@ s32 VS_SEAN_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Urien. */
 s32 VS_URIEN_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 65, -1, -1)) {
         return 1;
@@ -1174,7 +1174,7 @@ s32 VS_URIEN_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Gouki. */
 s32 VS_GOUKI_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, 0)) {
         return 1;
@@ -1198,7 +1198,7 @@ s32 VS_CHUN_LI_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Makoto. */
 s32 VS_MAKOTO_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 14, 24, 95, -1, -1)) {
         return 1;
@@ -1209,7 +1209,7 @@ s32 VS_MAKOTO_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Q. */
 s32 VS_Q_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 25, 24, 88, 1, -1)) {
         return 1;
@@ -1225,7 +1225,7 @@ s32 VS_NO12_AS(PLW* wk) {
 
 /** @brief Passive AI check (anti-special) vs Remy. */
 s32 VS_REMY_AS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 101, -1, 0)) {
         return 1;
@@ -1244,7 +1244,7 @@ static s32 Check_PL_Unit_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Gill. */
 s32 VS_GILL_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1267,7 +1267,7 @@ s32 VS_GILL_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Alex. */
 s32 VS_ALEX_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 25, 24, 22, 1, -1)) {
         return 1;
@@ -1298,7 +1298,7 @@ s32 VS_ALEX_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Ryu. */
 s32 VS_RYU_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1321,7 +1321,7 @@ s32 VS_RYU_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Yun. */
 s32 VS_YUN_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 20, 8, 52, 1, -1)) {
         return 1;
@@ -1336,7 +1336,7 @@ s32 VS_YUN_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Dudley. */
 s32 VS_DUDLEY_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 2, -1, -1)) {
         return 1;
@@ -1355,7 +1355,7 @@ s32 VS_DUDLEY_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Necro. */
 s32 VS_NECRO_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 38, -1, -1)) {
         return 1;
@@ -1378,7 +1378,7 @@ s32 VS_NECRO_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Hugo. */
 s32 VS_HUGO_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 19, 24, 58, 1, -1)) {
         return 1;
@@ -1409,7 +1409,7 @@ s32 VS_HUGO_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Ibuki. */
 s32 VS_IBUKI_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 24, 26, 1, -1)) {
         return 1;
@@ -1420,7 +1420,7 @@ s32 VS_IBUKI_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Elena. */
 s32 VS_ELENA_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 18, -1, -1)) {
         return 1;
@@ -1439,7 +1439,7 @@ s32 VS_ELENA_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Oro. */
 s32 VS_ORO_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 15, 8, 44, 1, -1)) {
         return 1;
@@ -1450,7 +1450,7 @@ s32 VS_ORO_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Ken. */
 s32 VS_KEN_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1461,7 +1461,7 @@ s32 VS_KEN_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Sean. */
 s32 VS_SEAN_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 21, 1, -1)) {
         return 1;
@@ -1484,7 +1484,7 @@ s32 VS_SEAN_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Urien. */
 s32 VS_URIEN_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1507,7 +1507,7 @@ s32 VS_URIEN_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Gouki. */
 s32 VS_GOUKI_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1526,7 +1526,7 @@ s32 VS_GOUKI_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Chun-Li. */
 s32 VS_CHUN_LI_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 78, 1, -1)) {
         return 1;
@@ -1545,7 +1545,7 @@ s32 VS_CHUN_LI_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Makoto. */
 s32 VS_MAKOTO_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 25, 24, 95, 1, -1)) {
         return 1;
@@ -1556,7 +1556,7 @@ s32 VS_MAKOTO_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Q. */
 s32 VS_Q_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 25, 24, 88, 1, -1)) {
         return 1;
@@ -1567,7 +1567,7 @@ s32 VS_Q_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Twelve. */
 s32 VS_NO12_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 17, 8, 105, 1, -1)) {
         return 1;
@@ -1582,7 +1582,7 @@ s32 VS_NO12_A(PLW* wk) {
 
 /** @brief Passive AI response (counter) vs Remy. */
 s32 VS_REMY_A(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1597,7 +1597,7 @@ static s32 Check_PL_Unit_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Gill. */
 s32 VS_GILL_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 61, -1, -1)) {
         return 1;
@@ -1612,7 +1612,7 @@ s32 VS_GILL_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Alex. */
 s32 VS_ALEX_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 24, 23, -1, -1)) {
         return 1;
@@ -1635,7 +1635,7 @@ s32 VS_ALEX_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Ryu. */
 s32 VS_RYU_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, 0)) {
         return 1;
@@ -1666,7 +1666,7 @@ s32 VS_RYU_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Yun. */
 s32 VS_YUN_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 29, -1, -1)) {
         return 1;
@@ -1685,7 +1685,7 @@ s32 VS_YUN_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Dudley. */
 s32 VS_DUDLEY_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, 0)) {
         return 1;
@@ -1713,7 +1713,7 @@ s32 VS_NECRO_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Hugo. */
 s32 VS_HUGO_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 61, -1, -1)) {
         return 1;
@@ -1744,7 +1744,7 @@ s32 VS_HUGO_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Ibuki. */
 s32 VS_IBUKI_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 28, -1, 0)) {
         return 1;
@@ -1759,7 +1759,7 @@ s32 VS_IBUKI_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Elena. */
 s32 VS_ELENA_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 17, -1, -1)) {
         return 1;
@@ -1782,7 +1782,7 @@ s32 VS_ELENA_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Oro. */
 s32 VS_ORO_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 39, -1, 0)) {
         return 1;
@@ -1793,7 +1793,7 @@ s32 VS_ORO_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Ken. */
 s32 VS_KEN_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1820,7 +1820,7 @@ s32 VS_KEN_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Sean. */
 s32 VS_SEAN_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 32, 8, -1, -1)) {
         return 1;
@@ -1831,7 +1831,7 @@ s32 VS_SEAN_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Urien. */
 s32 VS_URIEN_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 65, -1, -1)) {
         return 1;
@@ -1846,7 +1846,7 @@ s32 VS_URIEN_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Gouki. */
 s32 VS_GOUKI_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, 0)) {
         return 1;
@@ -1873,7 +1873,7 @@ s32 VS_GOUKI_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Chun-Li. */
 s32 VS_CHUN_LI_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 78, 1, -1)) {
         return 1;
@@ -1888,7 +1888,7 @@ s32 VS_CHUN_LI_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Makoto. */
 s32 VS_MAKOTO_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 92, -1, -1)) {
         return 1;
@@ -1903,7 +1903,7 @@ s32 VS_MAKOTO_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Q. */
 s32 VS_Q_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 25, 24, 88, 1, -1)) {
         return 1;
@@ -1919,7 +1919,7 @@ s32 VS_NO12_BS(PLW* wk) {
 
 /** @brief Standing passive check (anti-special) vs Remy. */
 s32 VS_REMY_BS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 101, -1, 0)) {
         return 1;
@@ -1938,7 +1938,7 @@ static s32 Check_PL_Unit_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Gill. */
 s32 VS_GILL_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -1961,7 +1961,7 @@ s32 VS_GILL_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Alex. */
 s32 VS_ALEX_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 25, 24, 22, 1, -1)) {
         return 1;
@@ -1992,7 +1992,7 @@ s32 VS_ALEX_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Ryu. */
 s32 VS_RYU_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2015,7 +2015,7 @@ s32 VS_RYU_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Yun. */
 s32 VS_YUN_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 31, -1, -1)) {
         return 1;
@@ -2034,7 +2034,7 @@ s32 VS_YUN_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Dudley. */
 s32 VS_DUDLEY_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 2, 1, -1)) {
         return 1;
@@ -2053,7 +2053,7 @@ s32 VS_DUDLEY_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Necro. */
 s32 VS_NECRO_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 38, -1, -1)) {
         return 1;
@@ -2076,7 +2076,7 @@ s32 VS_NECRO_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Hugo. */
 s32 VS_HUGO_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 2, 1, -1)) {
         return 1;
@@ -2115,7 +2115,7 @@ s32 VS_HUGO_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Ibuki. */
 s32 VS_IBUKI_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 24, 26, 1, -1)) {
         return 1;
@@ -2126,7 +2126,7 @@ s32 VS_IBUKI_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Elena. */
 s32 VS_ELENA_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 18, -1, -1)) {
         return 1;
@@ -2145,7 +2145,7 @@ s32 VS_ELENA_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Oro. */
 s32 VS_ORO_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 15, 8, 44, 1, -1)) {
         return 1;
@@ -2156,7 +2156,7 @@ s32 VS_ORO_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Ken. */
 s32 VS_KEN_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2171,7 +2171,7 @@ s32 VS_KEN_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Sean. */
 s32 VS_SEAN_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 15, 8, 32, 1, -1)) {
         return 1;
@@ -2198,7 +2198,7 @@ s32 VS_SEAN_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Urien. */
 s32 VS_URIEN_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2221,7 +2221,7 @@ s32 VS_URIEN_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Gouki. */
 s32 VS_GOUKI_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2248,7 +2248,7 @@ s32 VS_GOUKI_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Chun-Li. */
 s32 VS_CHUN_LI_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 78, 1, -1)) {
         return 1;
@@ -2271,7 +2271,7 @@ s32 VS_CHUN_LI_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Makoto. */
 s32 VS_MAKOTO_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 92, 1, -1)) {
         return 1;
@@ -2286,7 +2286,7 @@ s32 VS_MAKOTO_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Q. */
 s32 VS_Q_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 84, 1, -1)) {
         return 1;
@@ -2305,7 +2305,7 @@ s32 VS_Q_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Twelve. */
 s32 VS_NO12_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 22, 8, 107, 1, -1)) {
         return 1;
@@ -2320,7 +2320,7 @@ s32 VS_NO12_B(PLW* wk) {
 
 /** @brief Standing passive response (counter) vs Remy. */
 s32 VS_REMY_B(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2335,7 +2335,7 @@ static s32 Check_PL_Unit_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Gill. */
 s32 VS_GILL_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 65, -1, -1)) {
         return 1;
@@ -2350,7 +2350,7 @@ s32 VS_GILL_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Alex. */
 s32 VS_ALEX_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 24, 23, -1, -1)) {
         return 1;
@@ -2369,7 +2369,7 @@ s32 VS_ALEX_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Ryu. */
 s32 VS_RYU_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, 0)) {
         return 1;
@@ -2396,7 +2396,7 @@ s32 VS_RYU_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Yun. */
 s32 VS_YUN_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 29, -1, -1)) {
         return 1;
@@ -2415,7 +2415,7 @@ s32 VS_YUN_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Dudley. */
 s32 VS_DUDLEY_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, 0)) {
         return 1;
@@ -2447,7 +2447,7 @@ s32 VS_NECRO_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Hugo. */
 s32 VS_HUGO_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 61, -1, -1)) {
         return 1;
@@ -2478,7 +2478,7 @@ s32 VS_HUGO_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Ibuki. */
 s32 VS_IBUKI_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 32, 25, -1, -1)) {
         return 1;
@@ -2489,7 +2489,7 @@ s32 VS_IBUKI_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Elena. */
 s32 VS_ELENA_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 17, -1, 0)) {
         return 1;
@@ -2512,7 +2512,7 @@ s32 VS_ELENA_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Oro. */
 s32 VS_ORO_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 39, -1, 0)) {
         return 1;
@@ -2523,7 +2523,7 @@ s32 VS_ORO_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Ken. */
 s32 VS_KEN_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2546,7 +2546,7 @@ s32 VS_KEN_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Sean. */
 s32 VS_SEAN_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 32, 8, -1, -1)) {
         return 1;
@@ -2557,7 +2557,7 @@ s32 VS_SEAN_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Urien. */
 s32 VS_URIEN_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 65, -1, -1)) {
         return 1;
@@ -2572,7 +2572,7 @@ s32 VS_URIEN_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Gouki. */
 s32 VS_GOUKI_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 1, -1, 0)) {
         return 1;
@@ -2595,7 +2595,7 @@ s32 VS_GOUKI_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Chun-Li. */
 s32 VS_CHUN_LI_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 78, 1, -1)) {
         return 1;
@@ -2610,7 +2610,7 @@ s32 VS_CHUN_LI_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Makoto. */
 s32 VS_MAKOTO_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 92, -1, -1)) {
         return 1;
@@ -2635,7 +2635,7 @@ s32 VS_NO12_CS(PLW* wk) {
 
 /** @brief Crouching passive check (anti-special) vs Remy. */
 s32 VS_REMY_CS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 23, 8, 101, -1, 0)) {
         return 1;
@@ -2654,7 +2654,7 @@ static s32 Check_PL_Unit_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Gill. */
 s32 VS_GILL_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2677,7 +2677,7 @@ s32 VS_GILL_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Alex. */
 s32 VS_ALEX_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 24, 115, 1, 0)) {
         return 1;
@@ -2704,7 +2704,7 @@ s32 VS_ALEX_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Ryu. */
 s32 VS_RYU_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2727,7 +2727,7 @@ s32 VS_RYU_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Yun. */
 s32 VS_YUN_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 31, -1, -1)) {
         return 1;
@@ -2742,7 +2742,7 @@ s32 VS_YUN_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Dudley. */
 s32 VS_DUDLEY_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 2, 1, 0)) {
         return 1;
@@ -2761,7 +2761,7 @@ s32 VS_DUDLEY_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Necro. */
 s32 VS_NECRO_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 38, -1, -1)) {
         return 1;
@@ -2784,7 +2784,7 @@ s32 VS_NECRO_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Hugo. */
 s32 VS_HUGO_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 2, 1, -1)) {
         return 1;
@@ -2823,7 +2823,7 @@ s32 VS_HUGO_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Ibuki. */
 s32 VS_IBUKI_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 24, 26, 1, -1)) {
         return 1;
@@ -2834,7 +2834,7 @@ s32 VS_IBUKI_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Elena. */
 s32 VS_ELENA_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 18, 1, -1)) {
         return 1;
@@ -2853,7 +2853,7 @@ s32 VS_ELENA_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Oro. */
 s32 VS_ORO_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 15, 8, 44, 1, -1)) {
         return 1;
@@ -2864,7 +2864,7 @@ s32 VS_ORO_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Ken. */
 s32 VS_KEN_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2879,7 +2879,7 @@ s32 VS_KEN_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Sean. */
 s32 VS_SEAN_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 15, 8, 32, 1, -1)) {
         return 1;
@@ -2902,7 +2902,7 @@ s32 VS_SEAN_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Urien. */
 s32 VS_URIEN_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2925,7 +2925,7 @@ s32 VS_URIEN_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Gouki. */
 s32 VS_GOUKI_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -2944,7 +2944,7 @@ s32 VS_GOUKI_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Chun-Li. */
 s32 VS_CHUN_LI_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 76, 1, -1)) {
         return 1;
@@ -2967,7 +2967,7 @@ s32 VS_CHUN_LI_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Makoto. */
 s32 VS_MAKOTO_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 92, 1, -1)) {
         return 1;
@@ -2982,7 +2982,7 @@ s32 VS_MAKOTO_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Q. */
 s32 VS_Q_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 24, 8, 84, 1, -1)) {
         return 1;
@@ -2997,7 +2997,7 @@ s32 VS_Q_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Twelve. */
 s32 VS_NO12_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 22, 8, 107, 1, -1)) {
         return 1;
@@ -3012,7 +3012,7 @@ s32 VS_NO12_C(PLW* wk) {
 
 /** @brief Crouching passive response (counter) vs Remy. */
 s32 VS_REMY_C(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 8, 0, 1, -1)) {
         return 1;
@@ -3037,7 +3037,7 @@ s32 VS_ALEX_DS(PLW* wk) {
 
 /** @brief Downed passive check (anti-special) vs Ryu. */
 s32 VS_RYU_DS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 32, 5, 1, -1)) {
         return 1;
@@ -3073,7 +3073,7 @@ s32 VS_HUGO_DS(PLW* wk) {
 
 /** @brief Downed passive check (anti-special) vs Elena. */
 s32 VS_ELENA_DS(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 2, 48, 16, -1, -1)) {
         return 1;
@@ -3155,7 +3155,7 @@ s32 VS_ALEX_D(PLW* wk) {
 
 /** @brief Downed passive response (counter) vs Ryu. */
 s32 VS_RYU_D(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 11, 32, 5, 1, -1)) {
         return 1;
@@ -3191,7 +3191,7 @@ s32 VS_IBUKI_D(PLW* wk) {
 
 /** @brief Downed passive response (counter) vs Elena. */
 s32 VS_ELENA_D(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 2, 48, 16, -1, -1)) {
         return 1;
@@ -3217,7 +3217,7 @@ s32 VS_SEAN_D(PLW* wk) {
 
 /** @brief Downed passive response (counter) vs Urien. */
 s32 VS_URIEN_D(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 12, 8, 63, 1, 12)) {
         return 1;
@@ -3248,7 +3248,7 @@ s32 VS_Q_D(PLW* wk) {
 
 /** @brief Downed passive response (counter) vs Twelve. */
 s32 VS_NO12_D(PLW* wk) {
-    WORK* em = (WORK*)wk->wu.target_adrs;
+    State* em = (State*)wk->wu.target_adrs;
 
     if (Check_Special_Technique(wk, em, 8, 8, 105, 1, -1)) {
         return 1;

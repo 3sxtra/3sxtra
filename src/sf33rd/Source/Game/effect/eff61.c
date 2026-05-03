@@ -9,7 +9,7 @@
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
@@ -129,7 +129,7 @@ void Menu_UpdateNetworkLabel(void) {}
 void (*const EFF61_Jmp_Tbl[4])() = { EFF61_WAIT, EFF61_SLIDE_IN, EFF61_SLIDE_OUT, EFF61_SUDDENLY };
 
 void effect_61_move(WORK_Other_CONN* ewk) {
-    if (Check_Die_61((WORK_Other*)ewk)) {
+    if (Check_Die_61((State_Other*)ewk)) {
         Release_Effect(&ewk->wu);
         return;
     }
@@ -264,7 +264,7 @@ static void EFF61_SUDDENLY(WORK_Other_CONN* ewk) {
     }
 }
 
-s32 Check_Die_61(WORK_Other* ewk) {
+s32 Check_Die_61(State_Other* ewk) {
     return g_state.Menu_Suicide[ewk->master_player];
 }
 

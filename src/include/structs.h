@@ -1,13 +1,13 @@
 /**
  * @file structs.h
- * @brief Core data structures shared across the game engine (WORK, PLW,
- *        WORK_Other, MVXY, CharState, etc.).
+ * @brief Core data structures shared across the game engine (State, PLW,
+ *        State_Other, MVXY, CharState, etc.).
  *
- * @netplay_sync — WORK and PLW are the primary per-entity simulation structs.
+ * @netplay_sync — State and PLW are the primary per-entity simulation structs.
  *
  * During netplay, these structs are saved/loaded as part of the rollback state:
  *  - PLW[2] (the two players) are stored in GameState.
- *  - Effect WORK slots are stored in EffectState.frw[][].
+ *  - Effect State slots are stored in EffectState.frw[][].
  *
  * For desync detection, PLW copies are checksummed after sanitizing:
  *  - Pointer fields (ASLR makes raw pointers differ between peers)
@@ -276,7 +276,7 @@ typedef struct {
  * @brief Base entity struct — every game object (player, projectile, effect).
  *
  * @netplay_sync
- * WORK is the base struct embedded in PLW (players) and WORK_Other (effects).
+ * State is the base struct embedded in PLW (players) and State_Other (effects).
  * Pointer fields (marked below) must be zeroed before checksumming because
  * ASLR assigns different addresses on each peer. Rendering-only fields
  * (colcd, current_colcd, extra_col, extra_col_2) need palette-flag masking.
@@ -542,7 +542,7 @@ typedef struct {
     s16 effect_e4_index;
     u8 is_taking_chip_damage;
     u8 wrd_free[53];
-} WORK;
+} State;
 
 typedef struct {
     s16 kind_of_arts;
@@ -610,17 +610,17 @@ typedef struct {
 } AS;
 
 /**
- * @brief Player entity struct — extends WORK with player-specific state.
+ * @brief Player entity struct — extends State with player-specific state.
  *
  * @netplay_sync
  * PLW[2] is the largest and most desync-sensitive section of the rollback state.
  * Both players' PLW structs are checksummed after sanitizing pointers and
- * rendering bits. The embedded WORK (wu) is sanitized via sanitize_work_pointers()
+ * rendering bits. The embedded State (wu) is sanitized via sanitize_work_pointers()
  * and sanitize_work_rendering(). PLW-specific pointers (cp, dm_step_tbl, as, sa, py)
  * are also zeroed via sanitize_plw_pointers().
  */
 typedef struct {
-    WORK wu;
+    State wu;
     WORK_CP* cp; ///< @netplay_sync Pointer — zeroed for checksum
     u32 spmv_ng_flag;
     u32 special_move_disabled_flag2;
@@ -754,7 +754,7 @@ typedef struct {
 } PLW;
 
 typedef struct {
-    WORK wu;
+    State wu;
     void* my_master;
     s16 master_work_id;
     s16 master_id;
@@ -766,7 +766,7 @@ typedef struct {
     u32 master_special_move_disabled_flag;
     u32 master_special_move_disabled_flag2;
     u8 et_free[30];
-} WORK_Other;
+} State_Other;
 
 typedef struct {
     s16 nx;
@@ -785,7 +785,7 @@ typedef struct {
  * F1549 desync.
  */
 typedef struct {
-    WORK wu;
+    State wu;
     u32* my_master;
     s16 master_work_id;
     s16 master_id;
@@ -797,7 +797,7 @@ typedef struct {
 } WORK_Other_CONN;
 
 typedef struct {
-    WORK wu;
+    State wu;
     u32* my_master;
     s16 master_work_id;
     s16 master_id;

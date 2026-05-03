@@ -19,7 +19,7 @@
 #include <vector>
 
 extern "C" {
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 #include "sf33rd/Source/Game/training/trials.h"
 } // extern "C"

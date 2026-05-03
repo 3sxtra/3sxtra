@@ -10,25 +10,25 @@
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-static void EFF42_SUDDENLY(WORK_Other* ewk);
-static void EFF42_SLIDE_IN(WORK_Other* ewk);
-static void EFF42_SLIDE_OUT(WORK_Other* ewk);
-static void EFF42_KILL(WORK_Other* ewk);
-static void EFF42_MOVE(WORK_Other* ewk);
-static void Setup_Char_Index(WORK_Other* ewk);
+static void EFF42_SUDDENLY(State_Other* ewk);
+static void EFF42_SLIDE_IN(State_Other* ewk);
+static void EFF42_SLIDE_OUT(State_Other* ewk);
+static void EFF42_KILL(State_Other* ewk);
+static void EFF42_MOVE(State_Other* ewk);
+static void Setup_Char_Index(State_Other* ewk);
 
 void (*const EFF42_Jmp_Tbl[5])();
 
 /* eff42 draws the timer/counter display on the char select screen.
  * Suppress rendering when the RmlUI overlay provides the same UI. */
-void effect_42_move(WORK_Other* ewk) {
+void effect_42_move(State_Other* ewk) {
     EFF42_Jmp_Tbl[g_state.Order[ewk->wu.dir_old]](ewk);
 
     if (ewk->wu.be_flag != 0) {
@@ -39,7 +39,7 @@ void effect_42_move(WORK_Other* ewk) {
     }
 }
 
-static void EFF42_SUDDENLY(WORK_Other* ewk) {
+static void EFF42_SUDDENLY(State_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
@@ -72,7 +72,7 @@ static void EFF42_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-static void EFF42_SLIDE_IN(WORK_Other* ewk) {
+static void EFF42_SLIDE_IN(State_Other* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -123,7 +123,7 @@ static void EFF42_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-static void EFF42_SLIDE_OUT(WORK_Other* ewk) {
+static void EFF42_SLIDE_OUT(State_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
@@ -159,7 +159,7 @@ static void EFF42_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-static void EFF42_KILL(WORK_Other* ewk) {
+static void EFF42_KILL(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
@@ -176,7 +176,7 @@ static void EFF42_KILL(WORK_Other* ewk) {
     }
 }
 
-static void EFF42_MOVE(WORK_Other* ewk) {
+static void EFF42_MOVE(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
@@ -197,7 +197,7 @@ static void EFF42_MOVE(WORK_Other* ewk) {
     }
 }
 
-static void Setup_Char_Index(WORK_Other* ewk) {
+static void Setup_Char_Index(State_Other* ewk) {
     s16 xx = g_state.Select_Timer & (s8)ewk->wu.routine_no[7];
 
     xx &= 0xFF;
@@ -214,7 +214,7 @@ static void Setup_Char_Index(WORK_Other* ewk) {
 }
 
 s32 effect_42_init(s16 type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.Present_Mode == 4 || g_state.Present_Mode == 5) {
@@ -225,7 +225,7 @@ s32 effect_42_init(s16 type) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 42;
     ewk->wu.work_id = 16;

@@ -10,15 +10,15 @@
 #include "sf33rd/Source/Game/effect/eff02.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void effect_A7_move(WORK_Other* ewk) {
+void effect_A7_move(State_Other* ewk) {
     const HMDT* tad;
     const EXPLEM* edt;
 
@@ -52,17 +52,17 @@ void effect_A7_move(WORK_Other* ewk) {
         }
 
         if (tad->status & 0x40) {
-            if (((WORK*)ewk->wu.target_adrs)->work_id == 1) {
+            if (((State*)ewk->wu.target_adrs)->work_id == 1) {
                 ewk->wu.dir_timer = ((PLW*)ewk->wu.target_adrs)->player_number;
             } else {
-                ewk->wu.dir_timer = ((WORK_Other*)ewk->wu.target_adrs)->master_player;
+                ewk->wu.dir_timer = ((State_Other*)ewk->wu.target_adrs)->master_player;
             }
         }
 
         if (tad->col) {
             ewk->wu.my_col_code = hcct[tad->col];
         } else if (tad->status & 0x80) {
-            ewk->wu.my_col_code = ((WORK*)ewk->wu.target_adrs)->my_col_code + 1;
+            ewk->wu.my_col_code = ((State*)ewk->wu.target_adrs)->my_col_code + 1;
         }
 
         if (tad->se) {
@@ -169,7 +169,7 @@ void effect_A7_move(WORK_Other* ewk) {
 }
 
 s32 effect_A7_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     PLW* twk;
     s16 ix;
 
@@ -181,7 +181,7 @@ s32 effect_A7_init(PLW* wk) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     twk = (PLW*)wk->wu.target_adrs;
     ewk->wu.be_flag = 1;
     ewk->wu.id = 107;

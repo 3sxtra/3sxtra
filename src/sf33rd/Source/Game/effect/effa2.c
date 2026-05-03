@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
@@ -21,7 +21,7 @@ const u8 hnc_color_tbl[88] = { 21, 2, 22, 1, 21, 2, 20, 18, 21, 2, 22, 1, 21, 2,
                                21, 2, 20, 4, 21, 2, 22, 1,  21, 2, 20, 4, 21, 2, 22, 1,  21, 2, 20, 4, 21, 2,
                                22, 1, 21, 2, 20, 4, 21, 2,  22, 1, 21, 2, 20, 4, 21, 2,  22, 1, 21, 2, 20, 255 };
 
-void effect_A2_move(WORK_Other* ewk) {
+void effect_A2_move(State_Other* ewk) {
     if (!(g_state.Game_pause & 0x80)) {
         hnc_end_timer++;
     }
@@ -112,14 +112,14 @@ void effect_A2_move(WORK_Other* ewk) {
 
 s32 effect_A2_init(s32 arg) {
     (void)arg;
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 102;
     ewk->wu.work_id = 16;

@@ -9,13 +9,13 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void get_init_position_effK4(WORK* wk);
-static void get_init_speed_and_timer_effK4(WORK* wk);
+static void get_init_position_effK4(State* wk);
+static void get_init_speed_and_timer_effK4(State* wk);
 
 const s16 effK4_isp_table[4][4][2] = { { { -512, 768 }, { -768, 768 }, { 512, 768 }, { 768, 768 } },
                                        { { -1024, 1024 }, { -1280, 1024 }, { 1024, 1024 }, { 1280, 1024 } },
@@ -41,7 +41,7 @@ const s16 effK4_char_sel_table[4][16] = {
     { 140, 140, 140, 136, 136, 136, 132, 132, 132, 140, 136, 132, 134, 142, 143, 140 }
 };
 
-void effect_K4_move(WORK_Other* ewk) {
+void effect_K4_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -92,7 +92,7 @@ void effect_K4_move(WORK_Other* ewk) {
     }
 }
 
-static void get_init_position_effK4(WORK* wk) {
+static void get_init_position_effK4(State* wk) {
     s16 xhs;
 
     wk->xyz[0].disp.pos = wk->hit_mark_x;
@@ -104,7 +104,7 @@ static void get_init_position_effK4(WORK* wk) {
     wk->type = (xhs < 0) * 2;
 }
 
-static void get_init_speed_and_timer_effK4(WORK* wk) {
+static void get_init_speed_and_timer_effK4(State* wk) {
     s16 data[4];
     s16 ix;
 
@@ -122,8 +122,8 @@ static void get_init_speed_and_timer_effK4(WORK* wk) {
     wk->shadow_y = wk->shadow_prio / 2;
 }
 
-void setup_effK4(WORK* wk) {
-    WORK* twk;
+void setup_effK4(State* wk) {
+    State* twk;
     s16 i;
     s16 j;
 

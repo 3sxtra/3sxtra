@@ -28,7 +28,7 @@
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */

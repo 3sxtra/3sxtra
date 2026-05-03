@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
@@ -19,7 +19,7 @@ const s16 effb0_timer_tbl[8] = { 60, 30, 120, 150, 8, 20, 10, 90 };
 const s16 effb0_data_tbl[8][2] = { { 656, 112 }, { 328, 96 },  { 352, 224 }, { 688, 144 },
                                    { 344, 128 }, { 640, 224 }, { 336, 176 }, { 672, 72 } };
 
-void effect_B0_move(WORK_Other* ewk) {
+void effect_B0_move(State_Other* ewk) {
     s16 work;
 
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
@@ -65,7 +65,7 @@ void effect_B0_move(WORK_Other* ewk) {
 }
 
 s32 effect_B0_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     s16 work;
@@ -75,7 +75,7 @@ s32 effect_B0_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.id = 110;
         ewk->wu.be_flag = 1;
         ewk->wu.type = i;

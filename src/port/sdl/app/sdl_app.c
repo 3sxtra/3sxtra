@@ -101,7 +101,7 @@ int g_resolution_scale = 1;
 #include "port/sdl/renderer/sdl_text_renderer.h"
 #include "port/sound/adx.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 // clang-format off
 #include "port/sdl/renderer/gl_compat.h"

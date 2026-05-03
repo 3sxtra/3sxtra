@@ -7,14 +7,14 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 static void Check_Die_G0(WORK_Other_CONN* ewk);
-static void effG0_trans(WORK* ewk);
+static void effG0_trans(State* ewk);
 static void Flash_G0(WORK_Other_CONN* ewk);
 
 const u32 bunkai_table_G0[6] = { 1, 10, 100, 1000, 10000, 100000 };
@@ -24,7 +24,7 @@ const u16 bunkai_numobj_G0[10] = { 27159, 27160, 27161, 27162, 27163, 27164, 271
 const CONN Result_Score[6] = { { 40, 0, 0, 27159 }, { 32, 0, 0, 27159 }, { 24, 0, 0, 27159 },
                                { 16, 0, 0, 27159 }, { 8, 0, 0, 27159 },  { 0, 0, 0, 27159 } };
 
-void effect_G0_move(WORK_Other* ewk) {
+void effect_G0_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         switch (ewk->wu.routine_no[1]) {
@@ -96,7 +96,7 @@ static void Check_Die_G0(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effG0_trans(WORK* ewk) {
+static void effG0_trans(State* ewk) {
     ewk->cg_number = (ewk->cg_number + 1) & 0x7FFF;
 
     if (ewk->cg_number == 0) {

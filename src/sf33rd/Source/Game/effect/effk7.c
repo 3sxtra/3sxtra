@@ -9,15 +9,15 @@
 #include "sf33rd/Source/Game/com/com_pl.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/meta_col.h"
 
-static void K7_move_type_0(WORK_Other* ewk, PLW* mwk);
+static void K7_move_type_0(State_Other* ewk, PLW* mwk);
 static s16 K7_mt0_rebirth_check(PLW* mwk);
 
-void effect_K7_move(WORK_Other* ewk) {
+void effect_K7_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
@@ -58,7 +58,7 @@ void effect_K7_move(WORK_Other* ewk) {
     }
 }
 
-static void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
+static void K7_move_type_0(State_Other* ewk, PLW* mwk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (mwk->wu.cg_type != 20) {
@@ -181,7 +181,7 @@ void K7_muriyari_metamor_rebirth(PLW* wk) {
 }
 
 s32 effect_K7_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.test_flag) {
@@ -192,7 +192,7 @@ s32 effect_K7_init(PLW* wk) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 207;
     ewk->wu.work_id = 16;

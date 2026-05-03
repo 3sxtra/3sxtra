@@ -9,11 +9,11 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void d0_speed_set(WORK* ewk, s16 num);
+static void d0_speed_set(State* ewk, s16 num);
 
 const s32 effd0_data_tbl[9][4] = { { 0x4000, -0x800, -0x6000, -0x400 }, { -0x4000, 0x600, -0x4000, -0x600 },
                                    { 0x4000, -0xC00, -0x3000, -0x400 }, { 0x800, -0x300, -0x6000, -0x600 },
@@ -23,7 +23,7 @@ const s32 effd0_data_tbl[9][4] = { { 0x4000, -0x800, -0x6000, -0x400 }, { -0x400
 
 const s16 effd0_conter[9] = { 32, 40, 30, 48, 64, 16, 32, 36, 72 };
 
-void effect_D0_move(WORK_Other* ewk) {
+void effect_D0_move(State_Other* ewk) {
     if (g_state.Exec_Wipe) {
         ewk->wu.no_death_attack = 1;
     }
@@ -119,7 +119,7 @@ void effect_D0_move(WORK_Other* ewk) {
     }
 }
 
-static void d0_speed_set(WORK* ewk, s16 num) {
+static void d0_speed_set(State* ewk, s16 num) {
     ewk->old_routine_no[0] = effd0_conter[num];
     ewk->old_routine_no[1]++;
 
@@ -136,14 +136,14 @@ static void d0_speed_set(WORK* ewk, s16 num) {
 }
 
 s32 effect_D0_init(PLW* oya, s32 /* unused */) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 130;
     ewk->wu.work_id = 16;

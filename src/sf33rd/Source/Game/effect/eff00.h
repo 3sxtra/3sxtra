@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_00_move(WORK_Other_JUDGE* ewk);
-s32 effect_00_init(WORK* wk);
+s32 effect_00_init(State* wk);
 
 #endif

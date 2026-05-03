@@ -7,14 +7,14 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/plmain.h"
-#include "sf33rd/Source/Game/engine/spgauge.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_main.h"
+#include "sf33rd/Source/Game/engine/super_gauge.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void effect_E4_move(WORK_Other* ewk) {
+void effect_E4_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
     s16 num;
 
@@ -100,14 +100,14 @@ void effect_E4_move(WORK_Other* ewk) {
 }
 
 s32 effect_E4_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 144;
     ewk->wu.work_id = 16;

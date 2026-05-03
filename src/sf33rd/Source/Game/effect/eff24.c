@@ -8,11 +8,11 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -41,7 +41,7 @@ const s32 eff24_quake_speed_x_tbl[4][8] = { { 0x1200, 0x1200, 0x1400, 0x1400, 0x
 
 const s16 dog24_x_data[8] = { 0, 0, 0, 6, 10, 16, 32, 40 };
 
-void effect_24_move(WORK_Other* ewk) {
+void effect_24_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -69,7 +69,7 @@ void effect_24_move(WORK_Other* ewk) {
     }
 }
 
-void eff24_quake_sub(WORK_Other* ewk) {
+void eff24_quake_sub(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.bg_w.quake_y_index > 0) {
@@ -155,7 +155,7 @@ void eff24_quake_sub(WORK_Other* ewk) {
     }
 }
 
-void dog24_data_set(WORK_Other* ewk) {
+void dog24_data_set(State_Other* ewk) {
     s16 work;
 
     ewk->wu.old_routine_no[5] = 40;
@@ -169,7 +169,7 @@ void dog24_data_set(WORK_Other* ewk) {
     cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[5], work, ewk->wu.xyz[1].disp.pos, 2, 0);
 }
 
-void eff24_sp_data_set(WORK_Other* ewk) {
+void eff24_sp_data_set(State_Other* ewk) {
     s16 work;
 
     if (ewk->wu.old_routine_no[0]) {
@@ -212,7 +212,7 @@ void eff24_sp_data_set(WORK_Other* ewk) {
 }
 
 s32 effect_24_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = eff24_data_tbl;
@@ -222,7 +222,7 @@ s32 effect_24_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 24;
         ewk->wu.type = i;

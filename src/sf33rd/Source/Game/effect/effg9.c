@@ -9,14 +9,14 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const s16 g9_pos_hos[16] = { 0, 1, -1, 2, -2, 0, 3, -3, 1, -1, 2, -2, 4, 3, 0, 3 };
 
-void effect_G9_move(WORK_Other* ewk) {
+void effect_G9_move(State_Other* ewk) {
     s16 rnd_ix;
 
     switch (ewk->wu.routine_no[0]) {
@@ -74,15 +74,15 @@ void effect_G9_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_G9_init(WORK* wk) {
-    WORK_Other* ewk;
+s32 effect_G9_init(State* wk) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.type = wk->disp_flag;
     ewk->wu.id = 0xA9;

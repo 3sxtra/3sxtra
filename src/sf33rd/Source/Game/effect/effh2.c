@@ -12,8 +12,8 @@
 
 const s16 panel_guide[8][2] = { { 0, 6 }, { 0, 5 }, { 0, 4 }, { 0, 2 }, { 0, 0 }, { 0, 2 }, { 0, 4 }, { 0, 5 } };
 
-void effect_H2_move(WORK_Other* ewk) {
-    WORK* mwk = (WORK*)ewk->my_master;
+void effect_H2_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -61,15 +61,15 @@ void effect_H2_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_H2_init(WORK* wk, u8 gal, u8 ohen) {
-    WORK_Other* ewk;
+s32 effect_H2_init(State* wk, u8 gal, u8 ohen) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 172;
     ewk->wu.work_id = 16;

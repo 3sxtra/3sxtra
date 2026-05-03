@@ -72,7 +72,7 @@ const s16* scr_obj_data[22] = { stg_dum_data_tbl, stg0100_data_tbl, stg_dum_data
                                 stg1100_data_tbl, stg_dum_data_tbl, stg1300_data_tbl, stg1400_data_tbl,
                                 stg1500_data_tbl, stg1600_data_tbl };
 
-void effect_05_move(WORK_Other* ewk) {
+void effect_05_move(State_Other* ewk) {
     if (obr_no_disp_check() == 0) {
         switch (ewk->wu.routine_no[0]) {
         case 0:
@@ -98,7 +98,7 @@ void effect_05_move(WORK_Other* ewk) {
 }
 
 s32 effect_05_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 lp_cnt;
     s16 i;
@@ -116,7 +116,7 @@ s32 effect_05_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 5;
         ewk->wu.work_id = 0x10;

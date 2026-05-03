@@ -15,15 +15,15 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
 // forward decls
-static void eff36_move00(WORK_Other* ewk);
-static void eff36_move01(WORK_Other* ewk);
-static void eff36_move02(WORK_Other* ewk);
-static void eff36_move03(WORK_Other* ewk);
-static void eff36_move04(WORK_Other* ewk);
-static void eff36_move05(WORK_Other* ewk);
-static void eff36_move06(WORK_Other* ewk);
+static void eff36_move00(State_Other* ewk);
+static void eff36_move01(State_Other* ewk);
+static void eff36_move02(State_Other* ewk);
+static void eff36_move03(State_Other* ewk);
+static void eff36_move04(State_Other* ewk);
+static void eff36_move05(State_Other* ewk);
+static void eff36_move06(State_Other* ewk);
 
-void effect_36_move(WORK_Other* ewk) {
+void effect_36_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (ewk->wu.old_routine_no[1] <= op_w.index) {
@@ -71,7 +71,7 @@ void effect_36_move(WORK_Other* ewk) {
     }
 }
 
-static void eff36_move00(WORK_Other* ewk) {
+static void eff36_move00(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -99,7 +99,7 @@ static void eff36_move00(WORK_Other* ewk) {
     }
 }
 
-static void eff36_move01(WORK_Other* ewk) {
+static void eff36_move01(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -119,7 +119,7 @@ static void eff36_move01(WORK_Other* ewk) {
     }
 }
 
-static void eff36_move02(WORK_Other* ewk) {
+static void eff36_move02(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -142,7 +142,7 @@ static void eff36_move02(WORK_Other* ewk) {
     }
 }
 
-static void eff36_move03(WORK_Other* ewk) {
+static void eff36_move03(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -167,7 +167,7 @@ static void eff36_move03(WORK_Other* ewk) {
 
 const s16 eff36_04_tbl[4] = { 0, 5, 9, 13 };
 
-static void eff36_move04(WORK_Other* ewk) {
+static void eff36_move04(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -235,7 +235,7 @@ static void eff36_move04(WORK_Other* ewk) {
     }
 }
 
-static void eff36_move05(WORK_Other* ewk) {
+static void eff36_move05(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -262,7 +262,7 @@ static void eff36_move05(WORK_Other* ewk) {
     }
 }
 
-static void eff36_move06(WORK_Other* ewk) {
+static void eff36_move06(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -318,7 +318,7 @@ const s16 eff36_data_tbl[29][9] = { { 0, 1, 512, 128, 73, 5, 1, 41, 42 },   { 0,
                                     { 0, 6, 488, 120, 66, 11, 1, 91, 92 } };
 
 s32 effect_36_init(u8 typenum) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr;
 
@@ -330,7 +330,7 @@ s32 effect_36_init(u8 typenum) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     data_ptr = eff36_data_tbl[typenum];
     ewk->wu.id = 0x24;
     ewk->wu.be_flag = 1;

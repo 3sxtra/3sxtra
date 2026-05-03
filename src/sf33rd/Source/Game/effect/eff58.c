@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
@@ -16,11 +16,11 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-static s32 SF33rd_Logo(WORK_Other* ewk);
-static void EFF58_Type_01(WORK_Other* ewk);
-static void Fade_In_58_Sub(WORK_Other* ewk);
+static s32 SF33rd_Logo(State_Other* ewk);
+static void EFF58_Type_01(State_Other* ewk);
+static void Fade_In_58_Sub(State_Other* ewk);
 
-void effect_58_move(WORK_Other* ewk) {
+void effect_58_move(State_Other* ewk) {
     s16 xx;
 
     switch (ewk->wu.routine_no[0]) {
@@ -208,14 +208,14 @@ void effect_58_move(WORK_Other* ewk) {
 }
 
 s32 effect_58_init(s16 id, s16 time0, s16 option) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 58;
     ewk->wu.work_id = 16;
@@ -226,7 +226,7 @@ s32 effect_58_init(s16 id, s16 time0, s16 option) {
     return 0;
 }
 
-static s32 SF33rd_Logo(WORK_Other* ewk) {
+static s32 SF33rd_Logo(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -276,7 +276,7 @@ static s32 SF33rd_Logo(WORK_Other* ewk) {
     return ewk->wu.direction;
 }
 
-static void EFF58_Type_01(WORK_Other* ewk) {
+static void EFF58_Type_01(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         Switch_Screen(1);
@@ -297,7 +297,7 @@ static void EFF58_Type_01(WORK_Other* ewk) {
     }
 }
 
-static void Fade_In_58_Sub(WORK_Other* ewk) {
+static void Fade_In_58_Sub(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;

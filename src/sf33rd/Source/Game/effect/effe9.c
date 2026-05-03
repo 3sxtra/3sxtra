@@ -9,11 +9,11 @@
 #include "port/rendering/renderer.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void effect_E9_move(WORK_Other* ewk) {
+void effect_E9_move(State_Other* ewk) {
     PAL_CURSOR ita;
     PAL_CURSOR_P ita_p[4];
     PAL_CURSOR_P ita_pos[4];
@@ -123,7 +123,7 @@ void effect_E9_move(WORK_Other* ewk) {
 }
 
 s32 effect_E9_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
 
@@ -132,7 +132,7 @@ s32 effect_E9_init() {
         if ((ix = Acquire_Effect(4)) == -1) {
             return -1;
         }
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.id = 149;
         ewk->wu.be_flag = 1;
         ewk->wu.type = i;

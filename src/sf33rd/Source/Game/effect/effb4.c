@@ -9,9 +9,9 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
@@ -19,7 +19,7 @@
 const s16 s_mark_tbl[32] = { 0, 1, 0, 1, 0, 3, 0, 0, 0, 2, 4, 0, 0, 1, 0, 2,
                              6, 3, 0, 2, 0, 0, 6, 3, 0, 4, 0, 0, 6, 0, 0, 4 };
 
-void effect_B4_move(WORK_Other* ewk) {
+void effect_B4_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -59,15 +59,15 @@ void effect_B4_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_B4_init(WORK_Other* oya) {
-    WORK_Other* ewk;
+s32 effect_B4_init(State_Other* oya) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 114;
     ewk->wu.work_id = 16;

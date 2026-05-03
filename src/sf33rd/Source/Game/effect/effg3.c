@@ -10,11 +10,11 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void effect_G3_move(WORK_Other* ewk) {
-    WORK_Other* mwk;
+void effect_G3_move(State_Other* ewk) {
+    State_Other* mwk;
     PLW* pwk = (PLW*)ewk->wu.target_adrs;
     s16 adjust;
 
@@ -38,7 +38,7 @@ void effect_G3_move(WORK_Other* ewk) {
         }
 
         if (!ewk->wu.routine_no[1]) {
-            mwk = (WORK_Other*)ewk->my_master;
+            mwk = (State_Other*)ewk->my_master;
 
             if (mwk->wu.dead_f) {
                 ewk->wu.routine_no[0] = 3;
@@ -81,16 +81,16 @@ void effect_G3_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_G3_init(WORK* wk, u8 data) {
-    WORK_Other* ewk;
-    WORK_Other* ewk2;
+s32 effect_G3_init(State* wk, u8 data) {
+    State_Other* ewk;
+    State_Other* ewk2;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.type = data;
     ewk->wu.id = 163;
@@ -101,7 +101,7 @@ s32 effect_G3_init(WORK* wk, u8 data) {
     ewk->my_master = wk;
     ewk->master_work_id = wk->work_id;
     ewk->master_id = wk->id;
-    ewk2 = (WORK_Other*)wk;
+    ewk2 = (State_Other*)wk;
     ewk->wu.target_adrs = ewk2->my_master;
     ewk->wu.rl_flag = data;
     *ewk->wu.char_table = _effD4_char_table;

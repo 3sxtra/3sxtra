@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -35,7 +35,7 @@ const s16 eff12_data_tbl5[16] = { 0, 2, 8492, 575, 80, 74, 20, 0, 0, 2, 8492, 46
 const s16* scr_obj_data12[6] = { eff12_data_tbl0, eff12_data_tbl1, eff12_data_tbl2,
                                  eff12_data_tbl3, eff12_data_tbl4, eff12_data_tbl5 };
 
-void effect_12_move(WORK_Other* ewk) {
+void effect_12_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -69,7 +69,7 @@ void effect_12_move(WORK_Other* ewk) {
 }
 
 s32 effect_12_init(s16 type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 lp_cnt = scr_obj_num12[type];
     s16 i;
@@ -86,7 +86,7 @@ s32 effect_12_init(s16 type) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 12;
         ewk->wu.work_id = 16;

@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
@@ -17,12 +17,12 @@
 
 // sbss
 
-WORK_Other* oya_p = NULL;
+State_Other* oya_p = NULL;
 
 // Funcs
 
-void effect_B9_move(WORK_Other* ewk) {
-    oya_p = (WORK_Other*)ewk->my_master;
+void effect_B9_move(State_Other* ewk) {
+    oya_p = (State_Other*)ewk->my_master;
 
     switch (oya_p->wu.routine_no[0]) {
     case 2:
@@ -61,15 +61,15 @@ void effect_B9_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_B9_init(WORK_Other* oya) {
-    WORK_Other* ewk;
+s32 effect_B9_init(State_Other* oya) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0x77;
     ewk->wu.work_id = 0x10;

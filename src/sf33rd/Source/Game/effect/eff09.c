@@ -10,13 +10,13 @@
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/effect/effb4.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
@@ -65,13 +65,13 @@ const s32 eff09_19000_tbl[3][4] = { { 0x30000, 0x0, 0x10000, -0x6000 },
                                     { 0x20000, 0x0, 0x48000, -0x6000 },
                                     { 0x18000, 0x0, 0x30000, -0x6000 } };
 
-static void sean_ball_move(WORK_Other* ewk, u16 sw_work);
-static void ball_bound_set(WORK_Other* ewk);
-static void jijii_win_tama_sub(WORK_Other* ewk);
+static void sean_ball_move(State_Other* ewk, u16 sw_work);
+static void ball_bound_set(State_Other* ewk);
+static void jijii_win_tama_sub(State_Other* ewk);
 
-void (*eff09_tbl[28])(WORK_Other*);
+void (*eff09_tbl[28])(State_Other*);
 
-void effect_09_move(WORK_Other* ewk) {
+void effect_09_move(State_Other* ewk) {
     if (compel_dead_check(ewk)) {
         ewk->wu.disp_flag = 0;
         ewk->wu.routine_no[1] = 99;
@@ -80,7 +80,7 @@ void effect_09_move(WORK_Other* ewk) {
     eff09_tbl[ewk->wu.routine_no[0]](ewk);
 }
 
-static void eff09_0000(WORK_Other* ewk) {
+static void eff09_0000(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -116,7 +116,7 @@ static void eff09_0000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_1000(WORK_Other* ewk) {
+static void eff09_1000(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -192,7 +192,7 @@ static void eff09_1000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_2000(WORK_Other* ewk) {
+static void eff09_2000(State_Other* ewk) {
     s16 work;
     const s32* ptr;
     u16 sw_work;
@@ -312,7 +312,7 @@ static void eff09_2000(WORK_Other* ewk) {
     }
 }
 
-static void sean_ball_move(WORK_Other* ewk, u16 sw_work) {
+static void sean_ball_move(State_Other* ewk, u16 sw_work) {
     if (!g_state.plw[ewk->master_id].wu.pl_operator) {
         return;
     }
@@ -358,7 +358,7 @@ static void sean_ball_move(WORK_Other* ewk, u16 sw_work) {
     }
 }
 
-static void ball_bound_set(WORK_Other* ewk) {
+static void ball_bound_set(State_Other* ewk) {
     ewk->wu.mvxy.a[0].sp = -0x40000;
     ewk->wu.mvxy.a[1].sp = 0x60000;
     ewk->wu.mvxy.d[0].sp = -0x1000;
@@ -371,7 +371,7 @@ static void ball_bound_set(WORK_Other* ewk) {
     }
 }
 
-static void eff09_3000(WORK_Other* ewk) {
+static void eff09_3000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.Exec_Wipe) {
@@ -423,10 +423,10 @@ static void eff09_3000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_4000(WORK_Other* ewk) {
+static void eff09_4000(State_Other* ewk) {
     s16 work;
     s16 work2;
-    WORK* oya_ptr;
+    State* oya_ptr;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -440,7 +440,7 @@ static void eff09_4000(WORK_Other* ewk) {
         ewk->wu.my_col_code = 0x2000;
         ewk->wu.position_z = ewk->wu.my_priority = 20;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-        oya_ptr = (WORK*)ewk->my_master;
+        oya_ptr = (State*)ewk->my_master;
         ewk->wu.rl_flag = oya_ptr->rl_flag;
 
         if (oya_ptr->rl_flag) {
@@ -487,7 +487,7 @@ static void eff09_4000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_5000(WORK_Other* ewk) {
+static void eff09_5000(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -514,7 +514,7 @@ static void eff09_5000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_6000(WORK_Other* ewk) {
+static void eff09_6000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -558,7 +558,7 @@ static void eff09_6000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_7000(WORK_Other* ewk) {
+static void eff09_7000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -605,7 +605,7 @@ static void eff09_7000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_8000(WORK_Other* ewk) {
+static void eff09_8000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -637,7 +637,7 @@ static void eff09_8000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_9000(WORK_Other* ewk) {
+static void eff09_9000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -672,7 +672,7 @@ static void eff09_9000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_10000(WORK_Other* ewk) {
+static void eff09_10000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -713,10 +713,10 @@ static void eff09_10000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_11000(WORK_Other* ewk) {
+static void eff09_11000(State_Other* ewk) {
     s16 work;
     s16 work2;
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+    State* oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -785,7 +785,7 @@ static void eff09_11000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_12000(WORK_Other* ewk) {
+static void eff09_12000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -847,8 +847,8 @@ static void eff09_12000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_13000(WORK_Other* ewk) {
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+static void eff09_13000(State_Other* ewk) {
+    State* oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -903,8 +903,8 @@ static void eff09_13000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_14000(WORK_Other* ewk) {
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+static void eff09_14000(State_Other* ewk) {
+    State* oya_ptr = (State*)ewk->my_master;
 
     if (ewk->wu.rl_flag) {
         ewk->wu.xyz[0].disp.pos = oya_ptr->xyz[0].disp.pos - eff09_data2[ewk->wu.type][2];
@@ -946,14 +946,14 @@ static void eff09_14000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_15000(WORK_Other* ewk) {
-    WORK* oya_ptr;
+static void eff09_15000(State_Other* ewk) {
+    State* oya_ptr;
 
     if (obr_no_disp_check()) {
         return;
     }
 
-    oya_ptr = (WORK*)ewk->my_master;
+    oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -988,7 +988,7 @@ static void eff09_15000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_16000(WORK_Other* ewk) {
+static void eff09_16000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -1024,14 +1024,14 @@ static void eff09_16000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_17000(WORK_Other* ewk) {
-    WORK* oya_ptr;
+static void eff09_17000(State_Other* ewk) {
+    State* oya_ptr;
 
     if (obr_no_disp_check()) {
         return;
     }
 
-    oya_ptr = (WORK*)ewk->my_master;
+    oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -1077,14 +1077,14 @@ static void eff09_17000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_18000(WORK_Other* ewk) {
-    WORK* oya_ptr;
+static void eff09_18000(State_Other* ewk) {
+    State* oya_ptr;
 
     if (obr_no_disp_check()) {
         return;
     }
 
-    oya_ptr = (WORK*)ewk->my_master;
+    oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -1138,7 +1138,7 @@ static void eff09_18000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_19000(WORK_Other* ewk) {
+static void eff09_19000(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -1195,15 +1195,15 @@ static void eff09_19000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_20000(WORK_Other* ewk) {
-    WORK* oya_ptr;
+static void eff09_20000(State_Other* ewk) {
+    State* oya_ptr;
     s16 pos_work;
 
     if (g_state.test_flag) {
         ewk->wu.routine_no[1] = 99;
     }
 
-    oya_ptr = (WORK*)ewk->my_master;
+    oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -1251,7 +1251,7 @@ static void eff09_20000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_21000(WORK_Other* ewk) {
+static void eff09_21000(State_Other* ewk) {
     s16 arrive_x;
     s16 arrive_y;
 
@@ -1334,15 +1334,15 @@ static void eff09_21000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_22000(WORK_Other* ewk) {
-    WORK* oya_ptr;
+static void eff09_22000(State_Other* ewk) {
+    State* oya_ptr;
     s16 work;
 
     if (g_state.test_flag) {
         ewk->wu.routine_no[1] = 99;
     }
 
-    oya_ptr = (WORK*)ewk->my_master;
+    oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -1386,14 +1386,14 @@ static void eff09_22000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_23000(WORK_Other* ewk) {
-    WORK* oya_ptr;
+static void eff09_23000(State_Other* ewk) {
+    State* oya_ptr;
 
     if (g_state.test_flag) {
         ewk->wu.routine_no[1] = 99;
     }
 
-    oya_ptr = (WORK*)ewk->my_master;
+    oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -1456,14 +1456,14 @@ static void eff09_23000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_24000(WORK_Other* ewk) {
-    WORK* oya_ptr;
+static void eff09_24000(State_Other* ewk) {
+    State* oya_ptr;
 
     if (g_state.test_flag) {
         ewk->wu.routine_no[1] = 99;
     }
 
-    oya_ptr = (WORK*)ewk->my_master;
+    oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -1538,7 +1538,7 @@ static void eff09_24000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_25000(WORK_Other* ewk) {
+static void eff09_25000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -1587,14 +1587,14 @@ static void eff09_25000(WORK_Other* ewk) {
     }
 }
 
-static void eff09_26000(WORK_Other* ewk) {
-    WORK* oya_ptr;
+static void eff09_26000(State_Other* ewk) {
+    State* oya_ptr;
 
     if (g_state.test_flag) {
         ewk->wu.routine_no[1] = 99;
     }
 
-    oya_ptr = (WORK*)ewk->my_master;
+    oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -1664,8 +1664,8 @@ static void eff09_26000(WORK_Other* ewk) {
     }
 }
 
-static void jijii_win_tama_sub(WORK_Other* ewk) {
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+static void jijii_win_tama_sub(State_Other* ewk) {
+    State* oya_ptr = (State*)ewk->my_master;
 
     ewk->wu.old_routine_no[0] ^= 1;
 
@@ -1677,7 +1677,7 @@ static void jijii_win_tama_sub(WORK_Other* ewk) {
     ewk->wu.position_z = oya_ptr->position_z + 2;
 }
 
-static void eff09_27000(WORK_Other* ewk) {
+static void eff09_27000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -1742,8 +1742,8 @@ static void eff09_27000(WORK_Other* ewk) {
     }
 }
 
-s32 effect_09_init(WORK* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_09_init(State* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr;
 
@@ -1751,7 +1751,7 @@ s32 effect_09_init(WORK* wk, u8 data) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.type = data;
     data_ptr = eff09_data[ewk->wu.type];
     ewk->wu.be_flag = 1;
@@ -1779,8 +1779,8 @@ s32 effect_09_init(WORK* wk, u8 data) {
     return 0;
 }
 
-s32 effect_09_init2(WORK* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_09_init2(State* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr;
 
@@ -1796,7 +1796,7 @@ s32 effect_09_init2(WORK* wk, u8 data) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.type = data;
     ewk->my_master = wk;
     ewk->wu.target_adrs = wk->target_adrs;
@@ -1894,7 +1894,7 @@ s32 effect_09_init2(WORK* wk, u8 data) {
     return 0;
 }
 
-void (*eff09_tbl[28])(WORK_Other*) = { eff09_0000,  eff09_1000,  eff09_2000,  eff09_3000,  eff09_4000,  eff09_5000,
+void (*eff09_tbl[28])(State_Other*) = { eff09_0000,  eff09_1000,  eff09_2000,  eff09_3000,  eff09_4000,  eff09_5000,
                                        eff09_6000,  eff09_7000,  eff09_8000,  eff09_9000,  eff09_10000, eff09_11000,
                                        eff09_12000, eff09_13000, eff09_14000, eff09_15000, eff09_16000, eff09_17000,
                                        eff09_18000, eff09_19000, eff09_20000, eff09_21000, eff09_22000, eff09_23000,

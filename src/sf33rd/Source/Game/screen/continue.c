@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/effect/eff76.h"
 #include "sf33rd/Source/Game/effect/eff95.h"
 #include "sf33rd/Source/Game/effect/effa9.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"

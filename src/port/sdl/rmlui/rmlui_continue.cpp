@@ -6,7 +6,7 @@
  * Setup_Continue_OBJ() with an RmlUi overlay showing the countdown
  * timer and "CONTINUE?" prompt.
  *
- * Key globals (from workuser.h):
+ * Key globals (from state_user.h):
  *   g_state.Continue_Count_Down[2], g_state.Continue_Count[2], g_state.continue_phase[4],
  *   g_state.LOSER, g_state.My_char[]
  */
@@ -20,7 +20,7 @@
 
 extern "C" {
 #include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 } // extern "C"
 
 // ─── Character name table (SF3:3S roster, index matches g_state.My_char) ───

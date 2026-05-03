@@ -15,9 +15,9 @@
 
 #include "training_dummy.h"
 #include "game_state.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"    /* random_32_com() */
-#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.Lever_Buff[] */
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"    /* random_32_com() */
+#include "sf33rd/Source/Game/engine/state_user.h" /* g_state.Lever_Buff[] */
 
 DummySettings g_dummy_settings = {
     .block_type = DUMMY_BLOCK_NONE,

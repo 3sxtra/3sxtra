@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const s16 flames_stand[20][4][4] = { { { 1, -32, -16, 18 }, { 1, 16, 16, 57 }, { 3, 16, 24, 18 }, { 3, -16, 16, 18 } },
@@ -145,10 +145,10 @@ const s16 thunder_set_pos_SKB[20][4] = { { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 
                                          { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 5, 1, 23 },
                                          { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 5, 1, 23 } };
 
-static void effE2_sort_push(WORK* ewk, WORK* mwk);
-static void effe2_erase_or_die(WORK* wk);
+static void effE2_sort_push(State* ewk, State* mwk);
+static void effe2_erase_or_die(State* wk);
 
-void effect_E2_move(WORK_Other* ewk) {
+void effect_E2_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     ewk->wu.hit_stop = mwk->wu.hit_stop;
@@ -247,7 +247,7 @@ void effect_E2_move(WORK_Other* ewk) {
     }
 }
 
-static void effE2_sort_push(WORK* ewk, WORK* mwk) {
+static void effE2_sort_push(State* ewk, State* mwk) {
     if (ewk->rl_flag) {
         ewk->position_x = mwk->xyz[0].disp.pos + ewk->old_pos[0];
     } else {
@@ -262,7 +262,7 @@ static void effE2_sort_push(WORK* ewk, WORK* mwk) {
     sort_push_request8(ewk);
 }
 
-static void effe2_erase_or_die(WORK* wk) {
+static void effe2_erase_or_die(State* wk) {
     if (wk->cg_wca_ix != 0) {
         wk->routine_no[1] = 1;
         char_move_wca(wk);
@@ -274,7 +274,7 @@ static void effe2_erase_or_die(WORK* wk) {
 }
 
 s32 effect_E2_init(PLW* wk, const s16* data, s16 color_code, u8 ff) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16* bxt;
     s16 ix;
 
@@ -292,7 +292,7 @@ s32 effect_E2_init(PLW* wk, const s16* data, s16 color_code, u8 ff) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 142;
     ewk->wu.work_id = 16;

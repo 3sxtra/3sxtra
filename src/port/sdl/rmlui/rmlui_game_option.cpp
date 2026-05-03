@@ -17,7 +17,7 @@
 extern "C" {
 
 /* Game globals — g_state.Menu_Cursor_Y, g_state.IO_Result, g_state.Convert_Buff */
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "structs.h"
 
 } // extern "C"

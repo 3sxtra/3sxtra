@@ -13,8 +13,8 @@
 
 const s16 EFF62_Correct_Data[1][2] = { { 0, 0 } };
 
-void effect_62_move(WORK_Other* ewk) {
-    WORK_Other* mwk = (WORK_Other*)ewk->my_master;
+void effect_62_move(State_Other* ewk) {
+    State_Other* mwk = (State_Other*)ewk->my_master;
 
     if (mwk->wu.be_flag == 0) {
         Release_Effect(&ewk->wu);
@@ -27,15 +27,15 @@ void effect_62_move(WORK_Other* ewk) {
     sort_push_requestA(&ewk->wu);
 }
 
-s32 effect_62_init(WORK_Other* mwk, s16 arg_ID) {
-    WORK_Other* ewk;
+s32 effect_62_init(State_Other* mwk, s16 arg_ID) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 62;

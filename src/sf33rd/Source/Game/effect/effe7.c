@@ -8,14 +8,14 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effe5.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void effe7_get_zanzou_data(WORK_Other* ewk);
+static void effe7_get_zanzou_data(State_Other* ewk);
 
-void effect_E7_move(WORK_Other* ewk) {
+void effect_E7_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
     s16 pricol;
 
@@ -96,7 +96,7 @@ void effect_E7_move(WORK_Other* ewk) {
     }
 }
 
-static void effe7_get_zanzou_data(WORK_Other* ewk) {
+static void effe7_get_zanzou_data(State_Other* ewk) {
     ewk->wu.position_x = g_state.afterimage_table[ewk->master_id]->pos_x;
     ewk->wu.position_y = g_state.afterimage_table[ewk->master_id]->pos_y;
     ewk->wu.position_z = g_state.afterimage_table[ewk->master_id]->pos_z;
@@ -105,15 +105,15 @@ static void effe7_get_zanzou_data(WORK_Other* ewk) {
     ewk->wu.cg_flip = g_state.afterimage_table[ewk->master_id]->cg_flp;
 }
 
-s32 effect_E7_init(WORK_Other* ek, PLW* mk) {
-    WORK_Other* ewk;
+s32 effect_E7_init(State_Other* ek, PLW* mk) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.disp_flag = ek->wu.disp_flag;
     ewk->wu.id = 147;

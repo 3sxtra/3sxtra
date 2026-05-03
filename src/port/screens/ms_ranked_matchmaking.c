@@ -19,7 +19,7 @@
 
 #include <SDL3/SDL_log.h>
 
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "netplay/netplay.h"

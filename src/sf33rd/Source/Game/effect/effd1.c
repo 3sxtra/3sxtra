@@ -8,17 +8,17 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void fall_data_set(WORK_Other* ewk);
+static void fall_data_set(State_Other* ewk);
 
-void effect_D1_move(WORK_Other* ewk) {
+void effect_D1_move(State_Other* ewk) {
     if (g_state.Exec_Wipe) {
         ewk->wu.no_death_attack = 1;
     }
@@ -97,8 +97,8 @@ void effect_D1_move(WORK_Other* ewk) {
     }
 }
 
-static void fall_data_set(WORK_Other* ewk) {
-    WORK_Other* oya_ef = (WORK_Other*)ewk->my_master;
+static void fall_data_set(State_Other* ewk) {
+    State_Other* oya_ef = (State_Other*)ewk->my_master;
     s16 pos_work;
     s16 id_work;
 
@@ -136,15 +136,15 @@ static void fall_data_set(WORK_Other* ewk) {
     cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], ewk->wu.old_routine_no[2], 2, 1);
 }
 
-s32 effect_D1_init(WORK_Other* oya, s32 /* unused */) {
-    WORK_Other* ewk;
+s32 effect_D1_init(State_Other* oya, s32 /* unused */) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 131;
     ewk->wu.work_id = 16;

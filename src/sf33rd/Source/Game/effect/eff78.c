@@ -8,17 +8,17 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effect_78_move(WORK_Other* ewk) {
+void effect_78_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -49,7 +49,7 @@ void effect_78_move(WORK_Other* ewk) {
     }
 }
 
-s32 crow_fuss_check(WORK_Other* ewk) {
+s32 crow_fuss_check(State_Other* ewk) {
     s16 work;
 
     if (g_state.bg_w.quake_y_index > 3) {
@@ -77,7 +77,7 @@ const s16 eff78_data_tbl[4] = { 416, 71, 912, 64 };
 
 const s16 crow_char_tbl[3][3] = { { 8, 0, 64 }, { 18, -16, 64 }, { 13, 16, 64 } };
 
-void crow_fuss_move(WORK_Other* ewk) {
+void crow_fuss_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -178,7 +178,7 @@ void crow_fuss_move(WORK_Other* ewk) {
 }
 
 s32 effect_78_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = eff78_data_tbl;
@@ -188,7 +188,7 @@ s32 effect_78_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 78;
         ewk->wu.work_id = 16;

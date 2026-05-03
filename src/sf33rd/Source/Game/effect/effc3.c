@@ -15,16 +15,16 @@
 #include "sf33rd/Source/Game/engine/charid.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/plmain.h"
+#include "sf33rd/Source/Game/engine/player_main.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void bs2_display_C3(WORK* wk);
-static void set_display_car_parts(WORK_Other* wk);
-static void clear_parts_hit_data(WORK* wk);
-static void effC3_main_process(WORK_Other* ewk);
-static s32 get_efffC3_nsc(WORK* wk, WORK* c2wk);
+static void bs2_display_C3(State* wk);
+static void set_display_car_parts(State_Other* wk);
+static void clear_parts_hit_data(State* wk);
+static void effC3_main_process(State_Other* ewk);
+static s32 get_efffC3_nsc(State* wk, State* c2wk);
 
 const u16 effC3_nsc[6] = { 0x7E1A, 0x7E1A, 0x7E1A, 0x7E1A, 0x7E1A, 0x7E1A };
 
@@ -1037,7 +1037,7 @@ const u16 car_parts[7][8][18][2] = { { { { 0x7D10, 0x0000 },
                                          { 0x7A3E, 0x0000 },
                                          { 0x7A3F, 0x0000 } } } };
 
-void effect_C3_move(WORK_Other* ewk) {
+void effect_C3_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -1101,7 +1101,7 @@ void effect_C3_move(WORK_Other* ewk) {
             break;
 
         case 10:
-            switch (get_efffC3_nsc(&ewk->wu, (WORK*)ewk->wu.my_effadrs)) {
+            switch (get_efffC3_nsc(&ewk->wu, (State*)ewk->wu.my_effadrs)) {
             case 0:
                 ewk->wu.disp_flag = 0;
                 break;
@@ -1128,7 +1128,7 @@ void effect_C3_move(WORK_Other* ewk) {
     }
 }
 
-static void bs2_display_C3(WORK* wk) {
+static void bs2_display_C3(State* wk) {
     wk->position_x = wk->xyz[0].disp.pos + wk->next_x;
     wk->position_y = wk->xyz[1].disp.pos + wk->next_y;
     wk->next_y = 0;
@@ -1136,7 +1136,7 @@ static void bs2_display_C3(WORK* wk) {
     sort_push_request(wk);
 }
 
-static void set_display_car_parts(WORK_Other* wk) {
+static void set_display_car_parts(State_Other* wk) {
     const u16* adrs;
 
     bs2_get_parts_break(&wk->wu);
@@ -1145,7 +1145,7 @@ static void set_display_car_parts(WORK_Other* wk) {
     wk->wu.body_hurtbox = wk->wu.body_adrs + (wk->wu.anim_hurtbox_index = adrs[1]);
 }
 
-static void clear_parts_hit_data(WORK* wk) {
+static void clear_parts_hit_data(State* wk) {
     wk->cg_ja = wk->hit_ix_table[0];
     wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.body_hurtbox_index];
     wk->catch_box = &wk->catch_adrs[wk->cg_ja.catch_box_index];
@@ -1155,7 +1155,7 @@ static void clear_parts_hit_data(WORK* wk) {
     wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.behind_hurtbox_index + wk->cg_ja.hand_hurtbox_index];
 }
 
-static void effC3_main_process(WORK_Other* ewk) {
+static void effC3_main_process(State_Other* ewk) {
     if (ewk->wu.dir_old) {
         ewk->wu.routine_no[0] = 2;
         ewk->wu.routine_no[1] = 0;
@@ -1202,7 +1202,7 @@ static void effC3_main_process(WORK_Other* ewk) {
     get_shizumi_guai(&ewk->wu);
 }
 
-static s32 get_efffC3_nsc(WORK* wk, WORK* c2wk) {
+static s32 get_efffC3_nsc(State* wk, State* c2wk) {
     u16 num = c2wk->cg_number - 0x7DAA;
 
     wk->position_x = c2wk->position_x;
@@ -1221,15 +1221,15 @@ static s32 get_efffC3_nsc(WORK* wk, WORK* c2wk) {
     return 0;
 }
 
-s32 effect_C3_init(WORK_Other* wk, s16 data) {
-    WORK_Other* ewk;
+s32 effect_C3_init(State_Other* wk, s16 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(1)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 123;
     ewk->wu.type = data;

@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/effect/eff62.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -19,7 +19,7 @@
 
 void (*const EFF57_Jmp_Tbl[6])();
 
-void effect_57_move(WORK_Other* ewk) {
+void effect_57_move(State_Other* ewk) {
     if (ewk->wu.routine_no[0] != g_state.Order[ewk->wu.dir_old]) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -42,13 +42,13 @@ void effect_57_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-static void EFF57_WAIT(WORK_Other* ewk) {
+static void EFF57_WAIT(State_Other* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-static void EFF57_SLIDE_IN(WORK_Other* ewk) {
+static void EFF57_SLIDE_IN(State_Other* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -100,7 +100,7 @@ static void EFF57_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-static void EFF57_CHAR_CHANGE(WORK_Other* ewk) {
+static void EFF57_CHAR_CHANGE(State_Other* ewk) {
     if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
         ewk->wu.routine_no[0] = 0;
         g_state.Order[ewk->wu.dir_old] = 0;
@@ -109,7 +109,7 @@ static void EFF57_CHAR_CHANGE(WORK_Other* ewk) {
     }
 }
 
-static void EFF57_WALL(WORK_Other* ewk) {
+static void EFF57_WALL(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old]) {
@@ -132,7 +132,7 @@ static void EFF57_WALL(WORK_Other* ewk) {
     }
 }
 
-static void EFF57_SUDDENLY(WORK_Other* ewk) {
+static void EFF57_SUDDENLY(State_Other* ewk) {
     if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
@@ -152,21 +152,21 @@ static void EFF57_SUDDENLY(WORK_Other* ewk) {
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
 }
 
-void EFF57_KILL(WORK_Other* ewk) {
+void EFF57_KILL(State_Other* ewk) {
     if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
         Release_Effect(&ewk->wu);
     }
 }
 
 s32 effect_57_init(s16 dir_old, MenuHeader ID, s16 Target_BG, s16 char_ix, s16 option) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 57;
     ewk->wu.work_id = 16;

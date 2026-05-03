@@ -19,7 +19,7 @@
 #include <cstdio>
 
 extern "C" {
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/screen/n_input.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 } // extern "C"

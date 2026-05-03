@@ -9,7 +9,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effg9.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 const s16 effg6_data[230][8] = { { 46, 0, 0, 0, -32, 32, 515, 31 },       { 46, 0, 0, 0, -64, 40, 515, 31 },
                                  { 46, 0, 0, 0, -128, 48, 515, 30 },      { 46, 0, 0, 0, -192, 64, 515, 30 },
@@ -127,8 +127,8 @@ const s16 effg6_data[230][8] = { { 46, 0, 0, 0, -32, 32, 515, 31 },       { 46, 
                                  { 63, 7, -55, -5, -48, 28, 513, 31 },    { 63, 5, -48, -6, -36, 20, 515, 31 },
                                  { 63, 6, -38, -6, -32, 10, 515, 31 },    { 63, 7, -28, -5, 24, 18, 513, 31 } };
 
-void effect_G6_move(WORK_Other* ewk) {
-    WORK* mwk = (WORK*)ewk->my_master;
+void effect_G6_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -207,15 +207,15 @@ void effect_G6_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_G6_init(WORK* wk, u8 dat) {
-    WORK_Other* ewk;
+s32 effect_G6_init(State* wk, u8 dat) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0xA6;
     ewk->wu.work_id = 0x10;

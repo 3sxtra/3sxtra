@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effb6.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/screen/next_cpu.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -83,7 +83,7 @@ static s32 check2_A6_shortcut() {
 }
 
 void effect_A6_move(WORK_Other_CONN* ewk) {
-    WORK_Other* mwk;
+    State_Other* mwk;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -185,7 +185,7 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
             break;
         }
 
-        mwk = (WORK_Other*)ewk->my_master;
+        mwk = (State_Other*)ewk->my_master;
 
         switch (ewk->wu.dir_old) {
         case 0x43:
@@ -221,7 +221,7 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
     }
 }
 
-s32 effect_A6_init(WORK_Other* mwk) {
+s32 effect_A6_init(State_Other* mwk) {
     WORK_Other_CONN* ewk;
     s16 ix;
 

@@ -13,21 +13,21 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effk6.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-static void EFF39_WAIT(WORK_Other* ewk);
-static void EFF39_SUDDENLY(WORK_Other* ewk);
-static void EFF39_SLIDE_IN(WORK_Other* ewk);
-static void EFF39_SLIDE_OUT(WORK_Other* ewk);
-static void EFF39_KILL(WORK_Other* ewk);
-static void EFF39_MOVE(WORK_Other* ewk);
-static s32 Get_Pos39(WORK_Other* ewk, s16 Who, s16 Get_Type);
+static void EFF39_WAIT(State_Other* ewk);
+static void EFF39_SUDDENLY(State_Other* ewk);
+static void EFF39_SLIDE_IN(State_Other* ewk);
+static void EFF39_SLIDE_OUT(State_Other* ewk);
+static void EFF39_KILL(State_Other* ewk);
+static void EFF39_MOVE(State_Other* ewk);
+static s32 Get_Pos39(State_Other* ewk, s16 Who, s16 Get_Type);
 
 void (*const EFF39_Jmp_Tbl[6])() = {
     EFF39_WAIT, EFF39_SLIDE_IN, EFF39_SLIDE_OUT, EFF39_SUDDENLY, EFF39_MOVE, EFF39_KILL
@@ -35,7 +35,7 @@ void (*const EFF39_Jmp_Tbl[6])() = {
 
 /* eff39 draws the character name labels on the char select screen.
  * Suppress rendering when the RmlUI overlay provides the same UI. */
-void effect_39_move(WORK_Other* ewk) {
+void effect_39_move(State_Other* ewk) {
     EFF39_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
     if (ewk->wu.be_flag != 0) {
@@ -46,14 +46,14 @@ void effect_39_move(WORK_Other* ewk) {
     }
 }
 
-static void EFF39_WAIT(WORK_Other* ewk) {
+static void EFF39_WAIT(State_Other* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
     }
 }
 
-static void EFF39_SUDDENLY(WORK_Other* ewk) {
+static void EFF39_SUDDENLY(State_Other* ewk) {
     if (--g_state.Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
@@ -69,7 +69,7 @@ static void EFF39_SUDDENLY(WORK_Other* ewk) {
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
 }
 
-static void EFF39_SLIDE_IN(WORK_Other* ewk) {
+static void EFF39_SLIDE_IN(State_Other* ewk) {
     if (g_state.Order[ewk->wu.dir_old] == 5) {
         ewk->wu.routine_no[0] = 5;
         ewk->wu.routine_no[1] = 0;
@@ -140,7 +140,7 @@ static void EFF39_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-static void EFF39_SLIDE_OUT(WORK_Other* ewk) {
+static void EFF39_SLIDE_OUT(State_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (ewk->wu.disp_flag == 0) {
@@ -180,7 +180,7 @@ static void EFF39_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-static void EFF39_KILL(WORK_Other* ewk) {
+static void EFF39_KILL(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
@@ -196,7 +196,7 @@ static void EFF39_KILL(WORK_Other* ewk) {
     }
 }
 
-static void EFF39_MOVE(WORK_Other* ewk) {
+static void EFF39_MOVE(State_Other* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 4) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -238,14 +238,14 @@ static void EFF39_MOVE(WORK_Other* ewk) {
 }
 
 s32 effect_39_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Target_BG, s16 Option) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 39;
     ewk->wu.work_id = 16;
@@ -275,6 +275,6 @@ s32 effect_39_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Target_BG, s16 Opt
     return 0;
 }
 
-static s32 Get_Pos39(WORK_Other* ewk, s16 Who, s16 Get_Type) {
+static s32 Get_Pos39(State_Other* ewk, s16 Who, s16 Get_Type) {
     return Name_Pos_Data[ewk->master_id][g_state.Play_Type][Who][Get_Type];
 }

@@ -10,9 +10,9 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_00.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/rendering/texgroup.h"
@@ -20,41 +20,41 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-static void effe6_0000(WORK_Other* ewk);
-static void effe6_0001(WORK_Other* ewk);
-static void effe6_0002(WORK_Other* ewk);
-static void effe6_0003(WORK_Other* ewk);
-static void effe6_0004(WORK_Other* ewk);
-static void effe6_0005(WORK_Other* ewk);
-static void effe6_0006(WORK_Other* ewk);
-static void effe6_0007(WORK_Other* ewk);
-static void effe6_0009(WORK_Other* ewk);
-static void effe6_0010(WORK_Other* ewk);
-static void effe6_0010_sub(WORK_Other* ewk);
-static void effe6_0011(WORK_Other* ewk);
-static void effe6_0012(WORK_Other* ewk);
-static void effe6_0013(WORK_Other* ewk);
-static void effe6_0014(WORK_Other* ewk);
-static void effe6_0015(WORK_Other* ewk);
-static void effe6_0016(WORK_Other* ewk);
-static void effe6_0017(WORK_Other* ewk);
-static void effe6_0018(WORK_Other* ewk);
-static void effe6_0019(WORK_Other* ewk);
-static void effe6_0020(WORK_Other* ewk);
-static void effe6_0021(WORK_Other* ewk);
-static void effe6_0022(WORK_Other* ewk);
-static void effe6_0023(WORK_Other* ewk);
-static void effe6_0024(WORK_Other* ewk);
-static void effe6_0025(WORK_Other* ewk);
-static void effe6_0026(WORK_Other* ewk);
-static void effe6_0027(WORK_Other* ewk);
-static void effe6_0028(WORK_Other* ewk);
-static void effe6_0029(WORK_Other* ewk);
-static void effe6_0030(WORK_Other* ewk);
-static void effe6_0031(WORK_Other* ewk);
-static void effe6_0032(WORK_Other* ewk);
-static void effe6_0033(WORK_Other* ewk);
-static void effe6_init_common(WORK_Other* ewk);
+static void effe6_0000(State_Other* ewk);
+static void effe6_0001(State_Other* ewk);
+static void effe6_0002(State_Other* ewk);
+static void effe6_0003(State_Other* ewk);
+static void effe6_0004(State_Other* ewk);
+static void effe6_0005(State_Other* ewk);
+static void effe6_0006(State_Other* ewk);
+static void effe6_0007(State_Other* ewk);
+static void effe6_0009(State_Other* ewk);
+static void effe6_0010(State_Other* ewk);
+static void effe6_0010_sub(State_Other* ewk);
+static void effe6_0011(State_Other* ewk);
+static void effe6_0012(State_Other* ewk);
+static void effe6_0013(State_Other* ewk);
+static void effe6_0014(State_Other* ewk);
+static void effe6_0015(State_Other* ewk);
+static void effe6_0016(State_Other* ewk);
+static void effe6_0017(State_Other* ewk);
+static void effe6_0018(State_Other* ewk);
+static void effe6_0019(State_Other* ewk);
+static void effe6_0020(State_Other* ewk);
+static void effe6_0021(State_Other* ewk);
+static void effe6_0022(State_Other* ewk);
+static void effe6_0023(State_Other* ewk);
+static void effe6_0024(State_Other* ewk);
+static void effe6_0025(State_Other* ewk);
+static void effe6_0026(State_Other* ewk);
+static void effe6_0027(State_Other* ewk);
+static void effe6_0028(State_Other* ewk);
+static void effe6_0029(State_Other* ewk);
+static void effe6_0030(State_Other* ewk);
+static void effe6_0031(State_Other* ewk);
+static void effe6_0032(State_Other* ewk);
+static void effe6_0033(State_Other* ewk);
+static void effe6_init_common(State_Other* ewk);
 
 const s16 effe6_data_tbl[180][8] = {
     { 1, 0, 1, 512, 64, 80, 1, 0 },     { 1, 0, 1, 512, 64, 80, 2, 0 },     { 1, 0, 1, 512, 64, 80, 4, 0 },
@@ -119,8 +119,8 @@ const s16 effe6_data_tbl[180][8] = {
     { 1, 0, 71, 256, 240, 82, 1, 32 },  { 1, 0, 72, 256, 240, 81, 1, 32 },  { 1, 0, 62, 512, 512, 80, 4, 0 }
 };
 
-void effect_E6_move(WORK_Other* ewk) {
-    void (*effe6_jp[34])(WORK_Other*) = { effe6_0000, effe6_0001, effe6_0002, effe6_0003, effe6_0004, effe6_0005,
+void effect_E6_move(State_Other* ewk) {
+    void (*effe6_jp[34])(State_Other*) = { effe6_0000, effe6_0001, effe6_0002, effe6_0003, effe6_0004, effe6_0005,
                                           effe6_0006, effe6_0007, effe6_0007, effe6_0009, effe6_0010, effe6_0011,
                                           effe6_0012, effe6_0013, effe6_0014, effe6_0015, effe6_0016, effe6_0017,
                                           effe6_0018, effe6_0019, effe6_0020, effe6_0021, effe6_0022, effe6_0023,
@@ -146,7 +146,7 @@ void effect_E6_move(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0000(WORK_Other* ewk) {
+static void effe6_0000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -186,7 +186,7 @@ static void effe6_0000(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0001(WORK_Other* ewk) {
+static void effe6_0001(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -205,7 +205,7 @@ static void effe6_0001(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0002(WORK_Other* ewk) {
+static void effe6_0002(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -227,7 +227,7 @@ static void effe6_0002(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0003(WORK_Other* ewk) {
+static void effe6_0003(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -249,7 +249,7 @@ static void effe6_0003(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0004(WORK_Other* ewk) {
+static void effe6_0004(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -275,7 +275,7 @@ static void effe6_0004(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0005(WORK_Other* ewk) {
+static void effe6_0005(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -306,7 +306,7 @@ static void effe6_0005(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0006(WORK_Other* ewk) {
+static void effe6_0006(State_Other* ewk) {
     s16 work;
 
     switch (ewk->wu.routine_no[1]) {
@@ -336,7 +336,7 @@ static void effe6_0006(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0007(WORK_Other* ewk) {
+static void effe6_0007(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         switch (ewk->wu.type) {
@@ -385,7 +385,7 @@ static void effe6_0007(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0009(WORK_Other* ewk) {
+static void effe6_0009(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -418,7 +418,7 @@ static void effe6_0009(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0010(WORK_Other* ewk) {
+static void effe6_0010(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -456,7 +456,7 @@ static void effe6_0010(WORK_Other* ewk) {
 
 const s16 effe6_0010_col_tbl[8] = { 8521, 8524, 8525, 8526, 8527, 8526, 8525, 8524 };
 
-static void effe6_0010_sub(WORK_Other* ewk) {
+static void effe6_0010_sub(State_Other* ewk) {
     ewk->wu.old_routine_no[5]--;
 
     if (ewk->wu.old_routine_no[5] >= 0) {
@@ -474,7 +474,7 @@ static void effe6_0010_sub(WORK_Other* ewk) {
     ewk->wu.extra_col = effe6_0010_col_tbl[ewk->wu.old_routine_no[2]];
 }
 
-static void effe6_0011(WORK_Other* ewk) {
+static void effe6_0011(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -509,7 +509,7 @@ static void effe6_0011(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0012(WORK_Other* ewk) {
+static void effe6_0012(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -544,7 +544,7 @@ static void effe6_0012(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0013(WORK_Other* ewk) {
+static void effe6_0013(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -580,7 +580,7 @@ static void effe6_0013(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0014(WORK_Other* ewk) {
+static void effe6_0014(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -664,7 +664,7 @@ static void effe6_0014(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0015(WORK_Other* ewk) {
+static void effe6_0015(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -716,7 +716,7 @@ static void effe6_0015(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0016(WORK_Other* ewk) {
+static void effe6_0016(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -767,7 +767,7 @@ static void effe6_0016(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0017(WORK_Other* ewk) {
+static void effe6_0017(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -804,7 +804,7 @@ static void effe6_0017(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0018(WORK_Other* ewk) {
+static void effe6_0018(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -840,7 +840,7 @@ static void effe6_0018(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0019(WORK_Other* ewk) {
+static void effe6_0019(State_Other* ewk) {
     if (ewk->wu.old_routine_no[0] != g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -890,7 +890,7 @@ static void effe6_0019(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0020(WORK_Other* ewk) {
+static void effe6_0020(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -927,7 +927,7 @@ static void effe6_0020(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0021(WORK_Other* ewk) {
+static void effe6_0021(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -958,7 +958,7 @@ static void effe6_0021(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0022(WORK_Other* ewk) {
+static void effe6_0022(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -996,7 +996,7 @@ static void effe6_0022(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0023(WORK_Other* ewk) {
+static void effe6_0023(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -1023,7 +1023,7 @@ static void effe6_0023(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0024(WORK_Other* ewk) {
+static void effe6_0024(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -1062,7 +1062,7 @@ static void effe6_0024(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0025(WORK_Other* ewk) {
+static void effe6_0025(State_Other* ewk) {
     u16 work;
 
     switch (ewk->wu.routine_no[1]) {
@@ -1152,7 +1152,7 @@ static void effe6_0025(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0026(WORK_Other* ewk) {
+static void effe6_0026(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -1182,7 +1182,7 @@ static void effe6_0026(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0027(WORK_Other* ewk) {
+static void effe6_0027(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -1213,7 +1213,7 @@ static void effe6_0027(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0028(WORK_Other* ewk) {
+static void effe6_0028(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -1242,7 +1242,7 @@ static void effe6_0028(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0029(WORK_Other* ewk) {
+static void effe6_0029(State_Other* ewk) {
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[2] = 99;
     }
@@ -1291,7 +1291,7 @@ static void effe6_0029(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0030(WORK_Other* ewk) {
+static void effe6_0030(State_Other* ewk) {
     s16 i;
 
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
@@ -1371,7 +1371,7 @@ static void effe6_0030(WORK_Other* ewk) {
 
 const s32 gill_range[7] = { 0x900000, 0x900000, 0x100000, 0x900000, 0x900000, 0x200000, 0x50000 };
 
-static void effe6_0031(WORK_Other* ewk) {
+static void effe6_0031(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -1419,7 +1419,7 @@ static void effe6_0031(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0032(WORK_Other* ewk) {
+static void effe6_0032(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -1553,7 +1553,7 @@ static void effe6_0032(WORK_Other* ewk) {
     }
 }
 
-static void effe6_0033(WORK_Other* ewk) {
+static void effe6_0033(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         effe6_init_common(ewk);
@@ -1599,14 +1599,14 @@ static void effe6_0033(WORK_Other* ewk) {
     }
 }
 
-static void effe6_init_common(WORK_Other* ewk) {
+static void effe6_init_common(State_Other* ewk) {
     ewk->wu.routine_no[1]++;
     ewk->wu.disp_flag = 1;
     set_char_move_init2(&ewk->wu, 0, ewk->wu.old_routine_no[4], ewk->wu.char_index, 0);
 }
 
 s32 effect_E6_init(u8 char_num) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr;
 
@@ -1614,7 +1614,7 @@ s32 effect_E6_init(u8 char_num) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.id = 146;
     ewk->wu.be_flag = 1;
     ewk->wu.type = char_num;

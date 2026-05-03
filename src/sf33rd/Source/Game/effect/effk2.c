@@ -11,14 +11,14 @@
 #include "sf33rd/Source/Game/effect/effc2.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 
-static void disp_effK2(WORK* wk, WORK* mk, DADD* hk);
-static void set_next_next_y(WORK* wk, u8 flag);
+static void disp_effK2(State* wk, State* mk, DADD* hk);
+static void set_next_next_y(State* wk, u8 flag);
 
 const DADD debris_dummy[1] = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
 
@@ -229,9 +229,9 @@ const s16 k2_trajectory[83][4] = {
 
 void (*const effK2_main_process[9])();
 
-void effect_K2_move(WORK_Other* ewk) {
+void effect_K2_move(State_Other* ewk) {
     DADD* debris = (DADD*)ewk->wu.target_adrs;
-    WORK* mwk = (WORK*)ewk->my_master;
+    State* mwk = (State*)ewk->my_master;
 
     if (ewk->wu.dir_old == 0 && (mwk->id != ewk->master_work_id || mwk->dir_old != 0)) {
         ewk->wu.dir_old = 1;
@@ -293,7 +293,7 @@ void effect_K2_move(WORK_Other* ewk) {
     }
 }
 
-static void disp_effK2(WORK* wk, WORK* mk, DADD* hk) {
+static void disp_effK2(State* wk, State* mk, DADD* hk) {
     s16 flag;
     s16 hz;
 
@@ -329,7 +329,7 @@ static void disp_effK2(WORK* wk, WORK* mk, DADD* hk) {
     sort_push_request(wk);
 }
 
-static void effK2_parts_move_type_0(WORK_Other* ewk, DADD*) {
+static void effK2_parts_move_type_0(State_Other* ewk, DADD*) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -349,7 +349,7 @@ static void effK2_parts_move_type_0(WORK_Other* ewk, DADD*) {
     }
 }
 
-static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* debris) {
+static void effK2_parts_move_type_1(State_Other* ewk, DADD* debris) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         switch (ewk->wu.dm_attlv) {
@@ -434,7 +434,7 @@ static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* debris) {
     }
 }
 
-static void effK2_parts_move_type_2(WORK_Other* ewk, DADD* /* unused */) {
+static void effK2_parts_move_type_2(State_Other* ewk, DADD* /* unused */) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -455,7 +455,7 @@ static void effK2_parts_move_type_2(WORK_Other* ewk, DADD* /* unused */) {
     }
 }
 
-static void effK2_parts_move_type_3(WORK_Other* ewk, DADD* debris) {
+static void effK2_parts_move_type_3(State_Other* ewk, DADD* debris) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -487,7 +487,7 @@ static void effK2_parts_move_type_3(WORK_Other* ewk, DADD* debris) {
     }
 }
 
-static void effK2_parts_move_type_4(WORK_Other* ewk, DADD* arg1) {
+static void effK2_parts_move_type_4(State_Other* ewk, DADD* arg1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -512,7 +512,7 @@ static void effK2_parts_move_type_4(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-static void effK2_parts_move_type_5(WORK_Other* ewk, DADD* arg1) {
+static void effK2_parts_move_type_5(State_Other* ewk, DADD* arg1) {
     char_move(&ewk->wu);
 
     if (ewk->wu.dir_old) {
@@ -522,7 +522,7 @@ static void effK2_parts_move_type_5(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-static void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
+static void effK2_parts_move_type_6(State_Other* ewk, DADD* arg1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.shadow_prio = (random_16() & 7) + 28;
@@ -550,7 +550,7 @@ static void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-static void effK2_parts_move_type_7(WORK_Other* ewk, DADD* arg1) {
+static void effK2_parts_move_type_7(State_Other* ewk, DADD* arg1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -564,7 +564,7 @@ static void effK2_parts_move_type_7(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* debris) {
+static void effK2_parts_move_type_8(State_Other* ewk, DADD* debris) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         switch (ewk->wu.dm_attlv) {
@@ -653,7 +653,7 @@ static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* debris) {
     }
 }
 
-static void set_next_next_y(WORK* wk, u8 flag) {
+static void set_next_next_y(State* wk, u8 flag) {
     if (flag) {
         wk->next_y -= (random_16() & 4) + 2;
     } else {
@@ -661,15 +661,15 @@ static void set_next_next_y(WORK* wk, u8 flag) {
     }
 }
 
-static s32 effect_K2_init(WORK_Other* wk, u32* dad) {
-    WORK_Other* ewk;
+static s32 effect_K2_init(State_Other* wk, u32* dad) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(1)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 202;
     ewk->wu.work_id = 16;
@@ -696,7 +696,7 @@ static s32 effect_K2_init(WORK_Other* wk, u32* dad) {
     return 0;
 }
 
-void setup_effK2(WORK* wk) {
+void setup_effK2(State* wk) {
     const DADD* dhead;
     s16 i;
     s16 num;
@@ -708,11 +708,11 @@ void setup_effK2(WORK* wk) {
     dhead = debris_data[wk->vital_old][wk->type].dadd;
 
     for (i = 0; i < num; i++) {
-        effect_K2_init((WORK_Other*)wk, (u32*)&dhead[i]);
+        effect_K2_init((State_Other*)wk, (u32*)&dhead[i]);
     }
 }
 
-void setup_effK2_sync_bomb(WORK* wk) {
+void setup_effK2_sync_bomb(State* wk) {
     const DADD* dhead;
     s16 i;
     s16 j;
@@ -727,13 +727,13 @@ void setup_effK2_sync_bomb(WORK* wk) {
 
         for (i = 0; i < num; i++) {
             if (dhead[i].bomb == 0) {
-                effect_K2_init((WORK_Other*)wk, (u32*)&dhead[i]);
+                effect_K2_init((State_Other*)wk, (u32*)&dhead[i]);
             }
         }
     }
 }
 
-void illegal_setup_effK2(WORK* wk, s16 ix) {
+void illegal_setup_effK2(State* wk, s16 ix) {
     const DADD* dhead;
     s16 i;
     s16 num = ill_debris_data[ix].kosuu;
@@ -741,7 +741,7 @@ void illegal_setup_effK2(WORK* wk, s16 ix) {
     dhead = ill_debris_data[ix].dadd;
 
     for (i = 0; i < num; i++) {
-        effect_K2_init((WORK_Other*)wk, (u32*)&dhead[i]);
+        effect_K2_init((State_Other*)wk, (u32*)&dhead[i]);
     }
 }
 

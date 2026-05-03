@@ -34,7 +34,7 @@
 #include "sf33rd/Source/Game/effect/effe1.h"
 #include "sf33rd/Source/Game/effect/efff5.h"
 #include "sf33rd/Source/Game/effect/efff6.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"

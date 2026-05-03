@@ -12,7 +12,7 @@
 
 #include "sf33rd/AcrSDK/common/pad.h"           /* SWK_UP, etc. */
 #include "sf33rd/Source/Game/effect/eff57.h"    /* effect_57_init */
-#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.Menu_Cursor_Y */
+#include "sf33rd/Source/Game/engine/state_user.h" /* g_state.Menu_Cursor_Y */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
 #include "sf33rd/Source/Game/sound/sound3rd.h"  /* SE_selected */
 #include "sf33rd/Source/Game/system/reset.h"    /* g_state.Menu_Suicide */

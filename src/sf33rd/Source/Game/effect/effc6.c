@@ -9,15 +9,15 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void effect_C6_move(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+void effect_C6_move(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -72,15 +72,15 @@ void effect_C6_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_C6_init(WORK_Other* oya) {
-    WORK_Other* ewk;
+s32 effect_C6_init(State_Other* oya) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 126;
     ewk->wu.work_id = 16;

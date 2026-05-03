@@ -30,7 +30,7 @@
 #include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
 #include "sf33rd/Source/Game/effect/eff64.h"           /* effect_64_init */
 #include "sf33rd/Source/Game/effect/eff66.h"           /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* g_state.Menu_Cursor_Y, g_state.Convert_Buff, etc. */
+#include "sf33rd/Source/Game/engine/state_user.h"        /* g_state.Menu_Cursor_Y, g_state.Convert_Buff, etc. */
 #include "sf33rd/Source/Game/menu/dir_data.h"          /* Page_Data */
 #include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"     /* System_Dir_Move_Sub, Dir_Move_Sub, etc. */

@@ -19,7 +19,7 @@
 #include <SDL3/SDL.h>
 
 extern "C" {
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/menu/ex_data.h"
 #include "structs.h"
 } // extern "C"

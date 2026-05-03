@@ -29,7 +29,7 @@
 #include "sf33rd/Source/Game/effect/eff66.h"    /* effect_66_init */
 #include "sf33rd/Source/Game/effect/eff91.h"    /* effect_91_init */
 #include "sf33rd/Source/Game/effect/effa0.h"    /* effect_A0_init */
-#include "sf33rd/Source/Game/engine/workuser.h" /* plsw, Menu_Cursor_*, g_state.Order/Timer, g_state.VS_Win_Record, g_state.Sel_PL_Complete, g_state.Sel_Arts_Complete, g_state.Suicide, g_state.Cursor_Y_Pos, g_state.Mode_Type etc. */
+#include "sf33rd/Source/Game/engine/state_user.h" /* plsw, Menu_Cursor_*, g_state.Order/Timer, g_state.VS_Win_Record, g_state.Sel_PL_Complete, g_state.Sel_Arts_Complete, g_state.Suicide, g_state.Cursor_Y_Pos, g_state.Mode_Type etc. */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init, Menu_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub, VS_Result_Select_Sub, Setup_VS_Mode, Setup_Win_Lose_OBJ */
 #include "sf33rd/Source/Game/sound/se.h"       /* BGM_Request_Code_Check, BGM_Stop */

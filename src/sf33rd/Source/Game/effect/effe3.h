@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-void effect_e3_move(WORK_Other* ewk);
+void effect_e3_move(State_Other* ewk);
 s32 effect_e3_init(PLW* wk);
 
 #endif

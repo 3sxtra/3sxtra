@@ -10,13 +10,13 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void eff_h1_move(WORK_Other* ewk);
+static void eff_h1_move(State_Other* ewk);
 
 const s16 effh1_wait_timer[8] = { 30, 120, 180, 40, 10, 200, 240, 50 };
 
@@ -24,7 +24,7 @@ const s16 effh1_data_tbl[8][5] = { { -96, 256, 74, 34, 10 }, { 64, 288, 74, 34, 
                                    { 128, 272, 78, 35, 28 }, { -32, 240, 74, 34, 2 }, { 96, 240, 74, 34, 2 },
                                    { -160, 224, 78, 35, 2 }, { 128, 224, 78, 35, 2 } };
 
-void effect_H1_move(WORK_Other* ewk) {
+void effect_H1_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
@@ -46,7 +46,7 @@ void effect_H1_move(WORK_Other* ewk) {
     }
 }
 
-static void eff_h1_move(WORK_Other* ewk) {
+static void eff_h1_move(State_Other* ewk) {
     s16 work;
 
     switch (ewk->wu.routine_no[1]) {
@@ -87,7 +87,7 @@ static void eff_h1_move(WORK_Other* ewk) {
 }
 
 s32 effect_H1_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = &effh1_data_tbl[0][0];
@@ -97,7 +97,7 @@ s32 effect_H1_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.id = 171;
         ewk->wu.be_flag = 1;
         ewk->wu.type = i;

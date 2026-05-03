@@ -8,20 +8,20 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void effl6_flont(WORK_Other* ewk);
-static void effl6_back(WORK_Other* ewk);
+static void effl6_flont(State_Other* ewk);
+static void effl6_back(State_Other* ewk);
 
-void effect_L6_move(WORK_Other* ewk) {
+void effect_L6_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
@@ -42,7 +42,7 @@ void effect_L6_move(WORK_Other* ewk) {
     }
 }
 
-static void effl6_flont(WORK_Other* ewk) {
+static void effl6_flont(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -84,7 +84,7 @@ static void effl6_flont(WORK_Other* ewk) {
     }
 }
 
-static void effl6_back(WORK_Other* ewk) {
+static void effl6_back(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -126,15 +126,15 @@ static void effl6_back(WORK_Other* ewk) {
     }
 }
 
-s32 effect_L6_init(WORK* wk, u8 typel6) {
+s32 effect_L6_init(State* wk, u8 typel6) {
     s16 ix;
-    WORK_Other* ewk;
+    State_Other* ewk;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 216;
     ewk->wu.work_id = 16;

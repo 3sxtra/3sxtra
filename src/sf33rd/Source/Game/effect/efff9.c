@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effb6.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
@@ -152,7 +152,7 @@ s16 keep_mes_no;
 
 static s32 Rewrite();
 
-void effect_F9_move(WORK_Other* ewk) {
+void effect_F9_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -264,14 +264,14 @@ static void efff9_wk_set(WORK_Other_CONN* ewk) {
 }
 
 s32 Rewrite_End_Message(u16 mes_no) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     keep_mes_no = mes_no;
     efff9_wk_set((WORK_Other_CONN*)ewk);
     ewk->master_player = efff9_PL_NO;
@@ -286,14 +286,14 @@ s32 Rewrite_End_Message(u16 mes_no) {
 }
 
 static s32 Rewrite() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     efff9_wk_set((WORK_Other_CONN*)ewk);
     ewk->master_player = efff9_PL_NO;
     efff9_suicide = 1;

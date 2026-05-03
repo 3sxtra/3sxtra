@@ -10,7 +10,7 @@
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/effect/effh6.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/sound/sound_ids.h"
@@ -62,7 +62,7 @@ static const struct {
                      { 20, 96, 136, 6, "RYO UNO" },
                      { 20, 88, 136, 6, "Yusuke Saiwai*" },
                      { 60, 96, 136, 6, "KENICHI YAMAHASHI" },
-                     { 30, 96, 160, 8, "ORIGINAL ART WORK" },
+                     { 30, 96, 160, 8, "ORIGINAL ART State" },
                      { 20, 88, 136, 6, "DAIGORO" },
                      { 60, 88, 136, 6, "HARUMARU" },
                      { 30, 96, 160, 8, "TITLE LOGO DESIGN" },
@@ -177,7 +177,7 @@ static const struct {
                      { 20, 88, 136, 6, "SAWATCH-again" },
                      { 20, 88, 136, 6, "YUKI]KYOUTANI" },
                      { 60, 88, 136, 6, "YUSUKE-SAIWAI" },
-                     { 30, 96, 160, 8, "ORIGINAL ART WORK" },
+                     { 30, 96, 160, 8, "ORIGINAL ART State" },
                      { 60, 88, 136, 6, "IKENO|MIE" },
                      { 30, 96, 160, 8, "INSTRUCTION DESIGN" },
                      { 40, 88, 136, 6, "M.ru" },

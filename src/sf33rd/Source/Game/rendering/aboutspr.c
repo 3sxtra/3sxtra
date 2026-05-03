@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charid.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texgroup.h"
@@ -27,8 +27,8 @@
 // bss
 MultiTexture mts[24];
 MTS_OK mts_ok[24];
-WORK dmwk_moji;
-WORK dmwk_kage;
+State dmwk_moji;
+State dmwk_kage;
 
 // first part of rodata
 const u16 effk8k9_pattern[18] = { 0x9020, 0x9021, 0x9022, 0x9023, 0x9024, 0x9025, 0x9026, 0x9027, 0x9029,
@@ -116,14 +116,14 @@ void Init_load_on_memory_data() {
 
 /** @brief Set up Gill's extra SA object (resurrection form). */
 s32 setup_GILL_exsa_obj() {
-    WORK* ewk;
+    State* ewk;
     s16 i;
     s16 ix;
 
     if ((ix = Acquire_Effect(5)) == -1) {
         return -1;
     }
-    ewk = (WORK*)frw[ix];
+    ewk = (State*)frw[ix];
     ewk->disp_flag = 1;
     ewk->my_mts = 6;
     ewk->my_col_code = 2;
@@ -266,12 +266,12 @@ s32 set_conn_sprite(WORK_Other_CONN* wk, s16 bsy) {
 }
 
 /** @brief Reset all character sprite pattern cache entries. */
-void all_cgps_put_back(WORK* wk) {
+void all_cgps_put_back(State* wk) {
     // Do nothing
 }
 
 /** @brief Transform and render a character using the current trans mode. */
-void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
+void Mtrans_use_trans_mode(State* wk, s16 bsy) {
 
     if (mts_ok[wk->my_mts].be == 0) {
         // A display request was received before MTS initialization. MTS number: %d\n
@@ -405,38 +405,38 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 }
 
 /** @brief Look up and return the current color code for a character. */
-s16 exchange_current_colcd(WORK* wk) {
-    WORK* mwk;
+s16 exchange_current_colcd(State* wk) {
+    State* mwk;
 
-    switch (((WORK_Other*)wk)->wu.work_id) {
+    switch (((State_Other*)wk)->wu.work_id) {
     case 0x1:
-        col = ((WORK_Other*)wk)->wu.id * 8;
-        push_color_trans_req(((WORK_Other*)wk)->wu.current_colcd, col);
+        col = ((State_Other*)wk)->wu.id * 8;
+        push_color_trans_req(((State_Other*)wk)->wu.current_colcd, col);
         break;
 
     case 0x8:
     case 0x10:
-        mwk = (WORK*)((WORK_Other*)wk)->my_master;
+        mwk = (State*)((State_Other*)wk)->my_master;
 
-        if ((((WORK_Other*)wk)->wu.id == 147) || (((WORK_Other*)wk)->wu.id == 148)) {
+        if ((((State_Other*)wk)->wu.id == 147) || (((State_Other*)wk)->wu.id == 148)) {
             col = mwk->id * 8 + 4;
         }
 
         break;
 
     case 0x20:
-        mwk = (WORK*)((WORK_Other*)wk)->my_master;
+        mwk = (State*)((State_Other*)wk)->my_master;
 
-        if ((((WORK_Other*)wk)->wu.my_col_code) == mwk->my_col_code) {
+        if ((((State_Other*)wk)->wu.my_col_code) == mwk->my_col_code) {
             col = mwk->id * 8;
         }
 
         break;
 
     case 0x40:
-        mwk = (WORK*)((WORK_Other*)wk)->my_master;
+        mwk = (State*)((State_Other*)wk)->my_master;
 
-        if (((WORK_Other*)wk)->wu.my_col_code == mwk->my_col_code) {
+        if (((State_Other*)wk)->wu.my_col_code == mwk->my_col_code) {
             col = ((mwk->id * 8) + 1);
         }
 
@@ -447,7 +447,7 @@ s16 exchange_current_colcd(WORK* wk) {
 }
 
 /** @brief Push a sprite render request into the sort buffer (standard). */
-s32 sort_push_request(WORK* wk) {
+s32 sort_push_request(State* wk) {
     if (wk->my_mts == 0) {
         return 0;
     }
@@ -458,7 +458,7 @@ s32 sort_push_request(WORK* wk) {
         wk->current_colcd |= 8;
     }
 
-    if ((wk->work_id == 0x20) && (wk->my_col_code == ((WORK*)((WORK_Other*)wk)->my_master)->my_col_code) &&
+    if ((wk->work_id == 0x20) && (wk->my_col_code == ((State*)((State_Other*)wk)->my_master)->my_col_code) &&
         ((wk->rl_flag + wk->cg_flip) & 1)) {
         wk->current_colcd |= 8;
     }
@@ -489,7 +489,7 @@ s32 sort_push_request(WORK* wk) {
 }
 
 /** @brief Push a sprite render request for an Other-type work item. */
-s32 sort_push_request2(WORK_Other* wk) {
+s32 sort_push_request2(State_Other* wk) {
     if (wk->wu.disp_flag == 0) {
         return 1;
     }
@@ -500,7 +500,7 @@ s32 sort_push_request2(WORK_Other* wk) {
 }
 
 /** @brief Push a sprite render request (variant 3, different priority calc). */
-s32 sort_push_request3(WORK* wk) {
+s32 sort_push_request3(State* wk) {
     if (wk->my_mts == 0) {
         return 0;
     }
@@ -531,7 +531,7 @@ s32 sort_push_request3(WORK* wk) {
 }
 
 /** @brief Push a sprite render request (variant 4, with color effects). */
-s32 sort_push_request4(WORK* wk) {
+s32 sort_push_request4(State* wk) {
     if (wk->my_mts == 0) {
         return 0;
     }
@@ -576,7 +576,7 @@ s32 sort_push_request4(WORK* wk) {
 }
 
 /** @brief Push a sprite render request (variant 8, simple priority). */
-s32 sort_push_request8(WORK* wk) {
+s32 sort_push_request8(State* wk) {
     if (wk->cg_number >= 0x748F) {
         wk->my_mts = 2;
     } else {
@@ -591,7 +591,7 @@ s32 sort_push_request8(WORK* wk) {
 }
 
 /** @brief Shared box-rendering logic for sort_push_requestA/B. */
-static s32 sort_push_request_box_impl(WORK* wk, s16 bsy) {
+static s32 sort_push_request_box_impl(State* wk, s16 bsy) {
     PAL_CURSOR_COL oricol;
     s16 i;
     s16 mf;
@@ -679,17 +679,17 @@ static s32 sort_push_request_box_impl(WORK* wk, s16 bsy) {
 }
 
 /** @brief Push a sprite render request (variant A, with extended transform). */
-s32 sort_push_requestA(WORK* wk) {
+s32 sort_push_requestA(State* wk) {
     return sort_push_request_box_impl(wk, g_state.base_y_pos);
 }
 
 /** @brief Push a sprite render request (variant B, with CP3 palette transform). */
-s32 sort_push_requestB(WORK* wk) {
+s32 sort_push_requestB(State* wk) {
     return sort_push_request_box_impl(wk, 0);
 }
 
 /** @brief Set up shadow rendering parameters for a character. */
-void shadow_setup(WORK* wk, s16 bsy) {
+void shadow_setup(State* wk, s16 bsy) {
     f32 base_y = (f32)bsy;
 
     if (No_Trans) {
@@ -700,7 +700,7 @@ void shadow_setup(WORK* wk, s16 bsy) {
 }
 
 /** @brief Render a character's shadow sprite. */
-void shadow_drawing(WORK* wk, s16 bsy) {
+void shadow_drawing(State* wk, s16 bsy) {
     s16 shadow;
 
     if (Debug_w[DEBUG_NO_DISP_SHADOW]) {

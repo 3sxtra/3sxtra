@@ -29,7 +29,7 @@ typedef struct {
     Vec3 v[4];
     union {
         u32 color;
-        WORK* work;
+        State* work;
     } attr;
     u32 type;
     s32 next;
@@ -248,7 +248,7 @@ void Renderer_Queue2DPrimitive(const f32* pos, f32 priority, uintptr_t data, int
         s_Render2DQueue.prim[ix].v[0].z = priority;
         s_Render2DQueue.prim[ix].v[0].y = pos[0];
         s_Render2DQueue.prim[ix].type = 1;
-        s_Render2DQueue.prim[ix].attr.work = (WORK*)data;
+        s_Render2DQueue.prim[ix].attr.work = (State*)data;
     }
 
     s_Render2DQueue.prim[ix].next = -1;

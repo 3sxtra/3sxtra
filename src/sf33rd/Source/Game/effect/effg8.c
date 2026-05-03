@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
@@ -17,7 +17,7 @@
 
 const s32 effg8_sp_tbl[28][4];
 
-void effect_G8_move(WORK_Other* ewk) {
+void effect_G8_move(State_Other* ewk) {
     if (!g_state.akebono_flag) {
         ewk->wu.routine_no[0] = 99;
     }
@@ -83,7 +83,7 @@ void effect_G8_move(WORK_Other* ewk) {
     }
 }
 
-s16 effg8_range_check(WORK_Other* ewk) {
+s16 effg8_range_check(State_Other* ewk) {
     if (ewk->wu.xyz[0].disp.pos < 88) {
         return 1;
     }
@@ -104,7 +104,7 @@ s16 effg8_range_check(WORK_Other* ewk) {
 }
 
 s32 effect_G8_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
 
@@ -113,7 +113,7 @@ s32 effect_G8_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.id = 168;
         ewk->wu.be_flag = 1;
         ewk->wu.type = i;

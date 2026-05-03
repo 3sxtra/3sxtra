@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -18,7 +18,7 @@
 const s16 EFF91_Pos_Data[2][3][2] = { { { -88, 95 }, { -94, 71 }, { -88, 47 } },
                                       { { 104, 95 }, { 98, 71 }, { 104, 47 } } };
 
-void effect_91_move(WORK_Other* ewk) {
+void effect_91_move(State_Other* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);
         return;
@@ -50,14 +50,14 @@ void effect_91_move(WORK_Other* ewk) {
 }
 
 s32 effect_91_init(s16 master_id, s16 type, s16 target_bg, s16 char_ix, s16 char_ix2, s16 master_player) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 91;

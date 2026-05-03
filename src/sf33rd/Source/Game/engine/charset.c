@@ -15,10 +15,10 @@
 #include "sf33rd/Source/Game/engine/cmd_main.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/pls03.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/player_special_attacks.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -33,20 +33,20 @@ extern s32 (*const decode_if_lever[16])();
 extern const s16 jphos_table[16];
 extern const s16 kezuri_pow_table[5];
 
-static s16 decord_if_jump(WORK* wk, CommandState* cpc, s16 ix);
-static u16 get_comm_if_lever(WORK* wk);
-static u16 get_comm_if_shot(WORK* wk);
-static u16 get_comm_if_shot_now_off(WORK* wk);
-static u16 get_comm_if_shot_now(WORK* wk);
-static u16 get_comm_if_lvsh(WORK* wk);
+static s16 decord_if_jump(State* wk, CommandState* cpc, s16 ix);
+static u16 get_comm_if_lever(State* wk);
+static u16 get_comm_if_shot(State* wk);
+static u16 get_comm_if_shot_now_off(State* wk);
+static u16 get_comm_if_shot_now(State* wk);
+static u16 get_comm_if_lvsh(State* wk);
 static u8 get_comm_djmp_lever_dir(PLW* wk);
-static void setup_comm_retmj(WORK* wk);
-static u16 check_xcopy_filter_se_req(WORK* wk);
-static void check_cgd_patdat2(WORK* wk);
-static void setup_metamor_kezuri(WORK* wk);
+static void setup_comm_retmj(State* wk);
+static u16 check_xcopy_filter_se_req(State* wk);
+static void check_cgd_patdat2(State* wk);
+static void setup_metamor_kezuri(State* wk);
 
 /** @brief Initializes character animation move with a given index. */
-void set_char_move_init(WORK* wk, s16 kind_of_char, s16 index) {
+void set_char_move_init(State* wk, s16 kind_of_char, s16 index) {
     wk->current_char_type = kind_of_char;
     wk->char_index = index;
 
@@ -102,7 +102,7 @@ void set_char_move_init(WORK* wk, s16 kind_of_char, s16 index) {
 }
 
 /** @brief Sets up character table pointers and animation data. */
-void setupCharTableData(WORK* wk, s32 clr, s32 info) {
+void setupCharTableData(State* wk, s32 clr, s32 info) {
     u32* src;
     s32 i;
 
@@ -117,7 +117,7 @@ void setupCharTableData(WORK* wk, s32 clr, s32 info) {
         // We assume CharState layout matches the packed expectation.
 
         // This is safe because CharState is unionized or packed to match.
-        // Note: This relies on the new union in WORK.
+        // Note: This relies on the new union in State.
         wk->char_state.header_block_2 = src[-1]; // Offset -1
         wk->char_state.header_block_1 = src[-2]; // Offset -2
 
@@ -137,7 +137,7 @@ void setupCharTableData(WORK* wk, s32 clr, s32 info) {
 }
 
 /** @brief Extended char move init with IP and SCF parameters. */
-void set_char_move_init2(WORK* wk, s16 kind_of_char, s16 index, s16 ip, s16 scf) {
+void set_char_move_init2(State* wk, s16 kind_of_char, s16 index, s16 ip, s16 scf) {
     u8 pst;
     u8 move_type;
 
@@ -203,7 +203,7 @@ void set_char_move_init2(WORK* wk, s16 kind_of_char, s16 index, s16 ip, s16 scf)
 }
 
 /** @brief Extended set char move init preserving current flags. */
-void exset_char_move_init(WORK* wk, s16 kind_of_char, s16 index) {
+void exset_char_move_init(State* wk, s16 kind_of_char, s16 index) {
     u8 now_ctr;
 
     wk->current_char_type = kind_of_char;
@@ -238,7 +238,7 @@ void exset_char_move_init(WORK* wk, s16 kind_of_char, s16 index) {
 }
 
 /** @brief Advances the character animation Z-axis frame. */
-void char_move_z(WORK* wk) {
+void char_move_z(State* wk) {
     if (g_state.test_flag) {
         wk->cg_next_ix = 0;
     }
@@ -249,7 +249,7 @@ void char_move_z(WORK* wk) {
 }
 
 /** @brief Advances character animation with WCA (wait-for-command-A). */
-void char_move_wca(WORK* wk) {
+void char_move_wca(State* wk) {
     wk->cg_next_ix = 0;
     wk->graphic_index = (wk->cg_wca_ix - 1) * wk->char_graphic_data_type - wk->char_graphic_data_type;
     wk->cg_ctr = 1;
@@ -258,7 +258,7 @@ void char_move_wca(WORK* wk) {
 }
 
 /** @brief Initializes WCA mode for the character animation. */
-void char_move_wca_init(WORK* wk) {
+void char_move_wca_init(State* wk) {
     wk->cg_next_ix = 0;
     wk->graphic_index = (wk->cg_wca_ix - 1) * wk->char_graphic_data_type - wk->char_graphic_data_type;
     wk->cg_ctr = 1;
@@ -266,13 +266,13 @@ void char_move_wca_init(WORK* wk) {
 }
 
 /** @brief Script command: WCA (wait-for-command-A) mode toggle. */
-static s32 comm_wca(WORK* wk, CommandState* /* unused */) {
+static s32 comm_wca(State* wk, CommandState* /* unused */) {
     char_move_wca_init(wk);
     return 1;
 }
 
 /** @brief Advances character animation at a specific index. */
-void char_move_index(WORK* wk, s16 ix) {
+void char_move_index(State* wk, s16 ix) {
     wk->cg_next_ix = 0;
     wk->graphic_index = (ix - 1) * wk->char_graphic_data_type - wk->char_graphic_data_type;
     wk->cg_ctr = 1;
@@ -281,43 +281,43 @@ void char_move_index(WORK* wk, s16 ix) {
 }
 
 /** @brief Character move to command-jump-A target. */
-void char_move_cmja(WORK* wk) {
+void char_move_cmja(State* wk) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_1.kind_of_char, wk->cmd_jump_addr_1.ix, wk->cmd_jump_addr_1.pat, 0);
 }
 
 #if CPS3
-void char_move_cmj2(WORK* wk) {
+void char_move_cmj2(State* wk) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_2.kind_of_char, wk->cmd_jump_addr_2.ix, wk->cmd_jump_addr_2.pat, 0);
 }
 
-void char_move_cmj3(WORK* wk) {
+void char_move_cmj3(State* wk) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_3.kind_of_char, wk->cmd_jump_addr_3.ix, wk->cmd_jump_addr_3.pat, 0);
 }
 #endif
 
 /** @brief Character move to command-jump-4 target. */
-void char_move_cmj4(WORK* wk) {
+void char_move_cmj4(State* wk) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_4.kind_of_char, wk->cmd_jump_addr_4.ix, wk->cmd_jump_addr_4.pat, 0);
 }
 
 #if CPS3
-void char_move_cmoa(WORK* wk) {
+void char_move_cmoa(State* wk) {
     set_char_move_init2(wk, wk->cmd_roa_state.kind_of_char, wk->cmd_roa_state.ix, wk->cmd_roa_state.pat, 0);
 }
 #endif
 
 /** @brief Character move with command-move-set. */
-void char_move_cmms(WORK* wk) {
+void char_move_cmms(State* wk) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_move_jump_addr.kind_of_char, wk->cmd_move_jump_addr.ix, wk->cmd_move_jump_addr.pat, 0);
 }
 
 /** @brief Extended command-move-set with additional state check. */
-void char_move_cmms2(WORK* wk) {
+void char_move_cmms2(State* wk) {
     s16 i;
     s16 now_cgd;
 
@@ -435,7 +435,7 @@ void char_move_cmd_hit_stop(PLW* wk) {
 }
 
 /** @brief Main character animation tick — processes script commands. */
-void char_move(WORK* wk) {
+void char_move(State* wk) {
     wk->phase_k5_exec_ok = 1;
 
     if (--wk->cg_ctr == 0) {
@@ -444,7 +444,7 @@ void char_move(WORK* wk) {
 }
 
 /** @brief Processes extended script commands at end-of-frame. */
-void check_cm_extended_code(WORK* wk) {
+void check_cm_extended_code(State* wk) {
     CommandState* cpc;
 
     if (wk->cg_next_ix) {
@@ -470,12 +470,12 @@ void check_cm_extended_code(WORK* wk) {
 }
 
 /** @brief Script command: dummy — no-op. */
-static s32 comm_dummy(WORK* /* unused */, CommandState* /* unused */) {
+static s32 comm_dummy(State* /* unused */, CommandState* /* unused */) {
     return 1;
 }
 
 /** @brief Script command: ROA — read-once-and-advance. */
-static s32 comm_roa(WORK* wk, CommandState* /* unused */) {
+static s32 comm_roa(State* wk, CommandState* /* unused */) {
     if (wk->cmd_roa_state.pat == 0) {
         wk->cmd_roa_state.kind_of_char = wk->current_char_type;
         wk->cmd_roa_state.ix = wk->char_index;
@@ -487,27 +487,27 @@ static s32 comm_roa(WORK* wk, CommandState* /* unused */) {
 }
 
 /** @brief Script command: END — sets end-of-script type. */
-static s32 comm_end(WORK* wk, CommandState* ctc) {
+static s32 comm_end(State* wk, CommandState* ctc) {
     wk->graphic_index = (ctc->pat - 2) * wk->char_graphic_data_type;
     return 1;
 }
 
 /** @brief Script command: JMP — unconditional jump to label. */
-static s32 comm_jmp(WORK* wk, CommandState* ctc) {
+static s32 comm_jmp(State* wk, CommandState* ctc) {
     setup_comm_back(wk);
     set_char_move_init2(wk, ctc->kind_of_char, ctc->ix, ctc->pat, 0);
     return 0;
 }
 
 /** @brief Script command: JPSS — jump to sub-script. */
-static s32 comm_jpss(WORK* wk, CommandState* ctc) {
+static s32 comm_jpss(State* wk, CommandState* ctc) {
     setup_comm_back(wk);
     set_char_move_init2(wk, ctc->kind_of_char, ctc->ix, ctc->pat, 1);
     return 0;
 }
 
 /** @brief Script command: JSR — jump-to-subroutine (push return). */
-static s32 comm_jsr(WORK* wk, CommandState* ctc) {
+static s32 comm_jsr(State* wk, CommandState* ctc) {
     wk->cmd_subroutine_return.kind_of_char = wk->current_char_type;
     wk->cmd_subroutine_return.ix = wk->char_index;
     wk->cmd_subroutine_return.pat = (wk->graphic_index / wk->char_graphic_data_type) + 2;
@@ -516,31 +516,31 @@ static s32 comm_jsr(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RET — return from subroutine. */
-static s32 comm_ret(WORK* wk, CommandState* /* unused */) {
+static s32 comm_ret(State* wk, CommandState* /* unused */) {
     set_char_move_init2(wk, wk->cmd_subroutine_return.kind_of_char, wk->cmd_subroutine_return.ix, wk->cmd_subroutine_return.pat, 0);
     return 0;
 }
 
 /** @brief Script command: SPS — set position/speed. */
-static s32 comm_sps(WORK* wk, CommandState* ctc) {
+static s32 comm_sps(State* wk, CommandState* ctc) {
     wk->pat_status = ctc->pat;
     return 1;
 }
 
 /** @brief Script command: SETR — set register value. */
-static s32 comm_setr(WORK* wk, CommandState* ctc) {
+static s32 comm_setr(State* wk, CommandState* ctc) {
     wk->routine_no[ctc->kind_of_char] = ctc->ix;
     return 1;
 }
 
 /** @brief Script command: ADDR — add to register value. */
-static s32 comm_addr(WORK* wk, CommandState* ctc) {
+static s32 comm_addr(State* wk, CommandState* ctc) {
     wk->routine_no[ctc->kind_of_char] += ctc->ix;
     return 1;
 }
 
 /** @brief Script command: IF_L — conditional jump on lever input. */
-static s32 comm_if_l(WORK* wk, CommandState* ctc) {
+static s32 comm_if_l(State* wk, CommandState* ctc) {
     u16 lvdat;
     u16 my_lvdat;
 
@@ -574,7 +574,7 @@ static s32 comm_if_l(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: DJMP — direction-conditional jump. */
-static s32 comm_djmp(WORK* wk, CommandState* ctc) {
+static s32 comm_djmp(State* wk, CommandState* ctc) {
     u8 ldir;
 
     if ((ldir = get_comm_djmp_lever_dir((PLW*)wk))) {
@@ -589,7 +589,7 @@ static s32 comm_djmp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: FOR — begin counted loop. */
-static s32 comm_for(WORK* wk, CommandState* ctc) {
+static s32 comm_for(State* wk, CommandState* ctc) {
     if (ctc->pat & 0x4000) {
         wk->cmd_loop_counter_1.code = wk->script_register_bank[ctc->pat & 0xF];
     } else {
@@ -603,7 +603,7 @@ static s32 comm_for(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: NEX — next iteration of counted loop. */
-static s32 comm_nex(WORK* wk, CommandState* ctc) {
+static s32 comm_nex(State* wk, CommandState* ctc) {
     if (wk->cmd_loop_counter_1.code && --wk->cmd_loop_counter_1.code > 0) {
         set_char_move_init2(wk, wk->cmd_loop_counter_1.kind_of_char, wk->cmd_loop_counter_1.ix, wk->cmd_loop_counter_1.pat, 1);
         return 0;
@@ -613,7 +613,7 @@ static s32 comm_nex(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: FOR2 — begin counted loop (variant 2). */
-static s32 comm_for2(WORK* wk, CommandState* ctc) {
+static s32 comm_for2(State* wk, CommandState* ctc) {
     if (ctc->pat & 0x4000) {
         wk->cmd_loop_counter_2.code = wk->script_register_bank[ctc->pat & 0xF];
     } else {
@@ -627,7 +627,7 @@ static s32 comm_for2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: NEX2 — next iteration (variant 2). */
-static s32 comm_nex2(WORK* wk, CommandState* ctc) {
+static s32 comm_nex2(State* wk, CommandState* ctc) {
     if (wk->cmd_loop_counter_2.code && --wk->cmd_loop_counter_2.code > 0) {
         set_char_move_init2(wk, wk->cmd_loop_counter_2.kind_of_char, wk->cmd_loop_counter_2.ix, wk->cmd_loop_counter_2.pat, 1);
         return 0;
@@ -637,7 +637,7 @@ static s32 comm_nex2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RJA — relative jump if above. */
-static s32 comm_rja(WORK* wk, CommandState* ctc) {
+static s32 comm_rja(State* wk, CommandState* ctc) {
     wk->cmd_jump_addr_1.kind_of_char = ctc->kind_of_char;
     wk->cmd_jump_addr_1.ix = ctc->ix;
     wk->cmd_jump_addr_1.pat = ctc->pat;
@@ -645,14 +645,14 @@ static s32 comm_rja(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UJA — unconditional jump after. */
-static s32 comm_uja(WORK* wk, CommandState* ctc) {
+static s32 comm_uja(State* wk, CommandState* ctc) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_1.kind_of_char, wk->cmd_jump_addr_1.ix, wk->cmd_jump_addr_1.pat, 0);
     return 0;
 }
 
 /** @brief Script command: RJA2. */
-static s32 comm_rja2(WORK* wk, CommandState* ctc) {
+static s32 comm_rja2(State* wk, CommandState* ctc) {
     wk->cmd_jump_addr_2.kind_of_char = ctc->kind_of_char;
     wk->cmd_jump_addr_2.ix = ctc->ix;
     wk->cmd_jump_addr_2.pat = ctc->pat;
@@ -660,14 +660,14 @@ static s32 comm_rja2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UJA2. */
-static s32 comm_uja2(WORK* wk, CommandState* ctc) {
+static s32 comm_uja2(State* wk, CommandState* ctc) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_2.kind_of_char, wk->cmd_jump_addr_2.ix, wk->cmd_jump_addr_2.pat, 0);
     return 0;
 }
 
 /** @brief Script command: RJA3. */
-static s32 comm_rja3(WORK* wk, CommandState* ctc) {
+static s32 comm_rja3(State* wk, CommandState* ctc) {
     wk->cmd_jump_addr_3.kind_of_char = ctc->kind_of_char;
     wk->cmd_jump_addr_3.ix = ctc->ix;
     wk->cmd_jump_addr_3.pat = ctc->pat;
@@ -675,14 +675,14 @@ static s32 comm_rja3(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UJA3. */
-static s32 comm_uja3(WORK* wk, CommandState* ctc) {
+static s32 comm_uja3(State* wk, CommandState* ctc) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_3.kind_of_char, wk->cmd_jump_addr_3.ix, wk->cmd_jump_addr_3.pat, 0);
     return 0;
 }
 
 /** @brief Script command: RJA4. */
-static s32 comm_rja4(WORK* wk, CommandState* ctc) {
+static s32 comm_rja4(State* wk, CommandState* ctc) {
     wk->cmd_jump_addr_4.kind_of_char = ctc->kind_of_char;
     wk->cmd_jump_addr_4.ix = ctc->ix;
     wk->cmd_jump_addr_4.pat = ctc->pat;
@@ -690,14 +690,14 @@ static s32 comm_rja4(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UJA4. */
-static s32 comm_uja4(WORK* wk, CommandState* /* unused */) {
+static s32 comm_uja4(State* wk, CommandState* /* unused */) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_4.kind_of_char, wk->cmd_jump_addr_4.ix, wk->cmd_jump_addr_4.pat, 0);
     return 0;
 }
 
 /** @brief Script command: RJA5. */
-static s32 comm_rja5(WORK* wk, CommandState* ctc) {
+static s32 comm_rja5(State* wk, CommandState* ctc) {
     wk->cmd_jump_addr_5.kind_of_char = ctc->kind_of_char;
     wk->cmd_jump_addr_5.ix = ctc->ix;
     wk->cmd_jump_addr_5.pat = ctc->pat;
@@ -705,14 +705,14 @@ static s32 comm_rja5(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UJA5. */
-static s32 comm_uja5(WORK* wk, CommandState* /* unused */) {
+static s32 comm_uja5(State* wk, CommandState* /* unused */) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_5.kind_of_char, wk->cmd_jump_addr_5.ix, wk->cmd_jump_addr_5.pat, 0);
     return 0;
 }
 
 /** @brief Script command: RJA6. */
-static s32 comm_rja6(WORK* wk, CommandState* ctc) {
+static s32 comm_rja6(State* wk, CommandState* ctc) {
     wk->cmd_jump_addr_6.kind_of_char = ctc->kind_of_char;
     wk->cmd_jump_addr_6.ix = ctc->ix;
     wk->cmd_jump_addr_6.pat = ctc->pat;
@@ -720,14 +720,14 @@ static s32 comm_rja6(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UJA6. */
-static s32 comm_uja6(WORK* wk, CommandState* ctc) {
+static s32 comm_uja6(State* wk, CommandState* ctc) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_6.kind_of_char, wk->cmd_jump_addr_6.ix, wk->cmd_jump_addr_6.pat, 0);
     return 0;
 }
 
 /** @brief Script command: RJA7. */
-static s32 comm_rja7(WORK* wk, CommandState* ctc) {
+static s32 comm_rja7(State* wk, CommandState* ctc) {
     wk->cmd_jump_addr_7.kind_of_char = ctc->kind_of_char;
     wk->cmd_jump_addr_7.ix = ctc->ix;
     wk->cmd_jump_addr_7.pat = ctc->pat;
@@ -735,14 +735,14 @@ static s32 comm_rja7(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UJA7. */
-static s32 comm_uja7(WORK* wk, CommandState* ctc) {
+static s32 comm_uja7(State* wk, CommandState* ctc) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_jump_addr_7.kind_of_char, wk->cmd_jump_addr_7.ix, wk->cmd_jump_addr_7.pat, 0);
     return 0;
 }
 
 /** @brief Script command: RMJA — relative move-jump A. */
-static s32 comm_rmja(WORK* wk, CommandState* ctc) {
+static s32 comm_rmja(State* wk, CommandState* ctc) {
     wk->cmd_move_jump_addr.kind_of_char = ctc->kind_of_char;
     wk->cmd_move_jump_addr.ix = ctc->ix;
     wk->cmd_move_jump_addr.pat = ctc->pat;
@@ -750,14 +750,14 @@ static s32 comm_rmja(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UMJA — unconditional move-jump A. */
-static s32 comm_umja(WORK* wk, CommandState* /* unused */) {
+static s32 comm_umja(State* wk, CommandState* /* unused */) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmd_move_jump_addr.kind_of_char, wk->cmd_move_jump_addr.ix, wk->cmd_move_jump_addr.pat, 0);
     return 0;
 }
 
 /** @brief Script command: MDAT — set movement data. */
-static s32 comm_mdat(WORK* wk, CommandState* ctc) {
+static s32 comm_mdat(State* wk, CommandState* ctc) {
     wk->cmd_move_data.kind_of_char = ctc->kind_of_char;
     wk->cmd_move_data.ix = ctc->ix;
     wk->cmd_move_data.pat = ctc->pat;
@@ -765,7 +765,7 @@ static s32 comm_mdat(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: YDAT — set Y-axis data. */
-static s32 comm_ydat(WORK* wk, CommandState* ctc) {
+static s32 comm_ydat(State* wk, CommandState* ctc) {
     wk->cmd_y_axis_data.kind_of_char = ctc->kind_of_char;
     wk->cmd_y_axis_data.ix = ctc->ix;
     wk->cmd_y_axis_data.pat = ctc->pat;
@@ -773,7 +773,7 @@ static s32 comm_ydat(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: MPOS — set movement position. */
-static s32 comm_mpos(WORK* wk, CommandState* ctc) { // TODO: Confirm CPS3 match
+static s32 comm_mpos(State* wk, CommandState* ctc) { // TODO: Confirm CPS3 match
     wk->att.hit_mark = ctc->kind_of_char;
     wk->hit_mark_x = ctc->ix;
     wk->hit_mark_y = ctc->pat;
@@ -781,7 +781,7 @@ static s32 comm_mpos(WORK* wk, CommandState* ctc) { // TODO: Confirm CPS3 match
 }
 
 /** @brief Script command: CAFR — set catch frame. */
-static s32 comm_cafr(WORK* wk, CommandState* ctc) {
+static s32 comm_cafr(State* wk, CommandState* ctc) {
     wk->cmd_catch_frame.kind_of_char = ctc->kind_of_char;
     wk->cmd_catch_frame.ix = ctc->ix;
     wk->cmd_catch_frame.pat = ctc->pat;
@@ -789,7 +789,7 @@ static s32 comm_cafr(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: CARE — set catch release. */
-static s32 comm_care(WORK* wk, CommandState* ctc) {
+static s32 comm_care(State* wk, CommandState* ctc) {
     wk->cmd_catch_release.kind_of_char = ctc->kind_of_char;
     wk->cmd_catch_release.ix = ctc->ix;
     wk->cmd_catch_release.pat = ctc->pat;
@@ -797,8 +797,8 @@ static s32 comm_care(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: PSXY — set position XY (absolute). */
-static s32 comm_psxy(WORK* wk, CommandState* ctc) {
-    WORK* emwk;
+static s32 comm_psxy(State* wk, CommandState* ctc) {
+    State* emwk;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -812,7 +812,7 @@ static s32 comm_psxy(WORK* wk, CommandState* ctc) {
         /* fallthrough */
 
     default:
-        emwk = (WORK*)wk->target_adrs;
+        emwk = (State*)wk->target_adrs;
         emwk->xyz[0].disp.pos = ctc->ix;
         emwk->xyz[1].disp.pos = ctc->pat;
         break;
@@ -822,8 +822,8 @@ static s32 comm_psxy(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: PS_X — set position X. */
-static s32 comm_ps_x(WORK* wk, CommandState* ctc) {
-    WORK* emwk;
+static s32 comm_ps_x(State* wk, CommandState* ctc) {
+    State* emwk;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -835,7 +835,7 @@ static s32 comm_ps_x(WORK* wk, CommandState* ctc) {
         /* fallthrough */
 
     default:
-        emwk = (WORK*)wk->target_adrs;
+        emwk = (State*)wk->target_adrs;
         emwk->xyz[0].disp.pos = ctc->ix;
         break;
     }
@@ -844,8 +844,8 @@ static s32 comm_ps_x(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: PS_Y — set position Y. */
-static s32 comm_ps_y(WORK* wk, CommandState* ctc) {
-    WORK* emwk;
+static s32 comm_ps_y(State* wk, CommandState* ctc) {
+    State* emwk;
 
     if (wk->work_id == 1) {
         switch (ctc->kind_of_char) {
@@ -864,7 +864,7 @@ static s32 comm_ps_y(WORK* wk, CommandState* ctc) {
             /* fallthrough */
 
         default:
-            emwk = (WORK*)wk->target_adrs;
+            emwk = (State*)wk->target_adrs;
             emwk->xyz[1].disp.pos = ctc->pat;
             break;
         }
@@ -881,7 +881,7 @@ static s32 comm_ps_y(WORK* wk, CommandState* ctc) {
             /* fallthrough */
 
         default:
-            emwk = (WORK*)wk->target_adrs;
+            emwk = (State*)wk->target_adrs;
             emwk->xyz[1].disp.pos = ctc->pat;
             break;
         }
@@ -891,8 +891,8 @@ static s32 comm_ps_y(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: PAXY — add to position XY. */
-static s32 comm_paxy(WORK* wk, CommandState* ctc) {
-    WORK* emwk;
+static s32 comm_paxy(State* wk, CommandState* ctc) {
+    State* emwk;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -916,7 +916,7 @@ static s32 comm_paxy(WORK* wk, CommandState* ctc) {
         /* fallthrough */
 
     default:
-        emwk = (WORK*)wk->target_adrs;
+        emwk = (State*)wk->target_adrs;
 
         if (emwk->rl_flag) {
             emwk->xyz[0].cal += ctc->ix << 8;
@@ -932,8 +932,8 @@ static s32 comm_paxy(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: PA_X — add to position X. */
-static s32 comm_pa_x(WORK* wk, CommandState* ctc) {
-    WORK* emwk;
+static s32 comm_pa_x(State* wk, CommandState* ctc) {
+    State* emwk;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -955,7 +955,7 @@ static s32 comm_pa_x(WORK* wk, CommandState* ctc) {
         /* fallthrough */
 
     default:
-        emwk = (WORK*)wk->target_adrs;
+        emwk = (State*)wk->target_adrs;
 
         if (emwk->rl_flag) {
             emwk->xyz[0].cal += ctc->ix << 8;
@@ -970,8 +970,8 @@ static s32 comm_pa_x(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: PA_Y — add to position Y. */
-static s32 comm_pa_y(WORK* wk, CommandState* ctc) {
-    WORK* emwk;
+static s32 comm_pa_y(State* wk, CommandState* ctc) {
+    State* emwk;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -983,7 +983,7 @@ static s32 comm_pa_y(WORK* wk, CommandState* ctc) {
         /* fallthrough */
 
     default:
-        emwk = (WORK*)wk->target_adrs;
+        emwk = (State*)wk->target_adrs;
         emwk->xyz[1].cal += ctc->pat << 8;
         break;
     }
@@ -992,19 +992,19 @@ static s32 comm_pa_y(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: EXEC — execute external function call. */
-static s32 comm_exec(WORK* wk, CommandState* ctc) {
+static s32 comm_exec(State* wk, CommandState* ctc) {
     effinitjptbl[ctc->kind_of_char](wk, (u8)ctc->ix);
     return 1;
 }
 
 /** @brief Script command: RNGC — random number conditional. */
-static s32 comm_rngc(WORK* wk, CommandState* ctc) {
+static s32 comm_rngc(State* wk, CommandState* ctc) {
     s16 rngdat;
 
     if (wk->work_id == 1) {
         rngdat = get_em_body_range(wk);
     } else {
-        rngdat = get_em_body_range((WORK*)((WORK_Other*)wk)->my_master);
+        rngdat = get_em_body_range((State*)((State_Other*)wk)->my_master);
     }
 
     if (rngdat > ctc->kind_of_char) {
@@ -1015,7 +1015,7 @@ static s32 comm_rngc(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: MXYT — movement XY table load. */
-static s32 comm_mxyt(WORK* wk, CommandState* ctc) {
+static s32 comm_mxyt(State* wk, CommandState* ctc) {
     if (ctc->kind_of_char) {
         setup_mvxy_data(wk, ctc->kind_of_char);
     } else {
@@ -1026,7 +1026,7 @@ static s32 comm_mxyt(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: PJMP — pattern-based jump. */
-static s32 comm_pjmp(WORK* wk, CommandState* ctc) {
+static s32 comm_pjmp(State* wk, CommandState* ctc) {
     if (random_32() < ctc->kind_of_char) {
         return decord_if_jump(wk, ctc, ctc->ix);
     } else {
@@ -1035,7 +1035,7 @@ static s32 comm_pjmp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: HJMP — hit-stop jump with save. */
-static s32 comm_hjmp(WORK* wk, CommandState* ctc) {
+static s32 comm_hjmp(State* wk, CommandState* ctc) {
     if (wk->frame_link_hit_flag != 0 && wk->hf.hit_flag != 0) {
         if (wk->hf.hit_flag & 0x303) {
             return decord_if_jump(wk, ctc, ctc->kind_of_char);
@@ -1054,13 +1054,13 @@ static s32 comm_hjmp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: HCLR — clear hit-stop jump data. */
-static s32 comm_hclr(WORK* wk, CommandState* /* unused */) {
+static s32 comm_hclr(State* wk, CommandState* /* unused */) {
     wk->hf.hit_flag = 0;
     return 1;
 }
 
 /** @brief Script command: IXFW — index forward jump. */
-static s32 comm_ixfw(WORK* wk, CommandState* ctc) {
+static s32 comm_ixfw(State* wk, CommandState* ctc) {
     if (g_state.test_flag == 0 || g_state.ixbfw_cut == 0) {
         wk->graphic_index += (ctc->pat - 1) * wk->char_graphic_data_type;
     }
@@ -1069,7 +1069,7 @@ static s32 comm_ixfw(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: IXBW — index backward jump. */
-static s32 comm_ixbw(WORK* wk, CommandState* ctc) {
+static s32 comm_ixbw(State* wk, CommandState* ctc) {
     if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
         wk->graphic_index -= (ctc->pat + 1) * wk->char_graphic_data_type;
     }
@@ -1078,20 +1078,20 @@ static s32 comm_ixbw(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: QUAX — set quake X. */
-static s32 comm_quax(WORK* /* unused */, CommandState* ctc) {
+static s32 comm_quax(State* /* unused */, CommandState* ctc) {
     g_state.bg_w.quake_x_index = ctc->kind_of_char;
     return 1;
 }
 
 /** @brief Script command: QUAY — set quake Y. */
-static s32 comm_quay(WORK* /* unused */, CommandState* ctc) {
+static s32 comm_quay(State* /* unused */, CommandState* ctc) {
     g_state.bg_w.quake_y_index = ctc->kind_of_char;
     pp_screen_quake(g_state.bg_w.quake_y_index);
     return 1;
 }
 
 /** @brief Script command: IF_S — conditional jump on shot input. */
-static s32 comm_if_s(WORK* wk, CommandState* ctc) {
+static s32 comm_if_s(State* wk, CommandState* ctc) {
     u16 shdat;
     u16 my_shdat;
 
@@ -1116,7 +1116,7 @@ static s32 comm_if_s(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RAPP — read attack parameter (punch). */
-static s32 comm_rapp(WORK* wk, CommandState* ctc) {
+static s32 comm_rapp(State* wk, CommandState* ctc) {
     if (wk->work_id == 1) {
         if (g_state.wcp[wk->id].move_state_flags[9]) {
             setup_comm_back(wk);
@@ -1127,7 +1127,7 @@ static s32 comm_rapp(WORK* wk, CommandState* ctc) {
         return 1;
     }
 
-    if (g_state.wcp[((WORK_Other*)wk)->master_id & 1].move_state_flags[9]) {
+    if (g_state.wcp[((State_Other*)wk)->master_id & 1].move_state_flags[9]) {
         setup_comm_back(wk);
         set_char_move_init2(wk, ctc->kind_of_char, ctc->ix, ctc->pat, 1);
         return 0;
@@ -1137,7 +1137,7 @@ static s32 comm_rapp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RAPK — read attack parameter (kick). */
-static s32 comm_rapk(WORK* wk, CommandState* ctc) {
+static s32 comm_rapk(State* wk, CommandState* ctc) {
     if (wk->work_id == 1) {
         if (g_state.wcp[wk->id].move_state_flags[11]) {
             setup_comm_back(wk);
@@ -1148,7 +1148,7 @@ static s32 comm_rapk(WORK* wk, CommandState* ctc) {
         return 1;
     }
 
-    if (g_state.wcp[((WORK_Other*)wk)->master_id & 1].move_state_flags[11]) {
+    if (g_state.wcp[((State_Other*)wk)->master_id & 1].move_state_flags[11]) {
         setup_comm_back(wk);
         set_char_move_init2(wk, ctc->kind_of_char, ctc->ix, ctc->pat, 1);
         return 0;
@@ -1158,13 +1158,13 @@ static s32 comm_rapk(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: GETS — get shot button state. */
-static s32 comm_gets(WORK* wk, CommandState* /* unused */) {
+static s32 comm_gets(State* wk, CommandState* /* unused */) {
     setupCharTableData(wk, 0, 1);
     return 1;
 }
 
 /** @brief Script command: S123 — set shot data 1/2/3. */
-static s32 comm_s123(WORK* wk, CommandState* ctc) {
+static s32 comm_s123(State* wk, CommandState* ctc) {
     wk->routine_no[1] = ctc->kind_of_char;
     wk->routine_no[2] = ctc->ix;
     wk->routine_no[3] = ctc->pat;
@@ -1172,7 +1172,7 @@ static s32 comm_s123(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: S456 — set shot data 4/5/6. */
-static s32 comm_s456(WORK* wk, CommandState* ctc) {
+static s32 comm_s456(State* wk, CommandState* ctc) {
     wk->routine_no[4] = ctc->kind_of_char;
     wk->routine_no[5] = ctc->ix;
     wk->routine_no[6] = ctc->pat;
@@ -1180,7 +1180,7 @@ static s32 comm_s456(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: A123 — add attack data 1/2/3. */
-static s32 comm_a123(WORK* wk, CommandState* ctc) {
+static s32 comm_a123(State* wk, CommandState* ctc) {
     wk->routine_no[4] += ctc->kind_of_char;
     wk->routine_no[5] += ctc->ix;
     wk->routine_no[6] += ctc->pat;
@@ -1188,7 +1188,7 @@ static s32 comm_a123(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: A456 — add attack data 4/5/6. */
-static s32 comm_a456(WORK* wk, CommandState* ctc) {
+static s32 comm_a456(State* wk, CommandState* ctc) {
     wk->routine_no[4] += ctc->kind_of_char;
     wk->routine_no[5] += ctc->ix;
     wk->routine_no[6] += ctc->pat;
@@ -1221,16 +1221,16 @@ static s32 comm_stop(PLW* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: SMHF — set movement half-speed flag. */
-static s32 comm_smhf(WORK* wk, CommandState* ctc) {
+static s32 comm_smhf(State* wk, CommandState* ctc) {
     wk->frame_link_hit_flag = ctc->kind_of_char;
     return 1;
 }
 
 /** @brief Script command: NGME — negate me (set negative attributes). */
-static s32 comm_ngme(WORK* wk, CommandState* /* unused */) {
-    WORK* emwk;
+static s32 comm_ngme(State* wk, CommandState* /* unused */) {
+    State* emwk;
 
-    emwk = (WORK*)wk->hit_adrs;
+    emwk = (State*)wk->hit_adrs;
     emwk->routine_no[1] = 3;
     emwk->routine_no[2] = 1;
     emwk->routine_no[3] = 1;
@@ -1243,10 +1243,10 @@ static s32 comm_ngme(WORK* wk, CommandState* /* unused */) {
 }
 
 /** @brief Script command: NGEM — negate enemy (set negative attributes). */
-static s32 comm_ngem(WORK* wk, CommandState* /* unused */) {
-    WORK* emwk;
+static s32 comm_ngem(State* wk, CommandState* /* unused */) {
+    State* emwk;
 
-    emwk = (WORK*)wk->hit_adrs;
+    emwk = (State*)wk->hit_adrs;
     emwk->routine_no[1] = 3;
     emwk->routine_no[2] = 2;
     emwk->routine_no[3] = 1;
@@ -1259,7 +1259,7 @@ static s32 comm_ngem(WORK* wk, CommandState* /* unused */) {
 }
 
 /** @brief Script command: IFLB — conditional on lever+button. */
-static s32 comm_iflb(WORK* wk, CommandState* ctc) {
+static s32 comm_iflb(State* wk, CommandState* ctc) {
     u16 shdat;
     u16 my_shdat;
 
@@ -1279,7 +1279,7 @@ static s32 comm_iflb(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: ASXY — add speed XY. */
-static s32 comm_asxy(WORK* wk, CommandState* ctc) {
+static s32 comm_asxy(State* wk, CommandState* ctc) {
     s16* from_rom2 = &wk->step_xy_table[ctc->kind_of_char];
     s32 st = *from_rom2++;
 
@@ -1298,7 +1298,7 @@ static s32 comm_asxy(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: SCHX — scroll check X. */
-static s32 comm_schx(WORK* wk, CommandState* ctc) {
+static s32 comm_schx(State* wk, CommandState* ctc) {
     switch (ctc->kind_of_char) {
     case 0:
         wk->mvxy.a[0].sp = (wk->mvxy.a[0].sp * ctc->ix) / ctc->pat;
@@ -1317,7 +1317,7 @@ static s32 comm_schx(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: SCHY — scroll check Y. */
-static s32 comm_schy(WORK* wk, CommandState* ctc) {
+static s32 comm_schy(State* wk, CommandState* ctc) {
     switch (ctc->kind_of_char) {
     case 0:
         wk->mvxy.a[1].sp = (wk->mvxy.a[1].sp * ctc->ix) / ctc->pat;
@@ -1336,19 +1336,19 @@ static s32 comm_schy(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: BACK — store backup state. */
-static s32 comm_back(WORK* wk, CommandState* /* unused */) {
+static s32 comm_back(State* wk, CommandState* /* unused */) {
     set_char_move_init2(wk, wk->cmd_state_backup_1.kind_of_char, wk->cmd_state_backup_1.ix, wk->cmd_state_backup_1.pat, 0);
     return 0;
 }
 
 /** @brief Script command: MVIX — move index set. */
-static s32 comm_mvix(WORK* wk, CommandState* ctc) {
+static s32 comm_mvix(State* wk, CommandState* ctc) {
     wk->mvxy.index = ctc->kind_of_char;
     return 1;
 }
 
 /** @brief Script command: SAJP — super-art jump. */
-static s32 comm_sajp(WORK* wk, CommandState* ctc) {
+static s32 comm_sajp(State* wk, CommandState* ctc) {
     PLW* pwk;
 
     if (wk->work_id == 1) {
@@ -1356,7 +1356,7 @@ static s32 comm_sajp(WORK* wk, CommandState* ctc) {
             return decord_if_jump(wk, ctc, ctc->ix);
         }
     } else {
-        pwk = (PLW*)((WORK_Other*)wk)->my_master;
+        pwk = (PLW*)((State_Other*)wk)->my_master;
 
         if (pwk->wu.work_id == 1 && pwk->sa->kind_of_arts == ctc->kind_of_char && pwk->sa->ok == -1) {
             return decord_if_jump(&pwk->wu, ctc, ctc->ix);
@@ -1367,7 +1367,7 @@ static s32 comm_sajp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: CCCH — cancel chain check. */
-static s32 comm_ccch(WORK* wk, CommandState* ctc) {
+static s32 comm_ccch(State* wk, CommandState* ctc) {
     if (ctc->kind_of_char) {
         wk->extra_col += ctc->ix;
         wk->extra_col &= 0x2FFF;
@@ -1379,7 +1379,7 @@ static s32 comm_ccch(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WSET — set work register. */
-static s32 comm_wset(WORK* wk, CommandState* ctc) {
+static s32 comm_wset(State* wk, CommandState* ctc) {
     switch (ctc->ix) {
     default:
         wk->script_register_bank[ctc->kind_of_char & 0xF] = ctc->pat;
@@ -1414,7 +1414,7 @@ static s32 comm_wset(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WSWK — set work register from another work. */
-static s32 comm_wswk(WORK* wk, CommandState* ctc) {
+static s32 comm_wswk(State* wk, CommandState* ctc) {
     switch (ctc->ix) {
     default:
         wk->script_register_bank[ctc->kind_of_char & 0xF] = wk->script_register_bank[ctc->pat & 0xF];
@@ -1449,14 +1449,14 @@ static s32 comm_wswk(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WADD — add to work register. */
-static s32 comm_wadd(WORK* wk, CommandState* ctc) {
+static s32 comm_wadd(State* wk, CommandState* ctc) {
     wk->script_register_bank[ctc->kind_of_char & 0xF] += ctc->ix;
     wk->script_register_bank[ctc->kind_of_char & 0xF] &= ctc->pat;
     return 1;
 }
 
 /** @brief Script command: WCEQ — work compare-equal. */
-static s32 comm_wceq(WORK* wk, CommandState* ctc) {
+static s32 comm_wceq(State* wk, CommandState* ctc) {
     if (wk->script_register_bank[ctc->kind_of_char & 0xF] == ctc->ix) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -1465,7 +1465,7 @@ static s32 comm_wceq(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WCNE — work compare-not-equal. */
-static s32 comm_wcne(WORK* wk, CommandState* ctc) {
+static s32 comm_wcne(State* wk, CommandState* ctc) {
     if (wk->script_register_bank[ctc->kind_of_char & 0xF] != ctc->ix) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -1473,7 +1473,7 @@ static s32 comm_wcne(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WCGT — work compare-greater-than. */
-static s32 comm_wcgt(WORK* wk, CommandState* ctc) {
+static s32 comm_wcgt(State* wk, CommandState* ctc) {
     if (wk->script_register_bank[ctc->kind_of_char & 0xF] > ctc->ix) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -1482,7 +1482,7 @@ static s32 comm_wcgt(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WCLT — work compare-less-than. */
-static s32 comm_wclt(WORK* wk, CommandState* ctc) {
+static s32 comm_wclt(State* wk, CommandState* ctc) {
     if (wk->script_register_bank[ctc->kind_of_char & 0xF] < ctc->ix) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -1491,14 +1491,14 @@ static s32 comm_wclt(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WADD2 — add to work register (variant 2). */
-static s32 comm_wadd2(WORK* wk, CommandState* ctc) {
+static s32 comm_wadd2(State* wk, CommandState* ctc) {
     wk->script_register_bank[ctc->kind_of_char & 0xF] += wk->script_register_bank[ctc->ix & 0xF];
     wk->script_register_bank[ctc->kind_of_char & 0xF] &= ctc->pat;
     return 1;
 }
 
 /** @brief Script command: WCEQ2 — work compare-equal (variant 2). */
-static s32 comm_wceq2(WORK* wk, CommandState* ctc) {
+static s32 comm_wceq2(State* wk, CommandState* ctc) {
     if (wk->script_register_bank[ctc->kind_of_char & 0xF] == wk->script_register_bank[ctc->ix & 0xF]) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -1507,7 +1507,7 @@ static s32 comm_wceq2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WCNE2 — compare-not-equal (variant 2). */
-static s32 comm_wcne2(WORK* wk, CommandState* ctc) {
+static s32 comm_wcne2(State* wk, CommandState* ctc) {
     if (wk->script_register_bank[ctc->kind_of_char & 0xF] != wk->script_register_bank[ctc->ix & 0xF]) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -1516,7 +1516,7 @@ static s32 comm_wcne2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WCGT2 — compare-greater-than (variant 2). */
-static s32 comm_wcgt2(WORK* wk, CommandState* ctc) {
+static s32 comm_wcgt2(State* wk, CommandState* ctc) {
     if (wk->script_register_bank[ctc->kind_of_char & 0xF] > wk->script_register_bank[ctc->ix & 0xF]) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -1525,7 +1525,7 @@ static s32 comm_wcgt2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: WCLT2 — compare-less-than (variant 2). */
-static s32 comm_wclt2(WORK* wk, CommandState* ctc) {
+static s32 comm_wclt2(State* wk, CommandState* ctc) {
     if (wk->script_register_bank[ctc->kind_of_char & 0xF] < wk->script_register_bank[ctc->ix & 0xF]) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -1534,7 +1534,7 @@ static s32 comm_wclt2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RAPP2 — read attack param (punch, variant 2). */
-static s32 comm_rapp2(WORK* wk, CommandState* ctc) {
+static s32 comm_rapp2(State* wk, CommandState* ctc) {
     if (wk->work_id == 1) {
         if (g_state.wcp[wk->id].move_state_flags[8]) {
             setup_comm_back(wk);
@@ -1545,7 +1545,7 @@ static s32 comm_rapp2(WORK* wk, CommandState* ctc) {
         return 1;
     }
 
-    if (g_state.wcp[((WORK_Other*)wk)->master_id & 1].move_state_flags[8]) {
+    if (g_state.wcp[((State_Other*)wk)->master_id & 1].move_state_flags[8]) {
         setup_comm_back(wk);
         set_char_move_init2(wk, ctc->kind_of_char, ctc->ix, ctc->pat, 1);
         return 0;
@@ -1555,7 +1555,7 @@ static s32 comm_rapp2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RAPK2 — read attack param (kick, variant 2). */
-static s32 comm_rapk2(WORK* wk, CommandState* ctc) {
+static s32 comm_rapk2(State* wk, CommandState* ctc) {
     if (wk->work_id == 1) {
         if (g_state.wcp[wk->id].move_state_flags[10]) {
             setup_comm_back(wk);
@@ -1566,7 +1566,7 @@ static s32 comm_rapk2(WORK* wk, CommandState* ctc) {
         return 1;
     }
 
-    if (g_state.wcp[((WORK_Other*)wk)->master_id & 1].move_state_flags[10]) {
+    if (g_state.wcp[((State_Other*)wk)->master_id & 1].move_state_flags[10]) {
         setup_comm_back(wk);
         set_char_move_init2(wk, ctc->kind_of_char, ctc->ix, ctc->pat, 1);
         return 0;
@@ -1576,7 +1576,7 @@ static s32 comm_rapk2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: IFLG — conditional on flag state. */
-static s32 comm_iflg(WORK* wk, CommandState* ctc) {
+static s32 comm_iflg(State* wk, CommandState* ctc) {
     if (ctc->kind_of_char == 0) {
         if (wk->script_register_bank[11] < ctc->ix) {
             return 1;
@@ -1585,7 +1585,7 @@ static s32 comm_iflg(WORK* wk, CommandState* ctc) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
-    if (((WORK*)wk->target_adrs)->script_register_bank[11] < ctc->ix) {
+    if (((State*)wk->target_adrs)->script_register_bank[11] < ctc->ix) {
         return 1;
     }
 
@@ -1593,7 +1593,7 @@ static s32 comm_iflg(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: MPCY — my position-copy Y. */
-static s32 comm_mpcy(WORK* wk, CommandState* ctc) {
+static s32 comm_mpcy(State* wk, CommandState* ctc) {
     s16 ans = 0;
 
     switch (ctc->ix) {
@@ -1627,8 +1627,8 @@ static s32 comm_mpcy(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: EPCY — enemy position-copy Y. */
-static s32 comm_epcy(WORK* wk, CommandState* ctc) {
-    WORK* emwk = (WORK*)wk->target_adrs;
+static s32 comm_epcy(State* wk, CommandState* ctc) {
+    State* emwk = (State*)wk->target_adrs;
     s16 ans = 0;
 
     switch (ctc->ix) {
@@ -1711,8 +1711,8 @@ static s32 comm_imgc(PLW* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RVXY — relative velocity XY. */
-static s32 comm_rvxy(WORK* wk, CommandState* ctc) {
-    WORK* emwk = (WORK*)wk->target_adrs;
+static s32 comm_rvxy(State* wk, CommandState* ctc) {
+    State* emwk = (State*)wk->target_adrs;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -1750,8 +1750,8 @@ static s32 comm_rvxy(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RV_X — relative velocity X. */
-static s32 comm_rv_x(WORK* wk, CommandState* ctc) {
-    WORK* emwk = (WORK*)wk->target_adrs;
+static s32 comm_rv_x(State* wk, CommandState* ctc) {
+    State* emwk = (State*)wk->target_adrs;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -1786,8 +1786,8 @@ static s32 comm_rv_x(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RV_Y — relative velocity Y. */
-static s32 comm_rv_y(WORK* wk, CommandState* ctc) {
-    WORK* emwk = (WORK*)wk->target_adrs;
+static s32 comm_rv_y(State* wk, CommandState* ctc) {
+    State* emwk = (State*)wk->target_adrs;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -1813,7 +1813,7 @@ static s32 comm_ccfl(PLW* wk, CommandState* /* unused */) {
 }
 
 /** @brief Script command: MYHP — branch based on my HP level. */
-static s32 comm_myhp(WORK* wk, CommandState* ctc) {
+static s32 comm_myhp(State* wk, CommandState* ctc) {
     s16 num = 0;
     s32 cmpvital = (g_state.Max_vitality * ctc->ix) / 100;
 
@@ -1848,8 +1848,8 @@ static s32 comm_myhp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: EMHP — branch based on enemy HP level. */
-static s32 comm_emhp(WORK* wk, CommandState* ctc) {
-    WORK* emwk = (WORK*)wk->target_adrs;
+static s32 comm_emhp(State* wk, CommandState* ctc) {
+    State* emwk = (State*)wk->target_adrs;
     s16 num = 0;
     s32 cmpvital = (g_state.Max_vitality * ctc->ix) / 100;
 
@@ -1884,12 +1884,12 @@ static s32 comm_emhp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: EXBGS — extra BG start (no-op stub). */
-static s32 comm_exbgs(WORK* /* unused */, CommandState* /* unused */) {
+static s32 comm_exbgs(State* /* unused */, CommandState* /* unused */) {
     return 1;
 }
 
 /** @brief Script command: EXBGC — extra BG clear (no-op stub). */
-static s32 comm_exbgc(WORK* /* unused */, CommandState* /* unused */) {
+static s32 comm_exbgc(State* /* unused */, CommandState* /* unused */) {
     return 1;
 }
 
@@ -1922,7 +1922,7 @@ static s32 comm_retmj(PLW* wk, CommandState* /* unused */) {
 }
 
 /** @brief Script command: SSTX — step speed table X. */
-static s32 comm_sstx(WORK* wk, CommandState* ctc) {
+static s32 comm_sstx(State* wk, CommandState* ctc) {
     SST sstx;
 
     sstx.patl = 0;
@@ -2038,7 +2038,7 @@ static s32 comm_sstx(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: SSTY — step speed table Y. */
-static s32 comm_ssty(WORK* wk, CommandState* ctc) {
+static s32 comm_ssty(State* wk, CommandState* ctc) {
     SST ssty;
 
     ssty.patl = 0;
@@ -2154,7 +2154,7 @@ static s32 comm_ssty(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: NGDA — set negate damage amount. */
-static s32 comm_ngda(WORK* wk, CommandState* ctc) {
+static s32 comm_ngda(State* wk, CommandState* ctc) {
     wk->cmd_y_axis_data.kind_of_char = ctc->kind_of_char;
     wk->cmd_y_axis_data.ix = ctc->ix;
     wk->cmd_y_axis_data.pat = ctc->pat;
@@ -2162,13 +2162,13 @@ static s32 comm_ngda(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: FLIP — flip sprite horizontally. */
-static s32 comm_flip(WORK* wk, CommandState* /* unused */) {
+static s32 comm_flip(State* wk, CommandState* /* unused */) {
     wk->rl_flag = (wk->rl_flag + 1) & 1;
     return 1;
 }
 
 /** @brief Script command: KAGE — set shadow display flag. */
-static s32 comm_kage(WORK* wk, CommandState* ctc) {
+static s32 comm_kage(State* wk, CommandState* ctc) {
     wk->shadow_x = ctc->kind_of_char;
     wk->shadow_y = ctc->ix;
     wk->shadow_char = ctc->pat;
@@ -2176,13 +2176,13 @@ static s32 comm_kage(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: DSPF — set display flag. */
-static s32 comm_dspf(WORK* wk, CommandState* ctc) {
+static s32 comm_dspf(State* wk, CommandState* ctc) {
     wk->disp_flag = ctc->kind_of_char;
     return 1;
 }
 
 /** @brief Script command: IFRLF — conditional on RL flag. */
-static s32 comm_ifrlf(WORK* wk, CommandState* ctc) {
+static s32 comm_ifrlf(State* wk, CommandState* ctc) {
     if (ctc->kind_of_char) {
         if (wk->rl_flag == wk->active_move) {
             return decord_if_jump(wk, ctc, ctc->pat);
@@ -2199,7 +2199,7 @@ static s32 comm_ifrlf(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: SRLF — set RL flag. */
-static s32 comm_srlf(WORK* wk, CommandState* ctc) {
+static s32 comm_srlf(State* wk, CommandState* ctc) {
     if (ctc->kind_of_char) {
         if (wk->rl_flag != wk->active_move) {
             wk->rl_flag = wk->active_move;
@@ -2212,7 +2212,7 @@ static s32 comm_srlf(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: BGRLF — branch based on background RL flag. */
-static s32 comm_bgrlf(WORK* wk, CommandState* ctc) {
+static s32 comm_bgrlf(State* wk, CommandState* ctc) {
     if (wk->rl_flag) {
         if (wk->position_x > g_state.bg_w.bgw[1].pos_x_work) {
             return decord_if_jump(wk, ctc, ctc->pat);
@@ -2235,7 +2235,7 @@ static s32 comm_scmd(PLW* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RLJMP — RL-conditional jump. */
-static s32 comm_rljmp(WORK* wk, CommandState* ctc) {
+static s32 comm_rljmp(State* wk, CommandState* ctc) {
     if (wk->rl_flag) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -2244,7 +2244,7 @@ static s32 comm_rljmp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: IFS2 — conditional on shot (variant 2). */
-static s32 comm_ifs2(WORK* wk, CommandState* ctc) {
+static s32 comm_ifs2(State* wk, CommandState* ctc) {
     u16 shdat;
     u16 my_shdat;
 
@@ -2264,13 +2264,13 @@ static s32 comm_ifs2(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: ABBAK — absolute back position restore. */
-static s32 comm_abbak(WORK* wk, CommandState* /* unused */) {
+static s32 comm_abbak(State* wk, CommandState* /* unused */) {
     set_char_move_init2(wk, wk->cmd_state_backup_3.kind_of_char, wk->cmd_state_backup_3.ix, wk->cmd_state_backup_3.pat, 0);
     return 0;
 }
 
 /** @brief Script command: SSE — sound SE request. */
-static s32 comm_sse(WORK* wk, CommandState* ctc) {
+static s32 comm_sse(State* wk, CommandState* ctc) {
     u16* seadrs;
 
     wk->cg_se = ctc->kind_of_char;
@@ -2288,7 +2288,7 @@ static s32 comm_sse(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: S_CHG — sound change. */
-static s32 comm_s_chg(WORK* wk, CommandState* ctc) {
+static s32 comm_s_chg(State* wk, CommandState* ctc) {
     u16 shdat;
     u16 my_shdat;
 
@@ -2308,7 +2308,7 @@ static s32 comm_s_chg(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: SCHG2 — sound change (variant 2). */
-static s32 comm_schg2(WORK* wk, CommandState* ctc) {
+static s32 comm_schg2(State* wk, CommandState* ctc) {
     u16 shdat;
     u16 my_shdat;
 
@@ -2345,7 +2345,7 @@ static s32 comm_uhsja(PLW* wk, CommandState* /* unused */) {
 }
 
 /** @brief Script command: IFCOM — conditional on COM flag. */
-static s32 comm_ifcom(WORK* wk, CommandState* ctc) {
+static s32 comm_ifcom(State* wk, CommandState* ctc) {
     if (wk->pl_operator) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
@@ -2354,7 +2354,7 @@ static s32 comm_ifcom(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: AXJMP — X-axis conditional jump. */
-static s32 comm_axjmp(WORK* wk, CommandState* ctc) {
+static s32 comm_axjmp(State* wk, CommandState* ctc) {
     if (wk->mvxy.a[0].real.h > 2) {
         return decord_if_jump(wk, ctc, ctc->kind_of_char);
     }
@@ -2367,7 +2367,7 @@ static s32 comm_axjmp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: AYJMP — Y-axis conditional jump. */
-static s32 comm_ayjmp(WORK* wk, CommandState* ctc) {
+static s32 comm_ayjmp(State* wk, CommandState* ctc) {
     if (wk->mvxy.a[1].real.h > 0) {
         return decord_if_jump(wk, ctc, ctc->kind_of_char);
     }
@@ -2380,7 +2380,7 @@ static s32 comm_ayjmp(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: IFS3 — conditional on shot (variant 3). */
-static s32 comm_ifs3(WORK* wk, CommandState* ctc) {
+static s32 comm_ifs3(State* wk, CommandState* ctc) {
     u16 shdat;
     u16 my_shdat;
 
@@ -2400,7 +2400,7 @@ static s32 comm_ifs3(WORK* wk, CommandState* ctc) {
 }
 
 /** @brief Decodes an if-jump target for script conditional commands. */
-static s16 decord_if_jump(WORK* wk, CommandState* cpc, s16 ix) {
+static s16 decord_if_jump(State* wk, CommandState* cpc, s16 ix) {
     s16 rnum;
 
     switch (ix & 0xE000) {
@@ -2428,46 +2428,46 @@ static s16 decord_if_jump(WORK* wk, CommandState* cpc, s16 ix) {
 }
 
 /** @brief Returns the lever direction for script if-commands. */
-static u16 get_comm_if_lever(WORK* wk) {
+static u16 get_comm_if_lever(State* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
         num = g_state.wcp[wk->id].input_pressed & 0xF;
     } else {
-        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].input_pressed & 0xF;
+        num = g_state.wcp[((State_Other*)wk)->master_id & 1].input_pressed & 0xF;
     }
 
     return num;
 }
 
 /** @brief Returns the shot button state for script if-commands. */
-static u16 get_comm_if_shot(WORK* wk) {
+static u16 get_comm_if_shot(State* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
         num = g_state.wcp[wk->id].input_pressed & 0x770;
     } else {
-        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].input_pressed & 0x770;
+        num = g_state.wcp[((State_Other*)wk)->master_id & 1].input_pressed & 0x770;
     }
 
     return num;
 }
 
 /** @brief Returns shot-now-off state for script if-commands. */
-static u16 get_comm_if_shot_now_off(WORK* wk) {
+static u16 get_comm_if_shot_now_off(State* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
         num = g_state.wcp[wk->id].input_current & 0x770;
     } else {
-        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].input_current & 0x770;
+        num = g_state.wcp[((State_Other*)wk)->master_id & 1].input_current & 0x770;
     }
 
     if (wk->cg_cancel & 0x80) {
         if (wk->work_id == 1) {
             num |= g_state.wcp[wk->id].input_released & 0x770;
         } else {
-            num |= g_state.wcp[((WORK_Other*)wk)->master_id & 1].input_released & 0x770;
+            num |= g_state.wcp[((State_Other*)wk)->master_id & 1].input_released & 0x770;
         }
     }
 
@@ -2475,26 +2475,26 @@ static u16 get_comm_if_shot_now_off(WORK* wk) {
 }
 
 /** @brief Returns the shot-now state for script if-commands. */
-static u16 get_comm_if_shot_now(WORK* wk) {
+static u16 get_comm_if_shot_now(State* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
         num = g_state.wcp[wk->id].input_current & 0x770;
     } else {
-        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].input_current & 0x770;
+        num = g_state.wcp[((State_Other*)wk)->master_id & 1].input_current & 0x770;
     }
 
     return num;
 }
 
 /** @brief Returns the lever+shot combined state for script if-commands. */
-static u16 get_comm_if_lvsh(WORK* wk) {
+static u16 get_comm_if_lvsh(State* wk) {
     u16 num;
 
     if (wk->work_id == 1) {
         num = g_state.wcp[wk->id].input_pressed & 0x77F;
     } else {
-        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].input_pressed & 0x77F;
+        num = g_state.wcp[((State_Other*)wk)->master_id & 1].input_pressed & 0x77F;
     }
 
     return num;
@@ -2511,14 +2511,14 @@ static u8 get_comm_djmp_lever_dir(PLW* wk) {
             num = 0;
         }
     } else {
-        num = g_state.wcp[((WORK_Other*)wk)->master_id & 1].lever_dir;
+        num = g_state.wcp[((State_Other*)wk)->master_id & 1].lever_dir;
     }
 
     return num;
 }
 
 /** @brief Stores the backup state for comm_back. */
-void setup_comm_back(WORK* wk) {
+void setup_comm_back(State* wk) {
     wk->phase_k5_init_flag = 1;
     wk->cmd_state_backup_1.kind_of_char = wk->current_char_type;
     wk->cmd_state_backup_1.ix = wk->char_index;
@@ -2526,14 +2526,14 @@ void setup_comm_back(WORK* wk) {
 }
 
 /** @brief Stores the return-move-jump state. */
-static void setup_comm_retmj(WORK* wk) {
+static void setup_comm_retmj(State* wk) {
     wk->cmd_state_backup_2.kind_of_char = wk->current_char_type;
     wk->cmd_state_backup_2.ix = wk->char_index;
     wk->cmd_state_backup_2.pat = wk->graphic_index;
 }
 
 /** @brief Stores the absolute-backup state. */
-void setup_comm_abbak(WORK* wk) {
+void setup_comm_abbak(State* wk) {
     wk->cmd_state_backup_3.kind_of_char = wk->current_char_type;
     wk->cmd_state_backup_3.ix = wk->char_index;
     wk->cmd_state_backup_3.pat = (wk->graphic_index / wk->char_graphic_data_type) + 2;
@@ -2554,7 +2554,7 @@ static int catch_table_offset(Character thrown_character) {
 }
 
 /** @brief Main pattern-data interpreter — processes CG data per frame. */
-void check_cgd_patdat(WORK* wk) {
+void check_cgd_patdat(State* wk) {
     ST st;
 
     u16* seAdrs;
@@ -2717,7 +2717,7 @@ void check_cgd_patdat(WORK* wk) {
 }
 
 /** @brief Checks xcopy filter and triggers SE request. */
-static u16 check_xcopy_filter_se_req(WORK* wk) {
+static u16 check_xcopy_filter_se_req(State* wk) {
     u16 voif;
 
     if ((voif = wk->cg_se) < 0x160) {
@@ -2748,7 +2748,7 @@ static u16 check_xcopy_filter_se_req(WORK* wk) {
 }
 
 /** @brief Processes pattern data for auxiliary CG objects. */
-static void check_cgd_patdat2(WORK* wk) {
+static void check_cgd_patdat2(State* wk) {
     ST st;
     u16* seadrs;
 
@@ -2806,7 +2806,7 @@ static void check_cgd_patdat2(WORK* wk) {
 }
 
 /** @brief Sets a new attack number from the attack data tables. */
-void set_new_attnum(WORK* wk) {
+void set_new_attnum(State* wk) {
     s16 aag_sw;
 
     wk->renew_attack = wk->anim_hitbox_index;
@@ -2832,7 +2832,7 @@ void set_new_attnum(WORK* wk) {
             WK_AS_PLW->total_att_hit_ok += 1;
         }
 
-        grade_add_att_renew((WORK_Other*)wk);
+        grade_add_att_renew((State_Other*)wk);
     }
 
     wk->att = *(wk->att_ix_table + wk->anim_hitbox_index);
@@ -2861,14 +2861,14 @@ void set_new_attnum(WORK* wk) {
 }
 
 /** @brief Configures chip-damage (kezuri) for metamorphosis mode. */
-static void setup_metamor_kezuri(WORK* wk) {
+static void setup_metamor_kezuri(State* wk) {
     if (wk->chip_damage_power == 0) {
         wk->chip_damage_power = kezuri_pow_table[4];
     }
 }
 
 /** @brief Sets up the judge (collision) area for the work object. */
-void Set_Collision_Boxes(WORK* wk) {
+void Set_Collision_Boxes(State* wk) {
     wk->body_hurtbox = wk->body_adrs + wk->cg_ja.body_hurtbox_index;
     wk->catch_box = wk->catch_adrs + wk->cg_ja.catch_box_index;
     wk->caught_box = wk->caught_adrs + wk->cg_ja.caught_box_index;
@@ -2878,7 +2878,7 @@ void Set_Collision_Boxes(WORK* wk) {
 }
 
 /** @brief Captures current character data for after-image (zanzou). */
-void get_char_data_zanzou(WORK* wk) {
+void get_char_data_zanzou(State* wk) {
     if (wk->anim_hitbox_index) {
         set_new_attnum(wk);
     }
@@ -2892,131 +2892,131 @@ const s16 jphos_table[16] = { 0x0000, 0xFFF0, 0xFFF4, 0xFFF8, 0xFFFC, 0x0004, 0x
 
 const s16 kezuri_pow_table[5] = { 0, 4, 8, 16, 24 };
 
-static s32 comm_dummy(WORK*, CommandState*);
-static s32 comm_roa(WORK*, CommandState*);
-static s32 comm_end(WORK*, CommandState*);
-static s32 comm_jmp(WORK*, CommandState*);
-static s32 comm_jpss(WORK*, CommandState*);
-static s32 comm_jsr(WORK*, CommandState*);
-static s32 comm_ret(WORK*, CommandState*);
-static s32 comm_sps(WORK*, CommandState*);
-static s32 comm_setr(WORK*, CommandState*);
-static s32 comm_addr(WORK*, CommandState*);
-static s32 comm_if_l(WORK*, CommandState*);
-static s32 comm_djmp(WORK*, CommandState*);
-static s32 comm_for(WORK*, CommandState*);
-static s32 comm_nex(WORK*, CommandState*);
-static s32 comm_for2(WORK*, CommandState*);
-static s32 comm_nex2(WORK*, CommandState*);
-static s32 comm_rja(WORK*, CommandState*);
-static s32 comm_uja(WORK*, CommandState*);
-static s32 comm_rja2(WORK*, CommandState*);
-static s32 comm_uja2(WORK*, CommandState*);
-static s32 comm_rja3(WORK*, CommandState*);
-static s32 comm_uja3(WORK*, CommandState*);
-static s32 comm_rja4(WORK*, CommandState*);
-static s32 comm_uja4(WORK*, CommandState*);
-static s32 comm_rja5(WORK*, CommandState*);
-static s32 comm_uja5(WORK*, CommandState*);
-static s32 comm_rja6(WORK*, CommandState*);
-static s32 comm_uja6(WORK*, CommandState*);
-static s32 comm_rja7(WORK*, CommandState*);
-static s32 comm_uja7(WORK*, CommandState*);
-static s32 comm_rmja(WORK*, CommandState*);
-static s32 comm_umja(WORK*, CommandState*);
-static s32 comm_mdat(WORK*, CommandState*);
-static s32 comm_ydat(WORK*, CommandState*);
-static s32 comm_mpos(WORK*, CommandState*);
-static s32 comm_cafr(WORK*, CommandState*);
-static s32 comm_care(WORK*, CommandState*);
-static s32 comm_psxy(WORK*, CommandState*);
-static s32 comm_ps_x(WORK*, CommandState*);
-static s32 comm_ps_y(WORK*, CommandState*);
-static s32 comm_paxy(WORK*, CommandState*);
-static s32 comm_pa_x(WORK*, CommandState*);
-static s32 comm_pa_y(WORK*, CommandState*);
-static s32 comm_exec(WORK*, CommandState*);
-static s32 comm_rngc(WORK*, CommandState*);
-static s32 comm_mxyt(WORK*, CommandState*);
-static s32 comm_pjmp(WORK*, CommandState*);
-static s32 comm_hjmp(WORK*, CommandState*);
-static s32 comm_hclr(WORK*, CommandState*);
-static s32 comm_ixfw(WORK*, CommandState*);
-static s32 comm_ixbw(WORK*, CommandState*);
-static s32 comm_quax(WORK*, CommandState*);
-static s32 comm_quay(WORK*, CommandState*);
-static s32 comm_if_s(WORK*, CommandState*);
-static s32 comm_rapp(WORK*, CommandState*);
-static s32 comm_rapk(WORK*, CommandState*);
-static s32 comm_gets(WORK*, CommandState*);
-static s32 comm_s123(WORK*, CommandState*);
-static s32 comm_s456(WORK*, CommandState*);
-static s32 comm_a123(WORK*, CommandState*);
-static s32 comm_a456(WORK*, CommandState*);
+static s32 comm_dummy(State*, CommandState*);
+static s32 comm_roa(State*, CommandState*);
+static s32 comm_end(State*, CommandState*);
+static s32 comm_jmp(State*, CommandState*);
+static s32 comm_jpss(State*, CommandState*);
+static s32 comm_jsr(State*, CommandState*);
+static s32 comm_ret(State*, CommandState*);
+static s32 comm_sps(State*, CommandState*);
+static s32 comm_setr(State*, CommandState*);
+static s32 comm_addr(State*, CommandState*);
+static s32 comm_if_l(State*, CommandState*);
+static s32 comm_djmp(State*, CommandState*);
+static s32 comm_for(State*, CommandState*);
+static s32 comm_nex(State*, CommandState*);
+static s32 comm_for2(State*, CommandState*);
+static s32 comm_nex2(State*, CommandState*);
+static s32 comm_rja(State*, CommandState*);
+static s32 comm_uja(State*, CommandState*);
+static s32 comm_rja2(State*, CommandState*);
+static s32 comm_uja2(State*, CommandState*);
+static s32 comm_rja3(State*, CommandState*);
+static s32 comm_uja3(State*, CommandState*);
+static s32 comm_rja4(State*, CommandState*);
+static s32 comm_uja4(State*, CommandState*);
+static s32 comm_rja5(State*, CommandState*);
+static s32 comm_uja5(State*, CommandState*);
+static s32 comm_rja6(State*, CommandState*);
+static s32 comm_uja6(State*, CommandState*);
+static s32 comm_rja7(State*, CommandState*);
+static s32 comm_uja7(State*, CommandState*);
+static s32 comm_rmja(State*, CommandState*);
+static s32 comm_umja(State*, CommandState*);
+static s32 comm_mdat(State*, CommandState*);
+static s32 comm_ydat(State*, CommandState*);
+static s32 comm_mpos(State*, CommandState*);
+static s32 comm_cafr(State*, CommandState*);
+static s32 comm_care(State*, CommandState*);
+static s32 comm_psxy(State*, CommandState*);
+static s32 comm_ps_x(State*, CommandState*);
+static s32 comm_ps_y(State*, CommandState*);
+static s32 comm_paxy(State*, CommandState*);
+static s32 comm_pa_x(State*, CommandState*);
+static s32 comm_pa_y(State*, CommandState*);
+static s32 comm_exec(State*, CommandState*);
+static s32 comm_rngc(State*, CommandState*);
+static s32 comm_mxyt(State*, CommandState*);
+static s32 comm_pjmp(State*, CommandState*);
+static s32 comm_hjmp(State*, CommandState*);
+static s32 comm_hclr(State*, CommandState*);
+static s32 comm_ixfw(State*, CommandState*);
+static s32 comm_ixbw(State*, CommandState*);
+static s32 comm_quax(State*, CommandState*);
+static s32 comm_quay(State*, CommandState*);
+static s32 comm_if_s(State*, CommandState*);
+static s32 comm_rapp(State*, CommandState*);
+static s32 comm_rapk(State*, CommandState*);
+static s32 comm_gets(State*, CommandState*);
+static s32 comm_s123(State*, CommandState*);
+static s32 comm_s456(State*, CommandState*);
+static s32 comm_a123(State*, CommandState*);
+static s32 comm_a456(State*, CommandState*);
 static s32 comm_stop(PLW*, CommandState*);
-static s32 comm_smhf(WORK*, CommandState*);
-static s32 comm_ngme(WORK*, CommandState*);
-static s32 comm_ngem(WORK*, CommandState*);
-static s32 comm_iflb(WORK*, CommandState*);
-static s32 comm_asxy(WORK*, CommandState*);
-static s32 comm_schx(WORK*, CommandState*);
-static s32 comm_schy(WORK*, CommandState*);
-static s32 comm_back(WORK*, CommandState*);
-static s32 comm_mvix(WORK*, CommandState*);
-static s32 comm_sajp(WORK*, CommandState*);
-static s32 comm_ccch(WORK*, CommandState*);
-static s32 comm_wset(WORK*, CommandState*);
-static s32 comm_wswk(WORK*, CommandState*);
-static s32 comm_wadd(WORK*, CommandState*);
-static s32 comm_wceq(WORK*, CommandState*);
-static s32 comm_wcne(WORK*, CommandState*);
-static s32 comm_wcgt(WORK*, CommandState*);
-static s32 comm_wclt(WORK*, CommandState*);
-static s32 comm_wadd2(WORK*, CommandState*);
-static s32 comm_wceq2(WORK*, CommandState*);
-static s32 comm_wcne2(WORK*, CommandState*);
-static s32 comm_wcgt2(WORK*, CommandState*);
-static s32 comm_wclt2(WORK*, CommandState*);
-static s32 comm_rapp2(WORK*, CommandState*);
-static s32 comm_rapk2(WORK*, CommandState*);
-static s32 comm_iflg(WORK*, CommandState*);
-static s32 comm_mpcy(WORK*, CommandState*);
-static s32 comm_epcy(WORK*, CommandState*);
+static s32 comm_smhf(State*, CommandState*);
+static s32 comm_ngme(State*, CommandState*);
+static s32 comm_ngem(State*, CommandState*);
+static s32 comm_iflb(State*, CommandState*);
+static s32 comm_asxy(State*, CommandState*);
+static s32 comm_schx(State*, CommandState*);
+static s32 comm_schy(State*, CommandState*);
+static s32 comm_back(State*, CommandState*);
+static s32 comm_mvix(State*, CommandState*);
+static s32 comm_sajp(State*, CommandState*);
+static s32 comm_ccch(State*, CommandState*);
+static s32 comm_wset(State*, CommandState*);
+static s32 comm_wswk(State*, CommandState*);
+static s32 comm_wadd(State*, CommandState*);
+static s32 comm_wceq(State*, CommandState*);
+static s32 comm_wcne(State*, CommandState*);
+static s32 comm_wcgt(State*, CommandState*);
+static s32 comm_wclt(State*, CommandState*);
+static s32 comm_wadd2(State*, CommandState*);
+static s32 comm_wceq2(State*, CommandState*);
+static s32 comm_wcne2(State*, CommandState*);
+static s32 comm_wcgt2(State*, CommandState*);
+static s32 comm_wclt2(State*, CommandState*);
+static s32 comm_rapp2(State*, CommandState*);
+static s32 comm_rapk2(State*, CommandState*);
+static s32 comm_iflg(State*, CommandState*);
+static s32 comm_mpcy(State*, CommandState*);
+static s32 comm_epcy(State*, CommandState*);
 static s32 comm_imgs(PLW*, CommandState*);
 static s32 comm_imgc(PLW*, CommandState*);
-static s32 comm_rvxy(WORK*, CommandState*);
-static s32 comm_rv_x(WORK*, CommandState*);
-static s32 comm_rv_y(WORK*, CommandState*);
+static s32 comm_rvxy(State*, CommandState*);
+static s32 comm_rv_x(State*, CommandState*);
+static s32 comm_rv_y(State*, CommandState*);
 static s32 comm_ccfl(PLW*, CommandState*);
-static s32 comm_myhp(WORK*, CommandState*);
-static s32 comm_emhp(WORK*, CommandState*);
-static s32 comm_exbgs(WORK*, CommandState*);
-static s32 comm_exbgc(WORK*, CommandState*);
+static s32 comm_myhp(State*, CommandState*);
+static s32 comm_emhp(State*, CommandState*);
+static s32 comm_exbgs(State*, CommandState*);
+static s32 comm_exbgc(State*, CommandState*);
 static s32 comm_atmf(PLW*, CommandState*);
 static s32 comm_chkwf(PLW*, CommandState*);
 static s32 comm_retmj(PLW*, CommandState*);
-static s32 comm_sstx(WORK*, CommandState*);
-static s32 comm_ssty(WORK*, CommandState*);
-static s32 comm_ngda(WORK*, CommandState*);
-static s32 comm_flip(WORK*, CommandState*);
-static s32 comm_kage(WORK*, CommandState*);
-static s32 comm_dspf(WORK*, CommandState*);
-static s32 comm_ifrlf(WORK*, CommandState*);
-static s32 comm_srlf(WORK*, CommandState*);
-static s32 comm_bgrlf(WORK*, CommandState*);
+static s32 comm_sstx(State*, CommandState*);
+static s32 comm_ssty(State*, CommandState*);
+static s32 comm_ngda(State*, CommandState*);
+static s32 comm_flip(State*, CommandState*);
+static s32 comm_kage(State*, CommandState*);
+static s32 comm_dspf(State*, CommandState*);
+static s32 comm_ifrlf(State*, CommandState*);
+static s32 comm_srlf(State*, CommandState*);
+static s32 comm_bgrlf(State*, CommandState*);
 static s32 comm_scmd(PLW*, CommandState*);
-static s32 comm_rljmp(WORK*, CommandState*);
-static s32 comm_ifs2(WORK*, CommandState*);
-static s32 comm_abbak(WORK*, CommandState*);
-static s32 comm_sse(WORK*, CommandState*);
-static s32 comm_s_chg(WORK*, CommandState*);
-static s32 comm_schg2(WORK*, CommandState*);
+static s32 comm_rljmp(State*, CommandState*);
+static s32 comm_ifs2(State*, CommandState*);
+static s32 comm_abbak(State*, CommandState*);
+static s32 comm_sse(State*, CommandState*);
+static s32 comm_s_chg(State*, CommandState*);
+static s32 comm_schg2(State*, CommandState*);
 static s32 comm_rhsja(PLW*, CommandState*);
 static s32 comm_uhsja(PLW*, CommandState*);
-static s32 comm_ifcom(WORK*, CommandState*);
-static s32 comm_axjmp(WORK*, CommandState*);
-static s32 comm_ayjmp(WORK*, CommandState*);
-static s32 comm_ifs3(WORK*, CommandState*);
+static s32 comm_ifcom(State*, CommandState*);
+static s32 comm_axjmp(State*, CommandState*);
+static s32 comm_ayjmp(State*, CommandState*);
+static s32 comm_ifs3(State*, CommandState*);
 
 s32 (*const decode_chcmd[125])() = {
     comm_dummy, comm_roa,   comm_end,   comm_jmp,   comm_jpss,  comm_jsr,   comm_ret,   comm_sps,   comm_setr,

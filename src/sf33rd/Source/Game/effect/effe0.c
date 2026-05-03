@@ -10,16 +10,16 @@
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-static void Setup_Char_E0(WORK_Other* ewk);
+static void Setup_Char_E0(State_Other* ewk);
 
-void effect_E0_move(WORK_Other* ewk) {
+void effect_E0_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (Ck_Range_Out_S(ewk, ewk->wu.my_family - 1, 64)) {
@@ -117,7 +117,7 @@ void effect_E0_move(WORK_Other* ewk) {
         sort_push_request4(&ewk->wu);
 }
 
-static void Setup_Char_E0(WORK_Other* ewk) {
+static void Setup_Char_E0(State_Other* ewk) {
     ewk->wu.char_index = ((ewk->wu.direction - 1) * 4) + 35;
     ewk->wu.dir_step = 0;
 
@@ -127,14 +127,14 @@ static void Setup_Char_E0(WORK_Other* ewk) {
 }
 
 s32 effect_E0_init(s16 Direction, s16 damage_vitality, s16 Pos_Type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 140;
     ewk->wu.work_id = 16;

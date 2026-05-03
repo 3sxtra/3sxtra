@@ -8,22 +8,22 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void effl3_0000(WORK_Other* ewk);
-static void effl3_0001(WORK_Other* ewk);
-static void effl3_0002(WORK_Other* ewk);
-static void effl3_tobi(WORK_Other* ewk);
-static void effl3_kie(WORK_Other* ewk);
+static void effl3_0000(State_Other* ewk);
+static void effl3_0001(State_Other* ewk);
+static void effl3_0002(State_Other* ewk);
+static void effl3_tobi(State_Other* ewk);
+static void effl3_kie(State_Other* ewk);
 
 const s16 effl3_wait_timer[8] = { 3, 0, 30, 50, 40, 8, 20, 1 };
 
@@ -35,8 +35,8 @@ const s16 effl3_data_tbl[112] = { -272, -8,  -1, 1, 18, -32, -8, 0, 272,  -8,  -
                                   272,  2,   1,  0, 17, 192, 2,  0, 272,  128, 1,  0, 17, 160,  2,  1,
                                   -272, 2,   1,  0, 17, 16,  2,  0, 272,  128, 1,  0, 17, 32,   2,  1 };
 
-void effect_L3_move(WORK_Other* ewk) {
-    void (*effl3_jp[3])(WORK_Other*) = { effl3_0000, effl3_0001, effl3_0002 };
+void effect_L3_move(State_Other* ewk) {
+    void (*effl3_jp[3])(State_Other*) = { effl3_0000, effl3_0001, effl3_0002 };
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -58,7 +58,7 @@ void effect_L3_move(WORK_Other* ewk) {
     }
 }
 
-static void effl3_0000(WORK_Other* ewk) {
+static void effl3_0000(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -111,7 +111,7 @@ static void effl3_0000(WORK_Other* ewk) {
     }
 }
 
-static void effl3_0001(WORK_Other* ewk) {
+static void effl3_0001(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -158,7 +158,7 @@ static void effl3_0001(WORK_Other* ewk) {
     }
 }
 
-static void effl3_0002(WORK_Other* ewk) {
+static void effl3_0002(State_Other* ewk) {
     s16 work;
 
     switch (ewk->wu.routine_no[3]) {
@@ -181,7 +181,7 @@ static void effl3_0002(WORK_Other* ewk) {
     }
 }
 
-static void effl3_tobi(WORK_Other* ewk) {
+static void effl3_tobi(State_Other* ewk) {
     switch (ewk->wu.routine_no[4]) {
     case 0:
         ewk->wu.old_routine_no[4]--;
@@ -244,7 +244,7 @@ static void effl3_tobi(WORK_Other* ewk) {
     }
 }
 
-static void effl3_kie(WORK_Other* ewk) {
+static void effl3_kie(State_Other* ewk) {
     switch (ewk->wu.routine_no[4]) {
     case 0:
         ewk->wu.old_routine_no[4]--;
@@ -268,7 +268,7 @@ static void effl3_kie(WORK_Other* ewk) {
 }
 
 s32 effect_L3_init(PLW* oya) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     s16 id_w;
@@ -286,7 +286,7 @@ s32 effect_L3_init(PLW* oya) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 213;
         ewk->wu.work_id = 16;

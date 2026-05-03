@@ -10,13 +10,13 @@
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void effect_80_move(WORK_Other* ewk) {
-    WORK_Other* mwk = (WORK_Other*)ewk->my_master;
+void effect_80_move(State_Other* ewk) {
+    State_Other* mwk = (State_Other*)ewk->my_master;
 
     if (mwk->wu.be_flag == 0) {
         ewk->wu.disp_flag = 0;
@@ -57,15 +57,15 @@ void effect_80_move(WORK_Other* ewk) {
         sort_push_request4(&ewk->wu);
 }
 
-s32 effect_80_init(WORK_Other* mwk, s16 PL_id, s16 Plate_id, s16 Target_BG) {
-    WORK_Other* ewk;
+s32 effect_80_init(State_Other* mwk, s16 PL_id, s16 Plate_id, s16 Target_BG) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 80;
     ewk->wu.work_id = 16;

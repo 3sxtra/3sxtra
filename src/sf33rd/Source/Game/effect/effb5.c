@@ -15,9 +15,9 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
-static void current_name_move(WORK_Other* ewk, NAME_WK* np);
+static void current_name_move(State_Other* ewk, NAME_WK* np);
 
-void effect_B5_move(WORK_Other* ewk) {
+void effect_B5_move(State_Other* ewk) {
     NAME_WK* np = (NAME_WK*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
@@ -101,7 +101,7 @@ void effect_B5_move(WORK_Other* ewk) {
     disp_pos_trans_entry(ewk);
 }
 
-static void current_name_move(WORK_Other* ewk, NAME_WK* np) {
+static void current_name_move(State_Other* ewk, NAME_WK* np) {
     if (np->index != ewk->wu.old_routine_no[2]) {
         return;
     }

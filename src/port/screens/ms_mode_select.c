@@ -20,7 +20,7 @@
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
 #include "sf33rd/Source/Game/engine/grade.h"       /* grade_check_work_1st_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, g_state.Mode_Type, etc. */
+#include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, g_state.Mode_Type, etc. */
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Decide_PL, Exit_Sub */

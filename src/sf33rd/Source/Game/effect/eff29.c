@@ -9,9 +9,9 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
@@ -19,7 +19,7 @@
 
 const s16 eff29_vanish_time[8] = { 480, 600, 300, 240, 200, 340, 500, 360 };
 
-void effect_29_move(WORK_Other* ewk) {
+void effect_29_move(State_Other* ewk) {
     s16 work;
 
     if (obr_no_disp_check()) {
@@ -65,14 +65,14 @@ void effect_29_move(WORK_Other* ewk) {
 }
 
 s32 effect_29_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 29;
     ewk->wu.work_id = 16;

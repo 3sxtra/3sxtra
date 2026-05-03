@@ -7,9 +7,9 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 // Types
 
@@ -51,23 +51,23 @@ const s8 k5_exc_check[125] = { 1, 2, 0, 2, 2, 2, 2, 1, 1, 1, 2, 2, 1, 2, 1, 2, 1
 
 // Forward decls
 
-static void k5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl);
+static void k5_init_data(State* mwk, MVJ* mvj, u16* ixtbl);
 static void k5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num);
 static void k5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num);
-static void get_table_adrs_K5(WORK* wk);
+static void get_table_adrs_K5(State* wk);
 static void k5_add_sub(MVJ* mvj);
-static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj);
-static void k5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj);
-static void init_k5_work(WORK* ewk, WORK* mwk, MVJ* mvj);
-static void get_master_table_address(WORK* ewk, WORK* mwk);
-static s32 get_cal_work(WORK* wk);
-static void k5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf);
+static void get_okuri_time(State* ewk, State* mwk, MVJ* mvj);
+static void k5_main_process(State* ewk, State* mwk, MVJ* mvj);
+static void init_k5_work(State* ewk, State* mwk, MVJ* mvj);
+static void get_master_table_address(State* ewk, State* mwk);
+static s32 get_cal_work(State* wk);
+static void k5_decode_new_hit_index(State* wk, MVJ* mvj, u16 mf);
 static u32 decode_mvsw(u16 flag);
 
 // Funcs
 
-void effect_k5_move(WORK_Other* ewk) {
-    WORK* mwk = (WORK*)ewk->my_master;
+void effect_k5_move(State_Other* ewk) {
+    State* mwk = (State*)ewk->my_master;
     MVJ* mvj;
 
     switch (ewk->wu.routine_no[0]) {
@@ -82,10 +82,10 @@ void effect_k5_move(WORK_Other* ewk) {
         // This line is bullshit. Effect K5 needs some space for MVJ manipulation. Instead of allocating
         // space for that somewhere else they decided to use some of the space dedicated to effect work.
         // Why did they choose routine_no as the starting offset specifically? They did that because it's
-        // the first var of WORK that is not used for effect scheduling. If they chose an earlier address
+        // the first var of State that is not used for effect scheduling. If they chose an earlier address
         // that would lead to crashes and infinite loops. Fun times!
         // There's one more line just like this one down below.
-        mvj = (MVJ*)(((WORK*)ewk->wu.target_adrs)->routine_no);
+        mvj = (MVJ*)(((State*)ewk->wu.target_adrs)->routine_no);
 
         init_k5_work(&ewk->wu, mwk, mvj);
         ewk->wu.old_routine_no[1] = mwk->anim_hurtbox_index;
@@ -107,7 +107,7 @@ void effect_k5_move(WORK_Other* ewk) {
         }
 
         get_master_table_address(&ewk->wu, mwk);
-        mvj = (MVJ*)(((WORK*)ewk->wu.target_adrs)->routine_no);
+        mvj = (MVJ*)(((State*)ewk->wu.target_adrs)->routine_no);
 
         if (mwk->phase_k5_exec_ok) {
             mwk->phase_k5_exec_ok = 0;
@@ -129,7 +129,7 @@ void effect_k5_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        Release_Effect((WORK*)ewk->wu.target_adrs);
+        Release_Effect((State*)ewk->wu.target_adrs);
         /* fallthrough */
 
     default:
@@ -138,7 +138,7 @@ void effect_k5_move(WORK_Other* ewk) {
     }
 }
 
-static void k5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj) {
+static void k5_main_process(State* ewk, State* mwk, MVJ* mvj) {
     s16 i;
 
     switch (ewk->routine_no[1]) {
@@ -163,7 +163,7 @@ typedef union {
     u8* cpc;
 } GOTCP;
 
-static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
+static void get_okuri_time(State* ewk, State* mwk, MVJ* mvj) {
     GOTCP gotcp;
     ST st;
     s16 exc;
@@ -239,7 +239,7 @@ static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
     ewk->routine_no[1] = 2;
 }
 
-static void k5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
+static void k5_decode_new_hit_index(State* wk, MVJ* mvj, u16 mf) {
     s16 i;
     s16 t0;
     s16 t1;
@@ -363,13 +363,13 @@ static u32 decode_mvsw(u16 flag) {
     return mvsw.swi;
 }
 
-static void get_table_adrs_K5(WORK* wk) {
+static void get_table_adrs_K5(State* wk) {
     wk->cg_ja = wk->hit_ix_table[wk->anim_hurtbox_index];
     wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.body_hurtbox_index];
     wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.behind_hurtbox_index + wk->cg_ja.hand_hurtbox_index];
 }
 
-static void init_k5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
+static void init_k5_work(State* ewk, State* mwk, MVJ* mvj) {
     s16 i;
 
     for (i = 0; i < 10; i++) {
@@ -383,13 +383,13 @@ static void init_k5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
     mwk->phase_k5_init_flag = 1;
 }
 
-static void get_master_table_address(WORK* ewk, WORK* mwk) {
+static void get_master_table_address(State* ewk, State* mwk) {
     ewk->hit_ix_table = mwk->hit_ix_table;
     ewk->body_adrs = mwk->body_adrs;
     ewk->hand_adrs = mwk->hand_adrs;
 }
 
-static void k5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl) {
+static void k5_init_data(State* mwk, MVJ* mvj, u16* ixtbl) {
     s16 i;
 
     for (i = 0; i < 8; i++) {
@@ -423,15 +423,15 @@ static void k5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num) {
     }
 }
 
-static s32 get_cal_work(WORK* wk) {
-    WORK* fwk;
+static s32 get_cal_work(State* wk) {
+    State* fwk;
     s16 ix;
 
     if ((ix = Acquire_Effect(7)) == -1) {
         return -1;
     }
 
-    fwk = (WORK*)frw[ix];
+    fwk = (State*)frw[ix];
     wk->target_adrs = fwk;
     fwk->be_flag = 1;
     fwk->id = 0xCD;
@@ -451,7 +451,7 @@ static void k5_add_sub(MVJ* mvj) {
 }
 
 s32 effect_k5_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.Bonus_Game_Flag == 0x14) {
@@ -462,7 +462,7 @@ s32 effect_k5_init(PLW* wk) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0xCD;
     ewk->wu.work_id = 0x10;

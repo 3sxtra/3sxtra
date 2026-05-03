@@ -8,7 +8,7 @@
 #include "common.h"
 #include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
@@ -47,7 +47,7 @@ const s8* button_string_data[8][12] = {
     { "PLAYER 1", "PLAYER 2", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
-void effect_10_move(WORK_Other* ewk) {
+void effect_10_move(State_Other* ewk) {
     s16 color;
     s16 correct_index;
     s16 ix;
@@ -104,14 +104,14 @@ void effect_10_move(WORK_Other* ewk) {
 }
 
 s32 effect_10_init(s16 id, u8 Type, u8 Type_in_Type, u8 dir_step, u8 Death_Type, s16 pos_x, s16 pos_y) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 10;
     ewk->wu.work_id = 16;

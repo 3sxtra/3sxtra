@@ -10,13 +10,13 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effect_72_move(WORK_Other* ewk) {
+void effect_72_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -49,8 +49,8 @@ void effect_72_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_72_init(WORK_Other* oya, u8 type_id) {
-    WORK_Other* ewk;
+s32 effect_72_init(State_Other* oya, u8 type_id) {
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.EXE_obroll) {
@@ -61,7 +61,7 @@ s32 effect_72_init(WORK_Other* oya, u8 type_id) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 72;
     ewk->wu.type = type_id;

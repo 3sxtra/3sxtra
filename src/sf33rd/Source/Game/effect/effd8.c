@@ -10,7 +10,7 @@
 #include "constants.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
@@ -19,7 +19,7 @@
 
 // Forward decls
 
-static void Setup_EffD8_Pos(WORK_Other* ewk, s16 /* unused */);
+static void Setup_EffD8_Pos(State_Other* ewk, s16 /* unused */);
 static s32 Setup_Face_Offset_X(s16 x);
 
 // Data
@@ -28,7 +28,7 @@ const u8 D8_Priority_Data[4] = { 55, 55, 52, 53 };
 
 // Funcs
 
-void effect_D8_move(WORK_Other* ewk) {
+void effect_D8_move(State_Other* ewk) {
     s16 offset_x;
 
     ewk->wu.hit_quake += 1;
@@ -126,7 +126,7 @@ void effect_D8_move(WORK_Other* ewk) {
 }
 
 s32 effect_D8_init(s16 PL_id, s16 Type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 offset_x;
 
@@ -134,7 +134,7 @@ s32 effect_D8_init(s16 PL_id, s16 Type) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0x8A;
     ewk->wu.work_id = 0x10;
@@ -155,7 +155,7 @@ s32 effect_D8_init(s16 PL_id, s16 Type) {
     return 0;
 }
 
-static void Setup_EffD8_Pos(WORK_Other* ewk, s16 /* unused */) {
+static void Setup_EffD8_Pos(State_Other* ewk, s16 /* unused */) {
     s16 xx = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
     ewk->wu.xyz[0].disp.pos = Face_Pos_Data[xx][0] + 512;
     ewk->wu.xyz[1].disp.pos = Face_Pos_Data[xx][1] + 0;

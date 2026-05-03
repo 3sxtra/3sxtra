@@ -20,7 +20,7 @@
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Common/PPGWork.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
@@ -980,7 +980,7 @@ void dispButtonImage2(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix) {
 
 /** @brief Render the save/load title banner from event-work data. */
 void dispSaveLoadTitle(void* ewk) {
-    WORK* wk;
+    State* wk;
     PAL_CURSOR_COL oricol;
     Sprite prm;
     FLVec3 pos[2];
@@ -991,7 +991,7 @@ void dispSaveLoadTitle(void* ewk) {
         return;
     }
 
-    wk = (WORK*)ewk;
+    wk = (State*)ewk;
     mlt_obj_matrix(wk, 0);
     oricol.color = -1;
     oricol.argb.a = (0xFF - wk->my_clear_level);

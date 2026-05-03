@@ -8,15 +8,15 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff72.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
 const s16 eff71_time_tbl[8] = { 2, 8, 12, 9, 4, 6, 50, 3 };
 
-void effect_71_move(WORK_Other* ewk) {
+void effect_71_move(State_Other* ewk) {
     s16 work;
 
     if (obr_no_disp_check()) {
@@ -58,7 +58,7 @@ void effect_71_move(WORK_Other* ewk) {
 }
 
 s32 effect_71_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.EXE_obroll) {
@@ -69,7 +69,7 @@ s32 effect_71_init() {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 71;
     ewk->wu.work_id = 16;

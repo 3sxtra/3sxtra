@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
@@ -75,7 +75,7 @@ s8* Letter_Data_A3[26][8] = { { "NORMAL MODE",
                               { "RECORDING", "TRAINING", NULL, NULL, NULL, NULL, NULL, NULL },
                               { "REPLAY DATA", "FINISHED$!", NULL, NULL, NULL, NULL, NULL, NULL } };
 
-void effect_A3_move(WORK_Other* ewk) {
+void effect_A3_move(State_Other* ewk) {
     s16 color;
     s16 ix;
     s16 clear_level;
@@ -131,14 +131,14 @@ void effect_A3_move(WORK_Other* ewk) {
 }
 
 s32 effect_A3_init(s16 id, u8 Type, u8 Type_in_Type, u8 dir_step, u8 Death_Type, s16 pos_x, s16 pos_y, s16 Buff) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 103;
     ewk->wu.work_id = 16;

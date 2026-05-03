@@ -11,7 +11,7 @@
 #include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/eff10.h"
 #include "sf33rd/Source/Game/effect/eff66.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
 #include "sf33rd/Source/Game/system/pause.h"

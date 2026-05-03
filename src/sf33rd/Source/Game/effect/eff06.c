@@ -74,7 +74,7 @@ const s16* scr_obj_data6[22] = { st0000_data_tbl,  st0100_data_tbl,  st0200_data
                                  st1000_data_tbl,  st1100_data_tbl,  st0500_data_tbl, st1300_data_tbl,  st1400_data_tbl,
                                  stg_dum_data_tbl, stg_dum_data_tbl };
 
-void effect_06_move(WORK_Other* ewk) {
+void effect_06_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -103,7 +103,7 @@ void effect_06_move(WORK_Other* ewk) {
 }
 
 s32 effect_06_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 lp_cnt = scr_obj_num6[g_state.bg_w.bg_index];
     s16 i;
@@ -120,7 +120,7 @@ s32 effect_06_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 6;
         ewk->wu.work_id = 16;

@@ -9,15 +9,15 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto);
+static void urian_guard_se_check(State_Other* ewk, PLW* twk, u16 oto);
 
 const s16 hit_mark_dir_table[16] = { 0, -1, -2, -3, -4, -5, -6, -7, 8, 7, 6, 5, 4, 3, 2, 1 };
 
@@ -130,7 +130,7 @@ const s16 hit_mark_adjust_table[108][2] = {
     { -72, 0 },   { -48, 104 }, { 0, 2 },     { -48, 50 }
 };
 
-void effect_02_move(WORK_Other* ewk) {
+void effect_02_move(State_Other* ewk) {
     const HMDT* tad;
     const EXPLEM* edt;
 
@@ -176,7 +176,7 @@ void effect_02_move(WORK_Other* ewk) {
             if (((PLW*)ewk->wu.target_adrs)->wu.work_id == 1) {
                 ewk->wu.dir_timer = ((PLW*)ewk->wu.target_adrs)->player_number;
             } else {
-                ewk->wu.dir_timer = ((WORK_Other*)ewk->wu.target_adrs)->master_player;
+                ewk->wu.dir_timer = ((State_Other*)ewk->wu.target_adrs)->master_player;
             }
         }
 
@@ -300,7 +300,7 @@ void effect_02_move(WORK_Other* ewk) {
     }
 }
 
-static void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto) {
+static void urian_guard_se_check(State_Other* ewk, PLW* twk, u16 oto) {
     if (twk->player_number == 13 && (oto == 266 || oto == 267)) {
         Se_Dispatch(280, 280, ewk);
         g_state.Last_Called_SE = 280;
@@ -311,9 +311,9 @@ static void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto) {
     g_state.Last_Called_SE = oto;
 }
 
-s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl) {
-    WORK_Other* ewk;
-    WORK_Other* dwk;
+s32 effect_02_init(State* wk, s8 dmgp, s8 mkst, s8 dmrl) {
+    State_Other* ewk;
+    State_Other* dwk;
     s16 ix;
 
     if (g_state.Combo_Demo_Flag & 0x80) {
@@ -324,7 +324,7 @@ s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 2;
     ewk->wu.work_id = 64;
@@ -354,12 +354,12 @@ s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl) {
         ewk->master_player = ewk->wu.dir_timer = ((PLW*)wk)->player_number;
         ewk->wu.weight_level = 1;
     } else {
-        dwk = (WORK_Other*)wk;
+        dwk = (State_Other*)wk;
         ewk->my_master = dwk->my_master;
         ewk->master_id = dwk->master_id;
         ewk->master_work_id = dwk->master_work_id;
-        ewk->wu.target_adrs = ((WORK*)dwk->my_master)->target_adrs;
-        ewk->wu.my_col_code = ((WORK*)dwk->my_master)->my_col_code;
+        ewk->wu.target_adrs = ((State*)dwk->my_master)->target_adrs;
+        ewk->wu.my_col_code = ((State*)dwk->my_master)->my_col_code;
         ewk->master_player = ewk->wu.dir_timer = dwk->master_player;
     }
 

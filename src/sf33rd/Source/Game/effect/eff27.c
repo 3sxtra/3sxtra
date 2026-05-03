@@ -10,17 +10,17 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void set_second_hop(WORK_Other* ewk);
-static void dead_check27(WORK_Other* ewk);
+static void set_second_hop(State_Other* ewk);
+static void dead_check27(State_Other* ewk);
 
-void (*eff27_jp_tbl[11])(WORK_Other*);
+void (*eff27_jp_tbl[11])(State_Other*);
 
 const s16 scr_obj_num27[2] = { 3, 3 };
 
@@ -34,8 +34,8 @@ const s16 piece_0001[57] = { 2, 8492, 14,  80, 70, 51, 1, 0, 2, 32, 32, 2,  0, 0
 
 const s16* scr_obj_data27[2] = { piece_0000, piece_0001 };
 
-void effect_27_move(WORK_Other* ewk) {
-    WORK_Other* oya;
+void effect_27_move(State_Other* ewk) {
+    State_Other* oya;
 
     if (obr_no_disp_check()) {
         return;
@@ -47,7 +47,7 @@ void effect_27_move(WORK_Other* ewk) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.disp_flag = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-        oya = (WORK_Other*)ewk->my_master;
+        oya = (State_Other*)ewk->my_master;
         ewk->wu.old_routine_no[3] = oya->wu.routine_no[1];
         /* fallthrough */
 
@@ -81,7 +81,7 @@ void effect_27_move(WORK_Other* ewk) {
     }
 }
 
-static void eff27_00(WORK_Other* ewk) {
+static void eff27_00(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.hit_stop) {
@@ -106,7 +106,7 @@ static void eff27_00(WORK_Other* ewk) {
     }
 }
 
-static void eff27_02(WORK_Other* ewk) {
+static void eff27_02(State_Other* ewk) {
     if (ewk->wu.hit_stop) {
         char_move(&ewk->wu);
     }
@@ -121,7 +121,7 @@ static void eff27_02(WORK_Other* ewk) {
     }
 }
 
-static void eff27_03(WORK_Other* ewk) {
+static void eff27_03(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.cg_type != 2) {
@@ -163,7 +163,7 @@ static void eff27_03(WORK_Other* ewk) {
     }
 }
 
-static void eff27_04(WORK_Other* ewk) {
+static void eff27_04(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.cg_type != 2) {
@@ -195,7 +195,7 @@ static void eff27_04(WORK_Other* ewk) {
     }
 }
 
-static void eff27_05(WORK_Other* ewk) {
+static void eff27_05(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.cg_type != 2) {
@@ -228,7 +228,7 @@ static void eff27_05(WORK_Other* ewk) {
     }
 }
 
-static void eff27_06(WORK_Other* ewk) {
+static void eff27_06(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         char_move(&ewk->wu);
@@ -250,7 +250,7 @@ static void eff27_06(WORK_Other* ewk) {
     }
 }
 
-static void eff27_07(WORK_Other* ewk) {
+static void eff27_07(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.cg_type != 2) {
@@ -296,7 +296,7 @@ static void eff27_07(WORK_Other* ewk) {
     }
 }
 
-static void eff27_08(WORK_Other* ewk) {
+static void eff27_08(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         eff27_03(ewk);
@@ -313,7 +313,7 @@ static void eff27_08(WORK_Other* ewk) {
     }
 }
 
-static void eff27_09(WORK_Other* ewk) {
+static void eff27_09(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         char_move(&ewk->wu);
@@ -338,7 +338,7 @@ static void eff27_09(WORK_Other* ewk) {
     }
 }
 
-static void set_second_hop(WORK_Other* ewk) {
+static void set_second_hop(State_Other* ewk) {
     const s16* ptr;
 
     ewk->wu.xyz[1].disp.pos = ewk->wu.old_routine_no[1];
@@ -356,19 +356,19 @@ static void set_second_hop(WORK_Other* ewk) {
     ewk->wu.mvxy.a[1].sp = ewk->wu.mvxy.a[1].sp >> 1;
 }
 
-static void dead_check27(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+static void dead_check27(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     if (ewk->wu.old_routine_no[3] != oya->wu.routine_no[1]) {
         ewk->wu.routine_no[0] = 2;
     }
 }
 
-void (*eff27_jp_tbl[11])(WORK_Other*) = { eff27_00, eff27_00, eff27_02, eff27_03, eff27_04, eff27_05,
+void (*eff27_jp_tbl[11])(State_Other*) = { eff27_00, eff27_00, eff27_02, eff27_03, eff27_04, eff27_05,
                                           eff27_06, eff27_06, eff27_07, eff27_08, eff27_09 };
 
-s32 effect_27_init(WORK_Other* oya, s16 type) {
-    WORK_Other* ewk;
+s32 effect_27_init(State_Other* oya, s16 type) {
+    State_Other* ewk;
     s16 ix;
     s16 lp_cnt = scr_obj_num27[type];
     s16 i;
@@ -383,7 +383,7 @@ s32 effect_27_init(WORK_Other* oya, s16 type) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->my_master = oya;
         ewk->wu.be_flag = 1;
         ewk->wu.id = 0x1B;

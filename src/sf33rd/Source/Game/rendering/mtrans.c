@@ -100,7 +100,7 @@ typedef struct {
     s32 wh;        // Tile class: 1, 2, or 4
     s32 size;      // Decoded tile size in bytes: (wh*wh) << 6
     u16 tile_code; // trsptr->code (index into texture table)
-    u16 attr;      // trsptr->attr (raw, before XOR with WORK flip)
+    u16 attr;      // trsptr->attr (raw, before XOR with State flip)
     u8* tex_data;  // Pointer to compressed tile data (&((u8*)texptr)[1])
 } CGTileDesc;
 
@@ -295,7 +295,7 @@ static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count, const u
  *
  * @return true if the HD override was drawn; false if no override exists.
  */
-static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, const CGTileCacheEntry* cge) {
+static bool try_hd_sprite_override(State* wk, s32 flip_flags, s32 group_index, const CGTileCacheEntry* cge) {
     SpriteBox box;
     compute_tile_bbox(cge, flip_flags, &box);
 
@@ -346,7 +346,7 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, co
  *
  * @return true if the HD override was drawn; false if no override exists.
  */
-static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index, const TileMapEntry* trsptr, s32 count,
+static bool try_hd_sprite_override_ext(State* wk, s32 flip_flags, s32 group_index, const TileMapEntry* trsptr, s32 count,
                                        const u32* textbl) {
     SpriteBox box;
     compute_tile_bbox_ext(trsptr, count, textbl, flip_flags, &box);
@@ -567,7 +567,7 @@ static void search_trsptr(uintptr_t trstbl, s32 i, s32 n, s32 cods, s32 atrs, s3
 }
 
 /** @brief Render a multi-texture object with standard display mode. */
-void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
+void mlt_obj_disp(MultiTexture* mt, State* wk, s32 base_y) {
     u16* trsbas;
     TileMapEntry* trsptr;
     s32 rnum;
@@ -681,7 +681,7 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
 }
 
 /** @brief Render a multi-texture object in RGB (unpaletted) mode. */
-void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
+void mlt_obj_disp_rgb(MultiTexture* mt, State* wk, s32 base_y) {
     u16* trsbas;
     TileMapEntry* trsptr;
     s32 rnum;
@@ -831,7 +831,7 @@ s16 getObjectHeight(u16 cgnum) {
 }
 
 /** @brief Transform and render with pattern caching (extended variant). */
-void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
+void mlt_obj_trans_ext(MultiTexture* mt, State* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
     TileMapEntry* trsptr;
@@ -1089,7 +1089,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
  * The accumulated X/Y positions, TEX dimensions, and tile sizes are read from
  * the CGTileDesc cache instead of being re-parsed from TileMapEntry[].
  */
-void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
+void mlt_obj_trans(MultiTexture* mt, State* wk, s32 base_y) {
     s32 rnum;
     s32 attr;
     s32 palo;
@@ -1192,7 +1192,7 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
 }
 
 /** @brief Transform and render with CP3 palette (extended variant). */
-void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
+void mlt_obj_trans_cp3_ext(MultiTexture* mt, State* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
     TileMapEntry* trsptr;
@@ -1460,7 +1460,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
  *
  * `+"`u{26A1}`+" Opt4: Uses pre-built CG tile descriptors to skip the per-frame tile map walk.
  */
-void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
+void mlt_obj_trans_cp3(MultiTexture* mt, State* wk, s32 base_y) {
 
     s32 rnum;
     s32 flip;
@@ -1570,7 +1570,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
 }
 
 /** @brief Transform and render in RGB mode (extended variant). */
-void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
+void mlt_obj_trans_rgb_ext(MultiTexture* mt, State* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
     TileMapEntry* trsptr;
@@ -1822,7 +1822,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
  *
  * `+"`u{26A1}`+" Opt4: Uses pre-built CG tile descriptors to skip the per-frame tile map walk.
  */
-void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
+void mlt_obj_trans_rgb(MultiTexture* mt, State* wk, s32 base_y) {
     TRACE_ZONE_NC("mlt_obj_trans_rgb", TRACE_COLOR_RENDER);
     s32 rnum;
     s32 flip;
@@ -1932,7 +1932,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
  * ⚡ Opt3: After building the matrix, cache its elements into statics
  * for inlined per-chip transforms in seqsStoreChip().
  */
-void mlt_obj_matrix(WORK* wk, s32 base_y) {
+void mlt_obj_matrix(State* wk, s32 base_y) {
     njSetMatrix(NULL, &BgMATRIX[wk->my_family]);
     njTranslate(NULL, wk->position_x, wk->position_y + base_y, PrioBase[wk->position_z]);
 

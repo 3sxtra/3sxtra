@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
@@ -16,7 +16,7 @@ const u8 ci_color_tbl[26] = { 21, 2,  22, 2,  21, 2,  20, 2,  21, 2,  22, 2,  21
 
 const u8 bonus_ci_color_tbl[6] = { 20, 12, 20, 12, 20, 255 };
 
-void effect_56_move(WORK_Other* ewk) {
+void effect_56_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -71,14 +71,14 @@ void effect_56_move(WORK_Other* ewk) {
 }
 
 s32 effect_56_init(u8 type, u8 kill) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 56;
     ewk->wu.work_id = 16;

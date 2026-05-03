@@ -10,20 +10,20 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effm0.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void effm2_move(WORK_Other* ewk);
-static void effm2_move2(WORK_Other* ewk);
+static void effm2_move(State_Other* ewk);
+static void effm2_move2(State_Other* ewk);
 
 const s16 effm2_char_tbl[4] = { 50, 50, 29, 46 };
 
-void effect_M2_move(WORK_Other* ewk) {
+void effect_M2_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -54,8 +54,8 @@ void effect_M2_move(WORK_Other* ewk) {
     }
 }
 
-static void effm2_move(WORK_Other* ewk) {
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+static void effm2_move(State_Other* ewk) {
+    State* oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -107,8 +107,8 @@ static void effm2_move(WORK_Other* ewk) {
     }
 }
 
-static void effm2_move2(WORK_Other* ewk) {
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+static void effm2_move2(State_Other* ewk) {
+    State* oya_ptr = (State*)ewk->my_master;
     s16 dis_w;
 
     switch (ewk->wu.routine_no[1]) {
@@ -176,8 +176,8 @@ static void effm2_move2(WORK_Other* ewk) {
     }
 }
 
-s32 effect_M2_init(WORK* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_M2_init(State* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
 
     if (data) {
@@ -192,7 +192,7 @@ s32 effect_M2_init(WORK* wk, u8 data) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 222;
     ewk->wu.graphic_rom_type = 1;

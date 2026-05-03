@@ -16,7 +16,7 @@
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/config/paths.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 // clang-format off
 #include "port/sdl/renderer/gl_compat.h"

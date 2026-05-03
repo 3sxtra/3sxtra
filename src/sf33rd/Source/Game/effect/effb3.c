@@ -19,20 +19,20 @@
 
 // sbss
 
-WORK_Other* oya_adrs = NULL;
+State_Other* oya_adrs = NULL;
 
 // Forward decls
 
-static void round_move_init(WORK_Other* ewk);
-static void round_move(WORK_Other* ewk);
-static void fight_move(WORK_Other* ewk);
-static void fight_col_move(WORK_Other* ewk);
-static void fight_vanish(WORK_Other* ewk);
+static void round_move_init(State_Other* ewk);
+static void round_move(State_Other* ewk);
+static void fight_move(State_Other* ewk);
+static void fight_col_move(State_Other* ewk);
+static void fight_vanish(State_Other* ewk);
 
 // Funcs
 
-void effect_B3_move(WORK_Other* ewk) {
-    oya_adrs = (WORK_Other*)ewk->my_master;
+void effect_B3_move(State_Other* ewk) {
+    oya_adrs = (State_Other*)ewk->my_master;
 
     if (ewk->wu.old_routine_no[1] != oya_adrs->wu.routine_no[0]) {
         ewk->wu.routine_no[1] = 0;
@@ -82,7 +82,7 @@ void effect_B3_move(WORK_Other* ewk) {
     }
 }
 
-static void round_move_init(WORK_Other* ewk) {
+static void round_move_init(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -99,7 +99,7 @@ static void round_move_init(WORK_Other* ewk) {
     }
 }
 
-static void round_move(WORK_Other* ewk) {
+static void round_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -127,7 +127,7 @@ static void round_move(WORK_Other* ewk) {
     }
 }
 
-static void fight_move(WORK_Other* ewk) {
+static void fight_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -147,12 +147,12 @@ static void fight_move(WORK_Other* ewk) {
     }
 }
 
-static void fight_col_move(WORK_Other* ewk) {
+static void fight_col_move(State_Other* ewk) {
     ewk->wu.extra_col = oya_adrs->wu.extra_col;
     disp_pos_trans_entry5(ewk);
 }
 
-static void fight_vanish(WORK_Other* ewk) {
+static void fight_vanish(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -179,15 +179,15 @@ static void fight_vanish(WORK_Other* ewk) {
     }
 }
 
-s32 effect_B3_init(WORK_Other* oya) {
-    WORK_Other* ewk;
+s32 effect_B3_init(State_Other* oya) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0x71;
     ewk->wu.work_id = 0x10;

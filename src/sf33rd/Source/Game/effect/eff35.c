@@ -10,22 +10,22 @@
 #include "sf33rd/Source/Game/effect/eff58.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void eff35_0000(WORK_Other* ewk);
-static void eff35_0001(WORK_Other* ewk);
-static void eff35_0002(WORK_Other* ewk);
-static void eff35_0003(WORK_Other* ewk);
-static void eff35_0004(WORK_Other* ewk);
-static void eff35_0005(WORK_Other* ewk);
-static void eff35_0006(WORK_Other* ewk);
+static void eff35_0000(State_Other* ewk);
+static void eff35_0001(State_Other* ewk);
+static void eff35_0002(State_Other* ewk);
+static void eff35_0003(State_Other* ewk);
+static void eff35_0004(State_Other* ewk);
+static void eff35_0005(State_Other* ewk);
+static void eff35_0006(State_Other* ewk);
 
 const s16 eff35_data_tbl[12][7] = {
     { 608, 0, 28, 1, 1, 0, 60 },  { 432, 0, 28, 1, 2, 0, 60 },  { 848, 20, 81, 1, 3, 3, 60 },
@@ -38,14 +38,14 @@ const s16 eff35_03_b[4] = { 180, 120, 240, 60 };
 
 const s16 eff35_03_s[4] = { 190, 130, 220, 60 };
 
-void effect_35_move(WORK_Other* ewk) {
-    void (*eff35_jp[7])(WORK_Other*) = { eff35_0000, eff35_0001, eff35_0002, eff35_0003,
+void effect_35_move(State_Other* ewk) {
+    void (*eff35_jp[7])(State_Other*) = { eff35_0000, eff35_0001, eff35_0002, eff35_0003,
                                          eff35_0004, eff35_0005, eff35_0006 };
 
     eff35_jp[ewk->wu.routine_no[0]](ewk);
 }
 
-static void eff35_0000(WORK_Other* ewk) {
+static void eff35_0000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.old_routine_no[1]--;
@@ -69,7 +69,7 @@ static void eff35_0000(WORK_Other* ewk) {
     }
 }
 
-static void eff35_0001(WORK_Other* ewk) {
+static void eff35_0001(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.Break_Into) {
@@ -150,7 +150,7 @@ static void eff35_0001(WORK_Other* ewk) {
     }
 }
 
-static void eff35_0002(WORK_Other* ewk) {
+static void eff35_0002(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.Break_Into) {
@@ -196,7 +196,7 @@ static void eff35_0002(WORK_Other* ewk) {
     }
 }
 
-static void eff35_0003(WORK_Other* ewk) {
+static void eff35_0003(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -277,7 +277,7 @@ static void eff35_0003(WORK_Other* ewk) {
     }
 }
 
-static void eff35_0004(WORK_Other* ewk) {
+static void eff35_0004(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.old_routine_no[1]--;
@@ -332,7 +332,7 @@ static void eff35_0004(WORK_Other* ewk) {
     }
 }
 
-static void eff35_0005(WORK_Other* ewk) {
+static void eff35_0005(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.Break_Into) {
@@ -380,7 +380,7 @@ static void eff35_0005(WORK_Other* ewk) {
     }
 }
 
-static void eff35_0006(WORK_Other* ewk) {
+static void eff35_0006(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.Break_Into) {
@@ -430,7 +430,7 @@ static void eff35_0006(WORK_Other* ewk) {
 }
 
 s32 effect_35_init(s16 wait_timer, s16 c_type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr;
     u8 char_num;
@@ -439,7 +439,7 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.id = 35;
 
     switch (c_type) {

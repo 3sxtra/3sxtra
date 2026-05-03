@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -23,10 +23,10 @@ const s16 eff25_data_0000[16] = { 0, 2, 300, 160, 32, 71, 6, 0, 0, 0, 6, 6, 66, 
 
 const s16* scr_obj_data25[1] = { eff25_data_0000 };
 
-void (*eff25_jp_tbl[10])(WORK_Other* ewk) = { eff25_00, eff25_00, eff25_02, eff25_02, eff25_04,
+void (*eff25_jp_tbl[10])(State_Other* ewk) = { eff25_00, eff25_00, eff25_02, eff25_02, eff25_04,
                                               eff25_04, eff25_06, eff25_06, eff25_08, eff25_08 };
 
-void effect_25_move(WORK_Other* ewk) {
+void effect_25_move(State_Other* ewk) {
     if (compel_dead_check(ewk)) {
         ewk->wu.routine_no[0] = 99;
         ewk->wu.disp_flag = 0;
@@ -60,7 +60,7 @@ void effect_25_move(WORK_Other* ewk) {
     }
 }
 
-void eff25_00(WORK_Other* ewk) {
+void eff25_00(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.eff_hit_flag[ewk->wu.type]) {
@@ -102,7 +102,7 @@ void eff25_00(WORK_Other* ewk) {
     }
 }
 
-void eff25_02(WORK_Other* ewk) {
+void eff25_02(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.eff_hit_flag[ewk->wu.type]) {
@@ -152,7 +152,7 @@ void eff25_02(WORK_Other* ewk) {
     }
 }
 
-void eff25_04(WORK_Other* ewk) {
+void eff25_04(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.eff_hit_flag[ewk->wu.type]) {
@@ -182,7 +182,7 @@ void eff25_04(WORK_Other* ewk) {
     }
 }
 
-void eff25_06(WORK_Other* ewk) {
+void eff25_06(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.eff_hit_flag[ewk->wu.type]) {
@@ -234,7 +234,7 @@ void eff25_06(WORK_Other* ewk) {
     }
 }
 
-void eff25_08(WORK_Other* ewk) {
+void eff25_08(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.eff_hit_flag[ewk->wu.type]) {
@@ -264,13 +264,13 @@ void eff25_08(WORK_Other* ewk) {
     }
 }
 
-void eff25_char_set(WORK_Other* ewk) {
+void eff25_char_set(State_Other* ewk) {
     ewk->wu.routine_no[1]++;
     ewk->wu.disp_flag = 1;
     set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
 }
 
-void piece_set(WORK_Other* ewk) {
+void piece_set(State_Other* ewk) {
     if (!(ewk->wu.old_routine_no[2] & 1)) {
         return;
     }
@@ -283,7 +283,7 @@ void piece_set(WORK_Other* ewk) {
 }
 
 s32 effect_25_init(s8 num) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr = scr_obj_data25[num];
 
@@ -291,7 +291,7 @@ s32 effect_25_init(s8 num) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 25;
     ewk->wu.work_id = 16;

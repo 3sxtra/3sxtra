@@ -11,7 +11,7 @@
  *   cursor 2: AUTO SAVE  (toggle: g_state.Convert_Buff[3][0][2], 0=OFF 1=ON)
  *   cursor 3: EXIT
  *
- * Key globals (from workuser.h):
+ * Key globals (from state_user.h):
  *   g_state.Menu_Cursor_Y[], g_state.IO_Result, g_state.Convert_Buff[4][2][12]
  */
 
@@ -23,7 +23,7 @@
 #include <SDL3/SDL.h>
 
 extern "C" {
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 } // extern "C"
 
 // ─── Data model ──────────────────────────────────────────────────

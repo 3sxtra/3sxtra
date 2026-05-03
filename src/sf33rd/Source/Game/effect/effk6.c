@@ -12,8 +12,8 @@
 #include "sf33rd/Source/Game/effect/eff76.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
@@ -21,16 +21,16 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-static void EFFK6_WAIT(WORK_Other* ewk);
-static void EFFK6_SLIDE_IN(WORK_Other* ewk);
-static void EFFK6_SLIDE_OUT(WORK_Other* ewk);
-static void EFFK6_SUDDENLY(WORK_Other* ewk);
-static void EFFK6_KILL(WORK_Other* ewk);
-static void EFFK6_MOVE(WORK_Other* ewk);
-static void Setup_1st_PosK6(WORK_Other* ewk, s16 Who, s16 Play_Style);
-static s16 Get_PosK6(WORK_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style);
-static void Setup_CharK6(WORK_Other* ewk, s16 damage_vitality);
-static s16 Setup_K6_Index(WORK_Other* ewk);
+static void EFFK6_WAIT(State_Other* ewk);
+static void EFFK6_SLIDE_IN(State_Other* ewk);
+static void EFFK6_SLIDE_OUT(State_Other* ewk);
+static void EFFK6_SUDDENLY(State_Other* ewk);
+static void EFFK6_KILL(State_Other* ewk);
+static void EFFK6_MOVE(State_Other* ewk);
+static void Setup_1st_PosK6(State_Other* ewk, s16 Who, s16 Play_Style);
+static s16 Get_PosK6(State_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style);
+static void Setup_CharK6(State_Other* ewk, s16 damage_vitality);
+static s16 Setup_K6_Index(State_Other* ewk);
 
 void (*const EFFK6_Jmp_Tbl[6])() = {
     EFFK6_WAIT, EFFK6_SLIDE_IN, EFFK6_SLIDE_OUT, EFFK6_SUDDENLY, EFFK6_MOVE, EFFK6_KILL
@@ -38,7 +38,7 @@ void (*const EFFK6_Jmp_Tbl[6])() = {
 
 /* effk6 draws 1P/2P badges and name covers on the char select screen.
  * Suppress rendering when the RmlUI overlay is active. */
-void effect_K6_move(WORK_Other* ewk) {
+void effect_K6_move(State_Other* ewk) {
     Check_Pos_OBJ(ewk);
     EFFK6_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
@@ -47,13 +47,13 @@ void effect_K6_move(WORK_Other* ewk) {
         sort_push_request4(&ewk->wu);
 }
 
-static void EFFK6_WAIT(WORK_Other* ewk) {
+static void EFFK6_WAIT(State_Other* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-static void EFFK6_SLIDE_IN(WORK_Other* ewk) {
+static void EFFK6_SLIDE_IN(State_Other* ewk) {
     s16 xx;
 
     if ((g_state.Order[ewk->wu.dir_old]) == 5) {
@@ -138,7 +138,7 @@ static void EFFK6_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-static void EFFK6_SLIDE_OUT(WORK_Other* ewk) {
+static void EFFK6_SLIDE_OUT(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.disp_flag == 0) {
@@ -178,7 +178,7 @@ static void EFFK6_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-static void EFFK6_SUDDENLY(WORK_Other* ewk) {
+static void EFFK6_SUDDENLY(State_Other* ewk) {
     s16 xx;
 
     switch (ewk->wu.routine_no[1]) {
@@ -209,7 +209,7 @@ static void EFFK6_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-static void EFFK6_KILL(WORK_Other* ewk) {
+static void EFFK6_KILL(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old] == 0) {
@@ -225,7 +225,7 @@ static void EFFK6_KILL(WORK_Other* ewk) {
     }
 }
 
-static void EFFK6_MOVE(WORK_Other* ewk) {
+static void EFFK6_MOVE(State_Other* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 4) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -269,14 +269,14 @@ static void EFFK6_MOVE(WORK_Other* ewk) {
 }
 
 s32 effect_K6_init(s16 PL_id, s16 dir_old, s16 damage_vitality, s16 Target_BG) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 206;
     ewk->wu.work_id = 16;
@@ -293,7 +293,7 @@ s32 effect_K6_init(s16 PL_id, s16 dir_old, s16 damage_vitality, s16 Target_BG) {
     return 0;
 }
 
-static void Setup_1st_PosK6(WORK_Other* ewk, s16 Who, s16 Play_Style) {
+static void Setup_1st_PosK6(State_Other* ewk, s16 Who, s16 Play_Style) {
     if (ewk->master_id) {
         ewk->wu.mvxy.a[0].sp = -0xF0000;
         ewk->wu.mvxy.d[0].sp = 0;
@@ -313,7 +313,7 @@ static void Setup_1st_PosK6(WORK_Other* ewk, s16 Who, s16 Play_Style) {
     }
 }
 
-static s16 Get_PosK6(WORK_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style) {
+static s16 Get_PosK6(State_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style) {
     if (ewk->master_id == 0) {
         switch (ewk->wu.direction) {
         default:
@@ -366,7 +366,7 @@ static s16 Get_PosK6(WORK_Other* ewk, s16 Who, s16 Get_Type, s16 Play_Style) {
     }
 }
 
-static void Setup_CharK6(WORK_Other* ewk, s16 damage_vitality) {
+static void Setup_CharK6(State_Other* ewk, s16 damage_vitality) {
     s16 x;
 
     switch (damage_vitality) {
@@ -392,7 +392,7 @@ static void Setup_CharK6(WORK_Other* ewk, s16 damage_vitality) {
     }
 }
 
-static s16 Setup_K6_Index(WORK_Other* ewk) {
+static s16 Setup_K6_Index(State_Other* ewk) {
     switch (ewk->wu.dir_old) {
     case 25:
     case 26:

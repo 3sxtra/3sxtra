@@ -10,21 +10,21 @@
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-static void EFF40_EXIT(WORK_Other* ewk);
-static void EFF40_BACK(WORK_Other* ewk);
-static void EFF40_ARROW(WORK_Other* ewk);
+static void EFF40_EXIT(State_Other* ewk);
+static void EFF40_BACK(State_Other* ewk);
+static void EFF40_ARROW(State_Other* ewk);
 
 void (*const EFF40_Jmp_Tbl[4])() = { EFF40_EXIT, EFF40_BACK, EFF40_ARROW, EFF40_ARROW };
 
 const s16 Pos_Data_40[4][3] = { { 0, 77, 70 }, { 0, 77, 72 }, { 0, 77, 68 }, { 0, 77, 68 } };
 
-void effect_40_move(WORK_Other* ewk) {
+void effect_40_move(State_Other* ewk) {
     Check_Pos_OBJ2(ewk);
 
     if (g_state.Menu_Suicide[ewk->master_player]) {
@@ -42,7 +42,7 @@ void effect_40_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-static void EFF40_EXIT(WORK_Other* ewk) {
+static void EFF40_EXIT(State_Other* ewk) {
     if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max && ewk->wu.active_move == ewk->master_priority) {
         ewk->wu.my_clear_level = 0;
     } else {
@@ -50,7 +50,7 @@ static void EFF40_EXIT(WORK_Other* ewk) {
     }
 }
 
-static void EFF40_BACK(WORK_Other* ewk) {
+static void EFF40_BACK(State_Other* ewk) {
     s16 ix;
 
     if (g_state.Menu_Cursor_Y[0] == g_state.Menu_Max && ewk->wu.active_move == ewk->master_priority) {
@@ -62,7 +62,7 @@ static void EFF40_BACK(WORK_Other* ewk) {
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ix + 1, 0);
 }
 
-static void EFF40_ARROW(WORK_Other* ewk) {
+static void EFF40_ARROW(State_Other* ewk) {
     if (g_state.Menu_Cursor_Y[0] != g_state.Menu_Max) {
         set_char_move_init2(&ewk->wu, 0, 76, (ewk->master_priority / 2) + 1, 0);
         ewk->wu.routine_no[1] = 0;
@@ -80,14 +80,14 @@ static void EFF40_ARROW(WORK_Other* ewk) {
 }
 
 s32 effect_40_init(s16 id, s16 type, s16 char_ix, s16 sync_bg, s16 master_player, s16 master_priority) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 40;

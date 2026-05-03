@@ -6,7 +6,7 @@
  * with an RmlUi overlay showing sound mode, BGM/SE levels, BGM type,
  * and sound test controls.
  *
- * Key globals (from workuser.h):
+ * Key globals (from state_user.h):
  *   g_state.Convert_Buff[3][1][0..7], bgm_level, se_level, sys_w.bgm_type,
  *   g_state.Menu_Cursor_Y[]
  */
@@ -21,7 +21,7 @@
 #include <cstdio>
 
 extern "C" {
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 } // extern "C"
 

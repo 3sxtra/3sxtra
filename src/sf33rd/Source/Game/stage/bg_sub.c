@@ -7,9 +7,9 @@
 #include "game_state.h"
 #include "sf33rd/Source/Game/stage/bg_constants.h"
 #include "common.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
@@ -25,7 +25,7 @@ void (*const scr_x_mv_jp[35])() = { scr_10_20,   scr_10_21,   scr_10_22,   scr_x
 
 // Forward decls
 static s16 remake_x_mvstep(s16 mvstep);
-static s32 suzi_offset_set_sub(WORK_Other* ewk);
+static s32 suzi_offset_set_sub(State_Other* ewk);
 
 /** @brief Handle CGA zoom logic for the current stage. */
 void check_cg_zoom() {
@@ -873,14 +873,14 @@ void zoom_ud_check() {
 }
 
 /** @brief Set suzi (tile strip) offset for a background object. */
-void suzi_offset_set(WORK_Other* ewk) {
+void suzi_offset_set(State_Other* ewk) {
     if (ewk->wu.sync_bg_strip == 1) {
         suzi_offset_set_sub(ewk);
     }
 }
 
 /** @brief Calculate suzi offset sub-value for a background object. */
-static s32 suzi_offset_set_sub(WORK_Other* ewk) {
+static s32 suzi_offset_set_sub(State_Other* ewk) {
     s16 work, work2;
 
     work = ewk->wu.xyz[1].disp.pos & 0x300;
@@ -895,7 +895,7 @@ static s32 suzi_offset_set_sub(WORK_Other* ewk) {
 }
 
 /** @brief Synchronize object position with suzi tile strip data. */
-void sync_bg_strip_position(WORK_Other* ewk) {
+void sync_bg_strip_position(State_Other* ewk) {
     s16 work;
 
     if (ewk->wu.sync_bg_strip) {
@@ -1274,7 +1274,7 @@ void bg_etc_write(s16 type) {
 }
 
 /** @brief Check whether an object is outside the visible stage range. */
-s32 Ck_Range_Out_S(WORK_Other* ewk, s16 BG_No, s16 R) {
+s32 Ck_Range_Out_S(State_Other* ewk, s16 BG_No, s16 R) {
     s16 x;
 
     x = ewk->wu.xyz[0].disp.pos - g_state.bg_w.bgw[BG_No].wxy[0].disp.pos;

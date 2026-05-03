@@ -9,14 +9,14 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
 const s16 eff07_data_tbl[2][3] = { { 4, 742, 28 }, { 5, 806, 28 } };
 
-void effect_07_move(WORK_Other* ewk) {
+void effect_07_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -44,7 +44,7 @@ void effect_07_move(WORK_Other* ewk) {
 }
 
 s32 effect_07_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = &eff07_data_tbl[0][0];
@@ -54,7 +54,7 @@ s32 effect_07_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 7;
         ewk->wu.work_id = 16;

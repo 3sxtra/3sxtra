@@ -12,13 +12,13 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void effJ9_trans(WORK* wk);
-static s16 get_c2_quake(WORK* c2wk);
+static void effJ9_trans(State* wk);
+static s16 get_c2_quake(State* c2wk);
 
 const s16 c2quake_table[19] = { 0, 3, 3, 2, 2, 1, 1, 1, 0, 0, 0, -1, -1, -1, -2, -2, -3, -3, 0 };
 
-void effect_J9_move(WORK_Other* ewk) {
-    WORK* c2wk = (WORK*)ewk->my_master;
+void effect_J9_move(State_Other* ewk) {
+    State* c2wk = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -77,12 +77,12 @@ void effect_J9_move(WORK_Other* ewk) {
     }
 }
 
-static void effJ9_trans(WORK* wk) {
+static void effJ9_trans(State* wk) {
     wk->position_x = wk->xyz[0].disp.pos + wk->next_x;
     sort_push_request(wk);
 }
 
-static s16 get_c2_quake(WORK* c2wk) {
+static s16 get_c2_quake(State* c2wk) {
     u16 c2cg;
 
     if ((c2cg = c2wk->cg_number) > 18) {
@@ -92,15 +92,15 @@ static s16 get_c2_quake(WORK* c2wk) {
     return c2quake_table[c2cg];
 }
 
-s32 effect_J9_init(WORK_Other* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_J9_init(State_Other* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 199;
     ewk->wu.work_id = 16;

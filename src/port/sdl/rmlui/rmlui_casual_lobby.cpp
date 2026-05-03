@@ -26,7 +26,7 @@ extern "C" {
 #include "netplay/ping_probe.h"
 #include "port/menu_screen.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/menu/menu.h"
 #include "structs.h"
 } // extern "C"

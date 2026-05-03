@@ -12,9 +12,9 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -59,7 +59,7 @@ const u8 ag_sel_table[22][4][4] = { { { 6, 7, 3, 0 }, { 6, 5, 1, 0 }, { 6, 0, 5,
                                     { { 3, 0, 2, 0 }, { 4, 5, 0, 0 }, { 0, 2, 1, 0 }, { 0, 4, 1, 0 } },
                                     { { 3, 0, 2, 0 }, { 4, 5, 0, 0 }, { 0, 2, 1, 0 }, { 0, 4, 1, 0 } } };
 
-void effect_C9_move(WORK_Other* ewk) {
+void effect_C9_move(State_Other* ewk) {
     s16 scrc;
 
     switch (ewk->wu.routine_no[0]) {
@@ -193,14 +193,14 @@ void effect_C9_move(WORK_Other* ewk) {
 }
 
 s32 effect_C9_init(PLW* arg0, u8 data) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 129;
     ewk->wu.work_id = 16;

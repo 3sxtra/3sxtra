@@ -10,7 +10,7 @@
 #include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/eff61.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
@@ -65,7 +65,7 @@ const s8* Letter_Data_23[4][12] = { { "L.PUNCH",
 void (*const EFF23_Jmp_Tbl[4])() = { EFF23_WAIT, EFF23_SLIDE_IN, EFF23_CHAR_CHANGE, EFF23_SUDDENLY };
 
 void effect_23_move(WORK_Other_CONN* ewk) {
-    if (Check_Die_61((WORK_Other*)ewk)) {
+    if (Check_Die_61((State_Other*)ewk)) {
         Release_Effect(&ewk->wu);
         return;
     }

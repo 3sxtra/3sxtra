@@ -19,7 +19,7 @@
 
 extern "C" {
 #include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 } // extern "C"
 
 // ─── Character name table (SF3:3S roster, index matches g_state.My_char) ───

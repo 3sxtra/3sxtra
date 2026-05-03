@@ -16,7 +16,7 @@ extern "C" {
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/engine/workuser.h" /* SWK constants */
+#include "sf33rd/Source/Game/engine/state_user.h" /* SWK constants */
 } // extern "C"
 
 // ─── Match history struct for data-for ──────────────────────────

@@ -15,7 +15,7 @@
 #include <SDL3/SDL.h>
 
 extern "C" {
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 } // extern "C"
 
 static Rml::DataModelHandle s_model_handle;

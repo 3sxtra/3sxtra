@@ -8,11 +8,11 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -39,7 +39,7 @@ const s32 eff11_quake_speed_y_tbl2[2][4] = { { 0x30000, 0x20000, 0x18000, 0x1000
 const s32 eff11_quake_speed_x_tbl[2][8] = { { 0xC000, 0xC000, 0xA000, 0xA000, 0x8000, 0x6000, 0xA000, 0xC000 },
                                             { 0xA000, 0xA000, 0xC000, 0xC000, 0x10000, 0xA000, 0xA000, 0x8000 } };
 
-void effect_11_move(WORK_Other* ewk) {
+void effect_11_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -65,7 +65,7 @@ void effect_11_move(WORK_Other* ewk) {
     }
 }
 
-void eff11_quake_sub(WORK_Other* ewk) {
+void eff11_quake_sub(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (g_state.bg_w.quake_y_index > 1) {
@@ -93,7 +93,7 @@ void eff11_quake_sub(WORK_Other* ewk) {
     }
 }
 
-void quake_level_middle(WORK_Other* ewk) {
+void quake_level_middle(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -146,7 +146,7 @@ void quake_level_middle(WORK_Other* ewk) {
     }
 }
 
-void quake_level_large(WORK_Other* ewk) {
+void quake_level_large(State_Other* ewk) {
     s16 work;
     switch (ewk->wu.routine_no[2]) {
     case 0:
@@ -278,7 +278,7 @@ void quake_level_large(WORK_Other* ewk) {
 }
 
 s32 effect_11_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = eff11_data_tbl;
@@ -288,7 +288,7 @@ s32 effect_11_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 11;
         ewk->wu.type = i;

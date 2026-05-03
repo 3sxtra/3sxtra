@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const GillEffData gill_eff_data[54] = {
@@ -27,7 +27,7 @@ const GillEffData gill_eff_data[54] = {
     { -16, 140, -2, 110 }, { -16, 140, -2, 111 }, { -40, 144, -2, 110 }, { -40, 144, -2, 111 }
 };
 
-void effect_G4_move(WORK_Other* ewk) {
+void effect_G4_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -74,15 +74,15 @@ void effect_G4_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_G4_init(WORK* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_G4_init(State* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 164;
     ewk->wu.work_id = 16;

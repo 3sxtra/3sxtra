@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -27,7 +27,7 @@ const CONN bbbs_blocking[20] = { { -172, -12, 0, 32484 }, { -154, -12, 0, 32484 
                                  { -82, 4, 0, 32484 },    { -172, 20, 0, 32484 },  { -154, 20, 0, 32484 },
                                  { -136, 20, 0, 32484 },  { -172, 36, 0, 32484 } };
 
-static void effB1_trans(WORK* ewk);
+static void effB1_trans(State* ewk);
 static void effB1_mark_change(WORK_Other_CONN* ewk);
 static void effB1_mark_exchange(WORK_Other_CONN* ewk);
 
@@ -139,7 +139,7 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effB1_trans(WORK* ewk) {
+static void effB1_trans(State* ewk) {
     ewk->position_x = g_state.bg_w.bgw[2].wxy[0].disp.pos;
     ewk->position_y = g_state.bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);

@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_H0_move(WORK_Other_CONN* ewk);
-s32 effect_H0_init(WORK* wk);
+s32 effect_H0_init(State* wk);
 
 #endif

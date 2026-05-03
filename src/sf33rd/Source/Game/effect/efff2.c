@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
@@ -23,7 +23,7 @@ const s32 efff2_sp_tbl1[10][2] = { { -0xC000, 0 }, { -0x1800, 0 }, { 0x2000, 0 }
 
 const s16 efff2_timer_tbl[16] = { 60, 0, 40, 90, 20, 10, 8, 130, 1, 34, 50, 70, 6, 80, 22, 100 };
 
-void effect_F2_move(WORK_Other* ewk) {
+void effect_F2_move(State_Other* ewk) {
     s16 work;
 
     if (ewk->wu.old_routine_no[6] < g_state.end_w.r_no_2) {
@@ -87,7 +87,7 @@ void effect_F2_move(WORK_Other* ewk) {
 }
 
 s32 effect_F2_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = &efff2_data_tbl1[0][0];
@@ -97,7 +97,7 @@ s32 effect_F2_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.id = 152;
         ewk->wu.be_flag = 1;
         ewk->wu.work_id = 0x10;

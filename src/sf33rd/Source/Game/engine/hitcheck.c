@@ -11,19 +11,19 @@
 #include "sf33rd/Source/Game/effect/eff02.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/cmb_win.h"
+#include "sf33rd/Source/Game/engine/combo_window.h"
 #include "sf33rd/Source/Game/engine/cmd_main.h"
 #include "sf33rd/Source/Game/engine/grade.h"
-#include "sf33rd/Source/Game/engine/hitefef.h"
-#include "sf33rd/Source/Game/engine/hitefpl.h"
-#include "sf33rd/Source/Game/engine/hitplef.h"
-#include "sf33rd/Source/Game/engine/hitplpl.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls01.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/pls03.h"
+#include "sf33rd/Source/Game/engine/hit_effect_effect.h"
+#include "sf33rd/Source/Game/engine/hit_effect_player.h"
+#include "sf33rd/Source/Game/engine/hit_player_effect.h"
+#include "sf33rd/Source/Game/engine/hit_player_player.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_common_mechanics.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/player_special_attacks.h"
 #include "sf33rd/Source/Game/engine/pow_pow.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
@@ -44,7 +44,7 @@ HS hs[32];
 s16 grdb[2][2][2];
 s16 grdb2[2][2];
 s16* dmdat_adrs[16];
-WORK* q_hit_push[32];
+State* q_hit_push[32];
 s16 mkm_wk[32];
 s16 hpq_in;
 s8 ca_check_flag;
@@ -110,8 +110,8 @@ s16 set_judge_result() {
 
 /** @brief Performs extra result checks (chip KO, SA finish, simultaneous KO). */
 void check_result_extra() {
-    WORK_Other* dm1p;
-    WORK_Other* dm2p;
+    State_Other* dm1p;
+    State_Other* dm2p;
     s16 hs1;
     s16 hs2;
     s16 qua;
@@ -137,8 +137,8 @@ void check_result_extra() {
     p2state = assign2;
 
     if (p1state & p2state) {
-        dm1p = (WORK_Other*)g_state.plw[0].wu.dmg_adrs;
-        dm2p = (WORK_Other*)g_state.plw[1].wu.dmg_adrs;
+        dm1p = (State_Other*)g_state.plw[0].wu.dmg_adrs;
+        dm2p = (State_Other*)g_state.plw[1].wu.dmg_adrs;
 
         switch ((dm1p->wu.work_id == 1) + ((dm2p->wu.work_id == 1) * 2)) {
         case 3:
@@ -339,7 +339,7 @@ void set_caught_status(s16 ix) {
     ds->wu.routine_no[1] = 3;
     ds->wu.routine_no[2] = as->wu.att.ng_type;
     ds->wu.routine_no[3] = 0;
-    grade_add_clean_hits((WORK_Other*)as);
+    grade_add_clean_hits((State_Other*)as);
     check_guard_miss(&as->wu, ds, gddir);
 
     if (as->wu.att.ng_type == 2) {
@@ -371,7 +371,7 @@ set_paring_status:
 }
 
 /** @brief Returns whether a work item is in an attackable pattern state. */
-s32 check_pat_status(WORK* wk) {
+s32 check_pat_status(State* wk) {
     if (wk->pat_status >= 14 && wk->pat_status < 31) {
         return 1;
     }
@@ -392,14 +392,14 @@ s16 check_blocking_flag(PLW* as, PLW* ds) {
 }
 
 /** @brief Sets up the attack-hit data for a catch (throw) connection. */
-void setup_catch_atthit(WORK* as, WORK* ds) {
+void setup_catch_atthit(State* as, State* ds) {
     set_damage_and_piyo((PLW*)as, (PLW*)ds);
     dm_status_copy(as, ds);
     as->hit_stop = ds->damage_hit_stop = 0;
 }
 
 /** @brief Calculates the hit-mark sprite position for a catch (throw). */
-void set_catch_hit_mark_pos(WORK* as, WORK* ds) {
+void set_catch_hit_mark_pos(State* as, State* ds) {
     if (as->att.hit_mark_index) {
         if (as->rl_flag) {
             as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.hit_mark_index][0];
@@ -416,8 +416,8 @@ void set_catch_hit_mark_pos(WORK* as, WORK* ds) {
 
 /** @brief Handles struck status setup when a normal attack connects. */
 void set_struck_status(s16 ix) {
-    WORK* as;
-    WORK* ds;
+    State* as;
+    State* ds;
     s16 ix2;
 
     ix2 = hs[ix].dm_me;
@@ -458,7 +458,7 @@ void set_struck_status(s16 ix) {
 }
 
 /** @brief Calculates the hit-mark spark position from overlapping hitboxes. */
-void cal_hit_mark_pos(WORK* as, WORK* ds, s16 ix2, s16 ix) {
+void cal_hit_mark_pos(State* as, State* ds, s16 ix2, s16 ix) {
     if (as->att.hit_mark_index) {
         if (as->rl_flag) {
             as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.hit_mark_index][0];
@@ -563,7 +563,7 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
 
     ds->wu.routine_no[1] = 1;
     ds->wu.routine_no[3] = 0;
-    grade_add_clean_hits((WORK_Other*)as);
+    grade_add_clean_hits((State_Other*)as);
     check_guard_miss(&as->wu, ds, gddir);
     effect_02_init(&as->wu, ds->dm_point, 1, ds->wu.dm_rl);
     dm_status_copy(&as->wu, &ds->wu);
@@ -719,7 +719,7 @@ s32 check_normal_attack(u8 attack) {
 }
 
 /** @brief Parses hit-pattern extended data and sets attack/damage flags. */
-void hit_pattern_extdat_check(WORK* as) {
+void hit_pattern_extdat_check(State* as) {
     s16 i;
 
     switch ((as->cg_extdat & 0xC0) + ((as->cg_extdat & 0x3F) != 0)) {
@@ -841,7 +841,7 @@ void hit_pattern_extdat_check(WORK* as) {
 }
 
 /** @brief Checks whether a damage source can be guarded given the defender's state. */
-s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
+s16 check_dm_att_guard(State* as, State* ds, s16 kom) {
     s16 curr_id;
     s16 rnum;
 
@@ -851,7 +851,7 @@ s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
     if (as->work_id == 1) {
         curr_id = as->id;
     } else {
-        curr_id = ((WORK_Other*)as)->master_id;
+        curr_id = ((State_Other*)as)->master_id;
     }
 
     if (!(g_state.plw[curr_id].spmv_ng_flag & DIP_CHIP_DAMAGE_ENABLED)) {
@@ -884,7 +884,7 @@ s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
 }
 
 /** @brief Checks whether a damage source can be parried (blocked) given the defender's state. */
-s16 check_dm_att_blocking(WORK* as, WORK* ds, s16 dnum) {
+s16 check_dm_att_blocking(State* as, State* ds, s16 dnum) {
     s16 rnum = 0;
     TAMA* tama = (TAMA*)as->my_effadrs;
 
@@ -1008,7 +1008,7 @@ s16 remake_score_index(s16 dmv) {
 }
 
 /** @brief Handles same-frame simultaneous damage (double hit) hitstop. */
-void same_dm_stop(WORK* as, WORK* ds) {
+void same_dm_stop(State* as, State* ds) {
     if (as->work_id == 1 && as->att.dipsw & 1 && (ds->xyz[1].disp.pos > 0 || (ds->vital_new - ds->damage_vitality) < -2)) {
         switch ((ds->damage_hit_stop < 0) + ((as->att.hitstop_me < 0) * 2)) {
         case 1:
@@ -1274,7 +1274,7 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
 }
 
 /** @brief Sets up damage reaction left/right direction for the defender. */
-void setup_dm_rl(WORK* as, WORK* ds) {
+void setup_dm_rl(State* as, State* ds) {
     s16 pw;
 
     if (as->work_id != 1 || check_ttk_damage_request(as->att.reaction)) {
@@ -1307,7 +1307,7 @@ void setup_dm_rl(WORK* as, WORK* ds) {
 }
 
 /** @brief Copies damage status from attacker to defender work. */
-void dm_status_copy(WORK* as, WORK* ds) {
+void dm_status_copy(State* as, State* ds) {
     ds->dm_attlv = as->att.level;
     ds->dm_impact = as->att.impact;
     ds->dm_dir = as->dir_atthit;
@@ -1336,7 +1336,7 @@ void dm_status_copy(WORK* as, WORK* ds) {
         ds->dm_plnum = ((PLW*)as)->player_number;
         pp_pulpara_remake_at_hit(as);
     } else {
-        ds->dm_plnum = ((PLW*)((WORK_Other*)as)->my_master)->player_number;
+        ds->dm_plnum = ((PLW*)((State_Other*)as)->my_master)->player_number;
     }
 
     as->frame_link_hit_flag = 1;
@@ -1460,8 +1460,8 @@ void cal_combo_waribiki2(PLW* ds) {
 
 /** @brief Main catch (throw) hit-check loop — tests all active catch boxes. */
 void catch_hit_check() {
-    WORK* mad;
-    WORK* sad;
+    State* mad;
+    State* sad;
     s16* mh;
     s16* sh;
     s16 mi;
@@ -1547,8 +1547,8 @@ void catch_hit_check() {
 
 /** @brief Main attack hit-check loop — tests all active attack vs. hurt boxes. */
 void attack_hit_check() {
-    WORK* mad;
-    WORK* sad;
+    State* mad;
+    State* sad;
     s16* mh;
     s16* sh;
     s16 mi;
@@ -1595,7 +1595,7 @@ void attack_hit_check() {
             }
 
             if (!(mad->att.dipsw & 2) ||
-                (!(sad->att.dipsw & 2) && (sad->work_id == 1 || !(((WORK_Other*)sad)->refrected)))) {
+                (!(sad->att.dipsw & 2) && (sad->work_id == 1 || !(((State_Other*)sad)->refrected)))) {
                 if ((mad->work_id != 1 && mad->work_id != 8) || !(sad->att.dipsw & 2)) {
                     if (!(mad->vs_id & sad->work_id)) {
                         continue;
@@ -1605,14 +1605,14 @@ void attack_hit_check() {
 
             if (mad->work_id != 1) {
                 if (sad->work_id == 1) {
-                    if (((WORK_Other*)mad)->master_id == sad->id) {
+                    if (((State_Other*)mad)->master_id == sad->id) {
                         continue;
                     }
-                } else if (((WORK_Other*)mad)->master_id == ((WORK_Other*)sad)->master_id) {
+                } else if (((State_Other*)mad)->master_id == ((State_Other*)sad)->master_id) {
                     continue;
                 }
-            } else if ((sad->work_id != 1 && ((WORK_Other*)sad)->refrected == 0) &&
-                       (mad->id == ((WORK_Other*)sad)->master_id)) {
+            } else if ((sad->work_id != 1 && ((State_Other*)sad)->refrected == 0) &&
+                       (mad->id == ((State_Other*)sad)->master_id)) {
                 continue;
             }
 
@@ -1683,7 +1683,7 @@ void attack_hit_check() {
 }
 
 /** @brief Low-level hitbox overlap test (AABB intersection check). */
-s16 hit_check_subroutine(WORK* wk1, WORK* wk2, const s16* hd1, const s16* hd2) {
+s16 hit_check_subroutine(State* wk1, State* wk2, const s16* hd1, const s16* hd2) {
     s16 d0;
     s16 d1;
     s16 d2;
@@ -1735,7 +1735,7 @@ s16 hit_check_subroutine(WORK* wk1, WORK* wk2, const s16* hd1, const s16* hd2) {
 }
 
 /** @brief Hitbox overlap test on X-axis only (for push/proximity checks). */
-s32 hit_check_x_only(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
+s32 hit_check_x_only(State* wk1, State* wk2, s16* hd1, s16* hd2) {
     s16 d0;
     s16 d1;
     s16 d2;
@@ -1775,7 +1775,7 @@ s32 hit_check_x_only(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
 }
 
 /** @brief Calculates the hit-mark spark position from two overlapping hitbox rects. */
-void cal_hit_mark_position(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
+void cal_hit_mark_position(State* wk1, State* wk2, s16* hd1, s16* hd2) {
     s16 d0 = *hd1++;
     s16 d1 = *hd1++;
     s16 d2;
@@ -1831,7 +1831,7 @@ void cal_hit_mark_position(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
 }
 
 /** @brief Gets the target attack position for aim/tracking purposes. */
-void get_target_att_position(WORK* wk, s16* tx, s16* ty) {
+void get_target_att_position(State* wk, s16* tx, s16* ty) {
     s16 i;
     s16(*ta)[4];
 
@@ -1856,7 +1856,7 @@ void get_target_att_position(WORK* wk, s16* tx, s16* ty) {
 }
 
 /** @brief Gets the head position for a work item's attack hitbox. */
-s16 get_att_head_position(WORK* wk) {
+s16 get_att_head_position(State* wk) {
     s16* ta;
     s16 kx;
     s16 tx;
@@ -1897,7 +1897,7 @@ s16 get_att_head_position(WORK* wk) {
 }
 
 /** @brief Enqueues a work item into the hit-push processing queue. */
-void hit_push_request(WORK* hpr_wk) {
+void hit_push_request(State* hpr_wk) {
     if (hpq_in < 31 && hpr_wk->anim_hurtbox_index != 0) {
         q_hit_push[hpq_in++] = hpr_wk;
     }

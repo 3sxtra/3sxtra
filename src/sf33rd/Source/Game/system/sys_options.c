@@ -15,7 +15,7 @@
 #include "main.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/menu/ex_data.h"
 #include "sf33rd/Source/Game/screen/ranking.h"
 #include "sf33rd/Source/Game/system/sysdir.h"

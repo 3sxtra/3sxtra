@@ -10,26 +10,26 @@
 #include "sf33rd/Source/Game/effect/eff03.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effi8.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charid.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/pls01.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_common_mechanics.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-static void effD7_main_process(WORK_Other* ewk);
-static void cal_speeds_to_me(WORK_Other* ewk, PLW* mwk);
-static void cal_speeds_to_em(WORK_Other* ewk, PLW* twk);
+static void effD7_main_process(State_Other* ewk);
+static void cal_speeds_to_me(State_Other* ewk, PLW* mwk);
+static void cal_speeds_to_em(State_Other* ewk, PLW* twk);
 static s32 my_ball_live_check(PLW* wk);
 
 const s16 effD7_hit_box[2][4] = { { -9, 17, -6, 12 }, { -4, 10, 114, 9 } };
 
-void effect_D7_move(WORK_Other* ewk) {
+void effect_D7_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -89,7 +89,7 @@ void effect_D7_move(WORK_Other* ewk) {
     }
 }
 
-static void effD7_main_process(WORK_Other* ewk) {
+static void effD7_main_process(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
@@ -154,7 +154,7 @@ static void effD7_main_process(WORK_Other* ewk) {
 
             if (ewk->wu.shadow_flag && mwk->wu.routine_no[1] == 4 && mwk->wu.routine_no[2] == 30 &&
                 mwk->wu.cg_type == 0x28 && mwk->tk_success == ewk->wu.shell_ix[0] &&
-                hit_check_subroutine(&ewk->wu, (WORK*)ewk->my_master, effD7_hit_box[0], effD7_hit_box[1])) {
+                hit_check_subroutine(&ewk->wu, (State*)ewk->my_master, effD7_hit_box[0], effD7_hit_box[1])) {
                 mwk->wu.script_register_bank[7] = 1;
                 ewk->wu.type = 0;
                 ewk->wu.routine_no[2] = 1;
@@ -222,7 +222,7 @@ static void effD7_main_process(WORK_Other* ewk) {
                 ewk->wu.mvxy.d[1].sp = -0x5000;
                 ewk->wu.hit_stop = 4;
             }
-        } else if (ewk->wu.hf.hit.effect && ((WORK*)ewk->wu.hit_adrs)->id == 0x89) {
+        } else if (ewk->wu.hf.hit.effect && ((State*)ewk->wu.hit_adrs)->id == 0x89) {
             Se_Dispatch(0x157, 0x157, ewk);
             ewk->wu.routine_no[1] = 0;
             ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
@@ -259,14 +259,14 @@ static void effD7_main_process(WORK_Other* ewk) {
     }
 }
 
-static void cal_speeds_to_me(WORK_Other* ewk, PLW* mwk) {
+static void cal_speeds_to_me(State_Other* ewk, PLW* mwk) {
     s16 tx = mwk->wu.xyz[0].disp.pos;
     s16 ty = mwk->wu.xyz[1].disp.pos + 157;
 
     cal_speeds_effD7(ewk, 20, tx, ty, 6);
 }
 
-static void cal_speeds_to_em(WORK_Other* ewk, PLW* twk) {
+static void cal_speeds_to_em(State_Other* ewk, PLW* twk) {
     s16 tx = twk->wu.position_x;
     s16 ty;
 
@@ -282,7 +282,7 @@ static void cal_speeds_to_em(WORK_Other* ewk, PLW* twk) {
     cal_speeds_effD7(ewk, 40, tx, ty, 4);
 }
 
-void cal_speeds_effD7(WORK_Other* ewk, s16 tm, s16 tx, s16 ty, s16 ysp) {
+void cal_speeds_effD7(State_Other* ewk, s16 tm, s16 tx, s16 ty, s16 ysp) {
     ewk->wu.mvxy.d[0].sp = 0;
     ewk->wu.mvxy.a[0].sp = 0;
     ewk->wu.mvxy.d[1].sp = 0;
@@ -296,7 +296,7 @@ void cal_speeds_effD7(WORK_Other* ewk, s16 tm, s16 tx, s16 ty, s16 ysp) {
     }
 }
 
-void ball_init_position_effD7(WORK_Other* ewk, PLW* mwk) {
+void ball_init_position_effD7(State_Other* ewk, PLW* mwk) {
     s16 tx = get_center_position();
 
     if (mwk->wu.position_x - tx < 0) {
@@ -314,7 +314,7 @@ void ball_init_position_effD7(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.xyz[1].disp.pos = 128;
 }
 
-u8 screen_range_check_effD7(WORK* wk) {
+u8 screen_range_check_effD7(State* wk) {
     s16 scpx = get_center_position();
     s16 scpxr = scpx + 288;
     s16 scpxl = scpx - 288;
@@ -339,7 +339,7 @@ u8 screen_range_check_effD7(WORK* wk) {
 }
 
 s32 effect_D7_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (my_ball_live_check(wk) != 0) {
@@ -350,7 +350,7 @@ s32 effect_D7_init(PLW* wk) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 137;
     ewk->wu.work_id = 2;
@@ -367,14 +367,14 @@ s32 effect_D7_init(PLW* wk) {
 }
 
 static s32 my_ball_live_check(PLW* wk) {
-    WORK_Other* twk;
+    State_Other* twk;
     s16 ix;
 
     if ((ix = search_effect_index(3, 0, 137)) == -1) {
         return 0;
     }
 
-    twk = (WORK_Other*)frw[ix];
+    twk = (State_Other*)frw[ix];
 
     if (twk->master_id == wk->wu.id) {
         return 1;
@@ -384,7 +384,7 @@ static s32 my_ball_live_check(PLW* wk) {
         return 0;
     }
 
-    twk = (WORK_Other*)frw[ix];
+    twk = (State_Other*)frw[ix];
 
     if (twk->master_id == wk->wu.id) {
         return 1;

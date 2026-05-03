@@ -9,30 +9,30 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void animal_init(WORK_Other* ewk);
-static void animal_control(WORK_Other* ewk);
-static void animal_0000(WORK_Other* ewk);
-static void animal_0001(WORK_Other* ewk);
-static void animal_0002(WORK_Other* ewk);
-static void animal_0004(WORK_Other* ewk);
-static void animal_0005(WORK_Other* ewk);
-static void mouse_run_set(WORK_Other* ewk);
-static void mouse_stand_set(WORK_Other* ewk);
-static void cat_run_set(WORK_Other* ewk);
-static void don_run_set(WORK_Other* ewk);
+static void animal_init(State_Other* ewk);
+static void animal_control(State_Other* ewk);
+static void animal_0000(State_Other* ewk);
+static void animal_0001(State_Other* ewk);
+static void animal_0002(State_Other* ewk);
+static void animal_0004(State_Other* ewk);
+static void animal_0005(State_Other* ewk);
+static void mouse_run_set(State_Other* ewk);
+static void mouse_stand_set(State_Other* ewk);
+static void cat_run_set(State_Other* ewk);
+static void don_run_set(State_Other* ewk);
 
 const s16 animal_0005_tbl[16] = { 40, 50, 160, 70, 80, 100, 30, 200, 340, 10, 110, 18, 40, 60, 30, 150 };
 
-void effect_M0_move(WORK_Other* ewk) {
+void effect_M0_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -58,7 +58,7 @@ void effect_M0_move(WORK_Other* ewk) {
     }
 }
 
-static void animal_init(WORK_Other* ewk) {
+static void animal_init(State_Other* ewk) {
     s16 work_l = g_state.bg_w.bgw[1].wxy[0].disp.pos - g_state.bg_w.pos_offset;
     s16 work_r = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset;
 
@@ -125,13 +125,13 @@ static void animal_init(WORK_Other* ewk) {
     }
 }
 
-static void animal_control(WORK_Other* ewk) {
-    void (*animal_jp[7])(WORK_Other* ewk) = { animal_0000, animal_0001, animal_0002, animal_0001,
+static void animal_control(State_Other* ewk) {
+    void (*animal_jp[7])(State_Other* ewk) = { animal_0000, animal_0001, animal_0002, animal_0001,
                                               animal_0004, animal_0005, animal_0000 };
     animal_jp[ewk->wu.type](ewk);
 }
 
-static void animal_0000(WORK_Other* ewk) {
+static void animal_0000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -178,7 +178,7 @@ static void animal_0000(WORK_Other* ewk) {
     }
 }
 
-static void animal_0001(WORK_Other* ewk) {
+static void animal_0001(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -211,7 +211,7 @@ static void animal_0001(WORK_Other* ewk) {
     }
 }
 
-static void animal_0002(WORK_Other* ewk) {
+static void animal_0002(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -246,7 +246,7 @@ static void animal_0002(WORK_Other* ewk) {
     }
 }
 
-static void animal_0004(WORK_Other* ewk) {
+static void animal_0004(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -296,7 +296,7 @@ static void animal_0004(WORK_Other* ewk) {
     }
 }
 
-static void animal_0005(WORK_Other* ewk) {
+static void animal_0005(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -354,7 +354,7 @@ static void animal_0005(WORK_Other* ewk) {
     }
 }
 
-static void mouse_run_set(WORK_Other* ewk) {
+static void mouse_run_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 25);
 
     if (ewk->wu.rl_flag) {
@@ -366,13 +366,13 @@ static void mouse_run_set(WORK_Other* ewk) {
     ewk->wu.mvxy.d[0].sp = 0;
 }
 
-static void mouse_stand_set(WORK_Other* ewk) {
+static void mouse_stand_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 18);
     ewk->wu.mvxy.a[0].sp = 0;
     ewk->wu.mvxy.d[0].sp = 0;
 }
 
-static void cat_run_set(WORK_Other* ewk) {
+static void cat_run_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 26);
 
     if (ewk->wu.rl_flag) {
@@ -384,7 +384,7 @@ static void cat_run_set(WORK_Other* ewk) {
     ewk->wu.mvxy.d[0].sp = 0;
 }
 
-void cat_run_set2(WORK_Other* ewk) {
+void cat_run_set2(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 26);
 
     if (ewk->wu.rl_flag) {
@@ -396,7 +396,7 @@ void cat_run_set2(WORK_Other* ewk) {
     ewk->wu.mvxy.d[0].sp = 0;
 }
 
-void cat_walk_set(WORK_Other* ewk) {
+void cat_walk_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 27);
 
     if (ewk->wu.rl_flag) {
@@ -408,7 +408,7 @@ void cat_walk_set(WORK_Other* ewk) {
     ewk->wu.mvxy.d[0].sp = 0;
 }
 
-static void don_run_set(WORK_Other* ewk) {
+static void don_run_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 52);
 
     if (ewk->wu.rl_flag) {
@@ -421,14 +421,14 @@ static void don_run_set(WORK_Other* ewk) {
 }
 
 s32 effect_M0_init(u8 pl_rl, u8 animal_type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 220;
     ewk->wu.work_id = 16;

@@ -5,9 +5,9 @@
 
 #include "training_prediction.h"
 #include "game_state.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/plmain.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_main.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 
 // Helper to simulate 1 frame of physics exactly like cal_mvxy_speed and add_mvxy_speed
 static void simulate_physics_frame(PredictedPlayerState* p) {

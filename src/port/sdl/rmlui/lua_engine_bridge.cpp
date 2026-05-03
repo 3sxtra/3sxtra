@@ -6,7 +6,7 @@
  * Registered as the `engine` global table in the Lua state.
  *
  * Lua API:
- *   engine.read_player(id)              -> full player table (50+ fields from PLW/WORK)
+ *   engine.read_player(id)              -> full player table (50+ fields from PLW/State)
  *                                          Includes raw-offset fields: standing_state,
  *                                          can_fast_wakeup, received_connection_marker
  *   engine.read_globals()               -> global game state table
@@ -36,8 +36,8 @@ extern "C" {
 extern "C" {
 #include "netplay/netplay.h"
 #include "sf33rd/Source/Game/engine/cmd_data.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/training/training_dummy.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 #include "structs.h"
@@ -66,7 +66,7 @@ extern "C" {
 static char s_exe_base_path[1024] = { 0 };
 
 // ---- engine.read_player(id) ----
-// Returns the raw PLW/WORK fields matching gamestate.lua's field names.
+// Returns the raw PLW/State fields matching gamestate.lua's field names.
 
 static int l_read_player(lua_State* L) {
     int id = (int)luaL_checkinteger(L, 1);
@@ -76,7 +76,7 @@ static int l_read_player(lua_State* L) {
     }
 
     PLW* wk = &g_state.plw[id - 1];
-    WORK* wu = &wk->wu;
+    State* wu = &wk->wu;
 
     lua_createtable(L, 0, 80); // pre-allocate hash part
     int t = lua_gettop(L);

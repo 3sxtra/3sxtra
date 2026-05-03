@@ -9,12 +9,12 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void effect_65_move(WORK_Other* ewk) {
+void effect_65_move(State_Other* ewk) {
     ewk->wu.my_clear_level = 0x80;
 
     if (g_state.Menu_Suicide[ewk->master_player]) {

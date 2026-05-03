@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
@@ -17,7 +17,7 @@ const u16 jdb[16] = { 0x8000, 0x80FF, 0xBC00, 0xBCFF, 0x8300, 0x83FF, 0xBF00, 0x
 
 static s32 get_dip_modoki(s16 from, s8 fl);
 static s32 get_dip_modoki2(s16 from, s8 fl);
-static void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk);
+static void renewal_table_address(WORK_Other_JUDGE* ewk, State* twk);
 static void renewal_table_data(WORK_Other_JUDGE* ewk);
 
 static bool Is_Training_Hitbox_Display_Active() {
@@ -35,7 +35,7 @@ void effect_00_move(WORK_Other_JUDGE* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.type = ewk->master_work_id < 16;
-        renewal_table_address(ewk, (WORK*)ewk->my_master);
+        renewal_table_address(ewk, (State*)ewk->my_master);
         ewk->wu.my_priority = ewk->wu.position_z = 1;
         ewk->look_up_flag = 0;
         ewk->curr_ja = 0;
@@ -48,7 +48,7 @@ void effect_00_move(WORK_Other_JUDGE* ewk) {
             break;
         }
 
-        if (((WORK*)ewk->my_master)->bbox_work_index != ewk->wu.myself) {
+        if (((State*)ewk->my_master)->bbox_work_index != ewk->wu.myself) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
@@ -76,13 +76,13 @@ void effect_00_move(WORK_Other_JUDGE* ewk) {
             ewk->curr_ja = Debug_w[DEBUG_CURRENT_BOX_DATA];
         }
 
-        renewal_table_address(ewk, (WORK*)ewk->my_master);
+        renewal_table_address(ewk, (State*)ewk->my_master);
 
         if (ewk->wu.type) {
             renewal_table_data(ewk);
         }
 
-        sort_push_request2((WORK_Other*)ewk);
+        sort_push_request2((State_Other*)ewk);
         break;
 
     default:
@@ -125,7 +125,7 @@ static s32 get_dip_modoki2(s16 from, s8 fl) {
     return rnum;
 }
 
-static void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk) {
+static void renewal_table_address(WORK_Other_JUDGE* ewk, State* twk) {
     ewk->wu.my_family = twk->my_family;
     ewk->wu.rl_flag = twk->rl_flag;
 
@@ -181,7 +181,7 @@ static void renewal_table_data(WORK_Other_JUDGE* ewk) {
     }
 }
 
-s32 effect_00_init(WORK* wk) {
+s32 effect_00_init(State* wk) {
     WORK_Other_JUDGE* ewk;
     s16 ix;
 

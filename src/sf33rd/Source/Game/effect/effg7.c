@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effect_G7_move(WORK_Other* ewk) {
+void effect_G7_move(State_Other* ewk) {
     if (ewk->wu.old_routine_no[0] < g_state.end_w.r_no_2) {
         ewk->wu.routine_no[0] = 99;
     }
@@ -45,14 +45,14 @@ void effect_G7_move(WORK_Other* ewk) {
 }
 
 s32 effect_G7_init(s32 /* unused */, s32 /* unused */) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.id = 167;
     ewk->wu.be_flag = 1;
     ewk->wu.work_id = 16;

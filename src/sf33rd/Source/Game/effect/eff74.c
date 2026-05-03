@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/eff57.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
@@ -20,7 +20,7 @@ const s16 EFF74_Pos_Data[3][2][2] = { { { 0, 148 }, { 0, 116 } },
 
 void (*const EFF74_Jmp_Tbl[5])();
 
-void effect_74_move(WORK_Other* ewk) {
+void effect_74_move(State_Other* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);
         return;
@@ -45,13 +45,13 @@ void effect_74_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-static void EFF74_WAIT(WORK_Other* ewk) {
+static void EFF74_WAIT(State_Other* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-static void EFF74_SUDDENLY(WORK_Other* ewk) {
+static void EFF74_SUDDENLY(State_Other* ewk) {
     s16 pos_y;
 
     switch (ewk->wu.routine_no[1]) {

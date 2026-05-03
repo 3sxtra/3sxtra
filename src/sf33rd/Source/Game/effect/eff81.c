@@ -9,14 +9,14 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void effect_81_move(WORK_Other* ewk) {
+void effect_81_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (--ewk->wu.dir_timer) {
@@ -75,14 +75,14 @@ void effect_81_move(WORK_Other* ewk) {
 }
 
 s32 effect_81_init(s16 Time) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 81;
     ewk->wu.work_id = 16;

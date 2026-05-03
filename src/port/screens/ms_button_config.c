@@ -39,7 +39,7 @@
 #include "sf33rd/Source/Game/effect/eff23.h"         /* effect_23_init */
 #include "sf33rd/Source/Game/effect/eff57.h"         /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff66.h"         /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"      /* g_state.Menu_Cursor_Y, g_state.Menu_Cursor_Move, etc. */
+#include "sf33rd/Source/Game/engine/state_user.h"      /* g_state.Menu_Cursor_Y, g_state.Menu_Cursor_Move, etc. */
 #include "sf33rd/Source/Game/io/pulpul.h"            /* pp_operator_check_flag */
 #include "sf33rd/Source/Game/menu/menu.h"            /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"   /* Button_Config_Sub, Button_Exit_Check, etc. */

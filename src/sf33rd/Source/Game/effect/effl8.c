@@ -15,7 +15,7 @@ u32 spmv_ng_save[2];
 
 const s16 pl17_0_00[12];
 
-void effect_L8_move(WORK_Other* ewk) {
+void effect_L8_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
     s16* save_old_col_ptr = (s16*)&ewk->wu.zu_flag;
 
@@ -54,12 +54,12 @@ void effect_L8_move(WORK_Other* ewk) {
     }
 }
 
-void check_new_color_data_L8(WORK* wk) {
+void check_new_color_data_L8(State* wk) {
     get_new_color_data_L8(wk, (s16*)wk->hit_adrs, wk->step_xy_table);
     get_new_color_data_L8(wk, (s16*)wk->hit_adrs, wk->move_xy_table);
 }
 
-void get_new_color_data_L8(WORK* /* unused */, s16* trom, s16* tram) {
+void get_new_color_data_L8(State* /* unused */, s16* trom, s16* tram) {
     s16 i;
 
     for (i = 0; i < 12; i++) {
@@ -85,7 +85,7 @@ void load_old_color_data(s16* wram, s16* tram) {
 }
 
 s32 effect_L8_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (wk->player_number != 16) {
@@ -96,7 +96,7 @@ s32 effect_L8_init(PLW* wk) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 218;
     ewk->wu.work_id = 16;

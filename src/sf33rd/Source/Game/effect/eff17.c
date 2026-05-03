@@ -8,11 +8,11 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void effect_17_move(WORK_Other* ewk) {
+void effect_17_move(State_Other* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);
     } else if (g_state.Menu_Cursor_Y[0] == ewk->wu.type) {
@@ -25,7 +25,7 @@ void effect_17_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-void EFF17_Bowan(WORK_Other* ewk) {
+void EFF17_Bowan(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.my_clear_level -= 4;

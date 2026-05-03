@@ -19,10 +19,10 @@ extern const s16 efff6_move01_tbl[6];
 extern const s16 efff6_data_tbl00[61][8];
 extern const EFFF6_ETC efff6_etc_data[61];
 
-void effect_F6_move(WORK_Other* ewk);
-void efff6_move(WORK_Other* ewk);
-void efff6_move_common(WORK_Other* ewk);
-void efff6_move01(WORK_Other* ewk);
+void effect_F6_move(State_Other* ewk);
+void efff6_move(State_Other* ewk);
+void efff6_move_common(State_Other* ewk);
+void efff6_move01(State_Other* ewk);
 s32 effect_F6_init(u8 typenum);
 
 #endif

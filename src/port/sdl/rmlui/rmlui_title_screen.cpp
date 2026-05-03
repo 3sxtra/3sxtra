@@ -18,7 +18,7 @@
 extern "C" {
 
 /* Game state globals — g_state.fsm[4] for 2P prompt visibility */
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 } // extern "C"
 

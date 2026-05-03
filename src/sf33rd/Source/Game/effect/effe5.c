@@ -11,9 +11,9 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 
 const u16 after_image_data[39][10] = {
@@ -47,10 +47,10 @@ const u16 illusion_setup_table[13][2] = {
     { 0, 12 }, { 0, 13 }, { 0, 0 }, { 0, 15 }, { 0, 17 }, { 0, 18 },
 };
 
-static s32 check_new_after_image(WORK_Other* ewk, PLW* mwk);
-static void setup_illusion_data(WORK_Other* ewk, PLW* mwk);
+static s32 check_new_after_image(State_Other* ewk, PLW* mwk);
+static void setup_illusion_data(State_Other* ewk, PLW* mwk);
 
-void effect_E5_move(WORK_Other* ewk) {
+void effect_E5_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
     s16 i;
 
@@ -99,10 +99,10 @@ void effect_E5_move(WORK_Other* ewk) {
              (ewk->wu.routine_no[5] != mwk->wu.routine_no[1] || ewk->wu.routine_no[6] != mwk->wu.routine_no[2]) &&
              (mwk->image_data_index != 11 || mwk->wu.routine_no[1] != 4 || mwk->wu.routine_no[3] != 0)) ||
             (ewk->wu.dir_old & 4 && mwk->sa->ok != -1) ||
-            (ewk->wu.dir_old & 8 && ((WORK*)mwk->wu.target_adrs)->routine_no[1] != 4 &&
-             ((WORK*)mwk->wu.target_adrs)->routine_no[1] != 2) ||
+            (ewk->wu.dir_old & 8 && ((State*)mwk->wu.target_adrs)->routine_no[1] != 4 &&
+             ((State*)mwk->wu.target_adrs)->routine_no[1] != 2) ||
             (ewk->wu.dir_old & 0x10 && mwk->wu.routine_no[1] != 4 && mwk->wu.routine_no[1] != 2) ||
-            (ewk->wu.dir_old & 0x20 && ewk->wu.total_att_set != ((WORK*)mwk->wu.target_adrs)->attack_type) ||
+            (ewk->wu.dir_old & 0x20 && ewk->wu.total_att_set != ((State*)mwk->wu.target_adrs)->attack_type) ||
             (ewk->wu.dir_old & 0x40 && ewk->wu.total_paring != mwk->wu.attack_type) ||
             (ewk->wu.dir_old & 0x80 && g_state.pcon_dp_flag) || !mwk->image_setup_flag) {
             mwk->image_setup_flag = 0;
@@ -180,7 +180,7 @@ void effect_E5_move(WORK_Other* ewk) {
     }
 }
 
-static void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
+static void setup_illusion_data(State_Other* ewk, PLW* mwk) {
     const u16* tblh = after_image_data[mwk->image_data_index];
 
     if (tblh[0] & 0x10) {
@@ -207,12 +207,12 @@ static void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.routine_no[5] = mwk->wu.routine_no[1];
     ewk->wu.routine_no[6] = mwk->wu.routine_no[2];
     ewk->wu.total_paring = mwk->wu.attack_type;
-    ewk->wu.total_att_set = ((WORK*)mwk->wu.target_adrs)->attack_type;
+    ewk->wu.total_att_set = ((State*)mwk->wu.target_adrs)->attack_type;
     push_color_trans_req(after_image_color[ewk->wu.old_routine_no[4]][mwk->wu.id], (mwk->wu.id * 8) + 4);
     mwk->image_setup_flag = 1;
 }
 
-static s32 check_new_after_image(WORK_Other* ewk, PLW* mwk) {
+static s32 check_new_after_image(State_Other* ewk, PLW* mwk) {
     if (mwk->image_setup_flag != 2) {
         return 0;
     }
@@ -225,14 +225,14 @@ static s32 check_new_after_image(WORK_Other* ewk, PLW* mwk) {
 }
 
 s32 effect_E5_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 145;
     ewk->wu.work_id = 16;
@@ -248,7 +248,7 @@ s32 effect_E5_init(PLW* wk) {
     return 0;
 }
 
-void effect_e7_e8_init_union(WORK_Other* nwk, WORK_Other* ek, PLW* mk) {
+void effect_e7_e8_init_union(State_Other* nwk, State_Other* ek, PLW* mk) {
     nwk->wu.old_routine_no[4] = ek->wu.old_routine_no[4];
     nwk->wu.old_routine_no[3] = ek->wu.old_routine_no[3];
     nwk->wu.old_routine_no[1] = ek->wu.old_routine_no[1];
@@ -280,7 +280,7 @@ void effect_e7_e8_init_union(WORK_Other* nwk, WORK_Other* ek, PLW* mk) {
     nwk->wu.weight_level = mk->wu.weight_level;
 }
 
-void get_attdata_of_illusion(WORK_Other* ewk) {
+void get_attdata_of_illusion(State_Other* ewk) {
     ewk->wu.anim_hurtbox_index = g_state.afterimage_table[ewk->master_id][ewk->wu.type].hit_ix;
     ewk->wu.anim_hitbox_index = g_state.afterimage_table[ewk->master_id][ewk->wu.type].renew;
     ewk->wu.xyz[0].disp.pos = ewk->wu.position_x;

@@ -8,19 +8,19 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void effm1_move(WORK_Other* ewk);
+static void effm1_move(State_Other* ewk);
 
-void effect_M1_move(WORK_Other* ewk) {
+void effect_M1_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -51,8 +51,8 @@ void effect_M1_move(WORK_Other* ewk) {
     }
 }
 
-static void effm1_move(WORK_Other* ewk) {
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+static void effm1_move(State_Other* ewk) {
+    State* oya_ptr = (State*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -98,15 +98,15 @@ static void effm1_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_M1_init(WORK* wk) {
-    WORK_Other* ewk;
+s32 effect_M1_init(State* wk) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 221;
     ewk->wu.work_id = 16;

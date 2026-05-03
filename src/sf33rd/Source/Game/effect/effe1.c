@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void effect_E1_move(WORK_Other* ewk) {
+void effect_E1_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0] += 1;
@@ -30,14 +30,14 @@ void effect_E1_move(WORK_Other* ewk) {
 }
 
 s32 effect_E1_init(s16 id, s16 Time, s16 /* unused */) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0x8D;
     ewk->wu.work_id = 0x10;

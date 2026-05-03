@@ -33,9 +33,9 @@
 #include "sf33rd/Source/Game/effect/eff93.h"
 #include "sf33rd/Source/Game/effect/effb8.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
@@ -850,6 +850,6 @@ void All_Clear_Suicide() {
 }
 
 /** @brief Placeholder flash-violent callback (always returns 1). */
-s32 Flash_Violent(WORK_Other* /* unused */, s32 /* unused */) {
+s32 Flash_Violent(State_Other* /* unused */, s32 /* unused */) {
     return 1;
 }

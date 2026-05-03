@@ -41,7 +41,7 @@
 #include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Screen_Adjust_Sub, Screen_Exit_Check, etc. */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */

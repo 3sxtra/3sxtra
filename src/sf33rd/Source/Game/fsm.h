@@ -2,7 +2,7 @@
 #define FSM_H
 
 #include "types.h"
-#include "sf33rd/Source/Game/engine/workuser_system.h" // For G_No
+#include "sf33rd/Source/Game/engine/state_system.h" // For G_No
 
 typedef enum {
     MAIN_STATE_WAIT_AUTO_LOAD = 0,

@@ -11,19 +11,19 @@
 #include "sf33rd/Source/Game/effect/eff57.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void EFF66_WAIT(WORK_Other* ewk);
-static void EFF66_SUSPEND(WORK_Other* ewk);
-static void EFF66_SLIDE_IN(WORK_Other* ewk);
-static void EFF66_BOWAN(WORK_Other* ewk);
-static void EFF66_FLASH(WORK_Other* ewk);
-static void EFF66_SUDDENLY(WORK_Other* ewk);
-static void Setup_Pos_66(WORK_Other* ewk);
+static void EFF66_WAIT(State_Other* ewk);
+static void EFF66_SUSPEND(State_Other* ewk);
+static void EFF66_SLIDE_IN(State_Other* ewk);
+static void EFF66_BOWAN(State_Other* ewk);
+static void EFF66_FLASH(State_Other* ewk);
+static void EFF66_SUDDENLY(State_Other* ewk);
+static void Setup_Pos_66(State_Other* ewk);
 
 const u8 Flash_Data_66[14] = { 0, 128, 255, 128, 0, 128, 255, 128, 0, 128, 255, 128, 0, 128 };
 
@@ -39,7 +39,7 @@ const s16 EFF66_Half_OBJ_Data[17][7] = {
 
 void (*const EFF66_Jmp_Tbl[7])();
 
-void effect_66_move(WORK_Other* ewk) {
+void effect_66_move(State_Other* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);
         return;
@@ -75,13 +75,13 @@ void effect_66_move(WORK_Other* ewk) {
     }
 }
 
-static void EFF66_WAIT(WORK_Other* ewk) {
+static void EFF66_WAIT(State_Other* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-static void EFF66_SUSPEND(WORK_Other* ewk) {
+static void EFF66_SUSPEND(State_Other* ewk) {
     ewk->wu.disp_flag = 0;
 
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
@@ -89,7 +89,7 @@ static void EFF66_SUSPEND(WORK_Other* ewk) {
     }
 }
 
-static void EFF66_SLIDE_IN(WORK_Other* ewk) {
+static void EFF66_SLIDE_IN(State_Other* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -133,7 +133,7 @@ static void EFF66_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-static void EFF66_BOWAN(WORK_Other* ewk) {
+static void EFF66_BOWAN(State_Other* ewk) {
     if (ewk->wu.routine_no[0] != g_state.Order[ewk->wu.dir_old]) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -167,7 +167,7 @@ static void EFF66_BOWAN(WORK_Other* ewk) {
     }
 }
 
-static void EFF66_FLASH(WORK_Other* ewk) {
+static void EFF66_FLASH(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         Setup_Pos_66(ewk);
@@ -193,7 +193,7 @@ static void EFF66_FLASH(WORK_Other* ewk) {
     }
 }
 
-static void EFF66_SUDDENLY(WORK_Other* ewk) {
+static void EFF66_SUDDENLY(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         Setup_Pos_66(ewk);
@@ -206,7 +206,7 @@ static void EFF66_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-static void Setup_Pos_66(WORK_Other* ewk) {
+static void Setup_Pos_66(State_Other* ewk) {
     if (--g_state.Order_Timer[ewk->wu.dir_old]) {
         return;
     }
@@ -242,7 +242,7 @@ static void Setup_Pos_66(WORK_Other* ewk) {
 }
 
 s32 effect_66_init(s16 order_index, s16 id, s16 master_player, s16 target_bg, s16 char_ix, s16 char_ix2, s16 option) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 cg_type;
 
@@ -250,7 +250,7 @@ s32 effect_66_init(s16 order_index, s16 id, s16 master_player, s16 target_bg, s1
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 66;
     ewk->wu.work_id = 16;

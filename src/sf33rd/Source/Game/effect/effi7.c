@@ -10,10 +10,10 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void effI7_pos_hosei(WORK_Other* ewk, WORK* mwk);
+static void effI7_pos_hosei(State_Other* ewk, State* mwk);
 
 const s16 ex_sign_data[69][4] = {
     { 28, 70, 121, 1 },  { -44, 60, 121, 0 }, { -24, 40, 121, 1 },  { -12, 52, 121, 1 }, { -40, 68, 121, 1 },
@@ -32,7 +32,7 @@ const s16 ex_sign_data[69][4] = {
     { -56, 65, 121, 0 }, { -37, 78, 121, 1 }, { -18, 58, 121, 1 },  { -42, 84, 121, 1 }
 };
 
-void effect_I7_move(WORK_Other* ewk) {
+void effect_I7_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
@@ -86,7 +86,7 @@ void effect_I7_move(WORK_Other* ewk) {
     }
 }
 
-static void effI7_pos_hosei(WORK_Other* ewk, WORK* mwk) {
+static void effI7_pos_hosei(State_Other* ewk, State* mwk) {
     ewk->wu.position_x = mwk->position_x;
 
     if (mwk->rl_flag) {
@@ -99,7 +99,7 @@ static void effI7_pos_hosei(WORK_Other* ewk, WORK* mwk) {
 }
 
 s32 effect_I7_init(PLW* wk, u8 data) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.test_flag) {
@@ -110,7 +110,7 @@ s32 effect_I7_init(PLW* wk, u8 data) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.type = data;
     ewk->wu.id = 187;

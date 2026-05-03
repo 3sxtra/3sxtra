@@ -10,14 +10,14 @@
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void effect_50_move(WORK_Other* ewk) {
-    WORK_Other* pwk;
+void effect_50_move(State_Other* ewk) {
+    State_Other* pwk;
     u16 sw;
 
     if (ewk->master_id) {
@@ -32,7 +32,7 @@ void effect_50_move(WORK_Other* ewk) {
         return;
     }
 
-    pwk = (WORK_Other*)Synchro_Address[ewk->master_id][(ewk->wu.direction - 1) ^ 1];
+    pwk = (State_Other*)Synchro_Address[ewk->master_id][(ewk->wu.direction - 1) ^ 1];
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -103,14 +103,14 @@ void effect_50_move(WORK_Other* ewk) {
 }
 
 s32 effect_50_init(s16 PL_id, s16 Direction, s16 damage_vitality) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 50;
     ewk->wu.work_id = 16;

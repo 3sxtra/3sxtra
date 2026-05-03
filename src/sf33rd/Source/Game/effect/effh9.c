@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
@@ -19,7 +19,7 @@ const CONN bbbs_ball[4][3] = {
     { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } },
 };
 
-static void effH9_trans(WORK* ewk);
+static void effH9_trans(State* ewk);
 static void nokori_ball_effH9(WORK_Other_CONN* ewk, s16 num);
 
 void effect_H9_move(WORK_Other_CONN* ewk) {
@@ -82,7 +82,7 @@ void effect_H9_move(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effH9_trans(WORK* ewk) {
+static void effH9_trans(State* ewk) {
     ewk->position_x = g_state.bg_w.bgw[2].wxy[0].disp.pos;
     ewk->position_y = g_state.bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);

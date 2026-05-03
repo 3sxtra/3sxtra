@@ -9,11 +9,11 @@
 #include "common.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
@@ -23,8 +23,8 @@
 // forward declaration
 const s16 effl7_data_tbl[16];
 
-void effect_L7_move(WORK_Other* ewk) {
-    WORK* oya_ptr = (WORK*)ewk->my_master;
+void effect_L7_move(State_Other* ewk) {
+    State* oya_ptr = (State*)ewk->my_master;
 
     if (g_state.Suicide[0] || (ewk->wu.dead_f)) {
         ewk->wu.routine_no[0] = 1;
@@ -51,7 +51,7 @@ void effect_L7_move(WORK_Other* ewk) {
     }
 }
 
-void effl7_move(WORK_Other* ewk) {
+void effl7_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -140,8 +140,8 @@ void effl7_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_L7_init(WORK* wk, s32 /* unused */) {
-    WORK_Other* ewk;
+s32 effect_L7_init(State* wk, s32 /* unused */) {
+    State_Other* ewk;
     s16 ix;
     s16 kind_w;
 
@@ -165,7 +165,7 @@ s32 effect_L7_init(WORK* wk, s32 /* unused */) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 217;
     ewk->wu.work_id = 16;

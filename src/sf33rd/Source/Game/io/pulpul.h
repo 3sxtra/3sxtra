@@ -36,16 +36,16 @@ s32 chkVibUnit(s32 port);
 void move_pulpul(PPWORK* wk);
 s32 pulpul_pdVibMxStart(PPWORK* wk, s32 arg1, s32 arg2, PULPARA* param);
 s32 vibParamTrans(s32 id, PULPARA* prm);
-void pp_pulpara_remake_at_init(WORK* wk);
-void pp_pulpara_remake_at_init2(WORK* wk);
-void pp_pulpara_remake_at_hit(WORK* wk);
-void pp_pulpara_remake_at(WORK* wk);
-void pp_pulpara_remake_dm_all(WORK* wk);
-void pp_pulpara_guard(WORK* wk);
-void pp_pulpara_hit(WORK* wk);
-void pp_pulpara_blocking(WORK* wk);
-void pp_pulpara_catch(WORK* wk);
-void pp_pulpara_caught(WORK* wk);
-void pp_pulpara_shungokusatsu(WORK* wk);
+void pp_pulpara_remake_at_init(State* wk);
+void pp_pulpara_remake_at_init2(State* wk);
+void pp_pulpara_remake_at_hit(State* wk);
+void pp_pulpara_remake_at(State* wk);
+void pp_pulpara_remake_dm_all(State* wk);
+void pp_pulpara_guard(State* wk);
+void pp_pulpara_hit(State* wk);
+void pp_pulpara_blocking(State* wk);
+void pp_pulpara_catch(State* wk);
+void pp_pulpara_caught(State* wk);
+void pp_pulpara_shungokusatsu(State* wk);
 
 #endif

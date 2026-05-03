@@ -9,23 +9,23 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void effm8_move_app(WORK_Other* ewk);
-static void don_run_sub_m8(WORK_Other* ewk);
-static void effm8_move_win(WORK_Other* ewk);
+static void effm8_move_app(State_Other* ewk);
+static void don_run_sub_m8(State_Other* ewk);
+static void effm8_move_win(State_Other* ewk);
 
 const s8 effm8_random_tbl[16] = { 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1 };
 
 const s16 effm8_timer_tbl[4] = { 24, 56, 72, 112 };
 
-void effect_M8_move(WORK_Other* ewk) {
+void effect_M8_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
@@ -46,7 +46,7 @@ void effect_M8_move(WORK_Other* ewk) {
     }
 }
 
-static void effm8_move_app(WORK_Other* ewk) {
+static void effm8_move_app(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -80,7 +80,7 @@ static void effm8_move_app(WORK_Other* ewk) {
     }
 }
 
-static void don_run_sub_m8(WORK_Other* ewk) {
+static void don_run_sub_m8(State_Other* ewk) {
     char_move(&ewk->wu);
     add_x_sub(&ewk->wu);
 
@@ -91,7 +91,7 @@ static void don_run_sub_m8(WORK_Other* ewk) {
     }
 }
 
-static void effm8_move_win(WORK_Other* ewk) {
+static void effm8_move_win(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.old_routine_no[0]--;
@@ -110,8 +110,8 @@ static void effm8_move_win(WORK_Other* ewk) {
     }
 }
 
-s32 effect_M8_init(WORK* oya, u8 data) {
-    WORK_Other* ewk;
+s32 effect_M8_init(State* oya, u8 data) {
+    State_Other* ewk;
     s16 ix;
     s16 i;
     s16 work;
@@ -128,7 +128,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[(ix)];
+        ewk = (State_Other*)frw[(ix)];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 228;
         ewk->wu.work_id = 16;
@@ -173,7 +173,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
                 return -1;
             }
 
-            ewk = (WORK_Other*)frw[(ix)];
+            ewk = (State_Other*)frw[(ix)];
             ewk->wu.be_flag = 1;
             ewk->wu.id = 228;
             ewk->wu.work_id = 16;
@@ -218,7 +218,7 @@ s32 effect_M8_init(WORK* oya, u8 data) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[(ix)];
+        ewk = (State_Other*)frw[(ix)];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 228;
         ewk->wu.work_id = 16;

@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -26,7 +26,7 @@ const s16 eff21_data_tbl_00[27] = { 1,  2,  8492, 640, 0, 10, 17,   0,   0, 0,  
 
 const s16* eff21_data_adrs[1] = { eff21_data_tbl_00 };
 
-void effect_21_move(WORK_Other* ewk) {
+void effect_21_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -62,7 +62,7 @@ void effect_21_move(WORK_Other* ewk) {
 }
 
 s32 effect_21_init(s16 sync_index) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 lp_cnt = eff21_num[sync_index];
     s16 i;
@@ -79,7 +79,7 @@ s32 effect_21_init(s16 sync_index) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 21;
         ewk->wu.work_id = 16;

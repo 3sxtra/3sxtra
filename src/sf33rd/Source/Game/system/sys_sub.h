@@ -100,6 +100,6 @@ s32 Check_Fade_Complete(void);
 
 /* === Misc === */
 void All_Clear_Suicide(void);
-s32 Flash_Violent(WORK_Other* /* unused */, s32 /* unused */);
+s32 Flash_Violent(State_Other* /* unused */, s32 /* unused */);
 
 #endif

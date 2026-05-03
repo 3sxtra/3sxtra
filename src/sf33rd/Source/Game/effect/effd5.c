@@ -9,19 +9,19 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effd6.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charid.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/pls01.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_common_mechanics.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 
-static void effD5_main_process(WORK_Other* ewk);
-static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk);
+static void effD5_main_process(State_Other* ewk);
+static void cal_speeds(State_Other* ewk, PLW* /* unused */, PLW* twk);
 static s32 my_rose_live_check(PLW* wk);
 
 const s16 dm_sp_sel_tbl[4][2] = { { 0, 14 }, { 1, 16 }, { 2, 18 }, { 3, 20 } };
@@ -30,7 +30,7 @@ const s16 range_time_table[16] = { 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 5
 
 const s16 range_isp_table[16] = { 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5 };
 
-void effect_D5_move(WORK_Other* ewk) {
+void effect_D5_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -93,7 +93,7 @@ void effect_D5_move(WORK_Other* ewk) {
     }
 }
 
-static void effD5_main_process(WORK_Other* ewk) {
+static void effD5_main_process(State_Other* ewk) {
     s16 dsst;
 
     if (ewk->wu.hf.hit_flag) {
@@ -187,7 +187,7 @@ static void effD5_main_process(WORK_Other* ewk) {
     }
 }
 
-static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk) {
+static void cal_speeds(State_Other* ewk, PLW* /* unused */, PLW* twk) {
     s16 tx = twk->wu.position_x;
     s16 rix = 0;
 
@@ -220,8 +220,8 @@ static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk) {
     }
 }
 
-s32 effect_D5_init(WORK* wk, s32 /* unused */) {
-    WORK_Other* ewk;
+s32 effect_D5_init(State* wk, s32 /* unused */) {
+    State_Other* ewk;
     s16 ix;
 
     if (my_rose_live_check((PLW*)wk) != 0) {
@@ -232,7 +232,7 @@ s32 effect_D5_init(WORK* wk, s32 /* unused */) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 135;
     ewk->wu.work_id = 2;
@@ -257,7 +257,7 @@ s32 effect_D5_init(WORK* wk, s32 /* unused */) {
 }
 
 static s32 my_rose_live_check(PLW* wk) {
-    WORK_Other* twk;
+    State_Other* twk;
     s16 ix;
 
     if (wk->player_number != g_state.My_char[wk->wu.id]) {
@@ -268,7 +268,7 @@ static s32 my_rose_live_check(PLW* wk) {
         return 0;
     }
 
-    twk = (WORK_Other*)frw[ix];
+    twk = (State_Other*)frw[ix];
 
     if (twk->master_id == wk->wu.id) {
         return 1;
@@ -278,7 +278,7 @@ static s32 my_rose_live_check(PLW* wk) {
         return 0;
     }
 
-    twk = (WORK_Other*)frw[ix];
+    twk = (State_Other*)frw[ix];
 
     if (twk->master_id == wk->wu.id) {
         return 1;

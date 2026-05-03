@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff61.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
@@ -32,7 +32,7 @@ const s8* Letter_Data_63[3][21] = { { "-10", "-9", "-8", "-7", "-6", "-5", "-4",
 void (*const EFF63_Jmp_Tbl[4])() = { EFF63_WAIT, EFF63_SLIDE_IN, EFF63_CHAR_CHANGE, EFF63_SUDDENLY };
 
 void effect_63_move(WORK_Other_CONN* ewk) {
-    if (Check_Die_61((WORK_Other*)ewk) != 0) {
+    if (Check_Die_61((State_Other*)ewk) != 0) {
         Release_Effect(&ewk->wu);
         return;
     }

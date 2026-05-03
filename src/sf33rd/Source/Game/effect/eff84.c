@@ -8,13 +8,13 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/eff56.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 const u8 Time_Data[5] = { 80, 90, 50, 50, 50 };
 
-void effect_84_move(WORK_Other* ewk) {
+void effect_84_move(State_Other* ewk) {
     if (g_state.Suicide[0]) {
         Release_Effect(&ewk->wu);
         return;
@@ -104,14 +104,14 @@ void effect_84_move(WORK_Other* ewk) {
 }
 
 s32 effect_84_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 84;
     return 0;

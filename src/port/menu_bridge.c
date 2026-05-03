@@ -27,7 +27,7 @@
 #endif
 #endif
 
-#include "game_state.h" // Includes headers for all the globals (workuser.h etc)
+#include "game_state.h" // Includes headers for all the globals (state_user.h etc)
 #include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"

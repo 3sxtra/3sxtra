@@ -10,15 +10,15 @@
 #include "sf33rd/Source/Game/effect/eff03.h"
 #include "sf33rd/Source/Game/effect/effd7.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charid.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/pls01.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_common_mechanics.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/pow_pow.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -32,11 +32,11 @@ const u16 cbm_table[8][5] = { { 0x3FFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFF00 }, { 0x1F
                               { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xF800 }, { 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xF000 },
                               { 0x0000, 0x000F, 0xFFFF, 0xFFFF, 0x8000 }, { 0x0000, 0x0000, 0x0FFF, 0xFFFE, 0x0000 } };
 
-static void effI8_main_process(WORK_Other* ewk);
-static void cal_speeds_to_me_effI8(WORK_Other* ewk, PLW* mwk);
-static void cal_speeds_to_em_effI8(WORK_Other* ewk, PLW* twk);
+static void effI8_main_process(State_Other* ewk);
+static void cal_speeds_to_me_effI8(State_Other* ewk, PLW* mwk);
+static void cal_speeds_to_em_effI8(State_Other* ewk, PLW* twk);
 
-void effect_I8_move(WORK_Other* ewk) {
+void effect_I8_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -96,7 +96,7 @@ void effect_I8_move(WORK_Other* ewk) {
     }
 }
 
-static void effI8_main_process(WORK_Other* ewk) {
+static void effI8_main_process(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
@@ -162,7 +162,7 @@ static void effI8_main_process(WORK_Other* ewk) {
 
             if (ewk->wu.shadow_flag != 0 && ewk->refrected == 0 && mwk->wu.routine_no[1] == 4 &&
                 mwk->wu.routine_no[2] == 31 && mwk->wu.cg_type == 0x28 &&
-                hit_check_subroutine(&ewk->wu, (WORK*)ewk->my_master, effI8_hit_box[0], effI8_hit_box[1])) {
+                hit_check_subroutine(&ewk->wu, (State*)ewk->my_master, effI8_hit_box[0], effI8_hit_box[1])) {
                 mwk->wu.script_register_bank[7] = 1;
                 ewk->wu.type = 0;
                 ewk->wu.routine_no[2] = 1;
@@ -234,14 +234,14 @@ static void effI8_main_process(WORK_Other* ewk) {
                 g_state.Bonus_Game_result++;
 
                 if (ewk->wu.hf.hit.player & 0x80) {
-                    Additinal_Score_DM((WORK_Other*)ewk->wu.target_adrs, 8);
+                    Additinal_Score_DM((State_Other*)ewk->wu.target_adrs, 8);
                 } else {
-                    Additinal_Score_DM((WORK_Other*)ewk->wu.target_adrs, 6);
+                    Additinal_Score_DM((State_Other*)ewk->wu.target_adrs, 6);
                 }
 
                 set_char_move_init(&ewk->wu, 0, 0x8B);
             }
-        } else if (ewk->wu.hf.hit.effect && ((WORK*)ewk->wu.hit_adrs)->id == 0x89) {
+        } else if (ewk->wu.hf.hit.effect && ((State*)ewk->wu.hit_adrs)->id == 0x89) {
             Se_Dispatch(0x157, 0x157, ewk);
             ewk->wu.routine_no[1] = 0;
             ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
@@ -259,7 +259,7 @@ static void effI8_main_process(WORK_Other* ewk) {
             ewk->wu.shadow_flag = 0;
             ewk->wu.dir_timer = 8;
             ewk->wu.hit_stop = 2;
-            Additinal_Score_DM((WORK_Other*)ewk->wu.target_adrs, 6);
+            Additinal_Score_DM((State_Other*)ewk->wu.target_adrs, 6);
             g_state.Bonus_Game_ex_result++;
         }
 
@@ -280,14 +280,14 @@ static void effI8_main_process(WORK_Other* ewk) {
     }
 }
 
-static void cal_speeds_to_me_effI8(WORK_Other* ewk, PLW* mwk) {
+static void cal_speeds_to_me_effI8(State_Other* ewk, PLW* mwk) {
     s16 tx = mwk->wu.xyz[0].disp.pos;
     s16 ty = cal_move_quantity3(&mwk->wu, ewk->wu.dir_timer) + 128;
 
     cal_speeds_effD7(ewk, ewk->wu.dir_timer, tx, ty, 5);
 }
 
-static void cal_speeds_to_em_effI8(WORK_Other* ewk, PLW* twk) {
+static void cal_speeds_to_em_effI8(State_Other* ewk, PLW* twk) {
     s16 tx = twk->wu.position_x;
     s16 ty;
 
@@ -347,14 +347,14 @@ s32 check_ball_mizushibuki(s16 xx, s16 yy) {
 }
 
 static s32 effect_I8_init(PLW* wk, s16 top, const s16* sptr) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0xBC;
     ewk->wu.work_id = 2;

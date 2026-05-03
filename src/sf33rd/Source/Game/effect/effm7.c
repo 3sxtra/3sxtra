@@ -9,16 +9,16 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void effm7_move(WORK_Other* ewk);
+static void effm7_move(State_Other* ewk);
 
-void effect_M7_move(WORK_Other* ewk) {
+void effect_M7_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (!g_state.EXE_flag && !g_state.Game_pause) {
@@ -35,7 +35,7 @@ void effect_M7_move(WORK_Other* ewk) {
     }
 }
 
-static void effm7_move(WORK_Other* ewk) {
+static void effm7_move(State_Other* ewk) {
     s16 id_w;
 
     switch (ewk->wu.routine_no[1]) {
@@ -131,7 +131,7 @@ const s16 effm7_data_tbl[42] = {
 };
 
 s32 effect_M7_init(PLW* oya) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = effm7_data_tbl;
@@ -142,7 +142,7 @@ s32 effect_M7_init(PLW* oya) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 227;
         ewk->wu.work_id = 16;

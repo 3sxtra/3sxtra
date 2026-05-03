@@ -7,9 +7,9 @@
 #include "training_state.h"
 #include "game_state.h"
 #include "port/sdl/rmlui/lua_engine_bridge.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/plmain.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_main.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/training/trials.h"
 #include "port/I_System.h"
 

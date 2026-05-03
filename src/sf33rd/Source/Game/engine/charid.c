@@ -76,7 +76,7 @@ const CharInitData char_init_data_ex[2] = { { _ef13_char_table,
                                               NULL } };
 
 /** @brief Initializes character work data from the char init tables. */
-void set_char_base_data(WORK* wk) {
+void set_char_base_data(State* wk) {
     CharInitData* cdat = &char_init_data[wk->charset_id];
     const CharInitData2* cdat2 = &char_init_data2[wk->charset_id];
 

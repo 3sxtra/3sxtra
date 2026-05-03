@@ -1,0 +1,1194 @@
+/**
+ * @file pls02.c
+ * @brief Player system utilities, damage scaling, and RNG generators.
+ *
+ * @netplay_sync — RNG SYSTEM OVERVIEW
+ *
+ * This file contains 10 parallel pseudo-random number generators used by the
+ * game engine. Each is a simple table-lookup RNG: an index variable steps
+ * through a fixed lookup table and wraps around. The tables are ROM constants;
+ * only the index variables are mutable state.
+ *
+ * The 10 generators (5 index vars × 2 table sizes each):
+ *
+ *   Generator              Index variable          Table              Wrap
+ *   ──────────────────────  ─────────────────────   ────────────────   ────
+ *   random_16()            g_state.Random_ix16             random_tbl_16[64]  0x3F
+ *   random_32()            g_state.Random_ix32             random_tbl_32[128] 0x7F
+ *   random_16_ex()         g_state.Random_ix16_ex          random_tbl_16_ex[16]  0xF
+ *   random_32_ex()         g_state.Random_ix32_ex          random_tbl_32_ex[32]  0x1F
+ *   random_16_com()        g_state.Random_ix16_com         random_tbl_16_com[64] 0x3F
+ *   random_32_com()        g_state.Random_ix32_com         random_tbl_32_com[128] 0x7F
+ *   random_16_ex_com()     g_state.Random_ix16_ex_com      random_tbl_16_ex_com[16] 0xF
+ *   random_32_ex_com()     g_state.Random_ix32_ex_com      random_tbl_32_ex_com[32] 0x1F
+ *   random_16_bg()         g_state.Random_ix16_bg          random_tbl_16_bg[64] 0x3F
+ *   (no random_32_bg)      —                       —                  —
+ *
+ * The "com" variants delegate to the main generators when g_state.Play_Mode == 0
+ * (both players are human). The "bg" variant drives background animations.
+ *
+ * All 9 index variables are saved/loaded in GameState (game_state.h) and
+ * checksummed during desync detection in save_state() (netplay.c).
+ *
+ * @see GameState in game_state.h — fields g_state.Random_ix16 through g_state.Random_ix16_bg
+ * @see save_state() in netplay.c — RNG indices are part of the checksum whitelist
+ * @see setup_vs_mode() in netplay.c — g_state.Random_ix16/g_state.Random_ix32 zeroed at session start
+ */
+
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "game_state.h"
+#include "bin2obj/gauge.h"
+#include "common.h"
+#include "sf33rd/Source/Game/com/com_data.h"
+#include "sf33rd/Source/Game/debug/Debug.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
+#include "sf33rd/Source/Game/engine/charid.h"
+#include "sf33rd/Source/Game/engine/hitcheck.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_damage_controller.h"
+#include "sf33rd/Source/Game/engine/player_common_mechanics.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
+#include "sf33rd/Source/Game/system/country_region.h"
+#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+#include "structs.h"
+
+static void read_adrs_store_mvxy(State* wk, s16* adrs);
+void remake_mvxy_PoGR(State* wk);
+static s16 meri_case_switch(s16 meri);
+static s16 is_adjustment_allowed(State* wk, s16 tx);
+s32 random_32();
+static s32 random_32_ex();
+static s32 random_16_ex();
+s8 get_guard_direction(State* as, State* ds);
+void add_sp_arts_gauge_guard(PLW* wk);
+static s16 cal_sa_gauge_waribiki(PLW* wk, s16 asag);
+void setup_latest_stick_dir(PLW* ds, s8 gddir);
+void dead_voice_request();
+static void dead_voice_request2(PLW* wk);
+
+const s16 asagh_zuru[8] = { -2, -1, 0, 0, 1, 2, 3, 4 };
+
+const s16 sel_adjust_tbl_ix[20] = { 29, 45, 1, 5, 49, 13, 9, 21, 17, 25, 5, 1, 1, 29, 1, 33, 37, 41, 57, 53 };
+
+const s16 satse[20] = { 32, 32, 28, 24, 32, 36, 40, 24, 28, 28, 24, 28, 28, 32, 30, 28, 28, 24, 36, 24 };
+
+const s16 random_tbl_32[128] = { 27, 4,  17, 6,  31, 10, 29, 2,  25, 19, 11, 22, 5,  15, 6,  20, 24, 18, 4,  26, 19, 11,
+                                 30, 0,  21, 7,  10, 27, 1,  24, 16, 6,  15, 5,  29, 17, 1,  23, 18, 2,  13, 22, 31, 16,
+                                 13, 3,  21, 30, 17, 22, 0,  26, 3,  19, 10, 23, 14, 30, 19, 29, 13, 8,  2,  9,  9,  25,
+                                 4,  12, 28, 20, 2,  14, 27, 9,  7,  18, 27, 1,  31, 14, 4,  8,  29, 8,  24, 28, 7,  16,
+                                 3,  11, 15, 6,  20, 28, 25, 12, 13, 23, 25, 10, 22, 8,  18, 21, 12, 1,  24, 31, 0,  3,
+                                 26, 7,  20, 5,  5,  15, 14, 0,  11, 28, 16, 26, 9,  17, 21, 30, 12, 23 };
+
+const s16 random_tbl_16[64] = { 3,  8, 6,  9, 14, 13, 9,  5, 10, 14, 1,  7, 4,  15, 2,  0, 12, 15, 5, 13, 6,  3,
+                                11, 8, 0,  3, 11, 10, 1,  7, 11, 4,  5,  4, 13, 2,  11, 9, 7,  10, 1, 6,  12, 9,
+                                14, 0, 15, 2, 13, 1,  15, 8, 0,  6,  14, 3, 12, 8,  4,  5, 10, 2,  7, 12 };
+
+const s16 random_tbl_32_ex[32] = { 16, 24, 5,  22, 10, 27, 14, 1,  20, 8,  29, 3,  26, 11, 18, 0,
+                                   31, 15, 28, 7,  12, 23, 4,  30, 9,  19, 2,  25, 13, 17, 21, 6 };
+
+const s16 random_tbl_16_ex[16] = { 9, 0, 5, 12, 3, 14, 7, 10, 1, 15, 6, 11, 2, 8, 13, 4 };
+
+const s16 random_tbl_32_com[128] = { 20, 5,  5,  15, 14, 0,  11, 28, 16, 26, 9,  17, 21, 30, 12, 23, 13, 23, 25,
+                                     10, 22, 8,  18, 21, 12, 1,  24, 31, 0,  3,  26, 7,  4,  8,  29, 8,  24, 28,
+                                     7,  16, 3,  11, 15, 6,  20, 28, 25, 12, 9,  25, 4,  12, 28, 20, 2,  14, 27,
+                                     9,  7,  18, 27, 1,  31, 14, 17, 22, 0,  26, 3,  19, 10, 23, 14, 30, 19, 29,
+                                     13, 8,  2,  9,  15, 5,  29, 17, 1,  23, 18, 2,  13, 22, 31, 16, 13, 3,  21,
+                                     30, 24, 18, 4,  26, 19, 11, 30, 0,  21, 7,  10, 27, 1,  24, 16, 6,  27, 4,
+                                     17, 6,  31, 10, 29, 2,  25, 19, 11, 22, 5,  15, 6,  20 };
+
+const s16 random_tbl_16_com[64] = { 13, 1,  15, 8, 0,  6, 14, 3, 12, 8,  4,  5,  10, 2,  7, 12, 5,  4,  13, 2, 11, 9,
+                                    7,  10, 1,  6, 12, 9, 14, 0, 15, 2,  12, 15, 5,  13, 6, 3,  11, 8,  0,  3, 11, 10,
+                                    1,  7,  11, 4, 3,  8, 6,  9, 14, 13, 9,  5,  10, 14, 1, 7,  4,  15, 2,  0 };
+
+const s16 random_tbl_32_ex_com[32] = { 31, 15, 28, 7,  12, 23, 4,  30, 9,  19, 2,  25, 13, 17, 21, 6,
+                                       16, 24, 5,  22, 10, 27, 14, 1,  20, 8,  29, 3,  26, 11, 18, 0 };
+
+const s16 random_tbl_16_ex_com[16] = { 9, 0, 5, 12, 3, 14, 7, 10, 1, 15, 6, 11, 2, 8, 13, 4 };
+
+const s16 random_tbl_16_bg[64] = { 13, 1,  15, 8, 0,  6, 14, 3, 12, 8,  4,  5,  10, 2,  7, 12, 5,  4,  13, 2, 11, 9,
+                                   7,  10, 1,  6, 12, 9, 14, 0, 15, 2,  12, 15, 5,  13, 6, 3,  11, 8,  0,  3, 11, 10,
+                                   1,  7,  11, 4, 3,  8, 6,  9, 14, 13, 9,  5,  10, 14, 1, 7,  4,  15, 2,  0 };
+
+const s16 dir16_rl_conv[16] = { 0, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+
+const s16 dir16_hddm[16] = { 35, 35, 35, 32, 32, 32, 36, 36, 36, 36, 36, 32, 32, 32, 35, 35 };
+
+const s16 dir16_trdm[16] = { 38, 38, 38, 37, 37, 37, 36, 36, 36, 36, 36, 37, 37, 37, 38, 38 };
+
+const s16 konjyou_tbl[20][6] = { { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 },
+                                 { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 },
+                                 { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 },
+                                 { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 },
+                                 { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 },
+                                 { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 },
+                                 { 26, 28, 30, 32, 32, 32 }, { 26, 28, 30, 32, 32, 32 } };
+
+const s16 apagt_table[20] = { 5, 4, 4, 4, 4, 4, 5, 4, 5, 3, 4, 4, 4, 4, 4, 4, 5, 3, 2, 4 };
+
+const s16 dir32_skydm[32] = { 88, 88, 88, 88, 88, 88, 88, 88, 88, 88, 88, 97, 97, 97, 97, 98,
+                              98, 98, 97, 97, 97, 97, 88, 88, 88, 88, 88, 88, 88, 88, 88, 88 };
+
+const s16 dir32_grddm[32] = { 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 39, 39, 39, 39, 40,
+                              40, 40, 39, 39, 39, 39, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91 };
+
+const u8 convert_latest_stick_dir[2][16] = { { 0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 2, 0, 0, 0, 0, 0 },
+                                          { 0, 0, 0, 0, 2, 2, 2, 0, 1, 1, 1, 0, 0, 0, 0, 0 } };
+
+const s16 dead_voice_table[20][2] = { { 864, 865 }, { 928, 929 }, { 512, 513 }, { 608, 609 }, { 896, 897 },
+                                      { 800, 801 }, { 832, 833 }, { 352, 353 }, { 672, 673 }, { 576, 577 },
+                                      { 640, 641 }, { 384, 385 }, { 480, 481 }, { 736, 737 }, { 704, 705 },
+                                      { 416, 417 }, { 448, 449 }, { 768, 769 }, { 960, 961 }, { 544, 545 } };
+
+/** @brief Adds to movement XY data from a table address. */
+void add_to_mvxy_data(State* wk, u16 ix) {
+    s16* adrs;
+    s32 sp;
+
+    wk->mvxy.index = ix;
+
+    adrs = &wk->move_xy_table[ix * 6];
+    sp = adrs[0];
+    sp *= 256;
+    wk->mvxy.a[0].sp += sp;
+    sp = adrs[1];
+    sp *= 256;
+    wk->mvxy.d[0].sp += sp;
+    wk->mvxy.physics_curve_type[0] = adrs[2];
+    sp = adrs[3];
+    sp *= 256;
+    wk->mvxy.a[1].sp += sp;
+    sp = adrs[4];
+    sp *= 256;
+    wk->mvxy.d[1].sp += sp;
+    wk->mvxy.physics_curve_type[1] = adrs[5];
+}
+
+/** @brief Sets up easy-mode movement data from address. */
+void setup_move_data_easy(State* wk, const s16* adrs, s16 prx, s16 pry) {
+    wk->mvxy.a[0].sp = adrs[0];
+    wk->mvxy.a[0].sp <<= 8;
+    wk->mvxy.d[0].sp = adrs[1];
+    wk->mvxy.d[0].sp <<= 8;
+    wk->mvxy.physics_curve_type[0] = prx;
+    wk->mvxy.a[1].sp = adrs[2];
+    wk->mvxy.a[1].sp <<= 8;
+    wk->mvxy.d[1].sp = adrs[3];
+    wk->mvxy.d[1].sp <<= 8;
+    wk->mvxy.physics_curve_type[1] = pry;
+}
+
+/** @brief Sets up movement XY data from a table index. */
+void setup_mvxy_data(State* wk, u16 ix) {
+    wk->mvxy.index = ix;
+    read_adrs_store_mvxy(wk, &wk->move_xy_table[ix * 6]);
+}
+
+/** @brief Sets up own blow-away trajectory data. */
+void setup_butt_own_data(State* wk) {
+    wk->mvxy.index = wk->damage_knockback_type;
+    read_adrs_store_mvxy(
+        wk, (s16*)((char*)parabora_own_table[wk->dm_plnum] + wk->damage_knockback_type * 48 + wk->weight_level * 12));
+}
+
+/** @brief Reads movement address data and stores into work XY. */
+static void read_adrs_store_mvxy(State* wk, s16* adrs) {
+    wk->mvxy.a[0].sp = adrs[0];
+    wk->mvxy.a[0].sp <<= 8;
+    wk->mvxy.d[0].sp = adrs[1];
+    wk->mvxy.d[0].sp <<= 8;
+    wk->mvxy.physics_curve_type[0] = adrs[2];
+    wk->mvxy.a[1].sp = adrs[3];
+    wk->mvxy.a[1].sp <<= 8;
+    wk->mvxy.d[1].sp = adrs[4];
+    wk->mvxy.d[1].sp <<= 8;
+    wk->mvxy.physics_curve_type[1] = adrs[5];
+}
+
+/** @brief Returns the weight-class index for the character. */
+s8 get_weight_point(State* wk) {
+    return wk->dm_weight - wk->weight_level + 3;
+}
+
+/** @brief Calculates movement speed with deceleration. */
+void cal_mvxy_speed(State* wk) {
+    s16 i;
+
+    for (i = 0; i < 2; i++) {
+        switch (wk->mvxy.physics_curve_type[i]) {
+        case 0:
+            wk->mvxy.a[i].sp += wk->mvxy.d[i].sp;
+            break;
+
+        case 1:
+            if (wk->mvxy.a[i].sp >= 0) {
+                wk->mvxy.a[i].sp += wk->mvxy.d[i].sp;
+
+                if (wk->mvxy.a[i].sp < 0) {
+                    wk->mvxy.d[i].sp = 0;
+                    wk->mvxy.a[i].sp = 0;
+                }
+            } else {
+                wk->mvxy.a[i].sp += wk->mvxy.d[i].sp;
+
+                if (wk->mvxy.a[i].sp >= 0) {
+                    wk->mvxy.d[i].sp = 0;
+                    wk->mvxy.a[i].sp = 0;
+                }
+            }
+            break;
+        }
+    }
+}
+
+/** @brief Applies movement speed to position using facing direction. */
+void add_mvxy_speed(State* wk) {
+    if (wk->rl_flag) {
+        wk->xyz[0].cal += wk->mvxy.a[0].sp;
+    } else {
+        wk->xyz[0].cal -= wk->mvxy.a[0].sp;
+    }
+
+    wk->xyz[1].cal += wk->mvxy.a[1].sp;
+}
+
+/** @brief Applies movement speed with explicit deceleration value. */
+void add_mvxy_speed_exp(State* wk, s16 dvp) {
+    if (wk->rl_flag) {
+        wk->xyz[0].cal += wk->mvxy.a[0].sp / dvp;
+    } else {
+        wk->xyz[0].cal -= wk->mvxy.a[0].sp / dvp;
+    }
+
+    wk->xyz[1].cal += wk->mvxy.a[1].sp;
+}
+
+/** @brief Applies movement speed ignoring left/right facing. */
+void add_mvxy_speed_no_use_rl(State* wk) {
+    wk->xyz[0].cal += wk->mvxy.a[0].sp;
+    wk->xyz[1].cal += wk->mvxy.a[1].sp;
+}
+
+/** @brief Applies direct X/Y speed values to position. */
+void add_mvxy_speed_direct(State* wk, s16 sx, s16 sy) {
+    s32 ax;
+    s32 ay;
+
+    ax = sx;
+    ay = sy;
+    ax <<= 8;
+
+    if (wk->rl_flag) {
+        wk->xyz[0].cal += ax;
+    } else {
+        wk->xyz[0].cal -= ax;
+    }
+
+    wk->xyz[1].cal += ay << 8;
+}
+
+/** @brief Clears all movement XY data. */
+void reset_mvxy_data(State* wk) {
+    wk->mvxy.a[0].sp = wk->mvxy.d[0].sp = wk->mvxy.physics_curve_type[0] = 0;
+    wk->mvxy.a[1].sp = wk->mvxy.d[1].sp = wk->mvxy.physics_curve_type[1] = 0;
+}
+
+/** @brief Rebuilds movement data for push-back (PoSB). */
+void remake_mvxy_PoSB(State* wk) {
+    if (wk->mvxy.a[1].sp < 0) {
+        wk->mvxy.a[1].sp = (wk->mvxy.a[1].sp * 30) / 100;
+        wk->mvxy.a[1].sp = -wk->mvxy.a[1].sp;
+    }
+}
+
+/** @brief Rebuilds movement data for gravity (PoGR). */
+void remake_mvxy_PoGR(State* wk) {
+    if (wk->mvxy.d[1].sp) {
+        switch ((wk->mvxy.a[1].sp > 0) + ((wk->mvxy.a[1].sp < 0) * 2)) {
+        case 1:
+            wk->mvxy.a[1].sp = (wk->mvxy.a[1].sp * 80) / 100;
+            break;
+
+        default:
+            wk->mvxy.a[1].sp = (wk->mvxy.a[1].sp * 10) / 100;
+            break;
+        }
+    }
+
+    switch ((wk->mvxy.a[0].sp > 0) + ((wk->mvxy.a[0].sp < 0) * 2)) {
+    case 2:
+        wk->mvxy.a[0].sp = (wk->mvxy.a[0].sp * 30) / 100;
+        break;
+
+    default:
+        wk->mvxy.a[0].sp = (wk->mvxy.a[0].sp * 50) / 100;
+
+        if (wk->mvxy.a[0].real.h <= 0) {
+            wk->mvxy.a[0].real.h = 1;
+        }
+
+        wk->mvxy.d[0].sp = 0;
+        wk->mvxy.a[0].sp = -wk->mvxy.a[0].sp;
+    }
+}
+
+/** @brief Checks player push-box collision and pushes them apart if needed. */
+void check_body_touch() {
+    PLW* p1w = &g_state.plw[0];
+    PLW* p2w = &g_state.plw[1];
+    s16 meri;
+
+    if (p1w->wu.pushbox->hos_box[0] != 0 && p2w->wu.pushbox->hos_box[0] != 0) {
+        meri = hit_check_subroutine(&p1w->wu, &p2w->wu, &p1w->wu.pushbox->hos_box[0], &p2w->wu.pushbox->hos_box[0]);
+
+        if (meri != 0) {
+            meri = meri_case_switch(meri);
+
+            if (p1w->wu.old_pos[1] < 1 && p2w->wu.old_pos[1] < 1) {
+                if (g_state.positional_relation) {
+                    goto one;
+                }
+
+                goto two;
+            }
+
+            if (check_work_position(&p1w->wu, &p2w->wu)) {
+                goto one;
+            }
+
+            goto two;
+        }
+    }
+
+    p1w->hos_em_flag = 0;
+    p2w->hos_em_flag = 0;
+    return;
+
+one:
+    p1w->wu.xyz[0].disp.pos += meri * (p1w->close_proximity_flag != 1);
+    p2w->wu.xyz[0].disp.pos -= meri * (p2w->close_proximity_flag != 2);
+    p1w->hos_em_flag = 2;
+    p2w->hos_em_flag = 1;
+    return;
+
+two:
+    p1w->wu.xyz[0].disp.pos -= meri * (p1w->close_proximity_flag != 2);
+    p2w->wu.xyz[0].disp.pos += meri * (p2w->close_proximity_flag != 1);
+    p1w->hos_em_flag = 1;
+    p2w->hos_em_flag = 2;
+}
+
+/** @brief Converts a push-box overlap amount to a step value. */
+static s16 meri_case_switch(s16 meri) {
+    switch (meri & 0xFFF8) {
+    case 0:
+        if (meri < 4) {
+            meri /= 2;
+        } else {
+            meri /= 4;
+        }
+        break;
+
+    case 8:
+        meri = (meri * 21) / 64;
+        break;
+
+    default:
+        meri = (meri * 13) / 32;
+        break;
+    }
+
+    return meri;
+}
+
+/** @brief Extended push-box check with wall/corner handling. */
+void check_body_touch2() {
+    PLW* hmw;
+    PLW* cmw;
+    State* efw;
+    s16* dad0;
+    s16* dad1;
+    s16 meri;
+    s16 ix;
+    s16 dad2[4];
+    s16 dad3[4];
+
+    if (g_state.plw->wu.pl_operator) {
+        hmw = &g_state.plw[0];
+        cmw = &g_state.plw[1];
+    } else {
+        hmw = &g_state.plw[1];
+        cmw = &g_state.plw[0];
+    }
+
+    if (!latest_bs2_on_car(hmw)) {
+        efw = (State*)cmw->wu.my_effadrs;
+        ix = (sel_adjust_tbl_ix[hmw->player_number]) + 1 + ((efw->dir_timer == 1) * 2);
+        dad0 = &hmw->wu.adjust_adrs[1].hos_box[0];
+        dad1 = &efw->adjust_adrs[ix].hos_box[0];
+
+        if (!is_adjustment_allowed(&hmw->wu, efw->xyz[0].disp.pos + (dad1[0] + dad1[1] / 2))) {
+            dad2[0] = dad0[0];
+            dad2[1] = dad0[1];
+            dad2[2] = dad0[2];
+            dad2[3] = dad0[3];
+            dad3[0] = dad1[0];
+            dad3[1] = dad1[1];
+            dad3[2] = dad1[2];
+            dad3[3] = dad1[3];
+
+            if (hmw->wu.cg_jphos) {
+                dad2[2] += hmw->wu.cg_jphos;
+                dad2[3] -= hmw->wu.cg_jphos;
+            }
+
+            if (efw->xyz[1].disp.pos) {
+                dad3[2] -= efw->xyz[1].disp.pos;
+            }
+
+            meri = hit_check_subroutine(&hmw->wu, efw, &dad2[0], &dad3[0]);
+
+            if (meri != 0) {
+                meri = meri_case_switch(meri);
+
+                if (!check_work_position_bonus(&hmw->wu, efw->xyz[0].disp.pos + (dad1[0] + dad1[1] / 2))) {
+                    goto two;
+                } else {
+                    goto one;
+                }
+            }
+        }
+    }
+
+    hmw->hos_em_flag = 0;
+    cmw->hos_em_flag = 0;
+    return;
+
+one:
+    hmw->wu.xyz[0].disp.pos += (meri) * (hmw->close_proximity_flag != 1);
+    hmw->hos_em_flag = 2;
+    cmw->hos_em_flag = 1;
+    return;
+
+two:
+    hmw->wu.xyz[0].disp.pos -= (meri) * (hmw->close_proximity_flag != 2);
+    hmw->hos_em_flag = 1;
+    cmw->hos_em_flag = 2;
+    return;
+}
+
+/** @brief Checks if we are in the bonus-stage car object area. */
+s32 check_be_car_object() {
+    PLW* com;
+
+    if (g_state.pcon_rno[0] == 0) {
+        return 1;
+    }
+
+    if (g_state.plw[0].wu.pl_operator) {
+        com = &g_state.plw[1];
+    } else {
+        com = &g_state.plw[0];
+    }
+
+    if (com->wu.routine_no[0] <= 0) {
+        return 1;
+    }
+
+    return ((PLW*)com->wu.my_effadrs)->wu.be_flag != 0;
+}
+
+/** @brief Checks if position correction is allowed. */
+static s16 is_adjustment_allowed(State* wk, s16 tx) {
+    s16 rnum = 0;
+
+    if (wk->cg_jphos + cal_top_of_position_y(wk) > g_state.bs2_floor[2] || wk->mvxy.a[1].real.h < 0) {
+        switch ((wk->xyz[0].disp.pos < tx) + (wk->rl_flag != 0) * 2) {
+        case 1:
+        case 2:
+            if (wk->mvxy.a[1].real.h > 0 && wk->mvxy.a[0].real.h < 0) {
+                rnum = 1;
+            }
+
+            if (wk->mvxy.a[1].real.h < 0 && wk->mvxy.a[0].real.h > 0) {
+                rnum = 1;
+            }
+
+            break;
+
+        default:
+            if (wk->mvxy.a[1].real.h > 0 && wk->mvxy.a[0].real.h > 0) {
+                rnum = 1;
+            }
+        }
+    }
+
+    return rnum;
+}
+
+/** @brief Returns the correction table index for a player. */
+s16 get_sel_adjust_tbl_ix(s16 plnum) {
+    return sel_adjust_tbl_ix[plnum];
+}
+
+/** @brief Checks work position relative to bonus stage. */
+s16 check_work_position_bonus(State* hm, s16 tx) {
+    s16 result = hm->xyz[0].disp.pos - tx;
+    s16 num;
+
+    if (result) {
+        if (result > 0) {
+            num = 1;
+        } else {
+            num = 0;
+        }
+    } else {
+        num = hm->rl_flag == 0;
+    }
+
+    return num;
+}
+
+/** @brief Sets the field correction flag based on position. */
+s32 set_field_adjust_flag(PLW* pl, s16 pos, s16 ix) {
+    s16 hami;
+
+    while (1) {
+        if (ix) {
+            hami = pl->wu.xyz[0].disp.pos + satse[pl->player_number] - pos;
+
+            if (hami) {
+                if (hami >= 0) {
+                    pl->wu.xyz[0].disp.pos -= hami;
+                    pl->close_proximity_flag = 1;
+                    pl->hos_fi_flag = 1;
+                    pl->scaling_remainder = -hami;
+                } else {
+                    break;
+                }
+            } else {
+                pl->close_proximity_flag = 1;
+                pl->hos_fi_flag = 0;
+                pl->scaling_remainder = 0;
+            }
+        } else {
+            hami = pl->wu.xyz[0].disp.pos - satse[pl->player_number] - pos;
+
+            if (hami) {
+                if (hami <= 0) {
+                    pl->wu.xyz[0].disp.pos -= hami;
+                    pl->close_proximity_flag = 2;
+                    pl->hos_fi_flag = 2;
+                    pl->scaling_remainder = -hami;
+                } else {
+                    break;
+                }
+            } else {
+                pl->close_proximity_flag = 2;
+                pl->hos_fi_flag = 0;
+                pl->scaling_remainder = 0;
+            }
+        }
+
+        return 0;
+    }
+
+    pl->close_proximity_flag = 0;
+    pl->hos_fi_flag = 0;
+    pl->scaling_remainder = 0;
+    return 1;
+}
+
+/** @brief Calculates the relative position between two work structures. */
+s16 check_work_position(State* p1, State* p2) {
+    s16 result = p1->xyz[0].disp.pos - p2->xyz[0].disp.pos;
+    s16 num;
+
+    if (result) {
+        if (result > 0) {
+            num = 1;
+        } else {
+            num = 0;
+        }
+    } else if (p1->rl_flag + p2->rl_flag & 1) {
+        if (p1->rl_flag) {
+            num = 0;
+        } else {
+            num = 1;
+        }
+    } else {
+        switch ((p1->xyz[1].disp.pos == 0) + (p2->xyz[1].disp.pos == 0) * 2) {
+        case 1:
+            if (p1->rl_flag) {
+                num = 0;
+            } else {
+                num = 1;
+            }
+            break;
+
+        case 2:
+            if (p2->rl_flag) {
+                num = 1;
+            } else {
+                num = 0;
+            }
+            break;
+
+        default:
+            num = 0;
+            break;
+        }
+    }
+
+    return num;
+}
+
+/**
+ * @brief Shared RNG stepping helper.
+ *
+ * Every pseudo-random generator in this file follows the same pattern:
+ *   1. Increment the index
+ *   2. Reset to 0 when the debug random flag is set
+ *   3. Mask to table bounds
+ *   4. Return the table entry
+ *
+ * @param index  Pointer to the generator's index variable
+ * @param table  Lookup table for this generator
+ * @param mask   Bitmask for wrapping (e.g. 0x7F, 0x3F, 0x1F, 0xF)
+ * @return       The next pseudo-random value from the table
+ */
+static inline s32 rng_next(s16* index, const s16* table, s16 mask) {
+    (*index)++;
+
+    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
+        *index = 0;
+    }
+
+    *index &= mask;
+    return table[*index];
+}
+
+/** @brief Returns a 32-entry pseudo-random number. @netplay_sync — index saved in GameState. */
+s32 random_32() {
+    return rng_next(&g_state.Random_ix32, random_tbl_32, 0x7F);
+}
+
+/** @brief Returns a 16-entry pseudo-random number. @netplay_sync — index saved in GameState. */
+s32 random_16() {
+    return rng_next(&g_state.Random_ix16, random_tbl_16, 0x3F);
+}
+
+/** @brief Returns a 32-entry extended pseudo-random number. @netplay_sync */
+static s32 random_32_ex() {
+    return rng_next(&g_state.Random_ix32_ex, random_tbl_32_ex, 0x1F);
+}
+
+/** @brief Returns a 16-entry extended pseudo-random number. @netplay_sync */
+static s32 random_16_ex() {
+    return rng_next(&g_state.Random_ix16_ex, random_tbl_16_ex, 0xF);
+}
+
+/** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when
+ * g_state.Play_Mode==0.
+ */
+s32 random_32_com() {
+    if (g_state.Play_Mode == 0) {
+        return random_32();
+    }
+    return rng_next(&g_state.Random_ix32_com, random_tbl_32_com, 0x7F);
+}
+
+/** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when
+ * g_state.Play_Mode==0.
+ */
+s32 random_16_com() {
+    if (g_state.Play_Mode == 0) {
+        return random_16();
+    }
+    return rng_next(&g_state.Random_ix16_com, random_tbl_16_com, 0x3F);
+}
+
+/** @brief Returns a 32-entry extended COM-side pseudo-random. @netplay_sync */
+s32 random_32_ex_com() {
+    if (g_state.Play_Mode == 0) {
+        return random_32_ex();
+    }
+    return rng_next(&g_state.Random_ix32_ex_com, random_tbl_32_ex_com, 0x1F);
+}
+
+/** @brief Returns a 16-entry extended COM-side pseudo-random. @netplay_sync */
+s32 random_16_ex_com() {
+    if (g_state.Play_Mode == 0) {
+        return random_16_ex();
+    }
+    return rng_next(&g_state.Random_ix16_ex_com, random_tbl_16_ex_com, 0xF);
+}
+
+/** @brief Returns a 16-entry background pseudo-random number. @netplay_sync — saved but not checksummed. */
+s32 random_16_bg() {
+    return rng_next(&g_state.Random_ix16_bg, random_tbl_16_bg, 0x3F);
+}
+
+/** @brief Determines the guard direction between attacker and defender. */
+s8 get_guard_direction(State* as, State* ds) {
+    s16 result;
+    s8 num;
+
+    if (as->work_id == 1) {
+        result = as->xyz[0].disp.pos - ds->xyz[0].disp.pos;
+
+        if (result) {
+            if (result < 0) {
+                if (ds->rl_flag) {
+                    num = 1;
+                } else {
+                    num = 2;
+                }
+            } else if (ds->rl_flag) {
+                num = 2;
+            } else {
+                num = 1;
+            }
+        } else {
+            num = 3;
+        }
+    } else if (((PLW*)ds)->spmv_ng_flag & DIP_GUARD_CHECK_ENABLED) {
+        if (as->rl_flag + ds->rl_flag & 1) {
+            if (ds->work_id != 1) {
+                num = 2;
+            } else if (ds->rl_flag == ds->active_move) {
+                num = 2;
+            } else {
+                num = 3;
+            }
+        } else {
+            num = 3;
+        }
+    } else if (as->rl_flag + ds->rl_flag & 1) {
+        num = 2;
+    } else {
+        num = 3;
+    }
+
+    return num;
+}
+
+/** @brief Calculates the attack direction angle. */
+s16 cal_attdir(State* wk) {
+    s16 resdir = wk->att.dir;
+
+    if (wk->rl_flag) {
+        resdir = dir16_rl_conv[resdir];
+    }
+
+    return resdir;
+}
+
+/** @brief Flips the attack direction horizontally. */
+s16 cal_attdir_flip(s16 dir) {
+    return dir16_rl_conv[dir];
+}
+
+/** @brief Returns the head-hit damage type from direction. */
+s16 get_kind_of_head_dm(s16 dir, s8 drl) {
+    if (drl == 0) {
+        dir = dir16_rl_conv[dir];
+    }
+
+    return dir16_hddm[dir];
+}
+
+/** @brief Returns the trunk-hit damage type from direction. */
+s16 get_kind_of_trunk_dm(s16 dir, s8 drl) {
+    if (drl == 0) {
+        dir = dir16_rl_conv[dir];
+    }
+
+    return dir16_trdm[dir];
+}
+
+/** @brief Initializes vitality (health) for a player. */
+void setup_vitality(State* wk, s16 pno) {
+    s16 ix;
+
+    if (wk->pl_operator) {
+        ix = 2;
+    } else {
+        ix = g_state.CC_Value[1] + CurrentSave()->Difficulty;
+    }
+
+    wk->original_vitality = Com_Vital_Unit_Data[pno][CurrentSave()->Damage_Level][ix];
+    wk->original_vitality += (s16)base_vital_omake[omop_vital_init[wk->id]];
+    wk->damage_calc_multiplier = 32;
+    wk->damage_calc_divider = (wk->original_vitality << 5) / g_state.Max_vitality;
+    wk->vitality = wk->vital_new = wk->vital_old = g_state.Max_vitality;
+    wk->damage_vitality = 0;
+
+    if (g_state.Mode_Type != MODE_ARCADE) {
+        wk->vital_new = wk->vital_new * (g_state.Vital_Handicap[g_state.Present_Mode][wk->id] + 1) / 8;
+        wk->vital_old = wk->vital_new;
+    }
+}
+
+/** @brief Calculates damage-vitality gauge scaling correction. */
+void cal_dm_vital_gauge_adjust(PLW* wk) {
+    s16 cnjix;
+
+    if (wk->wu.damage_vitality == 0) {
+        return;
+    }
+
+    if (wk->wu.vital_new < (g_state.Max_vitality * 6) / 10) {
+        if (g_state.Max_vitality == 192) {
+            cnjix = wk->wu.vital_new / 19;
+        } else {
+            cnjix = wk->wu.vital_new / 16;
+        }
+
+        if (cnjix > 5) {
+            cnjix = 5;
+        }
+
+        wk->wu.damage_vitality = wk->wu.damage_vitality * konjyou_tbl[wk->player_number][cnjix] / wk->wu.damage_calc_multiplier;
+    }
+
+    wk->wu.damage_vitality = wk->wu.damage_vitality * (32 - wk->guts_scaling) / wk->wu.damage_calc_multiplier;
+    wk->wu.damage_vitality = wk->wu.damage_vitality * wk->wu.damage_calc_multiplier / wk->wu.damage_calc_divider;
+
+    if (wk->wu.damage_vitality <= 0) {
+        wk->wu.damage_vitality = 1;
+    }
+}
+
+/** @brief Applies hit-stop and hit-quake per frame. */
+void set_hit_stop_hit_quake(State* wk) {
+    if (wk->damage_hit_stop) {
+        wk->hit_stop = wk->damage_hit_stop;
+        wk->damage_hit_stop = 0;
+    }
+
+    if (wk->damage_screen_shake) {
+        wk->hit_quake = wk->damage_screen_shake;
+        wk->damage_screen_shake = 0;
+    }
+}
+
+/** @brief Adds initial SA gauge at round start. */
+void add_sp_arts_gauge_init(PLW* wk) {
+    PLW* mwk;
+    s16 asag;
+
+    if (wk->wu.work_id != 1) {
+        mwk = (PLW*)wk->cp;
+
+        if ((mwk->wu.work_id == 1) && !(mwk->special_move_disabled_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
+            asag = _add_arts_gauge[mwk->player_number][wk->wu.add_arts_point][0];
+            add_super_arts_gauge(mwk->sa, mwk->wu.id, asag, mwk->metamorphose);
+        }
+    } else if (!(wk->special_move_disabled_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
+        asag = _add_arts_gauge[wk->player_number][wk->wu.add_arts_point][0];
+        add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
+    }
+}
+
+/** @brief Adds SA gauge on guard (defensive meter gain). */
+void add_sp_arts_gauge_guard(PLW* wk) {
+    PLW* mwk;
+    s16 asag;
+
+    if (wk->wu.work_id != 1) {
+        mwk = (PLW*)wk->cp;
+
+        if (mwk->wu.work_id == 1) {
+            asag = _add_arts_gauge[mwk->player_number][wk->wu.add_arts_point][1];
+            add_super_arts_gauge(mwk->sa, mwk->wu.id, asag, mwk->metamorphose);
+        }
+    } else {
+        asag = _add_arts_gauge[wk->player_number][wk->wu.add_arts_point][1];
+        add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
+    }
+}
+
+/** @brief Adds SA gauge on landing a hit with damage. */
+void add_sp_arts_gauge_hit_dm(PLW* wk) {
+    PLW* emwk;
+    s16 asag;
+
+    if (wk->wu.work_id != 1) {
+        return;
+    }
+
+    emwk = (PLW*)wk->wu.target_adrs;
+    asag = _add_arts_gauge[emwk->player_number][wk->wu.dm_arts_point][2];
+
+    if (asag != 0) {
+        add_super_arts_gauge(wk->sa, wk->wu.id, asag / 3, wk->metamorphose);
+
+        if (emwk->wu.pl_operator == 0) {
+            asag += asagh_zuru[CurrentSave()->Difficulty];
+        }
+
+        if (asag <= 0) {
+            asag = 1;
+        }
+
+        asag = cal_sa_gauge_waribiki(wk, asag);
+
+        if (emwk->wu.pl_operator == 0 && g_state.Break_Into_CPU == 1) {
+            asag = (asag * 120) / 100;
+        }
+
+        add_super_arts_gauge(emwk->sa, emwk->wu.id, asag, emwk->metamorphose);
+    }
+
+    wk->wu.dm_arts_point = 0;
+}
+
+/** @brief Calculates SA gauge discount factor. */
+static s16 cal_sa_gauge_waribiki(PLW* wk, s16 asag) {
+    s16 num;
+
+    if (wk->combo_type.total < 2) {
+        return asag;
+    }
+
+    num = 32 - (wk->combo_type.total - 1) * 2;
+
+    if (num <= 0) {
+        num = 1;
+    }
+
+    asag = (asag * num) / 32;
+
+    if (asag == 0) {
+        asag = 1;
+    }
+
+    return asag;
+}
+
+/** @brief Adds SA gauge on successful parry. */
+void add_sp_arts_gauge_paring(PLW* wk) {
+    PLW* emwk;
+    s16 asag;
+
+    if (sa_stop_check() != 0) {
+        return;
+    }
+
+    if (wk->wu.work_id != 1) {
+        return;
+    }
+
+    emwk = (PLW*)wk->wu.target_adrs;
+    asag = _add_arts_gauge[emwk->player_number][wk->wu.dm_arts_point][3];
+
+    if (asag != 0) {
+        if (wk->wu.pl_operator == 0) {
+            asag += asagh_zuru[CurrentSave()->Difficulty];
+        }
+
+        if (asag <= 0) {
+            asag = 1;
+        }
+
+        add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
+    }
+
+    wk->wu.dm_arts_point = 0;
+}
+
+/**
+ * @brief Common helper: adds SA gauge for self-initiated actions.
+ * Checks work_id, applies difficulty adjustment, clamps, and calls
+ * add_super_arts_gauge. Used by tokushu, ukemi, and throw_escape.
+ */
+static void add_sp_arts_gauge_self(PLW* wk, s16 asag) {
+    if (wk->wu.work_id != 1) {
+        return;
+    }
+
+    if (asag == 0) {
+        return;
+    }
+
+    if (wk->wu.pl_operator == 0) {
+        asag += asagh_zuru[CurrentSave()->Difficulty];
+    }
+
+    if (asag <= 0) {
+        asag = 1;
+    }
+
+    add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
+}
+
+/** @brief Adds SA gauge for special (tokushu) moves. */
+void add_sp_arts_gauge_tokushu(PLW* wk) {
+    add_sp_arts_gauge_self(wk, apagt_table[wk->player_number]);
+}
+
+/** @brief Adds SA gauge on successful ukemi (tech-roll). */
+void add_sp_arts_gauge_ukemi(PLW* wk) {
+    add_sp_arts_gauge_self(wk, 3);
+}
+
+/** @brief Adds SA gauge on successful throw break. */
+void Add_Super_Gauge_Throw_Escape(PLW* wk) {
+    add_sp_arts_gauge_self(wk, 6);
+}
+
+/** @brief Clamps SA gauge to the maximum bit count. */
+void add_sp_arts_gauge_maxbit(PLW* wk) {
+    if (g_state.pcon_rno[0] != 1) {
+        return;
+    }
+
+    if (wk->sa->mp == -1 || wk->sa->ok == -1 || wk->sa->ex == -1) {
+        return;
+    }
+
+    if (g_state.sag_inc_timer[wk->wu.id]) {
+        g_state.sag_inc_timer[wk->wu.id]--;
+        return;
+    }
+
+    if (!(wk->special_move_disabled_flag2 & DIP2_SA_GAUGE_AUTOFILL_DISABLED)) {
+        g_state.sag_inc_timer[wk->wu.id] = 2;
+        add_super_arts_gauge(wk->sa, wk->wu.id, wk->sa->gauge_len, wk->metamorphose);
+        return;
+    }
+
+    if (!(wk->special_move_disabled_flag2 & DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED)) {
+        if (g_state.sag_inc_timer[wk->wu.id]) {
+            g_state.sag_inc_timer[wk->wu.id]--;
+            return;
+        }
+
+        add_super_arts_gauge(wk->sa, wk->wu.id, 1, wk->metamorphose);
+    }
+}
+
+/** @brief Adds an amount to the Super Arts gauge. */
+void add_super_arts_gauge(SA_WORK* wk, s16 ix, s16 asag, u8 mf) {
+    if (!g_state.test_flag && !mf) {
+        if ((wk->mp == -1) || (wk->ok == -1) || (wk->ex == -1)) {
+            return;
+        }
+
+        if (!g_state.pcon_dp_flag && !g_state.Bonus_Game_Flag && (sa_gauge_omake[omop_sa_gauge_ix[ix]] != 0) &&
+            (asag > 0) && (wk->store != wk->store_max)) {
+            asag = asag * 0x78 / 100;
+
+            if (CurrentSave()->Battle_Number[g_state.Play_Type] == 0) {
+                asag = asag * 0x96 / 100;
+            }
+
+            asag = asag * sa_gauge_omake[omop_sa_gauge_ix[ix]] / 32;
+
+            if (asag == 0) {
+                asag = 1;
+            }
+
+            wk->gauge.s.h += asag;
+            wk->gauge.s.l = -1;
+
+            if (wk->gauge.s.h > wk->gauge_len) {
+                wk->store += 1;
+
+                if (wk->store < wk->store_max) {
+                    wk->gauge.s.h -= wk->gauge_len;
+                } else {
+                    wk->store = wk->store_max;
+                    wk->gauge.i = 0;
+                }
+
+                g_state.sa_gauge_flash[ix] |= 1;
+            }
+        }
+    }
+}
+
+/** @brief Returns the blow-away type for grounded knockback. */
+s16 check_buttobi_type(PLW* wk) {
+    s16 rn;
+
+    setup_butt_own_data(&wk->wu);
+    rn = dir32_skydm[cal_move_dir_forecast(&wk->wu, 5)];
+    return rn;
+}
+
+/** @brief Returns the blow-away type for airborne knockback. */
+s16 check_buttobi_type2(PLW* wk) {
+    s16 rn;
+
+    setup_butt_own_data(&wk->wu);
+    rn = dir32_grddm[cal_move_dir_forecast(&wk->wu, 5)];
+    return rn;
+}
+
+/** @brief Sets up latest lever direction for defender. */
+void setup_latest_stick_dir(PLW* ds, s8 gddir) {
+    if ((ds->sa_stop_flag) == 1) {
+        if (ds->wu.rl_flag) {
+            ds->latest_stick_dir = convert_latest_stick_dir[1][ds->sa_stop_lvdir & 0xC];
+        } else {
+            ds->latest_stick_dir = convert_latest_stick_dir[0][ds->sa_stop_lvdir & 0xC];
+        }
+    } else if (ds->wu.rl_flag) {
+        ds->latest_stick_dir = convert_latest_stick_dir[1][ds->cp->input_held & 0xC];
+    } else {
+        ds->latest_stick_dir = convert_latest_stick_dir[0][ds->cp->input_held & 0xC];
+    }
+
+    if (!(ds->spmv_ng_flag & DIP_ABSOLUTE_GUARD_DISABLED) && (ds->guard_active != 0) && ((ds->guard_active) < 5)) {
+        ds->latest_stick_dir = gddir;
+    }
+}
+
+/** @brief Sets up lever direction after auto-direction adjustment. */
+void setup_lvdir_after_autodir(PLW* wk) {
+    if (wk->wu.rl_flag) {
+        wk->cp->lever_dir = convert_latest_stick_dir[1][wk->cp->input_held & 0xC];
+        return;
+    }
+
+    wk->cp->lever_dir = convert_latest_stick_dir[0][wk->cp->input_held & 0xC];
+}
+
+/** @brief Requests the death voice sound for both players. */
+void dead_voice_request() {
+    if (g_state.dead_voice_flag) {
+        if (g_state.plw[0].dead_flag) {
+            dead_voice_request2(&g_state.plw[0]);
+        }
+
+        if (g_state.plw[1].dead_flag) {
+            dead_voice_request2(&g_state.plw[1]);
+        }
+    }
+
+    g_state.dead_voice_flag = false;
+}
+
+/** @brief Requests the death voice sound for a specific player. */
+static void dead_voice_request2(PLW* wk) {
+    s16 secd1;
+    s16 secd2;
+    s16 ks = 0;
+
+    if (wk->metamorphose != 0 && g_state.Country != COUNTRY_KOREA) {
+        ks = 0x600;
+    }
+
+    secd1 = dead_voice_table[wk->player_number][0];
+    secd2 = dead_voice_table[wk->player_number][1];
+
+    if ((wk->wu.routine_no[1] == 1) && atsagct[wk->wu.routine_no[2]] & 0x10) {
+        Se_Dispatch(secd2, secd2 + ks, wk);
+        return;
+    }
+
+    Se_Dispatch(secd1, secd1 + ks, wk);
+}

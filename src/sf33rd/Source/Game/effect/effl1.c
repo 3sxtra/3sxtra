@@ -10,11 +10,11 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effm3.h"
 #include "sf33rd/Source/Game/engine/grade.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void effL1_trans(WORK* ewk);
+static void effL1_trans(State* ewk);
 static void grade_data_disp();
 static void effL1_w_win_init(WORK_Other_CONN* ewk);
 static void effL1_w_grade_init(WORK_Other_CONN* ewk);
@@ -151,7 +151,7 @@ void effect_L1_move(WORK_Other_CONN* ewk) {
         ewk->wu.my_col_code = 0x90;
 
         if (effL1_base_data[ewk->wu.type][2]) {
-            Setup_Color_L1((WORK_Other*)ewk);
+            Setup_Color_L1((State_Other*)ewk);
         }
 
         ewk->wu.my_family = effL1_base_data[ewk->wu.type][1];
@@ -206,7 +206,7 @@ void effect_L1_move(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effL1_trans(WORK* ewk) {
+static void effL1_trans(State* ewk) {
     ewk->cg_number = (ewk->cg_number + 1) & 0x7FFF;
 
     if (ewk->cg_number == 0) {
@@ -508,14 +508,14 @@ static void effL1_suuchi_bunkai_sub(WORK_Other_CONN* ewk, u32 tsc) {
 }
 
 s32 effect_L1_init(s16 flag) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 211;
     ewk->wu.type = flag;

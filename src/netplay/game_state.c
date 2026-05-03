@@ -29,10 +29,10 @@
 #include "sf33rd/Source/Game/effect/effb2.h"
 #include "sf33rd/Source/Game/effect/effb8.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/spgauge.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/super_gauge.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/select_timer.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
@@ -44,7 +44,7 @@
 static int battle_start_frame = -1;
 #if DEBUG
 #define STATE_BUFFER_MAX 20
-static State state_buffer[STATE_BUFFER_MAX];
+static RollbackState state_buffer[STATE_BUFFER_MAX];
 #endif
 
 #include "netplay.h"
@@ -128,7 +128,7 @@ static PLW saved_plw_scratch[STATE_BUFFER_MAX][2];
  * (via GameState_Save) and the EffectState (effect pool + free list) into dst.
  * This is the "save" half of the rollback save/load cycle.
  */
-static void gather_state(State* dst) {
+static void gather_state(RollbackState* dst) {
     // GameState
     GameState* gs = &dst->gs;
     GameState_Save(gs);
@@ -146,7 +146,7 @@ static void gather_state(State* dst) {
 
 /// Zero pointer fields so they don't pollute checksums (ASLR makes them differ).
 /// Only ever called on a scratch copy — never on a state Gekko will restore.
-static void sanitize_work_pointers(WORK* w) {
+static void sanitize_work_pointers(State* w) {
     w->target_adrs = NULL;
     w->hit_adrs = NULL;
     w->dmg_adrs = NULL;
@@ -180,11 +180,11 @@ static void sanitize_work_pointers(WORK* w) {
     w->my_effadrs = NULL;
 }
 
-/// Mask rendering-only bits/fields from WORK color fields.
+/// Mask rendering-only bits/fields from State color fields.
 /// - current_colcd, my_col_code: strip 0x2000 player-side palette flag
 /// - colcd: fully zeroed (derived from current_colcd by rendering, can differ entirely)
 /// - extra_col, extra_col_2: strip 0x2000 palette flag
-static void sanitize_work_rendering(WORK* w) {
+static void sanitize_work_rendering(State* w) {
     w->current_colcd &= ~0x2000;
     w->my_col_code &= ~0x2000;
     w->colcd = 0; // Rendering-derived, not gameplay state
@@ -206,13 +206,13 @@ static void sanitize_plw_pointers(PLW* p) {
 #if DEBUG
 /// Save state in state buffer.
 /// @return Mutable pointer to state as it has been saved.
-static State* note_state(const State* state, int frame) {
+static RollbackState* note_state(const RollbackState* state, int frame) {
     if (frame < 0) {
         frame += STATE_BUFFER_MAX;
     }
 
-    State* dst = &state_buffer[frame % STATE_BUFFER_MAX];
-    SDL_memcpy(dst, state, sizeof(State));
+    RollbackState* dst = &state_buffer[frame % STATE_BUFFER_MAX];
+    SDL_memcpy(dst, state, sizeof(RollbackState));
     return dst;
 }
 #endif
@@ -232,7 +232,7 @@ static State* note_state(const State* state, int frame) {
  * checksummed to reduce false positives from rendering-only divergence.
  */
 uint32_t save_current_state(void* buffer, int frame) {
-    State* dst = (State*)buffer;
+    RollbackState* dst = (RollbackState*)buffer;
     gather_state(dst);
 
     // Activate checksumming from the very first synced frame (not just battle).
@@ -256,7 +256,7 @@ uint32_t save_current_state(void* buffer, int frame) {
     {
         EffectState* es = &dst->es;
         for (int i = 0; i < EFFECT_MAX; i++) {
-            WORK* w = (WORK*)es->frw[i];
+            State* w = (State*)es->frw[i];
             if (w->be_flag == 0) {
                 s16 before = w->before;
                 s16 behind = w->behind;
@@ -267,7 +267,7 @@ uint32_t save_current_state(void* buffer, int frame) {
                 w->myself = myself;
             } else {
                 SDL_zeroa(w->wrd_free);
-                WORK_Other* wo = (WORK_Other*)w;
+                State_Other* wo = (State_Other*)w;
                 SDL_zeroa(wo->et_free);
             }
         }
@@ -405,7 +405,7 @@ uint32_t save_current_state(void* buffer, int frame) {
 }
 
 void save_state(const GekkoGameEvent* event) {
-    *event->data.save.state_len = sizeof(State);
+    *event->data.save.state_len = sizeof(RollbackState);
     uint32_t h = save_current_state(event->data.save.state, event->data.save.frame);
     *event->data.save.checksum = h;
 }
@@ -437,7 +437,7 @@ void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_check
         fprintf(f, "Local checksum:  0x%08x\n", local_checksum);
         fprintf(f, "Remote checksum: 0x%08x\n", remote_checksum);
         fprintf(f, "STATE_BUFFER_MAX: %d\n", STATE_BUFFER_MAX);
-        fprintf(f, "sizeof(PLW): %zu  sizeof(State): %zu\n\n", sizeof(PLW), sizeof(State));
+        fprintf(f, "sizeof(PLW): %zu  sizeof(RollbackState): %zu\n\n", sizeof(PLW), sizeof(RollbackState));
 
         fprintf(f, "--- Per-section checksums (ring buffer) ---\n");
         fprintf(f,
@@ -493,9 +493,9 @@ void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_check
     SDL_snprintf(path, sizeof(path), "states/desync_F%d_state.bin", frame);
     f = fopen(path, "wb");
     if (f) {
-        fwrite(&state_buffer[slot], sizeof(State), 1, f);
+        fwrite(&state_buffer[slot], sizeof(RollbackState), 1, f);
         fclose(f);
-        SDL_Log("[desync] Wrote full State (%zu bytes) to %s", sizeof(State), path);
+        SDL_Log("[desync] Wrote full State (%zu bytes) to %s", sizeof(RollbackState), path);
     }
 }
 #endif
@@ -508,7 +508,7 @@ void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_check
  * saved State snapshot: GameState_Load for game globals, then manually restores
  * the effect pool state (frw, frwque, head_ix, tail_ix, frwctr, frwctr_min).
  */
-void load_state(const State* src) {
+void load_state(const RollbackState* src) {
     // GameState
     const GameState* gs = &src->gs;
     GameState_Load(gs);
@@ -525,6 +525,6 @@ void load_state(const State* src) {
 }
 
 void load_state_from_event(const GekkoGameEvent* event) {
-    const State* src = (State*)event->data.load.state;
+    const RollbackState* src = (RollbackState*)event->data.load.state;
     load_state(src);
 }

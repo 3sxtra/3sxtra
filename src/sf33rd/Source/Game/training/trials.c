@@ -1,6 +1,6 @@
 #include "sf33rd/Source/Game/training/trials.h"
 #include "game_state.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
 #include "sf33rd/Source/Game/training/training_hud.h"
 #include "sf33rd/Source/Game/training/training_state.h"

@@ -10,7 +10,7 @@
 #include "arcade/arcade_char_data.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Game/engine/charid.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/rendering/chren3rd.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"

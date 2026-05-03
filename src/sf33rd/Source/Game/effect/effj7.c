@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 
 const s16 pl00_L_0_00[64] = { 0x0000, 0xF3BF, 0xE75F, 0xDB1F, 0xCEBE, 0xC67C, 0xBA39, 0xB1D5, 0xADB4, 0xA992, 0xA151,
@@ -381,10 +381,10 @@ const ColorCode pl00_R_1[21] = { { 4, 0, pl00_R_1_00 }, { 4, 0, pl00_R_1_01 }, {
 
 const ColorCode* pl00_cctbl[][2];
 
-static void check_new_color_data(WORK* wk);
-static void get_new_color_data(WORK* wk, ColorCode* trom, s16* tram);
+static void check_new_color_data(State* wk);
+static void get_new_color_data(State* wk, ColorCode* trom, s16* tram);
 
-void effect_J7_move(WORK_Other* ewk) {
+void effect_J7_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     ewk->wu.rl_flag = mwk->wu.rl_flag;
@@ -460,7 +460,7 @@ void effect_J7_move(WORK_Other* ewk) {
     }
 }
 
-static void check_new_color_data(WORK* wk) {
+static void check_new_color_data(State* wk) {
     if (--wk->dir_timer >= 0) {
         return;
     }
@@ -480,7 +480,7 @@ static void check_new_color_data(WORK* wk) {
     }
 }
 
-static void get_new_color_data(WORK* wk, ColorCode* trom, s16* tram) {
+static void get_new_color_data(State* wk, ColorCode* trom, s16* tram) {
     const s16* data;
     s16 i;
 
@@ -495,7 +495,7 @@ static void get_new_color_data(WORK* wk, ColorCode* trom, s16* tram) {
 }
 
 s32 effect_J7_init(PLW* wk) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (wk->player_number != 0) {
@@ -510,7 +510,7 @@ s32 effect_J7_init(PLW* wk) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 197;
     ewk->wu.work_id = 16;

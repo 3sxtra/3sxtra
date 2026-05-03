@@ -10,26 +10,26 @@
 #include "sf33rd/Source/Game/effect/eff96.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effi9.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charid.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-static void tama_display(WORK* wk);
-static void set_tengu_init_pos(WORK* ewk, WORK* mwk);
-static void set_tengu_my_home(WORK* ewk, WORK* mwk);
-static s32 check_tengu_attack(WORK* ewk, WORK* mwk, TAMA* twk);
-static void make_speed_xy_att(WORK* ewk, WORK* mwk, s16 tm, u8 xsw, u8 ysw);
-static void make_speed_xy_back(WORK* ewk, WORK* mwk, TAMA* twk);
+static void tama_display(State* wk);
+static void set_tengu_init_pos(State* ewk, State* mwk);
+static void set_tengu_my_home(State* ewk, State* mwk);
+static s32 check_tengu_attack(State* ewk, State* mwk, TAMA* twk);
+static void make_speed_xy_att(State* ewk, State* mwk, s16 tm, u8 xsw, u8 ysw);
+static void make_speed_xy_back(State* ewk, State* mwk, TAMA* twk);
 
 const s16 kotp_07_dm_vital[4];
 const TAMA tama_data[243];
@@ -40,7 +40,7 @@ const s16 homing_empos_hos[1][20][2];
 const s16 enemy_pos_hos[1][20][2];
 const s16 X_F_L_A_T_pos_hos[1][20][2];
 
-void effect_13_move(WORK_Other* ewk) {
+void effect_13_move(State_Other* ewk) {
     TAMA* tama = (TAMA*)ewk->wu.my_effadrs;
     PLW* mwk;
     PLW* emwk;
@@ -86,7 +86,7 @@ void effect_13_move(WORK_Other* ewk) {
         }
 
         if (tama->kind_of_tama == 2) {
-            set_tengu_init_pos(&ewk->wu, (WORK*)ewk->my_master);
+            set_tengu_init_pos(&ewk->wu, (State*)ewk->my_master);
             ewk->wu.disp_flag = 0;
             ewk->wu.dir_old = ((PLW*)ewk->my_master)->sa->id_arts;
             set_char_move_init2(&ewk->wu, 0, tama->chix, random_16() & 7, 0);
@@ -138,7 +138,7 @@ void effect_13_move(WORK_Other* ewk) {
         }
 
         if (tama->kind_of_tama == 10) {
-            ewk->wu.rl_flag = ((WORK*)ewk->my_master)->active_move;
+            ewk->wu.rl_flag = ((State*)ewk->my_master)->active_move;
         }
 
         tama_display(&ewk->wu);
@@ -171,7 +171,7 @@ void effect_13_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        erase_my_shell_ix((WORK*)ewk->my_master, ewk->wu.myself);
+        erase_my_shell_ix((State*)ewk->my_master, ewk->wu.myself);
         ewk->wu.routine_no[0] = 3;
         break;
 
@@ -182,14 +182,14 @@ void effect_13_move(WORK_Other* ewk) {
     }
 }
 
-static void tama_display(WORK* wk) {
+static void tama_display(State* wk) {
     set_quake((PLW*)wk);
     wk->position_x = wk->xyz[0].disp.pos + wk->next_x;
     wk->position_y = wk->xyz[1].disp.pos;
     sort_push_request(wk);
 }
 
-s32 screen_x_range_check(WORK* wk) {
+s32 screen_x_range_check(State* wk) {
     s16 scpx = get_center_position();
     s16 scpxr = scpx + 256;
     s16 scpxl = scpx - 256;
@@ -209,7 +209,7 @@ s32 screen_x_range_check(WORK* wk) {
     return 0;
 }
 
-static s32 screen_range_check(WORK* wk) {
+static s32 screen_range_check(State* wk) {
     s16 scpx = get_center_position();
     s16 scpxr = scpx + 256;
     s16 scpxl = scpx - 256;
@@ -239,7 +239,7 @@ static s32 screen_range_check(WORK* wk) {
     return 0;
 }
 
-static s32 tama15_screen_check(WORK* wk) {
+static s32 tama15_screen_check(State* wk) {
     s16 scpx = get_center_position();
     s16 scpxr = scpx + 512;
     s16 scpxl = scpx - 512;
@@ -277,7 +277,7 @@ static s32 tama15_screen_check(WORK* wk) {
     return 0;
 }
 
-static void set_tengu_init_pos(WORK* ewk, WORK* mwk) {
+static void set_tengu_init_pos(State* ewk, State* mwk) {
     s16 scp = get_center_position();
 
     if (mwk->rl_flag) {
@@ -290,7 +290,7 @@ static void set_tengu_init_pos(WORK* ewk, WORK* mwk) {
     ewk->xyz[1].disp.pos = ewk->direction;
 }
 
-static void kotp_00000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_00000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -407,7 +407,7 @@ static void kotp_00000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_01000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_01000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -464,7 +464,7 @@ static void kotp_01000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_02000(State_Other* ewk, TAMA* twk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
@@ -587,7 +587,7 @@ static void kotp_02000(WORK_Other* ewk, TAMA* twk) {
         break;
     }
 }
-static void set_tengu_my_home(WORK* ewk, WORK* mwk) {
+static void set_tengu_my_home(State* ewk, State* mwk) {
     if (mwk->pat_status < 32) {
         ewk->damage_calc_multiplier = mwk->xyz[0].disp.pos + ewk->old_pos[0];
         ewk->damage_calc_divider = mwk->xyz[1].disp.pos + ewk->old_pos[1];
@@ -599,7 +599,7 @@ static void set_tengu_my_home(WORK* ewk, WORK* mwk) {
     ewk->dir_step = cal_move_quantity2(ewk->xyz[0].disp.pos, ewk->xyz[1].disp.pos, ewk->damage_calc_multiplier, ewk->damage_calc_divider);
 }
 
-static s32 check_tengu_attack(WORK* ewk, WORK* mwk, TAMA* twk) {
+static s32 check_tengu_attack(State* ewk, State* mwk, TAMA* twk) {
     if (mwk->cg_ja.attack_box_index == 0) {
         return 0;
     }
@@ -608,7 +608,7 @@ static s32 check_tengu_attack(WORK* ewk, WORK* mwk, TAMA* twk) {
     ewk->att_hit_ok = 1;
     ewk->rl_flag = mwk->rl_flag;
     ewk->dir_timer = twk->life_time;
-    grade_add_att_renew((WORK_Other*)ewk);
+    grade_add_att_renew((State_Other*)ewk);
 
     if (mwk->xyz[1].disp.pos > 0) {
         make_speed_xy_att(ewk, mwk, ewk->dir_timer, 2, 0);
@@ -619,7 +619,7 @@ static s32 check_tengu_attack(WORK* ewk, WORK* mwk, TAMA* twk) {
     return 1;
 }
 
-static void make_speed_xy_att(WORK* ewk, WORK* mwk, s16 tm, u8 xsw, u8 ysw) {
+static void make_speed_xy_att(State* ewk, State* mwk, s16 tm, u8 xsw, u8 ysw) {
     s16 ax;
     s16 ay;
 
@@ -627,7 +627,7 @@ static void make_speed_xy_att(WORK* ewk, WORK* mwk, s16 tm, u8 xsw, u8 ysw) {
     cal_all_speed_data(ewk, tm, ax, ay, xsw, ysw);
 }
 
-static void make_speed_xy_back(WORK* ewk, WORK* mwk, TAMA* twk) {
+static void make_speed_xy_back(State* ewk, State* mwk, TAMA* twk) {
     s16 bx;
     s16 by;
 
@@ -644,7 +644,7 @@ static void make_speed_xy_back(WORK* ewk, WORK* mwk, TAMA* twk) {
     cal_initial_speed(ewk, ewk->dir_timer, bx, by);
 }
 
-static void kotp_03000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_03000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -743,12 +743,12 @@ static void kotp_03000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_04000(WORK_Other* ewk, TAMA* /* unused */) {
+static void kotp_04000(State_Other* ewk, TAMA* /* unused */) {
     ewk->wu.disp_flag = 0;
     ewk->wu.routine_no[0] = 2;
 }
 
-static void kotp_05000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_05000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -851,7 +851,7 @@ static void kotp_05000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_06000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_06000(State_Other* ewk, TAMA* twk) {
     PLW* mwk;
     PLW* emwk;
     s16 dir;
@@ -999,8 +999,8 @@ static void kotp_06000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_07000(WORK_Other* ewk, TAMA* twk) {
-    WORK* awk;
+static void kotp_07000(State_Other* ewk, TAMA* twk) {
+    State* awk;
     s16 dsst;
     PLW* mwk;
     PLW* emwk;
@@ -1052,7 +1052,7 @@ static void kotp_07000(WORK_Other* ewk, TAMA* twk) {
 
     case 1:
         if (ewk->wu.hf.hit_flag == 0) {
-            awk = (WORK*)ewk->wu.dmg_adrs;
+            awk = (State*)ewk->wu.dmg_adrs;
 
             if (awk->work_id == 1) {
                 dsst = 3;
@@ -1131,7 +1131,7 @@ static void kotp_07000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_08000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_08000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1239,7 +1239,7 @@ static void kotp_08000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_09000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_09000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1355,7 +1355,7 @@ static void kotp_09000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_10000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_10000(State_Other* ewk, TAMA* twk) {
     char_move(&ewk->wu);
 
     if (ewk->wu.cg_type == 0xFF) {
@@ -1364,7 +1364,7 @@ static void kotp_10000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_11000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_11000(State_Other* ewk, TAMA* twk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
@@ -1412,7 +1412,7 @@ static void kotp_11000(WORK_Other* ewk, TAMA* twk) {
     ewk->wu.position_z = ewk->wu.next_z;
 }
 
-static void kotp_12000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_12000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1535,7 +1535,7 @@ static void kotp_12000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_13000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_13000(State_Other* ewk, TAMA* twk) {
     PLW* mwk;
     PLW* emwk;
     s16 ipos_x;
@@ -1620,11 +1620,11 @@ static void kotp_13000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_14000(WORK_Other* ewk, TAMA* /* unused */) {
+static void kotp_14000(State_Other* ewk, TAMA* /* unused */) {
     char_move(&ewk->wu);
 
     if (ewk->wu.hf.hit_flag) {
-        ((WORK*)ewk->my_master)->hf.hit_flag = ewk->wu.hf.hit_flag;
+        ((State*)ewk->my_master)->hf.hit_flag = ewk->wu.hf.hit_flag;
         ewk->wu.hf.hit_flag = 0;
     }
 
@@ -1634,7 +1634,7 @@ static void kotp_14000(WORK_Other* ewk, TAMA* /* unused */) {
     }
 }
 
-static void kotp_15000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_15000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1684,7 +1684,7 @@ static void kotp_15000(WORK_Other* ewk, TAMA* twk) {
 
         ewk->wu.hf.hit_flag = 0;
         ewk->wu.hit_quake = 0;
-        pp_pulpara_hit((WORK*)ewk->my_master);
+        pp_pulpara_hit((State*)ewk->my_master);
         break;
 
     case 2:
@@ -1709,7 +1709,7 @@ static void kotp_15000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-static void kotp_16000(WORK_Other* ewk, TAMA* twk) {
+static void kotp_16000(State_Other* ewk, TAMA* twk) {
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
@@ -1829,15 +1829,15 @@ static void kotp_16000(WORK_Other* ewk, TAMA* twk) {
     }
 }
 
-s32 effect_13_init(WORK* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_13_init(State* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     write_my_shell_ix(wk, ix);
 
     if (wk->work_id == 1 && wk->rl_flag == 1 && ((PLW*)wk)->player_number == 0) {
@@ -1866,9 +1866,9 @@ s32 effect_13_init(WORK* wk, u8 data) {
         ewk->wu.olc_work_ix[2] = ((PLW*)wk)->stun_scaling;
         ewk->wu.olc_work_ix[3] = wk->routine_no[1];
     } else {
-        ewk->master_player = ((WORK_Other*)wk)->master_player;
-        ewk->master_id = ((WORK_Other*)wk)->master_id;
-        ewk->master_work_id = ((WORK_Other*)wk)->master_work_id;
+        ewk->master_player = ((State_Other*)wk)->master_player;
+        ewk->master_id = ((State_Other*)wk)->master_id;
+        ewk->master_work_id = ((State_Other*)wk)->master_work_id;
     }
 
     ewk->wu.xyz[0] = wk->xyz[0];

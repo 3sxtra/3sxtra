@@ -9,9 +9,9 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
@@ -20,8 +20,8 @@ const s16 eff86_data_tbl00[7] = { 0, 2, 8224, 511, 56, 10, 18 };
 
 const s16* eff86_adrs_tbl[1] = { eff86_data_tbl00 };
 
-void effect_86_move(WORK_Other* ewk) {
-    void (*eff86_jp_tbl[1])(WORK_Other*) = { eff86_0000 };
+void effect_86_move(State_Other* ewk) {
+    void (*eff86_jp_tbl[1])(State_Other*) = { eff86_0000 };
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -38,7 +38,7 @@ void effect_86_move(WORK_Other* ewk) {
     }
 }
 
-void eff86_0000(WORK_Other* ewk) {
+void eff86_0000(State_Other* ewk) {
     s16 work;
 
     switch (ewk->wu.routine_no[2]) {
@@ -67,7 +67,7 @@ void eff86_0000(WORK_Other* ewk) {
 }
 
 s32 effect_86_init(s16 type86) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr;
 
@@ -75,7 +75,7 @@ s32 effect_86_init(s16 type86) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     data_ptr = eff86_adrs_tbl[type86];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 86;

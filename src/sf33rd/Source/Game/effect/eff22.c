@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
@@ -71,7 +71,7 @@ const s32 snow_sp[4][12][4] = { { { 0x200, 0, -0x2000, 0 },
                                   { -0x80, 0, -0x1800, 0 },
                                   { 0, 0, -0x2000, 0 } } };
 
-void effect_22_move(WORK_Other* ewk) {
+void effect_22_move(State_Other* ewk) {
     const s32* ptr;
 
     if (obr_no_disp_check()) {
@@ -129,14 +129,14 @@ void effect_22_move(WORK_Other* ewk) {
 s32 effect_22_init() {
     s16 ix;
     s16 i;
-    WORK_Other* ewk;
+    State_Other* ewk;
 
     for (i = 0; i < 12; i++) {
         if ((ix = Acquire_Effect(4)) == -1) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 22;
         ewk->wu.work_id = 16;

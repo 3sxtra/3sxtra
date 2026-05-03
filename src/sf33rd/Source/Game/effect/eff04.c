@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -25,7 +25,7 @@ const s16 EFF04_Cursor_Data[8][8][2] = {
     { { 16, 156 }, { 32, 135 }, { 48, 114 }, { 64, 93 }, { 80, 72 }, { 96, 51 }, { 112, 30 }, { 0, 0 } },
 };
 
-void effect_04_move(WORK_Other* ewk) {
+void effect_04_move(State_Other* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);
         return;
@@ -50,14 +50,14 @@ void effect_04_move(WORK_Other* ewk) {
 }
 
 s32 effect_04_init(s16 Death_Type, s16 cg_type, s16 sync_bg, s16 priority) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 4;

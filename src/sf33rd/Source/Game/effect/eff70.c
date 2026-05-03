@@ -9,15 +9,15 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-static void Setup_Eff70(WORK_Other* ewk);
+static void Setup_Eff70(State_Other* ewk);
 
-void effect_70_move(WORK_Other* ewk) {
+void effect_70_move(State_Other* ewk) {
     if (g_state.Suicide[0] == 1) {
         ewk->wu.routine_no[0] = 99;
         ewk->wu.disp_flag = 0;
@@ -97,14 +97,14 @@ void effect_70_move(WORK_Other* ewk) {
 }
 
 s32 effect_70_init(s16 id) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     Setup_Eff70(ewk);
     ewk->wu.xyz[0].disp.pos = Face_Pos_Data[id][0] + 512;
     ewk->wu.xyz[1].disp.pos = Face_Pos_Data[id][1] + 0;
@@ -124,7 +124,7 @@ s32 effect_70_init(s16 id) {
     return 0;
 }
 
-static void Setup_Eff70(WORK_Other* ewk) {
+static void Setup_Eff70(State_Other* ewk) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 70;
     ewk->wu.work_id = 16;

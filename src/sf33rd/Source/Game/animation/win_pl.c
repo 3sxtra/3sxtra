@@ -22,9 +22,9 @@
 #include "sf33rd/Source/Game/effect/effl6.h"
 #include "sf33rd/Source/Game/effect/effm2.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
@@ -239,7 +239,7 @@ static void jijii_nebukuro(PLW* wk) {
             char_move(&wk->wu);
         }
 
-        add_y_sub((WORK_Other*)wk);
+        add_y_sub((State_Other*)wk);
 
         if (wk->wu.xyz[1].disp.pos > 256) {
             g_state.win_rno[1]++;
@@ -290,8 +290,8 @@ static void jijii_jump(PLW* wk) {
             char_move(&wk->wu);
         }
 
-        add_x_sub((WORK_Other*)wk);
-        add_y_sub((WORK_Other*)wk);
+        add_x_sub((State_Other*)wk);
+        add_y_sub((State_Other*)wk);
 
         if (wk->wu.rl_flag) {
             if (wk->wu.xyz[0].disp.pos > g_state.bg_w.bgw[1].xy[0].disp.pos + 320) {
@@ -337,7 +337,7 @@ static void jijii_jump(PLW* wk) {
         /* fallthrough */
 
     case 4:
-        add_x_sub((WORK_Other*)wk);
+        add_x_sub((State_Other*)wk);
         char_move(&wk->wu);
 
         break;
@@ -615,8 +615,8 @@ static void Win_05000(PLW* wk) {
         switch (g_state.win_rno[1]) {
         case 0:
             char_move(&wk->wu);
-            add_x_sub((WORK_Other*)wk);
-            add_y_sub((WORK_Other*)wk);
+            add_x_sub((State_Other*)wk);
+            add_y_sub((State_Other*)wk);
 
             if (wk->wu.xyz[1].disp.pos < 0) {
                 g_state.win_rno[1]++;
@@ -1050,7 +1050,7 @@ static void q_keeping_action(PLW* wk) {
 
     case 3:
         char_move(&wk->wu);
-        add_x_sub((WORK_Other*)wk);
+        add_x_sub((State_Other*)wk);
 
         if (!q_em_distance_chk(wk)) {
             break;
@@ -1116,7 +1116,7 @@ static void q_leave_after_action(PLW* wk) {
 
     case 3:
         char_move(&wk->wu);
-        add_x_sub((WORK_Other*)wk);
+        add_x_sub((State_Other*)wk);
 
         if (q_em_distance_chk(wk)) {
             g_state.win_rno[1]++;
@@ -1149,7 +1149,7 @@ static void q_leave_after_action(PLW* wk) {
 
     case 5:
         char_move(&wk->wu);
-        add_x_sub((WORK_Other*)wk);
+        add_x_sub((State_Other*)wk);
 
         if (wk->wu.rl_flag) {
             work = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset;
@@ -1252,7 +1252,7 @@ static void twelve_win_away(PLW* wk) {
         break;
 
     case 1:
-        add_y_sub((WORK_Other*)wk);
+        add_y_sub((State_Other*)wk);
         char_move(&wk->wu);
 
         if (wk->wu.cg_type != 2) {
@@ -1273,10 +1273,10 @@ static void twelve_win_away(PLW* wk) {
         break;
 
     case 2:
-        add_x_sub((WORK_Other*)wk);
-        add_y_sub((WORK_Other*)wk);
+        add_x_sub((State_Other*)wk);
+        add_y_sub((State_Other*)wk);
 
-        if (!range_x_check3((WORK_Other*)wk, 208)) {
+        if (!range_x_check3((State_Other*)wk, 208)) {
             g_state.win_rno[1]++;
         }
 
@@ -1312,8 +1312,8 @@ static void twelve_win_backjump(PLW* wk) {
         break;
 
     case 1:
-        add_y_sub((WORK_Other*)wk);
-        add_x_sub((WORK_Other*)wk);
+        add_y_sub((State_Other*)wk);
+        add_x_sub((State_Other*)wk);
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 2) {

@@ -29,7 +29,7 @@
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
 // Game engine globals for match result reporting
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 
 static bool hud_visible = true;
 static bool diagnostics_visible = false;

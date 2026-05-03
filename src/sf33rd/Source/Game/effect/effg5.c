@@ -8,11 +8,11 @@
 #include "bin2obj/char_table.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const s16 num_of_ase[4] = { 0, 3, 5, 6 };
@@ -31,7 +31,7 @@ const s16 ase_delta_hosei[4][6] = { { -88, -96, -112, -80, -128, -88 },
                                     { -88, -96, -112, -80, -128, -88 },
                                     { -88, -96, -112, -80, -128, -88 } };
 
-void effect_G5_move(WORK_Other* ewk) {
+void effect_G5_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -85,15 +85,15 @@ void effect_G5_move(WORK_Other* ewk) {
     }
 }
 
-static s32 effect_G5_init(WORK* wk, s16 dr, s16 sp, s16 dl) {
-    WORK_Other* ewk;
+static s32 effect_G5_init(State* wk, s16 dr, s16 sp, s16 dl) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 165;
     ewk->wu.work_id = 16;
@@ -108,7 +108,7 @@ static s32 effect_G5_init(WORK* wk, s16 dr, s16 sp, s16 dl) {
     return 0;
 }
 
-s32 setup_ase_extra(WORK* wk, u8 num) {
+s32 setup_ase_extra(State* wk, u8 num) {
     s16 i;
     s16 way;
     s16 rnd_00;

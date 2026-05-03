@@ -7,9 +7,9 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
@@ -21,7 +21,7 @@ const s16 eff77_data_tbl[7][2] = { { 64, 0 }, { 2, 0 }, { 1, 1 }, { 32, 1 }, { 2
 
 const u32 eff77_col_tbl[2] = { 0xFFFFFFFF, 0xFF000000 };
 
-void effect_77_move(WORK_Other* ewk) {
+void effect_77_move(State_Other* ewk) {
     s16 i;
     u16 bg;
     u16 mask;
@@ -154,7 +154,7 @@ void effect_77_move(WORK_Other* ewk) {
 }
 
 s32 effect_77_init(u8 /* unused */, u8 data) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     chk77_flag = 0;
@@ -163,7 +163,7 @@ s32 effect_77_init(u8 /* unused */, u8 data) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 77;
     ewk->wu.type = data;

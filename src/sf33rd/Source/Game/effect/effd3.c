@@ -11,8 +11,8 @@
 #include "sf33rd/Source/Game/effect/effg8.h"
 #include "sf33rd/Source/Game/effect/effl9.h"
 #include "sf33rd/Source/Game/engine/manage.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -24,7 +24,7 @@
 const s16 ake_timer_tbl[13];
 const u32 ake_color[13];
 
-void effect_D3_move(WORK_Other* ewk) {
+void effect_D3_move(State_Other* ewk) {
     if (ewk->wu.type == 0) {
         akebono_finish(ewk);
     } else {
@@ -32,7 +32,7 @@ void effect_D3_move(WORK_Other* ewk) {
     }
 }
 
-void akebono_finish(WORK_Other* ewk) {
+void akebono_finish(State_Other* ewk) {
     s16 i;
     u16 bg;
     u16 mask;
@@ -133,7 +133,7 @@ void akebono_finish(WORK_Other* ewk) {
     }
 }
 
-void syungoku_finish(WORK_Other* ewk) {
+void syungoku_finish(State_Other* ewk) {
     s16 i;
     u16 bg;
     u16 mask;
@@ -224,14 +224,14 @@ void syungoku_finish(WORK_Other* ewk) {
 }
 
 s32 effect_D3_init(u8 ake_type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.id = 133;
     ewk->wu.be_flag = 1;
     ewk->wu.work_id = 16;

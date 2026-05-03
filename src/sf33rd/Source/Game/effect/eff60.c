@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -25,7 +25,7 @@ const s16 flash_0002[10] = { 0, 2, 300, 431, 64, 83, 2, 0, 0, 2 };
 
 const s16* flash_obj_data61[3] = { flash_0000, flash_0001, flash_0002 };
 
-void effect_60_move(WORK_Other* ewk) {
+void effect_60_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -73,7 +73,7 @@ void effect_60_move(WORK_Other* ewk) {
 }
 
 s32 effect_60_init(s16 type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr;
 
@@ -82,7 +82,7 @@ s32 effect_60_init(s16 type) {
     }
 
     data_ptr = flash_obj_data61[type];
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 60;
     ewk->wu.work_id = 16;

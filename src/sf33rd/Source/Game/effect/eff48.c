@@ -9,7 +9,7 @@
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/eff36.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/opening/opening.h"
@@ -21,15 +21,15 @@ typedef const s16* ConstShortArray;
 extern ConstShortArray eff48_adrs_tbl[];
 extern const s16 eff48_num_tbl[22];
 
-static void eff48_0000(WORK_Other*);
-static void eff48_1000(WORK_Other*);
+static void eff48_0000(State_Other*);
+static void eff48_1000(State_Other*);
 
-void effect_48_move(WORK_Other* ewk) {
-    void (*eff48_jp[3])(WORK_Other*) = { eff48_0000, eff48_1000, eff48_0000 };
+void effect_48_move(State_Other* ewk) {
+    void (*eff48_jp[3])(State_Other*) = { eff48_0000, eff48_1000, eff48_0000 };
     eff48_jp[ewk->wu.routine_no[0]](ewk);
 }
 
-static void eff48_0000(WORK_Other* ewk) {
+static void eff48_0000(State_Other* ewk) {
     if (ewk->wu.old_routine_no[1] <= op_obj_disp) {
         ewk->wu.routine_no[1] = 0x63;
     }
@@ -56,7 +56,7 @@ static void eff48_0000(WORK_Other* ewk) {
     }
 }
 
-static void eff48_1000(WORK_Other* ewk) {
+static void eff48_1000(State_Other* ewk) {
     if (ewk->wu.old_routine_no[1] <= op_obj_disp) {
         ewk->wu.routine_no[1] = 0x63;
     }
@@ -115,7 +115,7 @@ static void eff48_1000(WORK_Other* ewk) {
 }
 
 s32 effect_48_init(s16 type) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr;
@@ -131,7 +131,7 @@ s32 effect_48_init(s16 type) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 0x30;
         ewk->wu.work_id = 0x10;

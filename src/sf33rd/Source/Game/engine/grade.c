@@ -8,10 +8,10 @@
 #include "common.h"
 #include "sf33rd/Source/Game/com/com_sub.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 #include "port/I_System.h"
@@ -743,15 +743,15 @@ s16 get_ex_point_total(s16 ix, s16 wf) {
 }
 
 /** @brief Increments the clean-hit counter for grading. */
-void grade_add_clean_hits(WORK_Other* wk) {
-    WORK* mwk;
+void grade_add_clean_hits(State_Other* wk) {
+    State* mwk;
     s16 ix;
 
     if (g_state.pcon_rno[0] != 0) {
         ix = wk->wu.id;
 
         if (wk->wu.work_id != 1) {
-            mwk = (WORK*)(wk->my_master);
+            mwk = (State*)(wk->my_master);
 
             if (mwk->work_id != 1) {
                 return;
@@ -763,15 +763,15 @@ void grade_add_clean_hits(WORK_Other* wk) {
 }
 
 /** @brief Increments the attack-renew counter for grading. */
-void grade_add_att_renew(WORK_Other* wk) {
-    WORK* mwk;
+void grade_add_att_renew(State_Other* wk) {
+    State* mwk;
     s16 ix;
 
     if (g_state.pcon_rno[0] != 0) {
         ix = wk->wu.id;
 
         if (wk->wu.work_id != 1) {
-            mwk = (WORK*)(wk->my_master);
+            mwk = (State*)(wk->my_master);
 
             if (mwk->work_id != 1) {
                 return;
@@ -833,7 +833,7 @@ void grade_add_quick_stand(s16 ix) {
 }
 
 /** @brief Increments the normal-throw counter for grading. */
-void Grade_Add_Normal_Throw(WORK* wk) {
+void Grade_Add_Normal_Throw(State* wk) {
     s16 ix;
 
     if (check_normal_attack(wk->attack_type)) {
@@ -1079,7 +1079,7 @@ s16 get_grade_ix(s16 pts) {
 }
 
 /** @brief Checks if the defender missed a guard opportunity and increments the miss counter. */
-void check_guard_miss(WORK* as, PLW* ds, s8 gddir) {
+void check_guard_miss(State* as, PLW* ds, s8 gddir) {
     if (ds->remake_power.total) {
         return;
     }

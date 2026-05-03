@@ -9,15 +9,15 @@
 #include "sf33rd/Source/Game/effect/eff54.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
 const s16 eff53_vanish_time[8] = { 480, 600, 900, 1440, 480, 1080, 1500, 600 };
 
-void effect_53_move(WORK_Other* ewk) {
+void effect_53_move(State_Other* ewk) {
     s16 work;
 
     if (obr_no_disp_check()) {
@@ -76,14 +76,14 @@ void effect_53_move(WORK_Other* ewk) {
 }
 
 s32 effect_53_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 53;
     ewk->wu.work_id = 16;

@@ -8,17 +8,17 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effe5.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk);
-static void effE8_trans(WORK_Other* ewk, PLW* mwk);
+static void effe8_zanzou_process(State_Other* ewk, PLW* mwk);
+static void effE8_trans(State_Other* ewk, PLW* mwk);
 
-void effect_E8_move(WORK_Other* ewk) {
+void effect_E8_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
-    WORK_Other* cwk = (WORK_Other*)ewk->wu.target_adrs;
-    WORK* mtwk;
+    State_Other* cwk = (State_Other*)ewk->wu.target_adrs;
+    State* mtwk;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -75,7 +75,7 @@ void effect_E8_move(WORK_Other* ewk) {
 
     case 2:
         if (g_state.pcon_rno[0] != 2) {
-            mtwk = (WORK*)mwk->wu.target_adrs;
+            mtwk = (State*)mwk->wu.target_adrs;
 
             if (mtwk->routine_no[0] == 4 && mtwk->routine_no[1] == 1 && mtwk->routine_no[3] < 2) {
                 break;
@@ -91,7 +91,7 @@ void effect_E8_move(WORK_Other* ewk) {
     }
 }
 
-static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
+static void effe8_zanzou_process(State_Other* ewk, PLW* mwk) {
     if (ewk->wu.old_routine_no[5]) {
         if (ewk->wu.type == 0) {
             ewk->wu.position_x = mwk->wu.position_x;
@@ -138,7 +138,7 @@ static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
     }
 }
 
-static void effE8_trans(WORK_Other* ewk, PLW* mwk) {
+static void effE8_trans(State_Other* ewk, PLW* mwk) {
     if (ewk->wu.old_routine_no[3] == 0) {
         return;
     }
@@ -151,15 +151,15 @@ static void effE8_trans(WORK_Other* ewk, PLW* mwk) {
     }
 }
 
-s32 effect_E8_init(WORK_Other* ek, PLW* mk, s16 data) {
-    WORK_Other* ewk;
+s32 effect_E8_init(State_Other* ek, PLW* mk, s16 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.disp_flag = ek->wu.disp_flag;
     ewk->wu.id = 148;

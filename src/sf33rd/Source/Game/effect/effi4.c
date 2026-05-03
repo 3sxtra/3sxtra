@@ -9,15 +9,15 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effj6.h"
-#include "sf33rd/Source/Game/engine/caldir.h"
+#include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effect_I4_move(WORK_Other* ewk) {
+void effect_I4_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -53,7 +53,7 @@ void effect_I4_move(WORK_Other* ewk) {
     }
 }
 
-void effect_i4_hit_sub(WORK_Other* ewk) {
+void effect_i4_hit_sub(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (eff_hit_check2(ewk, 0, 2)) {
@@ -84,7 +84,7 @@ void effect_i4_hit_sub(WORK_Other* ewk) {
     }
 }
 
-void effi4_down_to_up(WORK_Other* ewk) {
+void effi4_down_to_up(State_Other* ewk) {
     switch (ewk->wu.routine_no[3]) {
     case 0:
         char_move(&ewk->wu);
@@ -131,7 +131,7 @@ void effi4_down_to_up(WORK_Other* ewk) {
     }
 }
 
-void effi4_up_to_down(WORK_Other* ewk) {
+void effi4_up_to_down(State_Other* ewk) {
     char_move(&ewk->wu);
 
     if (ewk->wu.cg_type == 0xFF) {
@@ -141,14 +141,14 @@ void effi4_up_to_down(WORK_Other* ewk) {
 }
 
 s32 effect_I4_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 184;
     ewk->wu.work_id = 16;

@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void effect_43_move(WORK_Other* ewk) {
+void effect_43_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (--ewk->wu.dir_timer) {
@@ -40,14 +40,14 @@ void effect_43_move(WORK_Other* ewk) {
 }
 
 s32 effect_43_init(s16 Time, s16 Target_BG) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 43;
     ewk->wu.work_id = 16;

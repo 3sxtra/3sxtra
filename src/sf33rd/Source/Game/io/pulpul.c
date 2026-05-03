@@ -16,8 +16,8 @@
 #include "sf33rd/AcrSDK/ps2/ps2PAD.h"
 #include "sf33rd/Source/Game/debug/OBJTEST.h"
 #include "sf33rd/Source/Game/debug/OTESTDAT.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -537,27 +537,27 @@ static s32 pp_convert_attack_type(u8 num) {
 }
 
 /** @brief Rebuild vibration parameters at init. */
-void pp_pulpara_remake_at_init(WORK* wk) {
+void pp_pulpara_remake_at_init(State* wk) {
     (void)wk;
 }
 
 /** @brief Rebuild vibration parameters at init (variant 2). */
-void pp_pulpara_remake_at_init2(WORK* wk) {
+void pp_pulpara_remake_at_init2(State* wk) {
     (void)wk;
 }
 
 /** @brief Rebuild vibration parameters on hit. */
-void pp_pulpara_remake_at_hit(WORK* wk) {
+void pp_pulpara_remake_at_hit(State* wk) {
     (void)wk;
 }
 
 /** @brief Rebuild all vibration parameters. */
-void pp_pulpara_remake_at(WORK* wk) {
+void pp_pulpara_remake_at(State* wk) {
     (void)wk;
 }
 
 /** @brief Rebuild vibration parameters for all damage types. */
-void pp_pulpara_remake_dm_all(WORK* wk) {
+void pp_pulpara_remake_dm_all(State* wk) {
     s16 ix;
 
     ix = pp_convert_attack_type(wk->damage_attack_type);
@@ -566,17 +566,17 @@ void pp_pulpara_remake_dm_all(WORK* wk) {
 }
 
 /** @brief Set vibration parameters for a guard impact. */
-void pp_pulpara_guard(WORK* wk) {
+void pp_pulpara_guard(State* wk) {
     pulpul_request(wk->id, pp_guard_shock[pp_convert_attack_type(wk->damage_attack_type)]);
 }
 
 /** @brief Set vibration parameters for a hit impact. */
-void pp_pulpara_hit(WORK* wk) {
+void pp_pulpara_hit(State* wk) {
     pulpul_request(wk->id, pp_hit_shock[pp_convert_attack_type(wk->attack_type)]);
 }
 
 /** @brief Set vibration parameters for a blocking (parry) event. */
-void pp_pulpara_blocking(WORK* wk) {
+void pp_pulpara_blocking(State* wk) {
     pulpul_request(wk->id, 0x20);
 
     if (((s16*)wk->dmg_adrs)[3] == 1) {
@@ -585,17 +585,17 @@ void pp_pulpara_blocking(WORK* wk) {
 }
 
 /** @brief Set vibration parameters for a throw catch. */
-void pp_pulpara_catch(WORK* wk) {
+void pp_pulpara_catch(State* wk) {
     pulpul_request(wk->id, 0x22);
 }
 
 /** @brief Set vibration parameters for being thrown (caught). */
-void pp_pulpara_caught(WORK* wk) {
+void pp_pulpara_caught(State* wk) {
     pulpul_request(wk->id, 0x23);
 }
 
 /** @brief Set vibration parameters for Shun Goku Satsu (Raging Demon). */
-void pp_pulpara_shungokusatsu(WORK* wk) {
+void pp_pulpara_shungokusatsu(State* wk) {
     pulpul_request(wk->id, 0x2E);
     pulpul_request((wk->id + 1) & 1, 0x2F);
 }

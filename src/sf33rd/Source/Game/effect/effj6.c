@@ -11,21 +11,21 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-static void effect_j6_hit_sub(WORK_Other* ewk);
+static void effect_j6_hit_sub(State_Other* ewk);
 
-void effect_J6_move(WORK_Other* ewk) {
-    WORK_Other* oya_ptr;
+void effect_J6_move(State_Other* ewk) {
+    State_Other* oya_ptr;
 
     if (obr_no_disp_check()) {
         return;
     }
 
-    oya_ptr = (WORK_Other*)ewk->my_master;
+    oya_ptr = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -73,22 +73,22 @@ void effect_J6_move(WORK_Other* ewk) {
     }
 }
 
-static void effect_j6_hit_sub(WORK_Other* ewk) {
+static void effect_j6_hit_sub(State_Other* ewk) {
     if (eff_hit_check(ewk, 0)) {
         ewk->wu.routine_no[0]++;
         effect_27_init(ewk, 1);
     }
 }
 
-s32 effect_J6_init(WORK_Other* oya) {
-    WORK_Other* ewk;
+s32 effect_J6_init(State_Other* oya) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->my_master = oya;
     ewk->wu.be_flag = 1;
     ewk->wu.id = 196;

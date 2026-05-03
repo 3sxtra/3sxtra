@@ -17,8 +17,8 @@
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
@@ -98,7 +98,7 @@ void SE_All_Off() {
 }
 
 /** @brief Dummy SE handler — stores code for debug display but plays nothing. */
-void Se_Dummy(WORK_Other* ewk, u16 Code) {
+void Se_Dummy(State_Other* ewk, u16 Code) {
     SoundRequestData rmc;
 
     rmc.ptix = 0;
@@ -110,7 +110,7 @@ void Se_Dummy(WORK_Other* ewk, u16 Code) {
 }
 
 /** @brief Shock/hit SE — switches to KO variant if target is dead. */
-void Se_Shock(WORK_Other* ewk, u16 Code) {
+void Se_Shock(State_Other* ewk, u16 Code) {
     PLW* em;
     s16 xx;
     s16 zz;
@@ -145,7 +145,7 @@ void Se_Shock(WORK_Other* ewk, u16 Code) {
 }
 
 /** @brief Play SE from the caller's own player channel. */
-void Se_Myself(WORK_Other* ewk, u16 Code) {
+void Se_Myself(State_Other* ewk, u16 Code) {
     s16 xx;
     s16 uid = ewk->wu.id;
 
@@ -160,7 +160,7 @@ void Se_Myself(WORK_Other* ewk, u16 Code) {
 }
 
 /** @brief Like Se_Myself but only plays when the character is alive. */
-void Se_Myself_Die(WORK_Other* ewk, u16 Code) {
+void Se_Myself_Die(State_Other* ewk, u16 Code) {
     s16 xx;
 
     if ((ewk->wu.work_id == 1) && (ewk->wu.vital_new >= 0)) {
@@ -173,7 +173,7 @@ void Se_Myself_Die(WORK_Other* ewk, u16 Code) {
 }
 
 /** @brief Play SE on the target's channel (hit reaction). */
-void Se_Let(WORK_Other* ewk, u16 Code) {
+void Se_Let(State_Other* ewk, u16 Code) {
     s16 xx;
     s16 uid;
 
@@ -192,7 +192,7 @@ void Se_Let(WORK_Other* ewk, u16 Code) {
 }
 
 /** @brief Like Se_Let with special override codes for KO hits. */
-void Se_Let_SP(WORK_Other* ewk, u16 Code) {
+void Se_Let_SP(State_Other* ewk, u16 Code) {
     PLW* em;
     s16 xx;
     s16 uid;
@@ -223,7 +223,7 @@ void Se_Let_SP(WORK_Other* ewk, u16 Code) {
 }
 
 /** @brief Generic SE call — plays at the caller's screen position. */
-void Call_Se(WORK_Other* ewk, u16 Code) {
+void Call_Se(State_Other* ewk, u16 Code) {
     s16 xx;
 
     xx = Get_Position((PLW*)ewk);
@@ -231,7 +231,7 @@ void Call_Se(WORK_Other* ewk, u16 Code) {
 }
 
 /** @brief Termination SE — only plays if character is airborne and alive. */
-void Se_Term(WORK_Other* ewk, u16 Code) {
+void Se_Term(State_Other* ewk, u16 Code) {
     s16 xx;
 
     if (ewk->wu.work_id != 1) {

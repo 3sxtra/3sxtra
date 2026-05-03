@@ -9,9 +9,9 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 // forward declarations
@@ -23,7 +23,7 @@ const s16 koishi_app_area[8][16];
 const s16 koishi_speed_x[5][8];
 const s16 koishi_speed_y[5][8];
 
-void effect_I0_move(WORK_Other* ewk) {
+void effect_I0_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0] += 1;
@@ -82,15 +82,15 @@ void effect_I0_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_I0_init(WORK* wk, s16 hsx, s16 hsy, s16 spx, s16 spy, s16 nxy) {
-    WORK_Other* ewk;
+s32 effect_I0_init(State* wk, s16 hsx, s16 hsy, s16 spx, s16 spy, s16 nxy) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0xB4;
     ewk->wu.work_id = 0x10;
@@ -115,7 +115,7 @@ s32 effect_I0_init(WORK* wk, s16 hsx, s16 hsy, s16 spx, s16 spy, s16 nxy) {
     return 0;
 }
 
-s32 setup_koishi_extra(WORK* wk, u8 num) {
+s32 setup_koishi_extra(State* wk, u8 num) {
     s16* dix;
     s16 i;
     s16 hsx;

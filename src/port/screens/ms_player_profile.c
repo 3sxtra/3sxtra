@@ -11,7 +11,7 @@
 #include "game_state.h"
 
 #include "sf33rd/Source/Game/effect/effect.h"   /* effect_work_init */
-#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.plsw_00, g_state.plsw_01, g_state.Order */
+#include "sf33rd/Source/Game/engine/state_user.h" /* g_state.plsw_00, g_state.plsw_01, g_state.Order */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
 #include "sf33rd/Source/Game/system/work_sys.h" /* Interface_Type, g_state.Decide_ID */
 #include "sf33rd/Source/Game/sound/sound3rd.h"  /* SE_selected */

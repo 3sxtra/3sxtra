@@ -18,12 +18,12 @@
 
 // Forward decls
 
-static void hukuromoji_move(WORK_Other* ewk);
+static void hukuromoji_move(State_Other* ewk);
 
 // Funcs
 
-void effect_L5_move(WORK_Other* ewk) {
-    WORK_Other* oya_ptr = (WORK_Other*)ewk->my_master;
+void effect_L5_move(State_Other* ewk) {
+    State_Other* oya_ptr = (State_Other*)ewk->my_master;
 
     switch (oya_ptr->wu.routine_no[0]) {
     case 5:
@@ -49,8 +49,8 @@ void effect_L5_move(WORK_Other* ewk) {
     }
 }
 
-static void hukuromoji_move(WORK_Other* ewk) {
-    WORK_Other* oya_ptr = (WORK_Other*)ewk->my_master;
+static void hukuromoji_move(State_Other* ewk) {
+    State_Other* oya_ptr = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -104,15 +104,15 @@ static void hukuromoji_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_L5_init(WORK_Other* oya) {
-    WORK_Other* ewk;
+s32 effect_L5_init(State_Other* oya) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 0xD7;
     ewk->wu.work_id = 0x10;

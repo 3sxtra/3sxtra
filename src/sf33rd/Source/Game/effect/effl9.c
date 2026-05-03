@@ -9,14 +9,14 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void effect_L9_move(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+void effect_L9_move(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -49,15 +49,15 @@ void effect_L9_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_L9_init(WORK_Other* oya, u8 ten_type) {
-    WORK_Other* ewk;
+s32 effect_L9_init(State_Other* oya, u8 ten_type) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->my_master = oya;
     ewk->master_id = oya->wu.id;
     ewk->wu.type = ten_type;

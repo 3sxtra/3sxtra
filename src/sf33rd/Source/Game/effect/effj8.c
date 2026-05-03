@@ -9,16 +9,16 @@
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/pls02.h"
+#include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effect_J8_move(WORK_Other* ewk) {
+void effect_J8_move(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -51,14 +51,14 @@ void effect_J8_move(WORK_Other* ewk) {
     }
 }
 
-void dragonfly_move(WORK_Other* ewk) {
-    void (*const dragonfly_move_jp1[8])(WORK_Other*) = { dragonfly_move_0000, dragonfly_move_0001, dragonfly_r_move,
+void dragonfly_move(State_Other* ewk) {
+    void (*const dragonfly_move_jp1[8])(State_Other*) = { dragonfly_move_0000, dragonfly_move_0001, dragonfly_r_move,
                                                          dragonfly_l_move,    dragonfly_move_0004, dragonfly_move_0005,
                                                          dragonfly_l_move,    dragonfly_r_move };
     dragonfly_move_jp1[ewk->wu.routine_no[1]](ewk);
 }
 
-void dragonfly_l_move_0(WORK_Other* ewk) {
+void dragonfly_l_move_0(State_Other* ewk) {
     s16 work;
 
     ewk->wu.rl_flag = 1;
@@ -69,12 +69,12 @@ void dragonfly_l_move_0(WORK_Other* ewk) {
     ewk->wu.xyz[1].disp.low = 0;
 }
 
-void dragonfly_l_move_1(WORK_Other* ewk) {
+void dragonfly_l_move_1(State_Other* ewk) {
     char_move(&ewk->wu);
     dragonfly_line_set(ewk, 0);
 }
 
-s16 dragonfly_l_move_2(WORK_Other* ewk) {
+s16 dragonfly_l_move_2(State_Other* ewk) {
     char_move(&ewk->wu);
     add_x_sub(&ewk->wu);
     add_y_sub(&ewk->wu);
@@ -91,7 +91,7 @@ s16 dragonfly_l_move_2(WORK_Other* ewk) {
     return 0;
 }
 
-s16 dragonfly_l_move_3(WORK_Other* ewk) {
+s16 dragonfly_l_move_3(State_Other* ewk) {
     add_x_sub(&ewk->wu);
     add_y_sub(&ewk->wu);
 
@@ -110,7 +110,7 @@ s16 dragonfly_l_move_3(WORK_Other* ewk) {
     return 0;
 }
 
-s16 dragonfly_l_move_4(WORK_Other* ewk) {
+s16 dragonfly_l_move_4(State_Other* ewk) {
     char_move(&ewk->wu);
     ewk->wu.dir_timer--;
 
@@ -122,7 +122,7 @@ s16 dragonfly_l_move_4(WORK_Other* ewk) {
     return 0;
 }
 
-void dragonfly_l_move(WORK_Other* ewk) {
+void dragonfly_l_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -164,7 +164,7 @@ void dragonfly_l_move(WORK_Other* ewk) {
     }
 }
 
-void dragonfly_r_move_0(WORK_Other* ewk) {
+void dragonfly_r_move_0(State_Other* ewk) {
     s16 work;
 
     ewk->wu.rl_flag = 0;
@@ -175,12 +175,12 @@ void dragonfly_r_move_0(WORK_Other* ewk) {
     ewk->wu.xyz[1].disp.low = 0;
 }
 
-void dragonfly_r_move_1(WORK_Other* ewk) {
+void dragonfly_r_move_1(State_Other* ewk) {
     char_move(&ewk->wu);
     dragonfly_line_set(ewk, 1);
 }
 
-s16 dragonfly_r_move_2(WORK_Other* ewk) {
+s16 dragonfly_r_move_2(State_Other* ewk) {
     char_move(&ewk->wu);
     add_x_sub(&ewk->wu);
     add_y_sub(&ewk->wu);
@@ -197,7 +197,7 @@ s16 dragonfly_r_move_2(WORK_Other* ewk) {
     return 0;
 }
 
-s16 dragonfly_r_move_3(WORK_Other* ewk) {
+s16 dragonfly_r_move_3(State_Other* ewk) {
     add_x_sub(&ewk->wu);
     add_y_sub(&ewk->wu);
 
@@ -216,7 +216,7 @@ s16 dragonfly_r_move_3(WORK_Other* ewk) {
     return 0;
 }
 
-s16 dragonfly_r_move_4(WORK_Other* ewk) {
+s16 dragonfly_r_move_4(State_Other* ewk) {
     char_move(&ewk->wu);
     ewk->wu.dir_timer--;
 
@@ -228,7 +228,7 @@ s16 dragonfly_r_move_4(WORK_Other* ewk) {
     return 0;
 }
 
-void dragonfly_r_move(WORK_Other* ewk) {
+void dragonfly_r_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -269,7 +269,7 @@ void dragonfly_r_move(WORK_Other* ewk) {
     }
 }
 
-void dragonfly_move_0000(WORK_Other* ewk) {
+void dragonfly_move_0000(State_Other* ewk) {
     char_move(&ewk->wu);
 
     switch (ewk->wu.routine_no[2]) {
@@ -319,7 +319,7 @@ const s16 effj8_timer_tbl[8] = { 60, 120, 180, 90, 150, 30, 220, 160 };
 
 const s16 effj8_y_tbl[8] = { 128, 80, 96, 160, 176, 112, 144, 168 };
 
-void dragonfly_move_0001(WORK_Other* ewk) {
+void dragonfly_move_0001(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -374,7 +374,7 @@ void dragonfly_move_0001(WORK_Other* ewk) {
     }
 }
 
-void dragonfly_move_0004(WORK_Other* ewk) {
+void dragonfly_move_0004(State_Other* ewk) {
     char_move(&ewk->wu);
 
     switch (ewk->wu.routine_no[2]) {
@@ -416,7 +416,7 @@ void dragonfly_move_0004(WORK_Other* ewk) {
     }
 }
 
-void dragonfly_move_0005(WORK_Other* ewk) {
+void dragonfly_move_0005(State_Other* ewk) {
     char_move(&ewk->wu);
 
     switch (ewk->wu.routine_no[2]) {
@@ -469,7 +469,7 @@ void dragonfly_move_0005(WORK_Other* ewk) {
     }
 }
 
-void dragonfly_stop_timer(WORK_Other* ewk) {
+void dragonfly_stop_timer(State_Other* ewk) {
     s16 work = random_16();
 
     work &= 7;
@@ -481,7 +481,7 @@ const s32 effj8_sp_tbl[8][4] = { { 0x60000, -0x4000, 0x4000, 0 }, { 0x60000, -0x
                                  { 0x80000, -0xA000, 0x4000, 0 }, { 0x80000, -0x2000, -0x4000, 0 },
                                  { 0x80000, -0x6000, 0x4000, 0 }, { 0x80000, -0x4000, -0x4000, 0 } };
 
-void dragonfly_line_set(WORK_Other* ewk, s16 dir_type) {
+void dragonfly_line_set(State_Other* ewk, s16 dir_type) {
     s16 work = random_16();
     const s32* sp_ptr;
 
@@ -501,7 +501,7 @@ void dragonfly_line_set(WORK_Other* ewk, s16 dir_type) {
     ewk->wu.mvxy.d[1].sp = *sp_ptr++;
 }
 
-void dragonfly_move_next(WORK_Other* ewk) {
+void dragonfly_move_next(State_Other* ewk) {
     ewk->wu.routine_no[1]++;
     ewk->wu.routine_no[1] &= 7;
     ewk->wu.routine_no[2] = 0;
@@ -509,7 +509,7 @@ void dragonfly_move_next(WORK_Other* ewk) {
 }
 
 s32 effect_J8_init() {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     s16 i;
 
@@ -518,7 +518,7 @@ s32 effect_J8_init() {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 198;
         ewk->wu.work_id = 16;

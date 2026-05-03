@@ -10,8 +10,8 @@
 #include "sf33rd/Source/Game/animation/lose_pl.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
@@ -23,9 +23,9 @@ s16 eff_hit_data[4][4] = { { -67, 59, 13, 29 }, { 31, 95, 24, 15 }, { 4, 123, 28
 
 // sbss
 
-static s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl);
-static s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type);
-static s16 hit_check_subroutine_yu(WORK* tpl, WORK* tef, s16* hd1, s16* hd2);
+static s32 eff_hit_check_sub(State_Other* ewk, PLW* pl);
+static s32 eff_hit_check_sub2(State_Other* ewk, PLW* pl, s16 where_type);
+static s16 hit_check_subroutine_yu(State* tpl, State* tef, s16* hd1, s16* hd2);
 
 /** @brief Synchronize family layer position for a foreground object. */
 void sync_fam_set3(s16 my_fam) {
@@ -74,7 +74,7 @@ void sync_fam_set3(s16 my_fam) {
 }
 
 /** @brief Check if an object is within horizontal stage range. */
-s32 range_x_check(WORK_Other* ewk) {
+s32 range_x_check(State_Other* ewk) {
     s16 pos_x_work;
     s16 work2;
     s16 work3;
@@ -103,7 +103,7 @@ s32 range_x_check(WORK_Other* ewk) {
 }
 
 /** @brief Check if an object is within a custom horizontal range. */
-s32 range_x_check3(WORK_Other* ewk, s16 optional_range) {
+s32 range_x_check3(State_Other* ewk, s16 optional_range) {
     s16 pos_x_work;
     s16 work2;
     s16 work3;
@@ -127,7 +127,7 @@ s32 range_x_check3(WORK_Other* ewk, s16 optional_range) {
 }
 
 /** @brief Check if an object is within vertical stage range. */
-static s32 range_y_check(WORK_Other* ewk) {
+static s32 range_y_check(State_Other* ewk) {
     s16 pos_y_work;
     s16 work2;
     s16 work3;
@@ -151,25 +151,25 @@ static s32 range_y_check(WORK_Other* ewk) {
 }
 
 /** @brief Add horizontal speed to an object's position. */
-void add_x_sub(WORK* wk) {
+void add_x_sub(State* wk) {
     wk->xyz[0].cal += wk->mvxy.a[0].sp;
     wk->mvxy.a[0].sp += wk->mvxy.d[0].sp;
 }
 
 /** @brief Add horizontal speed to an object's alternate position. */
-void add_x_sub2(WORK* wk) {
+void add_x_sub2(State* wk) {
     wk->xyz[0].cal += wk->mvxy.a[0].sp;
     wk->mvxy.a[0].sp += wk->mvxy.d[0].sp;
 }
 
 /** @brief Add vertical speed to an object's position. */
-void add_y_sub(WORK* wk) {
+void add_y_sub(State* wk) {
     wk->xyz[1].cal += wk->mvxy.a[1].sp;
     wk->mvxy.a[1].sp += wk->mvxy.d[1].sp;
 }
 
 /** @brief Add vertical speed to an object's alternate position. */
-void add_y_sub2(WORK* wk) {
+void add_y_sub2(State* wk) {
     wk->xyz[1].cal += wk->mvxy.a[1].sp;
     wk->mvxy.a[1].sp += wk->mvxy.d[1].sp;
 }
@@ -185,7 +185,7 @@ s32 obr_no_disp_check() {
 }
 
 /** @brief Transform and register an object for display. */
-void disp_pos_trans_entry(WORK_Other* ewk) {
+void disp_pos_trans_entry(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -196,7 +196,7 @@ void disp_pos_trans_entry(WORK_Other* ewk) {
 }
 
 /** @brief Transform and register an object for display (variant 5). */
-void disp_pos_trans_entry5(WORK_Other* ewk) {
+void disp_pos_trans_entry5(State_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -207,7 +207,7 @@ void disp_pos_trans_entry5(WORK_Other* ewk) {
 }
 
 /** @brief Transform and register an object for reversed display. */
-void disp_pos_trans_entry_r(WORK_Other* ewk) {
+void disp_pos_trans_entry_r(State_Other* ewk) {
     if ((obr_no_disp_check() == 0) && (range_x_check(ewk) != 0)) {
         ewk->wu.position_x = (ewk->wu.xyz[0].disp.pos & 0xFFFF) + 1;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
@@ -216,7 +216,7 @@ void disp_pos_trans_entry_r(WORK_Other* ewk) {
 }
 
 /** @brief Transform and register an object for reversed display (variant 4). */
-void disp_pos_trans_entry_r4(WORK_Other* ewk) {
+void disp_pos_trans_entry_r4(State_Other* ewk) {
     if ((obr_no_disp_check() == 0) && (range_y_check(ewk) != 0)) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
@@ -225,7 +225,7 @@ void disp_pos_trans_entry_r4(WORK_Other* ewk) {
 }
 
 /** @brief Transform and register a scaled object for display. */
-void disp_pos_trans_entry_s(WORK_Other* ewk) {
+void disp_pos_trans_entry_s(State_Other* ewk) {
     if (obr_no_disp_check() == 0) {
         sync_bg_strip_position(ewk);
         ewk->wu.position_x++;
@@ -234,7 +234,7 @@ void disp_pos_trans_entry_s(WORK_Other* ewk) {
 }
 
 /** @brief Transform and register a reversed scaled object for display. */
-void disp_pos_trans_entry_rs(WORK_Other* ewk) {
+void disp_pos_trans_entry_rs(State_Other* ewk) {
     if ((obr_no_disp_check() == 0) && (range_x_check(ewk) != 0)) {
         sync_bg_strip_position(ewk);
         ewk->wu.position_x++;
@@ -243,7 +243,7 @@ void disp_pos_trans_entry_rs(WORK_Other* ewk) {
 }
 
 /** @brief Transform and register a player effect for display. */
-void pl_eff_trans_entry(WORK_Other* ewk) {
+void pl_eff_trans_entry(State_Other* ewk) {
     if (obr_no_disp_check() == 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
@@ -252,7 +252,7 @@ void pl_eff_trans_entry(WORK_Other* ewk) {
 }
 
 /** @brief Check whether a background effect collides with a player. */
-s16 eff_hit_check(WORK_Other* ewk, s16 type) {
+s16 eff_hit_check(State_Other* ewk, s16 type) {
     if (!g_state.EXE_obroll) {
         if (type) {
             if (g_state.pcon_dp_flag) {
@@ -277,7 +277,7 @@ const s16 pl_hit_eff[25][4] = { { -11, 56, 33, 38 }, { -11, 56, 35, 53 }, { -13,
                                 { -11, 56, 33, 38 } };
 
 /** @brief Sub-routine for effect-player collision detection. */
-static s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl) {
+static s32 eff_hit_check_sub(State_Other* ewk, PLW* pl) {
     if (pl->wu.routine_no[1] == 1) {
         if (pl->wu.routine_no[2] < 14 || pl->wu.routine_no[2] >= 24) {
             return 0;
@@ -293,7 +293,7 @@ static s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl) {
 }
 
 /** @brief Check effect collision against a specific hit zone. */
-s16 eff_hit_check2(WORK_Other* ewk, s16 type, s16 where_type) {
+s16 eff_hit_check2(State_Other* ewk, s16 type, s16 where_type) {
     if (!g_state.EXE_obroll) {
         if (type) {
             if (g_state.pcon_dp_flag) {
@@ -310,7 +310,7 @@ s16 eff_hit_check2(WORK_Other* ewk, s16 type, s16 where_type) {
 }
 
 /** @brief Sub-routine for effect collision with zone type. */
-static s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type) {
+static s32 eff_hit_check_sub2(State_Other* ewk, PLW* pl, s16 where_type) {
     s16* hd1 = pl->wu.body_hurtbox->body_dm[where_type];
 
     if (hit_check_subroutine_yu(&pl->wu, &ewk->wu, hd1, eff_hit_data[ewk->wu.type])) {
@@ -321,7 +321,7 @@ static s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type) {
 }
 
 /** @brief Core axis-aligned bounding box hit check. */
-static s16 hit_check_subroutine_yu(WORK* tpl, WORK* tef, s16* hd1, s16* hd2) {
+static s16 hit_check_subroutine_yu(State* tpl, State* tef, s16* hd1, s16* hd2) {
     s16 d0 = *hd1++;
     s16 d1 = *hd1++;
     s16 d2;
@@ -377,7 +377,7 @@ void eff_hit_flag_clear() {
 }
 
 /** @brief Check whether a background object should be forcibly killed. */
-s32 compel_dead_check(WORK_Other* ewk) {
+s32 compel_dead_check(State_Other* ewk) {
     s32 var_s0 = 0;
 
     if (g_state.bg_w.compel_flag) {

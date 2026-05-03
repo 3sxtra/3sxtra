@@ -54,6 +54,6 @@ extern const SeHandlerType se_handler_type[SE_DISPATCH_TABLE_SIZE];
  *              filtered SE code from check_xcopy_filter_se_req()).
  * @param ewk   Pointer to the requesting entity's work struct.
  */
-void Se_Dispatch(u16 index, u16 code, WORK_Other* ewk);
+void Se_Dispatch(u16 index, u16 code, State_Other* ewk);
 
 #endif

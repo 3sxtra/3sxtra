@@ -11,33 +11,33 @@
 #include "sf33rd/Source/Game/effect/eff80.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static s32 Check_Play_Status_79(WORK_Other* ewk);
-static void Move_Move_79(WORK_Other* ewk);
-static void Setup_Move_79(WORK_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_Value, s32 Option);
-static void Move_79(WORK_Other* ewk);
-static void Check_Priority(WORK_Other* ewk);
-static s32 EFF79_Move_X(WORK_Other* ewk);
-static s32 EFF79_Move_Y(WORK_Other* ewk);
-static void Setup_Command_Name(WORK_Other* ewk);
-static s32 Select_End_Sub_79(WORK_Other* ewk);
-static void Setup_Pos_79(WORK_Other* ewk);
-static void Check_Speed_79(WORK_Other* ewk);
-static s32 Move_X_Sub(WORK_Other* ewk, s16 Target_X, s16 cut);
-static s32 Check_Depth_to_Before(WORK_Other* ewk);
-static s32 Move_Y_Sub(WORK_Other* ewk, s16 Target_Y, u16 cut);
+static s32 Check_Play_Status_79(State_Other* ewk);
+static void Move_Move_79(State_Other* ewk);
+static void Setup_Move_79(State_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_Value, s32 Option);
+static void Move_79(State_Other* ewk);
+static void Check_Priority(State_Other* ewk);
+static s32 EFF79_Move_X(State_Other* ewk);
+static s32 EFF79_Move_Y(State_Other* ewk);
+static void Setup_Command_Name(State_Other* ewk);
+static s32 Select_End_Sub_79(State_Other* ewk);
+static void Setup_Pos_79(State_Other* ewk);
+static void Check_Speed_79(State_Other* ewk);
+static s32 Move_X_Sub(State_Other* ewk, s16 Target_X, s16 cut);
+static s32 Check_Depth_to_Before(State_Other* ewk);
+static s32 Move_Y_Sub(State_Other* ewk, s16 Target_Y, u16 cut);
 
 u8 OK_Appear79[2];
 u8 Extra_Counter[2];
 
 const s32 Pos_Z_Data_79[3] = { 0, 5, 10 };
 
-void effect_79_move(WORK_Other* ewk) {
+void effect_79_move(State_Other* ewk) {
     s16 xx;
     s16 arrived[2];
 
@@ -331,7 +331,7 @@ void effect_79_move(WORK_Other* ewk) {
         sort_push_request4(&ewk->wu);
 }
 
-static s32 Check_Play_Status_79(WORK_Other* ewk) {
+static s32 Check_Play_Status_79(State_Other* ewk) {
     if (ewk->wu.dir_old == 0 && g_state.Play_Type == 1) {
         ewk->wu.routine_no[1] = 2;
         ewk->wu.routine_no[2] = 0;
@@ -364,7 +364,7 @@ static s32 Check_Play_Status_79(WORK_Other* ewk) {
     return 0;
 }
 
-static void Move_Move_79(WORK_Other* ewk) {
+static void Move_Move_79(State_Other* ewk) {
     s16 arrived[2];
 
     switch (ewk->wu.routine_no[2]) {
@@ -406,7 +406,7 @@ static void Move_Move_79(WORK_Other* ewk) {
     }
 }
 
-static void Setup_Move_79(WORK_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_Value, s32 Option) {
+static void Setup_Move_79(State_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_Value, s32 Option) {
     ewk->wu.routine_no[1] = 1;
     ewk->wu.routine_no[2] = 0;
     ewk->wu.routine_no[5] = 0;
@@ -438,7 +438,7 @@ static void Setup_Move_79(WORK_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_
     }
 }
 
-static void Move_79(WORK_Other* ewk) {
+static void Move_79(State_Other* ewk) {
     s16 arrived[2];
 
     Check_Priority(ewk);
@@ -479,7 +479,7 @@ static void Move_79(WORK_Other* ewk) {
     }
 }
 
-static void Check_Priority(WORK_Other* ewk) {
+static void Check_Priority(State_Other* ewk) {
     switch (ewk->wu.routine_no[7]) {
     case 0:
         if (g_state.OK_Priority[ewk->master_id] == 0) {
@@ -499,7 +499,7 @@ static void Check_Priority(WORK_Other* ewk) {
     }
 }
 
-static s32 EFF79_Move_X(WORK_Other* ewk) {
+static s32 EFF79_Move_X(State_Other* ewk) {
     switch (ewk->wu.routine_no[5]) {
     case 0:
         if (!Move_X_Sub(ewk, ewk->wu.vital_new, 1)) {
@@ -527,7 +527,7 @@ static s32 EFF79_Move_X(WORK_Other* ewk) {
     return 0;
 }
 
-static s32 EFF79_Move_Y(WORK_Other* ewk) {
+static s32 EFF79_Move_Y(State_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         ewk->wu.xyz[1].cal += ewk->wu.mvxy.a[1].sp;
@@ -584,7 +584,7 @@ static s32 EFF79_Move_Y(WORK_Other* ewk) {
     return 0;
 }
 
-static void Setup_Command_Name(WORK_Other* ewk) {
+static void Setup_Command_Name(State_Other* ewk) {
     if (g_state.Moving_Plate[ewk->master_id] == 2) {
         g_state.Disp_Command_Name[ewk->master_id][ewk->master_player] = 0;
 
@@ -612,7 +612,7 @@ static void Setup_Command_Name(WORK_Other* ewk) {
     }
 }
 
-static s32 Select_End_Sub_79(WORK_Other* ewk) {
+static s32 Select_End_Sub_79(State_Other* ewk) {
     if (g_state.Sel_Arts_Complete[ewk->master_id] == 0) {
         return 0;
     }
@@ -636,14 +636,14 @@ static s32 Select_End_Sub_79(WORK_Other* ewk) {
 }
 
 s32 effect_79_init(s16 pl_id, s16 plate_id, s16 pos_id, s16 time, s16 Target_BG) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->master_player = plate_id;
     ewk->master_priority = pos_id;
     ewk->wu.hit_quake = pos_id;
@@ -682,7 +682,7 @@ s32 effect_79_init(s16 pl_id, s16 plate_id, s16 pos_id, s16 time, s16 Target_BG)
     return 0;
 }
 
-static void Setup_Pos_79(WORK_Other* ewk) {
+static void Setup_Pos_79(State_Other* ewk) {
     if (ewk->master_priority) {
         ewk->wu.routine_no[0] = 3;
         ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
@@ -717,7 +717,7 @@ static void Setup_Pos_79(WORK_Other* ewk) {
     ewk->wu.xyz[2].disp.pos = Pos_Z_Data_79[ewk->master_priority] + 35;
 }
 
-static void Check_Speed_79(WORK_Other* ewk) {
+static void Check_Speed_79(State_Other* ewk) {
     if (g_state.Play_Type == 1) {
         ewk->wu.mvxy.a[0].sp /= 3;
         ewk->wu.mvxy.d[0].sp /= 3;
@@ -726,7 +726,7 @@ static void Check_Speed_79(WORK_Other* ewk) {
     }
 }
 
-static s32 Move_X_Sub(WORK_Other* ewk, s16 Target_X, s16 cut) {
+static s32 Move_X_Sub(State_Other* ewk, s16 Target_X, s16 cut) {
     ewk->wu.xyz[0].cal += ewk->wu.mvxy.a[0].sp * cut;
     ewk->wu.mvxy.a[0].sp += ewk->wu.mvxy.d[0].sp;
 
@@ -751,7 +751,7 @@ static s32 Move_X_Sub(WORK_Other* ewk, s16 Target_X, s16 cut) {
     return 0;
 }
 
-static s32 Check_Depth_to_Before(WORK_Other* ewk) {
+static s32 Check_Depth_to_Before(State_Other* ewk) {
     if (0 <= ewk->wu.mvxy.a[1].sp) {
         return 0;
     }
@@ -763,7 +763,7 @@ static s32 Check_Depth_to_Before(WORK_Other* ewk) {
     return 0;
 }
 
-static s32 Move_Y_Sub(WORK_Other* ewk, s16 Target_Y, u16 cut) {
+static s32 Move_Y_Sub(State_Other* ewk, s16 Target_Y, u16 cut) {
     ewk->wu.xyz[1].cal += ewk->wu.mvxy.a[1].sp * cut;
     ewk->wu.mvxy.a[1].sp += ewk->wu.mvxy.d[1].sp;
 

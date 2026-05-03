@@ -15,10 +15,10 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
 // forward decls
-void efff6_move_common(WORK_Other* ewk);
-void efff6_move01(WORK_Other* ewk);
+void efff6_move_common(State_Other* ewk);
+void efff6_move01(State_Other* ewk);
 
-void effect_F6_move(WORK_Other* ewk) {
+void effect_F6_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (ewk->wu.old_routine_no[1] <= op_w.index) {
@@ -37,7 +37,7 @@ void effect_F6_move(WORK_Other* ewk) {
     }
 }
 
-void efff6_move(WORK_Other* ewk) {
+void efff6_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -65,7 +65,7 @@ void efff6_move(WORK_Other* ewk) {
     }
 }
 
-void efff6_move_common(WORK_Other* ewk) {
+void efff6_move_common(State_Other* ewk) {
     s16 work;
 
     switch (ewk->wu.routine_no[3]) {
@@ -180,7 +180,7 @@ void efff6_move_common(WORK_Other* ewk) {
     }
 }
 
-void efff6_move01(WORK_Other* ewk) {
+void efff6_move01(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2] += 1;
@@ -216,7 +216,7 @@ void efff6_move01(WORK_Other* ewk) {
 }
 
 s32 effect_F6_init(u8 typenum) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
     const s16* data_ptr;
 
@@ -228,7 +228,7 @@ s32 effect_F6_init(u8 typenum) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     data_ptr = efff6_data_tbl00[typenum];
     ewk->wu.id = 0x9C;
     ewk->wu.be_flag = 1;

@@ -12,14 +12,14 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void eff41_process_00(WORK_Other* ewk, PLW* mwk);
-static void eff41_process_01(WORK_Other* ewk, PLW* mwk);
-static void gauge_minus(WORK_Other* ewk, PLW* mwk);
+static void eff41_process_00(State_Other* ewk, PLW* mwk);
+static void eff41_process_01(State_Other* ewk, PLW* mwk);
+static void gauge_minus(State_Other* ewk, PLW* mwk);
 
 const s16 sa_sign_data[69][5] = {
     { 28, 70, 156, 1, 1 },  { -41, 37, 156, 1, 1 },  { 12, 56, 156, 1, 1 },  { -14, 80, 156, 1, 1 },
@@ -44,7 +44,7 @@ const s16 sa_sign_data[69][5] = {
 
 void (*const eff41_main_process[2])() = { eff41_process_00, eff41_process_01 };
 
-void effect_41_move(WORK_Other* ewk) {
+void effect_41_move(State_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
@@ -107,7 +107,7 @@ void effect_41_move(WORK_Other* ewk) {
         break;
 
     case 2:
-        erase_my_shell_ix((WORK*)ewk->my_master, ewk->wu.myself);
+        erase_my_shell_ix((State*)ewk->my_master, ewk->wu.myself);
         ewk->wu.routine_no[0] = 3;
         break;
 
@@ -117,7 +117,7 @@ void effect_41_move(WORK_Other* ewk) {
     }
 }
 
-static void eff41_process_00(WORK_Other* ewk, PLW* mwk) {
+static void eff41_process_00(State_Other* ewk, PLW* mwk) {
     if (ewk->wu.cg_type == 1) {
         gauge_minus(ewk, mwk);
     }
@@ -133,7 +133,7 @@ static void eff41_process_00(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.position_y = mwk->wu.position_y + sa_sign_data[ewk->wu.type][1];
 }
 
-static void eff41_process_01(WORK_Other* ewk, PLW* mwk) {
+static void eff41_process_01(State_Other* ewk, PLW* mwk) {
     switch (ewk->wu.cg_type) {
     case 1:
         gauge_minus(ewk, mwk);
@@ -170,7 +170,7 @@ static void eff41_process_01(WORK_Other* ewk, PLW* mwk) {
     }
 }
 
-static void gauge_minus(WORK_Other* ewk, PLW* mwk) {
+static void gauge_minus(State_Other* ewk, PLW* mwk) {
     switch (sa_sign_data[ewk->wu.type][3]) {
     case 1:
         mwk->sa->saeff_ok = -1;
@@ -185,7 +185,7 @@ static void gauge_minus(WORK_Other* ewk, PLW* mwk) {
 }
 
 s32 effect_41_init(PLW* wk, u8 data) {
-    WORK_Other* ewk;
+    State_Other* ewk;
     s16 ix;
 
     if (g_state.test_flag) {
@@ -196,7 +196,7 @@ s32 effect_41_init(PLW* wk, u8 data) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     write_my_shell_ix(&wk->wu, ix);
     ewk->wu.be_flag = 1;
     ewk->wu.type = data;

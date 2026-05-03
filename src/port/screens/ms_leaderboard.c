@@ -32,7 +32,7 @@
 #include "sf33rd/Source/Game/effect/eff45.h"    /* effect_45_init, Message_Data */
 #include "sf33rd/Source/Game/effect/eff57.h"    /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/effect.h"   /* effect_work_init */
-#include "sf33rd/Source/Game/engine/workuser.h" /* g_state.Menu_Cursor_Y, g_state.Menu_Suicide, g_state.Order, g_state.Order_Dir, g_state.Order_Timer, g_state.plsw_00, g_state.plsw_01 */
+#include "sf33rd/Source/Game/engine/state_user.h" /* g_state.Menu_Cursor_Y, g_state.Menu_Suicide, g_state.Order, g_state.Order_Dir, g_state.Order_Timer, g_state.plsw_00, g_state.plsw_01 */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* AT_JMP_COUNT */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */

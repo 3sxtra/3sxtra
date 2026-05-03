@@ -14,8 +14,8 @@
 
 const s16 eff29_data_tbl[8] = { 687, 128, 82, 7, 415, 152, 79, 8 };
 
-void effect_54_move(WORK_Other* ewk) {
-    WORK_Other* oya = (WORK_Other*)ewk->my_master;
+void effect_54_move(State_Other* ewk) {
+    State_Other* oya = (State_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -30,8 +30,8 @@ void effect_54_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_54_init(WORK_Other* oya) {
-    WORK_Other* ewk;
+s32 effect_54_init(State_Other* oya) {
+    State_Other* ewk;
     s16 ix;
     s16 i;
     const s16* data_ptr = eff29_data_tbl;
@@ -41,7 +41,7 @@ s32 effect_54_init(WORK_Other* oya) {
             return -1;
         }
 
-        ewk = (WORK_Other*)frw[ix];
+        ewk = (State_Other*)frw[ix];
         ewk->wu.be_flag = 1;
         ewk->wu.id = 54;
         ewk->wu.work_id = 16;

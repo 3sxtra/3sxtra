@@ -22,13 +22,13 @@
 /* ─── Real game headers — all types come from here ─── */
 extern "C" {
 #include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
-#include "sf33rd/Source/Game/engine/cmb_win.h" /* CMST_BUFF, g_state.cmst_buff[2][5], g_state.cmb_stock[2], g_state.cst_read[2] */
-#include "sf33rd/Source/Game/engine/plcnt.h"    /* g_state.stun_state[2] (StunState), g_state.plw[2] */
-#include "sf33rd/Source/Game/engine/spgauge.h"  /* SPG_DAT, g_state.spg_dat[2] — SA gauge */
-#include "sf33rd/Source/Game/engine/workuser.h" /* PLW, g_state.Super_Arts, g_state.My_char, g_state.Win_Record, g_state.Max_vitality, g_state.Mode_Type … (pulls structs.h) */
+#include "sf33rd/Source/Game/engine/combo_window.h" /* CMST_BUFF, g_state.cmst_buff[2][5], g_state.cmb_stock[2], g_state.cst_read[2] */
+#include "sf33rd/Source/Game/engine/player_control.h"    /* g_state.stun_state[2] (StunState), g_state.plw[2] */
+#include "sf33rd/Source/Game/engine/super_gauge.h"  /* SPG_DAT, g_state.spg_dat[2] — SA gauge */
+#include "sf33rd/Source/Game/engine/state_user.h" /* PLW, g_state.Super_Arts, g_state.My_char, g_state.Win_Record, g_state.Max_vitality, g_state.Mode_Type … (pulls structs.h) */
 #include "sf33rd/Source/Game/training/training_state.h" /* g_training_state — combo stun */
 
-/* VIT and SDAT are defined in structs.h (pulled by workuser.h).
+/* VIT and SDAT are defined in structs.h (pulled by state_user.h).
    Declare the globals here since no header exposes them as externs. */
 
 /* Timer globals (declared in count.c, no public header) */
@@ -37,7 +37,7 @@ extern "C" {
 
 /* Round result arrays (declared in game_globals.c, used by flash_lp.c) */
 /* Values: 0=empty, 1=V, 3=P(erfect), 4=C(hip), 5=D(raw), 6=J(udgement), 7=S(A finish) */
-/* g_state.Score, g_state.Continue_Coin, g_state.Play_Type, g_state.win_type — all in workuser.h */
+/* g_state.Score, g_state.Continue_Coin, g_state.Play_Type, g_state.win_type — all in state_user.h */
 
 } // extern "C"
 

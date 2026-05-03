@@ -14,7 +14,7 @@
 #include "game_state.h"
 #include "constants.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "types.h"
 
 #include "port/I_System.h"

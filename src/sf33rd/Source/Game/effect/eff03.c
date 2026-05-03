@@ -10,10 +10,10 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-static void eff03_disp_pos(WORK* ewk, WORK* mwk);
+static void eff03_disp_pos(State* ewk, State* mwk);
 
 const PLEF plef_data[165] = { { 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 0 },       { 13, 0, -2, 0, 1, 0, 0, 1, 0, 0, 1 },
                               { 14, 2, 67, 1, 1, 32, 1, 1, 0, 0, 28 },    { -14, 2, 67, 1, 1, 32, 1, 1, 0, 0, 29 },
@@ -99,7 +99,7 @@ const PLEF plef_data[165] = { { 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 0 },       { 13, 
                               { 16, -4, -1, 0, 0, 32, 1, 1, 1, 0, 57 },   { -37, 4, -1, 0, 0, 32, 1, 1, 1, 0, 58 },
                               { 44, 1, -1, 0, 0, 32, 1, 1, 1, 0, 58 } };
 
-void effect_03_move(WORK_Other* ewk) {
+void effect_03_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
@@ -179,7 +179,7 @@ void effect_03_move(WORK_Other* ewk) {
             }
         }
 
-        eff03_disp_pos(&ewk->wu, (WORK*)ewk->my_master);
+        eff03_disp_pos(&ewk->wu, (State*)ewk->my_master);
         sort_push_request(&ewk->wu);
         break;
 
@@ -194,7 +194,7 @@ void effect_03_move(WORK_Other* ewk) {
     }
 }
 
-static void eff03_disp_pos(WORK* ewk, WORK* mwk) {
+static void eff03_disp_pos(State* ewk, State* mwk) {
     if (plef_data[ewk->type].ichi) {
         ewk->position_x = mwk->position_x + ewk->xyz[0].disp.pos;
         ewk->position_y = mwk->position_y + ewk->xyz[1].disp.pos;
@@ -206,15 +206,15 @@ static void eff03_disp_pos(WORK* ewk, WORK* mwk) {
     ewk->position_y = ewk->xyz[1].disp.pos;
 }
 
-s32 effect_03_init(WORK* wk, u8 data) {
-    WORK_Other* ewk;
+s32 effect_03_init(State* wk, u8 data) {
+    State_Other* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(3)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other*)frw[ix];
+    ewk = (State_Other*)frw[ix];
     ewk->wu.be_flag = 1;
     ewk->wu.id = 3;
     ewk->wu.work_id = 16;
@@ -230,8 +230,8 @@ s32 effect_03_init(WORK* wk, u8 data) {
         ewk->master_work_id = wk->work_id;
         ewk->master_id = wk->id;
     } else {
-        ewk->master_work_id = ((WORK_Other*)wk)->master_work_id;
-        ewk->master_id = ((WORK_Other*)wk)->master_id;
+        ewk->master_work_id = ((State_Other*)wk)->master_work_id;
+        ewk->master_id = ((State_Other*)wk)->master_id;
     }
 
     ewk->wu.xyz[0].disp.pos = wk->position_x;
