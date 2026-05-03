@@ -126,7 +126,16 @@ void SDLTextRendererGL_Shutdown() {
 void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale, float r, float g, float b,
                                 float target_width, float target_height) {
     glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_STENCIL_TEST);
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+    glDisable(GL_FRAMEBUFFER_SRGB);
 
     glUseProgram(s_text_shader);
 
@@ -138,6 +147,8 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
     glUniformMatrix4fv(s_text_loc_projection, 1, GL_FALSE, &projection[0][0]);
     glUniform3f(s_text_loc_textColor, r, g, b);
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindTexture(GL_TEXTURE_2D, s_font_atlas.texture_id);
     glBindVertexArray(s_text_vao);
 
@@ -320,7 +331,16 @@ void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale
 
     // --- ONE-TIME GL STATE SETUP ---
     glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_STENCIL_TEST);
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+    glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(s_text_shader);
 
     const float projection[4][4] = { { 2.0f / target_width, 0.0f, 0.0f, 0.0f },
@@ -328,6 +348,8 @@ void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale
                                      { 0.0f, 0.0f, -1.0f, 0.0f },
                                      { -1.0f, 1.0f, 0.0f, 1.0f } };
     glUniformMatrix4fv(s_text_loc_projection, 1, GL_FALSE, &projection[0][0]);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindTexture(GL_TEXTURE_2D, s_font_atlas.texture_id);
     glBindVertexArray(s_text_vao);
     glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);

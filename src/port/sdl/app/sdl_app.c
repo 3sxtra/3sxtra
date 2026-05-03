@@ -1721,6 +1721,9 @@ void SDLApp_EndFrame() {
         // Render overlays (menus, netplay, UI flush)
         render_overlays(win_w, win_h);
 
+        // Flush Text Renderer (draws buffered text like the Debug HUD)
+        SDLTextRenderer_Flush();
+
         // Final Output broadcast: capture the fully-composited frame
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_FINAL) {
             TRACE_SUB_BEGIN("GL:Broadcast");

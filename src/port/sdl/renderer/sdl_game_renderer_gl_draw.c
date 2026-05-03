@@ -238,7 +238,7 @@ void SDLGameRendererGL_RenderFrame(void) {
 
     // ⚡ Bolt: Enable depth testing for HD composition pass occlusion
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL); // Painter's algorithm guarantees last-drawn is front-most
+    glDepthFunc(GL_GEQUAL); // Painter's algorithm guarantees last-drawn is front-most
 
     RendererBlendMode current_applied_blend_mode = -1;
 
@@ -477,10 +477,11 @@ void SDLGameRendererGL_ExecutePass(int pass_index, int viewport_x, int viewport_
         glDrawElements(GL_TRIANGLES, batch_count * 6, GL_UNSIGNED_INT, (void*)offset_bytes);
     }
 
-    // Unbind Depth
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     TRACE_ZONE_END();
 }
