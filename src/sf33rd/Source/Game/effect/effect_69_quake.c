@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
 static void Setup_Clear_OBJ(State_Other* ewk);
@@ -27,7 +27,7 @@ void (*const EFF69_Jmp_Tbl[5])();
 void effect_69_move(State_Other* ewk) {
     EFF69_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag != 0) {
+    if (ewk->wu.active_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
         if (!rmlui_char_select_visible)
@@ -168,7 +168,7 @@ s32 effect_69_init(s16 dir_old) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 69;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
@@ -177,8 +177,8 @@ s32 effect_69_init(s16 dir_old) {
     ewk->wu.char_index = 16;
     ewk->wu.dir_step = dir_old + 2;
     ewk->wu.dir_old = dir_old;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.xyz[0].disp.pos = 800;
     ewk->wu.mvxy.a[0].sp = -0xF0000;
     ewk->wu.hit_quake = Pos_Data_69[dir_old][0] + 512;

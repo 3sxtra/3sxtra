@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_D9_move(State_Other* ewk);
-s32 effect_D9_init(PLW* wk, u8 data);
+s32 effect_D9_init(PlayerEntity* wk, u8 data);
 
 #endif

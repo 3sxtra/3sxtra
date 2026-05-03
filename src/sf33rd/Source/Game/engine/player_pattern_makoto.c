@@ -23,21 +23,21 @@ static s32 kabe_check(State* wk);
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl17_exatt_table[18])(PLW*);
+void (*const pl17_exatt_table[18])(PlayerEntity*);
 
 /** @brief Makoto: extra attack dispatcher. */
-void pl_makoto_extra_attack(PLW* wk) {
+void pl_makoto_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl17_exatt_table[idx](wk);
 }
 
 /** @brief Makoto: attack 1 (Tanden Renki / Hayate chain). */
-static void Att_PL17_AT1(PLW* wk) {
+static void Att_PL17_AT1(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         wk->scr_pos_set_flag = 0;
         reset_mvxy_data(&wk->wu);
         setup_mvxy_data(&wk->wu, wk->as->r_no);
@@ -166,7 +166,7 @@ static void Att_PL17_AT1(PLW* wk) {
                 wk->wu.routine_no[3] = 2;
                 wk->wu.xyz[0].disp.pos = get_center_position();
 
-                if (wk->wu.rl_flag) {
+                if (wk->wu.facing_flag) {
                     wk->wu.xyz[0].disp.pos -= 142;
                 } else {
                     wk->wu.xyz[0].disp.pos += 142;
@@ -190,7 +190,7 @@ static void set_kabe_move_spd(State* wk, s16 tm) {
 
     tar_pos = get_center_position();
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         tar_pos -= 192;
     } else {
         tar_pos += 192;
@@ -198,7 +198,7 @@ static void set_kabe_move_spd(State* wk, s16 tm) {
 
     cal_all_speed_data(wk, tm, tar_pos, wk->xyz[1].disp.pos + 120, 2, 2);
 
-    if (!wk->rl_flag) {
+    if (!wk->facing_flag) {
         wk->mvxy.a[0].sp = -wk->mvxy.a[0].sp;
         wk->mvxy.d[0].sp = -wk->mvxy.d[0].sp;
     }
@@ -216,7 +216,7 @@ static s32 kabe_check(State* wk) {
 
     tar_pos = get_center_position();
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         tar_pos -= 142;
 
         if (!(wk->xyz[0].disp.pos > tar_pos)) {
@@ -238,11 +238,11 @@ static s32 kabe_check(State* wk) {
 }
 
 /** @brief Makoto: attack 2 (Seichusen Godanzuki). */
-static void Att_PL17_AT2(PLW* wk) {
+static void Att_PL17_AT2(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -260,13 +260,13 @@ static void Att_PL17_AT2(PLW* wk) {
 }
 
 /** @brief Makoto: special action (tokushu koudou). */
-static void Att_PL17_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL17_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -304,8 +304,8 @@ static void Att_PL17_TOKUSHUKOUDOU(PLW* wk) {
         case 30:
             wk->wu.routine_no[3]++;
 
-            if (wk->tk_success < 3) {
-                wk->tk_success++;
+            if (wk->target_combo_success < 3) {
+                wk->target_combo_success++;
                 wk->py->recover = (wk->py->recover * 110) / 100;
             }
 
@@ -320,7 +320,7 @@ static void Att_PL17_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl17_exatt_table[18])(PLW*) = {
+void (*const pl17_exatt_table[18])(PlayerEntity*) = {
     Att_CHOUCHUURENGEKI, Att_PL17_AT1,     Att_HADOUKEN2,      Att_PL17_AT2, Att_KUUCHUUJINNCHUUWATARI,
     Att_DUMMY,           Att_DUMMY,        Att_DUMMY,          Att_DUMMY,    Att_DUMMY,
     Att_DUMMY,           Att_DUMMY,        Att_DUMMY,          Att_DUMMY,    Att_PL17_TOKUSHUKOUDOU,

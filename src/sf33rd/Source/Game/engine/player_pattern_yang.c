@@ -13,23 +13,23 @@
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl10_exatt_table[18])(PLW*);
+void (*const pl10_exatt_table[18])(PlayerEntity*);
 
 /** @brief Yang: extra attack dispatcher. */
-void pl_yang_extra_attack(PLW* wk) {
+void pl_yang_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl10_exatt_table[idx](wk);
 }
 
 /** @brief Yang: special action (tokushu koudou). */
-static void Att_PL10_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL10_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -67,13 +67,13 @@ static void Att_PL10_TOKUSHUKOUDOU(PLW* wk) {
 }
 
 /** @brief Yang: Mantis Slash 2 (mach slide variant). */
-static void Att_PL10_MACH_SLIDE2(PLW* wk) {
+static void Att_PL10_MACH_SLIDE2(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         force_grounded_state(wk);
-        wk->wu.rl_flag = wk->wu.active_move;
-        wk->rl_save = wk->wu.rl_flag;
+        wk->wu.facing_flag = wk->wu.active_move;
+        wk->rl_save = wk->wu.facing_flag;
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
@@ -131,7 +131,7 @@ static void Att_PL10_MACH_SLIDE2(PLW* wk) {
     }
 }
 
-void (*const pl10_exatt_table[18])(PLW*) = { Att_HADOUKEN,
+void (*const pl10_exatt_table[18])(PlayerEntity*) = { Att_HADOUKEN,
                                              Att_TENSHINSENKYUUTAI,
                                              Att_SLIDE_and_JUMP,
                                              Att_HADOUKEN,

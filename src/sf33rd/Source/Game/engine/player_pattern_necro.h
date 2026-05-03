@@ -4,6 +4,6 @@
 #include "structs.h"
 #include "types.h"
 
-void pl_necro_extra_attack(PLW* wk);
+void pl_necro_extra_attack(PlayerEntity* wk);
 
 #endif

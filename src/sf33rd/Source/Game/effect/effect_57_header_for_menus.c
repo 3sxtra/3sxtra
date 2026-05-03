@@ -27,7 +27,7 @@ void effect_57_move(State_Other* ewk) {
 
     EFF57_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag == 0) {
+    if (ewk->wu.active_flag == 0) {
         return;
     }
 
@@ -167,7 +167,7 @@ s32 effect_57_init(s16 dir_old, MenuHeader ID, s16 Target_BG, s16 char_ix, s16 o
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 57;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x1AC;
@@ -176,8 +176,8 @@ s32 effect_57_init(s16 dir_old, MenuHeader ID, s16 Target_BG, s16 char_ix, s16 o
     ewk->wu.dir_step = ID;
     ewk->wu.type = ID;
     ewk->wu.dir_old = dir_old;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.char_index = char_ix;
     ewk->master_priority = option;
 

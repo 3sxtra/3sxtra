@@ -41,7 +41,7 @@ void* flAllocMemory(s32 size) {
 }
 
 /** @brief Snapshot the current frame pointer for heap 0. */
-s32 flGetFrame(FMS_FRAME* frame) {
+s32 flGetFrame(FrameHeapSlot* frame) {
     return fmsGetFrame(&flFMS, 0, frame);
 }
 

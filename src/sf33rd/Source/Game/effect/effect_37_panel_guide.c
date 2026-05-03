@@ -41,7 +41,7 @@ void effect_37_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
@@ -89,16 +89,16 @@ s32 effect_37_init(State* wk, u8 gal, u8 ohen) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 37;
     ewk->wu.work_id = 16;
     ewk->wu.charset_id = gal;
     ewk->wu.type = ohen;
     ewk->my_master = wk;
-    ewk->wu.active_move = wk->rl_flag;
+    ewk->wu.active_move = wk->facing_flag;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_family = 2;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.position_z = wk->position_z - 1;
     ewk->wu.char_table[0] = _ag_face_panel_table;
     return 0;

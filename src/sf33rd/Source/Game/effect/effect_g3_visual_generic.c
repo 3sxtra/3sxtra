@@ -9,13 +9,13 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
 void effect_G3_move(State_Other* ewk) {
     State_Other* mwk;
-    PLW* pwk = (PLW*)ewk->wu.target_adrs;
+    PlayerEntity* pwk = (PlayerEntity*)ewk->wu.target_adrs;
     s16 adjust;
 
     switch (ewk->wu.routine_no[0]) {
@@ -31,7 +31,7 @@ void effect_G3_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f || g_state.Suicide[6] != 0) {
+        if (ewk->wu.death_timer || g_state.Suicide[6] != 0) {
             ewk->wu.routine_no[0] = 3;
             ewk->wu.disp_flag = 0;
             break;
@@ -40,7 +40,7 @@ void effect_G3_move(State_Other* ewk) {
         if (!ewk->wu.routine_no[1]) {
             mwk = (State_Other*)ewk->my_master;
 
-            if (mwk->wu.dead_f) {
+            if (mwk->wu.death_timer) {
                 ewk->wu.routine_no[0] = 3;
                 ewk->wu.disp_flag = 0;
                 break;
@@ -56,11 +56,11 @@ void effect_G3_move(State_Other* ewk) {
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             if (!ewk->wu.routine_no[1]) {
                 adjust = 80;
 
-                if (ewk->wu.rl_flag) {
+                if (ewk->wu.facing_flag) {
                     adjust = -adjust;
                 }
 
@@ -91,11 +91,11 @@ s32 effect_G3_init(State* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.type = data;
     ewk->wu.id = 163;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.my_family = wk->my_family;
     ewk->wu.graphic_rom_type = 1;
     ewk->my_master = wk;
@@ -103,7 +103,7 @@ s32 effect_G3_init(State* wk, u8 data) {
     ewk->master_id = wk->id;
     ewk2 = (State_Other*)wk;
     ewk->wu.target_adrs = ewk2->my_master;
-    ewk->wu.rl_flag = data;
+    ewk->wu.facing_flag = data;
     *ewk->wu.char_table = _effD4_char_table;
     return 0;
 }

@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/target_subroutines.h"
 #include "structs.h"
@@ -188,15 +188,15 @@ s32 effect_B3_init(State_Other* oya) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0x71;
     ewk->wu.work_id = 0x10;
     ewk->my_master = oya;
     ewk->wu.my_family = 4;
     ewk->wu.my_col_code = 0x52;
     ewk->wu.my_priority = ewk->wu.position_z = 10;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.xyz[1].cal = 0x780000;
     ewk->wu.xyz[0].disp.low = 0;
     *ewk->wu.char_table = _etc_char_table;

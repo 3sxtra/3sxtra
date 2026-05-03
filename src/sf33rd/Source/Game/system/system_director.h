@@ -75,7 +75,7 @@ extern const s16 guard_distance[4];
 extern const s16 sa_gauge_omake[4];
 extern const s16 stun_gauge_omake[4];
 extern const s16 stun_gauge_r_omake[4];
-extern const s16 stun_gauge_len_omake[5];
+extern const s16 stun_gauge_length_omake[5];
 extern const s16 blok_b_omake[4];
 extern const s16 blok_r_omake[4];
 extern const s16 sag_stock_omake[11];
@@ -100,7 +100,7 @@ extern s16 omop_r_block_ix[2];
 extern s16 omop_b_block_ix[2];
 
 extern s16 omop_otedama_ix[2];
-extern s16 omop_stun_gauge_len[2];
+extern s16 omop_stun_gauge_length[2];
 extern s16 omop_stun_gauge_rcv[2];
 extern s16 omop_stun_gauge_add[2];
 extern s16 omop_sa_gauge_ix[2];

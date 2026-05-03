@@ -9,7 +9,7 @@
 #include "sf33rd/Source/Game/effect/effect_72_visual_generic.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/target_subroutines.h"
@@ -25,7 +25,7 @@ void effect_71_move(State_Other* ewk) {
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
+        if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] <= 0) {
@@ -40,7 +40,7 @@ void effect_71_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
+        if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             ewk->wu.routine_no[0] = 0;
             ewk->wu.old_routine_no[1] = 0;
             work = random_16();
@@ -70,11 +70,11 @@ s32 effect_71_init() {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 71;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.disp_flag = 0;
     ewk->wu.old_routine_no[0] = 0;
     return 0;

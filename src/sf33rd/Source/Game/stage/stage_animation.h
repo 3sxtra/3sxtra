@@ -3,6 +3,6 @@
 
 #include "types.h"
 
-void TATE00();
+void stage_animate();
 
 #endif

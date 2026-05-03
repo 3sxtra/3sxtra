@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -39,7 +39,7 @@ void effect_L2_move(State_Other* ewk) {
                     set_char_move_init(&ewk->wu, 0, 1);
                 }
             }
-        } else if (!g_state.EXE_flag && !g_state.Game_pause) {
+        } else if (!g_state.execute_flag && !g_state.Game_pause) {
             effl2_dir_check(ewk);
         }
 
@@ -107,7 +107,7 @@ s32 effect_L2_init() {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 212;
     ewk->wu.work_id = 16;
     ewk->master_id = oya_id;
@@ -116,8 +116,8 @@ s32 effect_L2_init() {
     ewk->wu.my_family = 2;
     ewk->my_master = &g_state.plw[oya_id];
     ewk->wu.my_col_mode = 0x4200;
-    ewk->wu.my_mts = 7;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 7;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     if (oya_id) {
         ewk->wu.my_col_code = 0x2016;

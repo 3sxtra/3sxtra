@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
 
-void effect_67_move(WORK_Other_CONN* ewk) {
+void effect_67_move(EffectMultiSprite* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         switch (ewk->wu.routine_no[1]) {
@@ -159,15 +159,15 @@ void effect_67_move(WORK_Other_CONN* ewk) {
 }
 
 s32 effect_67_init(s16 id, s16 X, s16 Y, s16 time0, s16 Char_Index, s16 Priority, s16 no, s16 col) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 67;
     ewk->wu.work_id = 16;
 
@@ -177,8 +177,8 @@ s32 effect_67_init(s16 id, s16 X, s16 Y, s16 time0, s16 Char_Index, s16 Priority
         ewk->wu.my_col_code = 0x6A;
     }
 
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.my_family = 1;
     ewk->wu.position_z = Priority;
     ewk->wu.dir_timer = time0;

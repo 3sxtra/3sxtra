@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 static void EFF66_WAIT(State_Other* ewk);
@@ -53,7 +53,7 @@ void effect_66_move(State_Other* ewk) {
     Check_Pos_OBJ(ewk);
     EFF66_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag == 0) {
+    if (ewk->wu.active_flag == 0) {
         return;
     }
 
@@ -251,7 +251,7 @@ s32 effect_66_init(s16 order_index, s16 id, s16 master_player, s16 target_bg, s1
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 66;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x1AC;
@@ -264,8 +264,8 @@ s32 effect_66_init(s16 order_index, s16 id, s16 master_player, s16 target_bg, s1
     ewk->master_player = master_player;
     ewk->wu.char_index = char_ix;
     ewk->master_priority = option;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     switch (option) {
     case 1:

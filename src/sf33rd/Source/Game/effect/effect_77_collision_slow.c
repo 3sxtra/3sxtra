@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -43,7 +43,7 @@ void effect_77_move(State_Other* ewk) {
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (g_state.Game_pause || g_state.EXE_flag) {
+        if (g_state.Game_pause || g_state.execute_flag) {
             break;
         }
 
@@ -58,7 +58,7 @@ void effect_77_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (g_state.Game_pause || g_state.EXE_flag) {
+        if (g_state.Game_pause || g_state.execute_flag) {
             break;
         }
 
@@ -79,7 +79,7 @@ void effect_77_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (g_state.Game_pause || g_state.EXE_flag) {
+        if (g_state.Game_pause || g_state.execute_flag) {
             overwrite_panel(eff77_col_tbl[ewk->wu.old_routine_no[1]], 0x46);
             break;
         }
@@ -102,7 +102,7 @@ void effect_77_move(State_Other* ewk) {
             ewk->wu.old_routine_no[0] = 0;
         }
 
-        if (!g_state.Game_pause && !g_state.EXE_flag) {
+        if (!g_state.Game_pause && !g_state.execute_flag) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] <= 0) {
@@ -116,7 +116,7 @@ void effect_77_move(State_Other* ewk) {
 
                 for (i = 0; i < 4; i++, assign3 = mask *= 2) {
                     if (bg & mask) {
-                        Bg_On_R(1 << i);
+                        bg_enable_render(1 << i);
                     }
                 }
 
@@ -130,7 +130,7 @@ void effect_77_move(State_Other* ewk) {
         break;
 
     case 4:
-        if (g_state.Game_pause || g_state.EXE_flag) {
+        if (g_state.Game_pause || g_state.execute_flag) {
             break;
         }
 
@@ -143,7 +143,7 @@ void effect_77_move(State_Other* ewk) {
         break;
 
     default:
-        if (!g_state.Game_pause && !g_state.EXE_flag) {
+        if (!g_state.Game_pause && !g_state.execute_flag) {
             g_state.sa_pa_flag = 0;
             all_cgps_put_back(&ewk->wu);
             Release_Effect(&ewk->wu);
@@ -164,7 +164,7 @@ s32 effect_77_init(u8 /* unused */, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 77;
     ewk->wu.type = data;
     g_state.another_bg[0] = g_state.another_bg[1] = 0;

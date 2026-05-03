@@ -17,9 +17,9 @@
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
@@ -42,13 +42,13 @@ const s16 X_F_L_A_T_pos_hos[1][20][2];
 
 void effect_13_move(State_Other* ewk) {
     TAMA* tama = (TAMA*)ewk->wu.my_effadrs;
-    PLW* mwk;
-    PLW* emwk;
+    PlayerEntity* mwk;
+    PlayerEntity* emwk;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        ewk->wu.my_mts = 14;
+        ewk->wu.my_sprite_sheet = 14;
         ewk->wu.charset_id = 11;
         set_char_base_data(&ewk->wu);
         ewk->wu.hf.hit_flag = 0;
@@ -88,10 +88,10 @@ void effect_13_move(State_Other* ewk) {
         if (tama->kind_of_tama == 2) {
             set_tengu_init_pos(&ewk->wu, (State*)ewk->my_master);
             ewk->wu.disp_flag = 0;
-            ewk->wu.dir_old = ((PLW*)ewk->my_master)->sa->id_arts;
+            ewk->wu.dir_old = ((PlayerEntity*)ewk->my_master)->sa->super_art_id;
             set_char_move_init2(&ewk->wu, 0, tama->chix, random_16() & 7, 0);
         } else if (tama->kind_of_tama == 0xF) {
-            mwk = (PLW*)ewk->my_master;
+            mwk = (PlayerEntity*)ewk->my_master;
 
             if (tama->data01) {
                 ewk->wu.mvxy.a[0].sp = mwk->wu.mvxy.a[0].sp;
@@ -100,20 +100,20 @@ void effect_13_move(State_Other* ewk) {
                 ewk->wu.mvxy.d[1].sp = mwk->wu.mvxy.d[1].sp;
                 ewk->wu.mvxy.physics_curve_type[1] = 0;
             } else {
-                emwk = (PLW*)mwk->wu.target_adrs;
+                emwk = (PlayerEntity*)mwk->wu.target_adrs;
                 ewk->wu.xyz[0].disp.pos = tama->hos_x;
                 ewk->wu.xyz[0].disp.pos += emwk->wu.xyz[0].disp.pos;
                 ewk->wu.xyz[0].disp.pos += X_F_L_A_T_pos_hos[0][emwk->player_number][0];
                 ewk->wu.xyz[1].disp.pos = tama->hos_y;
                 ewk->wu.xyz[1].disp.pos += emwk->wu.xyz[1].disp.pos;
                 ewk->wu.xyz[1].disp.pos += X_F_L_A_T_pos_hos[0][emwk->player_number][1];
-                ewk->wu.rl_flag = ewk->wu.xyz[0].disp.pos > emwk->wu.xyz[0].disp.pos ? 0 : 1;
+                ewk->wu.facing_flag = ewk->wu.xyz[0].disp.pos > emwk->wu.xyz[0].disp.pos ? 0 : 1;
                 setup_mvxy_data(&ewk->wu, tama->data00);
             }
 
             set_char_move_init(&ewk->wu, 0, tama->chix);
         } else {
-            if (ewk->wu.rl_flag) {
+            if (ewk->wu.facing_flag) {
                 ewk->wu.xyz[0].disp.pos -= tama->hos_x;
             } else {
                 ewk->wu.xyz[0].disp.pos += tama->hos_x;
@@ -138,7 +138,7 @@ void effect_13_move(State_Other* ewk) {
         }
 
         if (tama->kind_of_tama == 10) {
-            ewk->wu.rl_flag = ((State*)ewk->my_master)->active_move;
+            ewk->wu.facing_flag = ((State*)ewk->my_master)->active_move;
         }
 
         tama_display(&ewk->wu);
@@ -146,7 +146,7 @@ void effect_13_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[6] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[6] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -156,7 +156,7 @@ void effect_13_move(State_Other* ewk) {
             ewk->wu.hit_stop = -ewk->wu.hit_stop;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             kind_of_tama_process[tama->kind_of_tama](ewk, tama);
         }
 
@@ -183,7 +183,7 @@ void effect_13_move(State_Other* ewk) {
 }
 
 static void tama_display(State* wk) {
-    set_quake((PLW*)wk);
+    set_quake((PlayerEntity*)wk);
     wk->position_x = wk->xyz[0].disp.pos + wk->next_x;
     wk->position_y = wk->xyz[1].disp.pos;
     sort_push_request(wk);
@@ -280,7 +280,7 @@ static s32 tama15_screen_check(State* wk) {
 static void set_tengu_init_pos(State* ewk, State* mwk) {
     s16 scp = get_center_position();
 
-    if (mwk->rl_flag) {
+    if (mwk->facing_flag) {
         scp -= 320;
     } else {
         scp += 320;
@@ -374,10 +374,10 @@ static void kotp_00000(State_Other* ewk, TAMA* twk) {
                 effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
-            if (ewk->dm_refrect) {
+            if (ewk->damage_reflect) {
                 ewk->master_id = (ewk->master_id + 1) & 1;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
-                ewk->dm_refrect = 0;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
+                ewk->damage_reflect = 0;
             }
         }
 
@@ -465,7 +465,7 @@ static void kotp_01000(State_Other* ewk, TAMA* twk) {
 }
 
 static void kotp_02000(State_Other* ewk, TAMA* twk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
@@ -506,7 +506,7 @@ static void kotp_02000(State_Other* ewk, TAMA* twk) {
         case 2:
             ewk->wu.position_z = mwk->wu.position_z + ewk->wu.old_pos[2];
 
-            if (mwk->sa->ok != -1 || ewk->wu.dir_old != mwk->sa->id_arts) {
+            if (mwk->sa->can_activate != -1 || ewk->wu.dir_old != mwk->sa->super_art_id) {
                 ewk->wu.routine_no[1] = 2;
                 ewk->wu.routine_no[2] = 0;
                 ewk->wu.anim_hurtbox_index = 0;
@@ -592,8 +592,8 @@ static void set_tengu_my_home(State* ewk, State* mwk) {
         ewk->damage_calc_multiplier = mwk->xyz[0].disp.pos + ewk->old_pos[0];
         ewk->damage_calc_divider = mwk->xyz[1].disp.pos + ewk->old_pos[1];
     } else {
-        ewk->damage_calc_multiplier = mwk->xyz[0].disp.pos + ewk->scr_mv_x;
-        ewk->damage_calc_divider = mwk->xyz[1].disp.pos + ewk->scr_mv_y;
+        ewk->damage_calc_multiplier = mwk->xyz[0].disp.pos + ewk->screen_move_x;
+        ewk->damage_calc_divider = mwk->xyz[1].disp.pos + ewk->screen_move_y;
     }
 
     ewk->dir_step = cal_move_quantity2(ewk->xyz[0].disp.pos, ewk->xyz[1].disp.pos, ewk->damage_calc_multiplier, ewk->damage_calc_divider);
@@ -606,7 +606,7 @@ static s32 check_tengu_attack(State* ewk, State* mwk, TAMA* twk) {
 
     ewk->routine_no[2] = 3;
     ewk->att_hit_ok = 1;
-    ewk->rl_flag = mwk->rl_flag;
+    ewk->facing_flag = mwk->facing_flag;
     ewk->dir_timer = twk->life_time;
     grade_add_att_renew((State_Other*)ewk);
 
@@ -852,15 +852,15 @@ static void kotp_05000(State_Other* ewk, TAMA* twk) {
 }
 
 static void kotp_06000(State_Other* ewk, TAMA* twk) {
-    PLW* mwk;
-    PLW* emwk;
+    PlayerEntity* mwk;
+    PlayerEntity* emwk;
     s16 dir;
     s16 emdir;
     s16* target_x;
     s16* target_y;
 
-    mwk = (PLW*)ewk->my_master;
-    emwk = (PLW*)mwk->wu.target_adrs;
+    mwk = (PlayerEntity*)ewk->my_master;
+    emwk = (PlayerEntity*)mwk->wu.target_adrs;
     target_x = &ewk->wu.effect_e3_index;
     target_y = &ewk->wu.effect_e4_index;
 
@@ -879,7 +879,7 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
         case 0:
             ewk->wu.routine_no[3]++;
             ewk->wu.is_taking_chip_damage = 6;
-            ewk->wu.direction = ewk->wu.rl_flag ? twk->data01 : 256 - twk->data01 & 0xFF;
+            ewk->wu.direction = ewk->wu.facing_flag ? twk->data01 : 256 - twk->data01 & 0xFF;
             effect_I9_init(ewk, 2, 3, 0x77);
             break;
 
@@ -894,14 +894,14 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
 
         case 2:
             *target_x = homing_empos_hos[0][ewk->master_player][0];
-            *target_x = mwk->wu.rl_flag ? emwk->wu.xyz[0].disp.pos - *target_x : emwk->wu.xyz[0].disp.pos + *target_x;
+            *target_x = mwk->wu.facing_flag ? emwk->wu.xyz[0].disp.pos - *target_x : emwk->wu.xyz[0].disp.pos + *target_x;
             *target_y = homing_empos_hos[0][ewk->master_player][1] + emwk->wu.xyz[1].disp.pos;
             dir = ewk->wu.direction;
             emdir = caldir_pos_256(ewk->wu.xyz[0].disp.pos, ewk->wu.xyz[1].disp.pos, *target_x, *target_y);
             dir += (emdir - (dir - 0x80) & 0xFF) > 0x80 ? 4 : -4;
             dir = dir & 0xFF;
             ewk->wu.mvxy.a[0].sp = (rate_256_table[dir][0] * 480) / 256;
-            ewk->wu.mvxy.a[0].sp *= ewk->wu.rl_flag ? 1 : -1;
+            ewk->wu.mvxy.a[0].sp *= ewk->wu.facing_flag ? 1 : -1;
             ewk->wu.mvxy.a[1].sp = (rate_256_table[dir][1] * 512) / 256;
             ewk->wu.direction = dir;
 
@@ -1002,8 +1002,8 @@ static void kotp_06000(State_Other* ewk, TAMA* twk) {
 static void kotp_07000(State_Other* ewk, TAMA* twk) {
     State* awk;
     s16 dsst;
-    PLW* mwk;
-    PLW* emwk;
+    PlayerEntity* mwk;
+    PlayerEntity* emwk;
     s16 tama_x;
 
     if (ewk->wu.hf.hit_flag) {
@@ -1029,16 +1029,16 @@ static void kotp_07000(State_Other* ewk, TAMA* twk) {
             setup_mvxy_data(&ewk->wu, ewk->wu.mvxy.index);
             ewk->wu.mvxy.index++;
             ewk->wu.cg_type = 0;
-            mwk = (PLW*)ewk->my_master;
-            emwk = (PLW*)mwk->wu.target_adrs;
+            mwk = (PlayerEntity*)ewk->my_master;
+            emwk = (PlayerEntity*)mwk->wu.target_adrs;
             tama_x = ewk->wu.xyz[0].disp.pos;
 
             if (tama_x > emwk->wu.xyz[0].disp.pos) {
-                ewk->wu.mvxy.a[0].sp *= ewk->wu.rl_flag ? -1 : 1;
-                ewk->wu.mvxy.d[0].sp *= ewk->wu.rl_flag ? -1 : 1;
+                ewk->wu.mvxy.a[0].sp *= ewk->wu.facing_flag ? -1 : 1;
+                ewk->wu.mvxy.d[0].sp *= ewk->wu.facing_flag ? -1 : 1;
             } else {
-                ewk->wu.mvxy.a[0].sp *= ewk->wu.rl_flag ? 1 : -1;
-                ewk->wu.mvxy.d[0].sp *= ewk->wu.rl_flag ? 1 : -1;
+                ewk->wu.mvxy.a[0].sp *= ewk->wu.facing_flag ? 1 : -1;
+                ewk->wu.mvxy.d[0].sp *= ewk->wu.facing_flag ? 1 : -1;
             }
         }
 
@@ -1098,10 +1098,10 @@ static void kotp_07000(State_Other* ewk, TAMA* twk) {
                 effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
-            if (ewk->dm_refrect) {
+            if (ewk->damage_reflect) {
                 ewk->master_id = (ewk->master_id + 1) & 1;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
-                ewk->dm_refrect = 0;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
+                ewk->damage_reflect = 0;
             }
         }
 
@@ -1198,7 +1198,7 @@ static void kotp_08000(State_Other* ewk, TAMA* twk) {
                 } else {
                     effect_96_init(&ewk->wu, twk->erht, ewk->wu.disp_flag, ewk->wu.hit_stop);
                 }
-            } else if (ewk->dm_refrect) {
+            } else if (ewk->damage_reflect) {
                 effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
             } else {
                 set_char_move_init(&ewk->wu, 0, twk->erex);
@@ -1208,10 +1208,10 @@ static void kotp_08000(State_Other* ewk, TAMA* twk) {
                 ewk->wu.hit_stop = 0;
             }
 
-            if (ewk->dm_refrect) {
+            if (ewk->damage_reflect) {
                 ewk->master_id = (ewk->master_id + 1) & 1;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
-                ewk->dm_refrect = 0;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
+                ewk->damage_reflect = 0;
             }
         }
 
@@ -1322,10 +1322,10 @@ static void kotp_09000(State_Other* ewk, TAMA* twk) {
                 effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
-            if (ewk->dm_refrect) {
+            if (ewk->damage_reflect) {
                 ewk->master_id = (ewk->master_id + 1) & 1;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag) + 1 & 1;
-                ewk->dm_refrect = 0;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag) + 1 & 1;
+                ewk->damage_reflect = 0;
             }
         }
 
@@ -1365,7 +1365,7 @@ static void kotp_10000(State_Other* ewk, TAMA* twk) {
 }
 
 static void kotp_11000(State_Other* ewk, TAMA* twk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -1502,10 +1502,10 @@ static void kotp_12000(State_Other* ewk, TAMA* twk) {
                 effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
-            if (ewk->dm_refrect) {
+            if (ewk->damage_reflect) {
                 ewk->master_id = (ewk->master_id + 1) & 1;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
-                ewk->dm_refrect = 0;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
+                ewk->damage_reflect = 0;
             }
         }
 
@@ -1536,15 +1536,15 @@ static void kotp_12000(State_Other* ewk, TAMA* twk) {
 }
 
 static void kotp_13000(State_Other* ewk, TAMA* twk) {
-    PLW* mwk;
-    PLW* emwk;
+    PlayerEntity* mwk;
+    PlayerEntity* emwk;
     s16 ipos_x;
 
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
     }
 
-    mwk = (PLW*)ewk->my_master;
+    mwk = (PlayerEntity*)ewk->my_master;
 
     if (mwk->wu.routine_no[1] != 4) {
         ewk->wu.routine_no[0] = 2;
@@ -1564,11 +1564,11 @@ static void kotp_13000(State_Other* ewk, TAMA* twk) {
             ewk->wu.routine_no[3]++;
 
             if (twk->data00) {
-                mwk = (PLW*)ewk->my_master;
-                emwk = (PLW*)mwk->wu.target_adrs;
+                mwk = (PlayerEntity*)ewk->my_master;
+                emwk = (PlayerEntity*)mwk->wu.target_adrs;
                 ipos_x = enemy_pos_hos[0][emwk->player_number][0];
                 ewk->wu.xyz[0].disp.pos =
-                    emwk->wu.rl_flag ? emwk->wu.xyz[0].disp.pos + ipos_x : emwk->wu.xyz[0].disp.pos - ipos_x;
+                    emwk->wu.facing_flag ? emwk->wu.xyz[0].disp.pos + ipos_x : emwk->wu.xyz[0].disp.pos - ipos_x;
             }
         }
 
@@ -1726,7 +1726,7 @@ static void kotp_16000(State_Other* ewk, TAMA* twk) {
         } else {
             add_mvxy_speed(&ewk->wu);
 
-            if (ewk->wu.rl_flag) {
+            if (ewk->wu.facing_flag) {
                 ewk->wu.xyz[0].cal += 0x38000;
             } else {
                 ewk->wu.xyz[0].cal += -0x38000;
@@ -1796,10 +1796,10 @@ static void kotp_16000(State_Other* ewk, TAMA* twk) {
                 effect_96_init(&ewk->wu, twk->erex, ewk->wu.disp_flag, ewk->wu.hit_stop);
             }
 
-            if (ewk->dm_refrect) {
+            if (ewk->damage_reflect) {
                 ewk->master_id = (ewk->master_id + 1) & 1;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
-                ewk->dm_refrect = 0;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
+                ewk->damage_reflect = 0;
             }
         }
 
@@ -1840,15 +1840,15 @@ s32 effect_13_init(State* wk, u8 data) {
     ewk = (State_Other*)frw[ix];
     write_my_shell_ix(wk, ix);
 
-    if (wk->work_id == 1 && wk->rl_flag == 1 && ((PLW*)wk)->player_number == 0) {
+    if (wk->work_id == 1 && wk->facing_flag == 1 && ((PlayerEntity*)wk)->player_number == 0) {
         data++;
     }
 
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 13;
     ewk->wu.type = data;
     ewk->wu.pl_operator = wk->pl_operator;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.facing_flag = wk->facing_flag;
     ewk->wu.my_family = wk->my_family;
     ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_col_mode = wk->my_col_mode;
@@ -1858,12 +1858,12 @@ s32 effect_13_init(State* wk, u8 data) {
     ewk->my_master = wk;
 
     if (wk->work_id == 1) {
-        ewk->master_player = ((PLW*)wk)->player_number;
+        ewk->master_player = ((PlayerEntity*)wk)->player_number;
         ewk->master_id = wk->id;
         ewk->master_work_id = wk->work_id;
-        ewk->wu.olc_work_ix[0] = ((PLW*)wk)->strike_scaling;
-        ewk->wu.olc_work_ix[1] = ((PLW*)wk)->throw_scaling;
-        ewk->wu.olc_work_ix[2] = ((PLW*)wk)->stun_scaling;
+        ewk->wu.olc_work_ix[0] = ((PlayerEntity*)wk)->strike_scaling;
+        ewk->wu.olc_work_ix[1] = ((PlayerEntity*)wk)->throw_scaling;
+        ewk->wu.olc_work_ix[2] = ((PlayerEntity*)wk)->stun_scaling;
         ewk->wu.olc_work_ix[3] = wk->routine_no[1];
     } else {
         ewk->master_player = ((State_Other*)wk)->master_player;
@@ -1876,7 +1876,7 @@ s32 effect_13_init(State* wk, u8 data) {
     ewk->wu.my_effadrs = &tama_data[data];
 
     if (wk->work_id == 1) {
-        ewk->wu.floor = ((PLW*)wk)->metamorphose;
+        ewk->wu.floor = ((PlayerEntity*)wk)->metamorphose;
     }
 
     return 0;

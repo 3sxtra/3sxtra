@@ -13,8 +13,8 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
-#include "sf33rd/Source/Game/screen/sel_pl.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
+#include "sf33rd/Source/Game/screen/character_select_player.h"
 #include "structs.h"
 
 // Forward decls
@@ -135,7 +135,7 @@ s32 effect_D8_init(s16 PL_id, s16 Type) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0x8A;
     ewk->wu.work_id = 0x10;
     ewk->wu.my_col_code = 0x90;
@@ -148,8 +148,8 @@ s32 effect_D8_init(s16 PL_id, s16 Type) {
     ewk->wu.position_z = D8_Priority_Data[Type];
     ewk->wu.direction = Type;
     ewk->wu.hit_quake = 0;
-    ewk->wu.my_mts = 0xD;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 0xD;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     offset_x = Setup_Face_Offset_X(Play_Type_1st);
     Setup_EffD8_Pos(ewk, offset_x);
     return 0;

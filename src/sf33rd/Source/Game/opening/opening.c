@@ -3,7 +3,7 @@
  * @brief Opening cinematic core — state machine, init, title screen, and shared helpers.
  *
  * Top-level entry points for the opening sequence: the `opening_demo()` state
- * machine, `TITLE_Init/Move`, `OPBG_Init/Move`, sound-trigger sync, tile-map
+ * machine, `TITLE_Init/Move`, `opening_bg_init/Move`, sound-trigger sync, tile-map
  * helpers (`oh_bg_blk_*`), and shared init routines.
  *
  * Scene handlers live in opening_scenes.c; BG layer dispatch in opening_bg.c.
@@ -37,13 +37,13 @@
 #include "sf33rd/Source/Game/effect/effect_f5_visual_generic.h"
 #include "sf33rd/Source/Game/effect/effect_f6_move_data_table.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/rendering/rendering_transform.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
@@ -77,7 +77,7 @@ OPBW* opw_ptr;
 s16 op_end_flag;
 s16 op_demo_index;
 s16 op_sound_status;
-MVXY op_bg_mvxy[3];
+MovementVector op_bg_mvxy[3];
 OP_W op_w;
 
 /** @brief Top-level opening demo state machine (BG init → scroll → title). */
@@ -95,7 +95,7 @@ s16 opening_demo() {
     switch (g_state.demo_phase[3]) {
     case 0:
         g_state.demo_phase[3] += 1;
-        OPBG_Init();
+        opening_bg_init();
         break;
 
     case 1:
@@ -236,13 +236,13 @@ s16 TITLE_Move(u16 type) {
 }
 
 /** @brief Load opening BG textures and initialise the cinematic sequence. */
-void OPBG_Init() {
+void opening_bg_init() {
     void* loadAdrs;
     size_t loadSize;
     s16 i;
     s16 key;
 
-    printf("[BOOT] OPBG_Init: START\n");
+    printf("[BOOT] opening_bg_init: START\n");
     mmDebWriteTag("\nOPENING\n\n");
     ppgOpnBgList.tex = &ppgOpnBgTex;
     ppgOpnBgList.pal = palGetChunkGhostCP3();
@@ -250,33 +250,33 @@ void OPBG_Init() {
 
     if ((key = Search_ramcnt_type(0x1D)) == 0) {
         // Opening demo texture has not been loaded.
-        printf("[BOOT] OPBG_Init: Search_ramcnt_type(0x1D) FAILED — no opening texture\n");
+        printf("[BOOT] opening_bg_init: Search_ramcnt_type(0x1D) FAILED — no opening texture\n");
         flLogOut("オープニングデモテクスチャが読み込まれていません。\n");
         return;
     }
 
     loadSize = Get_size_data_ramcnt_key(key);
     loadAdrs = (void*)Get_ramcnt_address(key);
-    printf("[BOOT] OPBG_Init: key=%d, loadAdrs=%p, loadSize=%u\n", key, loadAdrs, (unsigned)loadSize);
+    printf("[BOOT] opening_bg_init: key=%d, loadAdrs=%p, loadSize=%u\n", key, loadAdrs, (unsigned)loadSize);
     PPG_SetupTexturePrimary(NULL, loadAdrs, loadSize, 602, 91, 0, 0);
-    printf("[BOOT] OPBG_Init: PPG_SetupTexturePrimary done, textures=%d\n", ppgOpnBgTex.textures);
+    printf("[BOOT] opening_bg_init: PPG_SetupTexturePrimary done, textures=%d\n", ppgOpnBgTex.textures);
 
     for (i = 0; i < ppgOpnBgTex.textures; i++) {
         PPG_SetupTextureSecondary(NULL, i + 602);
         PPG_SetupTextureTertiary(NULL, i + 602, 1);
     }
-    printf("[BOOT] OPBG_Init: all tex chunks done\n");
+    printf("[BOOT] opening_bg_init: all tex chunks done\n");
 
     g_state.Opening_Now = 1;
-    printf("[BOOT] OPBG_Init: calling Allocate_Texture_Cache(9)\n");
+    printf("[BOOT] opening_bg_init: calling Allocate_Texture_Cache(9)\n");
     Allocate_Texture_Cache(9);
-    printf("[BOOT] OPBG_Init: calling mlt_obj_melt2\n");
+    printf("[BOOT] opening_bg_init: calling mlt_obj_melt2\n");
     mlt_obj_melt2(&mts[9], 0x8C40);
-    printf("[BOOT] OPBG_Init: calling sound_trg_init + opening_init\n");
+    printf("[BOOT] opening_bg_init: calling sound_trg_init + opening_init\n");
     sound_trg_init();
     opening_init();
     Zoom_Value_Set(0x40);
-    printf("[BOOT] OPBG_Init: COMPLETE\n");
+    printf("[BOOT] opening_bg_init: COMPLETE\n");
 }
 
 /** @brief Tick the opening BG demo and render the scrolling layers. */
@@ -284,7 +284,7 @@ s16 OPBG_Move(s32 unused1) {
     s16 flag = 0;
 
     flag = oh_opening_demo();
-    OPBG_Trans();
+    opening_bg_transform();
     return flag;
 }
 
@@ -339,7 +339,7 @@ void sound_trg_move() {
 }
 
 /** @brief Render all visible opening BG layers and optional debug overlay. */
-void OPBG_Trans() {
+void opening_bg_transform() {
     s16 i;
     s16 j;
     s16 k;
@@ -402,7 +402,7 @@ static void oh_reload_tex(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy) {
             ppgReleaseTextureHandle(&ppgOpnBgTex, opbw->map[mapx][mapy].g_no);
         }
 
-        opbw->map[mapx][mapy].ok = 1;
+        opbw->map[mapx][mapy].can_activate = 1;
     }
 }
 
@@ -466,7 +466,7 @@ void opening_init() {
         for (j = 0; j < 4; j++) {
             for (k = 0; k < 4; k++) {
                 op_w.bgw[i].map[j][k].g_no = op_w.bgw[i].map[j][k].trans = op_w.bgw[i].map[j][k].hv =
-                    op_w.bgw[i].map[j][k].ok = 0;
+                    op_w.bgw[i].map[j][k].can_activate = 0;
             }
         }
     }

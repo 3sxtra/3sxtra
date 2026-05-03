@@ -4,10 +4,10 @@
 #include "structs.h"
 #include "types.h"
 
-void move_check(PLW* pl);
-void key_thru(PLW* pl);
-void cmd_data_set(PLW* /* unused */, s16 i);
-void cmd_init(PLW* pl);
+void move_check(PlayerEntity* pl);
+void key_thru(PlayerEntity* pl);
+void cmd_data_set(PlayerEntity* /* unused */, s16 i);
+void cmd_init(PlayerEntity* pl);
 void cmd_move();
 void check_init();
 void check_next();
@@ -46,8 +46,8 @@ void dash_flag_clear(s16 pl_id);
 void hi_jump_flag_clear(s16 pl_id);
 void move_flag_clear_only_1(s16 pl_id, s16 wznum);
 void move_compel_init(s16 pl_id, s16 num, intptr_t* adrs);
-void move_compel_all_init(PLW* pl);
-void move_compel_all_init2(PLW* pl);
+void move_compel_all_init(PlayerEntity* pl);
+void move_compel_all_init2(PlayerEntity* pl);
 u16 processed_lvbt(u16 lv_data);
 
 #endif

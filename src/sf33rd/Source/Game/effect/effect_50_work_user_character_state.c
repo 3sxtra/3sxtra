@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 void effect_50_move(State_Other* ewk) {
@@ -111,7 +111,7 @@ s32 effect_50_init(s16 PL_id, s16 Direction, s16 damage_vitality) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 50;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
@@ -120,8 +120,8 @@ s32 effect_50_init(s16 PL_id, s16 Direction, s16 damage_vitality) {
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.damage_vitality = damage_vitality;
     ewk->wu.direction = Direction;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     if (damage_vitality == 0) {
         Synchro_Address[ewk->master_id][ewk->wu.direction - 1] = ewk;

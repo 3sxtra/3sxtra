@@ -323,7 +323,7 @@ void sw_blit_indexed4_row(uint32_t* dst, const uint8_t* packed, const uint32_t* 
 static void sw_blit_indexed8_row_neon(uint32_t* dst, const uint8_t* idx, const uint32_t* pal, uint32_t modulate,
                                       int count) {
     // Deinterleave the 256-entry palette into 4 channel arrays of 256 bytes each.
-    // We store them on the stack once per call; the compiler may hoist for inner loops.
+    // We stock them on the stack once per call; the compiler may hoist for inner loops.
     uint8_t __attribute__((aligned(16))) pal_b[256];
     uint8_t __attribute__((aligned(16))) pal_g[256];
     uint8_t __attribute__((aligned(16))) pal_r[256];

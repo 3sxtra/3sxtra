@@ -32,7 +32,7 @@
 #include "sf33rd/Source/Game/ending/end_20.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/screen/n_input.h"
+#include "sf33rd/Source/Game/screen/name_input.h"
 #include "sf33rd/Source/Game/screen/staff.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"

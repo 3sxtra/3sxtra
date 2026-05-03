@@ -9,7 +9,7 @@
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/bonus_basketball_ai.h"
-#include "sf33rd/Source/Game/engine/bbbscom2.h"
+#include "sf33rd/Source/Game/engine/bonus_basketball_ai_2.h"
 #include "sf33rd/Source/Game/engine/cmd_main.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_main.h"
@@ -21,18 +21,18 @@
 #include "sf33rd/Source/Game/rendering/metamorphosis_color.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
-static void player_mvbs_0000(PLW* wk);
-static void player_mvbs_1000(PLW* wk);
-static void plmv_b_1010(PLW* wk);
-static void plmv_b_1020(PLW* wk, s16 step);
-static void player_mvbs_2000(PLW* wk);
-static void player_mvbs_3000(PLW* wk);
-static void player_mvbs_4000(PLW* wk);
+static void player_mvbs_0000(PlayerEntity* wk);
+static void player_mvbs_1000(PlayerEntity* wk);
+static void plmv_b_1010(PlayerEntity* wk);
+static void plmv_b_1020(PlayerEntity* wk, s16 step);
+static void player_mvbs_2000(PlayerEntity* wk);
+static void player_mvbs_3000(PlayerEntity* wk);
+static void player_mvbs_4000(PlayerEntity* wk);
 
-void (*const plmain_b_lv_00[5])(PLW* wk);
+void (*const plmain_b_lv_00[5])(PlayerEntity* wk);
 
 /** @brief Top-level per-frame player move update for bonus stages. */
-void Player_move_bonus(PLW* wk, u16 lv_data) {
+void Player_move_bonus(PlayerEntity* wk, u16 lv_data) {
     s16 i;
 
     if (wk->wu.pl_operator) {
@@ -45,23 +45,23 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
         if (g_state.Bonus_Game_Flag == 21) {
             bbbs_com_execute(wk);
         } else {
-            bbbs_com_execute2(wk);
+            bonus_basketball_ai_execute2(wk);
         }
 
         wk->cp->input_held = 0;
     }
 
-    if (wk->dead_flag) {
+    if (wk->death_timerlag) {
         wk->cp->input_held = 0;
     }
 
-    if (wk->wkey_flag) {
+    if (wk->wakeup_key_flag) {
         wk->cp->input_held = 0;
     }
 
     wk->cp->input_held = check_illegal_lever_data(wk->cp->input_held);
 
-    if ((wk->dead_flag + wk->wkey_flag) == 0) {
+    if ((wk->death_timerlag + wk->wakeup_key_flag) == 0) {
         wk->cannot_turn_flag = 0;
     }
 
@@ -82,8 +82,8 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
         move_check(wk);
     }
 
-    wk->wu.script_register_bank[10] = wk->cp->lgp;
-    wk->wu.script_register_bank[11] += wk->cp->lgp;
+    wk->wu.script_register_bank[10] = wk->cp->lever_grace_period;
+    wk->wu.script_register_bank[11] += wk->cp->lever_grace_period;
     wk->wu.script_register_bank[11] &= 0x7FFF;
     wk->wu.script_register_bank[12] = wk->cp->input_pressed;
     wk->wu.script_register_bank[13] = wk->cp->input_current;
@@ -91,7 +91,7 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
 }
 
 /** @brief Bonus stage move phase 0 — initial work setup. */
-static void player_mvbs_0000(PLW* wk) {
+static void player_mvbs_0000(PlayerEntity* wk) {
     s16 i;
 
     for (i = 0; i < 8; i++) {
@@ -100,7 +100,7 @@ static void player_mvbs_0000(PLW* wk) {
 
     setup_vitality(&wk->wu, wk->player_number);
     set_player_shadow(wk);
-    wk->bullet_hcnt = wk->bhcnt_timer = 0;
+    wk->bullet_hit_count = wk->bullet_hit_count_timer = 0;
     wk->auto_guard = 1;
     wk->wu.hit_stop = wk->wu.damage_hit_stop = 0;
     wk->wu.hit_quake = wk->wu.damage_screen_shake = 0;
@@ -110,22 +110,22 @@ static void player_mvbs_0000(PLW* wk) {
     wk->is_throwing = wk->is_being_thrown = false;
     clear_kizetsu_point(wk);
     wk->recovery_roll_ok_timer = 0;
-    wk->uot_cd_ok_flag = 0;
+    wk->ukemi_cooldown_ok = 0;
     wk->recovery_roll_success = 0;
     clear_my_shell_ix(&wk->wu);
-    wk->sa->mp = 0;
-    wk->sa->ok = 0;
-    wk->sa->ex = 0;
-    wk->sa->mp_rno = 0;
-    wk->sa->mp_rno2 = 0;
-    wk->sa->sa_rno = 0;
-    wk->sa->sa_rno2 = 0;
-    wk->sa->ex_rno = 0;
+    wk->sa->meter_points = 0;
+    wk->sa->can_activate = 0;
+    wk->sa->ex_mode = 0;
+    wk->sa->meter_routine_no = 0;
+    wk->sa->meter_routine_no_2 = 0;
+    wk->sa->super_art_routine_no = 0;
+    wk->sa->super_art_routine_no_2 = 0;
+    wk->sa->ex_routine_no = 0;
     wk->metamorphose = 0;
     wk->metamor_over = 0;
     wk->sa_healing = 0;
     demo_set_sa_full(wk->sa);
-    wk->dm_hos_flag = 0;
+    wk->damage_pushbox_flag = 0;
     wk->chip_death_flag = 0;
     wk->wu.floor = 0;
     wk->bs2_area_car = 0;
@@ -145,7 +145,7 @@ static void player_mvbs_0000(PLW* wk) {
 }
 
 /** @brief Bonus stage move phase 1 — appearance/entrance animation. */
-static void player_mvbs_1000(PLW* wk) {
+static void player_mvbs_1000(PlayerEntity* wk) {
     switch (g_state.appear_type) {
     case APPEAR_TYPE_NON_ANIMATED:
         plmv_b_1010(wk);
@@ -185,7 +185,7 @@ static void player_mvbs_1000(PLW* wk) {
 }
 
 /** @brief Sub-phase: sets initial routine numbers for bonus entrance. */
-static void plmv_b_1010(PLW* wk) {
+static void plmv_b_1010(PlayerEntity* wk) {
     wk->wu.routine_no[0] = 3;
 
     if (g_state.Bonus_Game_Flag != 20 || wk->wu.pl_operator) {
@@ -197,21 +197,21 @@ static void plmv_b_1010(PLW* wk) {
 }
 
 /** @brief Sub-phase: positions the player at the bonus stage spawn offset. */
-static void plmv_b_1020(PLW* wk, s16 step) {
+static void plmv_b_1020(PlayerEntity* wk, s16 step) {
     if (wk->wu.id) {
-        wk->wu.rl_flag = 0;
+        wk->wu.facing_flag = 0;
         wk->wu.xyz[0].disp.pos = step + get_center_position();
         wk->wu.xyz[1].disp.pos = 0;
         return;
     }
 
-    wk->wu.rl_flag = 1;
+    wk->wu.facing_flag = 1;
     wk->wu.xyz[0].disp.pos = get_center_position() - step;
     wk->wu.xyz[1].disp.pos = 0;
 }
 
 /** @brief Bonus stage move phase 2 — intro wait/transition. */
-static void player_mvbs_2000(PLW* wk) {
+static void player_mvbs_2000(PlayerEntity* wk) {
     if (g_state.Bonus_Game_Flag != 20 || wk->wu.pl_operator) {
         if (wk->wu.routine_no[2] == 1) {
             wk->wu.routine_no[0] = 3;
@@ -227,13 +227,13 @@ static void player_mvbs_2000(PLW* wk) {
 }
 
 /** @brief Bonus stage move phase 3 — standby/normal state. */
-static void player_mvbs_3000(PLW* wk) {
+static void player_mvbs_3000(PlayerEntity* wk) {
     Player_normal(wk);
 }
 
 /** @brief Bonus stage move phase 4 — active gameplay with combat. */
-static void player_mvbs_4000(PLW* wk) {
-    wk->permited_koa = 0;
+static void player_mvbs_4000(PlayerEntity* wk) {
+    wk->permitted_art_type = 0;
     check_extra_jump_timer(wk);
 
     if (wk->sa_stop_flag != 1) {
@@ -265,6 +265,6 @@ static void player_mvbs_4000(PLW* wk) {
     about_gauge_process(wk);
 }
 
-void (*const plmain_b_lv_00[5])(PLW* wk) = {
+void (*const plmain_b_lv_00[5])(PlayerEntity* wk) = {
     player_mvbs_0000, player_mvbs_1000, player_mvbs_2000, player_mvbs_3000, player_mvbs_4000
 };

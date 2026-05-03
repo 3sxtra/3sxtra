@@ -18,73 +18,73 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 
-void Player_normal(PLW* wk);
-static void setup_normal_process_flags(PLW* wk);
-static void Normal_00000(PLW* wk);
-static void Normal_01000(PLW* wk);
-static void Normal_02000(PLW* wk);
-static void Normal_03000(PLW* wk);
-static void Normal_04000(PLW* wk);
-static void Normal_05000(PLW* wk);
-static void nm_05_0000(PLW* wk);
-static void nm_05_0100(PLW* wk);
-static void Normal_06000(PLW* wk);
-static void nm_06_0000(PLW* wk);
-static void nm_06_0100(PLW* wk);
-static void nm_06_0200(PLW* wk);
-static void Normal_07000(PLW* wk);
-static void Normal_08000(PLW* wk);
-static void Normal_09000(PLW* wk);
-static void Normal_10000(PLW* wk);
-static void Normal_16000(PLW* wk);
-static void Normal_17000(PLW* wk);
-static void Normal_18000(PLW* wk);
-void Normal_18000_init_unit(PLW* wk, u8 ps);
-static void Normal_27000(PLW* wk);
-static void Normal_31000(PLW* wk);
-static void Normal_35000(PLW* wk);
-static void Normal_36000(PLW* wk);
-static void Normal_37000(PLW* wk);
-static void Normal_38000(PLW* wk);
-static void Normal_39000(PLW* wk);
-static void Normal_40000(PLW* wk);
-static void Normal_41000(PLW* wk);
-static void Normal_42000(PLW* wk);
-static void Normal_47000(PLW* wk);
-static void Normal_48000(PLW* wk);
-static void Normal_50000(PLW* wk);
-static void Normal_51000(PLW* wk);
-static void Normal_52000(PLW* wk);
-static void Normal_53000(PLW* wk);
-static void Normal_54000(PLW* wk);
-static void Normal_55000(PLW* wk);
-static void make_nm55_init_sp(PLW* wk);
-static void Normal_56000(PLW* wk);
-static void nm56_char_select(PLW* wk);
-static void Normal_57000(PLW* wk);
-static void Normal_58000(PLW* wk);
-static void nm57_dir_select(PLW* wk);
+void Player_normal(PlayerEntity* wk);
+static void setup_normal_process_flags(PlayerEntity* wk);
+static void Normal_00000(PlayerEntity* wk);
+static void Normal_01000(PlayerEntity* wk);
+static void Normal_02000(PlayerEntity* wk);
+static void Normal_03000(PlayerEntity* wk);
+static void Normal_04000(PlayerEntity* wk);
+static void Normal_05000(PlayerEntity* wk);
+static void nm_05_0000(PlayerEntity* wk);
+static void nm_05_0100(PlayerEntity* wk);
+static void Normal_06000(PlayerEntity* wk);
+static void nm_06_0000(PlayerEntity* wk);
+static void nm_06_0100(PlayerEntity* wk);
+static void nm_06_0200(PlayerEntity* wk);
+static void Normal_07000(PlayerEntity* wk);
+static void Normal_08000(PlayerEntity* wk);
+static void Normal_09000(PlayerEntity* wk);
+static void Normal_10000(PlayerEntity* wk);
+static void Normal_16000(PlayerEntity* wk);
+static void Normal_17000(PlayerEntity* wk);
+static void Normal_18000(PlayerEntity* wk);
+void Normal_18000_init_unit(PlayerEntity* wk, u8 ps);
+static void Normal_27000(PlayerEntity* wk);
+static void Normal_31000(PlayerEntity* wk);
+static void Normal_35000(PlayerEntity* wk);
+static void Normal_36000(PlayerEntity* wk);
+static void Normal_37000(PlayerEntity* wk);
+static void Normal_38000(PlayerEntity* wk);
+static void Normal_39000(PlayerEntity* wk);
+static void Normal_40000(PlayerEntity* wk);
+static void Normal_41000(PlayerEntity* wk);
+static void Normal_42000(PlayerEntity* wk);
+static void Normal_47000(PlayerEntity* wk);
+static void Normal_48000(PlayerEntity* wk);
+static void Normal_50000(PlayerEntity* wk);
+static void Normal_51000(PlayerEntity* wk);
+static void Normal_52000(PlayerEntity* wk);
+static void Normal_53000(PlayerEntity* wk);
+static void Normal_54000(PlayerEntity* wk);
+static void Normal_55000(PlayerEntity* wk);
+static void make_nm55_init_sp(PlayerEntity* wk);
+static void Normal_56000(PlayerEntity* wk);
+static void nm56_char_select(PlayerEntity* wk);
+static void Normal_57000(PlayerEntity* wk);
+static void Normal_58000(PlayerEntity* wk);
+static void nm57_dir_select(PlayerEntity* wk);
 
 const s16 nmPB_data[5][3];
 const s16 nmCE_data[4][3];
 const u16 jpdat_tbl[9][2];
 
-void (*const plpnm_lv_00[59])(PLW* wk);
-void (*const normal_05[])(PLW* wk);
-void (*const normal_06[])(PLW* wk);
+void (*const plpnm_lv_00[59])(PlayerEntity* wk);
+void (*const normal_05[])(PlayerEntity* wk);
+void (*const normal_06[])(PlayerEntity* wk);
 
 /** @brief Top-level normal state dispatcher — calls the appropriate Normal_XXXXX handler. */
-void Player_normal(PLW* wk) {
+void Player_normal(PlayerEntity* wk) {
     setup_normal_process_flags(wk);
 
     if (wk->wu.routine_no[3] == 0) {
         clear_chainex_check(wk->wu.id);
     }
 
-    check_my_tk_power_off(wk, (PLW*)wk->wu.target_adrs);
-    check_em_tk_power_off(wk, (PLW*)wk->wu.target_adrs);
+    check_my_tk_power_off(wk, (PlayerEntity*)wk->wu.target_adrs);
+    check_em_tk_power_off(wk, (PlayerEntity*)wk->wu.target_adrs);
     plpnm_lv_00[wk->wu.routine_no[2]](wk);
 
     if (wk->wu.cg_prio) {
@@ -100,30 +100,30 @@ void Player_normal(PLW* wk) {
 }
 
 /** @brief Clears per-frame process flags for the normal state machine. */
-static void setup_normal_process_flags(PLW* wk) {
+static void setup_normal_process_flags(PlayerEntity* wk) {
     wk->wu.next_z = wk->wu.my_priority;
-    wk->running_f = 0;
+    wk->running_flag = 0;
     wk->py->flag = 0;
     wk->guard_flag = 0;
     wk->guard_active = 0;
     wk->is_throwing = false;
     wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
-    wk->dm_hos_flag = 0;
+    wk->damage_pushbox_flag = 0;
     wk->recovery_roll_success = 0;
     wk->slide_timer = 0;
     wk->slide_index_counter = 0;
     wk->sa_stop_flag = 0;
     wk->parry_flag = 0;
     wk->caution_flag = 0;
-    wk->sa->saeff_ok = 0;
-    wk->sa->saeff_mp = 0;
+    wk->sa->super_effect_can_activate = 0;
+    wk->sa->super_effect_meter = 0;
     wk->recovery_roll_success = 0;
     wk->recovery_roll_ok_timer = 0;
-    wk->uot_cd_ok_flag = 0;
+    wk->ukemi_cooldown_ok = 0;
     wk->cancel_timer = 0;
     wk->inescapable_flag = 0;
-    wk->cat_break_reserve = 0;
+    wk->catch_break_reserve = 0;
     wk->cmd_request = 0;
     wk->high_jump_ok = 0;
 
@@ -135,12 +135,12 @@ static void setup_normal_process_flags(PLW* wk) {
 }
 
 /** @brief Normal state 00 — character appearance animation. */
-static void Normal_00000(PLW* wk) {
+static void Normal_00000(PlayerEntity* wk) {
     appear_player(wk);
 }
 
 /** @brief Normal state 01 — standing idle. */
-static void Normal_01000(PLW* wk) {
+static void Normal_01000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -158,7 +158,7 @@ static void Normal_01000(PLW* wk) {
 }
 
 /** @brief Normal state 02 — turn-around idle. */
-static void Normal_02000(PLW* wk) {
+static void Normal_02000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -166,7 +166,7 @@ static void Normal_02000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 0, 1);
         break;
 
@@ -177,7 +177,7 @@ static void Normal_02000(PLW* wk) {
 }
 
 /** @brief Normal state 03 — forward walk. */
-static void Normal_03000(PLW* wk) {
+static void Normal_03000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -201,7 +201,7 @@ static void Normal_03000(PLW* wk) {
 }
 
 /** @brief Normal state 04 — backward walk. */
-static void Normal_04000(PLW* wk) {
+static void Normal_04000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -223,23 +223,23 @@ static void Normal_04000(PLW* wk) {
 }
 
 /** @brief Normal state 05 — forward dash/run. */
-static void Normal_05000(PLW* wk) {
+static void Normal_05000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
 
-    wk->running_f = 1;
+    wk->running_flag = 1;
     wk->guard_flag = 3;
     normal_05[wk->player_number](wk);
     jumping_guard_type_check(wk);
 }
 
 /** @brief Forward dash variant 0 — generic character. */
-static void nm_05_0000(PLW* wk) {
+static void nm_05_0000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 0, 4);
         setup_mvxy_data(&wk->wu, 2);
         /* fallthrough */
@@ -265,11 +265,11 @@ static void nm_05_0000(PLW* wk) {
 }
 
 /** @brief Forward dash variant 1 — hop-type dash. */
-static void nm_05_0100(PLW* wk) {
+static void nm_05_0100(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 0, 4);
         setup_mvxy_data(&wk->wu, 2);
 
@@ -314,23 +314,23 @@ static void nm_05_0100(PLW* wk) {
 }
 
 /** @brief Normal state 06 — backward dash. */
-static void Normal_06000(PLW* wk) {
+static void Normal_06000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
 
-    wk->running_f = 2;
+    wk->running_flag = 2;
     wk->guard_flag = 3;
     normal_06[wk->player_number](wk);
     jumping_guard_type_check(wk);
 }
 
 /** @brief Backward dash variant 0 — generic character. */
-static void nm_06_0000(PLW* wk) {
+static void nm_06_0000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 0, 5);
         break;
 
@@ -341,11 +341,11 @@ static void nm_06_0000(PLW* wk) {
 }
 
 /** @brief Backward dash variant 1 — hop-type backdash. */
-static void nm_06_0100(PLW* wk) {
+static void nm_06_0100(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 0, 5);
         setup_mvxy_data(&wk->wu, 3);
         /* fallthrough */
@@ -371,11 +371,11 @@ static void nm_06_0100(PLW* wk) {
 }
 
 /** @brief Backward dash variant 2 — leap-type backdash. */
-static void nm_06_0200(PLW* wk) {
+static void nm_06_0200(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 0, 5);
         setup_mvxy_data(&wk->wu, 3);
 
@@ -420,7 +420,7 @@ static void nm_06_0200(PLW* wk) {
 }
 
 /** @brief Normal state 07 — crouching to stand transition. */
-static void Normal_07000(PLW* wk) {
+static void Normal_07000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -438,7 +438,7 @@ static void Normal_07000(PLW* wk) {
 }
 
 /** @brief Normal state 08 — standing to crouch transition. */
-static void Normal_08000(PLW* wk) {
+static void Normal_08000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -456,7 +456,7 @@ static void Normal_08000(PLW* wk) {
 }
 
 /** @brief Normal state 09 — crouching idle. */
-static void Normal_09000(PLW* wk) {
+static void Normal_09000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -474,7 +474,7 @@ static void Normal_09000(PLW* wk) {
 }
 
 /** @brief Normal state 10 — crouch-walking. */
-static void Normal_10000(PLW* wk) {
+static void Normal_10000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -482,7 +482,7 @@ static void Normal_10000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 0, 8);
         break;
 
@@ -493,7 +493,7 @@ static void Normal_10000(PLW* wk) {
 }
 
 /** @brief Normal state 16 — pre-jump squat (neutral). */
-static void Normal_16000(PLW* wk) {
+static void Normal_16000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -514,7 +514,7 @@ static void Normal_16000(PLW* wk) {
 }
 
 /** @brief Normal state 17 — pre-jump squat (directional). */
-static void Normal_17000(PLW* wk) {
+static void Normal_17000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -535,7 +535,7 @@ static void Normal_17000(PLW* wk) {
 }
 
 /** @brief Normal state 18 — airborne jump arc. */
-static void Normal_18000(PLW* wk) {
+static void Normal_18000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -563,7 +563,7 @@ static void Normal_18000(PLW* wk) {
 }
 
 /** @brief Initializes jump movement data from a given pattern slot. */
-void Normal_18000_init_unit(PLW* wk, u8 ps) {
+void Normal_18000_init_unit(PlayerEntity* wk, u8 ps) {
     ps = (ps - 14) / 2;
 
     if (ps > 8) {
@@ -576,7 +576,7 @@ void Normal_18000_init_unit(PLW* wk, u8 ps) {
 }
 
 /** @brief Normal state 27 — standing guard. */
-static void Normal_27000(PLW* wk) {
+static void Normal_27000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -594,7 +594,7 @@ static void Normal_27000(PLW* wk) {
 }
 
 /** @brief Normal state 31 — guard stun / block-stun reaction. */
-static void Normal_31000(PLW* wk) {
+static void Normal_31000(PlayerEntity* wk) {
     if (((State*)wk->wu.target_adrs)->cg_prio != 2) {
         wk->wu.next_z = 32;
     }
@@ -605,7 +605,7 @@ static void Normal_31000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = (wk->wu.dm_rl + 1) & 1;
+        wk->wu.facing_flag = (wk->wu.damage_facing + 1) & 1;
         set_char_move_init(&wk->wu, 0, wk->wu.routine_no[2] - 7);
 
         if (wk->wu.damage_hit_stop > 0) {
@@ -630,7 +630,7 @@ static void Normal_31000(PLW* wk) {
 }
 
 /** @brief Normal state 35 — air guard reaction. */
-static void Normal_35000(PLW* wk) {
+static void Normal_35000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -647,8 +647,8 @@ static void Normal_35000(PLW* wk) {
 
         set_hit_stop_hit_quake(&wk->wu);
 
-        if (wk->wu.rl_flag != ((wk->wu.dm_rl + 1) & 1)) {
-            wk->wu.rl_flag = ((wk->wu.dm_rl + 1) & 1);
+        if (wk->wu.facing_flag != ((wk->wu.damage_facing + 1) & 1)) {
+            wk->wu.facing_flag = ((wk->wu.damage_facing + 1) & 1);
             wk->wu.mvxy.a[0].sp = -wk->wu.mvxy.a[0].sp;
             wk->wu.mvxy.d[0].sp = -wk->wu.mvxy.d[0].sp;
         }
@@ -680,7 +680,7 @@ static void Normal_35000(PLW* wk) {
 }
 
 /** @brief Normal state 36 — taunt. */
-static void Normal_36000(PLW* wk) {
+static void Normal_36000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -689,7 +689,7 @@ static void Normal_36000(PLW* wk) {
 }
 
 /** @brief Normal state 37 — personal action. */
-static void Normal_37000(PLW* wk) {
+static void Normal_37000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -698,7 +698,7 @@ static void Normal_37000(PLW* wk) {
 }
 
 /** @brief Normal state 38 — wall-jump / triangle-jump. */
-static void Normal_38000(PLW* wk) {
+static void Normal_38000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -718,7 +718,7 @@ static void Normal_38000(PLW* wk) {
 }
 
 /** @brief Normal state 39 — high-jump landing recovery. */
-static void Normal_39000(PLW* wk) {
+static void Normal_39000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -733,7 +733,7 @@ static void Normal_39000(PLW* wk) {
 }
 
 /** @brief Normal state 40 — round win pose. */
-static void Normal_40000(PLW* wk) {
+static void Normal_40000(PlayerEntity* wk) {
     wk->wu.next_z = 38;
 
     if ((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING)) {
@@ -755,7 +755,7 @@ static void Normal_40000(PLW* wk) {
 }
 
 /** @brief Normal state 41 — round lose pose. */
-static void Normal_41000(PLW* wk) {
+static void Normal_41000(PlayerEntity* wk) {
     wk->wu.next_z = 34;
 
     if ((g_state.Mode_Type == MODE_NORMAL_TRAINING) || (g_state.Mode_Type == MODE_PARRY_TRAINING)) {
@@ -777,21 +777,21 @@ static void Normal_41000(PLW* wk) {
 }
 
 /** @brief Normal state 42 — parry block-stun reaction. */
-static void Normal_42000(PLW* wk) {
+static void Normal_42000(PlayerEntity* wk) {
     const s16* dadr = nmPB_data[wk->wu.routine_no[2] - 42];
 
     if (((State*)wk->wu.target_adrs)->cg_prio != 2) {
         wk->wu.next_z = 32;
     }
 
-    if (wk->wu.dm_work_id & 11) {
-        wk->dm_hos_flag = 1;
+    if (wk->wu.damage_work_id & 11) {
+        wk->damage_pushbox_flag = 1;
     }
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = (wk->wu.dm_rl + 1) & 1;
+        wk->wu.facing_flag = (wk->wu.damage_facing + 1) & 1;
 
         if (dadr[2]) {
             wk->wu.xyz[1].disp.pos = 0;
@@ -843,21 +843,21 @@ static void Normal_42000(PLW* wk) {
 }
 
 /** @brief Normal state 47 — air-parry block-stun. */
-static void Normal_47000(PLW* wk) {
+static void Normal_47000(PlayerEntity* wk) {
     const s16* datix = nmCE_data[wk->wu.routine_no[2] - 47];
 
     if (((State*)wk->wu.target_adrs)->cg_prio != 2) {
         wk->wu.next_z = 32;
     }
 
-    if (wk->wu.dm_work_id & 11) {
-        wk->dm_hos_flag = 1;
+    if (wk->wu.damage_work_id & 11) {
+        wk->damage_pushbox_flag = 1;
     }
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
 
         if (datix[2]) {
             wk->wu.xyz[1].disp.pos = 0;
@@ -907,13 +907,13 @@ static void Normal_47000(PLW* wk) {
 }
 
 /** @brief Normal state 48 — getting up after knockdown. */
-static void Normal_48000(PLW* wk) {
+static void Normal_48000(PlayerEntity* wk) {
     wk->guard_flag = 3;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         wk->wu.xyz[1].disp.pos = 0;
         set_char_move_init(&wk->wu, 0, 44);
         setup_mvxy_data(&wk->wu, 27);
@@ -952,13 +952,13 @@ static void Normal_48000(PLW* wk) {
 }
 
 /** @brief Normal state 50 — quick-rise after knockdown. */
-static void Normal_50000(PLW* wk) {
+static void Normal_50000(PlayerEntity* wk) {
     wk->guard_flag = 3;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 0, 46);
         setup_mvxy_data(&wk->wu, 29);
         wk->wu.hit_stop = -17;
@@ -996,7 +996,7 @@ static void Normal_50000(PLW* wk) {
 }
 
 /** @brief Normal state 51 — stun recovery. */
-static void Normal_51000(PLW* wk) {
+static void Normal_51000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] == 0) {
         wk->wu.routine_no[3]++;
         set_char_move_init(&wk->wu, 0, 12);
@@ -1004,7 +1004,7 @@ static void Normal_51000(PLW* wk) {
 }
 
 /** @brief Normal state 52 — stunned (dizzy). */
-static void Normal_52000(PLW* wk) {
+static void Normal_52000(PlayerEntity* wk) {
     wk->guard_flag = 3;
 
     if (wk->the_same_players) {
@@ -1036,7 +1036,7 @@ static void Normal_52000(PLW* wk) {
 }
 
 /** @brief Normal state 53 — ukemi / tech-recovery in air. */
-static void Normal_53000(PLW* wk) {
+static void Normal_53000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1079,7 +1079,7 @@ static void Normal_53000(PLW* wk) {
 }
 
 /** @brief Normal state 54 — landing recovery after tech. */
-static void Normal_54000(PLW* wk) {
+static void Normal_54000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1098,7 +1098,7 @@ static void Normal_54000(PLW* wk) {
             wk->wu.routine_no[2] = 18;
             wk->wu.routine_no[3] = 0;
 
-            if (wk->wu.rl_flag != check_work_position(&wk->wu, (State*)wk->wu.target_adrs)) {
+            if (wk->wu.facing_flag != check_work_position(&wk->wu, (State*)wk->wu.target_adrs)) {
                 wk->wu.routine_no[2] = 20;
             }
         }
@@ -1108,7 +1108,7 @@ static void Normal_54000(PLW* wk) {
 }
 
 /** @brief Normal state 55 — metamorphosis / character switch intro. */
-static void Normal_55000(PLW* wk) {
+static void Normal_55000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1136,7 +1136,7 @@ static void Normal_55000(PLW* wk) {
 }
 
 /** @brief Sets up initial speed for metamorphosis movement. */
-static void make_nm55_init_sp(PLW* wk) {
+static void make_nm55_init_sp(PlayerEntity* wk) {
     State* efw;
     s16* dad;
     s16 ix;
@@ -1155,19 +1155,19 @@ static void make_nm55_init_sp(PLW* wk) {
     dad = efw->adjust_adrs[ix].hos_box;
 
     if (!check_work_position_bonus(&wk->wu, dad[0] + (dad[1] / 2) + efw->xyz[0].disp.pos)) {
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             wk->wu.mvxy.a[0].real.h = -wk->wu.mvxy.a[0].real.h;
         }
         return;
     }
 
-    if (wk->wu.rl_flag == 0) {
+    if (wk->wu.facing_flag == 0) {
         wk->wu.mvxy.a[0].real.h = -wk->wu.mvxy.a[0].real.h;
     }
 }
 
 /** @brief Normal state 56 — metamorphosis character select. */
-static void Normal_56000(PLW* wk) {
+static void Normal_56000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1193,7 +1193,7 @@ static void Normal_56000(PLW* wk) {
 }
 
 /** @brief Helper: selects the target character during metamorphosis. */
-static void nm56_char_select(PLW* wk) {
+static void nm56_char_select(PlayerEntity* wk) {
     State* efw;
     s16* dad;
     s16 ix;
@@ -1205,10 +1205,10 @@ static void nm56_char_select(PLW* wk) {
     ix = 16;
 
     if (check_work_position_bonus(&wk->wu, dad[0] + (dad[1] / 2) + efw->xyz[0].disp.pos)) {
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             ix = 14;
         }
-    } else if (wk->wu.rl_flag == 0) {
+    } else if (wk->wu.facing_flag == 0) {
         ix = 14;
     }
 
@@ -1220,7 +1220,7 @@ static void nm56_char_select(PLW* wk) {
 }
 
 /** @brief Normal state 57 — metamorphosis direction select. */
-static void Normal_57000(PLW* wk) {
+static void Normal_57000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1258,7 +1258,7 @@ static void Normal_57000(PLW* wk) {
 }
 
 /** @brief Helper: selects the direction during metamorphosis. */
-static void nm57_dir_select(PLW* wk) {
+static void nm57_dir_select(PlayerEntity* wk) {
     State* efw;
     s16* dad;
     s16 ix;
@@ -1266,15 +1266,15 @@ static void nm57_dir_select(PLW* wk) {
     efw = (State*)((State*)wk->wu.target_adrs)->my_effadrs;
     ix = get_sel_adjust_tbl_ix(wk->player_number) + 1;
     dad = (s16*)efw->adjust_adrs[ix].hos_box;
-    wk->wu.rl_flag = 1;
+    wk->wu.facing_flag = 1;
 
     if (check_work_position_bonus(&wk->wu, dad[0] + (dad[1] / 2) + efw->xyz[0].disp.pos)) {
-        wk->wu.rl_flag = 0;
+        wk->wu.facing_flag = 0;
     }
 }
 
 /** @brief Normal state 58 — metamorphosis completion / rebirth. */
-static void Normal_58000(PLW* wk) {
+static void Normal_58000(PlayerEntity* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1299,7 +1299,7 @@ static void Normal_58000(PLW* wk) {
 const s16 nmPB_data[5][3] = { { 38, 23, 1 }, { 39, 23, 1 }, { 40, 24, 1 }, { 41, 25, 0 }, { 42, 25, 0 } };
 const s16 nmCE_data[4][3] = { { 43, 26, 1 }, { 44, 27, 1 }, { 45, 28, 0 }, { 46, 29, 0 } };
 
-void (*const plpnm_lv_00[59])(PLW* wk) = {
+void (*const plpnm_lv_00[59])(PlayerEntity* wk) = {
     Normal_00000, Normal_01000, Normal_02000, Normal_03000, Normal_04000, Normal_05000, Normal_06000, Normal_07000,
     Normal_08000, Normal_09000, Normal_10000, Normal_03000, Normal_04000, Normal_03000, Normal_03000, Normal_03000,
     Normal_16000, Normal_17000, Normal_18000, Normal_18000, Normal_18000, Normal_18000, Normal_18000, Normal_18000,
@@ -1310,12 +1310,12 @@ void (*const plpnm_lv_00[59])(PLW* wk) = {
     Normal_56000, Normal_57000, Normal_58000
 };
 
-void (*const normal_05[])(PLW* wk) = { nm_05_0000, nm_05_0000, nm_05_0100, nm_05_0000, nm_05_0000,
+void (*const normal_05[])(PlayerEntity* wk) = { nm_05_0000, nm_05_0000, nm_05_0100, nm_05_0000, nm_05_0000,
                                        nm_05_0000, nm_05_0000, nm_05_0000, nm_05_0100, nm_05_0000,
                                        nm_05_0000, nm_05_0100, nm_05_0100, nm_05_0000, nm_05_0100,
                                        nm_05_0000, nm_05_0100, nm_05_0000, nm_05_0000, nm_05_0000 };
 
-void (*const normal_06[])(PLW* wk) = { nm_06_0100, nm_06_0100, nm_06_0200, nm_06_0000, nm_06_0100,
+void (*const normal_06[])(PlayerEntity* wk) = { nm_06_0100, nm_06_0100, nm_06_0200, nm_06_0000, nm_06_0100,
                                        nm_06_0100, nm_06_0100, nm_06_0100, nm_06_0000, nm_06_0100,
                                        nm_06_0000, nm_06_0200, nm_06_0200, nm_06_0100, nm_06_0200,
                                        nm_06_0000, nm_06_0200, nm_06_0100, nm_06_0100, nm_06_0100 };

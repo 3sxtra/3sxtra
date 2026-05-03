@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -26,7 +26,7 @@ void effect_F8_move(State_Other* ewk) {
         ewk->wu.disp_flag = 1;
         ewk->wu.xyz[2].disp.pos = 26;
         ewk->wu.next_z = mwk->position_z;
-        if (mwk->rl_flag) {
+        if (mwk->facing_flag) {
             ewk->wu.position_x = mwk->position_x + paring_b_mark_data[ewk->wu.direction][ewk->master_player][0];
         } else {
             ewk->wu.position_x = mwk->position_x - paring_b_mark_data[ewk->wu.direction][ewk->master_player][0];
@@ -44,13 +44,13 @@ void effect_F8_move(State_Other* ewk) {
         return;
 
     case 1:
-        if ((ewk->wu.dead_f == 1) || (g_state.Suicide[0] != 0)) {
+        if ((ewk->wu.death_timer == 1) || (g_state.Suicide[0] != 0)) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] += 1;
             return;
         }
 
-        if ((g_state.EXE_flag == 0) && (g_state.Game_pause == 0)) {
+        if ((g_state.execute_flag == 0) && (g_state.Game_pause == 0)) {
             char_move(&ewk->wu);
             if (ewk->wu.cg_type == 0xFF) {
                 ewk->wu.disp_flag = 0;
@@ -72,7 +72,7 @@ void effect_F8_move(State_Other* ewk) {
     }
 }
 
-s32 effect_F8_init(PLW* wk, u8 data) {
+s32 effect_F8_init(PlayerEntity* wk, u8 data) {
     State_Other* ewk;
     s16 ix;
 
@@ -81,12 +81,12 @@ s32 effect_F8_init(PLW* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 158;
     ewk->wu.work_id = 64;
-    ewk->wu.rl_flag = wk->wu.rl_flag;
+    ewk->wu.facing_flag = wk->wu.facing_flag;
     ewk->wu.direction = data;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 0x2020;
     ewk->wu.my_family = wk->wu.my_family;

@@ -42,12 +42,12 @@ static bool s_model_registered = false;
 // --- HUD ---
 static bool s_hud_visible = false;
 static Rml::String s_hud_text;
-static Rml::String s_hud_color_class = "ok";
+static Rml::String s_hud_color_class = "can_activate";
 
 // --- Diagnostics ---
 static bool s_diag_visible = false;
 static Rml::String s_fps_text;
-static Rml::String s_fps_color_class = "ok";
+static Rml::String s_fps_color_class = "can_activate";
 static std::vector<BarCell> s_fps_bars;
 static Rml::String s_fps_stats;
 static bool s_net_session_active = false;
@@ -204,7 +204,7 @@ extern "C" void rmlui_netplay_ui_update(void) {
         // Color coding
         NetworkStats stats;
         Netplay_GetNetworkStats(&stats);
-        Rml::String new_color = "ok";
+        Rml::String new_color = "can_activate";
         if (stats.rollback > 3 || stats.ping > 150)
             new_color = "error";
         else if (stats.ping > 80)
@@ -264,7 +264,7 @@ extern "C" void rmlui_netplay_ui_update(void) {
                 s_model_handle.DirtyVariable("fps_text");
             }
 
-            Rml::String new_fps_color = "ok";
+            Rml::String new_fps_color = "can_activate";
             if (current_fps < 45.0f)
                 new_fps_color = "error";
             else if (current_fps < 55.0f)

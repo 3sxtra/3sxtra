@@ -11,15 +11,15 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void eff41_process_00(State_Other* ewk, PLW* mwk);
-static void eff41_process_01(State_Other* ewk, PLW* mwk);
-static void gauge_minus(State_Other* ewk, PLW* mwk);
+static void eff41_process_00(State_Other* ewk, PlayerEntity* mwk);
+static void eff41_process_01(State_Other* ewk, PlayerEntity* mwk);
+static void gauge_minus(State_Other* ewk, PlayerEntity* mwk);
 
 const s16 sa_sign_data[69][5] = {
     { 28, 70, 156, 1, 1 },  { -41, 37, 156, 1, 1 },  { 12, 56, 156, 1, 1 },  { -14, 80, 156, 1, 1 },
@@ -45,7 +45,7 @@ const s16 sa_sign_data[69][5] = {
 void (*const eff41_main_process[2])() = { eff41_process_00, eff41_process_01 };
 
 void effect_41_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -69,13 +69,13 @@ void effect_41_move(State_Other* ewk) {
         goto jump;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || mwk->wu.routine_no[1] != 4) {
+        if (ewk->wu.death_timer == 1 || mwk->wu.routine_no[1] != 4) {
             ewk->wu.routine_no[0]++;
             ewk->wu.disp_flag = 0;
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             if (ewk->wu.hit_stop) {
                 ewk->wu.hit_stop--;
             } else {
@@ -117,14 +117,14 @@ void effect_41_move(State_Other* ewk) {
     }
 }
 
-static void eff41_process_00(State_Other* ewk, PLW* mwk) {
+static void eff41_process_00(State_Other* ewk, PlayerEntity* mwk) {
     if (ewk->wu.cg_type == 1) {
         gauge_minus(ewk, mwk);
     }
 
     ewk->wu.position_x = mwk->wu.position_x;
 
-    if (mwk->wu.rl_flag) {
+    if (mwk->wu.facing_flag) {
         ewk->wu.position_x -= sa_sign_data[ewk->wu.type][0];
     } else {
         ewk->wu.position_x += sa_sign_data[ewk->wu.type][0];
@@ -133,7 +133,7 @@ static void eff41_process_00(State_Other* ewk, PLW* mwk) {
     ewk->wu.position_y = mwk->wu.position_y + sa_sign_data[ewk->wu.type][1];
 }
 
-static void eff41_process_01(State_Other* ewk, PLW* mwk) {
+static void eff41_process_01(State_Other* ewk, PlayerEntity* mwk) {
     switch (ewk->wu.cg_type) {
     case 1:
         gauge_minus(ewk, mwk);
@@ -159,7 +159,7 @@ static void eff41_process_01(State_Other* ewk, PLW* mwk) {
     default:
         ewk->wu.position_x = mwk->wu.position_x;
 
-        if (mwk->wu.rl_flag) {
+        if (mwk->wu.facing_flag) {
             ewk->wu.position_x -= sa_sign_data[ewk->wu.type][0];
         } else {
             ewk->wu.position_x += sa_sign_data[ewk->wu.type][0];
@@ -170,21 +170,21 @@ static void eff41_process_01(State_Other* ewk, PLW* mwk) {
     }
 }
 
-static void gauge_minus(State_Other* ewk, PLW* mwk) {
+static void gauge_minus(State_Other* ewk, PlayerEntity* mwk) {
     switch (sa_sign_data[ewk->wu.type][3]) {
     case 1:
-        mwk->sa->saeff_ok = -1;
+        mwk->sa->super_effect_can_activate = -1;
         grade_add_super_arts(mwk->wu.id, 1);
         break;
 
     case 2:
-        mwk->sa->saeff_mp = -1;
+        mwk->sa->super_effect_meter = -1;
         grade_add_super_arts(mwk->wu.id, 2);
         break;
     }
 }
 
-s32 effect_41_init(PLW* wk, u8 data) {
+s32 effect_41_init(PlayerEntity* wk, u8 data) {
     State_Other* ewk;
     s16 ix;
 
@@ -198,11 +198,11 @@ s32 effect_41_init(PLW* wk, u8 data) {
 
     ewk = (State_Other*)frw[ix];
     write_my_shell_ix(&wk->wu, ix);
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.type = data;
     ewk->wu.id = 41;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 15;
+    ewk->wu.my_sprite_sheet = 15;
     ewk->wu.my_family = wk->wu.my_family;
     ewk->my_master = wk;
     ewk->master_work_id = wk->wu.work_id;

@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_M7_move(State_Other* ewk);
-s32 effect_M7_init(PLW* oya);
+s32 effect_M7_init(PlayerEntity* oya);
 
 #endif

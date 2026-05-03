@@ -16,21 +16,21 @@
 
 static void effL1_trans(State* ewk);
 static void grade_data_disp();
-static void effL1_w_win_init(WORK_Other_CONN* ewk);
-static void effL1_w_grade_init(WORK_Other_CONN* ewk);
-static void effL1_k_grade_init(WORK_Other_CONN* ewk);
-static void effL1_w_score_init(WORK_Other_CONN* ewk);
-static void effL1_w_graph_init(WORK_Other_CONN* ewk);
-static void effL1_k_graph_init(WORK_Other_CONN* ewk);
-static void effL1_f_stage_p_init(WORK_Other_CONN* ewk);
-static void effL1_f_stage_r_init(WORK_Other_CONN* ewk);
-static void effL1_f_grade_init(WORK_Other_CONN* ewk);
-static void effL1_f_mk_spp_init(WORK_Other_CONN* ewk);
-static void effL1_f_mk_all_init(WORK_Other_CONN* ewk);
-static void effL1_f_kz_cont_init(WORK_Other_CONN* ewk);
-static void effL1_f_kz_spp_init(WORK_Other_CONN* ewk);
-static void effL1_f_score_init(WORK_Other_CONN* ewk);
-static void effL1_suuchi_bunkai_sub(WORK_Other_CONN* ewk, u32 tsc);
+static void effL1_w_win_init(EffectMultiSprite* ewk);
+static void effL1_w_grade_init(EffectMultiSprite* ewk);
+static void effL1_k_grade_init(EffectMultiSprite* ewk);
+static void effL1_w_score_init(EffectMultiSprite* ewk);
+static void effL1_w_graph_init(EffectMultiSprite* ewk);
+static void effL1_k_graph_init(EffectMultiSprite* ewk);
+static void effL1_f_stage_p_init(EffectMultiSprite* ewk);
+static void effL1_f_stage_r_init(EffectMultiSprite* ewk);
+static void effL1_f_grade_init(EffectMultiSprite* ewk);
+static void effL1_f_mk_spp_init(EffectMultiSprite* ewk);
+static void effL1_f_mk_all_init(EffectMultiSprite* ewk);
+static void effL1_f_kz_cont_init(EffectMultiSprite* ewk);
+static void effL1_f_kz_spp_init(EffectMultiSprite* ewk);
+static void effL1_f_score_init(EffectMultiSprite* ewk);
+static void effL1_suuchi_bunkai_sub(EffectMultiSprite* ewk, u32 tsc);
 
 const u32 bunkai_table_l1[8] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000 };
 
@@ -47,13 +47,13 @@ const s16 effL1_base_data[20][5] = { { 64, 1, 1, 1, 0 }, { 60, 3, 0, 0, 92 }, { 
                                      { 19, 1, 0, 1, 0 }, { 19, 1, 0, 1, 0 },  { 19, 1, 0, 1, 0 }, { 60, 3, 0, 1, 0 },
                                      { 68, 3, 0, 1, 0 }, { 68, 3, 0, 1, 0 },  { 68, 3, 0, 1, 0 }, { 68, 3, 0, 1, 0 } };
 
-const CONN gj_score[8] = { { -63, 49, 0, 0x6F5C },  { -71, 49, 0, 0x6F5C }, { -79, 49, 0, 0x6F5C },
+const SpriteConnection gj_score[8] = { { -63, 49, 0, 0x6F5C },  { -71, 49, 0, 0x6F5C }, { -79, 49, 0, 0x6F5C },
                            { -87, 49, 0, 0x6F5C },  { -95, 49, 0, 0x6F5C }, { -103, 49, 0, 0x6F5C },
                            { -111, 49, 0, 0x6F5C }, { -119, 49, 0, 0x6F5C } };
 
-const CONN gj_wins[3] = { { 175, 54, 0, 0x6ED7 }, { 162, 54, 0, 0x6ED7 }, { 149, 54, 0, 0x6ED7 } };
+const SpriteConnection gj_wins[3] = { { 175, 54, 0, 0x6ED7 }, { 162, 54, 0, 0x6ED7 }, { 149, 54, 0, 0x6ED7 } };
 
-const CONN gj_grade[32][4] = {
+const SpriteConnection gj_grade[32][4] = {
     { { -29, 75, 0, 0x6F38 }, { -29, 75, 0, 0x6F43 }, { 0, 0, 0, 0x0002 }, { 0, 0, 0, 0x0000 } },
     { { -29, 75, 0, 0x6F38 }, { -29, 75, 0, 0x6F43 }, { -29, 75, 0, 0x6F44 }, { 0, 0, 0, 0x0003 } },
     { { -29, 75, 0, 0x6F38 }, { -29, 75, 0, 0x6F43 }, { -29, 75, 0, 0x6F45 }, { 0, 0, 0, 0x0003 } },
@@ -88,15 +88,15 @@ const CONN gj_grade[32][4] = {
     { { -29, 75, 0, 0x6F32 }, { -29, 75, 0, 0x6F39 }, { 0, 0, 0, 0x0002 }, { 0, 0, 0, 0x0000 } }
 };
 
-const CONN gj_bar[6] = { { -123, 86, 0, 0x6F50 }, { -113, 86, 0, 0x6F50 }, { -103, 86, 0, 0x6F50 },
+const SpriteConnection gj_bar[6] = { { -123, 86, 0, 0x6F50 }, { -113, 86, 0, 0x6F50 }, { -103, 86, 0, 0x6F50 },
                          { -93, 86, 0, 0x6F50 },  { -83, 86, 0, 0x6F50 },  { -73, 86, 0, 0x6F6F } };
 
-const CONN gj_f_stage_p[11] = { { -160, 72, 0, 0x6F51 }, { -128, 72, 0, 0x6F51 }, { -96, 72, 0, 0x6F51 },
+const SpriteConnection gj_f_stage_p[11] = { { -160, 72, 0, 0x6F51 }, { -128, 72, 0, 0x6F51 }, { -96, 72, 0, 0x6F51 },
                                 { -64, 72, 0, 0x6F51 },  { -32, 72, 0, 0x6F51 },  { 0, 72, 0, 0x6F51 },
                                 { 32, 72, 0, 0x6F51 },   { 64, 72, 0, 0x6F51 },   { 96, 72, 0, 0x6F51 },
                                 { 128, 72, 0, 0x6F51 },  { 176, 72, 0, 0x6F5B } };
 
-const CONN gj_f_stage_r[22] = { { -168, 72, 0, 0x6F12 }, { -168, 65, 0, 0x6EFA }, { -136, 72, 0, 0x6F12 },
+const SpriteConnection gj_f_stage_r[22] = { { -168, 72, 0, 0x6F12 }, { -168, 65, 0, 0x6EFA }, { -136, 72, 0, 0x6F12 },
                                 { -136, 65, 0, 0x6EFA }, { -104, 72, 0, 0x6F12 }, { -104, 65, 0, 0x6EFA },
                                 { -72, 72, 0, 0x6F12 },  { -72, 65, 0, 0x6EFA },  { -40, 72, 0, 0x6F12 },
                                 { -40, 65, 0, 0x6EFA },  { -8, 72, 0, 0x6F12 },   { -8, 65, 0, 0x6EFA },
@@ -105,41 +105,41 @@ const CONN gj_f_stage_r[22] = { { -168, 72, 0, 0x6F12 }, { -168, 65, 0, 0x6EFA }
                                 { 120, 72, 0, 0x6F12 },  { 120, 65, 0, 0x6EFA },  { 168, 72, 0, 0x6F12 },
                                 { 168, 65, 0, 0x6EFA } };
 
-const CONN gj_f_mk_spp[10] = { { -168, 48, 0, 0x6F0F }, { -136, 48, 0, 0x6F0F }, { -104, 48, 0, 0x6F0F },
+const SpriteConnection gj_f_mk_spp[10] = { { -168, 48, 0, 0x6F0F }, { -136, 48, 0, 0x6F0F }, { -104, 48, 0, 0x6F0F },
                                { -72, 48, 0, 0x6F0F },  { -40, 48, 0, 0x6F0F },  { -8, 48, 0, 0x6F0F },
                                { 24, 48, 0, 0x6F0F },   { 56, 48, 0, 0x6F0F },   { 88, 48, 0, 0x6F0F },
                                { 168, 48, 0, 0x6F0F } };
 
-const CONN gj_f_mk_spp_Q[11] = { { -168, 48, 0, 0x6F0F }, { -136, 48, 0, 0x6F0F }, { -104, 48, 0, 0x6F0F },
+const SpriteConnection gj_f_mk_spp_Q[11] = { { -168, 48, 0, 0x6F0F }, { -136, 48, 0, 0x6F0F }, { -104, 48, 0, 0x6F0F },
                                  { -72, 48, 0, 0x6F0F },  { -40, 48, 0, 0x6F0F },  { -8, 48, 0, 0x6F0F },
                                  { 24, 48, 0, 0x6F0F },   { 56, 48, 0, 0x6F0F },   { 88, 48, 0, 0x6F0F },
                                  { 120, 48, 0, 0x6F0F },  { 168, 48, 0, 0x6F0F } };
 
-const CONN gj_f_mk_all[6] = { { -102, 32, 0, 0x6EF6 }, { -90, 32, 0, 0x6EF5 }, { -78, 32, 0, 0x6EF5 },
+const SpriteConnection gj_f_mk_all[6] = { { -102, 32, 0, 0x6EF6 }, { -90, 32, 0, 0x6EF5 }, { -78, 32, 0, 0x6EF5 },
                               { -66, 32, 0, 0x6EF5 },  { -54, 32, 0, 0x6EF5 }, { -36, 32, 0, 0x6EF8 } };
 
-const CONN gj_f_kz_cont[7] = { { -102, 23, 0, 0x6EF5 }, { -90, 23, 0, 0x6EF5 }, { -78, 23, 0, 0x6EF5 },
+const SpriteConnection gj_f_kz_cont[7] = { { -102, 23, 0, 0x6EF5 }, { -90, 23, 0, 0x6EF5 }, { -78, 23, 0, 0x6EF5 },
                                { -66, 23, 0, 0x6EF5 },  { -54, 23, 0, 0x6EF5 }, { -42, 23, 0, 0x6EE9 },
                                { -32, 23, 0, 0x6EE9 } };
 
-const CONN gj_f_kz_spp[8] = { { -110, 14, 0, 0x6EF6 }, { -102, 14, 0, 0x6EF5 }, { -90, 14, 0, 0x6EF5 },
+const SpriteConnection gj_f_kz_spp[8] = { { -110, 14, 0, 0x6EF6 }, { -102, 14, 0, 0x6EF5 }, { -90, 14, 0, 0x6EF5 },
                               { -78, 14, 0, 0x6EF5 },  { -66, 14, 0, 0x6EF5 },  { -54, 14, 0, 0x6EF5 },
                               { -42, 14, 0, 0x6EE9 },  { -32, 14, 0, 0x6EE9 } };
 
-const CONN gj_f_score[10] = { { -32, 5, 0, 0x6EE9 }, { -42, 5, 0, 0x6EE9 },  { -52, 5, 0, 0x6EE9 },
+const SpriteConnection gj_f_score[10] = { { -32, 5, 0, 0x6EE9 }, { -42, 5, 0, 0x6EE9 },  { -52, 5, 0, 0x6EE9 },
                               { -62, 5, 0, 0x6EE9 }, { -72, 5, 0, 0x6EE9 },  { -82, 5, 0, 0x6EE9 },
                               { -92, 5, 0, 0x6EE9 }, { -102, 5, 0, 0x6EE9 }, { -114, 5, 0, 0x6EF5 },
                               { -126, 5, 0, 0x6EF5 } };
 
-const CONN gj_loser[2] = { { -158, 160, 0, 0x6EC3 }, { -135, 144, 0, 0x6F12 } };
+const SpriteConnection gj_loser[2] = { { -158, 160, 0, 0x6EC3 }, { -135, 144, 0, 0x6F12 } };
 
 const s16 gj_loser_face[20] = { 0x6EC3, 0x6EC4, 0x6EC5, 0x6EC6, 0x6EC7, 0x6EC8, 0x6EC9, 0x6ECA, 0x6ECB, 0x6ECC,
                                 0x6ECD, 0x6ECE, 0x6ECF, 0x6ED0, 0x6ED1, 0x6ED2, 0x6ED3, 0x6ED4, 0x6ED5, 0x6ED6 };
 
-const CONN gj_bar2[6] = { { -123, 164, 0, 0x6F50 }, { -113, 164, 0, 0x6F50 }, { -103, 164, 0, 0x6F50 },
+const SpriteConnection gj_bar2[6] = { { -123, 164, 0, 0x6F50 }, { -113, 164, 0, 0x6F50 }, { -103, 164, 0, 0x6F50 },
                           { -93, 164, 0, 0x6F50 },  { -83, 164, 0, 0x6F50 },  { -73, 164, 0, 0x6F6F } };
 
-void effect_L1_move(WORK_Other_CONN* ewk) {
+void effect_L1_move(EffectMultiSprite* ewk) {
     s16 i;
 
     switch (ewk->wu.routine_no[0]) {
@@ -163,7 +163,7 @@ void effect_L1_move(WORK_Other_CONN* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[2] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[2] != 0) {
             ewk->wu.routine_no[0] = 2;
             ewk->wu.type = 0;
             ewk->wu.disp_flag = 0;
@@ -220,7 +220,7 @@ static void grade_data_disp() {
     // Do nothing
 };
 
-static void effL1_w_win_init(WORK_Other_CONN* ewk) {
+static void effL1_w_win_init(EffectMultiSprite* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, g_state.WGJ_Win);
@@ -232,7 +232,7 @@ static void effL1_w_win_init(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effL1_w_grade_init(WORK_Other_CONN* ewk) {
+static void effL1_w_grade_init(EffectMultiSprite* ewk) {
     s16 i;
 
     ewk->wu.direction = grade_get_my_grade((s32)g_state.Winner_id);
@@ -252,7 +252,7 @@ static void effL1_w_grade_init(WORK_Other_CONN* ewk) {
     ewk->prio_reverse = 1;
 }
 
-static void effL1_k_grade_init(WORK_Other_CONN* ewk) {
+static void effL1_k_grade_init(EffectMultiSprite* ewk) {
     s16 i;
 
     if (g_state.hidden_char_operator) {
@@ -272,7 +272,7 @@ static void effL1_k_grade_init(WORK_Other_CONN* ewk) {
     ewk->wu.position_x -= 384;
 }
 
-static void effL1_w_score_init(WORK_Other_CONN* ewk) {
+static void effL1_w_score_init(EffectMultiSprite* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, g_state.WGJ_Score);
@@ -286,7 +286,7 @@ static void effL1_w_score_init(WORK_Other_CONN* ewk) {
     ewk->wu.position_x -= 384;
 }
 
-static void effL1_w_graph_init(WORK_Other_CONN* ewk) {
+static void effL1_w_graph_init(EffectMultiSprite* ewk) {
     s16 i;
 
     ewk->wu.direction = grade_get_my_point_percentage((s32)g_state.Winner_id, (s16)(ewk->wu.type - 3));
@@ -317,7 +317,7 @@ static void effL1_w_graph_init(WORK_Other_CONN* ewk) {
     ewk->wu.position_x -= 384;
 }
 
-static void effL1_k_graph_init(WORK_Other_CONN* ewk) {
+static void effL1_k_graph_init(EffectMultiSprite* ewk) {
     s16 i;
 
     if (g_state.hidden_char_operator) {
@@ -352,7 +352,7 @@ static void effL1_k_graph_init(WORK_Other_CONN* ewk) {
     ewk->wu.position_x -= 384;
 }
 
-static void effL1_f_stage_p_init(WORK_Other_CONN* ewk) {
+static void effL1_f_stage_p_init(EffectMultiSprite* ewk) {
     s16 i;
 
     for (i = 0; i < 10; i++) {
@@ -370,7 +370,7 @@ static void effL1_f_stage_p_init(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effL1_f_stage_r_init(WORK_Other_CONN* ewk) {
+static void effL1_f_stage_r_init(EffectMultiSprite* ewk) {
     s16 i;
 
     for (i = 0; i < 22; i++) {
@@ -388,7 +388,7 @@ static void effL1_f_stage_r_init(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effL1_f_grade_init(WORK_Other_CONN* ewk) {
+static void effL1_f_grade_init(EffectMultiSprite* ewk) {
     s16 i;
 
     ewk->wu.direction = g_state.judge_final[g_state.WGJ_Target]->grade;
@@ -407,7 +407,7 @@ static void effL1_f_grade_init(WORK_Other_CONN* ewk) {
     ewk->prio_reverse = 1;
 }
 
-static void effL1_f_mk_spp_init(WORK_Other_CONN* ewk) {
+static void effL1_f_mk_spp_init(EffectMultiSprite* ewk) {
     s16 i;
     s16 k = 0;
 
@@ -437,7 +437,7 @@ static void effL1_f_mk_spp_init(WORK_Other_CONN* ewk) {
     ewk->conn[k + 3].chr = 0x6F10;
 }
 
-static void effL1_f_mk_all_init(WORK_Other_CONN* ewk) {
+static void effL1_f_mk_all_init(EffectMultiSprite* ewk) {
     s16 i;
 
     ewk->num_of_conn = 6;
@@ -453,7 +453,7 @@ static void effL1_f_mk_all_init(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effL1_f_kz_cont_init(WORK_Other_CONN* ewk) {
+static void effL1_f_kz_cont_init(EffectMultiSprite* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, g_state.judge_final[g_state.WGJ_Target][g_state.Play_Type].keizoku);
@@ -467,7 +467,7 @@ static void effL1_f_kz_cont_init(WORK_Other_CONN* ewk) {
     ewk->conn[5].chr += ewk->wu.shell_ix[1];
 }
 
-static void effL1_f_kz_spp_init(WORK_Other_CONN* ewk) {
+static void effL1_f_kz_spp_init(EffectMultiSprite* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, g_state.judge_final[g_state.WGJ_Target][g_state.Play_Type].sp_point);
@@ -481,7 +481,7 @@ static void effL1_f_kz_spp_init(WORK_Other_CONN* ewk) {
     ewk->conn[6].chr += ewk->wu.shell_ix[1];
 }
 
-static void effL1_f_score_init(WORK_Other_CONN* ewk) {
+static void effL1_f_score_init(EffectMultiSprite* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, g_state.WGJ_Score);
@@ -496,7 +496,7 @@ static void effL1_f_score_init(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effL1_suuchi_bunkai_sub(WORK_Other_CONN* ewk, u32 tsc) {
+static void effL1_suuchi_bunkai_sub(EffectMultiSprite* ewk, u32 tsc) {
     s16 i;
 
     for (i = 7; i > 0; i--) {
@@ -516,10 +516,10 @@ s32 effect_L1_init(s16 flag) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 211;
     ewk->wu.type = flag;
-    ewk->wu.my_mts = 13;
+    ewk->wu.my_sprite_sheet = 13;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;

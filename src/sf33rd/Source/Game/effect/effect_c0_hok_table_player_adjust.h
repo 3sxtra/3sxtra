@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_C0_move(State_Other* ewk);
-s32 effect_C0_init(PLW* wk, s32 /* unused */);
+s32 effect_C0_init(PlayerEntity* wk, s32 /* unused */);
 
 #endif

@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/engine/player_damage_controller.h"
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 #include "sf33rd/Source/Game/system/system_subroutines.h"
@@ -38,7 +38,7 @@ void (*const player_bonus_process[3])() = { plcnt_b_init, plcnt_b_move, plcnt_b_
 
 /** @brief Main player controller for the basketball bonus stage. */
 s32 Player_control_bonus() {
-    if (((g_state.pcon_rno[0] + g_state.pcon_rno[1]) == 0) || (!g_state.Game_pause && !g_state.EXE_flag)) {
+    if (((g_state.pcon_rno[0] + g_state.pcon_rno[1]) == 0) || (!g_state.Game_pause && !g_state.execute_flag)) {
         g_state.players_timer++;
         g_state.players_timer &= 0x7FFF;
         player_bonus_process[g_state.pcon_rno[0]]();
@@ -155,12 +155,12 @@ static void plcnt_b_move() {
         subtract_dm_vital_aiuchi(&g_state.plw[0]);
         subtract_dm_vital_aiuchi(&g_state.plw[1]);
 
-        if ((g_state.plw[0].dead_flag != 0) && (g_state.plw[1].dead_flag != 0)) {
+        if ((g_state.plw[0].death_timerlag != 0) && (g_state.plw[1].death_timerlag != 0)) {
             g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 2;
             g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 4;
             g_state.plw[0].wu.damage_screen_shake = g_state.plw[1].wu.damage_screen_shake = 0;
-        } else if ((g_state.plw[0].dead_flag != 0) || (g_state.plw[1].dead_flag != 0)) {
+        } else if ((g_state.plw[0].death_timerlag != 0) || (g_state.plw[1].death_timerlag != 0)) {
             g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 4;
             g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 8;
@@ -179,7 +179,7 @@ static void plcnt_b_die() {
 
     switch (g_state.pcon_rno[2]) {
     case 0:
-        g_state.plw[0].wkey_flag = g_state.plw[1].wkey_flag = 1;
+        g_state.plw[0].wakeup_key_flag = g_state.plw[1].wakeup_key_flag = 1;
         g_state.plw[0].image_setup_flag = g_state.plw[1].image_setup_flag = 0;
         g_state.pcon_rno[2]++;
         /* fallthrough */
@@ -330,7 +330,7 @@ void check_damage_adjust_bonus() {
     switch ((g_state.plw[0].scaling_remainder != 0) + ((g_state.plw[1].scaling_remainder != 0) * 2)) {
     case 1:
         if ((!g_state.plw[0].is_throwing || g_state.plw[0].kind_of_catch != 1) &&
-            (g_state.plw[0].is_being_thrown | g_state.plw[0].dm_hos_flag) == 0) {
+            (g_state.plw[0].is_being_thrown | g_state.plw[0].damage_pushbox_flag) == 0) {
             break;
         }
 
@@ -341,7 +341,7 @@ void check_damage_adjust_bonus() {
 
     case 2:
         if ((!g_state.plw[1].is_throwing || g_state.plw[1].kind_of_catch != 1) &&
-            (g_state.plw[1].is_being_thrown | g_state.plw[1].dm_hos_flag) == 0) {
+            (g_state.plw[1].is_being_thrown | g_state.plw[1].damage_pushbox_flag) == 0) {
             break;
         }
 
@@ -351,7 +351,7 @@ void check_damage_adjust_bonus() {
         break;
 
     case 3:
-        if (g_state.plw[0].hos_fi_flag == g_state.plw[1].hos_fi_flag) {
+        if (g_state.plw[0].pushbox_finish_flag == g_state.plw[1].pushbox_finish_flag) {
             if (g_state.plw[0].is_being_thrown) {
                 goto one;
             }

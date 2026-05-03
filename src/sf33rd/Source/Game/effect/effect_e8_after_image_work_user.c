@@ -12,11 +12,11 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
-static void effe8_zanzou_process(State_Other* ewk, PLW* mwk);
-static void effE8_trans(State_Other* ewk, PLW* mwk);
+static void effe8_zanzou_process(State_Other* ewk, PlayerEntity* mwk);
+static void effE8_trans(State_Other* ewk, PlayerEntity* mwk);
 
 void effect_E8_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
     State_Other* cwk = (State_Other*)ewk->wu.target_adrs;
     State* mtwk;
 
@@ -36,7 +36,7 @@ void effect_E8_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
@@ -91,7 +91,7 @@ void effect_E8_move(State_Other* ewk) {
     }
 }
 
-static void effe8_zanzou_process(State_Other* ewk, PLW* mwk) {
+static void effe8_zanzou_process(State_Other* ewk, PlayerEntity* mwk) {
     if (ewk->wu.old_routine_no[5]) {
         if (ewk->wu.type == 0) {
             ewk->wu.position_x = mwk->wu.position_x;
@@ -109,11 +109,11 @@ static void effe8_zanzou_process(State_Other* ewk, PLW* mwk) {
 
     if (ewk->wu.old_routine_no[3] == 0) {
         ewk->wu.old_cgnum = ewk->wu.cg_number = mwk->wu.cg_number;
-        ewk->wu.rl_flag = mwk->wu.rl_flag;
+        ewk->wu.facing_flag = mwk->wu.facing_flag;
         ewk->wu.cg_flip = mwk->wu.cg_flip;
     } else {
         ewk->wu.cg_number = g_state.afterimage_table[ewk->master_id][ewk->wu.type].cg_num;
-        ewk->wu.rl_flag = g_state.afterimage_table[ewk->master_id][ewk->wu.type].flip;
+        ewk->wu.facing_flag = g_state.afterimage_table[ewk->master_id][ewk->wu.type].flip;
         ewk->wu.cg_flip = g_state.afterimage_table[ewk->master_id][ewk->wu.type].cg_flp;
     }
 
@@ -138,7 +138,7 @@ static void effe8_zanzou_process(State_Other* ewk, PLW* mwk) {
     }
 }
 
-static void effE8_trans(State_Other* ewk, PLW* mwk) {
+static void effE8_trans(State_Other* ewk, PlayerEntity* mwk) {
     if (ewk->wu.old_routine_no[3] == 0) {
         return;
     }
@@ -151,7 +151,7 @@ static void effE8_trans(State_Other* ewk, PLW* mwk) {
     }
 }
 
-s32 effect_E8_init(State_Other* ek, PLW* mk, s16 data) {
+s32 effect_E8_init(State_Other* ek, PlayerEntity* mk, s16 data) {
     State_Other* ewk;
     s16 ix;
 
@@ -160,7 +160,7 @@ s32 effect_E8_init(State_Other* ek, PLW* mk, s16 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = ek->wu.disp_flag;
     ewk->wu.id = 148;
     ewk->wu.type = 0;

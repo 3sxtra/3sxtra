@@ -6,19 +6,19 @@
 #include "sf33rd/Source/Game/effect/effect_k7_player_common.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/com/com_pl.h"
+#include "sf33rd/Source/Game/com/ai_player_control.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/metamorphosis_color.h"
 
-static void K7_move_type_0(State_Other* ewk, PLW* mwk);
-static s16 K7_mt0_rebirth_check(PLW* mwk);
+static void K7_move_type_0(State_Other* ewk, PlayerEntity* mwk);
+static s16 K7_mt0_rebirth_check(PlayerEntity* mwk);
 
 void effect_K7_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -26,7 +26,7 @@ void effect_K7_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f != 0 || mwk->metamor_index != ewk->wu.myself) {
+        if (ewk->wu.death_timer != 0 || mwk->metamor_index != ewk->wu.myself) {
             ewk->wu.routine_no[0] = 3;
             metamor_color_restore(mwk->wu.id);
             mwk->metamorphose = 0;
@@ -36,7 +36,7 @@ void effect_K7_move(State_Other* ewk) {
             mwk->wu.my_col_mode = ewk->wu.my_col_mode;
             mwk->wu.my_col_code = ewk->wu.my_col_code;
             mwk->wu.disp_flag = 1;
-        } else if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        } else if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             K7_move_type_0(ewk, mwk);
         }
 
@@ -58,7 +58,7 @@ void effect_K7_move(State_Other* ewk) {
     }
 }
 
-static void K7_move_type_0(State_Other* ewk, PLW* mwk) {
+static void K7_move_type_0(State_Other* ewk, PlayerEntity* mwk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (mwk->wu.cg_type != 20) {
@@ -68,8 +68,8 @@ static void K7_move_type_0(State_Other* ewk, PLW* mwk) {
         ewk->wu.routine_no[1] = 1;
         ewk->wu.direction = mwk->player_number;
         ewk->wu.charset_id = mwk->wu.charset_id;
-        mwk->player_number = ((PLW*)mwk->wu.target_adrs)->player_number;
-        mwk->wu.charset_id = ((PLW*)mwk->wu.target_adrs)->wu.charset_id;
+        mwk->player_number = ((PlayerEntity*)mwk->wu.target_adrs)->player_number;
+        mwk->wu.charset_id = ((PlayerEntity*)mwk->wu.target_adrs)->wu.charset_id;
         set_base_data_metamorphose(mwk, mwk->wu.id + 1 & 1);
         mwk->att_plus = 10;
         mwk->def_plus = 6;
@@ -92,12 +92,12 @@ static void K7_move_type_0(State_Other* ewk, PLW* mwk) {
         /* fallthrough */
 
     case 2:
-        if (mwk->dead_flag != 0) {
+        if (mwk->death_timerlag != 0) {
             ewk->wu.routine_no[1] = 9;
             break;
         }
 
-        if (mwk->sa->ok == -1) {
+        if (mwk->sa->can_activate == -1) {
             break;
         }
 
@@ -148,7 +148,7 @@ static void K7_move_type_0(State_Other* ewk, PLW* mwk) {
     }
 }
 
-static s16 K7_mt0_rebirth_check(PLW* mwk) {
+static s16 K7_mt0_rebirth_check(PlayerEntity* mwk) {
     s16 num = 0;
 
     switch (mwk->wu.routine_no[1]) {
@@ -167,7 +167,7 @@ static s16 K7_mt0_rebirth_check(PLW* mwk) {
     return num;
 }
 
-void K7_muriyari_metamor_rebirth(PLW* wk) {
+void K7_muriyari_metamor_rebirth(PlayerEntity* wk) {
     if (wk->metamorphose == 0) {
         return;
     }
@@ -180,7 +180,7 @@ void K7_muriyari_metamor_rebirth(PLW* wk) {
     wk->metamorphose = 0;
 }
 
-s32 effect_K7_init(PLW* wk) {
+s32 effect_K7_init(PlayerEntity* wk) {
     State_Other* ewk;
     s16 ix;
 
@@ -193,7 +193,7 @@ s32 effect_K7_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 207;
     ewk->wu.work_id = 16;
     ewk->wu.type = 0;

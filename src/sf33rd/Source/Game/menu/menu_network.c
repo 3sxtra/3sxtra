@@ -53,9 +53,9 @@
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
-#include "sf33rd/Source/Game/io/vm_sub.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
+#include "sf33rd/Source/Game/io/rumble.h"
+#include "sf33rd/Source/Game/io/save_file_ops.h"
 #include "sf33rd/Source/Game/menu/dir_data.h"
 #include "sf33rd/Source/Game/menu/ex_data.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
@@ -66,7 +66,7 @@
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
 #include "sf33rd/Source/Game/rendering/texture_group.h"
 #include "sf33rd/Source/Game/screen/entry.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
@@ -1334,7 +1334,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
         g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
         g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
 
-        /* Menu items: 3 items (AUTO-CONN, CONNECT, EXIT), EFF_FONT_COMPACT = compact 8px font, master_player=1 */
+        /* Menu items: 3 items (AUTO-SpriteConnection, CONNECT, EXIT), EFF_FONT_COMPACT = compact 8px font, master_player=1 */
         {
             static const s16 lan_lobby_strings[] = { 80, 81, 82 };
             for (ix = 0; ix < 3; ix++) {
@@ -1447,7 +1447,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
             if (click & 12) {
                 switch (g_state.Menu_Cursor_Y[0]) {
-                case 0: { /* AUTO-CONN */
+                case 0: { /* AUTO-SpriteConnection */
                     bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
                     Config_SetBool(CFG_KEY_NETPLAY_AUTO_CONNECT, !v);
                     Config_Save();
@@ -1634,7 +1634,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 switch (g_state.IO_Result) {
                 case SWK_SOUTH: /* Confirm */
                     switch (g_state.Menu_Cursor_Y[0]) {
-                    case 0: { /* AUTO-CONN toggle */
+                    case 0: { /* AUTO-SpriteConnection toggle */
                         bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
                         Config_SetBool(CFG_KEY_NETPLAY_AUTO_CONNECT, !v);
                         Config_Save();

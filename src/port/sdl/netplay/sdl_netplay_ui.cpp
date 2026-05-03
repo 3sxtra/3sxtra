@@ -96,9 +96,9 @@ static int async_match_report_fn(void* userdata) {
     AsyncMatchReportData* data = (AsyncMatchReportData*)userdata;
     int match_id = -1;
     MatchSessionStatus session_status = MATCH_SESSION_ERROR;
-    bool ok = LobbyServer_ReportMatch(&data->result, &match_id, &session_status);
+    bool can_activate = LobbyServer_ReportMatch(&data->result, &match_id, &session_status);
 
-    if (ok) {
+    if (can_activate) {
         SDL_Log(
             "[NetplayUI] Match reported successfully (match_id=%d, session_status=%d)", match_id, (int)session_status);
     } else {
@@ -106,7 +106,7 @@ static int async_match_report_fn(void* userdata) {
     }
 
     // Signal session complete if FT was reached
-    if (ok && session_status == MATCH_SESSION_COMPLETE) {
+    if (can_activate && session_status == MATCH_SESSION_COMPLETE) {
         SDL_LockSpinlock(&async_match_session_lock);
         snprintf(async_match_session_winner, sizeof(async_match_session_winner), "%s", data->result.winner_id);
         SDL_UnlockSpinlock(&async_match_session_lock);
@@ -115,7 +115,7 @@ static int async_match_report_fn(void* userdata) {
     }
 
     // Upload the in-memory replay snapshot if the match was recorded
-    if (ok && match_id >= 0 && data->replay_snapshot && data->replay_size > 0) {
+    if (can_activate && match_id >= 0 && data->replay_snapshot && data->replay_size > 0) {
         bool upload_ok = LobbyServer_UploadReplay(match_id, data->replay_snapshot, data->replay_size);
         if (upload_ok) {
             SDL_Log("[NetplayUI] Replay uploaded for match %d (%zu bytes)", match_id, data->replay_size);
@@ -697,9 +697,9 @@ static void lobby_poll_server(void) {
 // STUN discover thread function
 static int SDLCALL stun_discover_thread_fn(void* data) {
     (void)data;
-    bool ok = Stun_Discover(&stun_result, 0); // OS assigns free port
-    SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
-    SDL_SetAtomicInt(&lobby_async_state, ok ? LOBBY_ASYNC_READY : LOBBY_ASYNC_STUN_FAILED);
+    bool can_activate = Stun_Discover(&stun_result, 0); // OS assigns free port
+    SDL_SetAtomicInt(&lobby_thread_result, can_activate ? 1 : 0);
+    SDL_SetAtomicInt(&lobby_async_state, can_activate ? LOBBY_ASYNC_READY : LOBBY_ASYNC_STUN_FAILED);
     return 0;
 }
 
@@ -727,8 +727,8 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
     }
 
     uint32_t start_ms = SDL_GetTicks();
-    bool ok = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, &lobby_punch_peer_port, 2500, &lobby_punch_cancel);
-    if (ok) {
+    bool can_activate = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, &lobby_punch_peer_port, 2500, &lobby_punch_cancel);
+    if (can_activate) {
         uint32_t rtt_ms = (SDL_GetTicks() - start_ms);
         if (rtt_ms > 200)
             rtt_ms = 200; // Cap at reasonable max for display
@@ -736,7 +736,7 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
             rtt_ms = 1;
         lobby_punch_rtt_ms = (int)rtt_ms;
     }
-    SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
+    SDL_SetAtomicInt(&lobby_thread_result, can_activate ? 1 : 0);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_PUNCH_DONE);
     return 0;
 }
@@ -744,8 +744,8 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
 // UPnP fallback thread function
 static int SDLCALL upnp_fallback_thread_fn(void* data) {
     (void)data;
-    bool ok = Upnp_AddMapping(&lobby_upnp_mapping, stun_result.local_port, stun_result.public_port, "UDP");
-    SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
+    bool can_activate = Upnp_AddMapping(&lobby_upnp_mapping, stun_result.local_port, stun_result.public_port, "UDP");
+    SDL_SetAtomicInt(&lobby_thread_result, can_activate ? 1 : 0);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_UPNP_DONE);
     return 0;
 }

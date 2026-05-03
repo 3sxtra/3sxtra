@@ -85,7 +85,7 @@ static void sysdir_enter(struct _TASK* task_ptr) {
      * AT index 11 = from Option_Select, AT index 5 = from Mode_Select.
      * After the integration hook intercepts, r_no[1] may already be
      * overwritten. We check: if parent screen is currently Option_Select
-     * or if r_no[1] was 11 when we entered. The registry hooks store
+     * or if r_no[1] was 11 when we entered. The registry hooks stock
      * r_no[1] before Goto, so we can check the raw value. */
     s_sysdir_from_option = (task_ptr->r_no[1] == 11);
 

@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
@@ -135,7 +135,7 @@ s32 effect_E0_init(s16 Direction, s16 damage_vitality, s16 Pos_Type) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 140;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
@@ -143,8 +143,8 @@ s32 effect_E0_init(s16 Direction, s16 damage_vitality, s16 Pos_Type) {
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.damage_vitality = damage_vitality;
     ewk->wu.direction = Direction;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.xyz[0].disp.pos =
         g_state.Offset_BG_X[3] + g_state.bg_w.bgw[3].wxy[0].disp.pos + Plate_Pos_Data_E0[Pos_Type][0];
     ewk->wu.xyz[1].disp.pos = g_state.bg_w.bgw[3].wxy[1].disp.pos + Plate_Pos_Data_E0[Pos_Type][1];

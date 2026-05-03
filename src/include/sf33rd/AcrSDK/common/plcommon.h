@@ -39,7 +39,7 @@ typedef struct {
     u32 mem_handle;
     uintptr_t lock_ptr;
     u32 tex_num;
-    s8 be_flag;
+    s8 active_flag;
     u8 lock_flag;
     void* wkVram;
 } FLTexture;

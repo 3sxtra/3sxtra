@@ -6,6 +6,6 @@
 
 void effect_I8_move(State_Other* ewk);
 s32 check_ball_mizushibuki(s16 xx, s16 yy);
-void setup_effI8(PLW* wk, const BBBSTable* dadr);
+void setup_effI8(PlayerEntity* wk, const BBBSTable* dadr);
 
 #endif

@@ -18,7 +18,7 @@
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
 #include "sf33rd/Source/Game/screen/ranking.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
@@ -43,7 +43,7 @@ void (*const EFF76_Jmp_Tbl[8])() = { EFF76_WAIT, EFF76_SLIDE_IN, EFF76_SLIDE_OUT
 void effect_76_move(State_Other* ewk) {
     EFF76_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag == 0) {
+    if (ewk->wu.active_flag == 0) {
         return;
     }
 
@@ -253,14 +253,14 @@ s32 effect_76_init(s16 dir_old) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 76;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
     ewk->wu.my_family = 3;
     *ewk->wu.char_table = _sel_pl_char_table;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.dir_old = dir_old;
     ewk->wu.direction = 2;
     ewk->wu.damage_vitality = Width_Data_76[dir_old - 43];
@@ -429,8 +429,8 @@ static void Setup_Pos_76(State_Other* ewk) {
             ix = 0;
         }
 
-        ewk->wu.my_mts = 14;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 14;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
         ewk->wu.hit_quake = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos +
                             Compute_Pos_Data_76[ix][g_state.Order_Dir[ewk->wu.dir_old]][0];
         ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake + 0x1A0;

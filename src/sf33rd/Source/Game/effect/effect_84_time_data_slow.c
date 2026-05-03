@@ -112,7 +112,7 @@ s32 effect_84_init() {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 84;
     return 0;
 }

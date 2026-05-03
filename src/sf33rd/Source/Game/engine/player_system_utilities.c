@@ -39,7 +39,7 @@
 #include "game_state.h"
 #include "bin2obj/gauge.h"
 #include "common.h"
-#include "sf33rd/Source/Game/com/com_data.h"
+#include "sf33rd/Source/Game/com/ai_data_tables.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charid.h"
@@ -49,7 +49,7 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/country_region.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
@@ -62,11 +62,11 @@ s32 random_32();
 static s32 random_32_ex();
 static s32 random_16_ex();
 s8 get_guard_direction(State* as, State* ds);
-void add_sp_arts_gauge_guard(PLW* wk);
-static s16 cal_sa_gauge_waribiki(PLW* wk, s16 asag);
-void setup_latest_stick_dir(PLW* ds, s8 gddir);
+void add_sp_arts_gauge_guard(PlayerEntity* wk);
+static s16 cal_sa_gauge_waribiki(PlayerEntity* wk, s16 asag);
+void setup_latest_stick_dir(PlayerEntity* ds, s8 gddir);
 void dead_voice_request();
-static void dead_voice_request2(PLW* wk);
+static void dead_voice_request2(PlayerEntity* wk);
 
 const s16 asagh_zuru[8] = { -2, -1, 0, 0, 1, 2, 3, 4 };
 
@@ -189,7 +189,7 @@ void setup_mvxy_data(State* wk, u16 ix) {
 void setup_butt_own_data(State* wk) {
     wk->mvxy.index = wk->damage_knockback_type;
     read_adrs_store_mvxy(
-        wk, (s16*)((char*)parabora_own_table[wk->dm_plnum] + wk->damage_knockback_type * 48 + wk->weight_level * 12));
+        wk, (s16*)((char*)parabora_own_table[wk->damage_player_num] + wk->damage_knockback_type * 48 + wk->weight_level * 12));
 }
 
 /** @brief Reads movement address data and stores into work XY. */
@@ -208,7 +208,7 @@ static void read_adrs_store_mvxy(State* wk, s16* adrs) {
 
 /** @brief Returns the weight-class index for the character. */
 s8 get_weight_point(State* wk) {
-    return wk->dm_weight - wk->weight_level + 3;
+    return wk->damage_weight - wk->weight_level + 3;
 }
 
 /** @brief Calculates movement speed with deceleration. */
@@ -244,7 +244,7 @@ void cal_mvxy_speed(State* wk) {
 
 /** @brief Applies movement speed to position using facing direction. */
 void add_mvxy_speed(State* wk) {
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         wk->xyz[0].cal += wk->mvxy.a[0].sp;
     } else {
         wk->xyz[0].cal -= wk->mvxy.a[0].sp;
@@ -255,7 +255,7 @@ void add_mvxy_speed(State* wk) {
 
 /** @brief Applies movement speed with explicit deceleration value. */
 void add_mvxy_speed_exp(State* wk, s16 dvp) {
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         wk->xyz[0].cal += wk->mvxy.a[0].sp / dvp;
     } else {
         wk->xyz[0].cal -= wk->mvxy.a[0].sp / dvp;
@@ -279,7 +279,7 @@ void add_mvxy_speed_direct(State* wk, s16 sx, s16 sy) {
     ay = sy;
     ax <<= 8;
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         wk->xyz[0].cal += ax;
     } else {
         wk->xyz[0].cal -= ax;
@@ -335,8 +335,8 @@ void remake_mvxy_PoGR(State* wk) {
 
 /** @brief Checks player push-box collision and pushes them apart if needed. */
 void check_body_touch() {
-    PLW* p1w = &g_state.plw[0];
-    PLW* p2w = &g_state.plw[1];
+    PlayerEntity* p1w = &g_state.plw[0];
+    PlayerEntity* p2w = &g_state.plw[1];
     s16 meri;
 
     if (p1w->wu.pushbox->hos_box[0] != 0 && p2w->wu.pushbox->hos_box[0] != 0) {
@@ -361,22 +361,22 @@ void check_body_touch() {
         }
     }
 
-    p1w->hos_em_flag = 0;
-    p2w->hos_em_flag = 0;
+    p1w->pushbox_emergency_flag = 0;
+    p2w->pushbox_emergency_flag = 0;
     return;
 
 one:
     p1w->wu.xyz[0].disp.pos += meri * (p1w->close_proximity_flag != 1);
     p2w->wu.xyz[0].disp.pos -= meri * (p2w->close_proximity_flag != 2);
-    p1w->hos_em_flag = 2;
-    p2w->hos_em_flag = 1;
+    p1w->pushbox_emergency_flag = 2;
+    p2w->pushbox_emergency_flag = 1;
     return;
 
 two:
     p1w->wu.xyz[0].disp.pos -= meri * (p1w->close_proximity_flag != 2);
     p2w->wu.xyz[0].disp.pos += meri * (p2w->close_proximity_flag != 1);
-    p1w->hos_em_flag = 1;
-    p2w->hos_em_flag = 2;
+    p1w->pushbox_emergency_flag = 1;
+    p2w->pushbox_emergency_flag = 2;
 }
 
 /** @brief Converts a push-box overlap amount to a step value. */
@@ -404,8 +404,8 @@ static s16 meri_case_switch(s16 meri) {
 
 /** @brief Extended push-box check with wall/corner handling. */
 void check_body_touch2() {
-    PLW* hmw;
-    PLW* cmw;
+    PlayerEntity* hmw;
+    PlayerEntity* cmw;
     State* efw;
     s16* dad0;
     s16* dad1;
@@ -461,26 +461,26 @@ void check_body_touch2() {
         }
     }
 
-    hmw->hos_em_flag = 0;
-    cmw->hos_em_flag = 0;
+    hmw->pushbox_emergency_flag = 0;
+    cmw->pushbox_emergency_flag = 0;
     return;
 
 one:
     hmw->wu.xyz[0].disp.pos += (meri) * (hmw->close_proximity_flag != 1);
-    hmw->hos_em_flag = 2;
-    cmw->hos_em_flag = 1;
+    hmw->pushbox_emergency_flag = 2;
+    cmw->pushbox_emergency_flag = 1;
     return;
 
 two:
     hmw->wu.xyz[0].disp.pos -= (meri) * (hmw->close_proximity_flag != 2);
-    hmw->hos_em_flag = 1;
-    cmw->hos_em_flag = 2;
+    hmw->pushbox_emergency_flag = 1;
+    cmw->pushbox_emergency_flag = 2;
     return;
 }
 
 /** @brief Checks if we are in the bonus-stage car object area. */
 s32 check_be_car_object() {
-    PLW* com;
+    PlayerEntity* com;
 
     if (g_state.pcon_rno[0] == 0) {
         return 1;
@@ -496,7 +496,7 @@ s32 check_be_car_object() {
         return 1;
     }
 
-    return ((PLW*)com->wu.my_effadrs)->wu.be_flag != 0;
+    return ((PlayerEntity*)com->wu.my_effadrs)->wu.active_flag != 0;
 }
 
 /** @brief Checks if position correction is allowed. */
@@ -504,7 +504,7 @@ static s16 is_adjustment_allowed(State* wk, s16 tx) {
     s16 rnum = 0;
 
     if (wk->cg_jphos + cal_top_of_position_y(wk) > g_state.bs2_floor[2] || wk->mvxy.a[1].real.h < 0) {
-        switch ((wk->xyz[0].disp.pos < tx) + (wk->rl_flag != 0) * 2) {
+        switch ((wk->xyz[0].disp.pos < tx) + (wk->facing_flag != 0) * 2) {
         case 1:
         case 2:
             if (wk->mvxy.a[1].real.h > 0 && wk->mvxy.a[0].real.h < 0) {
@@ -544,14 +544,14 @@ s16 check_work_position_bonus(State* hm, s16 tx) {
             num = 0;
         }
     } else {
-        num = hm->rl_flag == 0;
+        num = hm->facing_flag == 0;
     }
 
     return num;
 }
 
 /** @brief Sets the field correction flag based on position. */
-s32 set_field_adjust_flag(PLW* pl, s16 pos, s16 ix) {
+s32 set_field_adjust_flag(PlayerEntity* pl, s16 pos, s16 ix) {
     s16 hami;
 
     while (1) {
@@ -562,14 +562,14 @@ s32 set_field_adjust_flag(PLW* pl, s16 pos, s16 ix) {
                 if (hami >= 0) {
                     pl->wu.xyz[0].disp.pos -= hami;
                     pl->close_proximity_flag = 1;
-                    pl->hos_fi_flag = 1;
+                    pl->pushbox_finish_flag = 1;
                     pl->scaling_remainder = -hami;
                 } else {
                     break;
                 }
             } else {
                 pl->close_proximity_flag = 1;
-                pl->hos_fi_flag = 0;
+                pl->pushbox_finish_flag = 0;
                 pl->scaling_remainder = 0;
             }
         } else {
@@ -579,14 +579,14 @@ s32 set_field_adjust_flag(PLW* pl, s16 pos, s16 ix) {
                 if (hami <= 0) {
                     pl->wu.xyz[0].disp.pos -= hami;
                     pl->close_proximity_flag = 2;
-                    pl->hos_fi_flag = 2;
+                    pl->pushbox_finish_flag = 2;
                     pl->scaling_remainder = -hami;
                 } else {
                     break;
                 }
             } else {
                 pl->close_proximity_flag = 2;
-                pl->hos_fi_flag = 0;
+                pl->pushbox_finish_flag = 0;
                 pl->scaling_remainder = 0;
             }
         }
@@ -595,7 +595,7 @@ s32 set_field_adjust_flag(PLW* pl, s16 pos, s16 ix) {
     }
 
     pl->close_proximity_flag = 0;
-    pl->hos_fi_flag = 0;
+    pl->pushbox_finish_flag = 0;
     pl->scaling_remainder = 0;
     return 1;
 }
@@ -611,8 +611,8 @@ s16 check_work_position(State* p1, State* p2) {
         } else {
             num = 0;
         }
-    } else if (p1->rl_flag + p2->rl_flag & 1) {
-        if (p1->rl_flag) {
+    } else if (p1->facing_flag + p2->facing_flag & 1) {
+        if (p1->facing_flag) {
             num = 0;
         } else {
             num = 1;
@@ -620,7 +620,7 @@ s16 check_work_position(State* p1, State* p2) {
     } else {
         switch ((p1->xyz[1].disp.pos == 0) + (p2->xyz[1].disp.pos == 0) * 2) {
         case 1:
-            if (p1->rl_flag) {
+            if (p1->facing_flag) {
                 num = 0;
             } else {
                 num = 1;
@@ -628,7 +628,7 @@ s16 check_work_position(State* p1, State* p2) {
             break;
 
         case 2:
-            if (p2->rl_flag) {
+            if (p2->facing_flag) {
                 num = 1;
             } else {
                 num = 0;
@@ -740,12 +740,12 @@ s8 get_guard_direction(State* as, State* ds) {
 
         if (result) {
             if (result < 0) {
-                if (ds->rl_flag) {
+                if (ds->facing_flag) {
                     num = 1;
                 } else {
                     num = 2;
                 }
-            } else if (ds->rl_flag) {
+            } else if (ds->facing_flag) {
                 num = 2;
             } else {
                 num = 1;
@@ -753,11 +753,11 @@ s8 get_guard_direction(State* as, State* ds) {
         } else {
             num = 3;
         }
-    } else if (((PLW*)ds)->spmv_ng_flag & DIP_GUARD_CHECK_ENABLED) {
-        if (as->rl_flag + ds->rl_flag & 1) {
+    } else if (((PlayerEntity*)ds)->spmv_ng_flag & DIP_GUARD_CHECK_ENABLED) {
+        if (as->facing_flag + ds->facing_flag & 1) {
             if (ds->work_id != 1) {
                 num = 2;
-            } else if (ds->rl_flag == ds->active_move) {
+            } else if (ds->facing_flag == ds->active_move) {
                 num = 2;
             } else {
                 num = 3;
@@ -765,7 +765,7 @@ s8 get_guard_direction(State* as, State* ds) {
         } else {
             num = 3;
         }
-    } else if (as->rl_flag + ds->rl_flag & 1) {
+    } else if (as->facing_flag + ds->facing_flag & 1) {
         num = 2;
     } else {
         num = 3;
@@ -778,7 +778,7 @@ s8 get_guard_direction(State* as, State* ds) {
 s16 cal_attdir(State* wk) {
     s16 resdir = wk->att.dir;
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         resdir = dir16_rl_conv[resdir];
     }
 
@@ -832,7 +832,7 @@ void setup_vitality(State* wk, s16 pno) {
 }
 
 /** @brief Calculates damage-vitality gauge scaling correction. */
-void cal_dm_vital_gauge_adjust(PLW* wk) {
+void cal_dm_vital_gauge_adjust(PlayerEntity* wk) {
     s16 cnjix;
 
     if (wk->wu.damage_vitality == 0) {
@@ -875,12 +875,12 @@ void set_hit_stop_hit_quake(State* wk) {
 }
 
 /** @brief Adds initial SA gauge at round start. */
-void add_sp_arts_gauge_init(PLW* wk) {
-    PLW* mwk;
+void add_sp_arts_gauge_init(PlayerEntity* wk) {
+    PlayerEntity* mwk;
     s16 asag;
 
     if (wk->wu.work_id != 1) {
-        mwk = (PLW*)wk->cp;
+        mwk = (PlayerEntity*)wk->cp;
 
         if ((mwk->wu.work_id == 1) && !(mwk->special_move_disabled_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
             asag = _add_arts_gauge[mwk->player_number][wk->wu.add_arts_point][0];
@@ -893,12 +893,12 @@ void add_sp_arts_gauge_init(PLW* wk) {
 }
 
 /** @brief Adds SA gauge on guard (defensive meter gain). */
-void add_sp_arts_gauge_guard(PLW* wk) {
-    PLW* mwk;
+void add_sp_arts_gauge_guard(PlayerEntity* wk) {
+    PlayerEntity* mwk;
     s16 asag;
 
     if (wk->wu.work_id != 1) {
-        mwk = (PLW*)wk->cp;
+        mwk = (PlayerEntity*)wk->cp;
 
         if (mwk->wu.work_id == 1) {
             asag = _add_arts_gauge[mwk->player_number][wk->wu.add_arts_point][1];
@@ -911,16 +911,16 @@ void add_sp_arts_gauge_guard(PLW* wk) {
 }
 
 /** @brief Adds SA gauge on landing a hit with damage. */
-void add_sp_arts_gauge_hit_dm(PLW* wk) {
-    PLW* emwk;
+void add_sp_arts_gauge_hit_dm(PlayerEntity* wk) {
+    PlayerEntity* emwk;
     s16 asag;
 
     if (wk->wu.work_id != 1) {
         return;
     }
 
-    emwk = (PLW*)wk->wu.target_adrs;
-    asag = _add_arts_gauge[emwk->player_number][wk->wu.dm_arts_point][2];
+    emwk = (PlayerEntity*)wk->wu.target_adrs;
+    asag = _add_arts_gauge[emwk->player_number][wk->wu.damage_arts_point][2];
 
     if (asag != 0) {
         add_super_arts_gauge(wk->sa, wk->wu.id, asag / 3, wk->metamorphose);
@@ -942,11 +942,11 @@ void add_sp_arts_gauge_hit_dm(PLW* wk) {
         add_super_arts_gauge(emwk->sa, emwk->wu.id, asag, emwk->metamorphose);
     }
 
-    wk->wu.dm_arts_point = 0;
+    wk->wu.damage_arts_point = 0;
 }
 
 /** @brief Calculates SA gauge discount factor. */
-static s16 cal_sa_gauge_waribiki(PLW* wk, s16 asag) {
+static s16 cal_sa_gauge_waribiki(PlayerEntity* wk, s16 asag) {
     s16 num;
 
     if (wk->combo_type.total < 2) {
@@ -969,8 +969,8 @@ static s16 cal_sa_gauge_waribiki(PLW* wk, s16 asag) {
 }
 
 /** @brief Adds SA gauge on successful parry. */
-void add_sp_arts_gauge_paring(PLW* wk) {
-    PLW* emwk;
+void add_sp_arts_gauge_paring(PlayerEntity* wk) {
+    PlayerEntity* emwk;
     s16 asag;
 
     if (sa_stop_check() != 0) {
@@ -981,8 +981,8 @@ void add_sp_arts_gauge_paring(PLW* wk) {
         return;
     }
 
-    emwk = (PLW*)wk->wu.target_adrs;
-    asag = _add_arts_gauge[emwk->player_number][wk->wu.dm_arts_point][3];
+    emwk = (PlayerEntity*)wk->wu.target_adrs;
+    asag = _add_arts_gauge[emwk->player_number][wk->wu.damage_arts_point][3];
 
     if (asag != 0) {
         if (wk->wu.pl_operator == 0) {
@@ -996,7 +996,7 @@ void add_sp_arts_gauge_paring(PLW* wk) {
         add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
     }
 
-    wk->wu.dm_arts_point = 0;
+    wk->wu.damage_arts_point = 0;
 }
 
 /**
@@ -1004,7 +1004,7 @@ void add_sp_arts_gauge_paring(PLW* wk) {
  * Checks work_id, applies difficulty adjustment, clamps, and calls
  * add_super_arts_gauge. Used by tokushu, ukemi, and throw_escape.
  */
-static void add_sp_arts_gauge_self(PLW* wk, s16 asag) {
+static void add_sp_arts_gauge_self(PlayerEntity* wk, s16 asag) {
     if (wk->wu.work_id != 1) {
         return;
     }
@@ -1025,27 +1025,27 @@ static void add_sp_arts_gauge_self(PLW* wk, s16 asag) {
 }
 
 /** @brief Adds SA gauge for special (tokushu) moves. */
-void add_sp_arts_gauge_tokushu(PLW* wk) {
+void add_sp_arts_gauge_tokushu(PlayerEntity* wk) {
     add_sp_arts_gauge_self(wk, apagt_table[wk->player_number]);
 }
 
 /** @brief Adds SA gauge on successful ukemi (tech-roll). */
-void add_sp_arts_gauge_ukemi(PLW* wk) {
+void add_sp_arts_gauge_ukemi(PlayerEntity* wk) {
     add_sp_arts_gauge_self(wk, 3);
 }
 
 /** @brief Adds SA gauge on successful throw break. */
-void Add_Super_Gauge_Throw_Escape(PLW* wk) {
+void Add_Super_Gauge_Throw_Escape(PlayerEntity* wk) {
     add_sp_arts_gauge_self(wk, 6);
 }
 
 /** @brief Clamps SA gauge to the maximum bit count. */
-void add_sp_arts_gauge_maxbit(PLW* wk) {
+void add_sp_arts_gauge_maxbit(PlayerEntity* wk) {
     if (g_state.pcon_rno[0] != 1) {
         return;
     }
 
-    if (wk->sa->mp == -1 || wk->sa->ok == -1 || wk->sa->ex == -1) {
+    if (wk->sa->meter_points == -1 || wk->sa->can_activate == -1 || wk->sa->ex_mode == -1) {
         return;
     }
 
@@ -1056,7 +1056,7 @@ void add_sp_arts_gauge_maxbit(PLW* wk) {
 
     if (!(wk->special_move_disabled_flag2 & DIP2_SA_GAUGE_AUTOFILL_DISABLED)) {
         g_state.sag_inc_timer[wk->wu.id] = 2;
-        add_super_arts_gauge(wk->sa, wk->wu.id, wk->sa->gauge_len, wk->metamorphose);
+        add_super_arts_gauge(wk->sa, wk->wu.id, wk->sa->gauge_length, wk->metamorphose);
         return;
     }
 
@@ -1071,14 +1071,14 @@ void add_sp_arts_gauge_maxbit(PLW* wk) {
 }
 
 /** @brief Adds an amount to the Super Arts gauge. */
-void add_super_arts_gauge(SA_WORK* wk, s16 ix, s16 asag, u8 mf) {
+void add_super_arts_gauge(SuperArtGauge* wk, s16 ix, s16 asag, u8 mf) {
     if (!g_state.test_flag && !mf) {
-        if ((wk->mp == -1) || (wk->ok == -1) || (wk->ex == -1)) {
+        if ((wk->meter_points == -1) || (wk->can_activate == -1) || (wk->ex_mode == -1)) {
             return;
         }
 
         if (!g_state.pcon_dp_flag && !g_state.Bonus_Game_Flag && (sa_gauge_omake[omop_sa_gauge_ix[ix]] != 0) &&
-            (asag > 0) && (wk->store != wk->store_max)) {
+            (asag > 0) && (wk->stock != wk->stock_max)) {
             asag = asag * 0x78 / 100;
 
             if (CurrentSave()->Battle_Number[g_state.Play_Type] == 0) {
@@ -1094,13 +1094,13 @@ void add_super_arts_gauge(SA_WORK* wk, s16 ix, s16 asag, u8 mf) {
             wk->gauge.s.h += asag;
             wk->gauge.s.l = -1;
 
-            if (wk->gauge.s.h > wk->gauge_len) {
-                wk->store += 1;
+            if (wk->gauge.s.h > wk->gauge_length) {
+                wk->stock += 1;
 
-                if (wk->store < wk->store_max) {
-                    wk->gauge.s.h -= wk->gauge_len;
+                if (wk->stock < wk->stock_max) {
+                    wk->gauge.s.h -= wk->gauge_length;
                 } else {
-                    wk->store = wk->store_max;
+                    wk->stock = wk->stock_max;
                     wk->gauge.i = 0;
                 }
 
@@ -1111,7 +1111,7 @@ void add_super_arts_gauge(SA_WORK* wk, s16 ix, s16 asag, u8 mf) {
 }
 
 /** @brief Returns the blow-away type for grounded knockback. */
-s16 check_buttobi_type(PLW* wk) {
+s16 check_buttobi_type(PlayerEntity* wk) {
     s16 rn;
 
     setup_butt_own_data(&wk->wu);
@@ -1120,7 +1120,7 @@ s16 check_buttobi_type(PLW* wk) {
 }
 
 /** @brief Returns the blow-away type for airborne knockback. */
-s16 check_buttobi_type2(PLW* wk) {
+s16 check_buttobi_type2(PlayerEntity* wk) {
     s16 rn;
 
     setup_butt_own_data(&wk->wu);
@@ -1129,14 +1129,14 @@ s16 check_buttobi_type2(PLW* wk) {
 }
 
 /** @brief Sets up latest lever direction for defender. */
-void setup_latest_stick_dir(PLW* ds, s8 gddir) {
+void setup_latest_stick_dir(PlayerEntity* ds, s8 gddir) {
     if ((ds->sa_stop_flag) == 1) {
-        if (ds->wu.rl_flag) {
-            ds->latest_stick_dir = convert_latest_stick_dir[1][ds->sa_stop_lvdir & 0xC];
+        if (ds->wu.facing_flag) {
+            ds->latest_stick_dir = convert_latest_stick_dir[1][ds->super_art_stop_lever_dir & 0xC];
         } else {
-            ds->latest_stick_dir = convert_latest_stick_dir[0][ds->sa_stop_lvdir & 0xC];
+            ds->latest_stick_dir = convert_latest_stick_dir[0][ds->super_art_stop_lever_dir & 0xC];
         }
-    } else if (ds->wu.rl_flag) {
+    } else if (ds->wu.facing_flag) {
         ds->latest_stick_dir = convert_latest_stick_dir[1][ds->cp->input_held & 0xC];
     } else {
         ds->latest_stick_dir = convert_latest_stick_dir[0][ds->cp->input_held & 0xC];
@@ -1148,8 +1148,8 @@ void setup_latest_stick_dir(PLW* ds, s8 gddir) {
 }
 
 /** @brief Sets up lever direction after auto-direction adjustment. */
-void setup_lvdir_after_autodir(PLW* wk) {
-    if (wk->wu.rl_flag) {
+void setup_lvdir_after_autodir(PlayerEntity* wk) {
+    if (wk->wu.facing_flag) {
         wk->cp->lever_dir = convert_latest_stick_dir[1][wk->cp->input_held & 0xC];
         return;
     }
@@ -1160,11 +1160,11 @@ void setup_lvdir_after_autodir(PLW* wk) {
 /** @brief Requests the death voice sound for both players. */
 void dead_voice_request() {
     if (g_state.dead_voice_flag) {
-        if (g_state.plw[0].dead_flag) {
+        if (g_state.plw[0].death_timerlag) {
             dead_voice_request2(&g_state.plw[0]);
         }
 
-        if (g_state.plw[1].dead_flag) {
+        if (g_state.plw[1].death_timerlag) {
             dead_voice_request2(&g_state.plw[1]);
         }
     }
@@ -1173,7 +1173,7 @@ void dead_voice_request() {
 }
 
 /** @brief Requests the death voice sound for a specific player. */
-static void dead_voice_request2(PLW* wk) {
+static void dead_voice_request2(PlayerEntity* wk) {
     s16 secd1;
     s16 secd2;
     s16 ks = 0;

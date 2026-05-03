@@ -10,7 +10,7 @@ extern const u16 acatkoa_table[];
 extern u16 att_req;
 
 void setupCharTableData(State* wk, s32 clr, s32 info);
-void char_move_cmd_hit_stop(PLW* wk);
+void char_move_cmd_hit_stop(PlayerEntity* wk);
 void char_move(State* wk);
 void check_cm_extended_code(State* wk);
 void setup_comm_back(State* wk);
@@ -27,7 +27,7 @@ void char_move_cmja(State* wk);
 void exset_char_move_init(State* wk, s16 kind_of_char, s16 index);
 void char_move_cmms(State* wk);
 void char_move_cmms2(State* wk);
-s32 char_move_cmms3(PLW* wk);
+s32 char_move_cmms3(PlayerEntity* wk);
 void char_move_index(State* wk, s16 ix);
 void char_move_cmj4(State* wk);
 void get_char_data_zanzou(State* wk);

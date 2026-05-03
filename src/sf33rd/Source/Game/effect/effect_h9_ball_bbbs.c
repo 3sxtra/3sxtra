@@ -7,12 +7,12 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-const CONN bbbs_ball[4][3] = {
+const SpriteConnection bbbs_ball[4][3] = {
     { { 153, 0, 0, 32464 }, { 142, 0, 0, 32464 }, { 172, 8, 0, 32488 } },
     { { -141, 0, 0, 32464 }, { -152, 0, 0, 32464 }, { -174, 8, 0, 32488 } },
     { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } },
@@ -20,9 +20,9 @@ const CONN bbbs_ball[4][3] = {
 };
 
 static void effH9_trans(State* ewk);
-static void nokori_ball_effH9(WORK_Other_CONN* ewk, s16 num);
+static void nokori_ball_effH9(EffectMultiSprite* ewk, s16 num);
 
-void effect_H9_move(WORK_Other_CONN* ewk) {
+void effect_H9_move(EffectMultiSprite* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         switch (ewk->wu.routine_no[1]) {
@@ -37,7 +37,7 @@ void effect_H9_move(WORK_Other_CONN* ewk) {
             break;
 
         case 1:
-            if (g_state.Game_pause || g_state.EXE_flag) {
+            if (g_state.Game_pause || g_state.execute_flag) {
                 break;
             }
 
@@ -61,7 +61,7 @@ void effect_H9_move(WORK_Other_CONN* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -88,13 +88,13 @@ static void effH9_trans(State* ewk) {
     sort_push_request3(ewk);
 }
 
-static void nokori_ball_effH9(WORK_Other_CONN* ewk, s16 num) {
+static void nokori_ball_effH9(EffectMultiSprite* ewk, s16 num) {
     ewk->conn[0].chr = (num % 10) + 32464;
     ewk->conn[1].chr = (num / 10) + 32464;
 }
 
-s32 effect_H9_init(PLW* wk) {
-    WORK_Other_CONN* ewk;
+s32 effect_H9_init(PlayerEntity* wk) {
+    EffectMultiSprite* ewk;
     s16 ix;
     s16 i;
 
@@ -102,19 +102,19 @@ s32 effect_H9_init(PLW* wk) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 179;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.my_family = 3;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.type = wk->wu.rl_flag;
+    ewk->wu.type = wk->wu.facing_flag;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 73;
     ewk->num_of_conn = 3;
 
-    if (wk->wu.rl_flag) {
+    if (wk->wu.facing_flag) {
         ix = 1;
     } else {
         ix = 0;

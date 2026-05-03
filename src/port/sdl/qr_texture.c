@@ -48,7 +48,7 @@ bool QRTexture_GenerateBMP(const char* text, const char* path, int scale) {
     uint8_t qr_buf[qrcodegen_BUFFER_LEN_MAX];
     uint8_t temp_buf[qrcodegen_BUFFER_LEN_MAX];
 
-    bool ok = qrcodegen_encodeText(text,
+    bool can_activate = qrcodegen_encodeText(text,
                                    temp_buf,
                                    qr_buf,
                                    qrcodegen_Ecc_LOW, /* Low ECC for shorter URLs, denser QR */
@@ -57,7 +57,7 @@ bool QRTexture_GenerateBMP(const char* text, const char* path, int scale) {
                                    qrcodegen_Mask_AUTO,
                                    true /* Boost ECC if possible */
     );
-    if (!ok) {
+    if (!can_activate) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[QR] Failed to encode: %s", text);
         return false;
     }

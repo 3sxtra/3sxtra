@@ -11,13 +11,13 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 
-static void att_ahj_table_reader(PLW* wk);
+static void att_ahj_table_reader(PlayerEntity* wk);
 
 /** @brief Dummy attack — no-op placeholder. */
-void Att_DUMMY(PLW* /* unused */) {}
+void Att_DUMMY(PlayerEntity* /* unused */) {}
 
 /** @brief Metamorphosis wait state — waits before transformation. */
-void Att_METAMOR_WAIT(PLW* wk) {
+void Att_METAMOR_WAIT(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -59,13 +59,13 @@ const s16 metareb_pos[20][2] = { { 1, 9 },  { 14, 19 }, { 5, 31 }, { 8, 24 },  {
                                  { 5, 30 }, { 1, 23 },  { 6, 22 }, { 13, 25 }, { -4, 22 }, { 0, 17 } };
 
 /** @brief Metamorphosis rebirth — character transformation effect. */
-void Att_METAMOR_REBIRTH(PLW* wk) {
+void Att_METAMOR_REBIRTH(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3] = 1;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         reset_mvxy_data(&wk->wu);
 
         if (wk->wu.xyz[1].disp.pos < 3) {
@@ -73,7 +73,7 @@ void Att_METAMOR_REBIRTH(PLW* wk) {
         } else {
             wk->wu.xyz[1].disp.pos -= metareb_pos[wk->player_number][1];
 
-            if (wk->wu.rl_flag) {
+            if (wk->wu.facing_flag) {
                 wk->wu.xyz[0].disp.pos += metareb_pos[wk->player_number][0];
             } else {
                 wk->wu.xyz[0].disp.pos -= metareb_pos[wk->player_number][0];
@@ -119,17 +119,17 @@ void Att_METAMOR_REBIRTH(PLW* wk) {
 }
 
 /** @brief Hadouken fireball attack (simple version). */
-void Att_HADOUKEN(PLW* wk) {
+void Att_HADOUKEN(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
     Att_HADOUKEN2(wk);
 }
 
 /** @brief Hadouken fireball attack (with multi-hit / EX). */
-void Att_HADOUKEN2(PLW* wk) {
+void Att_HADOUKEN2(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -141,7 +141,7 @@ void Att_HADOUKEN2(PLW* wk) {
 }
 
 /** @brief Normal wakeup (okiagari) attack from prone position. */
-void Att_NM_OKIAGARI(PLW* wk) {
+void Att_NM_OKIAGARI(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -155,11 +155,11 @@ void Att_NM_OKIAGARI(PLW* wk) {
 }
 
 /** @brief Shoryuken (dragon punch) rising uppercut attack. */
-void Att_SHOURYUUKEN(PLW* wk) {
+void Att_SHOURYUUKEN(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
@@ -203,11 +203,11 @@ void Att_SHOURYUUKEN(PLW* wk) {
 }
 
 /** @brief Senpuukyaku (hurricane kick) spinning kick attack. */
-void Att_SENPUUKYAKU(PLW* wk) {
+void Att_SENPUUKYAKU(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
@@ -245,11 +245,11 @@ void Att_SENPUUKYAKU(PLW* wk) {
 }
 
 /** @brief Senpuukyaku variant 2 (air version spinning kick). */
-void Att_SENPUUKYAKU2(PLW* wk) {
+void Att_SENPUUKYAKU2(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->data_ix);
@@ -278,11 +278,11 @@ void Att_SENPUUKYAKU2(PLW* wk) {
 }
 
 /** @brief Abise-geri (overhead kick / dive kick). */
-void Att_ABISEGERI(PLW* wk) {
+void Att_ABISEGERI(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->r_no);
@@ -333,11 +333,11 @@ void Att_ABISEGERI(PLW* wk) {
 }
 
 /** @brief Shouryuu-reppa (multi-hit shoryuken Super Art). */
-void Att_SHOURYUUREPPA(PLW* wk) {
+void Att_SHOURYUUREPPA(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
@@ -391,11 +391,11 @@ void Att_SHOURYUUREPPA(PLW* wk) {
 }
 
 /** @brief Shin-Shoryuken (true dragon punch Super Art). */
-void Att_SHINSHOURYUUKEN(PLW* wk) {
+void Att_SHINSHOURYUUKEN(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
@@ -426,7 +426,7 @@ void Att_SHINSHOURYUUKEN(PLW* wk) {
 }
 
 /** @brief Kuuchuu Nichirin-shou (air palm-strike special). */
-void Att_KUUCHUUNICHIRINSHOU(PLW* wk) {
+void Att_KUUCHUUNICHIRINSHOU(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -458,7 +458,7 @@ void Att_KUUCHUUNICHIRINSHOU(PLW* wk) {
 }
 
 /** @brief Kuuchuu Jinchuu-watari (air command movement). */
-void Att_KUUCHUUJINNCHUUWATARI(PLW* wk) {
+void Att_KUUCHUUJINNCHUUWATARI(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -508,11 +508,11 @@ void Att_KUUCHUUJINNCHUUWATARI(PLW* wk) {
 }
 
 /** @brief Tenshin-senkyuutai (multi-hit spinning Super Art). */
-void Att_TENSHINSENKYUUTAI(PLW* wk) {
+void Att_TENSHINSENKYUUTAI(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
@@ -551,7 +551,7 @@ void Att_TENSHINSENKYUUTAI(PLW* wk) {
         add_mvxy_speed(&wk->wu);
         cal_mvxy_speed(&wk->wu);
 
-        if (wk->wu.routine_no[3] != 4 && wk->hos_fi_flag | wk->hos_em_flag) {
+        if (wk->wu.routine_no[3] != 4 && wk->pushbox_finish_flag | wk->pushbox_emergency_flag) {
             char_move_cmj4(&wk->wu);
             wk->wu.routine_no[3] = 4;
         }
@@ -604,12 +604,12 @@ void Att_TENSHINSENKYUUTAI(PLW* wk) {
 }
 
 /** @brief Chouchuu-rengeki (mid-air rapid chain attack). */
-void Att_CHOUCHUURENGEKI(PLW* wk) {
+void Att_CHOUCHUURENGEKI(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         force_grounded_state(wk);
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
@@ -636,12 +636,12 @@ void Att_CHOUCHUURENGEKI(PLW* wk) {
 }
 
 /** @brief Slide-and-jump (rushing slide into aerial arc). */
-void Att_SLIDE_and_JUMP(PLW* wk) {
+void Att_SLIDE_and_JUMP(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         force_grounded_state(wk);
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
@@ -712,11 +712,11 @@ void Att_SLIDE_and_JUMP(PLW* wk) {
 }
 
 /** @brief Jinchuu-watari (ground command movement). */
-void Att_JINNCHUUWATARI(PLW* wk) {
+void Att_JINNCHUUWATARI(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         wk->wu.mvxy.index = wk->as->data_ix;
@@ -756,11 +756,11 @@ void Att_JINNCHUUWATARI(PLW* wk) {
 }
 
 /** @brief Homing jump (leap targeting the opponent). */
-void Att_HOMING_JUMP(PLW* wk) {
+void Att_HOMING_JUMP(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         wk->wu.mvxy.index = wk->as->data_ix;
@@ -800,10 +800,10 @@ const s16 ahj_empos_hos[3][20][2] = {
 const s16 ahj_kop[3][4] = { { 0, 24, 0, 2 }, { 0, 22, 0, 2 }, { 0, 23, 0, 2 } };
 
 /** @brief Reads the air-homing-jump table to initialize trajectory. */
-static void att_ahj_table_reader(PLW* wk) {
-    PLW* twk = (PLW*)wk->wu.target_adrs;
+static void att_ahj_table_reader(PlayerEntity* wk) {
+    PlayerEntity* twk = (PlayerEntity*)wk->wu.target_adrs;
     const s16* curr_kop = ahj_kop[wk->as->r_no];
-    s16 ex;
+    s16 ex_mode;
     s16 ey;
 
     if (wk->wu.cg_type == 30) {
@@ -811,18 +811,18 @@ static void att_ahj_table_reader(PLW* wk) {
         wk->wu.mvxy.index++;
         switch (curr_kop[0]) {
         case 0:
-            if (wk->wu.rl_flag) {
-                ex = twk->wu.position_x - *ahj_empos_hos[wk->as->r_no][twk->player_number];
+            if (wk->wu.facing_flag) {
+                ex_mode = twk->wu.position_x - *ahj_empos_hos[wk->as->r_no][twk->player_number];
             } else {
-                ex = twk->wu.position_x + *ahj_empos_hos[wk->as->r_no][twk->player_number];
+                ex_mode = twk->wu.position_x + *ahj_empos_hos[wk->as->r_no][twk->player_number];
             }
 
             ey = ahj_empos_hos[wk->as->r_no][twk->player_number][1];
             wk->wu.mvxy.a[0].sp = 0;
-            cal_delta_speed(&wk->wu, curr_kop[1], ex, ey, curr_kop[2], curr_kop[3]);
+            cal_delta_speed(&wk->wu, curr_kop[1], ex_mode, ey, curr_kop[2], curr_kop[3]);
 
         default:
-            if (wk->wu.rl_flag == 0) {
+            if (wk->wu.facing_flag == 0) {
                 wk->wu.mvxy.a[0].sp = -wk->wu.mvxy.a[0].sp;
                 wk->wu.mvxy.d[0].sp = -wk->wu.mvxy.d[0].sp;
             }

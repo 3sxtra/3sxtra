@@ -11,11 +11,11 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 void effect_A7_move(State_Other* ewk) {
@@ -53,7 +53,7 @@ void effect_A7_move(State_Other* ewk) {
 
         if (tad->status & 0x40) {
             if (((State*)ewk->wu.target_adrs)->work_id == 1) {
-                ewk->wu.dir_timer = ((PLW*)ewk->wu.target_adrs)->player_number;
+                ewk->wu.dir_timer = ((PlayerEntity*)ewk->wu.target_adrs)->player_number;
             } else {
                 ewk->wu.dir_timer = ((State_Other*)ewk->wu.target_adrs)->master_player;
             }
@@ -79,7 +79,7 @@ void effect_A7_move(State_Other* ewk) {
                 edt = &explem[tad->myhix];
             }
 
-            if (ewk->wu.rl_flag) {
+            if (ewk->wu.facing_flag) {
                 ewk->wu.xyz[0].disp.pos -= *(s16*)&edt->hx;
             } else {
                 ewk->wu.xyz[0].disp.pos += *(s16*)&edt->hx;
@@ -93,8 +93,8 @@ void effect_A7_move(State_Other* ewk) {
             ewk->wu.xyz[1].disp.pos += (random_16() & 7) - 3;
         }
 
-        ewk->wu.scr_mv_x = gqdt[tad->quake][0];
-        ewk->wu.scr_mv_y = gqdt[tad->quake][1];
+        ewk->wu.screen_move_x = gqdt[tad->quake][0];
+        ewk->wu.screen_move_y = gqdt[tad->quake][1];
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos;
         ewk->wu.position_z = ewk->wu.xyz[2].disp.pos;
@@ -108,7 +108,7 @@ void effect_A7_move(State_Other* ewk) {
                 ewk->wu.dir_old = hit_mark_dir_table[ewk->wu.direction];
 
                 if (ewk->wu.dir_old < 0) {
-                    ewk->wu.rl_flag = 1;
+                    ewk->wu.facing_flag = 1;
                     ewk->wu.dir_old = -ewk->wu.dir_old;
                 }
             }
@@ -130,7 +130,7 @@ void effect_A7_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[6] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[6] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -140,7 +140,7 @@ void effect_A7_move(State_Other* ewk) {
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
@@ -149,8 +149,8 @@ void effect_A7_move(State_Other* ewk) {
                 break;
             }
 
-            if (ewk->wu.scr_mv_x && --ewk->wu.scr_mv_x == 0) {
-                g_state.bg_w.quake_y_index = ewk->wu.scr_mv_y;
+            if (ewk->wu.screen_move_x && --ewk->wu.screen_move_x == 0) {
+                g_state.bg_w.quake_y_index = ewk->wu.screen_move_y;
                 pp_screen_quake(g_state.bg_w.quake_y_index);
             }
         }
@@ -168,9 +168,9 @@ void effect_A7_move(State_Other* ewk) {
     }
 }
 
-s32 effect_A7_init(PLW* wk) {
+s32 effect_A7_init(PlayerEntity* wk) {
     State_Other* ewk;
-    PLW* twk;
+    PlayerEntity* twk;
     s16 ix;
 
     if (wk->wu.work_id != 1) {
@@ -182,12 +182,12 @@ s32 effect_A7_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    twk = (PLW*)wk->wu.target_adrs;
-    ewk->wu.be_flag = 1;
+    twk = (PlayerEntity*)wk->wu.target_adrs;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 107;
     ewk->wu.work_id = 64;
-    ewk->wu.rl_flag = wk->wu.rl_flag;
-    ewk->wu.kind_of_hit_mark = wk->wu.hm_dm_side;
+    ewk->wu.facing_flag = wk->wu.facing_flag;
+    ewk->wu.kind_of_hit_mark = wk->wu.hitmark_damage_side;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_family = 2;

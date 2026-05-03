@@ -33,14 +33,14 @@
 #define CMB_ALL_STOCK_OFFSET 0x288A4
 
 /* ── Player work ──────────────────────────────────────────────── */
-#define PLW_OFFSET 0x68C6C
+#define PlayerEntity_OFFSET 0x68C6C
 #define SUPER_ARTS_WORK_OFFSET 0x6959C /* super_arts */
 #define PIYORI_TYPE_OFFSET 0x695F4
-#define PLW_SIZE 0x498
+#define PlayerEntity_SIZE 0x498
 
-#define PLW_SA_STOP_FLAG_OFFSET 0x41C
-#define PLW_CAUTION_FLAG_OFFSET 0x428
-#define PLW_DO_NOT_MOVE_OFFSET 0x455
+#define PlayerEntity_SA_STOP_FLAG_OFFSET 0x41C
+#define PlayerEntity_CAUTION_FLAG_OFFSET 0x428
+#define PlayerEntity_DO_NOT_MOVE_OFFSET 0x455
 
 /* ── Input buffers ────────────────────────────────────────────── */
 #define P1SW_OFFSET 0x6AA8C

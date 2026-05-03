@@ -16,7 +16,7 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
-static void Setup_A8_Sub(WORK_Other_CONN* ewk);
+static void Setup_A8_Sub(EffectMultiSprite* ewk);
 
 const s16 Pos_Data_A8[4][2] = { { 52, 81 }, { 52, 68 }, { 0, 52 }, { 192, 32 } };
 
@@ -162,7 +162,7 @@ const s8* Letter_Data_A8AC[69] = { "-PLAY(  )",
 
 const s8** Letter_Data_A8[2] = { Letter_Data_A8DC, Letter_Data_A8AC };
 
-void effect_A8_move(WORK_Other_CONN* ewk) {
+void effect_A8_move(EffectMultiSprite* ewk) {
     s16 ix;
 
     if (g_state.Menu_Suicide[ewk->master_player]) {
@@ -230,15 +230,15 @@ void effect_A8_move(WORK_Other_CONN* ewk) {
 }
 
 s32 effect_A8_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 cursor_index, s16 char_ix, s16 pos_index) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 108;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x1AC;
@@ -249,8 +249,8 @@ s32 effect_A8_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 curso
     ewk->wu.type = cursor_index;
     ewk->wu.old_cgnum = char_ix;
     ewk->wu.dir_step = pos_index;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_A8[ewk->wu.dir_step][0];
     ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_A8[ewk->wu.dir_step][1];
     ewk->wu.position_z = 68;
@@ -271,7 +271,7 @@ s32 effect_A8_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 curso
     return 0;
 }
 
-static void Setup_A8_Sub(WORK_Other_CONN* ewk) {
+static void Setup_A8_Sub(EffectMultiSprite* ewk) {
     s16 x;
     s16 ix;
     s16 offset_x;

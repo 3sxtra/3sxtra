@@ -14,9 +14,9 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-static void Setup_Letter_C4(WORK_Other_CONN* ewk);
+static void Setup_Letter_C4(EffectMultiSprite* ewk);
 
-void effect_C4_move(WORK_Other_CONN* ewk) {
+void effect_C4_move(EffectMultiSprite* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);
         return;
@@ -36,7 +36,7 @@ void effect_C4_move(WORK_Other_CONN* ewk) {
 }
 
 s32 effect_C4_init(s16 id, s16 letter_type, s16 cursor_index, s16 master_player) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
     s16 x;
 
@@ -44,8 +44,8 @@ s32 effect_C4_init(s16 id, s16 letter_type, s16 cursor_index, s16 master_player)
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 124;
     ewk->wu.work_id = 16;
@@ -55,8 +55,8 @@ s32 effect_C4_init(s16 id, s16 letter_type, s16 cursor_index, s16 master_player)
     ewk->wu.char_index = letter_type;
     ewk->wu.type = cursor_index;
     ewk->master_player = master_player;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     Setup_Letter_C4(ewk);
 
     if (id == 0) {
@@ -71,7 +71,7 @@ s32 effect_C4_init(s16 id, s16 letter_type, s16 cursor_index, s16 master_player)
     return 0;
 }
 
-static void Setup_Letter_C4(WORK_Other_CONN* ewk) {
+static void Setup_Letter_C4(EffectMultiSprite* ewk) {
     s16 x;
     s16 ix;
     u8* ptr;

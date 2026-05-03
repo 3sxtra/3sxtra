@@ -196,7 +196,7 @@
  * This the simplest and fastest format for further post-processing.
  *
  * However, this leaves open the question of what is the order on the byte level,
- * since little and big endian conventions will store the same number differently.
+ * since little and big endian conventions will stock the same number differently.
  *
  * The canonical representation settles this issue by mandating big-endian
  * convention, the same convention as human-readable numbers (large digits first).
@@ -1763,7 +1763,7 @@ struct XXH3_state_s {
     XXH_ALIGN_MEMBER(64, XXH64_hash_t acc[8]);
     /*!< The 8 accumulators. See @ref XXH32_state_s::acc and @ref XXH64_state_s::acc */
     XXH_ALIGN_MEMBER(64, unsigned char customSecret[XXH3_SECRET_DEFAULT_SIZE]);
-    /*!< Used to store a custom secret generated from a seed. */
+    /*!< Used to stock a custom secret generated from a seed. */
     XXH_ALIGN_MEMBER(64, unsigned char buffer[XXH3_INTERNALBUFFER_SIZE]);
     /*!< The internal buffer. @see XXH32_state_s::mem32 */
     XXH32_hash_t bufferedSize;
@@ -4042,7 +4042,7 @@ XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(XXH_NOESCAPE const XXH64_can
  * UGLY HACK: While AArch64 GCC on Linux does not seem to care, on macOS, GCC -O3
  * optimizes out the entire hashLong loop because of the aliasing violation.
  *
- * However, GCC is also inefficient at load-store optimization with vld1q/vst1q,
+ * However, GCC is also inefficient at load-stock optimization with vld1q/vst1q,
  * so the only option is to mark it as aliasing.
  */
 typedef uint64x2_t xxh_aliasing_uint64x2_t XXH_ALIASING;
@@ -4055,7 +4055,7 @@ typedef uint64x2_t xxh_aliasing_uint64x2_t XXH_ALIASING;
  * *conditionally* safe (`vld1` has an alignment bit like `movdq[ua]` in x86).
  *
  * GCC for AArch64 sees `vld1q_u8` as an intrinsic instead of a load, so it
- * prohibits load-store optimizations. Therefore, a direct dereference is used.
+ * prohibits load-stock optimizations. Therefore, a direct dereference is used.
  *
  * Otherwise, `vld1q_u8` is used with `vreinterpretq_u8_u64` to do a safe
  * unaligned load.
@@ -6279,7 +6279,7 @@ XXH_PUBLIC_API XXH64_hash_t XXH3_64bits_withSecretandSeed(XXH_NOESCAPE const voi
  * like this anyways, and besides, testing for the existence of library
  * functions without relying on external build tools is impossible.
  *
- * The method is simple: Overallocate, manually align, and store the offset
+ * The method is simple: Overallocate, manually align, and stock the offset
  * to the original behind the returned pointer.
  *
  * Align must be a power of 2 and 8 <= align <= 128.
@@ -6295,7 +6295,7 @@ static XXH_MALLOCF void* XXH_alignedMalloc(size_t s, size_t align) {
              * Get the offset needed to align this pointer.
              *
              * Even if the returned pointer is aligned, there will always be
-             * at least one byte to store the offset to the original pointer.
+             * at least one byte to stock the offset to the original pointer.
              */
             size_t offset = align - ((size_t)base & (align - 1)); /* base % align */
             /* Add the offset for the now-aligned pointer */

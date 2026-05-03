@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -33,13 +33,13 @@ void effect_I0_move(State_Other* ewk) {
         set_char_move_init(&ewk->wu, 0, char_of_koishi[random_16() & 7]);
         /* fallthrough */
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] += 1;
             return;
         }
 
-        if ((g_state.EXE_flag == 0) && (g_state.Game_pause == 0)) {
+        if ((g_state.execute_flag == 0) && (g_state.Game_pause == 0)) {
             switch (ewk->wu.routine_no[1]) {
             case 0:
                 add_mvxy_speed(&ewk->wu);
@@ -91,10 +91,10 @@ s32 effect_I0_init(State* wk, s16 hsx, s16 hsy, s16 spx, s16 spy, s16 nxy) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0xB4;
     ewk->wu.work_id = 0x10;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.facing_flag = wk->facing_flag;
     ewk->wu.my_family = wk->my_family;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.next_y = nxy;
@@ -103,7 +103,7 @@ s32 effect_I0_init(State* wk, s16 hsx, s16 hsy, s16 spx, s16 spy, s16 nxy) {
     ewk->wu.mvxy.a[1].sp = spy << 8;
     ewk->wu.mvxy.d[1].sp = -0x8000U;
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.xyz[0].disp.pos = wk->position_x - hsx;
     } else {
         ewk->wu.xyz[0].disp.pos = wk->position_x + hsx;

@@ -88,7 +88,7 @@ s32 effect_40_init(s16 id, s16 type, s16 char_ix, s16 sync_bg, s16 master_player
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 40;
     ewk->wu.work_id = 16;
@@ -102,8 +102,8 @@ s32 effect_40_init(s16 id, s16 type, s16 char_ix, s16 sync_bg, s16 master_player
     ewk->master_player = master_player;
     ewk->master_priority = master_priority;
     *ewk->wu.char_table = _sel_pl_char_table;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_40[type][0];
     ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_40[type][1];
     ewk->wu.position_z = Pos_Data_40[type][2];

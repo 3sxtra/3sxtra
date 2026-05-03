@@ -15,44 +15,44 @@
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl13_exatt_table[18])(PLW*);
+void (*const pl13_exatt_table[18])(PlayerEntity*);
 
 const s16 mnd_em_tall2[21][2] = { { 28, 56 }, { 24, 44 }, { 24, 40 }, { 20, 32 }, { 24, 48 }, { 24, 40 }, { 28, 60 },
                                   { 16, 44 }, { 32, 32 }, { 28, 24 }, { 20, 32 }, { 24, 40 }, { 24, 40 }, { 28, 56 },
                                   { 24, 40 }, { 24, 40 }, { 24, 40 }, { 24, 40 }, { 24, 40 }, { 24, 40 }, { 24, 40 } };
 
 /** @brief Urien: extra attack dispatcher. */
-void pl_urien_extra_attack(PLW* wk) {
+void pl_urien_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl13_exatt_table[idx](wk);
 }
 
 /** @brief Urien: Moonsault Knee Drop variant 2 with homing. */
-static void Att_MOONSALT_KNEE_DROP2(PLW* wk) {
-    PLW* twk;
-    s16 ex;
+static void Att_MOONSALT_KNEE_DROP2(PlayerEntity* wk) {
+    PlayerEntity* twk;
+    s16 ex_mode;
     s16 ey;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->data_ix);
-        twk = (PLW*)wk->wu.target_adrs;
+        twk = (PlayerEntity*)wk->wu.target_adrs;
 
-        if (wk->wu.rl_flag) {
-            ex = twk->wu.position_x - mnd_em_tall2[twk->player_number][0];
+        if (wk->wu.facing_flag) {
+            ex_mode = twk->wu.position_x - mnd_em_tall2[twk->player_number][0];
         } else {
-            ex = twk->wu.position_x + mnd_em_tall2[twk->player_number][0];
+            ex_mode = twk->wu.position_x + mnd_em_tall2[twk->player_number][0];
         }
 
         ey = mnd_em_tall2[twk->player_number][1];
         wk->wu.mvxy.a[0].sp = 0;
-        cal_delta_speed(&wk->wu, wk->as->r_no, ex, ey, 2, 2);
+        cal_delta_speed(&wk->wu, wk->as->r_no, ex_mode, ey, 2, 2);
 
-        if (wk->wu.rl_flag == 0) {
+        if (wk->wu.facing_flag == 0) {
             wk->wu.mvxy.a[0].sp = -wk->wu.mvxy.a[0].sp;
             wk->wu.mvxy.d[0].sp = -wk->wu.mvxy.d[0].sp;
         }
@@ -81,13 +81,13 @@ static void Att_MOONSALT_KNEE_DROP2(PLW* wk) {
 }
 
 /** @brief Urien: special action (tokushu koudou). */
-static void Att_PL13_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL13_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -120,7 +120,7 @@ static void Att_PL13_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl13_exatt_table[18])(PLW*) = { Att_HADOUKEN,
+void (*const pl13_exatt_table[18])(PlayerEntity*) = { Att_HADOUKEN,
                                              Att_MOONSALT_KNEE_DROP2,
                                              Att_ABISEGERI,
                                              Att_SENPUUKYAKU,

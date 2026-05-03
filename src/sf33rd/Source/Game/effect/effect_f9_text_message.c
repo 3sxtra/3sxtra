@@ -156,11 +156,11 @@ void effect_F9_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        ewk->wu.my_mts = 12;
+        ewk->wu.my_sprite_sheet = 12;
         ewk->free = 0;
 
         if (g_state.mes_already) {
-            get_message_conn_data((WORK_Other_CONN*)ewk, 2, ewk->master_player, g_state.mes_already);
+            get_message_conn_data((EffectMultiSprite*)ewk, 2, ewk->master_player, g_state.mes_already);
         }
 
         ewk->wu.old_routine_no[4] = ewk->free;
@@ -186,7 +186,7 @@ void effect_F9_move(State_Other* ewk) {
         break;
 
     case 5:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 6;
@@ -247,11 +247,11 @@ void effect_F9_init(s16 END_PL_NO) {
     efff9_PL_NO = END_PL_NO;
 }
 
-static void efff9_wk_set(WORK_Other_CONN* ewk) {
-    ewk->wu.be_flag = 1;
+static void efff9_wk_set(EffectMultiSprite* ewk) {
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 159;
     ewk->wu.work_id = 16;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.sync_bg_strip = 0;
     ewk->wu.my_col_mode = 0x4200;
@@ -273,7 +273,7 @@ s32 Rewrite_End_Message(u16 mes_no) {
 
     ewk = (State_Other*)frw[ix];
     keep_mes_no = mes_no;
-    efff9_wk_set((WORK_Other_CONN*)ewk);
+    efff9_wk_set((EffectMultiSprite*)ewk);
     ewk->master_player = efff9_PL_NO;
     efff9_suicide = 1;
     efff9_txt_point = 2;
@@ -294,7 +294,7 @@ static s32 Rewrite() {
     }
 
     ewk = (State_Other*)frw[ix];
-    efff9_wk_set((WORK_Other_CONN*)ewk);
+    efff9_wk_set((EffectMultiSprite*)ewk);
     ewk->master_player = efff9_PL_NO;
     efff9_suicide = 1;
     efff9_txt_no_adrs = txt_no_tbl[efff9_PL_NO];

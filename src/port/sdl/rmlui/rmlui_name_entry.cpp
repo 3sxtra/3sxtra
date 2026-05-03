@@ -20,11 +20,11 @@
 
 extern "C" {
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/screen/n_input.h"
+#include "sf33rd/Source/Game/screen/name_input.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 } // extern "C"
 
-// Character table for display (matches name_code_tbl indices in n_input.c)
+// Character table for display (matches name_code_tbl indices in name_input.c)
 static const char s_name_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789. <END";
 
 static Rml::DataModelHandle s_model_handle;

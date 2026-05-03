@@ -14,52 +14,52 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/player_special_attacks.h"
-#include "sf33rd/Source/Game/engine/pow_pow.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/damage_calculator.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
-static void Check_Throw_Escape(PLW* wk, PLW* tk);
+static void Check_Throw_Escape(PlayerEntity* wk, PlayerEntity* tk);
 static s32 cat07_running_check(State* wk);
-static void catch_cg_type_check(PLW* wk);
-static void set_char_move_init_ca(PLW* wk, s16 kind_of_char, s16 index);
+static void catch_cg_type_check(PlayerEntity* wk);
+static void set_char_move_init_ca(PlayerEntity* wk, s16 kind_of_char, s16 index);
 
 #define PLPCA_DISPATCH_COUNT 9
 
 void (*const plpca_lv_00[9])();
 
 /** @brief Top-level catch/grab state dispatcher. */
-void Player_catch(PLW* wk) {
+void Player_catch(PlayerEntity* wk) {
     wk->wu.next_z = wk->wu.my_priority;
-    wk->running_f = 0;
+    wk->running_flag = 0;
     wk->py->flag = 0;
     wk->guard_flag = 3;
     wk->guard_active = 0;
     wk->is_throwing = true;
     wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
-    wk->dm_hos_flag = 0;
+    wk->damage_pushbox_flag = 0;
     wk->recovery_roll_success = 0;
     wk->slide_timer = 0;
     wk->slide_index_counter = 0;
     wk->sa_stop_flag = 0;
     wk->parry_flag = 0;
     wk->caution_flag = 0;
-    wk->sa->saeff_ok = 0;
-    wk->sa->saeff_mp = 0;
+    wk->sa->super_effect_can_activate = 0;
+    wk->sa->super_effect_meter = 0;
     wk->recovery_roll_success = 0;
     wk->recovery_roll_ok_timer = 0;
-    wk->uot_cd_ok_flag = 0;
+    wk->ukemi_cooldown_ok = 0;
     wk->cancel_timer = 0;
     wk->inescapable_flag = 0;
-    wk->cat_break_reserve = 0;
+    wk->catch_break_reserve = 0;
     wk->high_jump_ok = 0;
     wk->high_jump_flag = 0;
     wk->wu.swallow_no_effect = 0;
-    check_em_tk_power_off(wk, (PLW*)wk->wu.target_adrs);
+    check_em_tk_power_off(wk, (PlayerEntity*)wk->wu.target_adrs);
 
     if (wk->wu.routine_no[3] == 0) {
         pp_pulpara_catch(&wk->wu);
@@ -67,7 +67,7 @@ void Player_catch(PLW* wk) {
 
     if (wk->wu.routine_no[2] < PLPCA_DISPATCH_COUNT)
         plpca_lv_00[wk->wu.routine_no[2]](wk);
-    Check_Throw_Escape(wk, (PLW*)wk->wu.hit_adrs);
+    Check_Throw_Escape(wk, (PlayerEntity*)wk->wu.hit_adrs);
 
     if (((State*)wk->wu.target_adrs)->routine_no[2] == 3) {
         return;
@@ -88,16 +88,16 @@ void Player_catch(PLW* wk) {
 }
 
 /** @brief Checks for throw-break (throw_escape) from the grabbed opponent. */
-static void Check_Throw_Escape(PLW* wk, PLW* tk) {
+static void Check_Throw_Escape(PlayerEntity* wk, PlayerEntity* tk) {
     if (tk->wu.work_id != 1) {
         return;
     }
 
-    if (!tk->cat_break_reserve && tk->inescapable_flag) {
+    if (!tk->catch_break_reserve && tk->inescapable_flag) {
         return;
     }
 
-    if (!wk->cat_break_ok_timer) {
+    if (!wk->catch_break_ok_timer) {
         return;
     }
 
@@ -133,10 +133,10 @@ static void Check_Throw_Escape(PLW* wk, PLW* tk) {
 }
 
 /** @brief Catch state 00 — no-op placeholder. */
-static void Catch_00000(PLW* /* unused */) {}
+static void Catch_00000(PlayerEntity* /* unused */) {}
 
 /** @brief Catch state 01 — grab startup animation. */
-static void Catch_01000(PLW* wk) {
+static void Catch_01000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -151,7 +151,7 @@ static void Catch_01000(PLW* wk) {
 }
 
 /** @brief Catch state 02 — grab whiff animation. */
-static void Catch_02000(PLW* wk) {
+static void Catch_02000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -166,7 +166,7 @@ static void Catch_02000(PLW* wk) {
 }
 
 /** @brief Catch state 03 — catch success, pull-in phase. */
-static void Catch_03000(PLW* wk) {
+static void Catch_03000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -186,7 +186,7 @@ static void Catch_03000(PLW* wk) {
 }
 
 /** @brief Catch state 04 — throw execute phase. */
-static void Catch_04000(PLW* wk) {
+static void Catch_04000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -233,7 +233,7 @@ static void Catch_04000(PLW* wk) {
 }
 
 /** @brief Catch state 05 — throw followup / release. */
-static void Catch_05000(PLW* wk) {
+static void Catch_05000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -291,7 +291,7 @@ static void Catch_05000(PLW* wk) {
 }
 
 /** @brief Catch state 06 — air-throw execution. */
-static void Catch_06000(PLW* wk) {
+static void Catch_06000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -307,7 +307,7 @@ static void Catch_06000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 20) {
-            nise_combo_work(wk, (PLW*)wk->wu.target_adrs, 14);
+            nise_combo_work(wk, (PlayerEntity*)wk->wu.target_adrs, 14);
             wk->wu.cg_type = 0;
         }
 
@@ -317,7 +317,7 @@ static void Catch_06000(PLW* wk) {
 }
 
 /** @brief Catch state 07 — running grab / command throw. */
-static void Catch_07000(PLW* wk) {
+static void Catch_07000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -364,7 +364,7 @@ static void Catch_07000(PLW* wk) {
     case 4:
         jumping_union_process(&wk->wu, 6);
 
-        if (((PLW*)wk->wu.target_adrs)->close_proximity_flag) {
+        if (((PlayerEntity*)wk->wu.target_adrs)->close_proximity_flag) {
             char_move_z(&wk->wu);
             wk->wu.routine_no[3] = 5;
         }
@@ -397,7 +397,7 @@ static s32 cat07_running_check(State* wk) {
 }
 
 /** @brief Catch state 08 — special catch / multi-hit throw. */
-static void Catch_08000(PLW* wk) {
+static void Catch_08000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -419,11 +419,11 @@ static void Catch_08000(PLW* wk) {
 }
 
 /** @brief Subtracts grab-damage from the caught opponent's vitality. */
-void subtract_cu_vital(PLW* wk) {
+void subtract_cu_vital(PlayerEntity* wk) {
     if (wk->wu.damage_vitality != 0) {
-        if (wk->dead_flag == 0) {
+        if (wk->death_timerlag == 0) {
             if (wk->wu.damage_vitality) {
-                Additinal_Score_DM((State_Other*)wk->wu.dmg_adrs, wk->wu.dm_ten_ix);
+                additional_score_damage((State_Other*)wk->wu.dmg_adrs, wk->wu.damage_chain_index);
                 add_sp_arts_gauge_hit_dm(wk);
             }
 
@@ -433,17 +433,17 @@ void subtract_cu_vital(PLW* wk) {
 
             wk->wu.vital_new -= wk->wu.damage_vitality;
 
-            if (wk->wu.dm_nodeathattack && wk->wu.vital_new < 0) {
+            if (wk->wu.damage_no_death_attack && wk->wu.vital_new < 0) {
                 wk->wu.vital_new = 0;
             }
 
             if (wk->wu.vital_new < 0) {
                 wk->wu.vital_new = -1;
-                wk->dead_flag = 1;
+                wk->death_timerlag = 1;
                 g_state.dead_voice_flag = true;
 
                 if (!g_state.round_slow_flag) {
-                    set_conclusion_slow();
+                    set_round_end_slowmo();
                     g_state.round_slow_flag = true;
                 }
             } else if (wk->py->flag == 0) {
@@ -468,8 +468,8 @@ void subtract_cu_vital(PLW* wk) {
 }
 
 /** @brief Processes cg_type transitions during the catch state. */
-static void catch_cg_type_check(PLW* wk) {
-    PLW* emwk = (PLW*)wk->wu.hit_adrs;
+static void catch_cg_type_check(PlayerEntity* wk) {
+    PlayerEntity* emwk = (PlayerEntity*)wk->wu.hit_adrs;
 
     switch (wk->wu.cg_type) {
     case 2:
@@ -483,16 +483,16 @@ static void catch_cg_type_check(PLW* wk) {
         wk->wu.cg_type = 4;
         subtract_cu_vital(emwk);
         set_catch_hit_mark_pos(&wk->wu, &emwk->wu);
-        effect_02_init(&wk->wu, 0, 1, wk->wu.rl_flag);
+        effect_02_init(&wk->wu, 0, 1, wk->wu.facing_flag);
         pp_pulpara_remake_at_hit(wk);
         pp_pulpara_hit(&wk->wu);
         pp_pulpara_remake_dm_all(&emwk->wu);
 
         if (emwk->backup_ok_timer) {
-            emwk->uot_cd_ok_flag = 1;
+            emwk->ukemi_cooldown_ok = 1;
             emwk->recovery_roll_ok_timer = emwk->backup_ok_timer;
         } else {
-            emwk->uot_cd_ok_flag = 0;
+            emwk->ukemi_cooldown_ok = 0;
             emwk->recovery_roll_ok_timer = 0;
         }
 
@@ -503,13 +503,13 @@ static void catch_cg_type_check(PLW* wk) {
         subtract_cu_vital(emwk);
         wk->wu.cg_type = 0;
         emwk->recovery_roll_ok_timer = 0;
-        emwk->uot_cd_ok_flag = 0;
+        emwk->ukemi_cooldown_ok = 0;
         emwk->recovery_roll_success = 0;
         break;
 
     case 6:
         wk->wu.cg_type = 0;
-        wk->wu.rl_flag ^= 1;
+        wk->wu.facing_flag ^= 1;
         break;
 
     case 7:
@@ -532,11 +532,11 @@ static void catch_cg_type_check(PLW* wk) {
 }
 
 /** @brief Sets up character move init with catch-specific facing logic. */
-static void set_char_move_init_ca(PLW* wk, s16 kind_of_char, s16 index) {
+static void set_char_move_init_ca(PlayerEntity* wk, s16 kind_of_char, s16 index) {
     set_char_move_init(&wk->wu, kind_of_char, index);
-    wk->cat_break_ok_timer = wk->wu.cmd_y_axis_data.kind_of_char >> 8;
+    wk->catch_break_ok_timer = wk->wu.cmd_y_axis_data.kind_of_char >> 8;
     wk->wu.cmd_y_axis_data.kind_of_char &= 0xFF;
 }
 
-void (*const plpca_lv_00[9])(PLW*) = { Catch_00000, Catch_01000, Catch_02000, Catch_03000, Catch_04000,
+void (*const plpca_lv_00[9])(PlayerEntity*) = { Catch_00000, Catch_01000, Catch_02000, Catch_03000, Catch_04000,
                                        Catch_05000, Catch_06000, Catch_07000, Catch_08000 };

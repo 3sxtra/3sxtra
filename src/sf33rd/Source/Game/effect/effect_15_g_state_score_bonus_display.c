@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -50,7 +50,7 @@ static void eff15_koishi(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -66,7 +66,7 @@ static void eff15_koishi(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -99,7 +99,7 @@ s32 effect_15_init(State* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0xF;
     ewk->master_id = wk->id;
     ewk->wu.graphic_rom_type = 1;
@@ -108,7 +108,7 @@ s32 effect_15_init(State* wk, u8 data) {
     ewk->wu.my_col_code = 0x2020;
     ewk->wu.my_family = wk->my_family;
     ewk->my_master = wk;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.xyz[0].disp.pos = 629;
     ewk->wu.xyz[1].disp.pos = 340;
     ewk->wu.my_priority = 76;
@@ -123,7 +123,7 @@ s32 effect_15_init(State* wk, u8 data) {
 
     ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

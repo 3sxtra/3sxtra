@@ -53,13 +53,13 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_control_2.h"
 #include "sf33rd/Source/Game/engine/player_control_3.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/super_gauge.h"
 #include "sf33rd/Source/Game/engine/stun.h"
 #include "sf33rd/Source/Game/engine/vital.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/menu/menu.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/opening/opening.h"
@@ -88,10 +88,10 @@
 #include "sf33rd/Source/Game/screen/gameover.h"
 #include "sf33rd/Source/Game/screen/next_cpu.h"
 #include "sf33rd/Source/Game/screen/ranking.h"
-#include "sf33rd/Source/Game/screen/sel_pl.h"
+#include "sf33rd/Source/Game/screen/character_select_player.h"
 #include "sf33rd/Source/Game/screen/win.h"
 #include "sf33rd/Source/Game/select_timer.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
@@ -508,7 +508,7 @@ void Game_CharSelect() {
             All_Clear_Timer();
         }
 
-        init_slow_flag();
+        init_slowmo_flag();
         System_all_clear_Level_B();
         pulpul_stop();
         init_pulpul_work();
@@ -700,7 +700,7 @@ void Game_Fight_Sub0() {
 
     g_state.Allow_a_battle_f = 0;
     g_state.Time_in_Time = 60;
-    init_slow_flag();
+    init_slowmo_flag();
     clear_hit_queue();
     g_state.pcon_rno[0] = g_state.pcon_rno[1] = g_state.pcon_rno[2] = g_state.pcon_rno[3] = 0;
     ca_check_flag = 1;
@@ -717,7 +717,7 @@ void Game_Fight_Sub1() {
         g_state.Game_timer += 1;
     }
 
-    set_EXE_flag();
+    set_execute_flag();
     ppgPurgeFromVRAM(5);
 
     if (g_state.Disp_Cockpit) {
@@ -728,10 +728,10 @@ void Game_Fight_Sub1() {
 
     if (g_state.Disp_Cockpit) {
         vital_cont_main();
-        combo_cont_main();
+        combo_control_main();
     }
 
-    TATE00();
+    stage_animate();
     Game_Management();
     BG_Draw_System();
     ppgPurgeFromVRAM(4);
@@ -743,8 +743,8 @@ void Game_Fight_Sub1() {
             player_face();
         if (!use_rmlui || !rmlui_hud_names)
             player_name();
-        stngauge_cont_main();
-        spgauge_cont_main();
+        stun_gauge_control_main();
+        super_gauge_control_main();
         if (!use_rmlui || !rmlui_hud_super)
             Sa_frame_Write();
         if (!use_rmlui || !rmlui_hud_score)
@@ -795,7 +795,7 @@ void Game_Fight_Sub2() {
 
     g_state.Allow_a_battle_f = 0;
     g_state.Time_in_Time = 60;
-    init_slow_flag();
+    init_slowmo_flag();
     effect_work_quick_init();
     clear_hit_queue();
     g_state.pcon_rno[0] = g_state.pcon_rno[1] = g_state.pcon_rno[2] = g_state.pcon_rno[3] = 0;
@@ -805,16 +805,16 @@ void Game_Fight_Sub2() {
     player_face_init();
     Game_ResetMatchState();
     Set_Appear_Type_For_Mode();
-    TATE00();
+    stage_animate();
 
     for (i = 0; i < 3; i++) {
         if (stage_bgw_number[g_state.bg_w.stage][i] > 0) {
-            Bg_On_R(1 << i);
+            bg_enable_render(1 << i);
         }
     }
 
     if (g_state.bg_w.stage == 7) {
-        Bg_On_R(4);
+        bg_enable_render(4);
     }
 
     FSM_SetSubState(7);
@@ -859,7 +859,7 @@ void Game_Fight_Sub5() {
         erase_extra_plef_work();
         compel_bg_init_position();
         win_lose_work_clear();
-        TATE00();
+        stage_animate();
         break;
 
     default:
@@ -880,7 +880,7 @@ void Game_Fight_Sub6() {
 
     if (Wait_Seek_Time() != 0) {
         FSM_SetSubState(3);
-        TATE00();
+        stage_animate();
     }
 }
 
@@ -1106,7 +1106,7 @@ void Game_NextCPU() {
         }
 
         g_state.Stop_Combo = 0;
-        init_slow_flag();
+        init_slowmo_flag();
         pulpul_stop();
         break;
 
@@ -1511,7 +1511,7 @@ void Game_Bonus() {
         g_state.Round_num = 0;
         g_state.Allow_a_battle_f = 0;
         g_state.Time_in_Time = 60;
-        init_slow_flag();
+        init_slowmo_flag();
         clear_hit_queue();
         g_state.pcon_rno[0] = g_state.pcon_rno[1] = g_state.pcon_rno[2] = g_state.pcon_rno[3] = 0;
         bbbs_com_initialize();
@@ -1553,7 +1553,7 @@ void Game_Bonus() {
                     effect_58_init(6, 0x78, 0xA1);
                 }
 
-                TATE00();
+                stage_animate();
                 Switch_Screen_Init(0);
                 Bonus_Sub();
             }
@@ -1627,7 +1627,7 @@ s16 Bonus_Sub() {
         g_state.Game_timer += 1;
     }
 
-    set_EXE_flag();
+    set_execute_flag();
     Time_Control();
 
     if (g_state.Bonus_Type == 0x15) {
@@ -1636,7 +1636,7 @@ s16 Bonus_Sub() {
         g_state.Bonus_Game_Complete = Player_control_bonus2();
     }
 
-    TATE00();
+    stage_animate();
     x = 0;
     x = Game_Management();
     BG_Draw_System();
@@ -1661,7 +1661,7 @@ void Game_AfterBonus() {
         g_state.next_cpu_phase[2] = 0;
         g_state.next_cpu_phase[3] = 0;
         g_state.Stop_Combo = 0;
-        init_slow_flag();
+        init_slowmo_flag();
         break;
 
     case 1:
@@ -1712,7 +1712,7 @@ void Game_NextQ() {
         g_state.next_cpu_phase[3] = 0;
         g_state.Stop_Combo = 0;
         g_state.Bonus_Type = 0;
-        init_slow_flag();
+        init_slowmo_flag();
         break;
 
     case 1:
@@ -1760,7 +1760,7 @@ void Game_NextQ() {
         g_state.next_cpu_phase[3] = 0;
         g_state.Stop_Combo = 0;
         g_state.Bonus_Type = 0;
-        init_slow_flag();
+        init_slowmo_flag();
         Switch_Screen_Init(0);
         break;
 

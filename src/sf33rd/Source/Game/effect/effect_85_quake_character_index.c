@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -28,7 +28,7 @@ void eff85_0000(State_Other* ewk) {
     ewk->wu.routine_no[0]++;
     ewk->wu.routine_no[1] = 0;
     ewk->wu.routine_no[2] = 0;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.old_routine_no[0] = 0;
 }
 
@@ -36,7 +36,7 @@ void eff85_0100(State_Other* ewk) {
     void (*const eff85_move_tbl[9])(State_Other*) = { eff85_1000,   eff85_common, eff85_3000, eff85_common, eff85_5000,
                                                      eff85_common, eff85_7000,   eff85_8000, eff85_9000 };
 
-    if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
+    if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
         eff85_move_tbl[ewk->wu.routine_no[1]](ewk);
     }
 
@@ -267,17 +267,17 @@ s32 effect_85_init() {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 85;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.rl_flag = 0;
-    ewk->wu.dead_f = 1;
+    ewk->wu.facing_flag = 0;
+    ewk->wu.death_timer = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_family = 2;
     ewk->wu.my_col_code = 8492;
-    ewk->wu.my_mts = 7;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 7;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.xyz[0].cal = 0x1EB0000;
     ewk->wu.xyz[1].cal = 0x2C0000;
     ewk->wu.my_priority = ewk->wu.position_z = 10;

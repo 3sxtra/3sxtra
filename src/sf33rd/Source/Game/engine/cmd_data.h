@@ -17,7 +17,7 @@ extern s16 lvr_chk_tbl[2][4];
 
 // MARK: - Serialized
 
-extern WORK_CP wcp[2];
+extern CommandInputState wcp[2];
 extern T_PL_LVR t_pl_lvr[2];
 extern MOVE_WORK move_work[2][56];
 
@@ -29,6 +29,6 @@ extern u16 sw_work;
 extern T_PL_LVR* chk_pl;
 extern s16 move_type[2];
 extern MOVE_WORK* move_ptr;
-extern PLW* cmd_pl;
+extern PlayerEntity* cmd_pl;
 
 #endif

@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 
@@ -47,16 +47,16 @@ const u16 illusion_setup_table[13][2] = {
     { 0, 12 }, { 0, 13 }, { 0, 0 }, { 0, 15 }, { 0, 17 }, { 0, 18 },
 };
 
-static s32 check_new_after_image(State_Other* ewk, PLW* mwk);
-static void setup_illusion_data(State_Other* ewk, PLW* mwk);
+static s32 check_new_after_image(State_Other* ewk, PlayerEntity* mwk);
+static void setup_illusion_data(State_Other* ewk, PlayerEntity* mwk);
 
 void effect_E5_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
     s16 i;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.routine_no[0] = 2;
             mwk->image_setup_flag = 0;
             break;
@@ -83,7 +83,7 @@ void effect_E5_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.routine_no[0] = 2;
             mwk->image_setup_flag = 0;
             break;
@@ -93,12 +93,12 @@ void effect_E5_move(State_Other* ewk) {
             goto jump;
         }
 
-        if ((ewk->wu.dir_old & 1 && g_state.EXE_flag == 0 && g_state.Game_pause == 0 && mwk->wu.hit_stop <= 0 &&
+        if ((ewk->wu.dir_old & 1 && g_state.execute_flag == 0 && g_state.Game_pause == 0 && mwk->wu.hit_stop <= 0 &&
              --ewk->wu.direction == 0) ||
             (ewk->wu.dir_old & 2 &&
              (ewk->wu.routine_no[5] != mwk->wu.routine_no[1] || ewk->wu.routine_no[6] != mwk->wu.routine_no[2]) &&
              (mwk->image_data_index != 11 || mwk->wu.routine_no[1] != 4 || mwk->wu.routine_no[3] != 0)) ||
-            (ewk->wu.dir_old & 4 && mwk->sa->ok != -1) ||
+            (ewk->wu.dir_old & 4 && mwk->sa->can_activate != -1) ||
             (ewk->wu.dir_old & 8 && ((State*)mwk->wu.target_adrs)->routine_no[1] != 4 &&
              ((State*)mwk->wu.target_adrs)->routine_no[1] != 2) ||
             (ewk->wu.dir_old & 0x10 && mwk->wu.routine_no[1] != 4 && mwk->wu.routine_no[1] != 2) ||
@@ -131,7 +131,7 @@ void effect_E5_move(State_Other* ewk) {
                 /* fallthrough */
 
             case 2:
-                if (g_state.EXE_flag == 0 && g_state.Game_pause == 0 && --ewk->wu.dir_step <= 0) {
+                if (g_state.execute_flag == 0 && g_state.Game_pause == 0 && --ewk->wu.dir_step <= 0) {
                     effect_E7_init(ewk, mwk);
                     ewk->wu.routine_no[2] = 1;
                 }
@@ -180,7 +180,7 @@ void effect_E5_move(State_Other* ewk) {
     }
 }
 
-static void setup_illusion_data(State_Other* ewk, PLW* mwk) {
+static void setup_illusion_data(State_Other* ewk, PlayerEntity* mwk) {
     const u16* tblh = after_image_data[mwk->image_data_index];
 
     if (tblh[0] & 0x10) {
@@ -212,7 +212,7 @@ static void setup_illusion_data(State_Other* ewk, PLW* mwk) {
     mwk->image_setup_flag = 1;
 }
 
-static s32 check_new_after_image(State_Other* ewk, PLW* mwk) {
+static s32 check_new_after_image(State_Other* ewk, PlayerEntity* mwk) {
     if (mwk->image_setup_flag != 2) {
         return 0;
     }
@@ -224,7 +224,7 @@ static s32 check_new_after_image(State_Other* ewk, PLW* mwk) {
     return 1;
 }
 
-s32 effect_E5_init(PLW* wk) {
+s32 effect_E5_init(PlayerEntity* wk) {
     State_Other* ewk;
     s16 ix;
 
@@ -233,7 +233,7 @@ s32 effect_E5_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 145;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = wk->wu.my_family;
@@ -248,7 +248,7 @@ s32 effect_E5_init(PLW* wk) {
     return 0;
 }
 
-void effect_e7_e8_init_union(State_Other* nwk, State_Other* ek, PLW* mk) {
+void effect_e7_e8_init_union(State_Other* nwk, State_Other* ek, PlayerEntity* mk) {
     nwk->wu.old_routine_no[4] = ek->wu.old_routine_no[4];
     nwk->wu.old_routine_no[3] = ek->wu.old_routine_no[3];
     nwk->wu.old_routine_no[1] = ek->wu.old_routine_no[1];
@@ -256,7 +256,7 @@ void effect_e7_e8_init_union(State_Other* nwk, State_Other* ek, PLW* mk) {
     nwk->wu.old_routine_no[5] = ek->wu.old_routine_no[5];
     nwk->wu.olc_work_ix[2] = ek->wu.olc_work_ix[2];
     nwk->wu.my_bright_type = ek->wu.my_bright_type;
-    nwk->wu.my_mts = mk->wu.my_mts;
+    nwk->wu.my_sprite_sheet = mk->wu.my_sprite_sheet;
     nwk->wu.my_family = mk->wu.my_family;
     nwk->wu.graphic_rom_type = mk->wu.graphic_rom_type;
     nwk->wu.my_col_mode = mk->wu.my_col_mode;
@@ -290,7 +290,7 @@ void get_attdata_of_illusion(State_Other* ewk) {
     ewk->wu.att.guard = 0x3F;
     ewk->wu.att.dipsw = 1;
     ewk->wu.chip_damage_power = 0;
-    ewk->wu.at_attribute = 0;
+    ewk->wu.attack_attribute = 0;
     ewk->wu.att.pow /= 4;
 
     if (ewk->wu.att.pow <= 0) {
@@ -308,8 +308,8 @@ void get_attdata_of_illusion(State_Other* ewk) {
     }
 }
 
-s32 setup_after_images(PLW* wk, u8 ix) {
-    PLW* tk = (PLW*)wk->wu.target_adrs;
+s32 setup_after_images(PlayerEntity* wk, u8 ix) {
+    PlayerEntity* tk = (PlayerEntity*)wk->wu.target_adrs;
 
     switch (illusion_setup_table[ix][0]) {
     case 0:
@@ -331,8 +331,8 @@ s32 setup_after_images(PLW* wk, u8 ix) {
     return 0;
 }
 
-s32 erase_after_images(PLW* wk, u8 who) {
-    PLW* tk = (PLW*)wk->wu.target_adrs;
+s32 erase_after_images(PlayerEntity* wk, u8 who) {
+    PlayerEntity* tk = (PlayerEntity*)wk->wu.target_adrs;
 
     switch (who) {
     case 0:

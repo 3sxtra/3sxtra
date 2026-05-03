@@ -5,7 +5,7 @@
 #include "types.h"
 
 void effect_C9_move(State_Other* ewk);
-s32 effect_C9_init(PLW* /* unused */, u8 data);
+s32 effect_C9_init(PlayerEntity* /* unused */, u8 data);
 void setup_EJG_index();
 
 #endif

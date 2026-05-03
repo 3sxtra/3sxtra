@@ -110,7 +110,7 @@ extern s8 sa_pa_flag;
 extern s8 aku_flag;
 extern s8 seraph_flag;
 extern s8 akebono_flag;
-extern MVXY bg_mvxy;
+extern MovementVector bg_mvxy;
 extern s16 chase_time_y;
 extern s16 chase_time_x;
 extern s16 chase_y;

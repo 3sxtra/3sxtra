@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -41,7 +41,7 @@ void stngauge_cont_init() {
 }
 
 /** @brief Per-frame stun gauge update — drives the animated stun bar display. */
-void stngauge_cont_main() {
+void stun_gauge_control_main() {
     u8 i;
 
     if (omop_cockpit != 0) {
@@ -67,7 +67,7 @@ void stngauge_cont_main() {
 /** @brief Updates a single player's stun gauge animation and flash state. */
 void stngauge_control(u8 pl) {
     if (!g_state.sdat[pl].proccess_dead) {
-        if (g_state.plw[pl].dead_flag) {
+        if (g_state.plw[pl].death_timerlag) {
             g_state.sdat[pl].proccess_dead = 1;
             g_state.sdat[pl].cstn = 0;
             return;
@@ -82,7 +82,7 @@ void stngauge_control(u8 pl) {
                 g_state.sdat[pl].cstn = g_state.stun_state[pl].stun_threshold;
             }
 
-            if (!g_state.EXE_flag && !g_state.Game_pause) {
+            if (!g_state.execute_flag && !g_state.Game_pause) {
                 g_state.sdat[pl].stimer--;
             }
 

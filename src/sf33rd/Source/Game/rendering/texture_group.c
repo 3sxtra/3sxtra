@@ -11,7 +11,7 @@
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Game/engine/charid.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
 #include "sf33rd/Source/Game/rendering/character_rendering.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
 #include "sf33rd/Source/Game/system/ram_control.h"
@@ -169,7 +169,7 @@ void q_ldreq_texture_group(REQ* curr) {
 
         curr->lds = &texgrplds[curr->group];
 
-        if (curr->lds->ok) {
+        if (curr->lds->can_activate) {
             if (bsd->ix1st == 1 || bsd->ix1st == 2) {
                 switch (rckey_work[curr->lds->key].type) {
                 case 3:
@@ -260,7 +260,7 @@ void q_ldreq_texture_group(REQ* curr) {
             ldadr = Get_ramcnt_address(curr->key);
             curr->lds->texture_table = ldadr + bsd->to_tex;
             curr->lds->trans_table = ldadr;
-            curr->lds->ok = 1;
+            curr->lds->can_activate = 1;
 
             switch (bsd->ix1st) {
             case 1:
@@ -283,7 +283,7 @@ void q_ldreq_texture_group(REQ* curr) {
                 // Because 25 is the number of members in CharInitData struct, `i` goes
                 // to 25 too.
 
-                const s16 character_id = plt_req[curr->id];
+                const s16 character_id = palette_request[curr->id];
                 CharInitData* dst = &char_init_data[plid_data[character_id]];
 
                 const CharInitData* arcade_data = ArcadeBalance_IsEnabled() ? ArcadeCharData_Get(character_id) : NULL;
@@ -400,7 +400,7 @@ void checkSelObjFileLoaded() {
     ldadr = Get_ramcnt_address(lds->key);
     lds->texture_table = ldadr + bsd->to_tex;
     lds->trans_table = ldadr;
-    lds->ok = 1;
+    lds->can_activate = 1;
     omSelObjNowOnMemoryType = mpp_w.language;
     Clear_Texture_Cache();
 }
@@ -412,8 +412,8 @@ void purge_texture_group_of_this(u16 patnum) {
 
 /** @brief Purge all textures in a given texture group. */
 void purge_texture_group(u8 grp) {
-    if (texgrplds[grp].ok != 0) {
-        texgrplds[grp].ok = 0;
+    if (texgrplds[grp].can_activate != 0) {
+        texgrplds[grp].can_activate = 0;
         Push_ramcnt_key(texgrplds[grp].key);
     }
 }
@@ -464,7 +464,7 @@ static s32 load_any_texture_grpnum(u8 grp, u8 kokey) {
     lds = &texgrplds[grp];
     bsd = &texgrpdat[grp];
 
-    if (lds->ok) {
+    if (lds->can_activate) {
         return 0;
     }
 
@@ -472,6 +472,6 @@ static s32 load_any_texture_grpnum(u8 grp, u8 kokey) {
     ldadr = Get_ramcnt_address(lds->key);
     lds->texture_table = ldadr + bsd->to_tex;
     lds->trans_table = ldadr;
-    lds->ok = 1;
+    lds->can_activate = 1;
     return 1;
 }

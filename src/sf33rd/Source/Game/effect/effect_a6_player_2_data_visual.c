@@ -64,7 +64,7 @@ const s16 effA6_pl2_data_tbl[20][64] = {
       0, 210, 2, 840, 6, 210, 7, 210, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
-static void wwwk_set(WORK_Other_CONN* ewk);
+static void wwwk_set(EffectMultiSprite* ewk);
 
 static s32 check2_A6_shortcut() {
     u16 sw_w;
@@ -82,7 +82,7 @@ static s32 check2_A6_shortcut() {
     return 0;
 }
 
-void effect_A6_move(WORK_Other_CONN* ewk) {
+void effect_A6_move(EffectMultiSprite* ewk) {
     State_Other* mwk;
 
     switch (ewk->wu.routine_no[0]) {
@@ -222,14 +222,14 @@ void effect_A6_move(WORK_Other_CONN* ewk) {
 }
 
 s32 effect_A6_init(State_Other* mwk) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
+    ewk = (EffectMultiSprite*)frw[ix];
     wwwk_set(ewk);
     ewk->wu.dir_old = mwk->wu.dir_old;
     ewk->wu.routine_no[6] = 60;
@@ -262,15 +262,15 @@ s32 effect_A6_init(State_Other* mwk) {
     return 0;
 }
 
-static void wwwk_set(WORK_Other_CONN* ewk) {
-    ewk->wu.be_flag = 1;
+static void wwwk_set(EffectMultiSprite* ewk) {
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 106;
     ewk->wu.work_id = 16;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.sync_bg_strip = 0;
     ewk->wu.my_col_mode = 0x4200;
-    ewk->wu.my_mts = 12;
+    ewk->wu.my_sprite_sheet = 12;
     ewk->wu.my_col_code = 55;
     ewk->wu.my_family = 1;
     ewk->wu.my_priority = 35;

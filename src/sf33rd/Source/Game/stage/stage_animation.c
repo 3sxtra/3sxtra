@@ -25,7 +25,7 @@ static inline void ta_dispatch(void) {
 }
 
 /** @brief Main entry point for stage background animation. */
-void TATE00() {
+void stage_animate() {
     // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
     static void (*const jump_tbl[4])() = { ta0_init00, ta0_init01, ta0_init02, ta0_move };
 

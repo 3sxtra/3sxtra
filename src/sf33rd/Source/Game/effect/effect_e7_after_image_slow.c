@@ -9,14 +9,14 @@
 #include "sf33rd/Source/Game/effect/effect_e5_after_image_illusion.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
 static void effe7_get_zanzou_data(State_Other* ewk);
 
 void effect_E7_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
     s16 pricol;
 
     switch (ewk->wu.routine_no[0]) {
@@ -28,7 +28,7 @@ void effect_E7_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -44,11 +44,11 @@ void effect_E7_move(State_Other* ewk) {
 
             if (ewk->wu.old_routine_no[3] == 0) {
                 ewk->wu.cg_number = mwk->wu.cg_number;
-                ewk->wu.rl_flag = mwk->wu.rl_flag;
+                ewk->wu.facing_flag = mwk->wu.facing_flag;
                 ewk->wu.cg_flip = mwk->wu.cg_flip;
             }
 
-            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0 && --ewk->wu.dir_timer <= 0) {
+            if (g_state.execute_flag == 0 && g_state.Game_pause == 0 && --ewk->wu.dir_timer <= 0) {
                 ewk->wu.disp_flag = 0;
                 ewk->wu.routine_no[0]++;
                 break;
@@ -101,11 +101,11 @@ static void effe7_get_zanzou_data(State_Other* ewk) {
     ewk->wu.position_y = g_state.afterimage_table[ewk->master_id]->pos_y;
     ewk->wu.position_z = g_state.afterimage_table[ewk->master_id]->pos_z;
     ewk->wu.cg_number = g_state.afterimage_table[ewk->master_id]->cg_num;
-    ewk->wu.rl_flag = g_state.afterimage_table[ewk->master_id]->flip;
+    ewk->wu.facing_flag = g_state.afterimage_table[ewk->master_id]->flip;
     ewk->wu.cg_flip = g_state.afterimage_table[ewk->master_id]->cg_flp;
 }
 
-s32 effect_E7_init(State_Other* ek, PLW* mk) {
+s32 effect_E7_init(State_Other* ek, PlayerEntity* mk) {
     State_Other* ewk;
     s16 ix;
 
@@ -114,7 +114,7 @@ s32 effect_E7_init(State_Other* ek, PLW* mk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = ek->wu.disp_flag;
     ewk->wu.id = 147;
 

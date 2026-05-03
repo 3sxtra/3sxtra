@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -32,7 +32,7 @@ void effect_47_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] < 0) {
@@ -73,11 +73,11 @@ s32 effect_47_init(State* wk, s32 /* unused */) {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 47;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         *ewk->wu.char_table = _etc_char_table;
         ewk->wu.type = i;
         ewk->wu.my_family = 2;
@@ -95,8 +95,8 @@ s32 effect_47_init(State* wk, s32 /* unused */) {
         ewk->wu.mvxy.d[0].sp = eff47_sp_tbl[i][1];
         ewk->wu.mvxy.a[1].sp = eff47_sp_tbl[i][2];
         ewk->wu.mvxy.d[1].sp = eff47_sp_tbl[i][3];
-        ewk->wu.my_mts = 14;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 14;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     }
 
     return 0;

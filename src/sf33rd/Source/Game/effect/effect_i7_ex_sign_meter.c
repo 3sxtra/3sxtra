@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -33,7 +33,7 @@ const s16 ex_sign_data[69][4] = {
 };
 
 void effect_I7_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -48,13 +48,13 @@ void effect_I7_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || mwk->wu.routine_no[1] != 4) {
+        if (ewk->wu.death_timer == 1 || mwk->wu.routine_no[1] != 4) {
             ewk->wu.routine_no[0]++;
             ewk->wu.disp_flag = 0;
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             if (ewk->wu.hit_stop) {
                 ewk->wu.hit_stop--;
             } else {
@@ -89,7 +89,7 @@ void effect_I7_move(State_Other* ewk) {
 static void effI7_pos_hosei(State_Other* ewk, State* mwk) {
     ewk->wu.position_x = mwk->position_x;
 
-    if (mwk->rl_flag) {
+    if (mwk->facing_flag) {
         ewk->wu.position_x -= ex_sign_data[ewk->wu.type][0];
     } else {
         ewk->wu.position_x += ex_sign_data[ewk->wu.type][0];
@@ -98,7 +98,7 @@ static void effI7_pos_hosei(State_Other* ewk, State* mwk) {
     ewk->wu.position_y = mwk->position_y + ex_sign_data[ewk->wu.type][1];
 }
 
-s32 effect_I7_init(PLW* wk, u8 data) {
+s32 effect_I7_init(PlayerEntity* wk, u8 data) {
     State_Other* ewk;
     s16 ix;
 
@@ -111,11 +111,11 @@ s32 effect_I7_init(PLW* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.type = data;
     ewk->wu.id = 187;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.my_family = wk->wu.my_family;
     ewk->wu.graphic_rom_type = 1;
     ewk->my_master = wk;

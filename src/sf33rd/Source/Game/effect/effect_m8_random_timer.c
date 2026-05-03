@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -28,7 +28,7 @@ const s16 effm8_timer_tbl[4] = { 24, 56, 72, 112 };
 void effect_M8_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             if (ewk->wu.type) {
                 effm8_move_win(ewk);
             } else {
@@ -129,7 +129,7 @@ s32 effect_M8_init(State* oya, u8 data) {
         }
 
         ewk = (State_Other*)frw[(ix)];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 228;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
@@ -140,9 +140,9 @@ s32 effect_M8_init(State* oya, u8 data) {
         ewk->wu.my_family = 2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = oya->my_col_code;
-        ewk->wu.rl_flag = oya->rl_flag;
+        ewk->wu.facing_flag = oya->facing_flag;
 
-        if (oya->rl_flag) {
+        if (oya->facing_flag) {
             ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].position_x - 48;
             ewk->wu.mvxy.a[0].sp = 0x48000;
             ewk->wu.mvxy.d[0].sp = 0;
@@ -165,8 +165,8 @@ s32 effect_M8_init(State* oya, u8 data) {
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 8;
         ewk->wu.old_routine_no[0] = 0;
-        ewk->wu.my_mts = 14;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 14;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
         for (i = 0; i < 4; i++) {
             if ((ix = Acquire_Effect(3)) == -1) {
@@ -174,7 +174,7 @@ s32 effect_M8_init(State* oya, u8 data) {
             }
 
             ewk = (State_Other*)frw[(ix)];
-            ewk->wu.be_flag = 1;
+            ewk->wu.active_flag = 1;
             ewk->wu.id = 228;
             ewk->wu.work_id = 16;
             ewk->wu.graphic_rom_type = 1;
@@ -185,9 +185,9 @@ s32 effect_M8_init(State* oya, u8 data) {
             ewk->wu.my_family = 2;
             ewk->wu.my_col_mode = 0x4200;
             ewk->wu.my_col_code = oya->my_col_code;
-            ewk->wu.rl_flag = oya->rl_flag;
+            ewk->wu.facing_flag = oya->facing_flag;
 
-            if (oya->rl_flag) {
+            if (oya->facing_flag) {
                 ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].position_x - 48;
                 ewk->wu.mvxy.a[0].sp = 0x48000;
                 ewk->wu.mvxy.d[0].sp = 0;
@@ -210,8 +210,8 @@ s32 effect_M8_init(State* oya, u8 data) {
             ewk->wu.shadow_prio = 71;
             ewk->wu.shadow_char = 8;
             ewk->wu.old_routine_no[0] = effm8_timer_tbl[i];
-            ewk->wu.my_mts = 14;
-            ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+            ewk->wu.my_sprite_sheet = 14;
+            ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
         }
     } else {
         if ((ix = Acquire_Effect(3)) == -1) {
@@ -219,7 +219,7 @@ s32 effect_M8_init(State* oya, u8 data) {
         }
 
         ewk = (State_Other*)frw[(ix)];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 228;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
@@ -245,7 +245,7 @@ s32 effect_M8_init(State* oya, u8 data) {
         ewk->wu.position_z = oya->my_priority;
         ewk->wu.position_z++;
         ewk->wu.my_priority = ewk->wu.position_z;
-        ewk->wu.rl_flag = oya->rl_flag ^ 1;
+        ewk->wu.facing_flag = oya->facing_flag ^ 1;
         *ewk->wu.char_table = _etc2_char_table;
         ewk->wu.char_index = 54;
         ewk->wu.shadow_flag = 1;
@@ -253,8 +253,8 @@ s32 effect_M8_init(State* oya, u8 data) {
         ewk->wu.shadow_y = 4;
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 8;
-        ewk->wu.my_mts = 14;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 14;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     }
 
     return 0;

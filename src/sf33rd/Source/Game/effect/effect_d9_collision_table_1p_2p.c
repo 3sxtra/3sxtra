@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 
 const s16 coltbl_000_1P[10] = { 1, 8192, 2, 8193, 1, 8195, 2, 8193, 0, 0 };
@@ -53,7 +53,7 @@ const ColorTableIndex color_table_index[11] = {
 };
 
 void effect_D9_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -70,15 +70,15 @@ void effect_D9_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if ((ewk->wu.vital_old & 2) == 0 || g_state.EXE_flag != 0 || g_state.Game_pause != 0 || mwk->wu.hit_stop > 0 ||
+        if ((ewk->wu.vital_old & 2) == 0 || g_state.execute_flag != 0 || g_state.Game_pause != 0 || mwk->wu.hit_stop > 0 ||
             (--ewk->wu.dir_timer >= 0)) {
             if ((ewk->wu.vital_old & 4) != 0) {
-                if (ewk->wu.dir_old == mwk->wu.dm_count_up) {
+                if (ewk->wu.dir_old == mwk->wu.damage_count_up) {
                     if ((ewk->wu.type != 0) && (ewk->wu.type != 32)) {
                         if (mwk->wu.xyz[1].disp.pos <= 0) {
                             goto set_routine_2;
@@ -93,7 +93,7 @@ void effect_D9_move(State_Other* ewk) {
                 }
             }
 
-            if (((ewk->wu.vital_old & 8) == 0 || (mwk->sa->ok == -1)) &&
+            if (((ewk->wu.vital_old & 8) == 0 || (mwk->sa->can_activate == -1)) &&
                 (((ewk->wu.vital_old & 0x10) == 0) || (ewk->wu.total_paring == mwk->wu.attack_type))) {
                 if (--ewk->wu.vitality <= 0) {
                     ewk->wu.dir_step += 2;
@@ -132,7 +132,7 @@ void effect_D9_move(State_Other* ewk) {
     }
 }
 
-s32 effect_D9_init(PLW* wk, u8 data) {
+s32 effect_D9_init(PlayerEntity* wk, u8 data) {
     State_Other* ewk;
     s16 ix;
 
@@ -141,12 +141,12 @@ s32 effect_D9_init(PLW* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 139;
     ewk->wu.work_id = 16;
     ewk->wu.direction = data;
-    ewk->wu.dir_old = wk->wu.dm_count_up;
-    ewk->wu.dm_attribute = wk->wu.dm_attribute;
+    ewk->wu.dir_old = wk->wu.damage_count_up;
+    ewk->wu.damage_attribute = wk->wu.damage_attribute;
     ewk->wu.type = wk->wu.pat_status;
     ewk->wu.total_paring = wk->wu.attack_type;
     ewk->my_master = wk;

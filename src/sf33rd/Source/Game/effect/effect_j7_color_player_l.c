@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 
@@ -385,13 +385,13 @@ static void check_new_color_data(State* wk);
 static void get_new_color_data(State* wk, ColorCode* trom, s16* tram);
 
 void effect_J7_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
-    ewk->wu.rl_flag = mwk->wu.rl_flag;
+    ewk->wu.facing_flag = mwk->wu.facing_flag;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (mwk->gill_ccch_go == 0 && (mwk->wu.routine_no[1] != 0 || mwk->wu.routine_no[2] != 1)) {
+        if (mwk->gill_catch_go == 0 && (mwk->wu.routine_no[1] != 0 || mwk->wu.routine_no[2] != 1)) {
             break;
         }
 
@@ -407,12 +407,12 @@ void effect_J7_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.routine_no[0] = 3;
         } else if (mwk->wu.vital_new < 0) {
             ewk->wu.routine_no[0] = 2;
             ewk->wu.routine_no[1] = 0;
-        } else if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        } else if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             check_new_color_data(&ewk->wu);
         }
 
@@ -426,7 +426,7 @@ void effect_J7_move(State_Other* ewk) {
             ewk->wu.dir_step = 0;
             ewk->wu.dir_old = 1;
 
-            if (ewk->wu.rl_flag) {
+            if (ewk->wu.facing_flag) {
                 get_new_color_data(&ewk->wu, (ColorCode*)ewk->wu.hit_adrs, ewk->wu.step_xy_table);
                 get_new_color_data(&ewk->wu, (ColorCode*)ewk->wu.dmg_adrs, ewk->wu.move_xy_table);
             } else {
@@ -471,7 +471,7 @@ static void check_new_color_data(State* wk) {
         wk->dir_step++;
     }
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         get_new_color_data(wk, (ColorCode*)wk->hit_adrs, wk->step_xy_table);
         get_new_color_data(wk, (ColorCode*)wk->dmg_adrs, wk->move_xy_table);
     } else {
@@ -494,7 +494,7 @@ static void get_new_color_data(State* wk, ColorCode* trom, s16* tram) {
     }
 }
 
-s32 effect_J7_init(PLW* wk) {
+s32 effect_J7_init(PlayerEntity* wk) {
     State_Other* ewk;
     s16 ix;
 
@@ -511,7 +511,7 @@ s32 effect_J7_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 197;
     ewk->wu.work_id = 16;
     ewk->wu.type = g_state.Player_Color[wk->wu.id];

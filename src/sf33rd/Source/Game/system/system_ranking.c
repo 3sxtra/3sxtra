@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/engine/player_system_utilities.h" /* random_16 */
 #include "common.h"
 #include "main.h"
-#include "sf33rd/Source/Game/com/com_data.h"
+#include "sf33rd/Source/Game/com/ai_data_tables.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/screen/ranking.h"

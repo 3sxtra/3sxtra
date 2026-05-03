@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/screen/n_input.h"
+#include "sf33rd/Source/Game/screen/name_input.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/target_subroutines.h"
 #include "sf33rd/Source/Game/system/system_subroutines.h"

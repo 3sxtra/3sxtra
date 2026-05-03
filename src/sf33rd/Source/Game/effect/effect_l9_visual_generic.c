@@ -61,12 +61,12 @@ s32 effect_L9_init(State_Other* oya, u8 ten_type) {
     ewk->my_master = oya;
     ewk->master_id = oya->wu.id;
     ewk->wu.type = ten_type;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 219;
     ewk->wu.work_id = 16;
     ewk->wu.my_priority = 64;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _etc2_char_table;
     ewk->wu.my_family = 8;
@@ -78,7 +78,7 @@ s32 effect_L9_init(State_Other* oya, u8 ten_type) {
     if (ewk->wu.type) {
         ewk->wu.char_index = 53;
 
-        if (g_state.plw[g_state.Winner_id].wu.rl_flag) {
+        if (g_state.plw[g_state.Winner_id].wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos = 191;
         } else {
             ewk->wu.xyz[0].disp.pos = 192;
@@ -93,7 +93,7 @@ s32 effect_L9_init(State_Other* oya, u8 ten_type) {
         ewk->wu.xyz[1].disp.pos = 8;
     }
 
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

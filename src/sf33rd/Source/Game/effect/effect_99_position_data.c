@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void Setup_Letter_99(WORK_Other_CONN* ewk, s16 letter_index, s16 disp_index);
+static void Setup_Letter_99(EffectMultiSprite* ewk, s16 letter_index, s16 disp_index);
 
 const s16 Pos_Data_99[5][3] = { { -144, 128, 23 }, { 48, 128, 23 }, { 8, 54, 23 }, { 0, 42, 23 }, { 0, 30, 23 } };
 
@@ -66,7 +66,7 @@ const s8* Letter_Data_99[5][21] = {
       "" }
 };
 
-void effect_99_move(WORK_Other_CONN* ewk) {
+void effect_99_move(EffectMultiSprite* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);
         return;
@@ -86,15 +86,15 @@ void effect_99_move(WORK_Other_CONN* ewk) {
 }
 
 s32 effect_99_init(s16 id, s16 type, s16 char_offset, s16 letter_index, s16 pos_index, s16 master_player) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 99;
     ewk->wu.work_id = 16;
@@ -106,15 +106,15 @@ s32 effect_99_init(s16 id, s16 type, s16 char_offset, s16 letter_index, s16 pos_
     ewk->wu.dir_step = letter_index;
     ewk->master_priority = pos_index;
     ewk->master_player = master_player;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_99[pos_index][0];
     ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_99[pos_index][1];
     ewk->wu.position_z = Pos_Data_99[pos_index][2];
     return 0;
 }
 
-static void Setup_Letter_99(WORK_Other_CONN* ewk, s16 letter_index, s16 disp_index) {
+static void Setup_Letter_99(EffectMultiSprite* ewk, s16 letter_index, s16 disp_index) {
     s16 x;
     s16 ix;
     s16 offset_x;

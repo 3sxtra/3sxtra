@@ -13,23 +13,23 @@
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl04_exatt_table[18])(PLW*);
+void (*const pl04_exatt_table[18])(PlayerEntity*);
 
 /** @brief Dudley: extra attack dispatcher. */
-void pl_dudley_extra_attack(PLW* wk) {
+void pl_dudley_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl04_exatt_table[idx](wk);
 }
 
 /** @brief Dudley: special action (tokushu koudou). */
-static void Att_PL04_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL04_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -61,7 +61,7 @@ static void Att_PL04_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl04_exatt_table[18])(PLW*) = { Att_SENPUUKYAKU,     Att_SENPUUKYAKU,    Att_HADOUKEN,
+void (*const pl04_exatt_table[18])(PlayerEntity*) = { Att_SENPUUKYAKU,     Att_SENPUUKYAKU,    Att_HADOUKEN,
                                              Att_SHOURYUUREPPA,   Att_HADOUKEN2,      Att_CHOUCHUURENGEKI,
                                              Att_CHOUCHUURENGEKI, Att_SLIDE_and_JUMP, Att_SLIDE_and_JUMP,
                                              Att_HADOUKEN,        Att_NM_OKIAGARI,    Att_DUMMY,

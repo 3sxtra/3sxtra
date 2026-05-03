@@ -7,7 +7,7 @@
 #include "types.h"
 
 typedef struct {
-    s8 be_flag;
+    s8 active_flag;
     s8 disp_flag;
     s16 fam_no;
     s16 r_no_0;
@@ -125,7 +125,7 @@ void Bg_Close();
 void Bg_Texture_Load_EX();
 void Bg_Texture_Load2(u8 type);
 void Bg_Texture_Load_Ending(s16 type);
-void scr_trans(u8 bgnm);
+void screen_transform(u8 bgnm);
 void scr_trans_sub2(s32 x, s32 y, s32 suzi);
 void scr_calc(u8 bgnm);
 void scr_calc2(u8 bgnm);
@@ -140,7 +140,7 @@ void Scrn_Move_Set(s8 bgnm, s16 x, s16 y);
 void Family_Init();
 void Family_Set_R(s8 fmnm, s16 x, s16 y);
 void Family_Set_W(s8 fmnm, s16 x, s16 y);
-void Bg_On_R(u16 s_prm);
+void bg_enable_render(u16 s_prm);
 void Bg_On_W(u16 s_prm);
 void Bg_Off_R(u16 s_prm);
 void Bg_Off_W(u16 s_prm);

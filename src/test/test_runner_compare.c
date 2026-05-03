@@ -29,7 +29,7 @@ typedef struct Position {
 // Data reading
 
 static Sint64 calc_plw_offset(int player) {
-    return PLW_OFFSET + player * PLW_SIZE;
+    return PlayerEntity_OFFSET + player * PlayerEntity_SIZE;
 }
 
 static Position read_position(SDL_IOStream* io, int player) {
@@ -52,12 +52,12 @@ static u16 read_game_timer(SDL_IOStream* io) {
     return read_u16(io, GAME_TIMER_OFFSET);
 }
 
-static void read_wcp(SDL_IOStream* io, WORK_CP dst[2]) {
+static void read_wcp(SDL_IOStream* io, CommandInputState dst[2]) {
     SDL_SeekIO(io, WCP_OFFSET, SDL_IO_SEEK_SET);
     SDL_ReadIO(io, dst, sizeof(g_state.wcp));
 
     for (int i = 0; i < 2; i++) {
-        WORK_CP* w = &dst[i];
+        CommandInputState* w = &dst[i];
 
         w->input_held = SDL_Swap16BE(w->input_held);
         w->input_pressed = SDL_Swap16BE(w->input_pressed);
@@ -66,15 +66,15 @@ static void read_wcp(SDL_IOStream* io, WORK_CP dst[2]) {
         w->input_released = SDL_Swap16BE(w->input_released);
         w->input_changed = SDL_Swap16BE(w->input_changed);
         w->old_now = SDL_Swap16BE(w->old_now);
-        w->lgp = SDL_Swap16BE(w->lgp);
+        w->lever_grace_period = SDL_Swap16BE(w->lever_grace_period);
 
         for (int j = 0; j < 56; j++) {
             w->move_state_flags[j] = SDL_Swap16BE(w->move_state_flags[j]);
             w->reset[j] = SDL_Swap16BE(w->reset[j]);
-            w->btix[j] = SDL_Swap16BE(w->btix[j]);
+            w->button_index[j] = SDL_Swap16BE(w->button_index[j]);
 
             for (int k = 0; k < 4; k++) {
-                w->exdt[j][k] = SDL_Swap16BE(w->exdt[j][k]);
+                w->extended_data[j][k] = SDL_Swap16BE(w->extended_data[j][k]);
             }
         }
     }
@@ -150,11 +150,11 @@ static void compare_main_values(SDL_IOStream* io) {
         stop_if(stun_3sx != stun_cps3);
 
         const s16 sa_gauge_3sx = g_state.super_arts[i].gauge.s.h;
-        const s16 sa_gauge_cps3 = read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SA_WORK) + offsetof(SA_WORK, gauge));
+        const s16 sa_gauge_cps3 = read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SuperArtGauge) + offsetof(SuperArtGauge, gauge));
         stop_if(sa_gauge_3sx != sa_gauge_cps3);
 
-        const s16 sa_store_3sx = g_state.super_arts[i].store;
-        const s16 sa_store_cps3 = read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SA_WORK) + offsetof(SA_WORK, store));
+        const s16 sa_store_3sx = g_state.super_arts[i].stock;
+        const s16 sa_store_cps3 = read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SuperArtGauge) + offsetof(SuperArtGauge, stock));
         stop_if(sa_store_3sx != sa_store_cps3);
     }
 }
@@ -206,11 +206,11 @@ static void compare_service_values(SDL_IOStream* io, bool compare_characters, Ui
         // printf("%llu curr_rca: 0x%x\n", frame, curr_rca_cps3);
 
         const u8 caution_flag_3sx = g_state.plw[i].caution_flag;
-        const u8 caution_flag_cps3 = read_u8(io, plw_offset + PLW_CAUTION_FLAG_OFFSET);
+        const u8 caution_flag_cps3 = read_u8(io, plw_offset + PlayerEntity_CAUTION_FLAG_OFFSET);
         stop_if(caution_flag_3sx != caution_flag_cps3);
 
         const u8 do_not_move_3sx = g_state.plw[i].do_not_move;
-        const u8 do_not_move_cps3 = read_u8(io, plw_offset + PLW_DO_NOT_MOVE_OFFSET);
+        const u8 do_not_move_cps3 = read_u8(io, plw_offset + PlayerEntity_DO_NOT_MOVE_OFFSET);
         stop_if(do_not_move_3sx != do_not_move_cps3);
 
         for (int j = 0; j < 8; j++) {
@@ -228,7 +228,7 @@ static void compare_service_values(SDL_IOStream* io, bool compare_characters, Ui
         stop_if(hit_stop_3sx != hit_stop_cps3);
 
         const u8 sa_stop_flag_3sx = g_state.plw[i].sa_stop_flag;
-        const u8 sa_stop_flag_cps3 = read_u8(io, plw_offset + PLW_SA_STOP_FLAG_OFFSET);
+        const u8 sa_stop_flag_cps3 = read_u8(io, plw_offset + PlayerEntity_SA_STOP_FLAG_OFFSET);
         stop_if(sa_stop_flag_3sx != sa_stop_flag_cps3);
 
         // const u16 cg_ix_cps3 = read_u16(io, plw_offset + WORK_CG_IX_OFFSET);
@@ -267,15 +267,15 @@ static void compare_move_work(SDL_IOStream* io) {
 }
 
 static void compare_wcp(SDL_IOStream* io) {
-    WORK_CP wcp_cps3[2];
+    CommandInputState wcp_cps3[2];
     read_wcp(io, wcp_cps3);
 
     for (int i = 0; i < 2; i++) {
         const s16 move_type_cps3 = read_s16(io, WAZA_TYPE_OFFSET + i * sizeof(s16));
         stop_if(move_type[i] != move_type_cps3);
 
-        const WORK_CP* w_3sx = &g_state.wcp[i];
-        const WORK_CP* w_cps3 = &wcp_cps3[i];
+        const CommandInputState* w_3sx = &g_state.wcp[i];
+        const CommandInputState* w_cps3 = &wcp_cps3[i];
 
         stop_if(w_3sx->input_held != w_cps3->input_held);
         stop_if(w_3sx->input_pressed != w_cps3->input_pressed);
@@ -284,12 +284,12 @@ static void compare_wcp(SDL_IOStream* io) {
         stop_if(w_3sx->input_released != w_cps3->input_released);
         stop_if(w_3sx->input_changed != w_cps3->input_changed);
         stop_if(w_3sx->old_now != w_cps3->old_now);
-        stop_if(w_3sx->lgp != w_cps3->lgp);
-        stop_if(w_3sx->ca14 != w_cps3->ca14);
-        stop_if(w_3sx->ca25 != w_cps3->ca25);
-        stop_if(w_3sx->ca36 != w_cps3->ca36);
-        stop_if(w_3sx->calf != w_cps3->calf);
-        stop_if(w_3sx->calr != w_cps3->calr);
+        stop_if(w_3sx->lever_grace_period != w_cps3->lever_grace_period);
+        stop_if(w_3sx->combo_btn_14 != w_cps3->combo_btn_14);
+        stop_if(w_3sx->combo_btn_25 != w_cps3->combo_btn_25);
+        stop_if(w_3sx->combo_btn_36 != w_cps3->combo_btn_36);
+        stop_if(w_3sx->combo_all_forward != w_cps3->combo_all_forward);
+        stop_if(w_3sx->combo_all_reverse != w_cps3->combo_all_reverse);
         stop_if(w_3sx->lever_dir != w_cps3->lever_dir);
 
         for (int j = 0; j < 56; j++) {
@@ -300,11 +300,11 @@ static void compare_wcp(SDL_IOStream* io) {
             }
 
             stop_if(w_3sx->reset[j] != w_cps3->reset[j]);
-            stop_if(w_3sx->btix[j] != w_cps3->btix[j]);
+            stop_if(w_3sx->button_index[j] != w_cps3->button_index[j]);
 
             for (int k = 0; k < 4; k++) {
                 stop_if(w_3sx->move_state_timers[j][k] != w_cps3->move_state_timers[j][k]);
-                stop_if(w_3sx->exdt[j][k] != w_cps3->exdt[j][k]);
+                stop_if(w_3sx->extended_data[j][k] != w_cps3->extended_data[j][k]);
             }
         }
     }
@@ -339,7 +339,7 @@ static void sync_lvr(T_PL_LVR* dst, const T_PL_LVR* src) {
     dst->shot_ud = src->shot_ud;
 }
 
-static void sync_wcp(WORK_CP* dst, const WORK_CP* src) {
+static void sync_wcp(CommandInputState* dst, const CommandInputState* src) {
     dst->input_held = src->input_held;
     dst->input_pressed = src->input_pressed;
     dst->input_old = src->input_old;
@@ -347,10 +347,10 @@ static void sync_wcp(WORK_CP* dst, const WORK_CP* src) {
     dst->input_released = src->input_released;
     dst->input_changed = src->input_changed;
     dst->old_now = src->old_now;
-    dst->lgp = src->lgp;
-    dst->ca14 = src->ca14;
-    dst->ca25 = src->ca25;
-    dst->ca36 = src->ca36;
+    dst->lever_grace_period = src->lever_grace_period;
+    dst->combo_btn_14 = src->combo_btn_14;
+    dst->combo_btn_25 = src->combo_btn_25;
+    dst->combo_btn_36 = src->combo_btn_36;
     dst->lever_dir = src->lever_dir;
 
     for (int i = 0; i < 56; i++) {
@@ -371,7 +371,7 @@ void sync_values(SDL_IOStream* io) {
     g_state.Random_ix16 = read_s16(io, RANDOM_IX_16_OFFSET);
     g_state.Random_ix32 = read_s16(io, RANDOM_IX_32_OFFSET);
 
-    // WORK_CP wcp_cps3[2];
+    // CommandInputState wcp_cps3[2];
     // read_wcp(io, wcp_cps3);
 
     // MOVE_WORK move_work_cps3[2][56];

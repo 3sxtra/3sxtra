@@ -6,7 +6,7 @@
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/Source/Game/com/com_sub.h"
+#include "sf33rd/Source/Game/com/ai_subroutines.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
@@ -697,7 +697,7 @@ s16 get_tech_pts_total(s16 ix) {
 
     point += grade_table_lookup(grade_t_command_move, 8, g_state.judge_item[ix][g_state.Play_Type].command_move);
 
-    switch (g_state.plw[ix].sa->store_max) {
+    switch (g_state.plw[ix].sa->stock_max) {
     case 1:
         point += grade_table_lookup(grade_t_sa_stock_1, 5, g_state.judge_item[ix][g_state.Play_Type].sa_exec);
         break;
@@ -887,7 +887,7 @@ void grade_store_vitality(s16 ix) {
 }
 
 /** @brief Processes a successful parry/blocking and updates grade counters. */
-void grade_add_blocking(PLW* wk) {
+void grade_add_blocking(PlayerEntity* wk) {
     s16 ix = wk->wu.id;
 
     switch (wk->kind_of_blocking) {
@@ -1079,7 +1079,7 @@ s16 get_grade_ix(s16 pts) {
 }
 
 /** @brief Checks if the defender missed a guard opportunity and increments the miss counter. */
-void check_guard_miss(State* as, PLW* ds, s8 gddir) {
+void check_guard_miss(State* as, PlayerEntity* ds, s8 gddir) {
     if (ds->remake_power.total) {
         return;
     }

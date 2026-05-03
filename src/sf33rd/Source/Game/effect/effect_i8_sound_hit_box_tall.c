@@ -16,11 +16,11 @@
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/pow_pow.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/damage_calculator.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 const s16 effI8_hit_box[2][4] = { { -9, 17, -6, 12 }, { -4, 10, 114, 9 } };
@@ -33,8 +33,8 @@ const u16 cbm_table[8][5] = { { 0x3FFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFF00 }, { 0x1F
                               { 0x0000, 0x000F, 0xFFFF, 0xFFFF, 0x8000 }, { 0x0000, 0x0000, 0x0FFF, 0xFFFE, 0x0000 } };
 
 static void effI8_main_process(State_Other* ewk);
-static void cal_speeds_to_me_effI8(State_Other* ewk, PLW* mwk);
-static void cal_speeds_to_em_effI8(State_Other* ewk, PLW* twk);
+static void cal_speeds_to_me_effI8(State_Other* ewk, PlayerEntity* mwk);
+static void cal_speeds_to_em_effI8(State_Other* ewk, PlayerEntity* twk);
 
 void effect_I8_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -44,7 +44,7 @@ void effect_I8_move(State_Other* ewk) {
         set_char_base_data(&ewk->wu);
         ewk->wu.my_col_code = ewk->wu.damage_vitality;
         *ewk->wu.char_table = _plef_char_table;
-        ball_init_position_effD7(ewk, (PLW*)ewk->my_master);
+        ball_init_position_effD7(ewk, (PlayerEntity*)ewk->my_master);
         ewk->wu.type = 1;
         ewk->wu.disp_flag = 1;
         ewk->wu.blink_timing = ewk->master_id;
@@ -54,12 +54,12 @@ void effect_I8_move(State_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 0;
-        cal_speeds_to_me_effI8(ewk, (PLW*)ewk->my_master);
+        cal_speeds_to_me_effI8(ewk, (PlayerEntity*)ewk->my_master);
         set_char_move_init(&ewk->wu, 0, 0x75);
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -71,7 +71,7 @@ void effect_I8_move(State_Other* ewk) {
                 ewk->wu.hit_stop = -ewk->wu.hit_stop;
             }
 
-            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+            if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
                 effI8_main_process(ewk);
             }
 
@@ -97,7 +97,7 @@ void effect_I8_move(State_Other* ewk) {
 }
 
 static void effI8_main_process(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
@@ -187,7 +187,7 @@ static void effI8_main_process(State_Other* ewk) {
                 ewk->wu.routine_no[2] = 0;
                 mwk->wu.script_register_bank[6] = 0;
 
-                if (mwk->wu.rl_flag) {
+                if (mwk->wu.facing_flag) {
                     ewk->wu.xyz[0].disp.pos = mwk->wu.xyz[0].disp.pos + 10;
                 } else {
                     ewk->wu.xyz[0].disp.pos = mwk->wu.xyz[0].disp.pos - 10;
@@ -198,7 +198,7 @@ static void effI8_main_process(State_Other* ewk) {
                 ewk->wu.disp_flag = 1;
                 ewk->wu.type = 1;
                 set_char_move_init(&ewk->wu, 0, 0x89);
-                cal_speeds_to_em_effI8(ewk, (PLW*)ewk->wu.target_adrs);
+                cal_speeds_to_em_effI8(ewk, (PlayerEntity*)ewk->wu.target_adrs);
                 add_mvxy_speed(&ewk->wu);
                 cal_mvxy_speed(&ewk->wu);
             }
@@ -219,14 +219,14 @@ static void effI8_main_process(State_Other* ewk) {
                     ewk->wu.mvxy.a[1].sp = 0x10000;
                     ewk->wu.mvxy.d[1].sp = -0x6000;
                 } else {
-                    ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+                    ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
                     ewk->wu.mvxy.a[0].sp /= 2;
                     ewk->wu.mvxy.a[1].sp = 0;
                     ewk->wu.mvxy.d[1].sp = -0x6000;
                 }
             } else if (ewk->wu.hf.hit.player & 0xC0) {
                 ewk->wu.routine_no[1] = 0;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
                 ewk->wu.mvxy.a[0].sp = 0x30000;
                 ewk->wu.mvxy.a[1].sp = 0x44000;
                 ewk->wu.mvxy.d[1].sp = -0x5000;
@@ -234,9 +234,9 @@ static void effI8_main_process(State_Other* ewk) {
                 g_state.Bonus_Game_result++;
 
                 if (ewk->wu.hf.hit.player & 0x80) {
-                    Additinal_Score_DM((State_Other*)ewk->wu.target_adrs, 8);
+                    additional_score_damage((State_Other*)ewk->wu.target_adrs, 8);
                 } else {
-                    Additinal_Score_DM((State_Other*)ewk->wu.target_adrs, 6);
+                    additional_score_damage((State_Other*)ewk->wu.target_adrs, 6);
                 }
 
                 set_char_move_init(&ewk->wu, 0, 0x8B);
@@ -244,7 +244,7 @@ static void effI8_main_process(State_Other* ewk) {
         } else if (ewk->wu.hf.hit.effect && ((State*)ewk->wu.hit_adrs)->id == 0x89) {
             Se_Dispatch(0x157, 0x157, ewk);
             ewk->wu.routine_no[1] = 0;
-            ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+            ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
             ewk->wu.mvxy.a[0].sp = (ewk->wu.mvxy.a[0].sp * 3) / 4;
             ewk->wu.hit_stop = 2;
         } else {
@@ -253,13 +253,13 @@ static void effI8_main_process(State_Other* ewk) {
             }
 
             ewk->wu.routine_no[1] = 2;
-            ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+            ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
             ewk->wu.disp_flag = 2;
             ewk->wu.type = 0;
             ewk->wu.shadow_flag = 0;
             ewk->wu.dir_timer = 8;
             ewk->wu.hit_stop = 2;
-            Additinal_Score_DM((State_Other*)ewk->wu.target_adrs, 6);
+            additional_score_damage((State_Other*)ewk->wu.target_adrs, 6);
             g_state.Bonus_Game_ex_result++;
         }
 
@@ -280,18 +280,18 @@ static void effI8_main_process(State_Other* ewk) {
     }
 }
 
-static void cal_speeds_to_me_effI8(State_Other* ewk, PLW* mwk) {
+static void cal_speeds_to_me_effI8(State_Other* ewk, PlayerEntity* mwk) {
     s16 tx = mwk->wu.xyz[0].disp.pos;
     s16 ty = cal_move_quantity3(&mwk->wu, ewk->wu.dir_timer) + 128;
 
     cal_speeds_effD7(ewk, ewk->wu.dir_timer, tx, ty, 5);
 }
 
-static void cal_speeds_to_em_effI8(State_Other* ewk, PLW* twk) {
+static void cal_speeds_to_em_effI8(State_Other* ewk, PlayerEntity* twk) {
     s16 tx = twk->wu.position_x;
     s16 ty;
 
-    if (twk->wu.rl_flag) {
+    if (twk->wu.facing_flag) {
         tx -= ewk->wu.next_x;
     } else {
         tx += ewk->wu.next_x;
@@ -346,7 +346,7 @@ s32 check_ball_mizushibuki(s16 xx, s16 yy) {
     return 0;
 }
 
-static s32 effect_I8_init(PLW* wk, s16 top, const s16* sptr) {
+static s32 effect_I8_init(PlayerEntity* wk, s16 top, const s16* sptr) {
     State_Other* ewk;
     s16 ix;
 
@@ -355,12 +355,12 @@ static s32 effect_I8_init(PLW* wk, s16 top, const s16* sptr) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0xBC;
     ewk->wu.work_id = 2;
-    ewk->wu.rl_flag = wk->wu.rl_flag;
+    ewk->wu.facing_flag = wk->wu.facing_flag;
     ewk->wu.damage_vitality = wk->wu.my_col_code;
-    ewk->wu.my_mts = 0xE;
+    ewk->wu.my_sprite_sheet = 0xE;
     ewk->wu.dir_timer = top;
     ewk->wu.dir_step = sptr[1];
     ewk->wu.dir_old = sptr[2];
@@ -373,7 +373,7 @@ static s32 effect_I8_init(PLW* wk, s16 top, const s16* sptr) {
     return 0;
 }
 
-void setup_effI8(PLW* wk, const BBBSTable* dadr) {
+void setup_effI8(PlayerEntity* wk, const BBBSTable* dadr) {
     s16 i;
     s16 ttime = 0;
 

@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -35,7 +35,7 @@ void effect_33_move(State_Other* ewk) {
         sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
 
-        if (g_state.EXE_flag || g_state.Game_pause || g_state.pcon_rno[2] != 1 || g_state.Event_Judge_Gals != -1 ||
+        if (g_state.execute_flag || g_state.Game_pause || g_state.pcon_rno[2] != 1 || g_state.Event_Judge_Gals != -1 ||
             !g_state.Complete_Judgement) {
             break;
         }
@@ -44,7 +44,7 @@ void effect_33_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.routine_no[0]++;
             ewk->wu.char_index = WinLoseID[ewk->master_id][g_state.Winner_id] + 10;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -55,8 +55,8 @@ void effect_33_move(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
-            if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
+            if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
                 ewk->wu.disp_flag = 0;
                 ewk->wu.routine_no[0]++;
                 break;
@@ -89,7 +89,7 @@ s32 effect_33_init(State* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 33;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
@@ -98,9 +98,9 @@ s32 effect_33_init(State* wk) {
     ewk->wu.my_col_code = wk->my_col_code + 1;
     ewk->wu.my_family = wk->my_family;
     ewk->my_master = wk;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.facing_flag = wk->facing_flag;
     ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos;
-    ewk->wu.xyz[0].disp.pos += wk->rl_flag ? -48 : 48;
+    ewk->wu.xyz[0].disp.pos += wk->facing_flag ? -48 : 48;
     ewk->wu.xyz[1].disp.pos = wk->xyz[1].disp.pos - 12;
     ewk->wu.my_priority = wk->my_priority - 12;
     ewk->wu.position_z = ewk->wu.my_priority - 12;
@@ -108,8 +108,8 @@ s32 effect_33_init(State* wk) {
     ewk->wu.char_index = 7;
     ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
-    ewk->wu.my_mts = 0xE;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 0xE;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }
 

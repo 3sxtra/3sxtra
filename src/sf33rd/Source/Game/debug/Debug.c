@@ -18,7 +18,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/ioconv.h"
+#include "sf33rd/Source/Game/io/input_converter.h"
 #include "sf33rd/Source/Game/rendering/rendering_transform.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/system_subroutines.h"
@@ -570,7 +570,7 @@ void Disp_Rec_Time(s16 PL_id, u32 time) {
 }
 
 /** @brief Display CPU control mode/pattern for a player work structure. */
-void Disp_Mode(PLW* wk) {
+void Disp_Mode(PlayerEntity* wk) {
     s16 x;
     s16 offset_y = 0;
 

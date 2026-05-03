@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -29,7 +29,7 @@ void effect_72_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -62,18 +62,18 @@ s32 effect_72_init(State_Other* oya, u8 type_id) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 72;
     ewk->wu.type = type_id;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->my_master = oya;
     ewk->wu.my_family = 2;
     ewk->wu.my_col_code = 8492;
-    ewk->wu.my_mts = 7;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 7;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.char_table[0] = _hkg_char_table;
     ewk->wu.xyz[0].disp.pos = 511;
     ewk->wu.xyz[1].disp.pos = 0;

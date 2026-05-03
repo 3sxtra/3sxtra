@@ -1,5 +1,5 @@
-#ifndef EFFECT_G5_SWEAT_ASE_H
-#define EFFECT_G5_SWEAT_ASE_H
+#ifndef EFFECT_G5_SWEAT_ASOUND_EFFECTS_H
+#define EFFECT_G5_SWEAT_ASOUND_EFFECTS_H
 
 #include "structs.h"
 #include "types.h"

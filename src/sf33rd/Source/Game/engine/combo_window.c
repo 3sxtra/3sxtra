@@ -67,7 +67,7 @@ void combo_cont_init() {
 }
 
 /** @brief Per-frame combo window update — checks and displays combos for both sides. */
-void combo_cont_main() {
+void combo_control_main() {
     s8 i;
 
     if (g_state.Stop_Combo) {

@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
@@ -33,8 +33,8 @@ void effect_K9_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 0) {
-            if (g_state.EXE_flag != 0 || g_state.Game_pause != 0 ||
+        if (ewk->wu.death_timer == 0) {
+            if (g_state.execute_flag != 0 || g_state.Game_pause != 0 ||
                 (ewk->wu.dir_old == mwk->current_char_type && ewk->wu.dir_step == mwk->char_index &&
                  (char_move(&ewk->wu), ewk->wu.cg_type != 0xFF))) {
                 sort_push_request(&ewk->wu);
@@ -63,11 +63,11 @@ s32 effect_K9_init(State* wk, u8 data) {
 
     ewk = (State_Other*)frw[ix];
     ewk->my_master = wk;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 209;
     ewk->wu.type = data;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 6;
+    ewk->wu.my_sprite_sheet = 6;
     ewk->wu.my_family = 8;
     ewk->wu.position_x = 192;
     ewk->wu.position_y = 112 - g_state.base_y_pos;

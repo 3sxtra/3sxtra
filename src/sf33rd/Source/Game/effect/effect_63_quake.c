@@ -11,16 +11,16 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-static void EFF63_WAIT(WORK_Other_CONN* ewk);
-static void EFF63_SLIDE_IN(WORK_Other_CONN* ewk);
-static void EFF63_CHAR_CHANGE(WORK_Other_CONN* /* unused */);
-static void EFF63_SUDDENLY(WORK_Other_CONN* /* unused */);
-static void Disp_63_Sub(WORK_Other_CONN* ewk);
-static void Setup_Letter_63(WORK_Other_CONN* ewk, s16 disp_index);
+static void EFF63_WAIT(EffectMultiSprite* ewk);
+static void EFF63_SLIDE_IN(EffectMultiSprite* ewk);
+static void EFF63_CHAR_CHANGE(EffectMultiSprite* /* unused */);
+static void EFF63_SUDDENLY(EffectMultiSprite* /* unused */);
+static void Disp_63_Sub(EffectMultiSprite* ewk);
+static void Setup_Letter_63(EffectMultiSprite* ewk, s16 disp_index);
 
 const s8* Letter_Data_63[3][21] = { { "-10", "-9", "-8", "-7", "-6", "-5", "-4", "-3", "-2", "-1", "0",
                                       "1",   "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9",  "10" },
@@ -31,7 +31,7 @@ const s8* Letter_Data_63[3][21] = { { "-10", "-9", "-8", "-7", "-6", "-5", "-4",
 
 void (*const EFF63_Jmp_Tbl[4])() = { EFF63_WAIT, EFF63_SLIDE_IN, EFF63_CHAR_CHANGE, EFF63_SUDDENLY };
 
-void effect_63_move(WORK_Other_CONN* ewk) {
+void effect_63_move(EffectMultiSprite* ewk) {
     if (Check_Die_61((State_Other*)ewk) != 0) {
         Release_Effect(&ewk->wu);
         return;
@@ -50,7 +50,7 @@ void effect_63_move(WORK_Other_CONN* ewk) {
     sort_push_request3(&ewk->wu);
 }
 
-static void EFF63_WAIT(WORK_Other_CONN* ewk) {
+static void EFF63_WAIT(EffectMultiSprite* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
@@ -58,7 +58,7 @@ static void EFF63_WAIT(WORK_Other_CONN* ewk) {
     Disp_63_Sub(ewk);
 }
 
-static void EFF63_SLIDE_IN(WORK_Other_CONN* ewk) {
+static void EFF63_SLIDE_IN(EffectMultiSprite* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -114,20 +114,20 @@ static void EFF63_SLIDE_IN(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF63_CHAR_CHANGE(WORK_Other_CONN* /* unused */) {}
+void EFF63_CHAR_CHANGE(EffectMultiSprite* /* unused */) {}
 
-void EFF63_SUDDENLY(WORK_Other_CONN* /* unused */) {}
+void EFF63_SUDDENLY(EffectMultiSprite* /* unused */) {}
 
 s32 effect_63_init(u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, s16 cursor_index) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 63;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = (sync_bg + 1);
@@ -152,13 +152,13 @@ s32 effect_63_init(u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, 
 
     ewk->wu.dir_old = dir_old;
     ewk->master_player = master_player;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     Disp_63_Sub(ewk);
     return 0;
 }
 
-static void Disp_63_Sub(WORK_Other_CONN* ewk) {
+static void Disp_63_Sub(EffectMultiSprite* ewk) {
     s16 disp_index;
 
     switch (ewk->wu.type) {
@@ -188,7 +188,7 @@ static void Disp_63_Sub(WORK_Other_CONN* ewk) {
     Setup_Letter_63(ewk, disp_index);
 }
 
-static void Setup_Letter_63(WORK_Other_CONN* ewk, s16 disp_index) {
+static void Setup_Letter_63(EffectMultiSprite* ewk, s16 disp_index) {
     const u8* ptr = (u8*)Letter_Data_63[ewk->wu.dir_step][disp_index];
     s16 ix = 0;
     s16 x = 0;

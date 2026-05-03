@@ -131,7 +131,7 @@ typedef struct {
 extern DummySettings g_dummy_settings;
 
 // Called every frame during input polling to override the dummy's Lever_Buff
-void training_dummy_update_input(PLW* wk, s16 dummy_id);
+void training_dummy_update_input(PlayerEntity* wk, s16 dummy_id);
 void sync_dummy_settings_from_menu(void);
 
 #endif // TRAINING_DUMMY_H

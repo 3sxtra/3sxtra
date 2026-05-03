@@ -139,7 +139,7 @@ static CGTileCacheEntry* cg_build_tile_descs(u32 cg_number) {
         if (e->key == 0 || e->key == cg_number) {
             // Use this slot
             s32 i = obj_group_table[cg_number];
-            if (i == 0 || texgrplds[i].ok == 0) {
+            if (i == 0 || texgrplds[i].can_activate == 0) {
                 e->key = cg_number;
                 e->count = 0;
                 e->group = (u8)i;
@@ -589,7 +589,7 @@ void mlt_obj_disp(MultiTexture* mt, State* wk, s32 base_y) {
         return;
     }
 
-    if (texgrplds[i].ok == 0) {
+    if (texgrplds[i].can_activate == 0) {
         // The trans data is not valid. Group number: %d\n
         static u8 warned[256];
         if (!warned[i]) {
@@ -605,7 +605,7 @@ void mlt_obj_disp(MultiTexture* mt, State* wk, s32 base_y) {
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
-    attr = flptbl[wk->cg_flip ^ wk->rl_flag];
+    attr = flptbl[wk->cg_flip ^ wk->facing_flag];
     palo = wk->colcd & 0xF;
 
     if (wk->my_bright_type) {
@@ -702,7 +702,7 @@ void mlt_obj_disp_rgb(MultiTexture* mt, State* wk, s32 base_y) {
         return;
     }
 
-    if (texgrplds[i].ok == 0) {
+    if (texgrplds[i].can_activate == 0) {
         // The trans data is not valid. Group number: %d\n
         static u8 warned[256];
         if (!warned[i]) {
@@ -718,7 +718,7 @@ void mlt_obj_disp_rgb(MultiTexture* mt, State* wk, s32 base_y) {
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
-    attr = flptbl[wk->cg_flip ^ wk->rl_flag];
+    attr = flptbl[wk->cg_flip ^ wk->facing_flag];
 
     if (wk->my_bright_type) {
         curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
@@ -805,7 +805,7 @@ s16 getObjectHeight(u16 cgnum) {
         return 0;
     }
 
-    if (texgrplds[i].ok == 0) {
+    if (texgrplds[i].can_activate == 0) {
         return 0;
     }
 
@@ -855,7 +855,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, State* wk, s32 base_y) {
         return;
     }
 
-    if (texgrplds[i].ok == 0) {
+    if (texgrplds[i].can_activate == 0) {
         // The trans data is not valid. Group number: %d\n
         static u8 warned[256];
         if (!warned[i]) {
@@ -872,7 +872,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, State* wk, s32 base_y) {
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
-    attr = flptbl[wk->cg_flip ^ wk->rl_flag];
+    attr = flptbl[wk->cg_flip ^ wk->facing_flag];
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
@@ -1109,7 +1109,7 @@ void mlt_obj_trans(MultiTexture* mt, State* wk, s32 base_y) {
         return;
     }
 
-    attr = flptbl[wk->cg_flip ^ wk->rl_flag];
+    attr = flptbl[wk->cg_flip ^ wk->facing_flag];
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
@@ -1216,7 +1216,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, State* wk, s32 base_y) {
         return;
     }
 
-    if (texgrplds[i].ok == 0) {
+    if (texgrplds[i].can_activate == 0) {
         // The trans data is not valid. Group number: %d\n
         static u8 warned[256];
         if (!warned[i]) {
@@ -1233,7 +1233,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, State* wk, s32 base_y) {
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
-    flip = flptbl[wk->cg_flip ^ wk->rl_flag];
+    flip = flptbl[wk->cg_flip ^ wk->facing_flag];
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
@@ -1484,7 +1484,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, State* wk, s32 base_y) {
         return;
     }
 
-    flip = flptbl[wk->cg_flip ^ wk->rl_flag];
+    flip = flptbl[wk->cg_flip ^ wk->facing_flag];
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
@@ -1596,7 +1596,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, State* wk, s32 base_y) {
         return;
     }
 
-    if (texgrplds[i].ok == 0) {
+    if (texgrplds[i].can_activate == 0) {
         // The trans data is not valid. Group number: %d\n
         static u8 warned[256];
         if (!warned[i]) {
@@ -1613,7 +1613,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, State* wk, s32 base_y) {
     trsbas++;
     trsptr = (TileMapEntry*)trsbas;
     x = y = 0.0f;
-    flip = flptbl[wk->cg_flip ^ wk->rl_flag];
+    flip = flptbl[wk->cg_flip ^ wk->facing_flag];
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
@@ -1846,7 +1846,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, State* wk, s32 base_y) {
         return;
     }
 
-    flip = flptbl[wk->cg_flip ^ wk->rl_flag];
+    flip = flptbl[wk->cg_flip ^ wk->facing_flag];
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
@@ -2620,7 +2620,7 @@ static void lz_ext_p6_cx(u8* srcptr, u16* dstptr, u32 len, u16* palptr) {
             tmp = (tmp & 0xF) + 2;
 
             // ⚡ Bolt: 4× unroll — improves ILP for the palette gather pattern.
-            // CPU can pipeline 4 independent load→index→store sequences.
+            // CPU can pipeline 4 independent load→index→stock sequences.
             while (tmp >= 4) {
                 dstptr[0] = palptr[flg | (srcptr[0] >> 4)];
                 dstptr[1] = palptr[flg | (srcptr[0] & 0xF)];
@@ -2840,7 +2840,7 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
     ppgSetupCurrentDataList(&mt->texList);
     grplds = &texgrplds[obj_group_table[cg_number]];
 
-    if (grplds->ok == 0) {
+    if (grplds->can_activate == 0) {
         // The trans data is not valid. Group number: %d\n
         static u8 warned[256];
         if (!warned[obj_group_table[cg_number]]) {

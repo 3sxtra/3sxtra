@@ -26,7 +26,7 @@ void (*chk_move_jp[28])() = { check_init, check_0,  check_1,  check_2,  check_3,
                               check_20,   check_21, check_22, check_23, check_24, check_25, check_26 };
 
 /** @brief Main move/command check dispatcher — scans for special move inputs. */
-void move_check(PLW* pl) {
+void move_check(PlayerEntity* pl) {
     cmd_pl = pl;
     cmd_id = cmd_pl->wu.id;
     chk_pl = &g_state.t_pl_lvr[cmd_id];
@@ -35,7 +35,7 @@ void move_check(PLW* pl) {
 }
 
 /** @brief Passes lever input through without processing (used for disabled states). */
-void key_thru(PLW* pl) {
+void key_thru(PlayerEntity* pl) {
     cmd_pl = pl;
     cmd_id = cmd_pl->wu.id;
     chk_pl = &g_state.t_pl_lvr[cmd_id];
@@ -43,7 +43,7 @@ void key_thru(PLW* pl) {
 }
 
 /** @brief Initializes command sequence data tables from the move definition set. */
-void cmd_data_set(PLW* /* unused */, s16 i) {
+void cmd_data_set(PlayerEntity* /* unused */, s16 i) {
     u8* ptr3;
     u16* ptr4;
 
@@ -57,9 +57,9 @@ void cmd_data_set(PLW* /* unused */, s16 i) {
     *ptr3++ = (s8)*cmd_tbl_ptr++;
     *ptr3++ = (s8)*cmd_tbl_ptr++;
 
-    g_state.wcp[cmd_id].btix[i] = *cmd_tbl_ptr++;
+    g_state.wcp[cmd_id].button_index[i] = *cmd_tbl_ptr++;
 
-    ptr4 = &g_state.wcp[cmd_id].exdt[i][0];
+    ptr4 = &g_state.wcp[cmd_id].extended_data[i][0];
     *ptr4++ = *cmd_tbl_ptr++;
     *ptr4++ = *cmd_tbl_ptr++;
     *ptr4++ = *cmd_tbl_ptr++;
@@ -81,7 +81,7 @@ void cmd_data_set(PLW* /* unused */, s16 i) {
 }
 
 /** @brief Initializes the command input state machine for a player. */
-void cmd_init(PLW* pl) {
+void cmd_init(PlayerEntity* pl) {
     cmd_id = pl->wu.id;
     pl->cp = &g_state.wcp[cmd_id];
 
@@ -1544,7 +1544,7 @@ void pl_lvr_set() {
     sw_0 = g_state.wcp[cmd_id].input_held;
 
     if (check_rl_on_car(cmd_pl)) {
-        if (cmd_pl->wu.rl_flag) {
+        if (cmd_pl->wu.facing_flag) {
             sw_work = (sw_0 & CMD_LEVER_LR);
             if (sw_work) {
                 sw_0 &= CMD_SW_LR_CLR;
@@ -1640,26 +1640,26 @@ void pl_lvr_set() {
     sw_work = ((chk_pl->input_current) | (g_state.wcp[cmd_id].old_now));
 
     if ((sw_work & CMD_SW_2BTN_LP_LK) == CMD_SW_2BTN_LP_LK) {
-        g_state.wcp[cmd_id].ca14 = 1;
+        g_state.wcp[cmd_id].combo_btn_14 = 1;
     } else {
-        g_state.wcp[cmd_id].ca14 = 0;
+        g_state.wcp[cmd_id].combo_btn_14 = 0;
     }
 
     if ((sw_work & CMD_SW_2BTN_MP_MK) == CMD_SW_2BTN_MP_MK) {
-        g_state.wcp[cmd_id].ca25 = 1;
+        g_state.wcp[cmd_id].combo_btn_25 = 1;
     } else {
-        g_state.wcp[cmd_id].ca25 = 0;
+        g_state.wcp[cmd_id].combo_btn_25 = 0;
     }
     if ((sw_work & CMD_SW_2BTN_HP_HK) == CMD_SW_2BTN_HP_HK) {
-        g_state.wcp[cmd_id].ca36 = 1;
+        g_state.wcp[cmd_id].combo_btn_36 = 1;
     } else {
-        g_state.wcp[cmd_id].ca36 = 0;
+        g_state.wcp[cmd_id].combo_btn_36 = 0;
     }
 
-    g_state.wcp[cmd_id].lgp = lever_gacha_tbl[cmd_pl->cp->input_current & CMD_LEVER_MASK] * 4;
-    g_state.wcp[cmd_id].lgp += lever_gacha_tbl[cmd_pl->cp->input_released & CMD_LEVER_MASK] * 2;
-    g_state.wcp[cmd_id].lgp += lever_gacha_tbl[(cmd_pl->cp->input_current / 16) & 7] * 2;
-    g_state.wcp[cmd_id].lgp += lever_gacha_tbl[(cmd_pl->cp->input_current / 256) & 7] * 1;
+    g_state.wcp[cmd_id].lever_grace_period = lever_gacha_tbl[cmd_pl->cp->input_current & CMD_LEVER_MASK] * 4;
+    g_state.wcp[cmd_id].lever_grace_period += lever_gacha_tbl[cmd_pl->cp->input_released & CMD_LEVER_MASK] * 2;
+    g_state.wcp[cmd_id].lever_grace_period += lever_gacha_tbl[(cmd_pl->cp->input_current / 16) & 7] * 2;
+    g_state.wcp[cmd_id].lever_grace_period += lever_gacha_tbl[(cmd_pl->cp->input_current / 256) & 7] * 1;
 }
 
 /** @brief Picks up button presses and releases from the raw switch data. */
@@ -1699,7 +1699,7 @@ void sw_pick_up() {
     g_state.wcp[cmd_id].input_released = chk_pl->shot_down;
 
     if ((i = g_state.wcp[cmd_id].input_held & CMD_LEVER_LR)) {
-        if (cmd_pl->wu.rl_flag) {
+        if (cmd_pl->wu.facing_flag) {
             if (i & 8) {
                 g_state.wcp[cmd_id].lever_dir = 1;
             } else {
@@ -1715,17 +1715,17 @@ void sw_pick_up() {
     }
 
     if ((chk_pl->left_cnt != 0) && (chk_pl->left_cnt < 12)) {
-        g_state.wcp[cmd_id].calf = 1;
+        g_state.wcp[cmd_id].combo_all_forward = 1;
     } else {
-        g_state.wcp[cmd_id].calf = 0;
+        g_state.wcp[cmd_id].combo_all_forward = 0;
     }
 
     if ((chk_pl->right_cnt != 0) && (chk_pl->right_cnt < 12)) {
-        g_state.wcp[cmd_id].calr = 1;
+        g_state.wcp[cmd_id].combo_all_reverse = 1;
         return;
     }
 
-    g_state.wcp[cmd_id].calr = 0;
+    g_state.wcp[cmd_id].combo_all_reverse = 0;
 }
 
 /** @brief Clears all dash-detection flags for a player. */
@@ -1791,7 +1791,7 @@ void move_compel_init(s16 pl_id, s16 num, intptr_t* adrs) {
 }
 
 /** @brief Force-initializes all command detection slots for a player (AI). */
-void move_compel_all_init(PLW* pl) {
+void move_compel_all_init(PlayerEntity* pl) {
     s16 i;
     intptr_t* adrs;
 
@@ -1866,7 +1866,7 @@ void move_compel_all_init(PLW* pl) {
 }
 
 /** @brief Simplified version of move_compel_all_init for specific use cases. */
-void move_compel_all_init2(PLW* pl) {
+void move_compel_all_init2(PlayerEntity* pl) {
     s16 j;
 
     for (j = 0; j < 56; j++) {

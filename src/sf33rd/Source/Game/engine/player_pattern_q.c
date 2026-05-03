@@ -15,23 +15,23 @@
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl18_exatt_table[18])(PLW*);
+void (*const pl18_exatt_table[18])(PlayerEntity*);
 
 /** @brief Q: extra attack dispatcher. */
-void pl_q_extra_attack(PLW* wk) {
+void pl_q_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl18_exatt_table[idx](wk);
 }
 
 /** @brief Q: Ningen Bakudan (self-destruct human bomb SA). */
-static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
+static void Att_PL18_NINGENBAKUDAN(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -44,17 +44,17 @@ static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
             wk->wu.routine_no[2] = 91;
             wk->wu.routine_no[3] = 0;
             wk->wu.damage_vitality = 0;
-            wk->sa->gauge.i = wk->sa->dtm * wk->sa->dtm_mul;
+            wk->sa->gauge.i = wk->sa->damage_time * wk->sa->damage_time_multiplier;
 
             if (g_state.Bonus_Game_Flag == 20) {
-                wk->wu.dm_rl = (wk->wu.rl_flag + 1) & 1;
+                wk->wu.damage_facing = (wk->wu.facing_flag + 1) & 1;
             } else {
-                wk->wu.dm_rl = ((PLW*)wk->wu.target_adrs)->wu.rl_flag;
+                wk->wu.damage_facing = ((PlayerEntity*)wk->wu.target_adrs)->wu.facing_flag;
             }
 
-            wk->wu.dm_attlv = wk->wu.att.level;
-            wk->wu.dm_impact = wk->wu.att.impact;
-            wk->wu.dm_dir = wk->wu.dir_atthit;
+            wk->wu.damage_attack_level = wk->wu.att.level;
+            wk->wu.damage_impact = wk->wu.att.impact;
+            wk->wu.damage_direction = wk->wu.dir_atthit;
             wk->wu.damage_hit_stop = 1;
             wk->wu.damage_screen_shake = 1;
 
@@ -62,20 +62,20 @@ static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
                 wk->wu.damage_screen_shake = -wk->wu.damage_screen_shake;
             }
 
-            wk->wu.dm_weight = wk->wu.weight_level;
+            wk->wu.damage_weight = wk->wu.weight_level;
             wk->wu.damage_knockback_type = wk->wu.att.button_index;
             wk->wu.damage_invuln = wk->wu.attack_invuln;
-            wk->wu.dm_attribute = wk->wu.at_attribute;
-            wk->wu.dm_ten_ix = wk->wu.at_ten_ix;
+            wk->wu.damage_attribute = wk->wu.attack_attribute;
+            wk->wu.damage_chain_index = wk->wu.attack_chain_index;
             wk->wu.damage_kind_of_arts = wk->wu.attack_art_type;
-            wk->wu.hm_dm_side = wk->wu.att.dmg_mark;
-            wk->wu.dm_work_id = wk->wu.work_id;
-            wk->wu.dm_arts_point = 0;
+            wk->wu.hitmark_damage_side = wk->wu.att.dmg_mark;
+            wk->wu.damage_work_id = wk->wu.work_id;
+            wk->wu.damage_arts_point = 0;
             wk->wu.damage_attack_type = wk->wu.attack_type;
-            wk->wu.dm_nodeathattack = wk->wu.no_death_attack;
-            wk->wu.dm_jump_att_flag = wk->wu.jump_att_flag;
-            wk->wu.dm_exdm_ix = wk->exdm_ix;
-            wk->wu.dm_plnum = wk->player_number;
+            wk->wu.damage_no_death_attack = wk->wu.no_death_attack;
+            wk->wu.damage_jump_attack_flag = wk->wu.jump_att_flag;
+            wk->wu.damage_extra_index = wk->exdamage_index;
+            wk->wu.damage_player_num = wk->player_number;
             wk->wu.frame_link_hit_flag = 1;
         }
 
@@ -84,13 +84,13 @@ static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
 }
 
 /** @brief Q: special action (tokushu koudou). */
-static void Att_PL18_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL18_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -112,8 +112,8 @@ static void Att_PL18_TOKUSHUKOUDOU(PLW* wk) {
             grade_add_personal_action(wk->wu.id);
             wk->wu.routine_no[3]++;
 
-            if (wk->tk_success <= 0) {
-                wk->tk_success++;
+            if (wk->target_combo_success <= 0) {
+                wk->target_combo_success++;
                 wk->py->recover = (wk->py->recover * 120) / 100;
             }
         }
@@ -126,7 +126,7 @@ static void Att_PL18_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl18_exatt_table[18])(PLW*) = { Att_SLIDE_and_JUMP,
+void (*const pl18_exatt_table[18])(PlayerEntity*) = { Att_SLIDE_and_JUMP,
                                              Att_SLIDE_and_JUMP,
                                              Att_HADOUKEN2,
                                              Att_HADOUKEN2,

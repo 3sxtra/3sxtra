@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -40,7 +40,7 @@ void effect_M0_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             animal_control(ewk);
         }
 
@@ -70,7 +70,7 @@ static void animal_init(State_Other* ewk) {
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 3;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos = work_l;
             break;
         }
@@ -84,7 +84,7 @@ static void animal_init(State_Other* ewk) {
         ewk->wu.shadow_y = 33;
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 3;
-        ewk->wu.rl_flag ^= 1;
+        ewk->wu.facing_flag ^= 1;
         break;
 
     case 6:
@@ -100,7 +100,7 @@ static void animal_init(State_Other* ewk) {
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 8;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos = work_l;
             break;
         }
@@ -109,7 +109,7 @@ static void animal_init(State_Other* ewk) {
         break;
 
     default:
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos = work_r;
         } else {
             ewk->wu.xyz[0].disp.pos = work_l;
@@ -120,7 +120,7 @@ static void animal_init(State_Other* ewk) {
         ewk->wu.shadow_y = 33;
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 0;
-        ewk->wu.rl_flag ^= 1;
+        ewk->wu.facing_flag ^= 1;
         break;
     }
 }
@@ -227,7 +227,7 @@ static void animal_0002(State_Other* ewk) {
 
         if (ewk->wu.cg_type == 0xFF) {
             ewk->wu.routine_no[1]++;
-            ewk->wu.rl_flag ^= 1;
+            ewk->wu.facing_flag ^= 1;
             cat_run_set(ewk);
         }
 
@@ -256,7 +256,7 @@ static void animal_0004(State_Other* ewk) {
         ewk->wu.xyz[1].disp.pos = 32;
         ewk->wu.my_priority = ewk->wu.position_z = 27;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + 48;
             break;
         }
@@ -357,7 +357,7 @@ static void animal_0005(State_Other* ewk) {
 static void mouse_run_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 25);
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.mvxy.a[0].sp = -0x30000;
     } else {
         ewk->wu.mvxy.a[0].sp = 0x30000;
@@ -375,7 +375,7 @@ static void mouse_stand_set(State_Other* ewk) {
 static void cat_run_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 26);
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.mvxy.a[0].sp = 0x38000;
     } else {
         ewk->wu.mvxy.a[0].sp = -0x38000;
@@ -387,7 +387,7 @@ static void cat_run_set(State_Other* ewk) {
 void cat_run_set2(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 26);
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.mvxy.a[0].sp = 0x2C000;
     } else {
         ewk->wu.mvxy.a[0].sp = -0x2C000;
@@ -399,7 +399,7 @@ void cat_run_set2(State_Other* ewk) {
 void cat_walk_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 27);
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.mvxy.a[0].sp = 0x18000;
     } else {
         ewk->wu.mvxy.a[0].sp = -0x18000;
@@ -411,7 +411,7 @@ void cat_walk_set(State_Other* ewk) {
 static void don_run_set(State_Other* ewk) {
     set_char_move_init(&ewk->wu, 0, 52);
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.mvxy.a[0].sp = 0x48000;
     } else {
         ewk->wu.mvxy.a[0].sp = -0x48000;
@@ -429,7 +429,7 @@ s32 effect_M0_init(u8 pl_rl, u8 animal_type) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 220;
     ewk->wu.work_id = 16;
     ewk->wu.type = animal_type;
@@ -438,8 +438,8 @@ s32 effect_M0_init(u8 pl_rl, u8 animal_type) {
     ewk->wu.char_table[0] = _etc2_char_table;
     ewk->wu.my_family = 2;
     ewk->wu.my_col_code = 58;
-    ewk->wu.rl_flag = pl_rl;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.facing_flag = pl_rl;
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

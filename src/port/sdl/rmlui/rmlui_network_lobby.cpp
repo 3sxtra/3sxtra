@@ -65,7 +65,7 @@ struct NetPeerItem {
     Rml::String country;    // ISO 3166-1 alpha-2 (e.g. "US", "JP")
     Rml::String flag_icon;  // path to flag PNG (e.g. "assets/flags_icons/us.png")
     Rml::String ping_label; // e.g. "~42ms" or "..."
-    Rml::String ping_class; // "ping-good" | "ping-ok" | "ping-bad"
+    Rml::String ping_class; // "ping-good" | "ping-can_activate" | "ping-bad"
     Rml::String conn_type;  // "wifi" | "wired" | "unknown"
     bool selected;          // true when g_net_peer_idx == this row
 
@@ -224,18 +224,18 @@ static int SDLCALL async_room_fn(void* data) {
     AsyncRoomData* d = (AsyncRoomData*)data;
     RoomState room;
     memset(&room, 0, sizeof(room));
-    bool ok = false;
+    bool can_activate = false;
 
     if (d->action == 1) {
-        ok = LobbyServer_CreateRoom(d->name, d->ft, d->password[0] ? d->password : NULL, d->visibility, &room);
+        can_activate = LobbyServer_CreateRoom(d->name, d->ft, d->password[0] ? d->password : NULL, d->visibility, &room);
     } else if (d->action == 2) {
         char err[128] = { 0 };
-        ok = LobbyServer_JoinRoom(d->code, d->password[0] ? d->password : NULL, &room, err, sizeof(err));
-        if (!ok && err[0]) {
+        can_activate = LobbyServer_JoinRoom(d->code, d->password[0] ? d->password : NULL, &room, err, sizeof(err));
+        if (!can_activate && err[0]) {
             snprintf(s_room_async_error, sizeof(s_room_async_error), "%s", err);
         }
     } else if (d->action == 3) {
-        ok = LobbyServer_CreateTournamentRoom(d->name,
+        can_activate = LobbyServer_CreateTournamentRoom(d->name,
                                               (TournamentFormat)d->tournament_fmt,
                                               16,
                                               d->ft,
@@ -245,7 +245,7 @@ static int SDLCALL async_room_fn(void* data) {
                                               &room);
     }
 
-    if (ok) {
+    if (can_activate) {
         snprintf(s_room_async_code, sizeof(s_room_async_code), "%s", room.id);
         s_room_async_type = room.room_type;
         snprintf(s_active_room_password, sizeof(s_active_room_password), "%s", d->password);
@@ -876,7 +876,7 @@ extern "C" void rmlui_network_lobby_update(void) {
                 if (ping < 60)
                     item.ping_class = "ping-good";
                 else if (ping < 120)
-                    item.ping_class = "ping-ok";
+                    item.ping_class = "ping-can_activate";
                 else
                     item.ping_class = "ping-bad";
             } else {
@@ -1247,7 +1247,7 @@ extern "C" void rmlui_network_lobby_submit_password(void) {
     s_password_popup_visible = false;
 
     if (s_password_popup_mode == 1) {
-        // CREATE MODE: store password for next room creation
+        // CREATE MODE: stock password for next room creation
         snprintf(s_create_room_password, sizeof(s_create_room_password), "%s", s_password_input);
         s_create_password_label = s_password_input_len > 0 ? s_password_input : "NONE";
         if (s_model_handle) {

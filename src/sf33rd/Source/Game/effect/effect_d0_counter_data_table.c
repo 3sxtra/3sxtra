@@ -50,7 +50,7 @@ void effect_D0_move(State_Other* ewk) {
             d0_speed_set(&ewk->wu, ewk->wu.old_routine_no[1]);
             ewk->wu.xyz[1].disp.pos += 96;
 
-            if (ewk->wu.rl_flag) {
+            if (ewk->wu.facing_flag) {
                 ewk->wu.xyz[0].disp.pos += 22;
             } else {
                 ewk->wu.xyz[0].disp.pos -= 22;
@@ -123,7 +123,7 @@ static void d0_speed_set(State* ewk, s16 num) {
     ewk->old_routine_no[0] = effd0_conter[num];
     ewk->old_routine_no[1]++;
 
-    if (ewk->rl_flag) {
+    if (ewk->facing_flag) {
         ewk->mvxy.a[0].sp = -effd0_data_tbl[num][0];
         ewk->mvxy.d[0].sp = -effd0_data_tbl[num][1];
     } else {
@@ -135,7 +135,7 @@ static void d0_speed_set(State* ewk, s16 num) {
     ewk->mvxy.d[1].sp = effd0_data_tbl[num][3];
 }
 
-s32 effect_D0_init(PLW* oya, s32 /* unused */) {
+s32 effect_D0_init(PlayerEntity* oya, s32 /* unused */) {
     State_Other* ewk;
     s16 ix;
 
@@ -144,7 +144,7 @@ s32 effect_D0_init(PLW* oya, s32 /* unused */) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 130;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
@@ -158,7 +158,7 @@ s32 effect_D0_init(PLW* oya, s32 /* unused */) {
     ewk->master_id = oya->wu.id;
     ewk->wu.xyz[0].cal = oya->wu.xyz[0].cal;
     ewk->wu.xyz[1].cal = oya->wu.xyz[1].cal;
-    ewk->wu.rl_flag = oya->wu.rl_flag;
+    ewk->wu.facing_flag = oya->wu.facing_flag;
     *ewk->wu.char_table = _etc_char_table;
 
     if (oya->wu.id) {
@@ -168,7 +168,7 @@ s32 effect_D0_init(PLW* oya, s32 /* unused */) {
     }
 
     ewk->wu.no_death_attack = 0;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

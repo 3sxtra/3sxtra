@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -24,7 +24,7 @@ static void effl6_back(State_Other* ewk);
 void effect_L6_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             if (ewk->wu.type) {
                 effl6_flont(ewk);
             } else {
@@ -135,7 +135,7 @@ s32 effect_L6_init(State* wk, u8 typel6) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 216;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
@@ -154,9 +154,9 @@ s32 effect_L6_init(State* wk, u8 typel6) {
     ewk->wu.sync_bg_strip = 0;
 
     if (typel6) {
-        ewk->wu.rl_flag = wk->rl_flag ^ 1;
+        ewk->wu.facing_flag = wk->facing_flag ^ 1;
 
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset;
             ewk->wu.xyz[0].disp.pos += 32;
             ewk->wu.old_routine_no[1] = wk->xyz[0].disp.pos + 96;
@@ -169,9 +169,9 @@ s32 effect_L6_init(State* wk, u8 typel6) {
         ewk->wu.old_routine_no[0] = 120;
         cal_initial_speed(&ewk->wu, ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], ewk->wu.xyz[1].disp.pos);
     } else {
-        ewk->wu.rl_flag = wk->rl_flag;
+        ewk->wu.facing_flag = wk->facing_flag;
 
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             if (wk->xyz[0].disp.pos < g_state.bg_w.bgw[1].wxy[0].disp.pos) {
                 ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos - 256;
             } else {
@@ -194,7 +194,7 @@ s32 effect_L6_init(State* wk, u8 typel6) {
     }
 
     suzi_offset_set(ewk);
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

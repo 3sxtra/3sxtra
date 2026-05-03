@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -34,7 +34,7 @@ void effect_30_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -51,7 +51,7 @@ void effect_30_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause && (char_move(&ewk->wu), ewk->wu.cg_type == 0xFF)) {
+        if (!g_state.execute_flag && !g_state.Game_pause && (char_move(&ewk->wu), ewk->wu.cg_type == 0xFF)) {
             ewk->wu.routine_no[0]++;
             set_char_move_init(&ewk->wu, 0, 2);
         }
@@ -61,7 +61,7 @@ void effect_30_move(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause && (char_move(&ewk->wu), ewk->wu.cg_type == 10)) {
+        if (!g_state.execute_flag && !g_state.Game_pause && (char_move(&ewk->wu), ewk->wu.cg_type == 10)) {
             ewk->wu.cg_type = 0;
             ewk->wu.shadow_x -= 4;
         }
@@ -95,7 +95,7 @@ s32 effect_30_init(State* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 30;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
@@ -104,9 +104,9 @@ s32 effect_30_init(State* wk) {
     ewk->wu.my_col_code = wk->my_col_code + 1;
     ewk->wu.my_family = wk->my_family;
     ewk->my_master = wk;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.facing_flag = wk->facing_flag;
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         if (wk->xyz[0].disp.pos < g_state.bg_w.bgw[1].wxy[0].disp.pos) {
             ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos - 256;
         } else {
@@ -131,7 +131,7 @@ s32 effect_30_init(State* wk) {
     ewk->wu.char_index = 0;
     ewk->wu.sync_bg_strip = 0;
     suzi_offset_set(ewk);
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

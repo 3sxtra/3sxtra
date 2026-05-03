@@ -21,7 +21,7 @@
 
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "netplay/netplay.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/menu/menu.h"

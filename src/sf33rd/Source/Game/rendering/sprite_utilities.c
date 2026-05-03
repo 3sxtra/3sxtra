@@ -107,7 +107,7 @@ void Init_load_on_memory_data() {
     reservMemKeySelObj();
     load_any_texture_patnum(0x72A0, 0xF, 0);
     load_any_texture_patnum(0x7F30, 0xC, 0);
-    dmwk_kage.my_mts = 0x11;
+    dmwk_kage.my_sprite_sheet = 0x11;
     dmwk_kage.current_colcd = 0x1FF;
     dmwk_kage.my_clear_level = 0x90;
     dmwk_kage.work_id = 0x10;
@@ -125,7 +125,7 @@ s32 setup_GILL_exsa_obj() {
     }
     ewk = (State*)frw[ix];
     ewk->disp_flag = 1;
-    ewk->my_mts = 6;
+    ewk->my_sprite_sheet = 6;
     ewk->my_col_code = 2;
 
     for (i = 0; i < 8; i++) {
@@ -173,7 +173,7 @@ void set_judge_area_sprite(WORK_Other_JUDGE* wk, s16 bsy) {
 
     mlt_obj_matrix(&wk->wu, bsy);
 
-    if (wk->wu.rl_flag) {
+    if (wk->wu.facing_flag) {
         mirror_factor = -1;
     } else {
         mirror_factor = 1;
@@ -235,7 +235,7 @@ void draw_hit_judge_line(f32 px, f32 py, f32 sx, f32 sy, u32 col, u32 attr) {
 }
 
 /** @brief Render the connection sprite for a juggle/link combo indicator. */
-s32 set_conn_sprite(WORK_Other_CONN* wk, s16 bsy) {
+s32 set_conn_sprite(EffectMultiSprite* wk, s16 bsy) {
     s16 i;
 
     if (wk->num_of_conn == 0) {
@@ -247,10 +247,10 @@ s32 set_conn_sprite(WORK_Other_CONN* wk, s16 bsy) {
     dmwk_moji.my_bright_type = wk->wu.my_bright_type;
     dmwk_moji.my_bright_level = wk->wu.my_bright_level;
     dmwk_moji.my_clear_level = wk->wu.my_clear_level;
-    dmwk_moji.my_mts = wk->wu.my_mts;
+    dmwk_moji.my_sprite_sheet = wk->wu.my_sprite_sheet;
     dmwk_moji.mirror_flag = wk->wu.mirror_flag;
     dmwk_moji.mirror_scale = wk->wu.mirror_scale;
-    dmwk_moji.rl_flag = wk->wu.rl_flag;
+    dmwk_moji.facing_flag = wk->wu.facing_flag;
     dmwk_moji.cg_flip = 0;
 
     for (i = 0; i < wk->num_of_conn; i++) {
@@ -273,7 +273,7 @@ void all_cgps_put_back(State* wk) {
 /** @brief Transform and render a character using the current trans mode. */
 void Mtrans_use_trans_mode(State* wk, s16 bsy) {
 
-    if (mts_ok[wk->my_mts].be == 0) {
+    if (mts_ok[wk->my_sprite_sheet].be == 0) {
         // A display request was received before MTS initialization. MTS number: %d\n
         // Original text: "ＭＴＳの初期化前に表示要求が入りました。ＭＴＳ番号：%d\n"
         // For some reason MWCC (or mwccgap) removes a single byte from the string, resulting in a mismatch.
@@ -281,7 +281,7 @@ void Mtrans_use_trans_mode(State* wk, s16 bsy) {
         flLogOut("\x82\x6c\x82\x73\x82\x72\x82\xcc\x8f\x89\x8a\xfa\x89\xbb\x91\x4f\x82\xc9\x95\x5c\x8e\xa6\x97\x76\x8b"
                  "\x81\x82\xaa\x93\xfc\x82\xe8\x82\xdc\x82\xb5\x82\xbd\x81\x42\x82\x6c\x82\x73\x82\x72\x94\xd4\x8d\x86"
                  "\x81\x46\x25\x64\x0a",
-                 wk->my_mts);
+                 wk->my_sprite_sheet);
 
         return;
     }
@@ -344,12 +344,12 @@ void Mtrans_use_trans_mode(State* wk, s16 bsy) {
         wk->my_clear_level = 0x90;
     }
 
-    switch (mts[wk->my_mts].mode) {
+    switch (mts[wk->my_sprite_sheet].mode) {
     case 17:
         if ((Debug_w[DEBUG_NO_DISP_SPR_PAL] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = exchange_current_colcd(wk);
             COLCD_LOG_ENTRY(wk->colcd, 17);
-            mlt_obj_trans(&mts[wk->my_mts], wk, bsy);
+            mlt_obj_trans(&mts[wk->my_sprite_sheet], wk, bsy);
         }
 
         break;
@@ -358,7 +358,7 @@ void Mtrans_use_trans_mode(State* wk, s16 bsy) {
         if ((Debug_w[DEBUG_NO_DISP_SPR_CP3] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = wk->current_colcd;
             COLCD_LOG_ENTRY(wk->colcd, 18);
-            mlt_obj_trans_cp3(&mts[wk->my_mts], wk, bsy);
+            mlt_obj_trans_cp3(&mts[wk->my_sprite_sheet], wk, bsy);
         }
 
         break;
@@ -367,7 +367,7 @@ void Mtrans_use_trans_mode(State* wk, s16 bsy) {
         if ((Debug_w[DEBUG_NO_DISP_SPR_RGB] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = wk->current_colcd;
             COLCD_LOG_ENTRY(wk->colcd, 20);
-            mlt_obj_trans_rgb(&mts[wk->my_mts], wk, bsy);
+            mlt_obj_trans_rgb(&mts[wk->my_sprite_sheet], wk, bsy);
         }
 
         break;
@@ -376,7 +376,7 @@ void Mtrans_use_trans_mode(State* wk, s16 bsy) {
         if ((Debug_w[DEBUG_NO_DISP_SPR_PAL] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 2)) {
             wk->colcd = wk->current_colcd;
             COLCD_LOG_ENTRY(wk->colcd, 33);
-            mlt_obj_disp(&mts[wk->my_mts], wk, (s32)bsy);
+            mlt_obj_disp(&mts[wk->my_sprite_sheet], wk, (s32)bsy);
         }
 
         break;
@@ -396,7 +396,7 @@ void Mtrans_use_trans_mode(State* wk, s16 bsy) {
         if ((Debug_w[DEBUG_NO_DISP_SPR_RGB] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 2)) {
             wk->colcd = wk->current_colcd;
             COLCD_LOG_ENTRY(wk->colcd, 36);
-            mlt_obj_disp_rgb(&mts[wk->my_mts], wk, (s32)bsy);
+            mlt_obj_disp_rgb(&mts[wk->my_sprite_sheet], wk, (s32)bsy);
         }
 
         break;
@@ -448,18 +448,18 @@ s16 exchange_current_colcd(State* wk) {
 
 /** @brief Push a sprite render request into the sort buffer (standard). */
 s32 sort_push_request(State* wk) {
-    if (wk->my_mts == 0) {
+    if (wk->my_sprite_sheet == 0) {
         return 0;
     }
 
     wk->current_colcd = wk->my_col_code;
 
-    if ((wk->work_id == 1) && ((wk->rl_flag + wk->cg_flip) & 1)) {
+    if ((wk->work_id == 1) && ((wk->facing_flag + wk->cg_flip) & 1)) {
         wk->current_colcd |= 8;
     }
 
     if ((wk->work_id == 0x20) && (wk->my_col_code == ((State*)((State_Other*)wk)->my_master)->my_col_code) &&
-        ((wk->rl_flag + wk->cg_flip) & 1)) {
+        ((wk->facing_flag + wk->cg_flip) & 1)) {
         wk->current_colcd |= 8;
     }
 
@@ -501,7 +501,7 @@ s32 sort_push_request2(State_Other* wk) {
 
 /** @brief Push a sprite render request (variant 3, different priority calc). */
 s32 sort_push_request3(State* wk) {
-    if (wk->my_mts == 0) {
+    if (wk->my_sprite_sheet == 0) {
         return 0;
     }
 
@@ -523,7 +523,7 @@ s32 sort_push_request3(State* wk) {
         return 1;
     }
 
-    if (set_conn_sprite((WORK_Other_CONN*)wk, g_state.base_y_pos) == 1) {
+    if (set_conn_sprite((EffectMultiSprite*)wk, g_state.base_y_pos) == 1) {
         return 1;
     }
 
@@ -532,7 +532,7 @@ s32 sort_push_request3(State* wk) {
 
 /** @brief Push a sprite render request (variant 4, with color effects). */
 s32 sort_push_request4(State* wk) {
-    if (wk->my_mts == 0) {
+    if (wk->my_sprite_sheet == 0) {
         return 0;
     }
 
@@ -578,13 +578,13 @@ s32 sort_push_request4(State* wk) {
 /** @brief Push a sprite render request (variant 8, simple priority). */
 s32 sort_push_request8(State* wk) {
     if (wk->cg_number >= 0x748F) {
-        wk->my_mts = 2;
+        wk->my_sprite_sheet = 2;
     } else {
-        wk->my_mts = 0xE;
+        wk->my_sprite_sheet = 0xE;
     }
 
     if ((wk->my_col_code & 0x1FF) >= 0x20) {
-        wk->my_mts = 0xE;
+        wk->my_sprite_sheet = 0xE;
     }
 
     return sort_push_request(wk);
@@ -643,7 +643,7 @@ static s32 sort_push_request_box_impl(State* wk, s16 bsy) {
 
     mlt_obj_matrix(wk, bsy);
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         mf = -1;
     } else {
         mf = 1;
@@ -707,7 +707,7 @@ void shadow_drawing(State* wk, s16 bsy) {
         return;
     }
 
-    dmwk_kage.position_x = (wk->position_x + wk->shadow_x * (1 - (wk->rl_flag != 0) * 2));
+    dmwk_kage.position_x = (wk->position_x + wk->shadow_x * (1 - (wk->facing_flag != 0) * 2));
     dmwk_kage.position_y = wk->shadow_y;
     dmwk_kage.position_z = wk->shadow_prio;
     dmwk_kage.my_family = wk->my_family;

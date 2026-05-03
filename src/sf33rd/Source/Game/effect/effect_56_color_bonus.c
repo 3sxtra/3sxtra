@@ -79,7 +79,7 @@ s32 effect_56_init(u8 type, u8 kill) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 56;
     ewk->wu.work_id = 16;
     ewk->wu.type = type;

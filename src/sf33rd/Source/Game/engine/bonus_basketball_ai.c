@@ -19,7 +19,7 @@
 const s32 bbbs_jump_level[4][2];
 
 /** @brief Executes the AI for the basketball bonus stage opponent. */
-void bbbs_com_execute(PLW* wk) {
+void bbbs_com_execute(PlayerEntity* wk) {
     switch (g_state.Bonus_Stage_RNO[0]) {
     case 0:
         if (g_state.Allow_a_battle_f == 0) {

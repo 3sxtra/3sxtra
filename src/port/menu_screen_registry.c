@@ -175,7 +175,7 @@ void MenuScreen_Tick(struct _TASK* task_ptr) {
                 // Guaranteed header spritesheet preload. We do this in ENTER
                 // so the async texture load has the entire WAIT/FADE_IN duration
                 // (typically ~16 frames) to populate VRAM before ACTIVE phase natively draws it.
-                // WE MUST PURGE IT FIRST: If a sub-menu overwrote the VRAM slot but didn't clear the ok flag,
+                // WE MUST PURGE IT FIRST: If a sub-menu overwrote the VRAM slot but didn't clear the can_activate flag,
                 // the load request will be silently dismissed, resulting in VRAM corruption upon native draw!
                 purge_texture_group_of_this(0x7F30);
                 load_any_texture_patnum(0x7F30, 0xC, 0);

@@ -9,7 +9,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
@@ -216,7 +216,7 @@ s32 effect_58_init(s16 id, s16 time0, s16 option) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 58;
     ewk->wu.work_id = 16;
     ewk->wu.dir_timer = time0;

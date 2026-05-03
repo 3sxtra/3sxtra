@@ -34,7 +34,7 @@ void effect_J9_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -101,11 +101,11 @@ s32 effect_J9_init(State_Other* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 199;
     ewk->wu.work_id = 16;
     ewk->wu.type = data;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->my_master = wk;
     ewk->master_player = wk->master_player;
     ewk->master_id = wk->master_id;

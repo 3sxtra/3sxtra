@@ -13,16 +13,16 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
-static void EFF23_WAIT(WORK_Other_CONN* ewk);
-static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk);
-static void EFF23_CHAR_CHANGE(WORK_Other_CONN* /* unused */);
-static void EFF23_SUDDENLY(WORK_Other_CONN* /* unused */);
-static void Setup_23_Sub(WORK_Other_CONN* ewk);
-static void Setup_Letter_23(WORK_Other_CONN* ewk, s16 disp_index);
+static void EFF23_WAIT(EffectMultiSprite* ewk);
+static void EFF23_SLIDE_IN(EffectMultiSprite* ewk);
+static void EFF23_CHAR_CHANGE(EffectMultiSprite* /* unused */);
+static void EFF23_SUDDENLY(EffectMultiSprite* /* unused */);
+static void Setup_23_Sub(EffectMultiSprite* ewk);
+static void Setup_Letter_23(EffectMultiSprite* ewk, s16 disp_index);
 
 const s8* Letter_Data_23[4][12] = { { "L.PUNCH",
                                       "M.PUNCH",
@@ -64,7 +64,7 @@ const s8* Letter_Data_23[4][12] = { { "L.PUNCH",
 
 void (*const EFF23_Jmp_Tbl[4])() = { EFF23_WAIT, EFF23_SLIDE_IN, EFF23_CHAR_CHANGE, EFF23_SUDDENLY };
 
-void effect_23_move(WORK_Other_CONN* ewk) {
+void effect_23_move(EffectMultiSprite* ewk) {
     if (Check_Die_61((State_Other*)ewk)) {
         Release_Effect(&ewk->wu);
         return;
@@ -118,7 +118,7 @@ void effect_23_move(WORK_Other_CONN* ewk) {
     }
 }
 
-static void EFF23_WAIT(WORK_Other_CONN* ewk) {
+static void EFF23_WAIT(EffectMultiSprite* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
@@ -126,7 +126,7 @@ static void EFF23_WAIT(WORK_Other_CONN* ewk) {
     Setup_23_Sub(ewk);
 }
 
-static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
+static void EFF23_SLIDE_IN(EffectMultiSprite* ewk) {
     s16 offset_x;
 
     if (g_state.Order[ewk->wu.dir_old] != 1) {
@@ -174,21 +174,21 @@ static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF23_CHAR_CHANGE(WORK_Other_CONN* /* unused */) {}
+void EFF23_CHAR_CHANGE(EffectMultiSprite* /* unused */) {}
 
-void EFF23_SUDDENLY(WORK_Other_CONN* /* unused */) {}
+void EFF23_SUDDENLY(EffectMultiSprite* /* unused */) {}
 
 s32 effect_23_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, s16 cursor_index,
                    u16 char_offset, s16 pos_index, s16 type) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 23;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x1AC;
@@ -201,13 +201,13 @@ s32 effect_23_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 lette
     ewk->wu.old_cgnum = char_offset;
     ewk->wu.dir_step = pos_index;
     ewk->master_priority = type;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     Setup_23_Sub(ewk);
     return 0;
 }
 
-static void Setup_23_Sub(WORK_Other_CONN* ewk) {
+static void Setup_23_Sub(EffectMultiSprite* ewk) {
     switch (ewk->master_priority) {
     case 0:
         Setup_Letter_23(ewk, g_state.Convert_Buff[1][ewk->master_id][ewk->wu.type]);
@@ -220,7 +220,7 @@ static void Setup_23_Sub(WORK_Other_CONN* ewk) {
     }
 }
 
-static void Setup_Letter_23(WORK_Other_CONN* ewk, s16 disp_index) {
+static void Setup_Letter_23(EffectMultiSprite* ewk, s16 disp_index) {
     s16 x;
     s16 ix;
     s16 offset_x;

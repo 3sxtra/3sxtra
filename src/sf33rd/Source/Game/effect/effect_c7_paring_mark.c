@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -37,7 +37,7 @@ void effect_C7_move(State_Other* ewk) {
         ewk->wu.xyz[2].disp.pos = 26;
         ewk->wu.next_z = mwk->position_z;
 
-        if (mwk->rl_flag) {
+        if (mwk->facing_flag) {
             ewk->wu.position_x = mwk->position_x + paring_mark_data[ewk->wu.direction][ewk->master_player][0];
         } else {
             ewk->wu.position_x = mwk->position_x - paring_mark_data[ewk->wu.direction][ewk->master_player][0];
@@ -56,13 +56,13 @@ void effect_C7_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
@@ -89,7 +89,7 @@ static void effc7_sort_push(State* ewk, State* /* unused */) {
     sort_push_request8(ewk);
 }
 
-s32 effect_C7_init(PLW* wk, u8 data) {
+s32 effect_C7_init(PlayerEntity* wk, u8 data) {
     State_Other* ewk;
     s16 ix;
 
@@ -98,10 +98,10 @@ s32 effect_C7_init(PLW* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 127;
     ewk->wu.work_id = 64;
-    ewk->wu.rl_flag = wk->wu.rl_flag;
+    ewk->wu.facing_flag = wk->wu.facing_flag;
     ewk->wu.direction = data;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;

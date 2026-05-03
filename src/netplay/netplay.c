@@ -15,9 +15,9 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "stun.h"
 #include "net_tuning.h"
@@ -161,7 +161,7 @@ static void setup_vs_mode() {
     //
     // When connecting from the network lobby, the game engine may have been
     // running under the RmlUI overlay (attract mode, demo, etc.), leaving
-    // stale data in PLW[] and related player subsystems.
+    // stale data in PlayerEntity[] and related player subsystems.
     // The native LAN lobby doesn't hit this because the menu system goes
     // through a proper fade-destroy-reinit cycle.
     //
@@ -380,9 +380,9 @@ static void setup_vs_mode() {
     g_state.VS_Stage = 0;
 
     // Slow motion
-    g_state.SLOW_timer = 0;
-    g_state.SLOW_flag = 0;
-    g_state.EXE_flag = 0;
+    g_state.slowmo_timer = 0;
+    g_state.slowmo_flag = 0;
+    g_state.execute_flag = 0;
 
     // Stun gauge / vitality
     SDL_zeroa(g_state.stun_state);

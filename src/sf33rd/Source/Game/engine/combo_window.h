@@ -45,7 +45,7 @@ extern u8 cst_read[2];
 extern u8 cst_write[2];
 
 void combo_cont_init();
-void combo_cont_main();
+void combo_control_main();
 void combo_control(s8 PL);
 void check_and_set_combo(s8 PL);
 void combo_hensuu_clear(s8 PL);

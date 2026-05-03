@@ -5,7 +5,7 @@
 #include "types.h"
 
 void effect_K7_move(State_Other* ewk);
-void K7_muriyari_metamor_rebirth(PLW* wk);
-s32 effect_K7_init(PLW* wk);
+void K7_muriyari_metamor_rebirth(PlayerEntity* wk);
+s32 effect_K7_init(PlayerEntity* wk);
 
 #endif

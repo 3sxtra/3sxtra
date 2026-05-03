@@ -17,7 +17,7 @@
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
@@ -277,7 +277,7 @@ s32 effect_K6_init(s16 PL_id, s16 dir_old, s16 damage_vitality, s16 Target_BG) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 206;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
@@ -286,8 +286,8 @@ s32 effect_K6_init(s16 PL_id, s16 dir_old, s16 damage_vitality, s16 Target_BG) {
     ewk->master_id = PL_id;
     ewk->wu.direction = damage_vitality;
     ewk->wu.dir_old = dir_old;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     Setup_CharK6(ewk, damage_vitality);
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
     return 0;

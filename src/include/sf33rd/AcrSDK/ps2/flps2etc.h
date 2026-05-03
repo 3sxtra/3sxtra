@@ -18,7 +18,7 @@
 void flMemset(void* dst, u32 pat, s32 size);
 void flMemcpy(void* dst, void* src, s32 size);
 void* flAllocMemory(s32 size);
-s32 flGetFrame(FMS_FRAME* frame);
+s32 flGetFrame(FrameHeapSlot* frame);
 s32 flGetSpace();
 void* flAllocMemoryS(s32 size);
 u32 flPS2GetSystemMemoryHandle(s32 len, s32 type);

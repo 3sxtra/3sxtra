@@ -77,7 +77,7 @@ s32 effect_B0_init() {
 
         ewk = (State_Other*)frw[ix];
         ewk->wu.id = 110;
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.type = i;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
@@ -95,8 +95,8 @@ s32 effect_B0_init() {
         work = random_16();
         work &= 7;
         ewk->wu.old_routine_no[5] = effb0_timer_tbl[work];
-        ewk->wu.my_mts = 8;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 8;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     }
 
     return 0;

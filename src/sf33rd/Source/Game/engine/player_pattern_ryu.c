@@ -13,19 +13,19 @@
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl02_exatt_table[18])(PLW*);
+void (*const pl02_exatt_table[18])(PlayerEntity*);
 
 const s16 lgix_table[8] = { 0, 1, 2, 3, 3, 4, 4, 5 };
 
 /** @brief Ryu: extra attack dispatcher. */
-void pl_ryu_extra_attack(PLW* wk) {
+void pl_ryu_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl02_exatt_table[idx](wk);
 }
 
 /** @brief Ryu: Denjin Hadouken (electric fireball SA). */
-static void Att_DENJINHADOUKEN(PLW* wk) {
+static void Att_DENJINHADOUKEN(PlayerEntity* wk) {
     s16 i;
     s16 lgix;
 
@@ -34,7 +34,7 @@ static void Att_DENJINHADOUKEN(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -43,10 +43,10 @@ static void Att_DENJINHADOUKEN(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.current_char_type == 8 && wk->wu.char_index == 13) {
-            if (wk->cp->lgp > 13) {
+            if (wk->cp->lever_grace_period > 13) {
                 lgix = 5;
             } else {
-                lgix = lgix_table[wk->cp->lgp / 2];
+                lgix = lgix_table[wk->cp->lever_grace_period / 2];
             }
 
             if (lgix) {
@@ -61,13 +61,13 @@ static void Att_DENJINHADOUKEN(PLW* wk) {
 }
 
 /** @brief Ryu: special action (tokushu koudou). */
-static void Att_PL02_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL02_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -83,8 +83,8 @@ static void Att_PL02_TOKUSHUKOUDOU(PLW* wk) {
         if (wk->wu.cg_type == 64) {
             wk->wu.routine_no[3]++;
 
-            if (wk->tk_success < 3) {
-                wk->tk_success++;
+            if (wk->target_combo_success < 3) {
+                wk->target_combo_success++;
                 wk->py->recover = (wk->py->recover * 110) / 100;
                 grade_add_personal_action(wk->wu.id);
             }
@@ -98,7 +98,7 @@ static void Att_PL02_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl02_exatt_table[18])(PLW*) = { Att_HADOUKEN,
+void (*const pl02_exatt_table[18])(PlayerEntity*) = { Att_HADOUKEN,
                                              Att_SHOURYUUKEN,
                                              Att_SENPUUKYAKU,
                                              Att_HADOUKEN,

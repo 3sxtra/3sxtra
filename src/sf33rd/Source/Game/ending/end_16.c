@@ -9,7 +9,7 @@
 #include "sf33rd/Source/Game/effect/effect_f9_text_message.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/ending/end_main.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
 #include "sf33rd/Source/Game/system/system_subroutines.h"

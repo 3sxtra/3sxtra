@@ -42,7 +42,7 @@ void effect_00_move(WORK_Other_JUDGE* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
@@ -127,7 +127,7 @@ static s32 get_dip_modoki2(s16 from, s8 fl) {
 
 static void renewal_table_address(WORK_Other_JUDGE* ewk, State* twk) {
     ewk->wu.my_family = twk->my_family;
-    ewk->wu.rl_flag = twk->rl_flag;
+    ewk->wu.facing_flag = twk->facing_flag;
 
     if (twk->disp_flag) {
         ewk->wu.disp_flag = 1;
@@ -195,7 +195,7 @@ s32 effect_00_init(State* wk) {
     }
 
     ewk = (WORK_Other_JUDGE*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0;
     ewk->wu.work_id = 128;
     ewk->wu.my_family = wk->my_family;

@@ -1,19 +1,19 @@
 /**
  * @file structs.h
- * @brief Core data structures shared across the game engine (State, PLW,
- *        State_Other, MVXY, CharState, etc.).
+ * @brief Core data structures shared across the game engine (State, PlayerEntity,
+ *        State_Other, MovementVector, CharState, etc.).
  *
- * @netplay_sync — State and PLW are the primary per-entity simulation structs.
+ * @netplay_sync — State and PlayerEntity are the primary per-entity simulation structs.
  *
  * During netplay, these structs are saved/loaded as part of the rollback state:
- *  - PLW[2] (the two players) are stored in GameState.
+ *  - PlayerEntity[2] (the two players) are stored in GameState.
  *  - Effect State slots are stored in EffectState.frw[][].
  *
- * For desync detection, PLW copies are checksummed after sanitizing:
+ * For desync detection, PlayerEntity copies are checksummed after sanitizing:
  *  - Pointer fields (ASLR makes raw pointers differ between peers)
  *  - Rendering-only fields (palette flags, colcd)
  *  - Linked-list indices (before, behind, myself, listix, timing — allocation-order dependent)
- *  - WORK_Other_CONN.conn[] tails past num_of_conn (uninitialized heap data)
+ *  - EffectMultiSprite.conn[] tails past num_of_conn (uninitialized heap data)
  *
  * See sanitize_work_pointers(), sanitize_work_rendering(),
  * sanitize_plw_pointers(), sanitize_work_other_conn() in game_state.c.
@@ -30,25 +30,25 @@
 typedef struct {
     s16 l;
     s16 h;
-} LoHi16;
+} Int16Pair;
 
 typedef union {
     s32 sp;
-    LoHi16 real;
+    Int16Pair real;
 } Reg32SpReal;
 
 typedef union {
     s32 cal;
-    LoHi16 pos;
+    Int16Pair pos;
 } Reg32CalPos;
 
 typedef struct {
     u8* pFrame;
     s32 heapnum;
-} FMS_FRAME;
+} FrameHeapSlot;
 
 typedef struct {
-    FMS_FRAME fmsFrame;
+    FrameHeapSlot fmsFrame;
     u8* ramcntBuff;
     bool sysStop;
     bool initTrainingData;
@@ -187,7 +187,7 @@ typedef struct {
     Reg32SpReal d[2];
     s16 physics_curve_type[2];
     u16 index;
-} MVXY;
+} MovementVector;
 
 typedef union {
     s32 cal;
@@ -203,7 +203,7 @@ typedef struct {
     s16 req_f;
     s16 old_r;
     s16 kind_of[10][4][2];
-} ComboType;
+} ComboTracker;
 
 typedef struct {
     s8 flag;
@@ -214,10 +214,10 @@ typedef struct {
     s16 time;
     union {
         s32 timer;
-        LoHi16 quantity;
+        Int16Pair quantity;
     } now;
     s32 recover;
-    s16 store;
+    s16 stock;
     s16 again;
 } StunState;
 
@@ -276,7 +276,7 @@ typedef struct {
  * @brief Base entity struct — every game object (player, projectile, effect).
  *
  * @netplay_sync
- * State is the base struct embedded in PLW (players) and State_Other (effects).
+ * State is the base struct embedded in PlayerEntity (players) and State_Other (effects).
  * Pointer fields (marked below) must be zeroed before checksumming because
  * ASLR assigns different addresses on each peer. Rendering-only fields
  * (colcd, current_colcd, extra_col, extra_col_2) need palette-flag masking.
@@ -284,7 +284,7 @@ typedef struct {
  * allocation order and are excluded from checksums.
  */
 typedef struct {
-    s8 be_flag;
+    s8 active_flag;
     s8 disp_flag;
     u8 blink_timing;
     u8 pl_operator;
@@ -292,7 +292,7 @@ typedef struct {
     u8 charset_id;
     s16 work_id;
     s16 id;
-    s8 rl_flag;
+    s8 facing_flag;
     s8 active_move;
     void* target_adrs; ///< @netplay_sync Pointer — zeroed for checksum
     void* hit_adrs;    ///< @netplay_sync Pointer — zeroed for checksum
@@ -314,7 +314,7 @@ typedef struct {
     /// @netplay_sync Allocation-order dependent — excluded from checksums.
     s16 listix;
 
-    s16 dead_f;
+    s16 death_timer;
     s16 timing; ///< @netplay_sync Allocation-order dependent — excluded from checksums
     s16 routine_no[8];
     s16 old_routine_no[8];
@@ -333,13 +333,13 @@ typedef struct {
     s16 next_x;
     s16 next_y;
     s16 next_z;
-    s16 scr_mv_x;
-    s16 scr_mv_y;
+    s16 screen_move_x;
+    s16 screen_move_y;
     XY xyz[3];
     s16 old_pos[3];
     s16 sync_bg_strip;
     u16* bg_strip_offset;
-    MVXY mvxy;
+    MovementVector mvxy;
     s16 direction;
     s16 dir_old;
     s16 dir_step;
@@ -439,7 +439,7 @@ typedef struct {
     s16 my_bright_type;
     s16 my_bright_level;
     s16 my_clear_level;
-    s16 my_mts;
+    s16 my_sprite_sheet;
     s16 mirror_flag;
     struct {
         struct {
@@ -469,13 +469,13 @@ typedef struct {
     CollisionPushbox* pushbox;
     AttackIndexTable* att_ix_table;
     AttackIndexTable att;
-    u16 zu_flag;
-    u16 at_attribute;
+    u16 head_invuln_flag;
+    u16 attack_attribute;
     s16 chip_damage_power;
     u16 add_arts_point;
     u16 blowback_type;
     u16 attack_invuln;
-    u16 at_ten_ix;
+    u16 attack_chain_index;
     s16 dir_atthit;
     s16 vs_id;
     u8 att_hit_ok;
@@ -487,7 +487,7 @@ typedef struct {
     s8 shell_vs_refrect;
     s16 renew_attack;
     u16 attack_num;
-    u16 uketa_att[4];
+    u16 received_attack[4];
     union {
         struct {
             u8 player;
@@ -500,35 +500,35 @@ typedef struct {
     s16 hit_mark_z;
     s16 kind_of_hit_mark;
     u8 damage_float_state;
-    s8 dm_weight;
+    s8 damage_weight;
     u16 damage_knockback_type;
     u16 damage_invuln;
-    u16 dm_attribute;
+    u16 damage_attribute;
     s16 dm_guard_success;
-    s16 dm_plnum;
-    s16 dm_attlv;
-    s16 dm_dir;
-    s8 dm_rl;
-    u8 dm_impact;
+    s16 damage_player_num;
+    s16 damage_attack_level;
+    s16 damage_direction;
+    s8 damage_facing;
+    u8 damage_impact;
     s16 damage_hit_stop;
     s16 damage_screen_shake;
     u16 damage_stun_value;
-    u16 dm_ten_ix;
+    u16 damage_chain_index;
     u16 damage_kind_of_arts;
-    s16 dm_work_id;
-    u16 dm_arts_point;
-    u8 dm_jump_att_flag;
-    u8 dm_free;
-    s16 dm_count_up;
-    s8 dm_nodeathattack;
-    u8 dm_exdm_ix;
-    u8 dm_dip;
+    s16 damage_work_id;
+    u16 damage_arts_point;
+    u8 damage_jump_attack_flag;
+    u8 damage_free;
+    s16 damage_count_up;
+    s8 damage_no_death_attack;
+    u8 damage_extra_index;
+    u8 damage_dip;
     u8 damage_attack_type;
-    s16 attpow;
-    s16 defpow;
+    s16 attack_power;
+    s16 defense_power;
     void* my_effadrs;
     s16 shell_ix[8];
-    s16 hm_dm_side;
+    s16 hitmark_damage_side;
     s16 extra_col;   ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
     s16 extra_col_2; ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
     s16 original_vitality;
@@ -541,45 +541,45 @@ typedef struct {
     s16 effect_e3_index;
     s16 effect_e4_index;
     u8 is_taking_chip_damage;
-    u8 wrd_free[53];
+    u8 reserved_bytes[53];
 } State;
 
 typedef struct {
     s16 kind_of_arts;
-    u8 nmsa_g_ix;
-    u8 exsa_g_ix;
-    u8 exs2_g_ix;
-    u8 nmsa_a_ix;
-    u8 exsa_a_ix;
-    u8 exs2_a_ix;
+    u8 normal_sa_graphic_ix;
+    u8 ex_sa_graphic_ix;
+    u8 ex_sa2_graphic_ix;
+    u8 normal_sa_anim_ix;
+    u8 ex_sa_anim_ix;
+    u8 ex_sa2_anim_ix;
     s8 gauge_type;
-    s8 mp;
-    s8 ok;
-    s8 ex;
-    s8 ba;
-    s8 dtm_mul;
-    s8 mp_rno;
-    s8 mp_rno2;
-    s8 sa_rno;
-    s8 sa_rno2;
-    s8 ex_rno;
-    s8 gt2;
-    s8 saeff_ok;
-    s8 saeff_mp;
-    s16 gauge_len;
+    s8 meter_points;
+    s8 can_activate;
+    s8 ex_mode;
+    s8 bar_count;
+    s8 damage_time_multiplier;
+    s8 meter_routine_no;
+    s8 meter_routine_no_2;
+    s8 super_art_routine_no;
+    s8 super_art_routine_no_2;
+    s8 ex_routine_no;
+    s8 gauge_type_2;
+    s8 super_effect_can_activate;
+    s8 super_effect_meter;
+    s16 gauge_length;
     union {
         s32 i;
-        LoHi16 s;
+        Int16Pair s;
     } gauge;
-    s32 dtm;
-    s16 store_max;
-    s16 store;
-    s16 id_arts;
+    s32 damage_time;
+    s16 stock_max;
+    s16 stock;
+    s16 super_art_id;
     u8 ex4th_full;
     u8 ex4th_exec;
     s16 total_gauge;
-    s16 bacckup_g_h;
-} SA_WORK;
+    s16 backup_gauge_high;
+} SuperArtGauge;
 
 typedef struct {
     u16 input_held;
@@ -589,19 +589,19 @@ typedef struct {
     u16 input_released;
     u16 input_changed;
     u16 old_now;
-    s16 lgp;
-    u8 ca14;
-    u8 ca25;
-    u8 ca36;
-    u8 calf;
-    u8 calr;
+    s16 lever_grace_period;
+    u8 combo_btn_14;
+    u8 combo_btn_25;
+    u8 combo_btn_36;
+    u8 combo_all_forward;
+    u8 combo_all_reverse;
     u8 lever_dir;
     s16 move_state_flags[56];
     s16 reset[56];
     u8 move_state_timers[56][4];
-    u16 btix[56];
-    u16 exdt[56][4];
-} WORK_CP;
+    u16 button_index[56];
+    u16 extended_data[56][4];
+} CommandInputState;
 
 typedef struct {
     s16 r_no;
@@ -613,15 +613,15 @@ typedef struct {
  * @brief Player entity struct — extends State with player-specific state.
  *
  * @netplay_sync
- * PLW[2] is the largest and most desync-sensitive section of the rollback state.
- * Both players' PLW structs are checksummed after sanitizing pointers and
+ * PlayerEntity[2] is the largest and most desync-sensitive section of the rollback state.
+ * Both players' PlayerEntity structs are checksummed after sanitizing pointers and
  * rendering bits. The embedded State (wu) is sanitized via sanitize_work_pointers()
- * and sanitize_work_rendering(). PLW-specific pointers (cp, dm_step_tbl, as, sa, py)
+ * and sanitize_work_rendering(). PlayerEntity-specific pointers (cp, dm_step_tbl, as, sa, py)
  * are also zeroed via sanitize_plw_pointers().
  */
 typedef struct {
     State wu;
-    WORK_CP* cp; ///< @netplay_sync Pointer — zeroed for checksum
+    CommandInputState* cp; ///< @netplay_sync Pointer — zeroed for checksum
     u32 spmv_ng_flag;
     u32 special_move_disabled_flag2;
 
@@ -637,8 +637,8 @@ typedef struct {
     s8 throw_invuln_flag;
     u8 stun_state;
     u8 close_proximity_flag;
-    u8 hos_fi_flag;
-    u8 hos_em_flag;
+    u8 pushbox_finish_flag;
+    u8 pushbox_emergency_flag;
 
     /// Number of the character the player is throwing.
     s16 throw_target_id;
@@ -653,50 +653,50 @@ typedef struct {
     u8 old_gdflag;
     u8 guard_flag;
     u8 guard_active;
-    s16 dm_ix;
+    s16 damage_index;
     s16 scaling_remainder;
-    s8 dm_hos_flag;
-    u8 dm_point;
+    s8 damage_pushbox_flag;
+    u8 damage_point;
     s16 forced_movement;
     s8 scr_pos_set_flag;
     s8 stun_star_flag;
     s8 the_same_players;
     const s8* dm_step_tbl;
-    s8 running_f;
+    s8 running_flag;
     s8 cancel_timer;
     s8 jump_direction;
     s8 jump_timer;
     s16 current_attack;
     const AS* as;
-    SA_WORK* sa;
-    ComboType combo_type;
+    SuperArtGauge* sa;
+    ComboTracker combo_type;
     StunState* py;
-    s8 wkey_flag;
-    s8 dead_flag;
+    s8 wakeup_key_flag;
+    s8 death_timerlag;
     s16 recovery_roll_ok_timer;
     s16 backup_ok_timer;
-    s8 uot_cd_ok_flag;
+    s8 ukemi_cooldown_ok;
     s8 recovery_roll_success;
     s16 old_pos_data[8];
     s16 move_distance;
     s16 move_power;
-    s16 sa_stop_sai;
+    s16 super_art_stop_index;
     u8 latest_stick_dir;
-    u8 sa_stop_lvdir;
+    u8 super_art_stop_lever_dir;
     u8 sa_stop_flag;
     u8 chip_death_flag;
     s16 image_setup_flag;
     s16 image_data_index;
     u8 caution_flag;
     u8 tc_1st_flag;
-    ComboType remake_power;
-    s16 bullet_hcnt;
-    s16 bhcnt_timer;
-    s8 cat_break_ok_timer;
-    s8 cat_break_reserve;
+    ComboTracker remake_power;
+    s16 bullet_hit_count;
+    s16 bullet_hit_count_timer;
+    s8 catch_break_ok_timer;
+    s8 catch_break_reserve;
     s8 inescapable_flag;
     s8 cannot_turn_flag;
-    u8 tk_success;
+    u8 target_combo_success;
     u8 resurrection_resv;
     s16 strike_scaling;
     s16 throw_scaling;
@@ -708,9 +708,9 @@ typedef struct {
     u8 parry_flag;
     u8 parry_point;
     s16 dm_vital_backup;
-    u8 dm_refrect;
+    u8 damage_reflect;
     u8 dm_vital_use;
-    u8 exdm_ix;
+    u8 exdamage_index;
     u8 link_jump_flag;
     s16 cmd_request;
     s16 rl_save;
@@ -736,22 +736,22 @@ typedef struct {
     u8 extra_jump;
     u8 air_jump_ok_time;
     s16 bbox_ram_index;
-    u16 permited_koa;
+    u16 permitted_art_type;
     u8 jump_attack_routine;
     u8 jump_attack_timer;
     u8 kind_of_blocking;
     u8 metamorphose;
     s16 metamor_index;
     u8 metamor_over;
-    u8 gill_ccch_go;
-    u8 renew_attchar;
-    s16 omop_vital_timer;
+    u8 gill_catch_go;
+    u8 renew_attack_char;
+    s16 emergency_vital_timer;
     s16 sfwing_pos;
     u8 init_effect_e3_flag;
     u8 init_effect_e4_flag;
     u16 pl09_dat_index;
     s16 reserv_add_y;
-} PLW;
+} PlayerEntity;
 
 typedef struct {
     State wu;
@@ -760,7 +760,7 @@ typedef struct {
     s16 master_id;
     s16 master_player;
     s16 master_priority;
-    u8 dm_refrect;
+    u8 damage_reflect;
     u8 refrected;
     s16 free;
     u32 master_special_move_disabled_flag;
@@ -773,7 +773,7 @@ typedef struct {
     s16 ny;
     s16 col;
     u16 chr;
-} CONN;
+} SpriteConnection;
 
 /**
  * @brief Effect entity with variable-length conn[] tail.
@@ -793,8 +793,8 @@ typedef struct {
     s16 master_priority;
     s16 prio_reverse;
     s16 num_of_conn; ///< @netplay_sync Only conn[0..num_of_conn-1] are valid
-    CONN conn[108];
-} WORK_Other_CONN;
+    SpriteConnection conn[108];
+} EffectMultiSprite;
 
 typedef struct {
     State wu;
@@ -1152,7 +1152,7 @@ typedef struct {
     u8 flag;
     s8 power;
     u8 freq;
-} PULPARA;
+} RumbleParams;
 
 typedef struct {
     u16 low;
@@ -1196,13 +1196,13 @@ typedef struct {
     u8 free;
     u32 port;
     PPWORK_SUB p[2];
-} PPWORK;
+} RumbleWorkState;
 
 typedef struct {
     s16 prio;
     s16 rno;
     const PPWORK_SUB_SUB* adrs;
-} PULREQ;
+} RumbleRequest;
 
 typedef struct {
     s16 x;
@@ -1256,7 +1256,7 @@ typedef union {
 } MTX;
 
 typedef struct {
-    s8 ok;
+    s8 can_activate;
     s8 type;
     s16 key;
     uintptr_t texture_table;
@@ -1297,7 +1297,7 @@ struct _cursor_infor {
 };
 
 typedef struct {
-    u8 ok[20];
+    u8 can_activate[20];
     struct _cursor_infor cursor_infor[2];
 } Permission;
 
@@ -1540,7 +1540,7 @@ typedef struct {
     u32 g_no;
     s32 trans;
     u16 hv;
-    s16 ok;
+    s16 can_activate;
     OPTW_Color col;
 } OPTW_Small;
 
@@ -1644,7 +1644,7 @@ typedef struct {
 
 union POS_FLOAT {
     s32 long_pos;
-    LoHi16 word_pos;
+    Int16Pair word_pos;
 };
 
 typedef struct {
@@ -1985,7 +1985,7 @@ typedef struct {
 
 typedef union {
     s32 pl;
-    LoHi16 ps;
+    Int16Pair ps;
 } S32Split;
 
 typedef struct {
@@ -2144,7 +2144,7 @@ typedef struct {
 
 typedef union {
     s32 psi;
-    LoHi16 pss;
+    Int16Pair pss;
 } MS;
 
 typedef struct {
@@ -2231,27 +2231,27 @@ typedef struct {
 
 typedef union {
     s32 patl;
-    LoHi16 pats;
+    Int16Pair pats;
 } SST;
 
 typedef union {
     s32 l;
-    LoHi16 w;
+    Int16Pair w;
 } ST;
 
 typedef union {
     s32 dy;
-    LoHi16 ry;
+    Int16Pair ry;
 } PS_DY;
 
 typedef union {
     s32 psy;
-    LoHi16 psys;
+    Int16Pair psys;
 } PS_UNI;
 
 typedef union {
     s32 dp;
-    LoHi16 rp;
+    Int16Pair rp;
 } PS_DP;
 
 typedef struct {
@@ -2302,7 +2302,7 @@ typedef struct {
 
 typedef union {
     s32 ixl;
-    LoHi16 ixs;
+    Int16Pair ixs;
 } TBL;
 
 typedef struct {

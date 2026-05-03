@@ -85,13 +85,13 @@ static int is_empty_box(const s16 box[4]) {
     return box[0] == 0 && box[1] == 0 && box[2] == 0 && box[3] == 0;
 }
 
-void training_hud_draw_hitboxes(PLW* player) {
+void training_hud_draw_hitboxes(PlayerEntity* player) {
     if (!player)
         return;
 
     s16 pos_x = player->wu.xyz[0].disp.pos;
     s16 pos_y = player->wu.xyz[1].disp.pos;
-    s8 flip = player->wu.rl_flag ? -1 : 1;
+    s8 flip = player->wu.facing_flag ? -1 : 1;
 
     // Pushbox (Green)
     if (g_training_menu_settings.show_pushboxes && player->wu.pushbox) {

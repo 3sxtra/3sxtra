@@ -130,7 +130,7 @@ void NativeUI_Clear(void) {
             int slot = s_elements[i].effect_slot;
             for (int k = 0; k < EFFECT_MAX; k++) {
                 State_Other* w = (State_Other*)frw[k];
-                if (w->wu.be_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
+                if (w->wu.active_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
                     Release_Effect((State*)w);
                 }
             }
@@ -172,7 +172,7 @@ void NativeUI_End(void) {
             // instead of spamming g_state.Suicide[0]=1 and risking collateral damage.
             for (int k = 0; k < EFFECT_MAX; k++) {
                 State_Other* w = (State_Other*)frw[k];
-                if (w->wu.be_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
+                if (w->wu.active_flag && (w->wu.id == 57 || w->wu.id == 61) && w->wu.dir_old == slot) {
                     Release_Effect((State*)w);
                 }
             }

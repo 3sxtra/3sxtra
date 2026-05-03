@@ -58,7 +58,7 @@ s32 effect_04_init(s16 Death_Type, s16 cg_type, s16 sync_bg, s16 priority) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 4;
     ewk->wu.work_id = 16;
@@ -68,8 +68,8 @@ s32 effect_04_init(s16 Death_Type, s16 cg_type, s16 sync_bg, s16 priority) {
     ewk->wu.type = cg_type;
     ewk->master_player = Death_Type;
     ewk->wu.my_priority = ewk->wu.position_z = priority;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.char_table[0] = _sel_pl_char_table;
     ewk->wu.damage_calc_multiplier = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos;
     set_char_move_init(&ewk->wu, 0, 62);

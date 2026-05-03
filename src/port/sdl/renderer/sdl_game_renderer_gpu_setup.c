@@ -271,8 +271,8 @@ void SDLGameRendererGPU_Init(void) {
     sampler_info.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     sampler = SDL_CreateGPUSampler(device, &sampler_info);
 
-    // Create Texture Array (RGBA8: indexed textures store index in R channel,
-    // 16-bit direct color textures store full RGBA)
+    // Create Texture Array (RGBA8: indexed textures stock index in R channel,
+    // 16-bit direct color textures stock full RGBA)
     SDL_GPUTextureCreateInfo tex_info;
     SDL_zero(tex_info);
     tex_info.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;

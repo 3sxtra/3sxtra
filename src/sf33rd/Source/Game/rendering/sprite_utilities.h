@@ -35,7 +35,7 @@ s32 sort_push_request2(State_Other* wk);
 s16 exchange_current_colcd(State* wk);
 void Mtrans_use_trans_mode(State* wk, s16 bsy);
 void all_cgps_put_back(State* wk);
-s32 set_conn_sprite(WORK_Other_CONN* wk, s16 bsy);
+s32 set_conn_sprite(EffectMultiSprite* wk, s16 bsy);
 void set_judge_area_sprite(WORK_Other_JUDGE* wk, s16 bsy);
 void draw_hit_judge_line(f32 px, f32 py, f32 sx, f32 sy, u32 col, u32 attr);
 void setup_dma_group(u16 num, u32 /* unused */);

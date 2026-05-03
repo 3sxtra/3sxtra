@@ -16,7 +16,7 @@
 
 extern "C" {
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "structs.h"
 } // extern "C"
 

@@ -22,7 +22,7 @@ void effect_A1_move(State_Other* ewk) {
         return;
     }
 
-    if (ewk->wu.be_flag == 0) {
+    if (ewk->wu.active_flag == 0) {
         return;
     }
 

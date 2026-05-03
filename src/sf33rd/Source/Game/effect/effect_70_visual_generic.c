@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 static void Setup_Eff70(State_Other* ewk);
@@ -115,7 +115,7 @@ s32 effect_70_init(s16 id) {
     // permission_player is menu/UI state (character unlock flags), not gameplay state.
     // It's initialized at startup and set before gameplay begins, so both netplay
     // clients will have identical values. No GameState serialization needed.
-    if (permission_player[g_state.Present_Mode].ok[id] == 0) {
+    if (permission_player[g_state.Present_Mode].can_activate[id] == 0) {
         ewk->wu.my_bright_type = 1;
         ewk->wu.my_bright_level = 7;
         ewk->wu.my_clear_level = 80;
@@ -125,13 +125,13 @@ s32 effect_70_init(s16 id) {
 }
 
 static void Setup_Eff70(State_Other* ewk) {
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 70;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
     ewk->wu.my_family = 2;
     ewk->wu.char_index = 13;
     *ewk->wu.char_table = _sel_pl_char_table;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 }

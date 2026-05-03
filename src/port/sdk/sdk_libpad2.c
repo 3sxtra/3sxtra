@@ -39,7 +39,7 @@ int scePad2Read(int socket_number, scePad2ButtonState* data) {
     SDLPad_ButtonState button_state;
     SDLPad_GetButtonState(socket_number, &button_state);
 
-    // sw0 and sw1 store the pressed state of each button as bits.
+    // sw0 and sw1 stock the pressed state of each button as bits.
     // 0 = pressed, 1 = released
 
     data->sw0.byte = 0xFF;

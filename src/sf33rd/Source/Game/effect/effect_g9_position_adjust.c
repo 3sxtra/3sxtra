@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -37,7 +37,7 @@ void effect_G9_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] += 1;
             break;
@@ -47,7 +47,7 @@ void effect_G9_move(State_Other* ewk) {
             break;
         }
 
-        if ((g_state.EXE_flag == 0) && (g_state.Game_pause == 0)) {
+        if ((g_state.execute_flag == 0) && (g_state.Game_pause == 0)) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
@@ -83,11 +83,11 @@ s32 effect_G9_init(State* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.type = wk->disp_flag;
     ewk->wu.id = 0xA9;
     ewk->wu.work_id = 0x10;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.facing_flag = wk->facing_flag;
     ewk->wu.char_index = wk->direction;
     ewk->wu.my_family = wk->my_family;
     ewk->wu.graphic_rom_type = wk->graphic_rom_type;

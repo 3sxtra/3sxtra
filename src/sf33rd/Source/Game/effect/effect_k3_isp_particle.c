@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -47,13 +47,13 @@ void effect_K3_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
             add_mvxy_speed(&ewk->wu);
             cal_mvxy_speed(&ewk->wu);
@@ -103,16 +103,16 @@ static void set_init_posspeed_effK3(State* wk) {
     }
 
     ix = random_16() & 1;
-    data[0] = effK3_isp_table[wk->dm_attlv][flag + ix][0];
-    data[2] = effK3_isp_table[wk->dm_attlv][flag + ix][1];
+    data[0] = effK3_isp_table[wk->damage_attack_level][flag + ix][0];
+    data[2] = effK3_isp_table[wk->damage_attack_level][flag + ix][1];
     data[1] = 0;
     data[3] = -96;
     ix = random_16() & 7;
-    data[0] += effK3_isp_x_hosei[wk->dm_attlv][ix];
+    data[0] += effK3_isp_x_hosei[wk->damage_attack_level][ix];
     ix = random_16() & 7;
-    data[2] += effK3_isp_y_hosei[wk->dm_attlv][ix];
+    data[2] += effK3_isp_y_hosei[wk->damage_attack_level][ix];
     setup_move_data_easy(wk, &data[0], 1, 0);
-    wk->shadow_prio = effK3_life_time[wk->dm_attlv] + (random_16() & 3);
+    wk->shadow_prio = effK3_life_time[wk->damage_attack_level] + (random_16() & 3);
     wk->shadow_y = wk->shadow_prio / 2;
 }
 
@@ -125,17 +125,17 @@ static s32 effect_K3_init(State_Other* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 203;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 5;
+    ewk->wu.my_sprite_sheet = 5;
     ewk->wu.my_family = wk->wu.my_family;
     ewk->wu.graphic_rom_type = wk->wu.graphic_rom_type;
     ewk->wu.my_col_mode = wk->wu.my_col_mode;
     ewk->wu.my_col_code = wk->wu.my_col_code;
     ewk->my_master = wk;
-    ewk->wu.dm_dir = wk->wu.dm_dir;
-    ewk->wu.dm_attlv = wk->wu.dm_attlv;
+    ewk->wu.damage_direction = wk->wu.damage_direction;
+    ewk->wu.damage_attack_level = wk->wu.damage_attack_level;
     ewk->master_player = wk->master_player;
     ewk->master_id = wk->master_id;
     ewk->master_work_id = wk->master_work_id;
@@ -154,7 +154,7 @@ s32 setup_effK3(State* wk) {
         return 0;
     }
 
-    for (i = 0; i < numof_effK3[wk->dm_attlv]; i++) {
+    for (i = 0; i < numof_effK3[wk->damage_attack_level]; i++) {
         effect_K3_init((State_Other*)wk);
     }
 

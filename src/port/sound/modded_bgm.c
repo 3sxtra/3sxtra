@@ -305,10 +305,10 @@ static bool try_load_and_play(const char* ext, int file_id) {
         }
     }
 
-    bool ok = MIX_PlayTrack(music_track, props);
+    bool can_activate = MIX_PlayTrack(music_track, props);
     SDL_DestroyProperties(props);
 
-    if (!ok) {
+    if (!can_activate) {
         SDL_Log("ModdedBGM: Failed to play %s: %s", path, SDL_GetError());
         MIX_DestroyAudio(current_audio);
         current_audio = NULL;
@@ -439,10 +439,10 @@ static bool try_load_voice(const char* voice_name, const char* ext) {
     /* Play once — no looping */
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetNumberProperty(props, MIX_PROP_PLAY_LOOPS_NUMBER, 0);
-    bool ok = MIX_PlayTrack(voice_track, props);
+    bool can_activate = MIX_PlayTrack(voice_track, props);
     SDL_DestroyProperties(props);
 
-    if (!ok) {
+    if (!can_activate) {
         SDL_Log("[%s] ModdedBGM: Failed to play voice %s: %s", ModdedBGM_GetGameStateString(), path, SDL_GetError());
         MIX_DestroyAudio(current_voice_audio);
         current_voice_audio = NULL;

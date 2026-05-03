@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_M3_move(State_Other* ewk);
-s32 effect_M3_init(WORK_Other_CONN* wk, s16 num);
+s32 effect_M3_init(EffectMultiSprite* wk, s16 num);
 
 #endif

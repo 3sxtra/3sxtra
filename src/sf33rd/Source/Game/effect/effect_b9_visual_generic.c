@@ -70,7 +70,7 @@ s32 effect_B9_init(State_Other* oya) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0x77;
     ewk->wu.work_id = 0x10;
     ewk->my_master = oya;
@@ -78,8 +78,8 @@ s32 effect_B9_init(State_Other* oya) {
     ewk->wu.my_col_code = 0x52;
     ewk->wu.my_priority = ewk->wu.position_z = 10;
     *ewk->wu.char_table = _etc_char_table;
-    ewk->wu.my_mts = 0xE;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 0xE;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     if (oya->wu.type) {
         ewk->wu.old_routine_no[0] = 2;

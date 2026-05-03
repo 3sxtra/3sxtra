@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -42,14 +42,14 @@ void effect_D6_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
         }
 
         if (sa_stop_check() == 0) {
-            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+            if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
                 switch (ewk->wu.routine_no[1]) {
                 case 0:
                     ewk->wu.dir_old += ewk->wu.dir_step;
@@ -113,11 +113,11 @@ s32 effect_D6_init(State_Other* wk, s16 dr, s16 sp, s16 dl, s16 acc) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 136;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 14;
-    ewk->wu.rl_flag = wk->wu.rl_flag;
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.facing_flag = wk->wu.facing_flag;
     ewk->wu.my_family = wk->wu.my_family;
     ewk->wu.my_col_mode = wk->wu.my_col_mode;
     ewk->wu.my_col_code = wk->wu.my_col_code;

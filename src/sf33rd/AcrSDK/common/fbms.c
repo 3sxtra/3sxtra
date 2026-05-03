@@ -59,7 +59,7 @@ void* fmsAllocMemory(FL_FMS* lp, s32 bytes, s32 heapnum) {
 }
 
 /** @brief Snapshot the current frame pointer for the given heap into a frame struct. */
-s32 fmsGetFrame(FL_FMS* lp, s32 heapnum, FMS_FRAME* frame) {
+s32 fmsGetFrame(FL_FMS* lp, s32 heapnum, FrameHeapSlot* frame) {
     if ((u32)heapnum >= FMS_HEAP_COUNT) {
         return 0;
     }

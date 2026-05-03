@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/effect/effect_m0_animal_table.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -32,7 +32,7 @@ void effect_M2_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             if (ewk->wu.type) {
                 effm2_move2(ewk);
             } else {
@@ -61,7 +61,7 @@ static void effm2_move(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 0;
         ewk->wu.shadow_y = 7;
@@ -86,7 +86,7 @@ static void effm2_move(State_Other* ewk) {
             ewk->wu.routine_no[1]++;
 
             if (ewk->wu.old_routine_no[0] == 2) {
-                ewk->wu.rl_flag ^= 1;
+                ewk->wu.facing_flag ^= 1;
             }
 
             cat_run_set2(ewk);
@@ -115,14 +115,14 @@ static void effm2_move2(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 0;
         ewk->wu.shadow_y = 7;
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 3;
 
-        if (oya_ptr->rl_flag) {
+        if (oya_ptr->facing_flag) {
             ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].wxy[0].disp.pos - g_state.bg_w.pos_offset - 48;
 
             if (oya_ptr->xyz[0].disp.pos > g_state.bg_w.bgw[1].wxy[0].disp.pos) {
@@ -193,18 +193,18 @@ s32 effect_M2_init(State* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 222;
     ewk->wu.graphic_rom_type = 1;
     ewk->my_master = wk;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.facing_flag = wk->facing_flag;
     ewk->wu.type = data;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _etc2_char_table;
     ewk->wu.my_family = 2;
     ewk->wu.my_col_code = 59;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

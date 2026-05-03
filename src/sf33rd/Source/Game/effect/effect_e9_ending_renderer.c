@@ -66,7 +66,7 @@ void effect_E9_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.routine_no[0] = 3;
             ewk->wu.disp_flag = 0;
             break;
@@ -134,7 +134,7 @@ s32 effect_E9_init() {
         }
         ewk = (State_Other*)frw[ix];
         ewk->wu.id = 149;
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.type = i;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;

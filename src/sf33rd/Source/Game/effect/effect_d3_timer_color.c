@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
@@ -58,7 +58,7 @@ void akebono_finish(State_Other* ewk) {
             }
         }
 
-        Bg_On_R(8);
+        bg_enable_render(8);
         g_state.akebono_flag = 1;
         Sound_SE(117);
         Scrn_Move_Set(3, 192 - g_state.bg_w.pos_offset, 16);
@@ -112,7 +112,7 @@ void akebono_finish(State_Other* ewk) {
 
             for (i = 0; i < 4; i++, assign2 = mask *= 2) {
                 if (bg & mask) {
-                    Bg_On_R(1 << i);
+                    bg_enable_render(1 << i);
                 }
             }
         }
@@ -194,7 +194,7 @@ void syungoku_finish(State_Other* ewk) {
 
             for (i = 0; i < 4; i++, assign2 = mask *= 2) {
                 if (bg & mask) {
-                    Bg_On_R(1 << i);
+                    bg_enable_render(1 << i);
                 }
             }
         }
@@ -233,7 +233,7 @@ s32 effect_D3_init(u8 ake_type) {
 
     ewk = (State_Other*)frw[ix];
     ewk->wu.id = 133;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.old_routine_no[1] = 0;

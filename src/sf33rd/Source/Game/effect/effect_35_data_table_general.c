@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
@@ -243,7 +243,7 @@ static void eff35_0003(State_Other* ewk) {
             break;
         }
 
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             add_x_sub(&ewk->wu);
         }
 
@@ -297,7 +297,7 @@ static void eff35_0004(State_Other* ewk) {
             } else {
                 ewk->wu.routine_no[1] = 3;
             }
-        } else if (!g_state.EXE_flag && !g_state.Game_pause) {
+        } else if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -305,7 +305,7 @@ static void eff35_0004(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -318,7 +318,7 @@ static void eff35_0004(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -486,7 +486,7 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
     }
 
     data_ptr = eff35_data_tbl[char_num];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.old_routine_no[1] = wait_timer;
     ewk->wu.type = char_num;
     ewk->wu.work_id = 16;
@@ -494,8 +494,8 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _bns_char_table;
     ewk->wu.my_col_code = 0x12C;
-    ewk->wu.my_mts = 7;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 7;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.my_family = 2;
     ewk->wu.xyz[0].disp.pos = *data_ptr++;
     ewk->wu.xyz[1].disp.pos = *data_ptr++;

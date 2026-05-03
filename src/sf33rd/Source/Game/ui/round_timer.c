@@ -13,7 +13,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -111,7 +111,7 @@ void count_cont_main() {
         return;
     }
 
-    if (!g_state.EXE_flag && !g_state.Game_pause) {
+    if (!g_state.execute_flag && !g_state.Game_pause) {
         counter_control();
         return;
     }
@@ -250,7 +250,7 @@ void bcount_cont_main() {
         return;
     }
 
-    if (!Debug_w[DEBUG_TIME_STOP] && !g_state.EXE_flag && !g_state.Game_pause) {
+    if (!Debug_w[DEBUG_TIME_STOP] && !g_state.execute_flag && !g_state.Game_pause) {
         bcounter_control();
     }
 }

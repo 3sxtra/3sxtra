@@ -33,8 +33,8 @@ const s16 meta_lose_tbl[CHARACTER_COUNT] = { 24, 24, 24, 24, 24, 24, 24, 24, 24,
                                              24, 24, 24, 28, 24, 24, 24, 24, 24, 24 };
 
 /** @brief Top-level loser dispatch — select type-specific lose handler. */
-void lose_player(PLW* wk) {
-    void (*lose_jp_tbl[LOSER_TYPE_COUNT])(PLW*) = { Lose_00000, Lose_10000, Lose_20000, Lose_30000 };
+void lose_player(PlayerEntity* wk) {
+    void (*lose_jp_tbl[LOSER_TYPE_COUNT])(PlayerEntity*) = { Lose_00000, Lose_10000, Lose_20000, Lose_30000 };
 
     if (g_state.My_char[wk->wu.id] != wk->player_number) {
         meta_lose_pause(wk);
@@ -49,7 +49,7 @@ void lose_player(PLW* wk) {
 }
 
 /** @brief Lose type 0 — standard KO; judge or normal variant. */
-void Lose_00000(PLW* wk) {
+void Lose_00000(PlayerEntity* wk) {
     if ((g_state.pcon_rno[0] == 2) && (g_state.pcon_rno[1] == 3)) {
         Judge_normal_loser(wk);
         return;
@@ -59,7 +59,7 @@ void Lose_00000(PLW* wk) {
 }
 
 /** @brief Lose type 1 — character-specific random idle animation. */
-void Lose_10000(PLW* wk) {
+void Lose_10000(PlayerEntity* wk) {
     if ((g_state.pcon_rno[0] == 2) && (g_state.pcon_rno[1] == 3)) {
         switch (wk->wu.routine_no[3]) {
         case 0:
@@ -101,7 +101,7 @@ void Lose_10000(PLW* wk) {
 }
 
 /** @brief Lose type 2 — KO with optional extra-break effect. */
-void Lose_20000(PLW* wk) {
+void Lose_20000(PlayerEntity* wk) {
     s16 work;
 
     if ((g_state.pcon_rno[0] == 2) && (g_state.pcon_rno[1] == 3)) {
@@ -140,7 +140,7 @@ void Lose_20000(PLW* wk) {
 }
 
 /** @brief Lose type 3 — region-dependent KO variant. */
-void Lose_30000(PLW* wk) {
+void Lose_30000(PlayerEntity* wk) {
     if ((g_state.pcon_rno[0] == 2) && (g_state.pcon_rno[1] == 3)) {
         switch (wk->wu.routine_no[3]) {
         case 0:
@@ -187,7 +187,7 @@ void Lose_30000(PLW* wk) {
 }
 
 /** @brief Standard normal-round loser animation (random idle pick). */
-void Normal_normal_Loser(PLW* wk) {
+void Normal_normal_Loser(PlayerEntity* wk) {
     s16 work;
 
     if ((g_state.pcon_rno[1] == 0) || (g_state.pcon_rno[1] == 4)) {
@@ -215,7 +215,7 @@ void Normal_normal_Loser(PLW* wk) {
 }
 
 /** @brief Judge-round loser animation (random verdict pose). */
-void Judge_normal_loser(PLW* wk) {
+void Judge_normal_loser(PlayerEntity* wk) {
     s16 work;
 
     switch (wk->wu.routine_no[3]) {
@@ -239,7 +239,7 @@ void Judge_normal_loser(PLW* wk) {
 }
 
 /** @brief Meta-character (Gill) lose pause — stop BG scroll and hold pose. */
-void meta_lose_pause(PLW* wk) {
+void meta_lose_pause(PlayerEntity* wk) {
     g_state.bg_app_stop = 1;
 
     if ((g_state.pcon_rno[1] == 0) || (g_state.pcon_rno[1] == 4)) {

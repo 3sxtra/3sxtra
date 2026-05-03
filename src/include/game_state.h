@@ -15,7 +15,7 @@
  *  3. setup_vs_mode() in netplay.c canonicalizes many of these fields before
  *     the first synced frame to eliminate per-player divergence.
  *  4. The debug checksum in save_state() only hashes a whitelist of gameplay-
- *     critical fields (RNG indices, PLW, combat flags). UI-only fields are
+ *     critical fields (RNG indices, PlayerEntity, combat flags). UI-only fields are
  *     still saved/loaded but excluded from the checksum.
  *
  * @see GameState_Save(), GameState_Load() in game_state.c
@@ -539,15 +539,15 @@ typedef struct GameState {
 
     // ======================================================================
     // Player state (plcnt) — GAMEPLAY-CRITICAL
-    // PLW[2] holds the full per-player simulation state (State base + player
+    // PlayerEntity[2] holds the full per-player simulation state (State base + player
     // extensions). This is the single largest and most desync-sensitive
-    // section. Both PLW structs are checksummed (after sanitizing pointers
+    // section. Both PlayerEntity structs are checksummed (after sanitizing pointers
     // and rendering bits) during desync detection.
     // ======================================================================
 
-    PLW plw[2]; ///< @netplay_sync The two player structs — checksummed
+    PlayerEntity plw[2]; ///< @netplay_sync The two player structs — checksummed
     ZanzouTableEntry afterimage_table[2][48];
-    SA_WORK super_arts[2]; ///< @netplay_sync Super gauge state — checksummed
+    SuperArtGauge super_arts[2]; ///< @netplay_sync Super gauge state — checksummed
     StunState stun_state[2];
     AppearanceType appear_type;
     s16 pcon_rno[4];
@@ -567,7 +567,7 @@ typedef struct GameState {
     // special move detection buffers.
     // ======================================================================
 
-    WORK_CP wcp[2];
+    CommandInputState wcp[2];
     T_PL_LVR t_pl_lvr[2];
     MOVE_WORK move_work[2][56];
 
@@ -626,9 +626,9 @@ typedef struct GameState {
     // Slow motion (slowf) — GAMEPLAY-CRITICAL (checksummed)
     // ======================================================================
 
-    s16 SLOW_timer; ///< @netplay_sync Checksummed
-    s16 SLOW_flag;  ///< @netplay_sync Checksummed
-    s16 EXE_flag;   ///< @netplay_sync Checksummed
+    s16 slowmo_timer; ///< @netplay_sync Checksummed
+    s16 slowmo_flag;  ///< @netplay_sync Checksummed
+    s16 execute_flag;   ///< @netplay_sync Checksummed
 
     // grade
 
@@ -712,7 +712,7 @@ typedef struct GameState {
     s8 aku_flag;
     s8 seraph_flag;
     s8 akebono_flag;
-    MVXY bg_mvxy;
+    MovementVector bg_mvxy;
     s16 chase_time_y;
     s16 chase_time_x;
     s16 chase_y;

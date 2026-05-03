@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -26,7 +26,7 @@ void effect_J0_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
@@ -38,7 +38,7 @@ void effect_J0_move(State_Other* ewk) {
             break;
         }
 
-        if (!g_state.EXE_flag && !g_state.Game_pause && mwk->wu.hit_stop <= 0) {
+        if (!g_state.execute_flag && !g_state.Game_pause && mwk->wu.hit_stop <= 0) {
             if (--ewk->wu.dir_timer == 0) {
                 ewk->wu.routine_no[0] = 2;
                 break;
@@ -49,7 +49,7 @@ void effect_J0_move(State_Other* ewk) {
         }
 
         ewk->wu.old_cgnum = ewk->wu.cg_number = mwk->wu.cg_number;
-        ewk->wu.rl_flag = mwk->wu.rl_flag;
+        ewk->wu.facing_flag = mwk->wu.facing_flag;
         ewk->wu.cg_flip = mwk->wu.cg_flip;
         sort_push_request(&ewk->wu);
         break;
@@ -73,14 +73,14 @@ s32 effect_J0_init(State_Other* ek, State_Other* mk, s16 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 2;
     ewk->wu.id = 190;
     ewk->wu.old_cgnum = ek->wu.cg_number = mk->wu.cg_number;
     ewk->wu.dir_step = data;
     ewk->wu.position_x = ewk->wu.old_pos[0] = mk->wu.position_x;
     ewk->wu.position_y = ewk->wu.old_pos[1] = mk->wu.position_y;
-    ewk->wu.rl_flag = mk->wu.rl_flag;
+    ewk->wu.facing_flag = mk->wu.facing_flag;
     ewk->wu.cg_flip = mk->wu.cg_flip;
     ewk->wu.blink_timing = mk->wu.blink_timing;
     ewk->wu.work_id = 16;

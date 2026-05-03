@@ -17,7 +17,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
@@ -38,7 +38,7 @@ void (*const EFF39_Jmp_Tbl[6])() = {
 void effect_39_move(State_Other* ewk) {
     EFF39_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag != 0) {
+    if (ewk->wu.active_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
         if (!rmlui_char_select_visible)
@@ -246,7 +246,7 @@ s32 effect_39_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Target_BG, s16 Opt
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 39;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
@@ -256,8 +256,8 @@ s32 effect_39_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Target_BG, s16 Opt
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->master_id = PL_id;
     ewk->wu.dir_old = dir_old;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     if (Your_Char == 0x7F) {
         ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];

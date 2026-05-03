@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -34,7 +34,7 @@ void vital_cont_init() {
 /** @brief Per-frame vitality bar update — drives the animated health bar drain. */
 void vital_cont_main() {
     if (omop_cockpit != 0) {
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             if (g_state.vital_stop_flag[0] == 0 && g_state.gauge_stop_flag[0] == 0) {
                 vital_control(0);
             }

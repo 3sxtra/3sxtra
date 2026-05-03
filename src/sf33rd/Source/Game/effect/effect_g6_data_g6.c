@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effect_g9_position_adjust.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 
 const s16 effg6_data[230][8] = { { 46, 0, 0, 0, -32, 32, 515, 31 },       { 46, 0, 0, 0, -64, 40, 515, 31 },
@@ -142,7 +142,7 @@ void effect_G6_move(State_Other* ewk) {
         ewk->wu.current_char_type = effg6_data[ewk->wu.type][6];
         ewk->wu.direction = effg6_data[ewk->wu.type][7];
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.next_x = -ewk->wu.next_x;
         }
 
@@ -153,14 +153,14 @@ void effect_G6_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.routine_no[0] += 1;
             return;
         }
 
         if (((ewk->wu.damage_calc_multiplier & 1) && (ewk->wu.old_pos[1] != mwk->xyz[1].disp.pos)) ||
             ((ewk->wu.damage_calc_multiplier & 2) && (mwk->disp_flag == 0)) ||
-            ((ewk->wu.damage_calc_multiplier & 4) && (ewk->wu.damage_vitality != mwk->dm_count_up)) ||
+            ((ewk->wu.damage_calc_multiplier & 4) && (ewk->wu.damage_vitality != mwk->damage_count_up)) ||
             ((ewk->wu.damage_calc_multiplier & 8) &&
              ((ewk->wu.old_routine_no[0] != mwk->routine_no[0]) || (ewk->wu.old_routine_no[1] != mwk->routine_no[1]) ||
               (ewk->wu.old_routine_no[2] != mwk->routine_no[2])))) {
@@ -169,7 +169,7 @@ void effect_G6_move(State_Other* ewk) {
             return;
         }
 
-        if ((g_state.EXE_flag != 0) || (g_state.Game_pause != 0)) {
+        if ((g_state.execute_flag != 0) || (g_state.Game_pause != 0)) {
             break;
         }
 
@@ -216,11 +216,11 @@ s32 effect_G6_init(State* wk, u8 dat) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0xA6;
     ewk->wu.work_id = 0x10;
     ewk->wu.type = dat;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.facing_flag = wk->facing_flag;
     ewk->wu.my_family = 2;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
@@ -229,7 +229,7 @@ s32 effect_G6_init(State* wk, u8 dat) {
     ewk->wu.old_routine_no[0] = wk->routine_no[0];
     ewk->wu.old_routine_no[1] = wk->routine_no[1];
     ewk->wu.old_routine_no[2] = wk->routine_no[2];
-    ewk->wu.damage_vitality = wk->dm_count_up;
+    ewk->wu.damage_vitality = wk->damage_count_up;
     ewk->my_master = wk;
     ewk->master_work_id = wk->work_id;
     ewk->master_id = wk->id;

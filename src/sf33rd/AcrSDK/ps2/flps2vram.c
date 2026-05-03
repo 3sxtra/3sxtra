@@ -51,7 +51,7 @@ u32 flCreateTextureHandle(s32 id, plContext* bits, u32 flag) {
 
     lpflTexture = &flTexture[LO_16_BITS(th) - 1];
 
-    if (lpflTexture->be_flag) {
+    if (lpflTexture->active_flag) {
         flReleaseTextureHandle(th);
     }
 
@@ -102,7 +102,7 @@ s32 flPS2GetTextureInfoFromContext(plContext* bits, s32 bnum, u32 th, u32 flag) 
         }
     }
 
-    lpflTexture->be_flag = 1;
+    lpflTexture->active_flag = 1;
     lpflTexture->flag = flag;
     lpflTexture->desc = bits->desc;
     lpflTexture->width = bits->width;
@@ -188,7 +188,7 @@ u32 flPS2GetTextureHandle() {
     s32 i;
 
     for (i = 0; i < FL_TEXTURE_MAX; i++) {
-        if (!flTexture[i].be_flag) {
+        if (!flTexture[i].active_flag) {
             break;
         }
     }
@@ -211,7 +211,7 @@ u32 flCreatePaletteHandle(plContext* lpcontext, u32 flag) {
 
     lpflPalette = &flPalette[HI_16_BITS(ph) - 1];
 
-    if (lpflPalette->be_flag) {
+    if (lpflPalette->active_flag) {
         flReleasePaletteHandle(ph >> 16);
     }
 
@@ -272,7 +272,7 @@ s32 flPS2GetPaletteInfoFromContext(plContext* bits, u32 ph, u32 flag) {
 
     lpflPalette->desc = bits->desc;
     lpflPalette->flag = flag;
-    lpflPalette->be_flag = 1;
+    lpflPalette->active_flag = 1;
     lpflPalette->mem_handle = 0;
     lpflPalette->lock_ptr = 0;
     lpflPalette->lock_flag = 0;
@@ -293,7 +293,7 @@ u32 flPS2GetPaletteHandle() {
     s32 i;
 
     for (i = 0; i < FL_PALETTE_MAX; i++) {
-        if (!flPalette[i].be_flag) {
+        if (!flPalette[i].active_flag) {
             break;
         }
     }
@@ -314,7 +314,7 @@ s32 flReleaseTextureHandle(u32 texture_handle) {
 
     FLTexture* lpflTexture = &flTexture[texture_handle - 1];
 
-    if (lpflTexture->be_flag == 0) {
+    if (lpflTexture->active_flag == 0) {
         return 0; // Already released
     }
 
@@ -337,7 +337,7 @@ s32 flReleasePaletteHandle(u32 palette_handle) {
 
     FLTexture* lpflPalette = &flPalette[palette_handle - 1];
 
-    if (lpflPalette->be_flag == 0) {
+    if (lpflPalette->active_flag == 0) {
         return 0; // Already released
     }
 
@@ -359,7 +359,7 @@ s32 flLockTexture(Rect* lprect, u32 th, plContext* lpcontext, u32 flag) {
 
     FLTexture* lpflTexture = &flTexture[th - 1];
 
-    if (!lpflTexture->be_flag) {
+    if (!lpflTexture->active_flag) {
         return 0;
     }
 
@@ -374,7 +374,7 @@ s32 flLockPalette(Rect* lprect, u32 th, plContext* lpcontext, u32 flag) {
 
     FLTexture* lpflPalette = &flPalette[th - 1];
 
-    if (!lpflPalette->be_flag) {
+    if (!lpflPalette->active_flag) {
         return 0;
     }
 
@@ -810,7 +810,7 @@ s32 flUnlockTexture(u32 th) {
 
     FLTexture* lpflTexture = &flTexture[th - 1];
 
-    if (!lpflTexture->be_flag) {
+    if (!lpflTexture->active_flag) {
         return 0;
     }
 
@@ -827,7 +827,7 @@ s32 flUnlockPalette(u32 th) {
 
     FLTexture* lpflPalette = &flPalette[th - 1];
 
-    if (!lpflPalette->be_flag) {
+    if (!lpflPalette->active_flag) {
         return 0;
     }
 
@@ -1031,7 +1031,7 @@ static u32 flPS2GetTextureSize(u32 format, s32 dw, s32 dh, s32 bnum) {
     return tex_size;
 }
 
-/** @brief Convert a plContext into a GS-native pixel format and store in system memory. */
+/** @brief Convert a plContext into a GS-native pixel format and stock in system memory. */
 static s32 flPS2ConvertTextureFromContext(plContext* lpcontext, FLTexture* lpflTexture, u32 type) {
     s32 lp0;
     s32 dw;

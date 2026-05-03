@@ -6,7 +6,7 @@
  * As of March 2026, those definitions have been split into domain-specific
  * source files under src/sf33rd/Source/Game/globals/:
  *
- *   player_globals.c      — Player state (PLW, super arts, appearance)
+ *   player_globals.c      — Player state (PlayerEntity, super arts, appearance)
  *   timer_hud_globals.c   — Round timer, flash state, HUD counters
  *   score_globals.c       — Scores, bonuses, order arrays
  *   match_globals.c       — Round/match control, char select, AI, system timers
@@ -24,11 +24,11 @@
  * respective subsystem .c files. Kept here as documentation only.
  */
 
-// Removed duplicates found in slowf.c
+// Removed duplicates found in slow_motion.c
 /*
-s16 SLOW_timer;
-s16 SLOW_flag;
-s16 EXE_flag;
+s16 slowmo_timer;
+s16 slowmo_flag;
+s16 execute_flag;
 */
 
 // Removed duplicates found in grade.c

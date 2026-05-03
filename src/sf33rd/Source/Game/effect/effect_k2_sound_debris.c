@@ -12,10 +12,10 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 
 static void disp_effK2(State* wk, State* mk, DADD* hk);
 static void set_next_next_y(State* wk, u8 flag);
@@ -263,20 +263,20 @@ void effect_K2_move(State_Other* ewk) {
         set_char_move_init(&ewk->wu, 0, (debris->cix));
 
         if (debris->cix == 0x78) {
-            setup_demojump((PLW*)ewk->wu.hit_adrs, 1);
+            setup_demojump((PlayerEntity*)ewk->wu.hit_adrs, 1);
         }
 
         disp_effK2(&ewk->wu, mwk, debris);
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             effK2_main_process[ewk->wu.routine_no[1]](ewk, debris);
         }
 
@@ -352,7 +352,7 @@ static void effK2_parts_move_type_0(State_Other* ewk, DADD*) {
 static void effK2_parts_move_type_1(State_Other* ewk, DADD* debris) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
-        switch (ewk->wu.dm_attlv) {
+        switch (ewk->wu.damage_attack_level) {
         case 2:
         case 3:
             char_move(&ewk->wu);
@@ -567,7 +567,7 @@ static void effK2_parts_move_type_7(State_Other* ewk, DADD* arg1) {
 static void effK2_parts_move_type_8(State_Other* ewk, DADD* debris) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
-        switch (ewk->wu.dm_attlv) {
+        switch (ewk->wu.damage_attack_level) {
         case 2:
         case 3:
             char_move(&ewk->wu);
@@ -670,19 +670,19 @@ static s32 effect_K2_init(State_Other* wk, u32* dad) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 202;
     ewk->wu.work_id = 16;
     ewk->wu.type = wk->wu.type;
-    ewk->wu.dm_rl = wk->wu.dm_rl;
-    ewk->wu.dm_dir = wk->wu.dm_dir;
-    ewk->wu.dm_attlv = wk->wu.dm_attlv;
+    ewk->wu.damage_facing = wk->wu.damage_facing;
+    ewk->wu.damage_direction = wk->wu.damage_direction;
+    ewk->wu.damage_attack_level = wk->wu.damage_attack_level;
     ewk->wu.my_family = wk->wu.my_family;
     ewk->wu.graphic_rom_type = wk->wu.graphic_rom_type;
     ewk->wu.my_col_mode = wk->wu.my_col_mode;
     ewk->wu.my_col_code = wk->wu.my_col_code;
     ewk->wu.my_priority = wk->wu.position_z;
-    ewk->wu.my_mts = 5;
+    ewk->wu.my_sprite_sheet = 5;
     ewk->master_id = wk->master_id;
     ewk->master_work_id = wk->wu.id;
     ewk->wu.dir_old = 0;

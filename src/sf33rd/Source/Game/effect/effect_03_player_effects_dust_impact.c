@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -107,10 +107,10 @@ void effect_03_move(State_Other* ewk) {
         ewk->wu.blink_timing = ewk->master_id;
 
         if (plef_data[ewk->wu.type].sel_rl) {
-            ewk->wu.rl_flag = ewk->wu.active_move;
+            ewk->wu.facing_flag = ewk->wu.active_move;
         }
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.position_x = ewk->wu.xyz[0].disp.pos + plef_data[ewk->wu.type].hx;
         } else {
             ewk->wu.position_x = ewk->wu.xyz[0].disp.pos - plef_data[ewk->wu.type].hx;
@@ -129,7 +129,7 @@ void effect_03_move(State_Other* ewk) {
             ewk->wu.my_col_code += plef_data[ewk->wu.type].color;
         }
 
-        ewk->wu.my_mts = 14;
+        ewk->wu.my_sprite_sheet = 14;
         set_char_move_init(&ewk->wu, 0, plef_data[ewk->wu.type].chix);
 
         if (plef_data[ewk->wu.type].ichi) {
@@ -137,7 +137,7 @@ void effect_03_move(State_Other* ewk) {
             ewk->wu.xyz[1].disp.pos = plef_data[ewk->wu.type].hy;
             ewk->wu.xyz[2].disp.pos = plef_data[ewk->wu.type].hz;
 
-            if (ewk->wu.rl_flag == 0) {
+            if (ewk->wu.facing_flag == 0) {
                 ewk->wu.xyz[0].disp.pos = -ewk->wu.xyz[0].disp.pos;
             }
         } else {
@@ -155,7 +155,7 @@ void effect_03_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -165,7 +165,7 @@ void effect_03_move(State_Other* ewk) {
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -215,11 +215,11 @@ s32 effect_03_init(State* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 3;
     ewk->wu.work_id = 16;
     ewk->wu.type = data;
-    ewk->wu.active_move = wk->rl_flag;
+    ewk->wu.active_move = wk->facing_flag;
     ewk->wu.my_family = wk->my_family;
     ewk->wu.graphic_rom_type = wk->graphic_rom_type;
     ewk->wu.my_col_mode = wk->my_col_mode;

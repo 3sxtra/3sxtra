@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -50,17 +50,17 @@ void effect_K4_move(State_Other* ewk) {
         get_init_position_effK4(&ewk->wu);
         get_init_speed_and_timer_effK4(&ewk->wu);
         ewk->wu.position_z = 24;
-        set_char_move_init(&ewk->wu, 0, effK4_char_sel_table[ewk->wu.dm_attlv][random_16()]);
+        set_char_move_init(&ewk->wu, 0, effK4_char_sel_table[ewk->wu.damage_attack_level][random_16()]);
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
             add_mvxy_speed(&ewk->wu);
             cal_mvxy_speed(&ewk->wu);
@@ -109,16 +109,16 @@ static void get_init_speed_and_timer_effK4(State* wk) {
     s16 ix;
 
     ix = wk->type + (random_16() & 1);
-    data[0] = effK4_isp_table[wk->dm_attlv][ix][0];
-    data[2] = effK4_isp_table[wk->dm_attlv][ix][1];
+    data[0] = effK4_isp_table[wk->damage_attack_level][ix][0];
+    data[2] = effK4_isp_table[wk->damage_attack_level][ix][1];
     data[1] = 0;
     data[3] = -96;
     ix = random_16() & 7;
-    data[0] += effK4_isp_x_hosei[wk->dm_attlv][ix];
+    data[0] += effK4_isp_x_hosei[wk->damage_attack_level][ix];
     ix = random_16() & 7;
-    data[2] += effK4_isp_y_hosei[wk->dm_attlv][ix];
+    data[2] += effK4_isp_y_hosei[wk->damage_attack_level][ix];
     setup_move_data_easy(wk, &data[0], 1, 0);
-    wk->shadow_prio = (random_16() & 7) + effK4_life_time[wk->dm_attlv];
+    wk->shadow_prio = (random_16() & 7) + effK4_life_time[wk->damage_attack_level];
     wk->shadow_y = wk->shadow_prio / 2;
 }
 

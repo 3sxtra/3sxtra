@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/effect/effect_95_data_table.h"
 #include "sf33rd/Source/Game/effect/effect_a9_visual_generic.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"

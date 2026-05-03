@@ -110,7 +110,7 @@ static const u32 s_button_bits[] = {
     0x100, 0x200, 0x400, // LK, MK, HK
     0x1000               // Start
 };
-static const char* s_button_classes[] = { "icon btn-lp", "icon btn-mp", "icon btn-hp", "icon btn-lk",
+static const char* s_button_classes[] = { "icon btn-lp", "icon btn-meter_points", "icon btn-hp", "icon btn-lk",
                                           "icon btn-mk", "icon btn-hk", "icon btn-st" };
 static const int s_num_buttons = 7;
 

@@ -21,7 +21,7 @@
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/ending/end_maps.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/system/ram_control.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -153,12 +153,12 @@ void Bg_Texture_Load_EX() {
 
     for (i = 0; i < 3; i++) {
         if (stage_bgw_number[g_state.bg_w.stage][i] > 0) {
-            Bg_On_R(1 << i);
+            bg_enable_render(1 << i);
         }
     }
 
     if (g_state.bg_w.stage == 7) {
-        Bg_On_R(4);
+        bg_enable_render(4);
     }
 
     key1 = Search_ramcnt_type(0x12);
@@ -252,7 +252,7 @@ void Bg_Texture_Load2(u8 type) {
 
     for (i = 0; i < g_state.bg_w.scno; i++) {
         scr_bcm[i] = bg_map_tbl2[type];
-        Bg_On_R(1 << i);
+        bg_enable_render(1 << i);
     }
 
     ppgSetupCurrentDataList(ppgBgList);

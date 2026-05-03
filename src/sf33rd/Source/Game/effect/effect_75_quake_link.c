@@ -22,7 +22,7 @@ void (*const EFF75_Jmp_Tbl[5])();
 void effect_75_move(State_Other* ewk) {
     EFF75_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag != 0) {
+    if (ewk->wu.active_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
         if (!rmlui_char_select_visible)
@@ -81,7 +81,7 @@ s32 effect_75_init(s16 dir_old, s16 arg_ID, s16 Target_BG) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 75;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x90;
@@ -90,8 +90,8 @@ s32 effect_75_init(s16 dir_old, s16 arg_ID, s16 Target_BG) {
     ewk->wu.char_index = 19;
     ewk->wu.dir_step = arg_ID;
     ewk->wu.dir_old = dir_old;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }
 

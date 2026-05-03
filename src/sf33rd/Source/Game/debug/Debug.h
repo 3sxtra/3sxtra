@@ -47,7 +47,7 @@ void Check_Check_Screen();
 void Check_Pos_OBJ(State_Other* ewk);
 void Check_Pos_OBJ2(State_Other* ewk);
 void Disp_Rec_Time(s16 PL_id, u32 time);
-void Disp_Mode(PLW* wk);
+void Disp_Mode(PlayerEntity* wk);
 void Disp_Free_work();
 void Disp_Random();
 

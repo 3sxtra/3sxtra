@@ -11,15 +11,15 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void EFF64_WAIT(WORK_Other_CONN* ewk);
-static void EFF64_SLIDE_IN(WORK_Other_CONN* ewk);
-static void EFF64_CHAR_CHANGE(WORK_Other_CONN* /* unused */);
-static void EFF64_SUDDENLY(WORK_Other_CONN* /* unused */);
-static void Disp_64_Sub(WORK_Other_CONN* ewk);
-static void Setup_Letter_64(WORK_Other_CONN* ewk, s16 disp_index);
+static void EFF64_WAIT(EffectMultiSprite* ewk);
+static void EFF64_SLIDE_IN(EffectMultiSprite* ewk);
+static void EFF64_CHAR_CHANGE(EffectMultiSprite* /* unused */);
+static void EFF64_SUDDENLY(EffectMultiSprite* /* unused */);
+static void Disp_64_Sub(EffectMultiSprite* ewk);
+static void Setup_Letter_64(EffectMultiSprite* ewk, s16 disp_index);
 
 const s8* Letter_Data_64[16][16] = {
     { "\"OFF\"", "\"/ON/\"", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL },
@@ -72,7 +72,7 @@ const s8* Letter_Data_64[16][16] = {
 
 void (*const EFF64_Jmp_Tbl[4])() = { EFF64_WAIT, EFF64_SLIDE_IN, EFF64_CHAR_CHANGE, EFF64_SUDDENLY };
 
-void effect_64_move(WORK_Other_CONN* ewk) {
+void effect_64_move(EffectMultiSprite* ewk) {
     if (Check_Die_61((State_Other*)ewk)) {
         Release_Effect(&ewk->wu);
         return;
@@ -80,7 +80,7 @@ void effect_64_move(WORK_Other_CONN* ewk) {
 
     EFF64_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag == 0) {
+    if (ewk->wu.active_flag == 0) {
         return;
     }
 
@@ -96,7 +96,7 @@ void effect_64_move(WORK_Other_CONN* ewk) {
     sort_push_request3(&ewk->wu);
 }
 
-static void EFF64_WAIT(WORK_Other_CONN* ewk) {
+static void EFF64_WAIT(EffectMultiSprite* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
@@ -104,7 +104,7 @@ static void EFF64_WAIT(WORK_Other_CONN* ewk) {
     Disp_64_Sub(ewk);
 }
 
-static void EFF64_SLIDE_IN(WORK_Other_CONN* ewk) {
+static void EFF64_SLIDE_IN(EffectMultiSprite* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -148,21 +148,21 @@ static void EFF64_SLIDE_IN(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF64_CHAR_CHANGE(WORK_Other_CONN* /* unused */) {}
+void EFF64_CHAR_CHANGE(EffectMultiSprite* /* unused */) {}
 
-void EFF64_SUDDENLY(WORK_Other_CONN* /* unused */) {}
+void EFF64_SUDDENLY(EffectMultiSprite* /* unused */) {}
 
 s32 effect_64_init(u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, s16 cursor_index, u16 char_offset,
                    s16 pos_index, s16 convert_id, s16 convert_id2) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 64;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = sync_bg + 1;
@@ -175,17 +175,17 @@ s32 effect_64_init(u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, 
     ewk->wu.old_cgnum = char_offset;
     ewk->master_priority = convert_id;
     ewk->wu.cg_type = convert_id2;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     Disp_64_Sub(ewk);
     return 0;
 }
 
-static void Disp_64_Sub(WORK_Other_CONN* ewk) {
+static void Disp_64_Sub(EffectMultiSprite* ewk) {
     Setup_Letter_64(ewk, g_state.Convert_Buff[ewk->master_priority][ewk->wu.cg_type][ewk->wu.type]);
 }
 
-static void Setup_Letter_64(WORK_Other_CONN* ewk, s16 disp_index) {
+static void Setup_Letter_64(EffectMultiSprite* ewk, s16 disp_index) {
     s16 x;
     s16 ix;
     s16 offset_x;

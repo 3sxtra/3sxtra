@@ -1,5 +1,5 @@
-#ifndef CSE_DATA_H
-#define CSE_DATA_H
+#ifndef CSOUND_EFFECT_DATA_H
+#define CSOUND_EFFECT_DATA_H
 
 #include "structs.h"
 #include "types.h"

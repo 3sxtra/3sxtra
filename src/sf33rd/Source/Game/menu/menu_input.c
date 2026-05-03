@@ -48,9 +48,9 @@
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
-#include "sf33rd/Source/Game/io/vm_sub.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
+#include "sf33rd/Source/Game/io/rumble.h"
+#include "sf33rd/Source/Game/io/save_file_ops.h"
 #include "sf33rd/Source/Game/menu/dir_data.h"
 #include "sf33rd/Source/Game/menu/ex_data.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
@@ -59,7 +59,7 @@
 #include "sf33rd/Source/Game/rendering/memory_texture_control.h"
 #include "sf33rd/Source/Game/rendering/texture_group.h"
 #include "sf33rd/Source/Game/screen/entry.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
@@ -742,11 +742,11 @@ void Button_Config_Sub(s16 PL_id) {
     MC_Move_Sub(sw, PL_id, BUTTON_CONFIG_MAX, 0xFF);
     Button_Move_Sub_LR(sw, PL_id);
 
-    if (ppwork[0].ok_dev == 0) {
+    if (rumble_work[0].ok_dev == 0) {
         g_state.Convert_Buff[1][0][8] = 0;
     }
 
-    if (ppwork[1].ok_dev == 0) {
+    if (rumble_work[1].ok_dev == 0) {
         g_state.Convert_Buff[1][1][8] = 0;
     }
 }

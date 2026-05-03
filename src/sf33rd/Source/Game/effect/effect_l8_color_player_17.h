@@ -5,7 +5,7 @@
 #include "types.h"
 
 void effect_L8_move(State_Other* ewk);
-s32 effect_L8_init(PLW* wk);
+s32 effect_L8_init(PlayerEntity* wk);
 void check_new_color_data_L8(State* wk);
 void get_new_color_data_L8(State* /* unused */, s16* trom, s16* tram);
 void save_old_color_data(s16* wram, s16* tram);

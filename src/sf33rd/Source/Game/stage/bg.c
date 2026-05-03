@@ -21,7 +21,7 @@
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/rendering/rendering_transform.h"
@@ -57,7 +57,7 @@ static void bgAkebonoDraw();
 static void ppgCalScrPosition(s32 x, s32 y, s32 xs, s32 ys);
 
 /** @brief Transfer (render) a background screen layer to the display. */
-void scr_trans(u8 bgnm) {
+void screen_transform(u8 bgnm) {
     PPGDataList* curDataList;
     Vec3 point[2];
     s32 xx[2];
@@ -175,7 +175,7 @@ void scr_trans(u8 bgnm) {
             }
         }
 
-        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
+        if (g_state.execute_flag != 0 || g_state.Game_pause != 0) {
             return;
         }
 
@@ -276,7 +276,7 @@ void scr_trans(u8 bgnm) {
             }
         }
 
-        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
+        if (g_state.execute_flag != 0 || g_state.Game_pause != 0) {
             return;
         }
 
@@ -332,7 +332,7 @@ void scr_trans(u8 bgnm) {
             }
         }
 
-        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
+        if (g_state.execute_flag != 0 || g_state.Game_pause != 0) {
             return;
         }
 
@@ -515,7 +515,7 @@ void scr_trans(u8 bgnm) {
     case 7:
         bgDrawOneScreen(bgnm, global_index, &xx[0], &yy[0], -1, palOffset, curDataList);
 
-        if (g_state.EXE_flag != 0) {
+        if (g_state.execute_flag != 0) {
             break;
         }
 
@@ -555,7 +555,7 @@ void scr_trans(u8 bgnm) {
     default:
         bgDrawOneScreen(bgnm, global_index, &xx[0], &yy[0], -1, palOffset, curDataList);
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0 && g_state.rw_bg_flag[bgnm] && g_state.rw_num) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0 && g_state.rw_bg_flag[bgnm] && g_state.rw_num) {
             bgRWWorkUpdate();
         }
 
@@ -900,7 +900,7 @@ void Family_Set_W(s8 fmnm, s16 x, s16 y) {
 }
 
 /** @brief Enable a background layer for reading. */
-void Bg_On_R(u16 s_prm) {
+void bg_enable_render(u16 s_prm) {
     g_state.Screen_Switch |= s_prm;
     g_state.Screen_Switch_Buffer = g_state.Screen_Switch;
 }

@@ -28,7 +28,7 @@
 #include "sf33rd/Source/Game/effect/effect_64_quake.h"       /* effect_64_init */
 #include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h"       /* effect_66_init */
 #include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
-#include "sf33rd/Source/Game/io/vm_sub.h"          /* Setup_File_Property */
+#include "sf33rd/Source/Game/io/save_file_ops.h"          /* Setup_File_Property */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Memory_Card_Sub, Button_Exit_Check, etc. */
 #include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */

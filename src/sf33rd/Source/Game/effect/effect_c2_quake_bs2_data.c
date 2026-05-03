@@ -17,8 +17,8 @@
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_main.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/pow_pow.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/damage_calculator.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -64,11 +64,11 @@ const s16 c2_last_bomb[4][4] = {
 };
 
 // forward declares
-static void effC2_main_process_first(State_Other* ewk, PLW* twk);
+static void effC2_main_process_first(State_Other* ewk, PlayerEntity* twk);
 static void effc2_parts_work_chain_check(s16 flag);
-static void effC2_main_process_second(State_Other* ewk, PLW* twk);
+static void effC2_main_process_second(State_Other* ewk, PlayerEntity* twk);
 static void c2_last_char_and_mvxy(State_Other* ewk);
-static s16 c2_last_dir_select(PLW* wk, State* efw);
+static s16 c2_last_dir_select(PlayerEntity* wk, State* efw);
 static void copy_rno(State* wk);
 static void set_c2_quake(State* wk);
 static void setup_prio_ix(State_Other* c2wk);
@@ -114,7 +114,7 @@ void effect_C2_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             ewk->wu.routine_no[1] = 10;
@@ -123,16 +123,16 @@ void effect_C2_move(State_Other* ewk) {
         }
 
         if (ewk->wu.dir_timer) {
-            effC2_main_process_second(ewk, (PLW*)ewk->wu.target_adrs);
+            effC2_main_process_second(ewk, (PlayerEntity*)ewk->wu.target_adrs);
         } else {
-            effC2_main_process_first(ewk, (PLW*)ewk->wu.target_adrs);
+            effC2_main_process_first(ewk, (PlayerEntity*)ewk->wu.target_adrs);
         }
 
         set_bs2_floor(ewk);
         break;
 
     case 2:
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             switch (ewk->wu.routine_no[1]) {
             case 0:
                 if (--ewk->wu.hit_stop > 0) {
@@ -147,7 +147,7 @@ void effect_C2_move(State_Other* ewk) {
                 ewk->wu.position_z = 25;
                 illegal_setup_effK2(&ewk->wu, 4);
                 c2_last_char_and_mvxy(ewk);
-                setup_demojump((PLW*)ewk->wu.target_adrs, 2);
+                setup_demojump((PlayerEntity*)ewk->wu.target_adrs, 2);
                 break;
 
             case 9:
@@ -218,8 +218,8 @@ void effect_C2_move(State_Other* ewk) {
     }
 }
 
-static void effC2_main_process_first(State_Other* ewk, PLW* twk) {
-    if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+static void effC2_main_process_first(State_Other* ewk, PlayerEntity* twk) {
+    if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
         switch (ewk->wu.direction + (twk->bs2_on_car * 2)) {
         case 0:
             if (ewk->wu.routine_no[1] != 1 && ewk->wu.routine_no[2] != 0) {
@@ -330,7 +330,7 @@ static void effC2_main_process_first(State_Other* ewk, PLW* twk) {
                 set_char_move_init(&ewk->wu,
                                    0,
                                    (twk->bs2_on_car * 6) +
-                                       ((ewk->wu.dm_rl == 0) + sel_dm_quake[ewk->wu.dm_attlv][ewk->wu.active_move]));
+                                       ((ewk->wu.damage_facing == 0) + sel_dm_quake[ewk->wu.damage_attack_level][ewk->wu.active_move]));
 
                 if (ewk->wu.shell_ix[0] < 0) {
                     ewk->wu.dir_old = 1;
@@ -439,8 +439,8 @@ jump:
     adr3->before = bf[2];
 }
 
-static void effC2_main_process_second(State_Other* ewk, PLW* twk) {
-    if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+static void effC2_main_process_second(State_Other* ewk, PlayerEntity* twk) {
+    if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
         switch (ewk->wu.routine_no[1]) {
         case 0:
             switch (ewk->wu.routine_no[2]) {
@@ -578,17 +578,17 @@ static void effC2_main_process_second(State_Other* ewk, PLW* twk) {
 }
 
 static void c2_last_char_and_mvxy(State_Other* ewk) {
-    s16 ix = c2_last_dir_select((PLW*)ewk->wu.target_adrs, &ewk->wu);
+    s16 ix = c2_last_dir_select((PlayerEntity*)ewk->wu.target_adrs, &ewk->wu);
 
-    set_char_move_init(&ewk->wu, 0, ewk->wu.dm_attlv + 92 + ix);
-    setup_move_data_easy(&ewk->wu, c2_last_bomb[ewk->wu.dm_attlv], 1, 0);
+    set_char_move_init(&ewk->wu, 0, ewk->wu.damage_attack_level + 92 + ix);
+    setup_move_data_easy(&ewk->wu, c2_last_bomb[ewk->wu.damage_attack_level], 1, 0);
 
     if (ix) {
         ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
     }
 }
 
-static s16 c2_last_dir_select(PLW* wk, State* efw) {
+static s16 c2_last_dir_select(PlayerEntity* wk, State* efw) {
     s16 ix = get_sel_adjust_tbl_ix(wk->player_number) + 1;
     s16* dad = efw->adjust_adrs[ix].hos_box;
 
@@ -601,7 +601,7 @@ static s16 c2_last_dir_select(PLW* wk, State* efw) {
     return ix;
 }
 
-void setup_demojump(PLW* twk, s16 ix) {
+void setup_demojump(PlayerEntity* twk, s16 ix) {
     switch (ix) {
     case 0:
         if (twk->wu.xyz[1].disp.pos > 3) {
@@ -689,7 +689,7 @@ static void set_c2_quake(State* wk) {
         wk->next_x *= 2;
     }
 
-    if (wk->dm_rl) {
+    if (wk->damage_facing) {
         wk->next_x = -wk->next_x;
     }
 }
@@ -714,8 +714,8 @@ void get_bs2_parts_data(State* wk) {
 }
 
 static void setup_prio_ix(State_Other* c2wk) {
-    PLW* mwk = (PLW*)c2wk->my_master;
-    PLW* twk = (PLW*)mwk->wu.target_adrs;
+    PlayerEntity* mwk = (PlayerEntity*)c2wk->my_master;
+    PlayerEntity* twk = (PlayerEntity*)mwk->wu.target_adrs;
 
     c2wk->wu.vital_new = 0;
 
@@ -758,9 +758,9 @@ void c3_new_damage(State* wk) {
     c2wk = (State*)wk->my_effadrs;
     c2wk->routine_no[1] = 1;
     c2wk->routine_no[2] = 0;
-    c2wk->dm_attlv = wk->dm_attlv;
-    c2wk->dm_rl = wk->dm_rl;
-    c2wk->dm_dir = wk->dm_dir;
+    c2wk->damage_attack_level = wk->damage_attack_level;
+    c2wk->damage_facing = wk->damage_facing;
+    c2wk->damage_direction = wk->damage_direction;
     c2wk->damage_hit_stop = wk->damage_hit_stop;
     c2wk->active_move = wk->type;
 
@@ -793,8 +793,8 @@ s16 bs2_sync_bomb(State* wk) {
 }
 
 void bs2_get_parts_break(State* wk) {
-    wk->scr_mv_x = ((State*)wk->my_effadrs)->cg_number;
-    wk->scr_mv_y = ((State*)wk->my_effadrs)->script_register_bank[wk->type];
+    wk->screen_move_x = ((State*)wk->my_effadrs)->cg_number;
+    wk->screen_move_y = ((State*)wk->my_effadrs)->script_register_bank[wk->type];
 }
 
 static void setup_parts_break(State* wk) {
@@ -840,7 +840,7 @@ s32 check_parts_break_level(State* wk) {
 
     if ((wk->id != 0x7A || c2wk->dir_timer != 0) && wk->vital_old < c2wk->script_register_bank[wk->type]) {
         for (i = wk->vital_old; i < c2wk->script_register_bank[wk->type]; i++) {
-            Additinal_Score_DM((State_Other*)wk->target_adrs, pbs_table[wk->type][i]);
+            additional_score_damage((State_Other*)wk->target_adrs, pbs_table[wk->type][i]);
         }
     }
 
@@ -852,7 +852,7 @@ static void bs2_score_add_next(State* wk) {
     s16 i;
 
     for (i = 1; i < 8; i++) {
-        Additinal_Score_DM((State_Other*)wk->target_adrs, pbs_table[i][wk->script_register_bank[i]]);
+        additional_score_damage((State_Other*)wk->target_adrs, pbs_table[i][wk->script_register_bank[i]]);
     }
 }
 
@@ -901,13 +901,13 @@ s32 effect_C2_init(State* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0x7A;
     ewk->wu.type = data;
-    ewk->wu.my_mts = 5;
+    ewk->wu.my_sprite_sheet = 5;
     ewk->my_master = wk;
     ewk->wu.target_adrs = wk->target_adrs;
-    ewk->master_player = ((PLW*)wk)->player_number;
+    ewk->master_player = ((PlayerEntity*)wk)->player_number;
     ewk->master_id = wk->id;
     ewk->master_work_id = wk->work_id;
     wk->my_effadrs = ewk;

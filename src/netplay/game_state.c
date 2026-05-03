@@ -30,7 +30,7 @@
 #include "sf33rd/Source/Game/effect/effect_b8_quake.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/super_gauge.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/select_timer.h"
@@ -114,7 +114,7 @@ typedef struct {
 } SectionedChecksum;
 
 static SectionedChecksum saved_section_checksums[STATE_BUFFER_MAX];
-static PLW saved_plw_scratch[STATE_BUFFER_MAX][2];
+static PlayerEntity saved_plw_scratch[STATE_BUFFER_MAX][2];
 
 #endif
 
@@ -192,8 +192,8 @@ static void sanitize_work_rendering(State* w) {
     w->extra_col_2 &= ~0x2000;
 }
 
-/// Zero all pointer fields and mask rendering bits in a PLW struct.
-static void sanitize_plw_pointers(PLW* p) {
+/// Zero all pointer fields and mask rendering bits in a PlayerEntity struct.
+static void sanitize_plw_pointers(PlayerEntity* p) {
     sanitize_work_pointers(&p->wu);
     sanitize_work_rendering(&p->wu);
     p->cp = NULL;
@@ -223,10 +223,10 @@ static RollbackState* note_state(const RollbackState* state, int frame) {
  * @netplay_sync
  * Called by GekkoNet on every frame to save the current state. Computes a
  * focused gameplay checksum for desync detection in both Debug and Release.
- * In DEBUG builds, additionally saves per-subsystem checksums and PLW copies
+ * In DEBUG builds, additionally saves per-subsystem checksums and PlayerEntity copies
  * for binary comparison when a desync is detected.
  *
- * The checksum only covers a whitelist of gameplay-critical fields (PLW after
+ * The checksum only covers a whitelist of gameplay-critical fields (PlayerEntity after
  * pointer/rendering sanitization, RNG indices, round state, combat flags,
  * slow-motion flags, super gauge, stun). UI-only fields are saved but not
  * checksummed to reduce false positives from rendering-only divergence.
@@ -252,12 +252,12 @@ uint32_t save_current_state(void* buffer, int frame) {
 #endif
 
     // Sanitize non-functional data in dst (safe for rollback restore):
-    // inactive effect slots, padding arrays, WORK_Other_CONN unused tails.
+    // inactive effect slots, padding arrays, EffectMultiSprite unused tails.
     {
         EffectState* es = &dst->es;
         for (int i = 0; i < EFFECT_MAX; i++) {
             State* w = (State*)es->frw[i];
-            if (w->be_flag == 0) {
+            if (w->active_flag == 0) {
                 s16 before = w->before;
                 s16 behind = w->behind;
                 s16 myself = w->myself;
@@ -266,7 +266,7 @@ uint32_t save_current_state(void* buffer, int frame) {
                 w->behind = behind;
                 w->myself = myself;
             } else {
-                SDL_zeroa(w->wrd_free);
+                SDL_zeroa(w->reserved_bytes);
                 State_Other* wo = (State_Other*)w;
                 SDL_zeroa(wo->et_free);
             }
@@ -280,14 +280,14 @@ uint32_t save_current_state(void* buffer, int frame) {
         // === Focused gameplay checksum ===
         // Instead of checksumming the full 478KB State and sanitizing ~50 fields,
         // we checksum ONLY gameplay-critical data:
-        //   PLW[2]: copied and sanitized (pointers, rendering, linked-list zeroed)
+        //   PlayerEntity[2]: copied and sanitized (pointers, rendering, linked-list zeroed)
         //   Globals: explicit whitelist of deterministic fields
         //   Effects, BG, tasks, zanzou: excluded entirely
 
-        // --- Sanitized PLW copies ---
-        static PLW plw_scratch[2];
+        // --- Sanitized PlayerEntity copies ---
+        static PlayerEntity plw_scratch[2];
         for (int p = 0; p < 2; p++) {
-            SDL_memcpy(&plw_scratch[p], &dst->gs.plw[p], sizeof(PLW));
+            SDL_memcpy(&plw_scratch[p], &dst->gs.plw[p], sizeof(PlayerEntity));
             sanitize_plw_pointers(&plw_scratch[p]);
             sanitize_work_rendering(&plw_scratch[p].wu);
 
@@ -298,7 +298,7 @@ uint32_t save_current_state(void* buffer, int frame) {
             plw_scratch[p].wu.listix = 0;
             plw_scratch[p].wu.timing = 0;
 
-            // Sweep remaining pointer-like values in PLW.
+            // Sweep remaining pointer-like values in PlayerEntity.
             // Use fixed uint64_t stride so both 32-bit and 64-bit platforms
             // scan the same bytes and produce identical checksums.
             //
@@ -312,7 +312,7 @@ uint32_t save_current_state(void* buffer, int frame) {
             //   since sanitize_plw_pointers() already zeroed known pointers.
 #if UINTPTR_MAX > 0xFFFFFFFFULL
             uint64_t* words = (uint64_t*)&plw_scratch[p];
-            const size_t count = sizeof(PLW) / sizeof(uint64_t);
+            const size_t count = sizeof(PlayerEntity) / sizeof(uint64_t);
             for (size_t i = 0; i < count; i++) {
                 uint64_t v = words[i];
                 // Portable userspace pointer check: above 4GB (rules out
@@ -325,13 +325,13 @@ uint32_t save_current_state(void* buffer, int frame) {
 #endif
         }
 
-        // --- Build combined hash from PLW + whitelisted globals ---
+        // --- Build combined hash from PlayerEntity + whitelisted globals ---
         const GameState* gs = &dst->gs;
         uint32_t h = djb2_init();
 
-        // PLW (sanitized)
-        h = djb2_update_mem(h, (const uint8_t*)&plw_scratch[0], sizeof(PLW));
-        h = djb2_update_mem(h, (const uint8_t*)&plw_scratch[1], sizeof(PLW));
+        // PlayerEntity (sanitized)
+        h = djb2_update_mem(h, (const uint8_t*)&plw_scratch[0], sizeof(PlayerEntity));
+        h = djb2_update_mem(h, (const uint8_t*)&plw_scratch[1], sizeof(PlayerEntity));
 
         // RNG indices
         h = djb2_update_mem(h, (const uint8_t*)&gs->Random_ix16, sizeof(gs->Random_ix16));
@@ -371,9 +371,9 @@ uint32_t save_current_state(void* buffer, int frame) {
         h = djb2_update_mem(h, (const uint8_t*)&gs->VS_Stage, sizeof(gs->VS_Stage));
 
         // Slow motion
-        h = djb2_update_mem(h, (const uint8_t*)&gs->SLOW_timer, sizeof(gs->SLOW_timer));
-        h = djb2_update_mem(h, (const uint8_t*)&gs->SLOW_flag, sizeof(gs->SLOW_flag));
-        h = djb2_update_mem(h, (const uint8_t*)&gs->EXE_flag, sizeof(gs->EXE_flag));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->slowmo_timer, sizeof(gs->slowmo_timer));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->slowmo_flag, sizeof(gs->slowmo_flag));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->execute_flag, sizeof(gs->execute_flag));
 
         // Super gauge / stun
         h = djb2_update_mem(h, (const uint8_t*)&gs->super_arts, sizeof(gs->super_arts));
@@ -385,10 +385,10 @@ uint32_t save_current_state(void* buffer, int frame) {
         SectionedChecksum sc;
         uint32_t sh;
         sh = djb2_init();
-        sh = djb2_update_mem(sh, (const uint8_t*)&plw_scratch[0], sizeof(PLW));
+        sh = djb2_update_mem(sh, (const uint8_t*)&plw_scratch[0], sizeof(PlayerEntity));
         sc.plw0 = sh;
         sh = djb2_init();
-        sh = djb2_update_mem(sh, (const uint8_t*)&plw_scratch[1], sizeof(PLW));
+        sh = djb2_update_mem(sh, (const uint8_t*)&plw_scratch[1], sizeof(PlayerEntity));
         sc.plw1 = sh;
         sc.bg = 0;
         sc.tasks = 0;
@@ -396,8 +396,8 @@ uint32_t save_current_state(void* buffer, int frame) {
         sc.combined = h;
         sc.globals = h ^ sc.plw0 ^ sc.plw1;
         saved_section_checksums[frame % STATE_BUFFER_MAX] = sc;
-        SDL_memcpy(&saved_plw_scratch[frame % STATE_BUFFER_MAX][0], &plw_scratch[0], sizeof(PLW));
-        SDL_memcpy(&saved_plw_scratch[frame % STATE_BUFFER_MAX][1], &plw_scratch[1], sizeof(PLW));
+        SDL_memcpy(&saved_plw_scratch[frame % STATE_BUFFER_MAX][0], &plw_scratch[0], sizeof(PlayerEntity));
+        SDL_memcpy(&saved_plw_scratch[frame % STATE_BUFFER_MAX][1], &plw_scratch[1], sizeof(PlayerEntity));
 #endif
         return h;
     }
@@ -417,7 +417,7 @@ void save_state(const GekkoGameEvent* event) {
  * Called from the GekkoDesyncDetected handler in netplay.c. Writes:
  *  1. states/desync_F<frame>.txt — per-section checksums for the desync frame
  *     and a window of surrounding frames from the ring buffer.
- *  2. states/desync_F<frame>_plw0.bin / _plw1.bin — raw sanitized PLW snapshots
+ *  2. states/desync_F<frame>_plw0.bin / _plw1.bin — raw sanitized PlayerEntity snapshots
  *     for binary comparison with xxd (or a hex diff tool).
  *  3. states/desync_F<frame>_state.bin — full State snapshot for the frame.
  *
@@ -437,7 +437,7 @@ void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_check
         fprintf(f, "Local checksum:  0x%08x\n", local_checksum);
         fprintf(f, "Remote checksum: 0x%08x\n", remote_checksum);
         fprintf(f, "STATE_BUFFER_MAX: %d\n", STATE_BUFFER_MAX);
-        fprintf(f, "sizeof(PLW): %zu  sizeof(RollbackState): %zu\n\n", sizeof(PLW), sizeof(RollbackState));
+        fprintf(f, "sizeof(PlayerEntity): %zu  sizeof(RollbackState): %zu\n\n", sizeof(PlayerEntity), sizeof(RollbackState));
 
         fprintf(f, "--- Per-section checksums (ring buffer) ---\n");
         fprintf(f,
@@ -478,14 +478,14 @@ void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_check
         SDL_Log("[desync] ERROR: Could not open %s for writing", path);
     }
 
-    // --- 2. Binary PLW dumps for xxd diffing ---
+    // --- 2. Binary PlayerEntity dumps for xxd diffing ---
     for (int p = 0; p < 2; p++) {
         SDL_snprintf(path, sizeof(path), "states/desync_F%d_plw%d.bin", frame, p);
         f = fopen(path, "wb");
         if (f) {
-            fwrite(&saved_plw_scratch[slot][p], sizeof(PLW), 1, f);
+            fwrite(&saved_plw_scratch[slot][p], sizeof(PlayerEntity), 1, f);
             fclose(f);
-            SDL_Log("[desync] Wrote PLW[%d] snapshot (%zu bytes) to %s", p, sizeof(PLW), path);
+            SDL_Log("[desync] Wrote PlayerEntity[%d] snapshot (%zu bytes) to %s", p, sizeof(PlayerEntity), path);
         }
     }
 

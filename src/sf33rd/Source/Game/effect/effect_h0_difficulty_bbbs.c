@@ -11,12 +11,12 @@
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-const CONN bbbs_nando_small[2][2] = { { { 176, -16, 0, 32490 }, { 132, -16, 0, 32489 } },
+const SpriteConnection bbbs_nando_small[2][2] = { { { 176, -16, 0, 32490 }, { 132, -16, 0, 32489 } },
                                       { { -104, -16, 0, 32490 }, { -148, -16, 0, 32489 } } };
 
 static void effH0_trans(State* ewk);
 
-void effect_H0_move(WORK_Other_CONN* ewk) {
+void effect_H0_move(EffectMultiSprite* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         switch (ewk->wu.routine_no[1]) {
@@ -42,7 +42,7 @@ void effect_H0_move(WORK_Other_CONN* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -69,26 +69,26 @@ static void effH0_trans(State* ewk) {
 }
 
 s32 effect_H0_init(State* wk) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 170;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.my_family = 3;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.type = wk->rl_flag;
+    ewk->wu.type = wk->facing_flag;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_col_code = 73;
     ewk->num_of_conn = 2;
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         ix = 1;
     } else {
         ix = 0;

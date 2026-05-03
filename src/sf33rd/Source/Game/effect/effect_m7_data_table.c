@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -21,7 +21,7 @@ static void effm7_move(State_Other* ewk);
 void effect_M7_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             effm7_move(ewk);
         }
 
@@ -43,9 +43,9 @@ static void effm7_move(State_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
         id_w = ewk->master_id ^ 1;
-        ewk->wu.rl_flag ^= g_state.plw[id_w].wu.rl_flag;
+        ewk->wu.facing_flag ^= g_state.plw[id_w].wu.facing_flag;
 
-        if (g_state.plw[id_w].wu.rl_flag) {
+        if (g_state.plw[id_w].wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos = g_state.plw[id_w].wu.xyz[0].disp.pos - ewk->wu.xyz[0].disp.pos;
         } else {
             ewk->wu.xyz[0].disp.pos = g_state.plw[id_w].wu.xyz[0].disp.pos + ewk->wu.xyz[0].disp.pos;
@@ -101,7 +101,7 @@ static void effm7_move(State_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.mvxy.d[0].sp = 0;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.mvxy.a[0].sp = 0x80000;
         } else {
             ewk->wu.mvxy.a[0].sp = -0x80000;
@@ -130,7 +130,7 @@ const s16 effm7_data_tbl[42] = {
     -64, 2,  1,  1, 17, 24, 96, -112, -8, -1, 1, 18, 8,  102, -224, 2,  1,  1, 17, 10, 106
 };
 
-s32 effect_M7_init(PLW* oya) {
+s32 effect_M7_init(PlayerEntity* oya) {
     State_Other* ewk;
     s16 ix;
     s16 i;
@@ -143,7 +143,7 @@ s32 effect_M7_init(PLW* oya) {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 227;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
@@ -159,7 +159,7 @@ s32 effect_M7_init(PLW* oya) {
         ewk->wu.position_z = g_state.plw[em_id].wu.my_priority;
         ewk->wu.position_z += *(s16*)data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z;
-        ewk->wu.rl_flag = *data_ptr++;
+        ewk->wu.facing_flag = *data_ptr++;
         ewk->wu.shadow_char = *data_ptr++;
         ewk->wu.old_routine_no[0] = *data_ptr++;
         ewk->wu.old_routine_no[1] = *data_ptr++;
@@ -170,8 +170,8 @@ s32 effect_M7_init(PLW* oya) {
         ewk->wu.shadow_x = 6;
         ewk->wu.shadow_y = 0;
         ewk->wu.shadow_prio = ewk->wu.position_z + 5;
-        ewk->wu.my_mts = oya->wu.my_mts;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = oya->wu.my_sprite_sheet;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     }
 
     return 0;

@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 void (*const EFF98_Jmp_Tbl[5])();
@@ -135,15 +135,15 @@ s32 effect_98_init(s16 PL_id, s16 dir_old, s16 master_player, s16 Target_BG) {
 
     ewk = (State_Other*)frw[ix];
     ewk->master_player = master_player;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 98;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
     ewk->wu.my_family = Target_BG + 1;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->master_id = PL_id;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.dir_old = dir_old;
     ewk->wu.char_index = 14;
     ewk->wu.dir_step = 30;

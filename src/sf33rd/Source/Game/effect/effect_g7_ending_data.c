@@ -54,7 +54,7 @@ s32 effect_G7_init(s32 /* unused */, s32 /* unused */) {
 
     ewk = (State_Other*)frw[ix];
     ewk->wu.id = 167;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.old_routine_no[0] = g_state.end_w.r_no_2;
@@ -65,7 +65,7 @@ s32 effect_G7_init(s32 /* unused */, s32 /* unused */) {
     ewk->wu.xyz[0].disp.pos = 688;
     ewk->wu.xyz[1].disp.pos = 0;
     ewk->wu.my_priority = ewk->wu.position_z = 74;
-    ewk->wu.my_mts = 8;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 8;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

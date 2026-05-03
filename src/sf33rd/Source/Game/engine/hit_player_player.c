@@ -7,12 +7,12 @@
 #include "common.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 
 /** @brief Resolves player-vs-player hit collision and applies damage/guard. */
 void player_at_vs_player_dm(s16 ix2, s16 ix) {
-    PLW* as = (PLW*)q_hit_push[ix2];
-    PLW* ds = (PLW*)q_hit_push[ix];
+    PlayerEntity* as = (PlayerEntity*)q_hit_push[ix2];
+    PlayerEntity* ds = (PlayerEntity*)q_hit_push[ix];
     s8 gddir;
 
     while (1) {
@@ -85,10 +85,10 @@ void player_at_vs_player_dm(s16 ix2, s16 ix) {
     }
 
     pp_pulpara_hit(&as->wu);
-    ds->dm_point = hs[ix].dm_body;
+    ds->damage_point = hs[ix].dm_body;
     gddir = get_guard_direction(&as->wu, &ds->wu);
     setup_latest_stick_dir(ds, gddir);
-    setup_dm_rl(&as->wu, &ds->wu);
+    setup_damage_facing(&as->wu, &ds->wu);
     cal_hit_mark_pos(&as->wu, &ds->wu, ix2, ix);
     set_damage_and_piyo(as, ds);
     plef_at_vs_player_damage_union(as, ds, gddir);

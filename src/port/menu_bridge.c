@@ -28,8 +28,8 @@
 #endif
 
 #include "game_state.h" // Includes headers for all the globals (state_user.h etc)
-#include "sf33rd/Source/Game/engine/slowf.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/system/system_subroutines.h"
 #include "sf33rd/Source/Game/system/work_sys.h"

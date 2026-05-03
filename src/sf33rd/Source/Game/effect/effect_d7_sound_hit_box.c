@@ -16,16 +16,16 @@
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
 static void effD7_main_process(State_Other* ewk);
-static void cal_speeds_to_me(State_Other* ewk, PLW* mwk);
-static void cal_speeds_to_em(State_Other* ewk, PLW* twk);
-static s32 my_ball_live_check(PLW* wk);
+static void cal_speeds_to_me(State_Other* ewk, PlayerEntity* mwk);
+static void cal_speeds_to_em(State_Other* ewk, PlayerEntity* twk);
+static s32 my_ball_live_check(PlayerEntity* wk);
 
 const s16 effD7_hit_box[2][4] = { { -9, 17, -6, 12 }, { -4, 10, 114, 9 } };
 
@@ -37,7 +37,7 @@ void effect_D7_move(State_Other* ewk) {
         set_char_base_data(&ewk->wu);
         ewk->wu.my_col_code = ewk->wu.damage_vitality;
         *ewk->wu.char_table = _plef_char_table;
-        ball_init_position_effD7(ewk, (PLW*)ewk->my_master);
+        ball_init_position_effD7(ewk, (PlayerEntity*)ewk->my_master);
         ewk->wu.type = 1;
         ewk->wu.disp_flag = 1;
         ewk->wu.blink_timing = ewk->master_id;
@@ -47,12 +47,12 @@ void effect_D7_move(State_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 0;
-        cal_speeds_to_me(ewk, (PLW*)ewk->my_master);
+        cal_speeds_to_me(ewk, (PlayerEntity*)ewk->my_master);
         set_char_move_init(&ewk->wu, 0, 0x75);
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -64,7 +64,7 @@ void effect_D7_move(State_Other* ewk) {
                 ewk->wu.hit_stop = -ewk->wu.hit_stop;
             }
 
-            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+            if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
                 effD7_main_process(ewk);
             }
 
@@ -90,7 +90,7 @@ void effect_D7_move(State_Other* ewk) {
 }
 
 static void effD7_main_process(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
         ewk->wu.routine_no[1] = 1;
@@ -153,7 +153,7 @@ static void effD7_main_process(State_Other* ewk) {
             }
 
             if (ewk->wu.shadow_flag && mwk->wu.routine_no[1] == 4 && mwk->wu.routine_no[2] == 30 &&
-                mwk->wu.cg_type == 0x28 && mwk->tk_success == ewk->wu.shell_ix[0] &&
+                mwk->wu.cg_type == 0x28 && mwk->target_combo_success == ewk->wu.shell_ix[0] &&
                 hit_check_subroutine(&ewk->wu, (State*)ewk->my_master, effD7_hit_box[0], effD7_hit_box[1])) {
                 mwk->wu.script_register_bank[7] = 1;
                 ewk->wu.type = 0;
@@ -178,7 +178,7 @@ static void effD7_main_process(State_Other* ewk) {
             } else if (mwk->wu.script_register_bank[6]) {
                 ewk->wu.routine_no[2] = 0;
 
-                if (mwk->wu.rl_flag) {
+                if (mwk->wu.facing_flag) {
                     ewk->wu.xyz[0].disp.pos = mwk->wu.xyz[0].disp.pos + 10;
                 } else {
                     ewk->wu.xyz[0].disp.pos = mwk->wu.xyz[0].disp.pos - 10;
@@ -188,7 +188,7 @@ static void effD7_main_process(State_Other* ewk) {
                 ewk->wu.disp_flag = 1;
                 ewk->wu.type = 1;
                 set_char_move_init(&ewk->wu, 0, 0x76);
-                cal_speeds_to_em(ewk, (PLW*)ewk->wu.target_adrs);
+                cal_speeds_to_em(ewk, (PlayerEntity*)ewk->wu.target_adrs);
                 add_mvxy_speed(&ewk->wu);
                 cal_mvxy_speed(&ewk->wu);
             }
@@ -209,14 +209,14 @@ static void effD7_main_process(State_Other* ewk) {
                     ewk->wu.mvxy.a[1].sp = 0x10000;
                     ewk->wu.mvxy.d[1].sp = -0x6000;
                 } else {
-                    ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+                    ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
                     ewk->wu.mvxy.a[0].sp /= 2;
                     ewk->wu.mvxy.a[1].sp = 0;
                     ewk->wu.mvxy.d[1].sp = -0x6000;
                 }
             } else if (ewk->wu.hf.hit.player & 0xC0) {
                 ewk->wu.routine_no[1] = 0;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
                 ewk->wu.mvxy.a[0].sp = 0x30000;
                 ewk->wu.mvxy.a[1].sp = 0x44000;
                 ewk->wu.mvxy.d[1].sp = -0x5000;
@@ -225,7 +225,7 @@ static void effD7_main_process(State_Other* ewk) {
         } else if (ewk->wu.hf.hit.effect && ((State*)ewk->wu.hit_adrs)->id == 0x89) {
             Se_Dispatch(0x157, 0x157, ewk);
             ewk->wu.routine_no[1] = 0;
-            ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+            ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
             ewk->wu.mvxy.a[0].sp = (ewk->wu.mvxy.a[0].sp * 3) / 4;
             ewk->wu.hit_stop = 2;
         } else {
@@ -234,7 +234,7 @@ static void effD7_main_process(State_Other* ewk) {
             }
 
             ewk->wu.routine_no[1] = 2;
-            ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+            ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
             ewk->wu.disp_flag = 2;
             ewk->wu.type = 0;
             ewk->wu.shadow_flag = 0;
@@ -259,18 +259,18 @@ static void effD7_main_process(State_Other* ewk) {
     }
 }
 
-static void cal_speeds_to_me(State_Other* ewk, PLW* mwk) {
+static void cal_speeds_to_me(State_Other* ewk, PlayerEntity* mwk) {
     s16 tx = mwk->wu.xyz[0].disp.pos;
     s16 ty = mwk->wu.xyz[1].disp.pos + 157;
 
     cal_speeds_effD7(ewk, 20, tx, ty, 6);
 }
 
-static void cal_speeds_to_em(State_Other* ewk, PLW* twk) {
+static void cal_speeds_to_em(State_Other* ewk, PlayerEntity* twk) {
     s16 tx = twk->wu.position_x;
     s16 ty;
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         if (ewk->wu.xyz[0].disp.pos > tx - 32) {
             tx = twk->wu.position_x + 32;
         }
@@ -290,19 +290,19 @@ void cal_speeds_effD7(State_Other* ewk, s16 tm, s16 tx, s16 ty, s16 ysp) {
     ewk->wu.mvxy.a[1].real.h = ysp;
     cal_delta_speed(&ewk->wu, tm, tx, ty, 0, 1);
 
-    if (ewk->wu.rl_flag == 0) {
+    if (ewk->wu.facing_flag == 0) {
         ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
         ewk->wu.mvxy.d[0].sp = -ewk->wu.mvxy.d[0].sp;
     }
 }
 
-void ball_init_position_effD7(State_Other* ewk, PLW* mwk) {
+void ball_init_position_effD7(State_Other* ewk, PlayerEntity* mwk) {
     s16 tx = get_center_position();
 
     if (mwk->wu.position_x - tx < 0) {
         ewk->wu.xyz[0].disp.pos = tx - 288;
     } else if (mwk->wu.position_x - tx == 0) {
-        if (mwk->wu.rl_flag) {
+        if (mwk->wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos = tx + 288;
         } else {
             ewk->wu.xyz[0].disp.pos = tx - 288;
@@ -338,7 +338,7 @@ u8 screen_range_check_effD7(State* wk) {
     return 0;
 }
 
-s32 effect_D7_init(PLW* wk) {
+s32 effect_D7_init(PlayerEntity* wk) {
     State_Other* ewk;
     s16 ix;
 
@@ -351,13 +351,13 @@ s32 effect_D7_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 137;
     ewk->wu.work_id = 2;
-    ewk->wu.rl_flag = wk->wu.rl_flag;
+    ewk->wu.facing_flag = wk->wu.facing_flag;
     ewk->wu.damage_vitality = wk->wu.my_col_code;
-    ewk->wu.my_mts = 14;
-    ewk->wu.shell_ix[0] = wk->tk_success;
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.shell_ix[0] = wk->target_combo_success;
     ewk->my_master = wk;
     ewk->wu.target_adrs = wk->wu.target_adrs;
     ewk->master_work_id = wk->wu.work_id;
@@ -366,7 +366,7 @@ s32 effect_D7_init(PLW* wk) {
     return 0;
 }
 
-static s32 my_ball_live_check(PLW* wk) {
+static s32 my_ball_live_check(PlayerEntity* wk) {
     State_Other* twk;
     s16 ix;
 

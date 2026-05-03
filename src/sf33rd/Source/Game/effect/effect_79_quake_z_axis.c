@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 static s32 Check_Play_Status_79(State_Other* ewk);
@@ -648,7 +648,7 @@ s32 effect_79_init(s16 pl_id, s16 plate_id, s16 pos_id, s16 time, s16 Target_BG)
     ewk->master_priority = pos_id;
     ewk->wu.hit_quake = pos_id;
     ewk->wu.damage_calc_multiplier = pos_id;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 79;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
@@ -658,8 +658,8 @@ s32 effect_79_init(s16 pl_id, s16 plate_id, s16 pos_id, s16 time, s16 Target_BG)
     ewk->master_id = pl_id;
     ewk->wu.char_index = 14;
     ewk->wu.dir_old = g_state.Play_Type;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     if (pos_id == 0) {
         ewk->wu.dir_step = 0;

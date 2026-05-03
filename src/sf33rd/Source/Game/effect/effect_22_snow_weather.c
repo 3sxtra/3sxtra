@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -87,7 +87,7 @@ void effect_22_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, 11);
         ewk->wu.disp_flag = 1;
         ewk->wu.old_routine_no[0] = 0;
@@ -107,7 +107,7 @@ void effect_22_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
 
@@ -137,7 +137,7 @@ s32 effect_22_init() {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 22;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
@@ -145,8 +145,8 @@ s32 effect_22_init() {
         ewk->wu.my_family = 2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = 300;
-        ewk->wu.my_mts = 7;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 7;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
         ewk->wu.char_table[0] = _rca_char_table;
         ewk->wu.my_priority = ewk->wu.position_z = 10;
     }

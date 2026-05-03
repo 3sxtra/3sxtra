@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -42,7 +42,7 @@ void effect_94_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
+        if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             eff94_move_jp[ewk->wu.routine_no[1]](ewk);
         }
 
@@ -238,7 +238,7 @@ void eff94_3000_0(State_Other* ewk) {
     work &= 3;
     ewk->wu.xyz[0].disp.pos = eff94_3000_tbl[work][0];
     ewk->wu.xyz[1].disp.pos = eff94_3000_tbl[work][1];
-    ewk->wu.rl_flag = eff94_3000_tbl[work][2];
+    ewk->wu.facing_flag = eff94_3000_tbl[work][2];
     ewk->wu.mvxy.a[1].sp = -0x68000;
     ewk->wu.mvxy.d[1].sp = -0x6000;
 }
@@ -288,13 +288,13 @@ s32 effect_94_init(u8 type94) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 94;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.type = type94;
-    ewk->wu.dead_f = 0;
+    ewk->wu.death_timer = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
     ewk->wu.my_family = *data_ptr++;
@@ -307,7 +307,7 @@ s32 effect_94_init(u8 type94) {
     ewk->wu.hit_stop = *data_ptr++;
     ewk->wu.routine_no[1] = *data_ptr++;
     ewk->wu.old_routine_no[1] = *data_ptr++;
-    ewk->wu.my_mts = 7;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 7;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -26,7 +26,7 @@ void effect_97_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (g_state.plw[ewk->master_id].wu.routine_no[2] == 1 &&
@@ -41,12 +41,12 @@ void effect_97_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] > 0) {
                 ewk->wu.routine_no[0]++;
-                ewk->wu.rl_flag ^= 1;
+                ewk->wu.facing_flag ^= 1;
                 set_char_move_init(&ewk->wu, 0, 45);
                 ewk->wu.old_routine_no[0] = 16;
                 ewk->wu.mvxy.a[1].sp = 0xE8000;
@@ -67,7 +67,7 @@ void effect_97_move(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] > 0) {
@@ -94,7 +94,7 @@ void effect_97_move(State_Other* ewk) {
     }
 }
 
-s32 effect_97_init(PLW* oya) {
+s32 effect_97_init(PlayerEntity* oya) {
     State_Other* ewk;
     s16 ix;
 
@@ -103,7 +103,7 @@ s32 effect_97_init(PLW* oya) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 97;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
@@ -123,15 +123,15 @@ s32 effect_97_init(PLW* oya) {
     *ewk->wu.char_table = _etc_char_table;
 
     if (oya->wu.id) {
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.xyz[0].disp.pos = oya->wu.xyz[0].disp.pos - 108;
     } else {
-        ewk->wu.rl_flag = 1;
+        ewk->wu.facing_flag = 1;
         ewk->wu.xyz[0].disp.pos = oya->wu.xyz[0].disp.pos + 108;
     }
 
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     suzi_offset_set(ewk);
     return 0;
 }

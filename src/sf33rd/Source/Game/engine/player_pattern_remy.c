@@ -14,21 +14,21 @@
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl20_exatt_table[18])(PLW*);
+void (*const pl20_exatt_table[18])(PlayerEntity*);
 
 /** @brief Remy: extra attack dispatcher. */
-void pl_remy_extra_attack(PLW* wk) {
+void pl_remy_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl20_exatt_table[idx](wk);
 }
 
 /** @brief Remy: attack 1 (Light of Virtue, high). */
-static void Att_PL20_AT1(PLW* wk) {
+static void Att_PL20_AT1(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
@@ -88,11 +88,11 @@ static void Att_PL20_AT1(PLW* wk) {
 }
 
 /** @brief Remy: attack 2 (Cold Blue Kick). */
-static void Att_PL20_AT2(PLW* wk) {
+static void Att_PL20_AT2(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->r_no);
@@ -157,16 +157,16 @@ static void Att_PL20_AT2(PLW* wk) {
 }
 
 /** @brief Remy: attack 3 (Rising Rage Flash). */
-static void Att_PL20_AT3(PLW* wk) {
-    PLW* emwk;
+static void Att_PL20_AT3(PlayerEntity* wk) {
+    PlayerEntity* emwk;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         force_grounded_state(wk);
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         reset_mvxy_data(&wk->wu);
-        emwk = (PLW*)wk->wu.target_adrs;
+        emwk = (PlayerEntity*)wk->wu.target_adrs;
 
         if (emwk->wu.hit_mark_y < 32) {
             set_char_move_init(&wk->wu, 5, 55);
@@ -227,13 +227,13 @@ static void Att_PL20_AT3(PLW* wk) {
 }
 
 /** @brief Remy: special action (tokushu koudou). */
-static void Att_PL20_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL20_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -265,7 +265,7 @@ static void Att_PL20_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl20_exatt_table[18])(PLW*) = { Att_HADOUKEN,    Att_PL20_AT1,     Att_PL20_AT2,
+void (*const pl20_exatt_table[18])(PlayerEntity*) = { Att_HADOUKEN,    Att_PL20_AT1,     Att_PL20_AT2,
                                              Att_HOMING_JUMP, Att_HADOUKEN,     Att_PL20_AT3,
                                              Att_DUMMY,       Att_DUMMY,        Att_DUMMY,
                                              Att_DUMMY,       Att_DUMMY,        Att_DUMMY,

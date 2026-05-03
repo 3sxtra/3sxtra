@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
@@ -37,7 +37,7 @@ void effect_73_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -57,7 +57,7 @@ void effect_73_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -75,7 +75,7 @@ void effect_73_move(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -116,15 +116,15 @@ s32 effect_73_init(State_Other* oya) {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 73;
         ewk->wu.work_id = 16;
         ewk->my_master = oya;
         ewk->wu.graphic_rom_type = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.type = i;
         ewk->wu.my_col_mode = 0x4200;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         ewk->wu.my_family = 2;
         ewk->wu.sync_bg_strip = 0;
         *ewk->wu.char_table = _hkg_char_table;

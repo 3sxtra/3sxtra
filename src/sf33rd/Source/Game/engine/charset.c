@@ -19,14 +19,14 @@
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/player_special_attacks.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/io/rumble.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 
 #define LO_2_BYTES(_val) (((s16*)&(_val))[0])
 #define HI_2_BYTES(_val) (((s16*)&(_val))[1])
-#define WK_AS_PLW ((PLW*)wk)
+#define WK_AS_PlayerEntity ((PlayerEntity*)wk)
 
 extern s32 (*const decode_chcmd[125])();
 extern s32 (*const decode_if_lever[16])();
@@ -39,7 +39,7 @@ static u16 get_comm_if_shot(State* wk);
 static u16 get_comm_if_shot_now_off(State* wk);
 static u16 get_comm_if_shot_now(State* wk);
 static u16 get_comm_if_lvsh(State* wk);
-static u8 get_comm_djmp_lever_dir(PLW* wk);
+static u8 get_comm_djmp_lever_dir(PlayerEntity* wk);
 static void setup_comm_retmj(State* wk);
 static u16 check_xcopy_filter_se_req(State* wk);
 static void check_cgd_patdat2(State* wk);
@@ -87,13 +87,13 @@ void set_char_move_init(State* wk, s16 kind_of_char, s16 index) {
     }
 
     if (wk->work_id == 1) {
-        ((PLW*)wk)->tc_1st_flag = 0; // TODO: Confirm CPS3 match
+        ((PlayerEntity*)wk)->tc_1st_flag = 0; // TODO: Confirm CPS3 match
 
         if (wk->current_char_type == 4 || wk->current_char_type == 5) {
             grade_add_same_move(wk->id);
         }
 
-        ((PLW*)wk)->jump_attack_routine = 0; // TODO: Confirm CPS3 match
+        ((PlayerEntity*)wk)->jump_attack_routine = 0; // TODO: Confirm CPS3 match
         pp_pulpara_remake_at_init(wk);
     }
 
@@ -361,7 +361,7 @@ void char_move_cmms2(State* wk) {
 }
 
 /** @brief Command-move-set variant 3 with multi-hit tracking. */
-s32 char_move_cmms3(PLW* wk) {
+s32 char_move_cmms3(PlayerEntity* wk) {
     CommandState* cpc;
     s16 i;
     s16 now_cgd;
@@ -426,7 +426,7 @@ s32 char_move_cmms3(PLW* wk) {
 }
 
 /** @brief Character move with command-hit-set processing. */
-void char_move_cmd_hit_stop(PLW* wk) {
+void char_move_cmd_hit_stop(PlayerEntity* wk) {
     if (wk->high_jump_ok != 0) {
         setup_comm_back(&wk->wu);
         wk->high_jump_ok = 0;
@@ -577,7 +577,7 @@ static s32 comm_if_l(State* wk, CommandState* ctc) {
 static s32 comm_djmp(State* wk, CommandState* ctc) {
     u8 ldir;
 
-    if ((ldir = get_comm_djmp_lever_dir((PLW*)wk))) {
+    if ((ldir = get_comm_djmp_lever_dir((PlayerEntity*)wk))) {
         if (ldir == 1) {
             return decord_if_jump(wk, ctc, ctc->ix);
         } else {
@@ -851,7 +851,7 @@ static s32 comm_ps_y(State* wk, CommandState* ctc) {
         switch (ctc->kind_of_char) {
         case 0:
             // CPS3 compares to 21 here
-            if (g_state.bg_w.stage == 20 && ((PLW*)wk)->bs2_on_car && ctc->pat < g_state.bs2_floor[2]) {
+            if (g_state.bg_w.stage == 20 && ((PlayerEntity*)wk)->bs2_on_car && ctc->pat < g_state.bs2_floor[2]) {
                 wk->xyz[1].disp.pos = g_state.bs2_floor[2];
             } else {
                 wk->xyz[1].disp.pos = ctc->pat;
@@ -896,7 +896,7 @@ static s32 comm_paxy(State* wk, CommandState* ctc) {
 
     switch (ctc->kind_of_char) {
     case 0:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             wk->xyz[0].cal += ctc->ix << 8;
         } else {
             wk->xyz[0].cal -= ctc->ix << 8;
@@ -906,7 +906,7 @@ static s32 comm_paxy(State* wk, CommandState* ctc) {
         break;
 
     case 2:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             wk->xyz[0].cal += ctc->ix << 8;
         } else {
             wk->xyz[0].cal -= ctc->ix << 8;
@@ -918,7 +918,7 @@ static s32 comm_paxy(State* wk, CommandState* ctc) {
     default:
         emwk = (State*)wk->target_adrs;
 
-        if (emwk->rl_flag) {
+        if (emwk->facing_flag) {
             emwk->xyz[0].cal += ctc->ix << 8;
         } else {
             emwk->xyz[0].cal -= ctc->ix << 8;
@@ -937,7 +937,7 @@ static s32 comm_pa_x(State* wk, CommandState* ctc) {
 
     switch (ctc->kind_of_char) {
     case 0:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             wk->xyz[0].cal += ctc->ix << 8;
         } else {
             wk->xyz[0].cal -= ctc->ix << 8;
@@ -946,7 +946,7 @@ static s32 comm_pa_x(State* wk, CommandState* ctc) {
         break;
 
     case 2:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             wk->xyz[0].cal += ctc->ix << 8;
         } else {
             wk->xyz[0].cal -= ctc->ix << 8;
@@ -957,7 +957,7 @@ static s32 comm_pa_x(State* wk, CommandState* ctc) {
     default:
         emwk = (State*)wk->target_adrs;
 
-        if (emwk->rl_flag) {
+        if (emwk->facing_flag) {
             emwk->xyz[0].cal += ctc->ix << 8;
         } else {
             emwk->xyz[0].cal -= ctc->ix << 8;
@@ -1103,7 +1103,7 @@ static s32 comm_if_s(State* wk, CommandState* ctc) {
 
     shdat = get_comm_if_shot(wk);
 
-    if (wk->work_id == 1 && ((PLW*)wk)->player_number == 16 && ((PLW*)wk)->spmv_ng_flag & DIP_TAUNT_AFTER_KO_DISABLED &&
+    if (wk->work_id == 1 && ((PlayerEntity*)wk)->player_number == 16 && ((PlayerEntity*)wk)->spmv_ng_flag & DIP_TAUNT_AFTER_KO_DISABLED &&
         my_shdat == 0x440 && g_state.pcon_dp_flag) {
         shdat = 0;
     }
@@ -1196,18 +1196,18 @@ static s32 comm_a456(State* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: STOP — set hit-stop timer. */
-static s32 comm_stop(PLW* wk, CommandState* ctc) {
-    PLW* wk2;
+static s32 comm_stop(PlayerEntity* wk, CommandState* ctc) {
+    PlayerEntity* wk2;
 
     if (g_state.test_flag == 0) {
         wk->wu.damage_hit_stop = 0;
         wk->wu.hit_stop = ctc->kind_of_char;
-        wk2 = (PLW*)wk->wu.target_adrs;
+        wk2 = (PlayerEntity*)wk->wu.target_adrs;
         wk2->wu.hit_stop = ctc->ix;
-        wk2->sa_stop_sai = ctc->ix - 4;
+        wk2->super_art_stop_index = ctc->ix - 4;
 
-        if (wk2->sa_stop_sai < 0) {
-            wk2->sa_stop_sai = 1;
+        if (wk2->super_art_stop_index < 0) {
+            wk2->super_art_stop_index = 1;
         }
 
         setup_shell_hit_stop(&wk->wu, ctc->ix, ctc->pat);
@@ -1285,7 +1285,7 @@ static s32 comm_asxy(State* wk, CommandState* ctc) {
 
     st <<= 8;
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         wk->xyz[0].cal += st;
     } else {
         wk->xyz[0].cal -= st;
@@ -1335,7 +1335,7 @@ static s32 comm_schy(State* wk, CommandState* ctc) {
     return 1;
 }
 
-/** @brief Script command: BACK — store backup state. */
+/** @brief Script command: BACK — stock backup state. */
 static s32 comm_back(State* wk, CommandState* /* unused */) {
     set_char_move_init2(wk, wk->cmd_state_backup_1.kind_of_char, wk->cmd_state_backup_1.ix, wk->cmd_state_backup_1.pat, 0);
     return 0;
@@ -1349,16 +1349,16 @@ static s32 comm_mvix(State* wk, CommandState* ctc) {
 
 /** @brief Script command: SAJP — super-art jump. */
 static s32 comm_sajp(State* wk, CommandState* ctc) {
-    PLW* pwk;
+    PlayerEntity* pwk;
 
     if (wk->work_id == 1) {
-        if (g_state.My_char[wk->id] != 18 && ((PLW*)wk)->sa->kind_of_arts == ctc->kind_of_char && ((PLW*)wk)->sa->ok == -1) {
+        if (g_state.My_char[wk->id] != 18 && ((PlayerEntity*)wk)->sa->kind_of_arts == ctc->kind_of_char && ((PlayerEntity*)wk)->sa->can_activate == -1) {
             return decord_if_jump(wk, ctc, ctc->ix);
         }
     } else {
-        pwk = (PLW*)((State_Other*)wk)->my_master;
+        pwk = (PlayerEntity*)((State_Other*)wk)->my_master;
 
-        if (pwk->wu.work_id == 1 && pwk->sa->kind_of_arts == ctc->kind_of_char && pwk->sa->ok == -1) {
+        if (pwk->wu.work_id == 1 && pwk->sa->kind_of_arts == ctc->kind_of_char && pwk->sa->can_activate == -1) {
             return decord_if_jump(&pwk->wu, ctc, ctc->ix);
         }
     }
@@ -1662,11 +1662,11 @@ static s32 comm_epcy(State* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: IMGS — image set (start rendering effect). */
-static s32 comm_imgs(PLW* wk, CommandState* ctc) {
-    PLW* tk;
+static s32 comm_imgs(PlayerEntity* wk, CommandState* ctc) {
+    PlayerEntity* tk;
 
     if (g_state.test_flag == 0) {
-        tk = (PLW*)wk->wu.target_adrs;
+        tk = (PlayerEntity*)wk->wu.target_adrs;
 
         switch (ctc->kind_of_char) {
         case 0:
@@ -1690,8 +1690,8 @@ static s32 comm_imgs(PLW* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: IMGC — image clear (stop rendering effect). */
-static s32 comm_imgc(PLW* wk, CommandState* ctc) {
-    PLW* tk = (PLW*)wk->wu.target_adrs;
+static s32 comm_imgc(PlayerEntity* wk, CommandState* ctc) {
+    PlayerEntity* tk = (PlayerEntity*)wk->wu.target_adrs;
 
     switch (ctc->kind_of_char) {
     case 0:
@@ -1716,7 +1716,7 @@ static s32 comm_rvxy(State* wk, CommandState* ctc) {
 
     switch (ctc->kind_of_char) {
     case 0:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             wk->xyz[0].cal = emwk->xyz[0].cal + (ctc->ix << 8);
         } else {
             wk->xyz[0].cal = emwk->xyz[0].cal - (ctc->ix << 8);
@@ -1726,7 +1726,7 @@ static s32 comm_rvxy(State* wk, CommandState* ctc) {
         break;
 
     case 2:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             wk->xyz[0].cal = emwk->xyz[0].cal + (ctc->ix << 8);
         } else {
             wk->xyz[0].cal = emwk->xyz[0].cal - (ctc->ix << 8);
@@ -1736,7 +1736,7 @@ static s32 comm_rvxy(State* wk, CommandState* ctc) {
         /* fallthrough */
 
     default:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             emwk->xyz[0].cal = wk->xyz[0].cal + (ctc->ix << 8);
         } else {
             emwk->xyz[0].cal = wk->xyz[0].cal - (ctc->ix << 8);
@@ -1755,7 +1755,7 @@ static s32 comm_rv_x(State* wk, CommandState* ctc) {
 
     switch (ctc->kind_of_char) {
     case 0:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             wk->xyz[0].cal = emwk->xyz[0].cal + (ctc->ix << 8);
         } else {
             wk->xyz[0].cal = emwk->xyz[0].cal - (ctc->ix << 8);
@@ -1764,7 +1764,7 @@ static s32 comm_rv_x(State* wk, CommandState* ctc) {
         break;
 
     case 2:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             wk->xyz[0].cal = emwk->xyz[0].cal + (ctc->ix << 8);
         } else {
             wk->xyz[0].cal = emwk->xyz[0].cal - (ctc->ix << 8);
@@ -1773,7 +1773,7 @@ static s32 comm_rv_x(State* wk, CommandState* ctc) {
         /* fallthrough */
 
     default:
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             emwk->xyz[0].cal = wk->xyz[0].cal + (ctc->ix << 8);
         } else {
             emwk->xyz[0].cal = wk->xyz[0].cal - (ctc->ix << 8);
@@ -1807,7 +1807,7 @@ static s32 comm_rv_y(State* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: CCFL — cancel chain flag. */
-static s32 comm_ccfl(PLW* wk, CommandState* /* unused */) {
+static s32 comm_ccfl(PlayerEntity* wk, CommandState* /* unused */) {
     wk->caution_flag = 0;
     return 1;
 }
@@ -1894,14 +1894,14 @@ static s32 comm_exbgc(State* /* unused */, CommandState* /* unused */) {
 }
 
 /** @brief Script command: ATMF — set attack metamorphosis flag. */
-static s32 comm_atmf(PLW* wk, CommandState* ctc) {
+static s32 comm_atmf(PlayerEntity* wk, CommandState* ctc) {
     wk->parry_flag = ctc->kind_of_char;
     wk->parry_point = ctc->ix;
     return 1;
 }
 
 /** @brief Script command: CHKWF — check move flag conditional. */
-static s32 comm_chkwf(PLW* wk, CommandState* ctc) {
+static s32 comm_chkwf(PlayerEntity* wk, CommandState* ctc) {
     if (wk->cp->move_state_flags[ctc->kind_of_char] == 0 || wk->cp->move_state_flags[ctc->kind_of_char] == -1) {
         return decord_if_jump(&wk->wu, ctc, ctc->pat);
     }
@@ -1911,7 +1911,7 @@ static s32 comm_chkwf(PLW* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RETMJ — return from move-jump. */
-static s32 comm_retmj(PLW* wk, CommandState* /* unused */) {
+static s32 comm_retmj(PlayerEntity* wk, CommandState* /* unused */) {
     wk->wu.current_char_type = wk->wu.cmd_state_backup_2.kind_of_char;
     wk->wu.char_index = wk->wu.cmd_state_backup_2.ix;
     wk->wu.graphic_index = wk->wu.cmd_state_backup_2.pat;
@@ -2163,7 +2163,7 @@ static s32 comm_ngda(State* wk, CommandState* ctc) {
 
 /** @brief Script command: FLIP — flip sprite horizontally. */
 static s32 comm_flip(State* wk, CommandState* /* unused */) {
-    wk->rl_flag = (wk->rl_flag + 1) & 1;
+    wk->facing_flag = (wk->facing_flag + 1) & 1;
     return 1;
 }
 
@@ -2184,14 +2184,14 @@ static s32 comm_dspf(State* wk, CommandState* ctc) {
 /** @brief Script command: IFRLF — conditional on RL flag. */
 static s32 comm_ifrlf(State* wk, CommandState* ctc) {
     if (ctc->kind_of_char) {
-        if (wk->rl_flag == wk->active_move) {
+        if (wk->facing_flag == wk->active_move) {
             return decord_if_jump(wk, ctc, ctc->pat);
         }
 
         return decord_if_jump(wk, ctc, ctc->ix);
     }
 
-    if (wk->rl_flag == wk->active_move) {
+    if (wk->facing_flag == wk->active_move) {
         return decord_if_jump(wk, ctc, ctc->ix);
     }
 
@@ -2201,11 +2201,11 @@ static s32 comm_ifrlf(State* wk, CommandState* ctc) {
 /** @brief Script command: SRLF — set RL flag. */
 static s32 comm_srlf(State* wk, CommandState* ctc) {
     if (ctc->kind_of_char) {
-        if (wk->rl_flag != wk->active_move) {
-            wk->rl_flag = wk->active_move;
+        if (wk->facing_flag != wk->active_move) {
+            wk->facing_flag = wk->active_move;
         }
-    } else if (wk->rl_flag == wk->active_move) {
-        wk->rl_flag = (wk->rl_flag + 1) & 1;
+    } else if (wk->facing_flag == wk->active_move) {
+        wk->facing_flag = (wk->facing_flag + 1) & 1;
     }
 
     return 1;
@@ -2213,7 +2213,7 @@ static s32 comm_srlf(State* wk, CommandState* ctc) {
 
 /** @brief Script command: BGRLF — branch based on background RL flag. */
 static s32 comm_bgrlf(State* wk, CommandState* ctc) {
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         if (wk->position_x > g_state.bg_w.bgw[1].pos_x_work) {
             return decord_if_jump(wk, ctc, ctc->pat);
         }
@@ -2229,14 +2229,14 @@ static s32 comm_bgrlf(State* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: SCMD — set sub-command. */
-static s32 comm_scmd(PLW* wk, CommandState* ctc) {
+static s32 comm_scmd(PlayerEntity* wk, CommandState* ctc) {
     wk->cmd_request = ctc->kind_of_char;
     return 1;
 }
 
 /** @brief Script command: RLJMP — RL-conditional jump. */
 static s32 comm_rljmp(State* wk, CommandState* ctc) {
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         return decord_if_jump(wk, ctc, ctc->pat);
     }
 
@@ -2328,7 +2328,7 @@ static s32 comm_schg2(State* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: RHSJA — read hit-stop jump A. */
-static s32 comm_rhsja(PLW* wk, CommandState* ctc) {
+static s32 comm_rhsja(PlayerEntity* wk, CommandState* ctc) {
     wk->wu.cmd_hit_stop_backup.kind_of_char = ctc->kind_of_char;
     wk->wu.cmd_hit_stop_backup.ix = ctc->ix;
     wk->wu.cmd_hit_stop_backup.pat = ctc->pat;
@@ -2337,7 +2337,7 @@ static s32 comm_rhsja(PLW* wk, CommandState* ctc) {
 }
 
 /** @brief Script command: UHSJA — unconditional hit-stop jump A. */
-static s32 comm_uhsja(PLW* wk, CommandState* /* unused */) {
+static s32 comm_uhsja(PlayerEntity* wk, CommandState* /* unused */) {
     setup_comm_back(&wk->wu);
     wk->high_jump_ok = 0;
     set_char_move_init2(&wk->wu, wk->wu.cmd_hit_stop_backup.kind_of_char, wk->wu.cmd_hit_stop_backup.ix, wk->wu.cmd_hit_stop_backup.pat, 0);
@@ -2501,7 +2501,7 @@ static u16 get_comm_if_lvsh(State* wk) {
 }
 
 /** @brief Returns the lever direction for direction-jump commands. */
-static u8 get_comm_djmp_lever_dir(PLW* wk) {
+static u8 get_comm_djmp_lever_dir(PlayerEntity* wk) {
     u8 num;
 
     if (wk->wu.work_id == 1) {
@@ -2569,7 +2569,7 @@ void check_cgd_patdat(State* wk) {
             st.l = *from_rom2++;
             st.l <<= 8;
 
-            if (wk->rl_flag) {
+            if (wk->facing_flag) {
                 wk->xyz[0].cal += st.l;
             } else {
                 wk->xyz[0].cal -= st.l;
@@ -2624,7 +2624,7 @@ void check_cgd_patdat(State* wk) {
         if (wk->cg_rival == 0) {
             wk->curr_rca = NULL;
         } else {
-            wk->curr_rca = wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PLW*)wk)->throw_target_id));
+            wk->curr_rca = wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PlayerEntity*)wk)->throw_target_id));
         }
 
         wk->graphic_overlap_index = wk->olc_ix_table[wk->anim_overlap_col_index];
@@ -2641,7 +2641,7 @@ void check_cgd_patdat(State* wk) {
     }
 
     if (wk->work_id == 1) {
-        if ((WK_AS_PLW->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) && !(wk->move_type & 0xF8)) {
+        if ((WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) && !(wk->move_type & 0xF8)) {
             if (wk->move_type & 6) {
                 wk->cg_cancel &= 0xF7;
                 wk->cg_tc_state = 0;
@@ -2653,7 +2653,7 @@ void check_cgd_patdat(State* wk) {
             }
         }
 
-        if (WK_AS_PLW->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) {
+        if (WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) {
             if (wk->move_type & 0x60) {
                 wk->cg_cancel &= 0xBF;
             }
@@ -2661,7 +2661,7 @@ void check_cgd_patdat(State* wk) {
             wk->frame_link_hit_flag = 1;
         }
 
-        if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(wk->move_type & 0x60) &&
+        if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(wk->move_type & 0x60) &&
             (wk->move_type & 0xF8) && (wk->cg_cancel & 0x40)) {
             wk->cg_cancel |= 0x60;
         }
@@ -2676,16 +2676,16 @@ void check_cgd_patdat(State* wk) {
                 /* fallthrough */
 
             case 1:
-                if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
+                if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
                     wk->cg_cancel |= 1;
                 }
 
-                if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_DASH_DISABLED)) {
+                if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_DASH_DISABLED)) {
                     wk->cg_cancel |= 2;
                 }
 
-                if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_GROUND_CHAIN_COMBO_DISABLED)) {
-                    if (WK_AS_PLW->player_number == 4) {
+                if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_GROUND_CHAIN_COMBO_DISABLED)) {
+                    if (WK_AS_PlayerEntity->player_number == 4) {
                         wk->cg_tc_state = ground_knockback_table[wk->move_type & 7];
                         wk->cg_cancel |= 8;
                         return;
@@ -2699,8 +2699,8 @@ void check_cgd_patdat(State* wk) {
                 break;
 
             case 2:
-                if (!(WK_AS_PLW->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(wk)) {
-                    if (WK_AS_PLW->player_number == 7) {
+                if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(wk)) {
+                    if (WK_AS_PlayerEntity->player_number == 7) {
                         wk->cg_tc_state = air_knockback_table[wk->move_type & 7];
                         wk->cg_cancel |= 8;
                         return;
@@ -2725,22 +2725,22 @@ static u16 check_xcopy_filter_se_req(State* wk) {
     }
 
     if (wk->work_id != 1) {
-        if (LO_2_BYTES(WK_AS_PLW->spmv_ng_flag) != 1) {
+        if (LO_2_BYTES(WK_AS_PlayerEntity->spmv_ng_flag) != 1) {
             return voif;
         }
 
-        if ((u16)HI_2_BYTES(WK_AS_PLW->spmv_ng_flag) > 1) {
+        if ((u16)HI_2_BYTES(WK_AS_PlayerEntity->spmv_ng_flag) > 1) {
             return voif;
         }
 
-        if (g_state.plw[HI_2_BYTES(WK_AS_PLW->spmv_ng_flag)].metamorphose == 0) {
+        if (g_state.plw[HI_2_BYTES(WK_AS_PlayerEntity->spmv_ng_flag)].metamorphose == 0) {
             return voif;
         }
 
         return voif + 0x600;
     }
 
-    if (WK_AS_PLW->metamorphose == 0) {
+    if (WK_AS_PlayerEntity->metamorphose == 0) {
         return voif;
     }
 
@@ -2790,7 +2790,7 @@ static void check_cgd_patdat2(State* wk) {
         if (wk->cg_rival == 0) {
             wk->curr_rca = NULL;
         } else {
-            wk->curr_rca = wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PLW*)wk)->throw_target_id));
+            wk->curr_rca = wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PlayerEntity*)wk)->throw_target_id));
         }
     }
 
@@ -2828,17 +2828,17 @@ void set_new_attnum(State* wk) {
         wk->frame_link_hit_flag = 0;
 
         if (wk->work_id == 1) {
-            WK_AS_PLW->caution_flag = 1;
-            WK_AS_PLW->total_att_hit_ok += 1;
+            WK_AS_PlayerEntity->caution_flag = 1;
+            WK_AS_PlayerEntity->total_att_hit_ok += 1;
         }
 
         grade_add_att_renew((State_Other*)wk);
     }
 
     wk->att = *(wk->att_ix_table + wk->anim_hitbox_index);
-    wk->zu_flag = wk->att.level & 0x80;
+    wk->head_invuln_flag = wk->att.level & 0x80;
     wk->jump_att_flag = wk->att.level & 0x40;
-    wk->at_attribute = (wk->att.level >> 4) & 3;
+    wk->attack_attribute = (wk->att.level >> 4) & 3;
     wk->no_death_attack = wk->att.level & 8;
     wk->att.level &= 7;
     wk->chip_damage_power = kezuri_pow_table[(wk->att.guard >> 6) & 3];
@@ -2852,10 +2852,10 @@ void set_new_attnum(State* wk) {
     wk->dir_atthit = cal_attdir(wk);
 
     if (aag_sw) {
-        add_sp_arts_gauge_init((PLW*)wk);
+        add_sp_arts_gauge_init((PlayerEntity*)wk);
     }
 
-    if ((wk->work_id == 1) && !(WK_AS_PLW->spmv_ng_flag & DIP_EXTREME_CHIP_DAMAGE_DISABLED)) {
+    if ((wk->work_id == 1) && !(WK_AS_PlayerEntity->spmv_ng_flag & DIP_EXTREME_CHIP_DAMAGE_DISABLED)) {
         setup_metamor_kezuri(wk);
     }
 }
@@ -2953,7 +2953,7 @@ static s32 comm_s123(State*, CommandState*);
 static s32 comm_s456(State*, CommandState*);
 static s32 comm_a123(State*, CommandState*);
 static s32 comm_a456(State*, CommandState*);
-static s32 comm_stop(PLW*, CommandState*);
+static s32 comm_stop(PlayerEntity*, CommandState*);
 static s32 comm_smhf(State*, CommandState*);
 static s32 comm_ngme(State*, CommandState*);
 static s32 comm_ngem(State*, CommandState*);
@@ -2982,19 +2982,19 @@ static s32 comm_rapk2(State*, CommandState*);
 static s32 comm_iflg(State*, CommandState*);
 static s32 comm_mpcy(State*, CommandState*);
 static s32 comm_epcy(State*, CommandState*);
-static s32 comm_imgs(PLW*, CommandState*);
-static s32 comm_imgc(PLW*, CommandState*);
+static s32 comm_imgs(PlayerEntity*, CommandState*);
+static s32 comm_imgc(PlayerEntity*, CommandState*);
 static s32 comm_rvxy(State*, CommandState*);
 static s32 comm_rv_x(State*, CommandState*);
 static s32 comm_rv_y(State*, CommandState*);
-static s32 comm_ccfl(PLW*, CommandState*);
+static s32 comm_ccfl(PlayerEntity*, CommandState*);
 static s32 comm_myhp(State*, CommandState*);
 static s32 comm_emhp(State*, CommandState*);
 static s32 comm_exbgs(State*, CommandState*);
 static s32 comm_exbgc(State*, CommandState*);
-static s32 comm_atmf(PLW*, CommandState*);
-static s32 comm_chkwf(PLW*, CommandState*);
-static s32 comm_retmj(PLW*, CommandState*);
+static s32 comm_atmf(PlayerEntity*, CommandState*);
+static s32 comm_chkwf(PlayerEntity*, CommandState*);
+static s32 comm_retmj(PlayerEntity*, CommandState*);
 static s32 comm_sstx(State*, CommandState*);
 static s32 comm_ssty(State*, CommandState*);
 static s32 comm_ngda(State*, CommandState*);
@@ -3004,15 +3004,15 @@ static s32 comm_dspf(State*, CommandState*);
 static s32 comm_ifrlf(State*, CommandState*);
 static s32 comm_srlf(State*, CommandState*);
 static s32 comm_bgrlf(State*, CommandState*);
-static s32 comm_scmd(PLW*, CommandState*);
+static s32 comm_scmd(PlayerEntity*, CommandState*);
 static s32 comm_rljmp(State*, CommandState*);
 static s32 comm_ifs2(State*, CommandState*);
 static s32 comm_abbak(State*, CommandState*);
 static s32 comm_sse(State*, CommandState*);
 static s32 comm_s_chg(State*, CommandState*);
 static s32 comm_schg2(State*, CommandState*);
-static s32 comm_rhsja(PLW*, CommandState*);
-static s32 comm_uhsja(PLW*, CommandState*);
+static s32 comm_rhsja(PlayerEntity*, CommandState*);
+static s32 comm_uhsja(PlayerEntity*, CommandState*);
 static s32 comm_ifcom(State*, CommandState*);
 static s32 comm_axjmp(State*, CommandState*);
 static s32 comm_ayjmp(State*, CommandState*);

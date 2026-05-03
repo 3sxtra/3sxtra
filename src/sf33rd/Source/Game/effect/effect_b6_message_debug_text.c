@@ -15,7 +15,7 @@
 #include <strings.h>
 #include "stb/stb_ds.h"
 
-void get_message_conn_data(WORK_Other_CONN* ewk, s16 kind, s16 pl, s16 msg);
+void get_message_conn_data(EffectMultiSprite* ewk, s16 kind, s16 pl, s16 msg);
 static s32 msgConvertObjNum(u8* moji, s32* spc, s32* hz, u16* num, u8 hzSel);
 static s32 msgCheckCodeSize(u8 data);
 
@@ -344,17 +344,17 @@ static void init_text_maps() {
     }
 }
 
-void effect_B6_move(WORK_Other_CONN* ewk) {
+void effect_B6_move(EffectMultiSprite* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;
-        ewk->wu.my_mts = 12;
+        ewk->wu.my_sprite_sheet = 12;
         ewk->wu.my_family = 1;
         ewk->wu.position_z = ewk->wu.my_priority = 1;
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 9;
             break;
@@ -391,7 +391,7 @@ void effect_B6_move(WORK_Other_CONN* ewk) {
     }
 }
 
-void get_message_conn_data(WORK_Other_CONN* ewk, s16 kind, s16 pl, s16 msg) {
+void get_message_conn_data(EffectMultiSprite* ewk, s16 kind, s16 pl, s16 msg) {
     u8** msghead;
     u8* msgtbl;
     s32 msgline;

@@ -13,9 +13,9 @@
 
 static void effJ2_trans(State* ewk);
 
-const CONN bbbs_nando_large[2] = { { 92, 78, 0, 0x7EC7 }, { -20, 78, 0, 0x7EC6 } };
+const SpriteConnection bbbs_nando_large[2] = { { 92, 78, 0, 0x7EC7 }, { -20, 78, 0, 0x7EC6 } };
 
-void effect_J2_move(WORK_Other_CONN* ewk) {
+void effect_J2_move(EffectMultiSprite* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         switch (ewk->wu.routine_no[1]) {
@@ -40,7 +40,7 @@ void effect_J2_move(WORK_Other_CONN* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Break_Into || --ewk->wu.dir_timer <= 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Break_Into || --ewk->wu.dir_timer <= 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
         } else {
@@ -66,18 +66,18 @@ static void effJ2_trans(State* ewk) {
 }
 
 s32 effect_J2_init(s16 delay) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 192;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.my_family = 2;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;

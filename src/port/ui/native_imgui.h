@@ -87,7 +87,7 @@ void NativeUI_SetMasterPlayer(int master_player_id);
  * @param type The text font ID, e.g. 0x7047 (block) or 0x70A7 (regular).
  */
 void NativeUI_SetLetterType(unsigned short type);
-void NativeUI_SetMasterPlayer(int mp);
+void NativeUI_SetMasterPlayer(int meter_points);
 
 /**
  * @brief Overrides the internal layout index counter for the next item.

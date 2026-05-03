@@ -7,11 +7,11 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 
 void effect_L0_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -20,8 +20,8 @@ void effect_L0_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 0 && g_state.Suicide[0] == 0) {
-            if (g_state.Game_pause || g_state.EXE_flag) {
+        if (ewk->wu.death_timer == 0 && g_state.Suicide[0] == 0) {
+            if (g_state.Game_pause || g_state.execute_flag) {
                 break;
             }
 
@@ -29,7 +29,7 @@ void effect_L0_move(State_Other* ewk) {
                 ewk->wu.dir_timer--;
             }
 
-            if (ewk->wu.dead_f == 0 && ewk->wu.dir_timer > 0 && mwk->wu.routine_no[1] != 1 &&
+            if (ewk->wu.death_timer == 0 && ewk->wu.dir_timer > 0 && mwk->wu.routine_no[1] != 1 &&
                 mwk->wu.routine_no[1] != 2 && mwk->wu.routine_no[1] != 3 &&
                 (mwk->wu.current_char_type != 5 ||
                  (!(mwk->wu.attack_type & 0x20) && mwk->wu.char_index != 0x40 && mwk->wu.char_index != 1))) {
@@ -79,7 +79,7 @@ s32 effect_L0_init(State* wk, s16 data) {
 
     ewk = (State_Other*)frw[ix];
     ewk->my_master = wk;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 210;
     ewk->wu.dir_timer = data;
     ewk->wu.work_id = 16;

@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/engine/player_state_dispatcher.h"
 #include "common.h"
-#include "sf33rd/Source/Game/com/com_pl.h"
+#include "sf33rd/Source/Game/com/ai_player_control.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_damage_controller.h"
@@ -13,13 +13,13 @@
 #include "sf33rd/Source/Game/engine/player_special_attacks.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 
-static void nm_01000(PLW* wk);
-static void nm_09000(PLW* wk);
-static void nm_18000(PLW* wk);
+static void nm_01000(PlayerEntity* wk);
+static void nm_09000(PlayerEntity* wk);
+static void nm_18000(PlayerEntity* wk);
 
-static void jumping_cg_type_check(PLW* wk);
-static void nm_27_cg_type_check(PLW* wk);
-static s32 check_cg_cancel_data(PLW* wk);
+static void jumping_cg_type_check(PlayerEntity* wk);
+static void nm_27_cg_type_check(PlayerEntity* wk);
+static s32 check_cg_cancel_data(PlayerEntity* wk);
 
 #define PROCESS_NDCCA_COUNT 5
 #define PLPNM_DISPATCH_COUNT 59
@@ -27,12 +27,12 @@ static s32 check_cg_cancel_data(PLW* wk);
 
 const s8 lvdir_conv[4];
 
-void (*const process_ndcca[5])(PLW* wk);
-void (*const plpnm_xxxxx[59])(PLW* wk);
-void (*const plpdm_xxxxx[32])(PLW* wk);
+void (*const process_ndcca[5])(PlayerEntity* wk);
+void (*const plpnm_xxxxx[59])(PlayerEntity* wk);
+void (*const plpdm_xxxxx[32])(PlayerEntity* wk);
 
 /** @brief Reads the joystick lever data into player work. */
-void check_lever_data(PLW* wk) {
+void check_lever_data(PlayerEntity* wk) {
     if (wk->wu.routine_no[0] == 4) {
         if (wk->wu.routine_no[1] < PROCESS_NDCCA_COUNT)
             process_ndcca[wk->wu.routine_no[1]](wk);
@@ -40,7 +40,7 @@ void check_lever_data(PLW* wk) {
 }
 
 /** @brief Forwards to the normal-state sub-dispatcher. */
-static void process_normal(PLW* wk) {
+static void process_normal(PlayerEntity* wk) {
     if (wk->wu.routine_no[2] < PLPNM_DISPATCH_COUNT)
         plpnm_xxxxx[wk->wu.routine_no[2]](wk);
 }
@@ -56,25 +56,25 @@ static void TO_nm_init(State* wk, s16 r2, s16 r3) {
 /** @brief Transitions to normal state 01 (standing idle). */
 static void TO_nm_01000(State* wk) {
     TO_nm_init(wk, 1, 0);
-    nm_01000((PLW*)wk);
+    nm_01000((PlayerEntity*)wk);
 }
 
 /** @brief Transitions to normal state 36 (taunt). */
 static void TO_nm_36000(State* wk) {
     TO_nm_init(wk, 36, 0);
-    nm_01000((PLW*)wk);
+    nm_01000((PlayerEntity*)wk);
 }
 
 /** @brief Transitions to normal state 09 (crouching idle). */
 static void TO_nm_09000(State* wk) {
     TO_nm_init(wk, 9, 0);
-    nm_09000((PLW*)wk);
+    nm_09000((PlayerEntity*)wk);
 }
 
 /** @brief Transitions to normal state 37 (personal action). */
 static void TO_nm_37000(State* wk) {
     TO_nm_init(wk, 37, 0);
-    nm_09000((PLW*)wk);
+    nm_09000((PlayerEntity*)wk);
 }
 
 /** @brief Transitions to normal state 38 (wall-jump). */
@@ -85,14 +85,14 @@ static void TO_nm_38000(State* wk) {
 /** @brief Transitions to airborne state 18 variant 01. */
 static void TO_nm_18000_01(State* wk) {
     TO_nm_init(wk, 18, 1);
-    nm_18000((PLW*)wk);
+    nm_18000((PlayerEntity*)wk);
 }
 
 /** @brief Normal input handler 00 — no-op placeholder. */
-static void nm_00000(PLW* /* unused */) {}
+static void nm_00000(PlayerEntity* /* unused */) {}
 
 /** @brief Normal input handler 01 — standing idle input check. */
-static void nm_01000(PLW* wk) {
+static void nm_01000(PlayerEntity* wk) {
     if (setup_kuzureochi(wk)) {
         return;
     }
@@ -161,7 +161,7 @@ static void nm_01000(PLW* wk) {
 }
 
 /** @brief Normal input handler 02 — turn-around idle input check. */
-static void nm_02000(PLW* wk) {
+static void nm_02000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         TO_nm_01000(&wk->wu);
         return;
@@ -232,7 +232,7 @@ static void nm_02000(PLW* wk) {
 }
 
 /** @brief Normal input handler 03 — forward walk input check. */
-static void nm_03000(PLW* wk) {
+static void nm_03000(PlayerEntity* wk) {
     if (check_ashimoto(wk)) {
         return;
     }
@@ -299,14 +299,14 @@ static void nm_03000(PLW* wk) {
 }
 
 /** @brief Normal input handler 05 — forward dash input processing. */
-static void nm_05000(PLW* wk) {
+static void nm_05000(PlayerEntity* wk) {
     if (check_ashimoto_ex(wk) == 0) {
         jumping_cg_type_check(wk);
     }
 }
 
 /** @brief Normal input handler 07 — crouch-to-stand transition. */
-static void nm_07000(PLW* wk) {
+static void nm_07000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         TO_nm_01000(&wk->wu);
         return;
@@ -376,7 +376,7 @@ static void nm_07000(PLW* wk) {
 }
 
 /** @brief Normal input handler 08 — stand-to-crouch transition. */
-static void nm_08000(PLW* wk) {
+static void nm_08000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         TO_nm_09000(&wk->wu);
         return;
@@ -447,7 +447,7 @@ static void nm_08000(PLW* wk) {
 }
 
 /** @brief Normal input handler 09 — crouching idle input check. */
-static void nm_09000(PLW* wk) {
+static void nm_09000(PlayerEntity* wk) {
     if (setup_kuzureochi(wk)) {
         return;
     }
@@ -512,7 +512,7 @@ static void nm_09000(PLW* wk) {
 }
 
 /** @brief Normal input handler 10 — crouch walk input check. */
-static void nm_10000(PLW* wk) {
+static void nm_10000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         TO_nm_09000(&wk->wu);
         return;
@@ -574,7 +574,7 @@ static void nm_10000(PLW* wk) {
 }
 
 /** @brief Normal input handler 16 — neutral pre-jump squat input. */
-static void nm_16000(PLW* wk) {
+static void nm_16000(PlayerEntity* wk) {
     set_new_jump_direction(wk);
 
     if (wk->wu.routine_no[3] == 0) {
@@ -629,7 +629,7 @@ static void nm_16000(PLW* wk) {
 }
 
 /** @brief Normal input handler 17 — directional pre-jump squat input. */
-static void nm_17000(PLW* wk) {
+static void nm_17000(PlayerEntity* wk) {
     set_new_jump_direction(wk);
 
     if (wk->wu.routine_no[3] == 0) {
@@ -680,23 +680,23 @@ static void nm_17000(PLW* wk) {
 }
 
 /** @brief Checks and sets left/right direction flags during jump startup. */
-void check_jump_rl_dir(PLW* wk) {
-    if (check_rl_flag(&wk->wu) == 0) {
-        wk->wu.rl_flag = wk->wu.active_move;
+void check_jump_rl_dir(PlayerEntity* wk) {
+    if (check_facing_flag(&wk->wu) == 0) {
+        wk->wu.facing_flag = wk->wu.active_move;
         wk->cp->lever_dir = lvdir_conv[wk->cp->lever_dir];
         wk->jump_direction = lvdir_conv[wk->jump_direction];
     }
 }
 
 /** @brief Sets a new jump direction based on lever input. */
-void set_new_jump_direction(PLW* wk) {
+void set_new_jump_direction(PlayerEntity* wk) {
     if ((wk->cp->input_held & 1) && wk->cp->lever_dir) {
         wk->jump_direction = wk->cp->lever_dir;
     }
 }
 
 /** @brief Normal input handler 18 — airborne jump input check. */
-static void nm_18000(PLW* wk) {
+static void nm_18000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] < 2 && wk->wu.xyz[1].disp.pos > 0) {
         if (check_full_gauge_attack(wk, 0)) {
             return;
@@ -748,7 +748,7 @@ static void nm_18000(PLW* wk) {
  * Runs the standard 8-check sequence shared by case 2, 7, and 3 inside
  * jumping_cg_type_check.  Returns 1 if any check consumed the input.
  */
-static s32 cg_type_attack_chain(PLW* wk) {
+static s32 cg_type_attack_chain(PlayerEntity* wk) {
     if (check_full_gauge_attack(wk, 0))
         return 1;
     if (check_full_gauge_attack2(wk, 0))
@@ -769,7 +769,7 @@ static s32 cg_type_attack_chain(PLW* wk) {
 }
 
 /** @brief Determines grab type for airborne collision. */
-static void jumping_cg_type_check(PLW* wk) {
+static void jumping_cg_type_check(PlayerEntity* wk) {
     s32 standing = wk->wu.pat_status < 32;
 
     switch (wk->wu.cg_type) {
@@ -874,7 +874,7 @@ static void jumping_cg_type_check(PLW* wk) {
 }
 
 /** @brief Determines guard type for airborne collision. */
-void jumping_guard_type_check(PLW* wk) {
+void jumping_guard_type_check(PlayerEntity* wk) {
     switch (wk->wu.cg_type) {
     case 0xFF:
     case 64:
@@ -886,7 +886,7 @@ void jumping_guard_type_check(PLW* wk) {
 }
 
 /** @brief Normal input handler 27 — standing guard input check. */
-static void nm_27000(PLW* wk) {
+static void nm_27000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         TO_nm_01000(&wk->wu);
         return;
@@ -958,7 +958,7 @@ static void nm_27000(PLW* wk) {
 }
 
 /** @brief Determines grab type during standing guard. */
-static void nm_27_cg_type_check(PLW* wk) {
+static void nm_27_cg_type_check(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] == 0) {
         return;
     }
@@ -999,7 +999,7 @@ static void nm_27_cg_type_check(PLW* wk) {
 }
 
 /** @brief Normal input handler 29 — guard recovery input. */
-static void nm_29000(PLW* wk) {
+static void nm_29000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         TO_nm_09000(&wk->wu);
         return;
@@ -1065,7 +1065,7 @@ static void nm_29000(PLW* wk) {
 }
 
 /** @brief Normal input handler 31 — block-stun recovery input. */
-static void nm_31000(PLW* wk) {
+static void nm_31000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] == 0) {
         return;
     }
@@ -1127,7 +1127,7 @@ static void nm_31000(PLW* wk) {
 }
 
 /** @brief Normal input handler 34 — crouching guard stun. */
-static void nm_34000(PLW* wk) {
+static void nm_34000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] == 0) {
         return;
     }
@@ -1153,7 +1153,7 @@ static void nm_34000(PLW* wk) {
 }
 
 /** @brief Normal input handler 36 — taunt input. */
-static void nm_36000(PLW* wk) {
+static void nm_36000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         if (wk->wu.current_char_type == 0 && wk->wu.char_index == 0) {
             wk->wu.routine_no[2] = 1;
@@ -1172,7 +1172,7 @@ static void nm_36000(PLW* wk) {
 }
 
 /** @brief Normal input handler 37 — personal action input. */
-static void nm_37000(PLW* wk) {
+static void nm_37000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         wk->wu.routine_no[2] = 9;
         wk->wu.routine_no[3] = 0;
@@ -1182,7 +1182,7 @@ static void nm_37000(PLW* wk) {
 }
 
 /** @brief Normal input handler 38 — wall-jump input. */
-static void nm_38000(PLW* wk) {
+static void nm_38000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] < 2 && wk->wu.xyz[1].disp.pos > 0) {
         if (check_full_gauge_attack(wk, 0)) {
             return;
@@ -1229,7 +1229,7 @@ static void nm_38000(PLW* wk) {
 }
 
 /** @brief Normal input handler 39 — high-jump landing. */
-static void nm_39000(PLW* wk) {
+static void nm_39000(PlayerEntity* wk) {
     if (wk->wu.cg_type == 0xFF) {
         if (wk->wu.current_char_type == 0 && wk->wu.char_index == 0) {
             wk->wu.routine_no[2] = 1;
@@ -1244,21 +1244,21 @@ static void nm_39000(PLW* wk) {
 }
 
 /** @brief Normal input handler 40 — round win pose. */
-static void nm_40000(PLW* wk) {
+static void nm_40000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] && wk->wu.cg_type == 0xFF) {
         wk->wu.routine_no[3] = 9;
     }
 }
 
 /** @brief Normal input handler 42 — parry input. */
-static void nm_42000(PLW* wk) {
+static void nm_42000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] > 3) {
         jumping_cg_type_check(wk);
     }
 }
 
 /** @brief Normal input handler 45 — crouching guard to crouch walk. */
-static void nm_45000(PLW* wk) {
+static void nm_45000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] == 3) {
         if (check_full_gauge_attack(wk, 0)) {
             return;
@@ -1319,27 +1319,27 @@ static void nm_45000(PLW* wk) {
 }
 
 /** @brief Normal input handler 47 — air parry recovery. */
-static void nm_47000(PLW* wk) {
+static void nm_47000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] > 3) {
         jumping_cg_type_check(wk);
     }
 }
 
 /** @brief Normal input handler 48 — getting up input. */
-static void nm_48000(PLW* wk) {
+static void nm_48000(PlayerEntity* wk) {
     jumping_cg_type_check(wk);
 }
 
 /** @brief Normal input handler 49 — air parry stun. */
-static void nm_49000(PLW* wk) {
+static void nm_49000(PlayerEntity* wk) {
     jumping_cg_type_check(wk);
 }
 
 /** @brief Normal input handler 51 — stun recovery no-op. */
-static void nm_51000(PLW* /* unused */) {}
+static void nm_51000(PlayerEntity* /* unused */) {}
 
 /** @brief Normal input handler 52 — stunned (dizzy) input. */
-static void nm_52000(PLW* wk) {
+static void nm_52000(PlayerEntity* wk) {
     if (check_full_gauge_attack(wk, 0)) {
         return;
     }
@@ -1356,21 +1356,21 @@ static void nm_52000(PLW* wk) {
 }
 
 /** @brief Normal input handler 55 — metamorphosis input. */
-static void nm_55000(PLW* wk) {
+static void nm_55000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] > 1) {
         jumping_cg_type_check(wk);
     }
 }
 
 /** @brief Normal input handler 57 — metamorphosis direction input. */
-static void nm_57000(PLW* wk) {
+static void nm_57000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] > 2) {
         jumping_cg_type_check(wk);
     }
 }
 
 /** @brief Damage input sub-dispatcher — handles ukemi, cancel-on-hit, etc. */
-static void process_damage(PLW* wk) {
+static void process_damage(PlayerEntity* wk) {
     s32 csw;
 
     if (wk->wu.routine_no[3] == 0) {
@@ -1426,7 +1426,7 @@ static void process_damage(PLW* wk) {
 }
 
 /** @brief Damage input handler 00 — standing damage input. */
-static void dm_00000(PLW* wk) {
+static void dm_00000(PlayerEntity* wk) {
     if (wk->wu.routine_no[2] != 0) {
         return;
     }
@@ -1445,7 +1445,7 @@ static void dm_00000(PLW* wk) {
 }
 
 /** @brief Damage input handler 04 — guard recoil input. */
-static void dm_04000(PLW* wk) {
+static void dm_04000(PlayerEntity* wk) {
     switch (wk->wu.cg_type) {
     case 9:
         if (wk->py->flag == 0) {
@@ -1502,7 +1502,7 @@ static void dm_04000(PLW* wk) {
 }
 
 /** @brief Damage input handler 08 — air guard recoil input. */
-static void dm_08000(PLW* wk) {
+static void dm_08000(PlayerEntity* wk) {
     switch (wk->wu.cg_type) {
     case 0xFF:
         wk->throw_invuln_flag = 7;
@@ -1517,7 +1517,7 @@ static void dm_08000(PLW* wk) {
 }
 
 /** @brief Damage input handler 17 — air-hit tech input. */
-static void dm_17000(PLW* wk) {
+static void dm_17000(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] == 3) {
         wk->wu.routine_no[1] = 0;
         wk->wu.routine_no[2] = 23;
@@ -1527,7 +1527,7 @@ static void dm_17000(PLW* wk) {
 }
 
 /** @brief Damage input handler 18 — air blow-away tech input. */
-static void dm_18000(PLW* wk) {
+static void dm_18000(PlayerEntity* wk) {
     switch (wk->wu.cg_type) {
     case 0xFF:
         if (wk->wu.vital_new < 0 && (check_sa_type_rebirth(wk) != 0)) {
@@ -1536,7 +1536,7 @@ static void dm_18000(PLW* wk) {
             break;
         }
 
-        if (wk->dead_flag) {
+        if (wk->death_timerlag) {
             wk->wu.routine_no[2] = 16;
         } else {
             wk->wu.routine_no[2] = 1;
@@ -1560,7 +1560,7 @@ static void dm_18000(PLW* wk) {
 }
 
 /** @brief Damage input handler 25 — wallbounce tech input. */
-static void dm_25000(PLW* wk) {
+static void dm_25000(PlayerEntity* wk) {
     if (wk->sa_stop_flag == 1) {
         return;
     }
@@ -1572,7 +1572,7 @@ static void dm_25000(PLW* wk) {
 }
 
 /** @brief Catch/grab input sub-dispatcher. */
-static void process_catch(PLW* wk) {
+static void process_catch(PlayerEntity* wk) {
     if (wk->wu.routine_no[3] == 0) {
         return;
     }
@@ -1599,10 +1599,10 @@ static void process_catch(PLW* wk) {
 }
 
 /** @brief Caught/grabbed input sub-dispatcher — no-op placeholder. */
-static void process_caught(PLW* /* unused */) {}
+static void process_caught(PlayerEntity* /* unused */) {}
 
 /** @brief Attack input sub-dispatcher — cancel checks, chain combo logic. */
-static void process_attack(PLW* wk) {
+static void process_attack(PlayerEntity* wk) {
     if (wk->wu.routine_no[3]) {
         if (check_ashimoto_ex(wk)) {
             return;
@@ -1660,7 +1660,7 @@ static void process_attack(PLW* wk) {
 }
 
 /** @brief Checks if the current attack can be canceled into a grab. */
-static s32 check_cg_cancel_data(PLW* wk) {
+static s32 check_cg_cancel_data(PlayerEntity* wk) {
     if (wk->wu.cg_cancel == 0) {
         return 0;
     }
@@ -1757,11 +1757,11 @@ static s32 check_cg_cancel_data(PLW* wk) {
 
 const s8 lvdir_conv[4] = { 0, 2, 1, 0 };
 
-void (*const process_ndcca[5])(PLW* wk) = {
+void (*const process_ndcca[5])(PlayerEntity* wk) = {
     process_normal, process_damage, process_catch, process_caught, process_attack
 };
 
-void (*const plpnm_xxxxx[59])(PLW* wk) = {
+void (*const plpnm_xxxxx[59])(PlayerEntity* wk) = {
     nm_00000, nm_01000, nm_02000, nm_03000, nm_03000, nm_05000, nm_05000, nm_07000, nm_08000, nm_09000,
     nm_10000, nm_03000, nm_03000, nm_03000, nm_03000, nm_03000, nm_16000, nm_17000, nm_18000, nm_18000,
     nm_18000, nm_18000, nm_18000, nm_18000, nm_18000, nm_18000, nm_18000, nm_27000, nm_27000, nm_29000,
@@ -1770,7 +1770,7 @@ void (*const plpnm_xxxxx[59])(PLW* wk) = {
     nm_49000, nm_51000, nm_52000, nm_52000, nm_51000, nm_55000, nm_55000, nm_57000, nm_55000
 };
 
-void (*const plpdm_xxxxx[32])(PLW* wk) = { dm_00000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000,
+void (*const plpdm_xxxxx[32])(PlayerEntity* wk) = { dm_00000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000,
                                            dm_04000, dm_08000, dm_08000, dm_08000, dm_08000, dm_04000, dm_04000,
                                            dm_18000, dm_18000, dm_04000, dm_17000, dm_18000, dm_18000, dm_18000,
                                            dm_18000, dm_18000, dm_18000, dm_00000, dm_25000, dm_18000, dm_18000,

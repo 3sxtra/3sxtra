@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -21,7 +21,7 @@ const s16 plhos_data[20][3] = { { 2, 136, 4 }, { 40, 92, 3 },  { -4, 104, 2 },  
                                 { 6, 90, 2 },  { -4, 104, 2 }, { -41, 127, 5 }, { -4, 104, 4 }, { -4, 104, 4 } };
 
 void effect_C0_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
     s16 i;
     s16 hok;
 
@@ -35,7 +35,7 @@ void effect_C0_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -47,11 +47,11 @@ void effect_C0_move(State_Other* ewk) {
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0 && mwk->sa_stop_flag != 1) {
-            if (mwk->cp->lgp > 13) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0 && mwk->sa_stop_flag != 1) {
+            if (mwk->cp->lever_grace_period > 13) {
                 hok = 3;
             } else {
-                hok = hok_table_ef[mwk->cp->lgp / 2];
+                hok = hok_table_ef[mwk->cp->lever_grace_period / 2];
             }
 
             for (i = 0; i < hok; i++) {
@@ -61,7 +61,7 @@ void effect_C0_move(State_Other* ewk) {
 
         ewk->wu.position_x = mwk->wu.position_x;
 
-        if (mwk->wu.rl_flag) {
+        if (mwk->wu.facing_flag) {
             ewk->wu.position_x += plhos_data[mwk->player_number][0];
         } else {
             ewk->wu.position_x -= plhos_data[mwk->player_number][0];
@@ -82,7 +82,7 @@ void effect_C0_move(State_Other* ewk) {
     }
 }
 
-s32 effect_C0_init(PLW* wk, s32 /* unused */) {
+s32 effect_C0_init(PlayerEntity* wk, s32 /* unused */) {
     State_Other* ewk;
     s16 ix;
 
@@ -91,7 +91,7 @@ s32 effect_C0_init(PLW* wk, s32 /* unused */) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 120;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = wk->wu.my_family;

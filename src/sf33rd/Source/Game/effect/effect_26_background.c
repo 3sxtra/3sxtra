@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/effect/effect_27_screen_object_piece_data.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -44,7 +44,7 @@ void effect_26_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             eff26_jp_tbl[ewk->wu.old_routine_no[2] / 2](ewk);
         }
 
@@ -408,14 +408,14 @@ s32 effect_26_init(State_Other* oya, s16 type26) {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 26;
         ewk->wu.work_id = 16;
         ewk->my_master = oya;
         ewk->wu.graphic_rom_type = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.my_col_mode = 0x4200;
-        ewk->wu.dead_f = *data_ptr++;
+        ewk->wu.death_timer = *data_ptr++;
         ewk->wu.type = (s8)*data_ptr++;
         ewk->wu.my_family = *data_ptr++;
         ewk->wu.my_col_code = *data_ptr++;

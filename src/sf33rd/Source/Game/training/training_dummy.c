@@ -37,15 +37,15 @@ DummySettings g_dummy_settings = {
 /*  g_state.Lever_Buff helpers                                                 */
 /* ------------------------------------------------------------------ */
 
-static u16 guard_back_lever(PLW* wk) {
+static u16 guard_back_lever(PlayerEntity* wk) {
     return (wk->wu.active_move == 0) ? 0x04 : 0x08;
 }
 
-static u16 forward_lever(PLW* wk) {
+static u16 forward_lever(PlayerEntity* wk) {
     return (wk->wu.active_move == 0) ? 0x08 : 0x04;
 }
 
-static u16 down_forward_lever(PLW* wk) {
+static u16 down_forward_lever(PlayerEntity* wk) {
     return forward_lever(wk) | 0x02;
 }
 
@@ -89,7 +89,7 @@ static void inject_mash(s16 dummy_id, DummyMashType type) {
  * Injects forward → down → down-forward+LP during last 4 frames of
  * getup so the button press lands on the first actionable frame.
  */
-static bool try_wakeup_reversal(PLW* wk, s16 dummy_id) {
+static bool try_wakeup_reversal(PlayerEntity* wk, s16 dummy_id) {
     TrainingPlayerState* dummy = get_training_player(dummy_id);
     if (!dummy)
         return false;
@@ -138,7 +138,7 @@ static bool try_wakeup_reversal(PLW* wk, s16 dummy_id) {
  * @brief Try mashing during wakeup/hitstun/recovery (for escaping).
  * Only runs if mash is configured AND reversal didn't claim this frame.
  */
-static void try_wakeup_mash(PLW* wk, s16 dummy_id) {
+static void try_wakeup_mash(PlayerEntity* wk, s16 dummy_id) {
     TrainingPlayerState* dummy = get_training_player(dummy_id);
     if (!dummy)
         return;
@@ -180,7 +180,7 @@ static void try_stun_mash(s16 dummy_id) {
  * We also directly set move_state_flags[3] (high) or move_state_flags[4] (low) to
  * 0xFF so ANY grdb threshold is exceeded.
  */
-static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
+static void inject_parry(PlayerEntity* wk, s16 dummy_id, bool low) {
     /* Alternate neutral/forward to create the transition check_10 needs */
     if (g_training_state.frame_number & 1) {
         /* Forward frame */
@@ -216,7 +216,7 @@ static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
  * also set move_state_flags to 0xFF to guarantee the threshold is met.
  * The engine will only grant the red parry when guard_active is < 5.
  */
-static void inject_red_parry(PLW* wk, s16 dummy_id, bool low) {
+static void inject_red_parry(PlayerEntity* wk, s16 dummy_id, bool low) {
     /* Alternate neutral/forward — engine needs the lever transition
        even during blockstun for the parry validity to register */
     if (g_training_state.frame_number & 1) {
@@ -239,7 +239,7 @@ static void inject_red_parry(PLW* wk, s16 dummy_id, bool low) {
     }
 }
 
-static void execute_block_or_parry(PLW* wk, s16 dummy_id) {
+static void execute_block_or_parry(PlayerEntity* wk, s16 dummy_id) {
     TrainingPlayerState* dummy = get_training_player(dummy_id);
     TrainingPlayerState* opponent = get_training_player(dummy_id == 1 ? 0 : 1);
     if (!dummy || !opponent)
@@ -392,7 +392,7 @@ static void execute_block_or_parry(PLW* wk, s16 dummy_id) {
 /*  Main entry point                                                   */
 /* ------------------------------------------------------------------ */
 
-void training_dummy_update_input(PLW* wk, s16 dummy_id) {
+void training_dummy_update_input(PlayerEntity* wk, s16 dummy_id) {
     if (!wk)
         return;
 

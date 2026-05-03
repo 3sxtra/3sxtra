@@ -15,9 +15,9 @@
 
 const s16 Pos_Data_A0[4][3] = { { -52, 148, 69 }, { 140, 148, 69 }, { -52, 131, 69 }, { 140, 131, 69 } };
 
-static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_routine_no, s16 zero);
+static void Setup_A0_Sub(EffectMultiSprite* ewk, s16 old_routine_no, s16 zero);
 
-void effect_A0_move(WORK_Other_CONN* ewk) {
+void effect_A0_move(EffectMultiSprite* ewk) {
     if (g_state.Menu_Suicide[ewk->master_player]) {
         Release_Effect(&ewk->wu);
         return;
@@ -27,15 +27,15 @@ void effect_A0_move(WORK_Other_CONN* ewk) {
 }
 
 s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_routine_no, s16 zero, s16 target_bg, s16 master_player) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 100;
     ewk->wu.work_id = 16;
@@ -43,8 +43,8 @@ s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_routine_no,
     ewk->wu.type = type;
     ewk->wu.my_family = target_bg + 1;
     ewk->master_player = master_player;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.position_x = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + Pos_Data_A0[pos_index][0];
     ewk->wu.position_y = g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + Pos_Data_A0[pos_index][1];
     ewk->wu.position_z = Pos_Data_A0[pos_index][2];
@@ -53,7 +53,7 @@ s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_routine_no,
     return 0;
 }
 
-static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_routine_no, s16 zero) {
+static void Setup_A0_Sub(EffectMultiSprite* ewk, s16 old_routine_no, s16 zero) {
     ewk->num_of_conn = old_routine_no;
     ewk->conn[0].nx = 0;
     ewk->conn[0].ny = 0;

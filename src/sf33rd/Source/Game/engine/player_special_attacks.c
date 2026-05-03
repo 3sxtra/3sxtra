@@ -14,17 +14,17 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 
 // Forward decls
 
 extern const s16 cmdshot_conv_tbl[32];
 
-u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex);
+u16 decode_wst_data(PlayerEntity* wk, u16 cmd, s16 cmd_ex);
 
 /** @brief Common setup for special/super move initialization. */
-void hissatsu_setup_union(PLW* wk, s16 rno) {
+void hissatsu_setup_union(PlayerEntity* wk, s16 rno) {
     wk->wu.routine_no[1] = 4;
     wk->wu.routine_no[2] = rno;
     wk->wu.routine_no[3] = 0;
@@ -51,13 +51,13 @@ s16 cmdixconv(s16 ix) {
  * except for which SA index fields they use. This helper is parameterized by
  * the ground and air indices to eliminate the duplication.
  */
-static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
+static s32 check_full_gauge_attack_inner(PlayerEntity* wk, s8 always, u8 g_ix, u8 a_ix) {
     u16* conpane;
     s16 j;
     u16 cusw;
     u16 exsw;
 
-    if (wk->sa->mp != 1) {
+    if (wk->sa->meter_points != 1) {
         return 0;
     }
 
@@ -78,7 +78,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
             return 0;
         }
 
-        if (always && !(wk->cp->btix[g_ix] & 0x100)) {
+        if (always && !(wk->cp->button_index[g_ix] & 0x100)) {
             return 0;
         }
 
@@ -87,7 +87,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
         }
 
         if (wk->cancel_timer == 0) {
-            wk->permited_koa |= 0x40;
+            wk->permitted_art_type |= 0x40;
         }
 
         conpane = &wk->cp->input_held;
@@ -96,21 +96,21 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
             return 0;
         }
 
-        if (((wk->cp->btix[g_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[g_ix])) {
-            cusw = conpane[wk->cp->btix[g_ix] & 0xFF];
+        if (((wk->cp->button_index[g_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[g_ix])) {
+            cusw = conpane[wk->cp->button_index[g_ix] & 0xFF];
 
             for (j = 3; j >= 0; j--) {
-                if ((j == 3) && !(wk->cp->btix[g_ix] & 0x600)) {
+                if ((j == 3) && !(wk->cp->button_index[g_ix] & 0x600)) {
                     continue;
                 }
 
-                exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[g_ix][j]];
+                exsw = cusw & cmdshot_conv_tbl[wk->cp->extended_data[g_ix][j]];
 
-                if (exsw == cmdshot_conv_tbl[wk->cp->exdt[g_ix][j] & 0xF]) {
+                if (exsw == cmdshot_conv_tbl[wk->cp->extended_data[g_ix][j] & 0xF]) {
                     setup_comm_back(&wk->wu);
                     wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(g_ix)][j + ((g_ix - 20) * 4)];
                     wk->wu.cg_cancel = 0;
-                    wk->sa->mp = -1;
+                    wk->sa->meter_points = -1;
                     hissatsu_setup_union(wk, wk->cp->move_state_timers[g_ix][j]);
                     move_compel_all_init2(wk);
                     chainex_check[wk->wu.id][g_ix - 20] = 1;
@@ -135,7 +135,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
         return 0;
     }
 
-    if (always && !(wk->cp->btix[a_ix] & 0x100)) {
+    if (always && !(wk->cp->button_index[a_ix] & 0x100)) {
         return 0;
     }
 
@@ -144,7 +144,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
     }
 
     if (wk->cancel_timer == 0) {
-        wk->permited_koa |= 0x40;
+        wk->permitted_art_type |= 0x40;
     }
 
     conpane = &wk->cp->input_held;
@@ -153,21 +153,21 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
         return 0;
     }
 
-    if (((wk->cp->btix[a_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[a_ix])) {
-        cusw = conpane[wk->cp->btix[a_ix] & 0xFF];
+    if (((wk->cp->button_index[a_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[a_ix])) {
+        cusw = conpane[wk->cp->button_index[a_ix] & 0xFF];
 
         for (j = 3; j >= 0; j--) {
-            if ((j == 3) && !(wk->cp->btix[a_ix] & 0x600)) {
+            if ((j == 3) && !(wk->cp->button_index[a_ix] & 0x600)) {
                 continue;
             }
 
-            exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[a_ix][j]];
+            exsw = cusw & cmdshot_conv_tbl[wk->cp->extended_data[a_ix][j]];
 
-            if (exsw == cmdshot_conv_tbl[wk->cp->exdt[a_ix][j] & 0xF]) {
+            if (exsw == cmdshot_conv_tbl[wk->cp->extended_data[a_ix][j] & 0xF]) {
                 setup_comm_back(&wk->wu);
                 wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(a_ix)][j + ((a_ix - 38) * 4)];
                 wk->wu.cg_cancel = 0;
-                wk->sa->mp = -1;
+                wk->sa->meter_points = -1;
                 hissatsu_setup_union(wk, wk->cp->move_state_timers[a_ix][j]);
                 move_compel_all_init2(wk);
                 chainex_check[wk->wu.id][a_ix - 20] = 1;
@@ -181,29 +181,29 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
 }
 
 /** @brief Checks if a full-gauge Super Art attack can be used. */
-s32 check_full_gauge_attack(PLW* wk, s8 always) {
-    return check_full_gauge_attack_inner(wk, always, wk->sa->exsa_g_ix, wk->sa->exsa_a_ix);
+s32 check_full_gauge_attack(PlayerEntity* wk, s8 always) {
+    return check_full_gauge_attack_inner(wk, always, wk->sa->ex_sa_graphic_ix, wk->sa->ex_sa_anim_ix);
 }
 
 /** @brief Extended full-gauge check with additional cancel conditions. */
-s32 check_full_gauge_attack2(PLW* wk, s8 always) {
-    return check_full_gauge_attack_inner(wk, always, wk->sa->exs2_g_ix, wk->sa->exs2_a_ix);
+s32 check_full_gauge_attack2(PlayerEntity* wk, s8 always) {
+    return check_full_gauge_attack_inner(wk, always, wk->sa->ex_sa2_graphic_ix, wk->sa->ex_sa2_anim_ix);
 }
 
 /** @brief Checks if a Super Arts input command was detected. */
-s16 check_super_arts_attack(PLW* wk) {
+s16 check_super_arts_attack(PlayerEntity* wk) {
     s16 rnum = 0;
     s16 i;
 
     if (g_state.cmd_sel[wk->wu.id]) {
-        if (wk->sa->ok != -1) {
+        if (wk->sa->can_activate != -1) {
             for (i = 0; i < 3; i++) {
                 g_state.Super_Arts[wk->wu.id] = i;
                 set_super_arts_status_dc(wk->wu.id);
                 rnum = check_super_arts_attack_dc(wk);
 
                 if (rnum) {
-                    wk->sa->gt2 = wk->sa->gauge_type;
+                    wk->sa->gauge_type_2 = wk->sa->gauge_type;
                     break;
                 }
             }
@@ -216,13 +216,13 @@ s16 check_super_arts_attack(PLW* wk) {
 }
 
 /** @brief Checks Super Arts with damage-cancel conditions. */
-s32 check_super_arts_attack_dc(PLW* wk) {
+s32 check_super_arts_attack_dc(PlayerEntity* wk) {
     s16 j;
     u16 cusw;
     u16 exsw;
     u16* conpane;
 
-    if (wk->sa->ok != 1) {
+    if (wk->sa->can_activate != 1) {
         return 0;
     }
 
@@ -231,7 +231,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
     }
 
     if (wk->cancel_timer == 0) {
-        wk->permited_koa |= 1;
+        wk->permitted_art_type |= 1;
     }
 
     if (((g_state.Bonus_Game_Flag == 0x14) && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
@@ -239,47 +239,47 @@ s32 check_super_arts_attack_dc(PLW* wk) {
             return 0;
         }
 
-        if (wk->sa->nmsa_g_ix == 0) {
+        if (wk->sa->normal_sa_graphic_ix == 0) {
             return 0;
         }
 
-        if ((wk->sa->nmsa_g_ix) > 0x1C) {
+        if ((wk->sa->normal_sa_graphic_ix) > 0x1C) {
             return 0;
         }
 
         if ((wk->special_move_disabled_flag2 & DIP2_CHAIN_INTO_SUPER_ART_DISABLED) &&
-            (chainex_check[wk->wu.id][wk->sa->nmsa_g_ix - 20])) {
+            (chainex_check[wk->wu.id][wk->sa->normal_sa_graphic_ix - 20])) {
             return 0;
         }
 
         conpane = &wk->cp->input_held;
 
-        if (wk->cp->move_state_flags[wk->sa->nmsa_g_ix] == -1) {
+        if (wk->cp->move_state_flags[wk->sa->normal_sa_graphic_ix] == -1) {
             return 0;
         }
 
-        if (((wk->cp->btix[wk->sa->nmsa_g_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[wk->sa->nmsa_g_ix])) {
-            cusw = conpane[wk->cp->btix[wk->sa->nmsa_g_ix] & 0xFF];
+        if (((wk->cp->button_index[wk->sa->normal_sa_graphic_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[wk->sa->normal_sa_graphic_ix])) {
+            cusw = conpane[wk->cp->button_index[wk->sa->normal_sa_graphic_ix] & 0xFF];
 
             for (j = 3; j >= 0; j--) {
                 if (j == 3) {
-                    if (!(wk->cp->btix[wk->sa->nmsa_g_ix] & 0x600) || ((wk->sa->ex4th_full) && (wk->sa->mp != 1))) {
+                    if (!(wk->cp->button_index[wk->sa->normal_sa_graphic_ix] & 0x600) || ((wk->sa->ex4th_full) && (wk->sa->meter_points != 1))) {
                         continue;
                     }
                 }
 
-                exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[wk->sa->nmsa_g_ix][j]];
+                exsw = cusw & cmdshot_conv_tbl[wk->cp->extended_data[wk->sa->normal_sa_graphic_ix][j]];
 
-                if (exsw == cmdshot_conv_tbl[wk->cp->exdt[wk->sa->nmsa_g_ix][j] & 0xF]) {
+                if (exsw == cmdshot_conv_tbl[wk->cp->extended_data[wk->sa->normal_sa_graphic_ix][j] & 0xF]) {
                     setup_comm_back(&wk->wu);
-                    wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->nmsa_g_ix)]
-                                             [j + ((wk->sa->nmsa_g_ix - 20) * 4)];
+                    wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->normal_sa_graphic_ix)]
+                                             [j + ((wk->sa->normal_sa_graphic_ix - 20) * 4)];
                     wk->sa->ex4th_exec = (j == 3) * wk->sa->ex4th_full;
                     wk->wu.cg_cancel = 0;
-                    wk->sa->ok = -1;
-                    hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_g_ix][j]);
+                    wk->sa->can_activate = -1;
+                    hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->normal_sa_graphic_ix][j]);
                     move_compel_all_init2(wk);
-                    chainex_check[wk->wu.id][wk->sa->nmsa_g_ix - 20] = 1;
+                    chainex_check[wk->wu.id][wk->sa->normal_sa_graphic_ix - 20] = 1;
                     chainex_spat_cancel_trajectory(&wk->wu);
                     return 1;
                 }
@@ -293,47 +293,47 @@ s32 check_super_arts_attack_dc(PLW* wk) {
         return 0;
     }
 
-    if (wk->sa->nmsa_a_ix == 0) {
+    if (wk->sa->normal_sa_anim_ix == 0) {
         return 0;
     }
 
-    if ((wk->sa->nmsa_a_ix) < 0x1C) {
+    if ((wk->sa->normal_sa_anim_ix) < 0x1C) {
         return 0;
     }
 
     if ((wk->special_move_disabled_flag2 & DIP2_CHAIN_INTO_SUPER_ART_DISABLED) &&
-        (chainex_check[wk->wu.id][wk->sa->nmsa_a_ix - 20])) {
+        (chainex_check[wk->wu.id][wk->sa->normal_sa_anim_ix - 20])) {
         return 0;
     }
 
     conpane = &wk->cp->input_held;
 
-    if (wk->cp->move_state_flags[wk->sa->nmsa_a_ix] == -1) {
+    if (wk->cp->move_state_flags[wk->sa->normal_sa_anim_ix] == -1) {
         return 0;
     }
 
-    if (((wk->cp->btix[wk->sa->nmsa_a_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[wk->sa->nmsa_a_ix])) {
-        cusw = conpane[wk->cp->btix[wk->sa->nmsa_a_ix] & 0xFF];
+    if (((wk->cp->button_index[wk->sa->normal_sa_anim_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[wk->sa->normal_sa_anim_ix])) {
+        cusw = conpane[wk->cp->button_index[wk->sa->normal_sa_anim_ix] & 0xFF];
 
         for (j = 3; j >= 0; j--) {
             if (j == 3) {
-                if (!(wk->cp->btix[wk->sa->nmsa_a_ix] & 0x600) || (wk->sa->ex4th_full && (wk->sa->mp != 1))) {
+                if (!(wk->cp->button_index[wk->sa->normal_sa_anim_ix] & 0x600) || (wk->sa->ex4th_full && (wk->sa->meter_points != 1))) {
                     continue;
                 }
             }
 
-            exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[wk->sa->nmsa_a_ix][j]];
+            exsw = cusw & cmdshot_conv_tbl[wk->cp->extended_data[wk->sa->normal_sa_anim_ix][j]];
 
-            if (exsw == cmdshot_conv_tbl[wk->cp->exdt[wk->sa->nmsa_a_ix][j] & 0xF]) {
+            if (exsw == cmdshot_conv_tbl[wk->cp->extended_data[wk->sa->normal_sa_anim_ix][j] & 0xF]) {
                 setup_comm_back(&wk->wu);
-                wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->nmsa_a_ix)]
-                                         [j + (((wk->sa->nmsa_a_ix) - 38) * 4)];
+                wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->normal_sa_anim_ix)]
+                                         [j + (((wk->sa->normal_sa_anim_ix) - 38) * 4)];
                 wk->sa->ex4th_exec = ((j == 3) * (wk->sa->ex4th_full));
                 wk->wu.cg_cancel = 0;
-                wk->sa->ok = -1;
-                hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_a_ix][j]);
+                wk->sa->can_activate = -1;
+                hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->normal_sa_anim_ix][j]);
                 move_compel_all_init2(wk);
-                chainex_check[wk->wu.id][wk->sa->nmsa_a_ix - 20] = 1;
+                chainex_check[wk->wu.id][wk->sa->normal_sa_anim_ix - 20] = 1;
                 chainex_spat_cancel_trajectory(&wk->wu);
                 return 1;
             }
@@ -344,9 +344,9 @@ s32 check_super_arts_attack_dc(PLW* wk) {
 }
 
 /** @brief Executes the selected Super Art and sets up the attack state. */
-s32 execute_super_arts(PLW* wk) {
+s32 execute_super_arts(PlayerEntity* wk) {
     if (wk->cancel_timer == 0) {
-        wk->permited_koa |= 1;
+        wk->permitted_art_type |= 1;
     }
 
     if ((wk->sa->gauge_type != 3) && g_state.pcon_dp_flag) {
@@ -358,22 +358,22 @@ s32 execute_super_arts(PLW* wk) {
             return 0;
         }
 
-        if (wk->sa->ok != 1) {
+        if (wk->sa->can_activate != 1) {
             return 0;
         }
 
-        if (wk->sa->nmsa_g_ix > 28) {
+        if (wk->sa->normal_sa_graphic_ix > 28) {
             return 0;
         }
 
         setup_comm_back(&wk->wu);
-        wk->as = _assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->nmsa_g_ix)] + (wk->sa->nmsa_g_ix - 20) * 4;
+        wk->as = _assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->normal_sa_graphic_ix)] + (wk->sa->normal_sa_graphic_ix - 20) * 4;
         wk->sa->ex4th_exec = 0;
         wk->wu.cg_cancel = 0;
-        wk->sa->ok = -1;
-        hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_g_ix][0]);
+        wk->sa->can_activate = -1;
+        hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->normal_sa_graphic_ix][0]);
         move_compel_all_init2(wk);
-        wk->sa->gt2 = wk->sa->gauge_type;
+        wk->sa->gauge_type_2 = wk->sa->gauge_type;
         return 1;
     }
 
@@ -381,27 +381,27 @@ s32 execute_super_arts(PLW* wk) {
         return 0;
     }
 
-    if (wk->sa->ok != 1) {
+    if (wk->sa->can_activate != 1) {
         return 0;
     }
 
-    if (wk->sa->nmsa_a_ix < 0x1C) {
+    if (wk->sa->normal_sa_anim_ix < 0x1C) {
         return 0;
     }
 
     setup_comm_back(&wk->wu);
-    wk->as = _assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->nmsa_a_ix)] + (wk->sa->nmsa_a_ix - 38) * 4;
+    wk->as = _assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->normal_sa_anim_ix)] + (wk->sa->normal_sa_anim_ix - 38) * 4;
     wk->sa->ex4th_exec = 0;
     wk->wu.cg_cancel = 0;
-    wk->sa->ok = -1;
-    hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->nmsa_a_ix][0]);
+    wk->sa->can_activate = -1;
+    hissatsu_setup_union(wk, wk->cp->move_state_timers[wk->sa->normal_sa_anim_ix][0]);
     move_compel_all_init2(wk);
-    wk->sa->gt2 = wk->sa->gauge_type;
+    wk->sa->gauge_type_2 = wk->sa->gauge_type;
     return 1;
 }
 
 /** @brief Checks if a special move input command was detected. */
-s32 check_special_attack(PLW* wk) {
+s32 check_special_attack(PlayerEntity* wk) {
     s16 i;
     s16 j;
     u16 cusw;
@@ -409,7 +409,7 @@ s32 check_special_attack(PLW* wk) {
     u16* conpane;
 
     if (wk->cancel_timer == 0) {
-        wk->permited_koa |= 2;
+        wk->permitted_art_type |= 2;
     }
 
     if (g_state.pcon_dp_flag) {
@@ -428,51 +428,51 @@ s32 check_special_attack(PLW* wk) {
                 continue;
             }
 
-            if ((wk->cp->btix[i] & 0x800) && shell_live_check(wk, i)) {
+            if ((wk->cp->button_index[i] & 0x800) && shell_live_check(wk, i)) {
                 continue;
             }
 
-            if ((wk->cp->btix[i] & 0x1000) && (wk->metamorphose || (wk->sa->ok != -1))) {
+            if ((wk->cp->button_index[i] & 0x1000) && (wk->metamorphose || (wk->sa->can_activate != -1))) {
                 continue;
             }
 
-            if (((wk->cp->btix[i] & 0xFF) == 0x80) || !wk->cp->move_state_flags[i]) {
+            if (((wk->cp->button_index[i] & 0xFF) == 0x80) || !wk->cp->move_state_flags[i]) {
                 continue;
             }
 
-            cusw = conpane[wk->cp->btix[i] & 0xFF];
+            cusw = conpane[wk->cp->button_index[i] & 0xFF];
 
             for (j = 3; j >= 0; j--) {
-                exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[i][j]];
+                exsw = cusw & cmdshot_conv_tbl[wk->cp->extended_data[i][j]];
 
-                if (exsw != cmdshot_conv_tbl[wk->cp->exdt[i][j] & 0xF]) {
+                if (exsw != cmdshot_conv_tbl[wk->cp->extended_data[i][j] & 0xF]) {
                     continue;
                 }
 
                 if (j == 3) {
-                    if (!(wk->cp->btix[i] & 0x600)) {
+                    if (!(wk->cp->button_index[i] & 0x600)) {
                         continue;
                     }
 
-                    if ((wk->cp->btix[i] & 0x200) && (wk->spmv_ng_flag & DIP_GROUND_SPECIAL_DISABLED)) {
+                    if ((wk->cp->button_index[i] & 0x200) && (wk->spmv_ng_flag & DIP_GROUND_SPECIAL_DISABLED)) {
                         continue;
                     }
 
                     if (wk->metamorphose) {
-                        if (wk->cp->btix[i] & 0x400) {
+                        if (wk->cp->button_index[i] & 0x400) {
                             continue;
                         }
                     } else {
-                        if ((wk->sa->mp == -1) || (wk->sa->ok == -1)) {
+                        if ((wk->sa->meter_points == -1) || (wk->sa->can_activate == -1)) {
                             continue;
                         }
 
-                        if (wk->cp->btix[i] & 0x400) {
-                            if ((wk->special_move_disabled_flag2 & DIP2_EX_MOVE_DISABLED) || (wk->sa->ex != 1)) {
+                        if (wk->cp->button_index[i] & 0x400) {
+                            if ((wk->special_move_disabled_flag2 & DIP2_EX_MOVE_DISABLED) || (wk->sa->ex_mode != 1)) {
                                 continue;
                             }
 
-                            wk->sa->ex = -1;
+                            wk->sa->ex_mode = -1;
                         }
                     }
                 } else if (wk->spmv_ng_flag & DIP_GROUND_SPECIAL_DISABLED) {
@@ -510,52 +510,52 @@ s32 check_special_attack(PLW* wk) {
             continue;
         }
 
-        if ((wk->cp->btix[i] & 0x1000) && (wk->metamorphose || (wk->sa->ok != -1))) {
+        if ((wk->cp->button_index[i] & 0x1000) && (wk->metamorphose || (wk->sa->can_activate != -1))) {
             continue;
         }
 
-        if ((wk->cp->btix[i] & 0x2000) && (wk->wu.mvxy.a[0].sp < 0)) {
+        if ((wk->cp->button_index[i] & 0x2000) && (wk->wu.mvxy.a[0].sp < 0)) {
             continue;
         }
 
-        if ((wk->cp->btix[i] & 0xFF) != 0x80) {
+        if ((wk->cp->button_index[i] & 0xFF) != 0x80) {
             if (!wk->cp->move_state_flags[i]) {
                 continue;
             }
 
-            cusw = conpane[wk->cp->btix[i] & 0xFF];
+            cusw = conpane[wk->cp->button_index[i] & 0xFF];
 
             for (j = 3; j >= 0; j--) {
-                exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[i][j]];
+                exsw = cusw & cmdshot_conv_tbl[wk->cp->extended_data[i][j]];
 
-                if (exsw != cmdshot_conv_tbl[wk->cp->exdt[i][j] & 0xF]) {
+                if (exsw != cmdshot_conv_tbl[wk->cp->extended_data[i][j] & 0xF]) {
                     continue;
                 }
 
                 if (j == 3) {
-                    if (!(wk->cp->btix[i] & 0x600)) {
+                    if (!(wk->cp->button_index[i] & 0x600)) {
                         continue;
                     }
 
-                    if ((wk->cp->btix[i] & 0x200) && (wk->spmv_ng_flag & DIP_AIR_SPECIAL_DISABLED)) {
+                    if ((wk->cp->button_index[i] & 0x200) && (wk->spmv_ng_flag & DIP_AIR_SPECIAL_DISABLED)) {
                         continue;
                     }
 
                     if (wk->metamorphose) {
-                        if (wk->cp->btix[i] & 0x400) {
+                        if (wk->cp->button_index[i] & 0x400) {
                             continue;
                         }
                     } else {
-                        if ((wk->sa->mp == -1) || (wk->sa->ok == -1)) {
+                        if ((wk->sa->meter_points == -1) || (wk->sa->can_activate == -1)) {
                             continue;
                         }
 
-                        if (wk->cp->btix[i] & 0x400) {
-                            if ((wk->special_move_disabled_flag2 & DIP2_EX_MOVE_DISABLED) || (wk->sa->ex != 1)) {
+                        if (wk->cp->button_index[i] & 0x400) {
+                            if ((wk->special_move_disabled_flag2 & DIP2_EX_MOVE_DISABLED) || (wk->sa->ex_mode != 1)) {
                                 continue;
                             }
 
-                            wk->sa->ex = -1;
+                            wk->sa->ex_mode = -1;
                         }
                     }
                 } else if (wk->spmv_ng_flag & DIP_AIR_SPECIAL_DISABLED) {
@@ -594,7 +594,7 @@ s32 check_special_attack(PLW* wk) {
 
 /** @brief Activates chain-combo cancel into special move. */
 void chainex_spat_cancel_trajectory(State* wk) {
-    MVXY curr;
+    MovementVector curr;
 
     if (wk->old_routine_no[1] == 4 && wk->old_routine_no[2] > 15) {
         curr = wk->mvxy;
@@ -606,7 +606,7 @@ void chainex_spat_cancel_trajectory(State* wk) {
 }
 
 /** @brief Checks if a leap attack input was detected. */
-s32 check_leap_attack(PLW* wk) {
+s32 check_leap_attack(PlayerEntity* wk) {
     if (wk->special_move_disabled_flag2 & DIP2_UNIVERSAL_OVERHEAD_DISABLED) {
         return 0;
     }
@@ -615,10 +615,10 @@ s32 check_leap_attack(PLW* wk) {
         return 0;
     }
 
-    wk->permited_koa |= 0x200;
+    wk->permitted_art_type |= 0x200;
 
     if (wk->special_move_disabled_flag2 & DIP2_UNIVERSAL_OVERHEAD_DEFAULT_INPUT_ENABLED) {
-        if (wk->cp->ca25 == 0) {
+        if (wk->cp->combo_btn_25 == 0) {
             return 0;
         }
 
@@ -646,11 +646,11 @@ s32 check_leap_attack(PLW* wk) {
 }
 
 /** @brief Checks if a normal attack input was detected. */
-s32 check_nm_attack(PLW* wk) {
+s32 check_nm_attack(PlayerEntity* wk) {
     s16 kos;
     s16 koa;
 
-    wk->permited_koa |= 4;
+    wk->permitted_art_type |= 4;
 
     if ((kos = shot_data_convert(wk->cp->input_current)) < 0) {
         return 0;
@@ -777,7 +777,7 @@ s16 hikusugi_check(State* wk) {
 }
 
 /** @brief Checks if a taunt (chouhatsu) input was detected. */
-s32 check_chouhatsu(PLW* wk) {
+s32 check_chouhatsu(PlayerEntity* wk) {
     if (wk->spmv_ng_flag & DIP_TAUNT_DISABLED) {
         return 0;
     }
@@ -786,7 +786,7 @@ s32 check_chouhatsu(PLW* wk) {
         return 0;
     }
 
-    wk->permited_koa |= 0x80;
+    wk->permitted_art_type |= 0x80;
 
     if (wk->wu.xyz[1].disp.pos > 0) {
         return 0;
@@ -800,7 +800,7 @@ s32 check_chouhatsu(PLW* wk) {
         return 0;
     }
 
-    if (wk->cp->ca36 == 0) {
+    if (wk->cp->combo_btn_36 == 0) {
         return 0;
     }
 
@@ -815,12 +815,12 @@ s32 check_chouhatsu(PLW* wk) {
 }
 
 /** @brief Checks if a throw-break (throw_escape) input was detected. */
-s32 Check_Throw_Escape_Command(PLW* wk) {
+s32 Check_Throw_Escape_Command(PlayerEntity* wk) {
     if (wk->special_move_disabled_flag2 & DIP2_THROW_BREAK_DISABLED) {
         return 0;
     }
 
-    if (wk->cat_break_reserve) {
+    if (wk->catch_break_reserve) {
         return 1;
     }
 
@@ -832,7 +832,7 @@ s32 Check_Throw_Escape_Command(PLW* wk) {
         return 0;
     }
 
-    if (wk->cp->ca14) {
+    if (wk->cp->combo_btn_14) {
         return 1;
     }
 
@@ -843,7 +843,7 @@ const u8 nml_catch_h2_ok[2][20] = { { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16
                                     { 0, 0, 0, 0, 0, 0, 0, 17, 0, 17, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0 } };
 
 /** @brief Checks if a catch/grab attack input was detected. */
-s32 check_catch_attack(PLW* wk) {
+s32 check_catch_attack(PlayerEntity* wk) {
     s16 kos;
 
     if (g_state.pcon_dp_flag) {
@@ -854,9 +854,9 @@ s32 check_catch_attack(PLW* wk) {
         return 0;
     }
 
-    wk->permited_koa |= 0x100;
+    wk->permitted_art_type |= 0x100;
 
-    if (wk->cp->ca14 == 0) {
+    if (wk->cp->combo_btn_14 == 0) {
         return 0;
     }
 
@@ -892,7 +892,7 @@ s32 check_catch_attack(PLW* wk) {
 }
 
 /** @brief Sets the routine number for the attack state machine. */
-void set_attack_routine_number(PLW* wk) {
+void set_attack_routine_number(PlayerEntity* wk) {
     wk->wu.routine_no[1] = 4;
     wk->wu.routine_no[2] = wk->as->r_no;
     wk->wu.routine_no[3] = 0;
@@ -923,7 +923,7 @@ u16 get_nearing_range(s16 pnum, s16 kos) {
 }
 
 /** @brief Selects the appropriate move from the command input. */
-s32 move_select(PLW* wk, s16 kos, s16 sf) {
+s32 move_select(PlayerEntity* wk, s16 kos, s16 sf) {
     const u16* wst;
 
     switch (sf) {
@@ -987,7 +987,7 @@ s32 move_select(PLW* wk, s16 kos, s16 sf) {
 }
 
 /** @brief Decodes move select table data into actual move parameters. */
-u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
+u16 decode_wst_data(PlayerEntity* wk, u16 cmd, s16 cmd_ex) {
     u16 lever;
     u16 rnum;
 
@@ -1168,12 +1168,12 @@ s16 datacmd_conpanecmd(s16 dat) {
 const u8 renda_status_table[4] = { 0, 20, 32, 0 };
 
 /** @brief Checks for rapid-fire cancel (renda) opportunity. */
-s32 check_renda_cancel(PLW* wk) {
-    if (wk->wu.rl_flag != wk->wu.active_move) {
+s32 check_renda_cancel(PlayerEntity* wk) {
+    if (wk->wu.facing_flag != wk->wu.active_move) {
         return 0;
     }
 
-    wk->permited_koa |= 32;
+    wk->permitted_art_type |= 32;
 
     if (wk->wu.pat_status == renda_status_table[(wk->cp->input_pressed & 3)] &&
         wk->current_attack == (wk->cp->input_current & 0x770)) {
@@ -1213,12 +1213,12 @@ const s16 cnmc_z_lever_data[16][8] = { { -1, -1, -1, -1, -1, -1, -1, -1 }, { 4, 
                                        { 1, 4, 7, 3, 6, 9, -1, -1 },       { 1, 4, 7, 5, 3, 6, 9, -1 } };
 
 /** @brief Checks for target-combo (meoshi) cancel opportunity. */
-s32 check_target_combo_cancel(PLW* wk) {
+s32 check_target_combo_cancel(PlayerEntity* wk) {
     s16 i;
     s16 tdat;
     s16 wdat;
 
-    wk->permited_koa |= 0x10;
+    wk->permitted_art_type |= 0x10;
 
     if (wk->wu.frame_link_hit_flag == 0) {
         return 0;

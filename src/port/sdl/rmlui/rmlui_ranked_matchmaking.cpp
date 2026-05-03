@@ -290,7 +290,7 @@ extern "C" void rmlui_ranked_matchmaking_update(void) {
                 if (ping < 60)
                     item.ping_class = "ping-good";
                 else if (ping < 120)
-                    item.ping_class = "ping-ok";
+                    item.ping_class = "ping-can_activate";
                 else
                     item.ping_class = "ping-bad";
             } else {

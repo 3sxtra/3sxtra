@@ -12,11 +12,11 @@
 #include "sf33rd/Source/Game/effect/effect_m6_visual_generic.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
@@ -26,7 +26,7 @@
 void effect_M5_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.routine_no[0]++;
             ewk->wu.disp_flag = 1;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
@@ -36,7 +36,7 @@ void effect_M5_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             ewk->wu.old_routine_no[0]--;
 
@@ -58,7 +58,7 @@ void effect_M5_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 1) {
@@ -74,14 +74,14 @@ void effect_M5_move(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] < 0) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.old_routine_no[0] = 0x30;
 
-                if (ewk->wu.rl_flag) {
+                if (ewk->wu.facing_flag) {
                     ewk->wu.mvxy.a[0].sp = -0x20000;
                     ewk->wu.mvxy.d[0].sp = -0x1000;
                 } else {
@@ -96,7 +96,7 @@ void effect_M5_move(State_Other* ewk) {
         break;
 
     case 4:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] < 0) {
@@ -127,7 +127,7 @@ void effect_M5_move(State_Other* ewk) {
     }
 }
 
-s32 effect_M5_init(PLW* oya) {
+s32 effect_M5_init(PlayerEntity* oya) {
     State_Other* ewk;
     s16 ix;
     s16 work;
@@ -138,7 +138,7 @@ s32 effect_M5_init(PLW* oya) {
 
     ewk = (State_Other*)frw[ix];
     g_state.demo_car_flag[oya->wu.id] = 0;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 225;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
@@ -155,7 +155,7 @@ s32 effect_M5_init(PLW* oya) {
     if (oya->wu.id) {
         ewk->wu.xyz[0].disp.low = 0;
         ewk->wu.xyz[1].cal = 0;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.old_routine_no[0] = 40;
         work = (g_state.bg_w.bgw[1].pos_x_work + 168) & 0xFFFF;
         ewk->wu.xyz[0].disp.pos = (g_state.bg_w.bgw[1].pos_x_work + 320) & 0xFFFF;
@@ -163,7 +163,7 @@ s32 effect_M5_init(PLW* oya) {
     } else {
         ewk->wu.xyz[1].cal = 0;
         ewk->wu.xyz[0].disp.low = 0;
-        ewk->wu.rl_flag = 1;
+        ewk->wu.facing_flag = 1;
         ewk->wu.old_routine_no[0] = 40;
         work = (g_state.bg_w.bgw[1].pos_x_work - 168) & 0xFFFF;
         ewk->wu.xyz[0].disp.pos = (g_state.bg_w.bgw[1].pos_x_work - 320) & 0xFFFF;
@@ -171,8 +171,8 @@ s32 effect_M5_init(PLW* oya) {
     }
 
     suzi_offset_set(ewk);
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     effect_M6_init(ewk);
     return 0;
 }

@@ -42,19 +42,19 @@ s32 effect_54_init(State_Other* oya) {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 54;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->my_master = oya;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.type = i;
-        ewk->wu.dead_f = 0;
+        ewk->wu.death_timer = 0;
         ewk->wu.my_family = 2;
         ewk->wu.my_col_code = 8492;
-        ewk->wu.my_mts = 7;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 7;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
         ewk->wu.xyz[0].disp.pos = *data_ptr++;
         ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;

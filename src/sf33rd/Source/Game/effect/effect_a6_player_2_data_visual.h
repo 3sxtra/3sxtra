@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-void effect_A6_move(WORK_Other_CONN* ewk);
+void effect_A6_move(EffectMultiSprite* ewk);
 s32 effect_A6_init(State_Other* mwk);
 
 #endif

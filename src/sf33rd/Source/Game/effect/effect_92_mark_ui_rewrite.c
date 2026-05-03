@@ -50,7 +50,7 @@ s32 effect_92_init(s16 PL_id, s16 win_number) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 92;
     ewk->master_id = PL_id;
     ewk->wu.dir_step = win_number;

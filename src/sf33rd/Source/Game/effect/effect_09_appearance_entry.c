@@ -15,12 +15,12 @@
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
@@ -89,12 +89,12 @@ static void eff09_0000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
+        if (!g_state.execute_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -151,7 +151,7 @@ static void eff09_1000(State_Other* ewk) {
 
     case 1:
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
+        if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -170,7 +170,7 @@ static void eff09_1000(State_Other* ewk) {
             break;
         }
 
-        if (ewk->wu.old_routine_no[0] && !g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll &&
+        if (ewk->wu.old_routine_no[0] && !g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll &&
             eff_hit_check(ewk, 0)) {
             ewk->wu.routine_no[1]++;
             set_char_move_init(&ewk->wu, 0, 65);
@@ -197,7 +197,7 @@ static void eff09_2000(State_Other* ewk) {
     const s32* ptr;
     u16 sw_work;
     const s16* pl_hit_ptr;
-    PLW* hit_pl;
+    PlayerEntity* hit_pl;
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
@@ -226,7 +226,7 @@ static void eff09_2000(State_Other* ewk) {
         ewk->wu.mvxy.d[0].sp = *ptr++;
         ewk->wu.mvxy.d[1].sp = *ptr++;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
             ewk->wu.mvxy.d[0].sp = -ewk->wu.mvxy.d[0].sp;
         }
@@ -237,7 +237,7 @@ static void eff09_2000(State_Other* ewk) {
         return;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -288,7 +288,7 @@ static void eff09_2000(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             if ((ewk->wu.xyz[0].disp.pos >= 785 || ewk->wu.xyz[0].disp.pos < 240) || ewk->wu.xyz[1].disp.pos < -56) {
                 ewk->wu.routine_no[1]++;
                 ewk->wu.disp_flag = 0;
@@ -336,7 +336,7 @@ static void sean_ball_move(State_Other* ewk, u16 sw_work) {
     if (sw_work & 4) {
         ewk->wu.old_routine_no[2]++;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             if (ewk->wu.old_routine_no[2] < 4) {
                 ewk->wu.mvxy.d[0].sp += eff09_add_tbl1[ewk->wu.dir_step][0];
             }
@@ -348,7 +348,7 @@ static void sean_ball_move(State_Other* ewk, u16 sw_work) {
     if (sw_work & 8) {
         ewk->wu.old_routine_no[3]++;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             if (ewk->wu.old_routine_no[3] < 8) {
                 ewk->wu.mvxy.d[0].sp += eff09_add_tbl1[ewk->wu.dir_step][1];
             }
@@ -365,7 +365,7 @@ static void ball_bound_set(State_Other* ewk) {
     ewk->wu.mvxy.d[1].sp = -0x8000;
     ewk->wu.dir_timer = 12;
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
         ewk->wu.mvxy.d[0].sp = -ewk->wu.mvxy.d[0].sp;
     }
@@ -388,7 +388,7 @@ static void eff09_3000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] <= 0) {
@@ -409,7 +409,7 @@ static void eff09_3000(State_Other* ewk) {
             Sound_SE((g_state.Winner_id * 0x300) + 0x130);
         }
 
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -441,9 +441,9 @@ static void eff09_4000(State_Other* ewk) {
         ewk->wu.position_z = ewk->wu.my_priority = 20;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         oya_ptr = (State*)ewk->my_master;
-        ewk->wu.rl_flag = oya_ptr->rl_flag;
+        ewk->wu.facing_flag = oya_ptr->facing_flag;
 
-        if (oya_ptr->rl_flag) {
+        if (oya_ptr->facing_flag) {
             work = g_state.bg_w.bgw[1].xy[0].disp.pos - 272;
             work2 = oya_ptr->xyz[0].disp.pos - 88;
         } else {
@@ -457,7 +457,7 @@ static void eff09_4000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             ewk->wu.old_routine_no[0]--;
@@ -473,7 +473,7 @@ static void eff09_4000(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -500,7 +500,7 @@ static void eff09_5000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -610,7 +610,7 @@ static void eff09_8000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
@@ -643,19 +643,19 @@ static void eff09_9000(State_Other* ewk) {
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos -= 6;
         } else {
             ewk->wu.xyz[0].disp.pos -= 2;
         }
 
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.xyz[1].disp.pos += g_state.base_y_pos;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
+        if (!g_state.execute_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
             char_move(&ewk->wu);
         }
 
@@ -677,21 +677,21 @@ static void eff09_10000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.xyz[0].disp.pos -= 6;
         } else {
             ewk->wu.xyz[0].disp.pos -= 2;
         }
 
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.xyz[1].disp.pos += g_state.base_y_pos;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
+        if (!g_state.execute_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -730,9 +730,9 @@ static void eff09_11000(State_Other* ewk) {
         ewk->wu.my_col_code = 0x2000;
         ewk->wu.position_z = ewk->wu.my_priority = 20;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-        ewk->wu.rl_flag = oya_ptr->rl_flag ^ 1;
+        ewk->wu.facing_flag = oya_ptr->facing_flag ^ 1;
 
-        if (oya_ptr->rl_flag) {
+        if (oya_ptr->facing_flag) {
             work = g_state.bg_w.bgw[1].xy[0].disp.pos + 272;
             work2 = oya_ptr->xyz[0].disp.pos + 56;
         } else {
@@ -746,7 +746,7 @@ static void eff09_11000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             ewk->wu.old_routine_no[0]--;
@@ -764,7 +764,7 @@ static void eff09_11000(State_Other* ewk) {
     case 2:
         add_x_sub(&ewk->wu);
 
-        if (oya_ptr->rl_flag) {
+        if (oya_ptr->facing_flag) {
             if (oya_ptr->xyz[0].disp.pos > ewk->wu.xyz[0].disp.pos) {
                 ewk->wu.routine_no[1]++;
             }
@@ -790,13 +790,13 @@ static void eff09_12000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         ewk->wu.mvxy.a[1].sp = -0x10000;
         ewk->wu.mvxy.d[1].sp = 0;
         ewk->wu.mvxy.d[0].sp = 0;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.mvxy.a[0].sp = -0x20000;
         } else {
             ewk->wu.mvxy.a[0].sp = 0x20000;
@@ -854,12 +854,12 @@ static void eff09_13000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (oya_ptr->cg_type == 99) {
@@ -877,7 +877,7 @@ static void eff09_13000(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -906,7 +906,7 @@ static void eff09_13000(State_Other* ewk) {
 static void eff09_14000(State_Other* ewk) {
     State* oya_ptr = (State*)ewk->my_master;
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.xyz[0].disp.pos = oya_ptr->xyz[0].disp.pos - eff09_data2[ewk->wu.type][2];
     } else {
         ewk->wu.xyz[0].disp.pos = oya_ptr->xyz[0].disp.pos + eff09_data2[ewk->wu.type][2];
@@ -919,12 +919,12 @@ static void eff09_14000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
+        if (!g_state.execute_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -959,14 +959,14 @@ static void eff09_15000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.death_timer = 1;
+        ewk->wu.facing_flag = 0;
         ewk->wu.xyz[1].disp.pos += g_state.base_y_pos;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
+        if (!g_state.execute_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
             char_move(&ewk->wu);
 
             if (oya_ptr->cg_type == 9) {
@@ -993,15 +993,15 @@ static void eff09_16000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         ewk->wu.xyz[0].disp.pos += 2;
         ewk->wu.xyz[1].disp.pos += g_state.base_y_pos;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
+        if (!g_state.execute_flag && !g_state.Game_pause && ewk->wu.hit_stop) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -1037,14 +1037,14 @@ static void eff09_17000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.death_timer = 1;
+        ewk->wu.facing_flag = 0;
         ewk->wu.xyz[1].disp.pos += g_state.base_y_pos;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (oya_ptr->cg_type == 9) {
@@ -1058,7 +1058,7 @@ static void eff09_17000(State_Other* ewk) {
 
         ewk->wu.xyz[0].disp.pos = oya_ptr->xyz[0].disp.pos;
 
-        if (oya_ptr->rl_flag) {
+        if (oya_ptr->facing_flag) {
             ewk->wu.xyz[0].disp.pos -= eff09_data2[21][2];
         } else {
             ewk->wu.xyz[0].disp.pos += eff09_data2[21][2];
@@ -1090,10 +1090,10 @@ static void eff09_18000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
 
-        if (oya_ptr->rl_flag) {
+        if (oya_ptr->facing_flag) {
             if (oya_ptr->xyz[0].disp.pos < g_state.bg_w.bgw[1].wxy[0].disp.pos) {
                 ewk->wu.xyz[0].disp.pos = oya_ptr->xyz[0].disp.pos - 256;
             } else {
@@ -1112,7 +1112,7 @@ static void eff09_18000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             ewk->wu.old_routine_no[0]--;
 
@@ -1146,7 +1146,7 @@ static void eff09_19000(State_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         ewk->wu.mvxy.a[0].sp = eff09_19000_tbl[ewk->wu.routine_no[1]][0];
         ewk->wu.mvxy.d[0].sp = eff09_19000_tbl[ewk->wu.routine_no[1]][1];
@@ -1158,7 +1158,7 @@ static void eff09_19000(State_Other* ewk) {
 
     case 1:
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
 
@@ -1176,7 +1176,7 @@ static void eff09_19000(State_Other* ewk) {
         return;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
 
@@ -1209,7 +1209,7 @@ static void eff09_20000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 5;
         ewk->wu.shadow_y = g_state.base_y_pos + 2;
@@ -1220,7 +1220,7 @@ static void eff09_20000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (oya_ptr->id) {
@@ -1263,7 +1263,7 @@ static void eff09_21000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         ewk->wu.mvxy.d[0].sp = 0;
         ewk->wu.mvxy.d[1].sp = -0x8000;
@@ -1271,7 +1271,7 @@ static void eff09_21000(State_Other* ewk) {
         if (ewk->wu.type == 29) {
             ewk->wu.old_routine_no[0] = 70;
 
-            if (ewk->wu.rl_flag) {
+            if (ewk->wu.facing_flag) {
                 arrive_x = ewk->wu.xyz[0].disp.pos + 42;
             } else {
                 arrive_x = ewk->wu.xyz[0].disp.pos - 42;
@@ -1281,7 +1281,7 @@ static void eff09_21000(State_Other* ewk) {
         } else {
             ewk->wu.old_routine_no[0] = 64;
 
-            if (g_state.plw[g_state.Winner_id].wu.rl_flag) {
+            if (g_state.plw[g_state.Winner_id].wu.facing_flag) {
                 arrive_x = g_state.plw[g_state.Winner_id].wu.xyz[0].disp.pos + 28;
             } else {
                 arrive_x = g_state.plw[g_state.Winner_id].wu.xyz[0].disp.pos - 28;
@@ -1294,7 +1294,7 @@ static void eff09_21000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             ewk->wu.old_routine_no[0]--;
 
@@ -1311,7 +1311,7 @@ static void eff09_21000(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type) {
@@ -1348,12 +1348,12 @@ static void eff09_22000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             if (oya_ptr->cg_type == 99) {
                 ewk->wu.routine_no[1]++;
                 set_char_move_init(&ewk->wu, 0, 62);
@@ -1368,7 +1368,7 @@ static void eff09_22000(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
@@ -1399,7 +1399,7 @@ static void eff09_23000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = 1;
         ewk->wu.shadow_y = -2;
@@ -1409,7 +1409,7 @@ static void eff09_23000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && oya_ptr->cg_type == 1) {
+        if (!g_state.execute_flag && !g_state.Game_pause && oya_ptr->cg_type == 1) {
             ewk->wu.routine_no[1]++;
         }
 
@@ -1417,13 +1417,13 @@ static void eff09_23000(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
                 ewk->wu.routine_no[1]++;
 
-                if (ewk->wu.rl_flag) {
+                if (ewk->wu.facing_flag) {
                     ewk->wu.mvxy.a[0].sp = -0x20000;
                 } else {
                     ewk->wu.mvxy.a[0].sp = 0x20000;
@@ -1438,7 +1438,7 @@ static void eff09_23000(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
 
@@ -1469,17 +1469,17 @@ static void eff09_24000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
 
         if (ewk->wu.type == 38) {
-            ewk->wu.rl_flag ^= 1;
+            ewk->wu.facing_flag ^= 1;
         }
 
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         return;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && (oya_ptr->cg_type == 1)) {
+        if (!g_state.execute_flag && !g_state.Game_pause && (oya_ptr->cg_type == 1)) {
             ewk->wu.routine_no[1]++;
 
             if (ewk->wu.type == 38) {
@@ -1491,7 +1491,7 @@ static void eff09_24000(State_Other* ewk) {
         return;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 9) {
@@ -1504,7 +1504,7 @@ static void eff09_24000(State_Other* ewk) {
                     ewk->wu.mvxy.a[0].sp = -0x18000;
                 }
 
-                if (ewk->wu.rl_flag) {
+                if (ewk->wu.facing_flag) {
                     ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
                 }
 
@@ -1516,7 +1516,7 @@ static void eff09_24000(State_Other* ewk) {
         return;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
 
@@ -1543,7 +1543,7 @@ static void eff09_25000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
         ewk->wu.mvxy.d[0].sp = 0;
         ewk->wu.mvxy.d[1].sp = -0x6000;
@@ -1556,7 +1556,7 @@ static void eff09_25000(State_Other* ewk) {
             ewk->wu.mvxy.a[1].sp = 0x30000;
         }
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
         }
 
@@ -1564,7 +1564,7 @@ static void eff09_25000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
@@ -1600,14 +1600,14 @@ static void eff09_26000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         set_char_move_init(&ewk->wu, 0, 101);
         ewk->wu.old_routine_no[0] = 0;
         ewk->wu.xyz[1].disp.pos += g_state.base_y_pos;
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 9) {
@@ -1621,7 +1621,7 @@ static void eff09_26000(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
@@ -1635,7 +1635,7 @@ static void eff09_26000(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (oya_ptr->script_register_bank[0] == 2) {
@@ -1648,7 +1648,7 @@ static void eff09_26000(State_Other* ewk) {
         break;
 
     case 4:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
         }
 
@@ -1682,7 +1682,7 @@ static void eff09_27000(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[1]++;
         ewk->wu.disp_flag = 1;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = -8;
         ewk->wu.shadow_y = -11;
@@ -1693,7 +1693,7 @@ static void eff09_27000(State_Other* ewk) {
         ewk->wu.mvxy.a[1].sp = 0;
         ewk->wu.mvxy.d[1].sp = -0x6000;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
         }
 
@@ -1701,7 +1701,7 @@ static void eff09_27000(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
 
@@ -1711,7 +1711,7 @@ static void eff09_27000(State_Other* ewk) {
                 ewk->wu.mvxy.a[0].sp = -0x38000;
                 ewk->wu.mvxy.d[0].sp = 0;
 
-                if (ewk->wu.rl_flag) {
+                if (ewk->wu.facing_flag) {
                     ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
                 }
 
@@ -1723,7 +1723,7 @@ static void eff09_27000(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
             add_x_sub(&ewk->wu);
 
@@ -1754,13 +1754,13 @@ s32 effect_09_init(State* wk, u8 data) {
     ewk = (State_Other*)frw[ix];
     ewk->wu.type = data;
     data_ptr = eff09_data[ewk->wu.type];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 9;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
     ewk->wu.my_priority = 64;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _eff09_char_table;
     ewk->wu.routine_no[0] = *data_ptr++;
@@ -1774,8 +1774,8 @@ s32 effect_09_init(State* wk, u8 data) {
     ewk->wu.hit_stop = *data_ptr++;
     ewk->wu.sync_bg_strip = *data_ptr++;
     suzi_offset_set(ewk);
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }
 
@@ -1800,7 +1800,7 @@ s32 effect_09_init2(State* wk, u8 data) {
     ewk->wu.type = data;
     ewk->my_master = wk;
     ewk->wu.target_adrs = wk->target_adrs;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 9;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
@@ -1809,7 +1809,7 @@ s32 effect_09_init2(State* wk, u8 data) {
     ewk->wu.my_col_mode = wk->my_col_mode;
     data_ptr = eff09_data2[ewk->wu.type];
     ewk->wu.routine_no[0] = *data_ptr++;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
 
     switch (data) {
     case 18:
@@ -1835,7 +1835,7 @@ s32 effect_09_init2(State* wk, u8 data) {
     case 33:
         ewk->wu.my_col_code = 0x50;
         data_ptr++;
-        ewk->wu.my_mts = 7;
+        ewk->wu.my_sprite_sheet = 7;
         break;
 
     case 34:
@@ -1848,7 +1848,7 @@ s32 effect_09_init2(State* wk, u8 data) {
     case 40:
         ewk->wu.my_col_code = 0xA;
         data_ptr++;
-        ewk->wu.my_mts = 0x10;
+        ewk->wu.my_sprite_sheet = 0x10;
         break;
 
     case 41:
@@ -1868,14 +1868,14 @@ s32 effect_09_init2(State* wk, u8 data) {
     ewk->wu.my_family = wk->my_family;
 
     if (data == 4) {
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
     } else {
-        ewk->wu.rl_flag = wk->rl_flag;
+        ewk->wu.facing_flag = wk->facing_flag;
     }
 
     ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos;
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         ewk->wu.xyz[0].disp.pos -= *(s16*)data_ptr++;
     } else {
         ewk->wu.xyz[0].disp.pos += *(s16*)data_ptr++;
@@ -1890,7 +1890,7 @@ s32 effect_09_init2(State* wk, u8 data) {
     ewk->wu.hit_stop = *data_ptr++;
     ewk->wu.sync_bg_strip = *data_ptr++;
     suzi_offset_set(ewk);
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }
 

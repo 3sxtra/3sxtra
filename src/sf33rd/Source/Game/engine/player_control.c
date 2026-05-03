@@ -33,9 +33,9 @@
 #include "sf33rd/Source/Game/engine/player_damage_controller.h"
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -60,24 +60,24 @@ static void move_player_work();
 static void move_P1_move_P2();
 static void move_P2_move_P1();
 static void check_damage_adjust();
-static void check_damage_adjust_throw(PLW* as, PLW* ds);
-static void check_damage_adjust_strike(PLW* w1, PLW* w2);
+static void check_damage_adjust_throw(PlayerEntity* as, PlayerEntity* ds);
+static void check_damage_adjust_strike(PlayerEntity* w1, PlayerEntity* w2);
 static s32 time_over_check();
 static s32 will_die();
 static void setup_settle_rno(s16 kos);
 static void settle_check();
-static s32 check_sa_resurrection(PLW* wk);
+static s32 check_sa_resurrection(PlayerEntity* wk);
 static s16 nekorobi_check(s8 ix);
 static s16 footwork_check(s8 ix);
 static void setup_gouki_wins();
 static void setup_any_data();
-static void set_base_data(PLW* wk, s16 ix);
-void set_base_data_metamorphose(PLW* wk, s16 dmid);
-static void set_base_data_tiny(PLW* wk);
-static void setup_other_data(PLW* wk);
-static s16 remake_sa_store_max(s16 ix, s16 store_max);
-static s16 remake_sa_gauge_len(s16 ix, s16 gauge_len);
-void clear_super_arts_point(PLW* wk);
+static void set_base_data(PlayerEntity* wk, s16 ix);
+void set_base_data_metamorphose(PlayerEntity* wk, s16 dmid);
+static void set_base_data_tiny(PlayerEntity* wk);
+static void setup_other_data(PlayerEntity* wk);
+static s16 remake_sa_stock_max(s16 ix, s16 stock_max);
+static s16 remake_sa_gauge_length(s16 ix, s16 gauge_length);
+void clear_super_arts_point(PlayerEntity* wk);
 static void set_scrrrl();
 
 // NOTE: g_state.rambod/g_state.ramhan are recalculated each frame by effk5.c from the effect state
@@ -386,10 +386,10 @@ const s16** kizetsu_timer_table[9] = { normal_strike_stun,   special_strike_stun
 
 /** @brief Main player controller — dispatches per-player state updates for both sides. */
 void Player_control() {
-    pulpul_scene = 1;
+    rumble_scene = 1;
 
     if (g_state.pcon_rno[0] + g_state.pcon_rno[1] != 0) {
-        if (g_state.Game_pause || g_state.EXE_flag) {
+        if (g_state.Game_pause || g_state.execute_flag) {
             goto end;
         } else {
             if (!g_state.pcon_dp_flag) {
@@ -650,8 +650,8 @@ static void plcnt_move() {
     }
 
     if (g_state.Mode_Type == MODE_NORMAL_TRAINING && Training->contents[0][1][3] == 0) {
-        g_state.plw[0].wu.dm_nodeathattack = 1;
-        g_state.plw[1].wu.dm_nodeathattack = 1;
+        g_state.plw[0].wu.damage_no_death_attack = 1;
+        g_state.plw[1].wu.damage_no_death_attack = 1;
     }
 
     move_player_work();
@@ -660,12 +660,12 @@ static void plcnt_move() {
         subtract_dm_vital_aiuchi(&g_state.plw[0]);
         subtract_dm_vital_aiuchi(&g_state.plw[1]);
 
-        if ((g_state.plw[0].dead_flag != 0) && (g_state.plw[1].dead_flag != 0)) {
+        if ((g_state.plw[0].death_timerlag != 0) && (g_state.plw[1].death_timerlag != 0)) {
             g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 2;
             g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 4;
             g_state.plw[0].wu.damage_screen_shake = g_state.plw[1].wu.damage_screen_shake = 0;
-        } else if ((g_state.plw[0].dead_flag != 0) || (g_state.plw[1].dead_flag != 0)) {
+        } else if ((g_state.plw[0].death_timerlag != 0) || (g_state.plw[1].death_timerlag != 0)) {
             g_state.plw[0].wu.hit_stop = g_state.plw[1].wu.hit_stop = 4;
             g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.hit_quake = g_state.plw[1].wu.hit_quake = 8;
@@ -718,11 +718,11 @@ static void settle_type_00000() {
     case 1:
         if (nekorobi_check(g_state.Loser_id)) {
             g_state.pcon_rno[2]++;
-            g_state.plw[g_state.Winner_id].wkey_flag = 1;
+            g_state.plw[g_state.Winner_id].wakeup_key_flag = 1;
         }
 
         if (--g_state.plw[g_state.Winner_id].wu.dir_timer == 0) {
-            g_state.plw[g_state.Winner_id].wkey_flag = 1;
+            g_state.plw[g_state.Winner_id].wakeup_key_flag = 1;
         }
 
         break;
@@ -774,7 +774,7 @@ static void settle_type_10000() {
 static void settle_type_20000() {
     switch (g_state.pcon_rno[2]) {
     case 0:
-        g_state.plw[0].wkey_flag = g_state.plw[1].wkey_flag = 1;
+        g_state.plw[0].wakeup_key_flag = g_state.plw[1].wakeup_key_flag = 1;
         g_state.plw[0].image_setup_flag = g_state.plw[1].image_setup_flag = 0;
         g_state.pcon_rno[2]++;
         /* fallthrough */
@@ -844,7 +844,7 @@ static void settle_type_30000() {
 static void settle_type_40000() {
     switch (g_state.pcon_rno[2]) {
     case 0:
-        g_state.plw[g_state.Winner_id].wkey_flag = 1;
+        g_state.plw[g_state.Winner_id].wakeup_key_flag = 1;
         g_state.pcon_rno[2] += 1;
         /* fallthrough */
 
@@ -868,7 +868,7 @@ static void settle_type_40000() {
             grade_set_round_result(g_state.Winner_id + 0);
             g_state.plw[0].image_setup_flag = g_state.plw[1].image_setup_flag = 0;
             g_state.plw[g_state.Winner_id].wu.dir_timer = 60;
-            set_conclusion_slow();
+            set_round_end_slowmo();
         }
 
         break;
@@ -1011,7 +1011,7 @@ void store_player_after_image_data() {
         g_state.afterimage_table[i]->cg_num = g_state.plw[i].wu.cg_number;
         g_state.afterimage_table[i]->renew = g_state.plw[i].wu.renew_attack;
         g_state.afterimage_table[i]->hit_ix = g_state.plw[i].wu.anim_hurtbox_index;
-        g_state.afterimage_table[i]->flip = g_state.plw[i].wu.rl_flag;
+        g_state.afterimage_table[i]->flip = g_state.plw[i].wu.facing_flag;
         g_state.afterimage_table[i]->cg_flp = g_state.plw[i].wu.cg_flip;
         g_state.afterimage_table[i]->light_attack_flag = g_state.plw[i].wu.attack_type;
     }
@@ -1041,7 +1041,7 @@ static void check_damage_adjust() {
 }
 
 /** @brief Applies throw damage correction based on difficulty and mode. */
-static void check_damage_adjust_throw(PLW* as, PLW* ds) {
+static void check_damage_adjust_throw(PlayerEntity* as, PlayerEntity* ds) {
     if (as->kind_of_catch) {
         if (ds->scaling_remainder != 0) {
             as->wu.xyz[0].disp.pos += ds->scaling_remainder;
@@ -1064,8 +1064,8 @@ static void check_damage_adjust_throw(PLW* as, PLW* ds) {
 }
 
 /** @brief Applies strike damage correction based on difficulty and mode. */
-static void check_damage_adjust_strike(PLW* w1, PLW* w2) {
-    if ((w1->dm_hos_flag != 0) && (w2->wu.hit_stop == 0)) {
+static void check_damage_adjust_strike(PlayerEntity* w1, PlayerEntity* w2) {
+    if ((w1->damage_pushbox_flag != 0) && (w2->wu.hit_stop == 0)) {
         w2->wu.xyz[0].disp.pos += w1->scaling_remainder;
         w2->forced_movement += w1->scaling_remainder;
     }
@@ -1123,7 +1123,7 @@ static void setup_settle_rno(s16 kos) {
 /** @brief Checks for round conclusion conditions (KO, time-over, draw). */
 static void settle_check() {
     while (1) {
-        switch ((g_state.plw[0].dead_flag) + (g_state.plw[1].dead_flag * 2)) {
+        switch ((g_state.plw[0].death_timerlag) + (g_state.plw[1].death_timerlag * 2)) {
         case 1:
             g_state.Winner_id = 1;
             g_state.Loser_id = 0;
@@ -1181,19 +1181,19 @@ static void settle_check() {
 }
 
 /** @brief Checks if a player's SA provides automatic resurrection (Gill). */
-static s32 check_sa_resurrection(PLW* wk) {
+static s32 check_sa_resurrection(PlayerEntity* wk) {
     if (check_sa_type_rebirth(wk) == 0) {
         return 0;
     }
 
     wk->chip_death_flag = 0;
-    wk->dead_flag = 0;
+    wk->death_timerlag = 0;
     wk->resurrection_resv = 1;
     return 1;
 }
 
 /** @brief Checks if a player's SA provides rebirth-type resurrection. */
-s32 check_sa_type_rebirth(PLW* wk) {
+s32 check_sa_type_rebirth(PlayerEntity* wk) {
     if ((wk->spmv_ng_flag & DIP_GROUND_SUPER_ART_DISABLED) || (wk->spmv_ng_flag & DIP_AIR_SUPER_ART_DISABLED)) {
         return 0;
     }
@@ -1202,7 +1202,7 @@ s32 check_sa_type_rebirth(PLW* wk) {
         return 0;
     }
 
-    if (wk->sa->ok != 1) {
+    if (wk->sa->can_activate != 1) {
         return 0;
     }
 
@@ -1233,12 +1233,12 @@ static s16 footwork_check(s8 ix) {
 }
 
 /** @brief Sets screen-quake parameters for a player's landing/impact. */
-void set_quake(PLW* wk) {
+void set_quake(PlayerEntity* wk) {
     if (wk->wu.hit_quake) {
         wk->wu.hit_quake--;
         wk->wu.next_x = quake_table[wk->wu.hit_quake];
 
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             wk->wu.next_x = -wk->wu.next_x;
         }
     } else {
@@ -1247,7 +1247,7 @@ void set_quake(PLW* wk) {
 }
 
 /** @brief Adds a delta to the player's next-frame position. */
-void add_next_position(PLW* wk) {
+void add_next_position(PlayerEntity* wk) {
     wk->wu.position_x = wk->wu.xyz[0].disp.pos + wk->wu.next_x;
     wk->wu.position_y = wk->wu.xyz[1].disp.pos + wk->wu.next_y;
     wk->wu.position_z = wk->wu.next_z;
@@ -1281,8 +1281,8 @@ void setup_base_and_other_data() {
     Allocate_Texture_Cache(3);
     Allocate_Texture_Cache(4);
     Allocate_Texture_Cache(6);
-    g_state.plw[0].wu.my_mts = 3;
-    g_state.plw[1].wu.my_mts = 4;
+    g_state.plw[0].wu.my_sprite_sheet = 3;
+    g_state.plw[1].wu.my_sprite_sheet = 4;
     set_base_data(&g_state.plw[0], 0);
     set_base_data(&g_state.plw[1], 1);
     g_state.plw[0].sa = &g_state.super_arts[0];
@@ -1292,7 +1292,7 @@ void setup_base_and_other_data() {
     setup_other_data(&g_state.plw[0]);
     setup_other_data(&g_state.plw[1]);
     effect_work_list_init(6, 0xC5);
-    g_state.plw[0].gill_ccch_go = g_state.plw[1].gill_ccch_go = 0;
+    g_state.plw[0].gill_catch_go = g_state.plw[1].gill_catch_go = 0;
     effect_J7_init(&g_state.plw[0]);
     effect_J7_init(&g_state.plw[1]);
     effect_E5_init(&g_state.plw[0]);
@@ -1321,7 +1321,7 @@ static void setup_any_data() {
     setup_other_data(&g_state.plw[0]);
     setup_other_data(&g_state.plw[1]);
     effect_work_list_init(6, 0xC5);
-    g_state.plw[0].gill_ccch_go = g_state.plw[1].gill_ccch_go = 0;
+    g_state.plw[0].gill_catch_go = g_state.plw[1].gill_catch_go = 0;
     effect_J7_init(&g_state.plw[0]);
     effect_J7_init(&g_state.plw[1]);
     effect_E5_init(&g_state.plw[0]);
@@ -1333,15 +1333,15 @@ static void setup_any_data() {
 }
 
 /** @brief Sets base data (move tables, animation data) for a player work item. */
-static void set_base_data(PLW* wk, s16 ix) {
-    wk->wu.be_flag = 1;
+static void set_base_data(PlayerEntity* wk, s16 ix) {
+    wk->wu.active_flag = 1;
     wk->wu.disp_flag = 0;
     wk->wu.blink_timing = ix;
     wk->wu.id = ix;
     wk->wu.work_id = 1;
     wk->wu.pl_operator = g_state.Operator_Status[ix];
     wk->wu.charset_id = plid_data[g_state.My_char[ix]];
-    wk->wkey_flag = wk->dead_flag = 0;
+    wk->wakeup_key_flag = wk->death_timerlag = 0;
     set_char_base_data(&wk->wu);
     wk->wu.target_adrs = &g_state.plw[(ix + 1) & 1];
     wk->player_number = g_state.My_char[ix];
@@ -1365,7 +1365,7 @@ static void set_base_data(PLW* wk, s16 ix) {
 }
 
 /** @brief Sets base data for a metamorphosed (transformed) character. */
-void set_base_data_metamorphose(PLW* wk, s16 dmid) {
+void set_base_data_metamorphose(PlayerEntity* wk, s16 dmid) {
     set_char_base_data(&wk->wu);
 
     if (wk->wu.id) {
@@ -1379,7 +1379,7 @@ void set_base_data_metamorphose(PLW* wk, s16 dmid) {
 }
 
 /** @brief Sets up compact base data for a reduced-data character variant. */
-static void set_base_data_tiny(PLW* wk) {
+static void set_base_data_tiny(PlayerEntity* wk) {
     wk->wu.charset_id = plid_data[g_state.My_char[wk->wu.id]];
     wk->player_number = g_state.My_char[wk->wu.id];
     set_char_base_data(&wk->wu);
@@ -1388,9 +1388,9 @@ static void set_base_data_tiny(PLW* wk) {
         wk->wu.my_col_code |= 0x10;
     }
 
-    wk->wu.be_flag = 1;
+    wk->wu.active_flag = 1;
     wk->wu.disp_flag = 0;
-    wk->wkey_flag = wk->dead_flag = 0;
+    wk->wakeup_key_flag = wk->death_timerlag = 0;
     cmd_init(wk);
     wk->spmv_ng_flag = omop_spmv_ng_table[wk->wu.id];
     wk->special_move_disabled_flag2 = omop_spmv_ng_table2[wk->wu.id];
@@ -1399,7 +1399,7 @@ static void set_base_data_tiny(PLW* wk) {
 }
 
 /** @brief Configures the player's shadow sprite parameters. */
-void set_player_shadow(PLW* wk) {
+void set_player_shadow(PlayerEntity* wk) {
     wk->wu.shadow_flag = 1;
     wk->wu.shadow_prio = 68;
     wk->wu.shadow_x = kage_base[wk->player_number][0];
@@ -1407,7 +1407,7 @@ void set_player_shadow(PLW* wk) {
 }
 
 /** @brief Sets up other per-player data (SA config, damage tables). */
-static void setup_other_data(PLW* wk) {
+static void setup_other_data(PlayerEntity* wk) {
     s16 i;
 
     if (wk->player_number == 0) {
@@ -1438,9 +1438,9 @@ void set_kizetsu_status(s16 ix) {
     g_state.stun_state[ix].flag = 0;
     g_state.stun_state[ix].time = 0;
     g_state.stun_state[ix].now.timer = 0;
-    g_state.stun_state[ix].store = 0;
+    g_state.stun_state[ix].stock = 0;
     g_state.stun_state[ix].recover = pl_nr_piyo_tbl[plnum];
-    g_state.stun_state[ix].stun_threshold = pl_piyo_tbl[plnum] + stun_gauge_len_omake[omop_stun_gauge_len[ix]];
+    g_state.stun_state[ix].stun_threshold = pl_piyo_tbl[plnum] + stun_gauge_length_omake[omop_stun_gauge_length[ix]];
 
     if (g_state.stun_state[ix].stun_threshold < 56) {
         g_state.stun_state[ix].stun_threshold = 56;
@@ -1452,11 +1452,11 @@ void set_kizetsu_status(s16 ix) {
 }
 
 /** @brief Clears the stun gauge and related work for a player. */
-void clear_kizetsu_point(PLW* wk) {
+void clear_kizetsu_point(PlayerEntity* wk) {
     wk->py->flag = 0;
     wk->py->time = 0;
     wk->py->now.timer = 0;
-    wk->py->store = 0;
+    wk->py->stock = 0;
     wk->py->recover = pl_nr_piyo_tbl[wk->player_number];
 }
 
@@ -1471,29 +1471,29 @@ void set_super_arts_status(s16 ix) {
     }
 
     g_state.super_arts[ix].kind_of_arts = g_state.Super_Arts[ix];
-    g_state.super_arts[ix].nmsa_g_ix = saptr->nmsa_g_ix;
-    g_state.super_arts[ix].exsa_g_ix = saptr->exsa_g_ix;
-    g_state.super_arts[ix].exs2_g_ix = saptr->exs2_g_ix;
-    g_state.super_arts[ix].nmsa_a_ix = saptr->nmsa_a_ix;
-    g_state.super_arts[ix].exsa_a_ix = saptr->exsa_a_ix;
-    g_state.super_arts[ix].exs2_a_ix = saptr->exs2_a_ix;
+    g_state.super_arts[ix].normal_sa_graphic_ix = saptr->normal_sa_graphic_ix;
+    g_state.super_arts[ix].ex_sa_graphic_ix = saptr->ex_sa_graphic_ix;
+    g_state.super_arts[ix].ex_sa2_graphic_ix = saptr->ex_sa2_graphic_ix;
+    g_state.super_arts[ix].normal_sa_anim_ix = saptr->normal_sa_anim_ix;
+    g_state.super_arts[ix].ex_sa_anim_ix = saptr->ex_sa_anim_ix;
+    g_state.super_arts[ix].ex_sa2_anim_ix = saptr->ex_sa2_anim_ix;
     g_state.super_arts[ix].ex4th_full = saptr->ex4th_full;
     g_state.super_arts[ix].gauge_type = saptr->gauge_type;
-    g_state.super_arts[ix].gt2 = saptr->gauge_type;
-    g_state.super_arts[ix].gauge_len = remake_sa_gauge_len(ix, saptr->gauge_len);
-    g_state.super_arts[ix].store_max = remake_sa_store_max(ix, saptr->store_max);
-    g_state.super_arts[ix].dtm = saptr->dtm;
-    g_state.super_arts[ix].dtm_mul = 1;
-    g_state.super_arts[ix].store = 0;
+    g_state.super_arts[ix].gauge_type_2 = saptr->gauge_type;
+    g_state.super_arts[ix].gauge_length = remake_sa_gauge_length(ix, saptr->gauge_length);
+    g_state.super_arts[ix].stock_max = remake_sa_stock_max(ix, saptr->stock_max);
+    g_state.super_arts[ix].damage_time = saptr->damage_time;
+    g_state.super_arts[ix].damage_time_multiplier = 1;
+    g_state.super_arts[ix].stock = 0;
     g_state.super_arts[ix].gauge.s.h = 0;
     g_state.super_arts[ix].gauge.s.l = -1;
-    g_state.super_arts[ix].sa_rno = 0;
-    g_state.super_arts[ix].ok = 0;
+    g_state.super_arts[ix].super_art_routine_no = 0;
+    g_state.super_arts[ix].can_activate = 0;
 }
 
 /** @brief Adjusts SA stock maximum based on character-specific rules. */
-static s16 remake_sa_store_max(s16 ix, s16 store_max) {
-    s16 num = store_max + sag_stock_omake[omop_sag_max_ix[ix]];
+static s16 remake_sa_stock_max(s16 ix, s16 stock_max) {
+    s16 num = stock_max + sag_stock_omake[omop_sag_max_ix[ix]];
 
     if (num <= 0) {
         num = 1;
@@ -1507,8 +1507,8 @@ static s16 remake_sa_store_max(s16 ix, s16 store_max) {
 }
 
 /** @brief Adjusts SA gauge length based on character-specific rules. */
-static s16 remake_sa_gauge_len(s16 ix, s16 gauge_len) {
-    s16 num = gauge_len + sag_length_omake[omop_sag_len_ix[ix]] * 8;
+static s16 remake_sa_gauge_length(s16 ix, s16 gauge_length) {
+    s16 num = gauge_length + sag_length_omake[omop_sag_len_ix[ix]] * 8;
 
     if (num < 0x40) {
         num = 0x40;
@@ -1532,34 +1532,34 @@ void set_super_arts_status_dc(s16 ix) {
     }
 
     g_state.super_arts[ix].kind_of_arts = g_state.Super_Arts[ix];
-    g_state.super_arts[ix].nmsa_g_ix = saptr->nmsa_g_ix;
-    g_state.super_arts[ix].exsa_g_ix = saptr->exsa_g_ix;
-    g_state.super_arts[ix].exs2_g_ix = saptr->exs2_g_ix;
-    g_state.super_arts[ix].nmsa_a_ix = saptr->nmsa_a_ix;
-    g_state.super_arts[ix].exsa_a_ix = saptr->exsa_a_ix;
-    g_state.super_arts[ix].exs2_a_ix = saptr->exs2_a_ix;
+    g_state.super_arts[ix].normal_sa_graphic_ix = saptr->normal_sa_graphic_ix;
+    g_state.super_arts[ix].ex_sa_graphic_ix = saptr->ex_sa_graphic_ix;
+    g_state.super_arts[ix].ex_sa2_graphic_ix = saptr->ex_sa2_graphic_ix;
+    g_state.super_arts[ix].normal_sa_anim_ix = saptr->normal_sa_anim_ix;
+    g_state.super_arts[ix].ex_sa_anim_ix = saptr->ex_sa_anim_ix;
+    g_state.super_arts[ix].ex_sa2_anim_ix = saptr->ex_sa2_anim_ix;
     g_state.super_arts[ix].ex4th_full = saptr->ex4th_full;
     g_state.super_arts[ix].gauge_type = saptr->gauge_type;
-    g_state.super_arts[ix].gauge_len = remake_sa_gauge_len(ix, saptr->gauge_len);
-    g_state.super_arts[ix].store_max = remake_sa_store_max(ix, saptr->store_max);
-    g_state.super_arts[ix].dtm = saptr->dtm;
-    g_state.super_arts[ix].dtm_mul = 1;
+    g_state.super_arts[ix].gauge_length = remake_sa_gauge_length(ix, saptr->gauge_length);
+    g_state.super_arts[ix].stock_max = remake_sa_stock_max(ix, saptr->stock_max);
+    g_state.super_arts[ix].damage_time = saptr->damage_time;
+    g_state.super_arts[ix].damage_time_multiplier = 1;
 }
 
 /** @brief Clears a player's SA gauge and stock to zero. */
-void clear_super_arts_point(PLW* wk) {
-    wk->sa->store = 0;
+void clear_super_arts_point(PlayerEntity* wk) {
+    wk->sa->stock = 0;
     wk->sa->gauge.s.h = 0;
     wk->sa->gauge.s.l = -1;
-    wk->sa->mp_rno = 0;
-    wk->sa->mp_rno2 = 0;
-    wk->sa->sa_rno = 0;
-    wk->sa->sa_rno2 = 0;
-    wk->sa->ex_rno = 0;
-    wk->sa->mp = 0;
-    wk->sa->ok = 0;
-    wk->sa->ex = 0;
-    wk->sa->bacckup_g_h = 0;
+    wk->sa->meter_routine_no = 0;
+    wk->sa->meter_routine_no_2 = 0;
+    wk->sa->super_art_routine_no = 0;
+    wk->sa->super_art_routine_no_2 = 0;
+    wk->sa->ex_routine_no = 0;
+    wk->sa->meter_points = 0;
+    wk->sa->can_activate = 0;
+    wk->sa->ex_mode = 0;
+    wk->sa->backup_gauge_high = 0;
 }
 
 /** @brief Checks if an active combo has ended and finalizes combo data. */

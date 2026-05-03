@@ -83,7 +83,7 @@ s32 effect_81_init(s16 Time) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 81;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 8336;
@@ -94,8 +94,8 @@ s32 effect_81_init(s16 Time) {
     ewk->wu.dir_timer = Time;
     ewk->wu.position_z = 8;
     g_state.Appear_Q = 1;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.mirror_flag = 1;
     ewk->wu.mirror_scale.size.x = 127;
     ewk->wu.mirror_scale.size.y = 127;

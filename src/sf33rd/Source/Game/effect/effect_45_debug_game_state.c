@@ -14,20 +14,20 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-static void EFF45_DISP(WORK_Other_CONN* ewk);
-static void EFF45_SUSPEND(WORK_Other_CONN* ewk);
-static void EFF45_CHANGE(WORK_Other_CONN* ewk);
-static void Setup_Message(WORK_Other_CONN* ewk);
-static s16 Centering_Sub(WORK_Other_CONN* ewk, s16 dot_type);
-static void Check_Pig_Pig(WORK_Other_CONN* ewk);
-static void Convert_16_10_2(WORK_Other_CONN* ewk, u16 target);
+static void EFF45_DISP(EffectMultiSprite* ewk);
+static void EFF45_SUSPEND(EffectMultiSprite* ewk);
+static void EFF45_CHANGE(EffectMultiSprite* ewk);
+static void Setup_Message(EffectMultiSprite* ewk);
+static s16 Centering_Sub(EffectMultiSprite* ewk, s16 dot_type);
+static void Check_Pig_Pig(EffectMultiSprite* ewk);
+static void Convert_16_10_2(EffectMultiSprite* ewk, u16 target);
 
 // sbss
 MessageData Message_Data[4];
 
 void (*const EFF45_Jmp_Tbl[3])() = { EFF45_DISP, EFF45_CHANGE, EFF45_SUSPEND };
 
-void effect_45_move(WORK_Other_CONN* ewk) {
+void effect_45_move(EffectMultiSprite* ewk) {
     Check_Pos_OBJ2((State_Other*)ewk);
 
     if (Check_Die_61((State_Other*)ewk) != 0 || Message_Data[ewk->wu.dir_old].order == 3) {
@@ -42,13 +42,13 @@ void effect_45_move(WORK_Other_CONN* ewk) {
 
     EFF45_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag != 0) {
+    if (ewk->wu.active_flag != 0) {
         ewk->wu.dir_step = Message_Data[ewk->wu.dir_old].order;
         sort_push_request3(&ewk->wu);
     }
 }
 
-static void EFF45_DISP(WORK_Other_CONN* ewk) {
+static void EFF45_DISP(EffectMultiSprite* ewk) {
     ewk->wu.disp_flag = 1;
 
     if ((ewk->wu.routine_no[0] = Message_Data[ewk->wu.dir_old].order)) {
@@ -56,7 +56,7 @@ static void EFF45_DISP(WORK_Other_CONN* ewk) {
     }
 }
 
-static void EFF45_SUSPEND(WORK_Other_CONN* ewk) {
+static void EFF45_SUSPEND(EffectMultiSprite* ewk) {
     ewk->wu.disp_flag = 0;
 
     if (Message_Data[ewk->wu.dir_old].order != 2) {
@@ -68,7 +68,7 @@ static void EFF45_SUSPEND(WORK_Other_CONN* ewk) {
     }
 }
 
-static void EFF45_CHANGE(WORK_Other_CONN* ewk) {
+static void EFF45_CHANGE(EffectMultiSprite* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -88,32 +88,32 @@ static void EFF45_CHANGE(WORK_Other_CONN* ewk) {
 }
 
 s32 effect_45_init(u8 id, s16 sync_bg, s16 master_player) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
+    ewk = (EffectMultiSprite*)frw[ix];
     ewk->wu.routine_no[0] = 0;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 0;
     ewk->wu.id = 45;
     ewk->wu.work_id = 16;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.my_col_code = 0x1AC;
     ewk->wu.my_family = sync_bg + 1;
     ewk->master_player = master_player;
     ewk->wu.dir_old = id;
     Message_Data[ewk->wu.dir_old].contents = 0xFF;
     ewk->wu.routine_no[0] = Message_Data[ewk->wu.dir_old].order;
-    ewk->wu.my_mts = 12;
+    ewk->wu.my_sprite_sheet = 12;
     Setup_Message(ewk);
     return 0;
 }
 
-static void Setup_Message(WORK_Other_CONN* ewk) {
+static void Setup_Message(EffectMultiSprite* ewk) {
     Message_Data[ewk->wu.dir_old].contents = Message_Data[ewk->wu.dir_old].request;
     Message_Data[ewk->wu.dir_old].kind_cnt = Message_Data[ewk->wu.dir_old].kind_req;
 
@@ -130,7 +130,7 @@ static void Setup_Message(WORK_Other_CONN* ewk) {
     Check_Pig_Pig(ewk);
 }
 
-static s16 Centering_Sub(WORK_Other_CONN* ewk, s16 dot_type) {
+static s16 Centering_Sub(EffectMultiSprite* ewk, s16 dot_type) {
     s16 i;
     s16 ix;
     s16 ny;
@@ -158,7 +158,7 @@ static s16 Centering_Sub(WORK_Other_CONN* ewk, s16 dot_type) {
     return max / 2;
 }
 
-static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
+static void Check_Pig_Pig(EffectMultiSprite* ewk) {
     s16 ix;
 
     if (Debug_w[DEBUG_MESSAGE_TEST]) {
@@ -248,13 +248,13 @@ static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
     }
 }
 
-static void Convert_16_10_2(WORK_Other_CONN* ewk, u16 target) {
+static void Convert_16_10_2(EffectMultiSprite* ewk, u16 target) {
     ewk->wu.old_routine_no[1] = target / 10;
     target %= 10;
     ewk->wu.old_routine_no[0] = target;
 }
 
-void Convert_16_10_3(WORK_Other_CONN* ewk, u16 target) {
+void Convert_16_10_3(EffectMultiSprite* ewk, u16 target) {
     ewk->wu.old_routine_no[2] = target / 100;
     target %= 100;
     ewk->wu.old_routine_no[1] = target / 10;

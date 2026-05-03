@@ -6,7 +6,7 @@
  * Registered as the `engine` global table in the Lua state.
  *
  * Lua API:
- *   engine.read_player(id)              -> full player table (50+ fields from PLW/State)
+ *   engine.read_player(id)              -> full player table (50+ fields from PlayerEntity/State)
  *                                          Includes raw-offset fields: standing_state,
  *                                          can_fast_wakeup, received_connection_marker
  *   engine.read_globals()               -> global game state table
@@ -66,7 +66,7 @@ extern "C" {
 static char s_exe_base_path[1024] = { 0 };
 
 // ---- engine.read_player(id) ----
-// Returns the raw PLW/State fields matching gamestate.lua's field names.
+// Returns the raw PlayerEntity/State fields matching gamestate.lua's field names.
 
 static int l_read_player(lua_State* L) {
     int id = (int)luaL_checkinteger(L, 1);
@@ -75,7 +75,7 @@ static int l_read_player(lua_State* L) {
         return 1;
     }
 
-    PLW* wk = &g_state.plw[id - 1];
+    PlayerEntity* wk = &g_state.plw[id - 1];
     State* wu = &wk->wu;
 
     lua_createtable(L, 0, 80); // pre-allocate hash part
@@ -138,7 +138,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "hit_stop", wu->hit_stop);
 
     // --- Remaining freeze frames (offset 0x45) ---
-    PUSH_INT(L, t, "remaining_freeze_frames", wu->dead_f);
+    PUSH_INT(L, t, "remaining_freeze_frames", wu->death_timer);
 
     // --- Animation frame IDs ---
     PUSH_INT(L, t, "animation_frame_id", wu->graphic_index);
@@ -184,14 +184,14 @@ static int l_read_player(lua_State* L) {
     // --- Attack state ---
     PUSH_INT(L, t, "attack_type", wu->attack_type);
     PUSH_INT(L, t, "pat_status", wu->pat_status);
-    PUSH_INT(L, t, "attpow", wu->attpow);
-    PUSH_INT(L, t, "defpow", wu->defpow);
+    PUSH_INT(L, t, "attack_power", wu->attack_power);
+    PUSH_INT(L, t, "defense_power", wu->defense_power);
 
     // --- Missing fields from Phase 2 audit ---
     // Damage state
     PUSH_INT(L, t, "damage_hit_stop", wu->damage_hit_stop);
     PUSH_INT(L, t, "dm_guard_success", wu->dm_guard_success);
-    PUSH_INT(L, t, "dm_attlv", wu->dm_attlv);
+    PUSH_INT(L, t, "damage_attack_level", wu->damage_attack_level);
     PUSH_INT(L, t, "damage_stun_value", wu->damage_stun_value);
 
     // Extended routine state
@@ -202,17 +202,17 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "old_cgnum", wu->old_cgnum);
 
     // Attack attributes and hit tracking
-    PUSH_INT(L, t, "at_attribute", wu->at_attribute);
+    PUSH_INT(L, t, "attack_attribute", wu->attack_attribute);
     PUSH_INT(L, t, "hit_flag", wu->hf.hit_flag);
     PUSH_INT(L, t, "attack_num", wu->attack_num);
-    PUSH_INT(L, t, "zu_flag", wu->zu_flag);
+    PUSH_INT(L, t, "head_invuln_flag", wu->head_invuln_flag);
     PUSH_INT(L, t, "vitality", wu->vitality);
     PUSH_INT(L, t, "vital_new", wu->vital_new);
 
     // Family / friends (for projectile identification)
     PUSH_INT(L, t, "my_family", wu->my_family);
 
-    // --- PLW-specific fields ---
+    // --- PlayerEntity-specific fields ---
     // Guard
     PUSH_INT(L, t, "guard_flag", wk->guard_flag);
     PUSH_INT(L, t, "guard_active", wk->guard_active);
@@ -228,7 +228,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "combo_new_dm", wk->combo_type.new_dm);
 
     // Dead
-    PUSH_INT(L, t, "dead_flag", wk->dead_flag);
+    PUSH_INT(L, t, "death_timerlag", wk->death_timerlag);
 
     // Cancel
     PUSH_INT(L, t, "cancel_timer", wk->cancel_timer);
@@ -254,21 +254,21 @@ static int l_read_player(lua_State* L) {
         PUSH_INT(L, t, "stun_recover", 0);
     }
 
-    // --- Super gauge (SA_WORK) ---
+    // --- Super gauge (SuperArtGauge) ---
     if (wk->sa) {
         PUSH_INT(L, t, "gauge", wk->sa->gauge.s.h);
         PUSH_INT(L, t, "gauge_mantissa", wk->sa->gauge.s.l);
-        PUSH_INT(L, t, "gauge_len", wk->sa->gauge_len);
-        PUSH_INT(L, t, "store", wk->sa->store);
-        PUSH_INT(L, t, "store_max", wk->sa->store_max);
+        PUSH_INT(L, t, "gauge_length", wk->sa->gauge_length);
+        PUSH_INT(L, t, "stock", wk->sa->stock);
+        PUSH_INT(L, t, "stock_max", wk->sa->stock_max);
         PUSH_INT(L, t, "selected_sa", wk->sa->kind_of_arts);
-        PUSH_INT(L, t, "sa_state", wk->sa->ok);
+        PUSH_INT(L, t, "sa_state", wk->sa->can_activate);
     } else {
         PUSH_INT(L, t, "gauge", 0);
         PUSH_INT(L, t, "gauge_mantissa", 0);
-        PUSH_INT(L, t, "gauge_len", 0);
-        PUSH_INT(L, t, "store", 0);
-        PUSH_INT(L, t, "store_max", 0);
+        PUSH_INT(L, t, "gauge_length", 0);
+        PUSH_INT(L, t, "stock", 0);
+        PUSH_INT(L, t, "stock_max", 0);
         PUSH_INT(L, t, "selected_sa", 0);
         PUSH_INT(L, t, "sa_state", 0);
     }
@@ -301,7 +301,7 @@ static int l_read_player(lua_State* L) {
         lua_setfield(L, t, "body_boxes");
     }
 
-    // --- WORK_CP (command processing) ---
+    // --- CommandInputState (command processing) ---
     if (wk->cp) {
         PUSH_INT(L, t, "input_current", wk->cp->input_current);
         PUSH_INT(L, t, "input_pressed", wk->cp->input_pressed);
@@ -309,9 +309,9 @@ static int l_read_player(lua_State* L) {
         PUSH_INT(L, t, "lever_dir", wk->cp->lever_dir);
     }
 
-    // --- PLW extended ---
+    // --- PlayerEntity extended ---
     PUSH_INT(L, t, "current_attack", wk->current_attack);
-    PUSH_INT(L, t, "running_f", wk->running_f);
+    PUSH_INT(L, t, "running_flag", wk->running_flag);
     PUSH_INT(L, t, "invuln_flag", wk->invuln_flag ? 1 : 0);
     PUSH_INT(L, t, "att_plus", wk->att_plus);
     PUSH_INT(L, t, "def_plus", wk->def_plus);
@@ -422,10 +422,10 @@ static int l_read_player(lua_State* L) {
         PUSH_INT(L, t, "character_state_byte", base[0x27]);
 
         // wakeup_time: base + 0x187 = recovery_time (already pushed as damage_hit_stop)
-        // combo: base + 0xA59 (P1) / 0x519 (P2) — but combo_total already pushed via PLW
+        // combo: base + 0xA59 (P1) / 0x519 (P2) — but combo_total already pushed via PlayerEntity
     }
 
-    // --- Superfreeze (derived from PLW sa_stop_flag + hit_stop) ---
+    // --- Superfreeze (derived from PlayerEntity sa_stop_flag + hit_stop) ---
     // sa_stop_flag: 0=none, 1=frozen during super, 2=initiating super
     // Effie checks superfreeze_decount > 0 for Aegis blocking + cheat parry timing.
     PUSH_INT(L, t, "superfreeze_decount", (wk->sa_stop_flag != 0) ? wu->hit_stop : 0);
@@ -556,7 +556,7 @@ static int l_write_field(lua_State* L) {
     if (id < 1 || id > 2)
         return 0;
 
-    PLW* wk = &g_state.plw[id - 1];
+    PlayerEntity* wk = &g_state.plw[id - 1];
 
     if (strcmp(field, "life") == 0 || strcmp(field, "vitality") == 0) {
         wk->wu.vitality = (s16)val;
@@ -566,8 +566,8 @@ static int l_write_field(lua_State* L) {
         wk->wu.xyz[1].disp.pos = (s16)val;
     } else if (strcmp(field, "gauge") == 0 && wk->sa) {
         wk->sa->gauge.s.h = (s16)val;
-    } else if (strcmp(field, "store") == 0 && wk->sa) {
-        wk->sa->store = (s16)val;
+    } else if (strcmp(field, "stock") == 0 && wk->sa) {
+        wk->sa->stock = (s16)val;
     } else if (strcmp(field, "att_plus") == 0) {
         wk->att_plus = (s16)val;
     } else if (strcmp(field, "def_plus") == 0) {

@@ -16,7 +16,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 #include "sf33rd/Source/Game/system/system_subroutines.h"
@@ -42,7 +42,7 @@ void (*const EFF38_Jmp_Tbl[7])() = { EFF38_WAIT,  EFF38_SLIDE_IN, EFF38_SLIDE_OU
 void effect_38_move(State_Other* ewk) {
     EFF38_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag != 0) {
+    if (ewk->wu.active_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
 
@@ -366,7 +366,7 @@ s32 effect_38_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Play_Status, s16 T
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 38;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x90;
@@ -378,8 +378,8 @@ s32 effect_38_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Play_Status, s16 T
     ewk->wu.dir_old = Play_Status;
     ewk->wu.dir_old = dir_old;
     ewk->wu.vital_old = Your_Char;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     if (Your_Char == 0x7F) {
         ewk->wu.dir_step = g_state.ID_of_Face[g_state.Cursor_Y[ewk->master_id]][g_state.Cursor_X[ewk->master_id]];
@@ -391,7 +391,7 @@ s32 effect_38_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Play_Status, s16 T
         ewk->wu.dir_step = Your_Char;
     }
 
-    ewk->wu.rl_flag = PL_id ^ 1;
+    ewk->wu.facing_flag = PL_id ^ 1;
 
     if (PL_id) {
         if (g_state.My_char[PL_id] == 21) {

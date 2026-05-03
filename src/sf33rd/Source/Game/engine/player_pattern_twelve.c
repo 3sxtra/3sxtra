@@ -20,26 +20,26 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static s32 kabe_check3(PLW* wk);
-static u8 get_lever_dir(PLW* wk);
+static s32 kabe_check3(PlayerEntity* wk);
+static u8 get_lever_dir(PlayerEntity* wk);
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl19_exatt_table[18])(PLW*);
+void (*const pl19_exatt_table[18])(PlayerEntity*);
 
 /** @brief Twelve: extra attack dispatcher. */
-void pl_twelve_extra_attack(PLW* wk) {
+void pl_twelve_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl19_exatt_table[idx](wk);
 }
 
 /** @brief Twelve: X.C.O.P.Y. metamorphosis Super Art (copy opponent). */
-static void Att_METAMORPHOSE(PLW* wk) {
+static void Att_METAMORPHOSE(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         reset_mvxy_data(&wk->wu);
         wk->metamorphose = 0;
@@ -75,8 +75,8 @@ const s16 dra_em_tall[20][2] = { { 24, 16 }, { 28, 16 }, { 16, 16 }, { 16, 16 },
                                  { 16, 16 }, { 16, 16 }, { 16, 16 }, { 24, 16 }, { 20, 16 }, { 20, 16 } };
 
 /** @brief Twelve: SA D.R.A. (flying Super Art). */
-static void Att_SA__D_R_A(PLW* wk) {
-    PLW* emwk;
+static void Att_SA__D_R_A(PlayerEntity* wk) {
+    PlayerEntity* emwk;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -138,7 +138,7 @@ static void Att_SA__D_R_A(PLW* wk) {
             wk->wu.routine_no[3]++;
             setup_mvxy_data(&wk->wu, wk->wu.mvxy.index);
             wk->wu.mvxy.index++;
-            emwk = (PLW*)wk->wu.target_adrs;
+            emwk = (PlayerEntity*)wk->wu.target_adrs;
             wk->wu.xyz[0].disp.pos = emwk->wu.xyz[0].disp.pos;
             wk->wu.xyz[1].disp.pos = emwk->wu.xyz[1].disp.pos + -224;
 
@@ -185,30 +185,30 @@ static void Att_SA__D_R_A(PLW* wk) {
 }
 
 /** @brief Twelve: EX D.R.A. (enhanced flying attack). */
-static void Att_EX__D_R_A(PLW* wk) {
-    PLW* twk;
-    s16 ex;
+static void Att_EX__D_R_A(PlayerEntity* wk) {
+    PlayerEntity* twk;
+    s16 ex_mode;
     s16 ey;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->r_no);
-        twk = (PLW*)wk->wu.target_adrs;
+        twk = (PlayerEntity*)wk->wu.target_adrs;
 
-        if (wk->wu.rl_flag) {
-            ex = twk->wu.position_x - dra_em_tall[twk->player_number][0];
+        if (wk->wu.facing_flag) {
+            ex_mode = twk->wu.position_x - dra_em_tall[twk->player_number][0];
         } else {
-            ex = twk->wu.position_x + dra_em_tall[twk->player_number][0];
+            ex_mode = twk->wu.position_x + dra_em_tall[twk->player_number][0];
         }
 
         ey = dra_em_tall[twk->player_number][1];
         wk->wu.mvxy.a[0].sp = 0;
-        cal_delta_speed(&wk->wu, 8, ex, ey, 2, 2);
+        cal_delta_speed(&wk->wu, 8, ex_mode, ey, 2, 2);
 
-        if (wk->wu.rl_flag == 0) {
+        if (wk->wu.facing_flag == 0) {
             wk->wu.mvxy.a[0].sp = -wk->wu.mvxy.a[0].sp;
             wk->wu.mvxy.d[0].sp = -wk->wu.mvxy.d[0].sp;
         }
@@ -272,7 +272,7 @@ static void Att_EX__D_R_A(PLW* wk) {
 }
 
 /** @brief Twelve: air special attack (Kuuchuu Hissatsu). */
-static void Att_KUUCHUUHISSATU(PLW* wk) {
+static void Att_KUUCHUUHISSATU(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -331,11 +331,11 @@ static void Att_KUUCHUUHISSATU(PLW* wk) {
 }
 
 /** @brief Twelve: air dash attack. */
-static void Att_AIRDASH(PLW* wk) {
+static void Att_AIRDASH(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
@@ -345,9 +345,9 @@ static void Att_AIRDASH(PLW* wk) {
         char_move(&wk->wu);
 
         if (kabe_check3(wk) != 0) {
-            wk->wu.rl_flag = (wk->wu.rl_flag + 1) & 1;
+            wk->wu.facing_flag = (wk->wu.facing_flag + 1) & 1;
             wk->wu.xyz[0].disp.pos =
-                wk->wu.rl_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
+                wk->wu.facing_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
             set_char_move_init(&wk->wu, 5, 65);
             wk->wu.routine_no[3] = 5;
             wk->wu.cg_type = 0;
@@ -384,9 +384,9 @@ static void Att_AIRDASH(PLW* wk) {
         jumping_union_process(&wk->wu, 4);
 
         if (kabe_check3(wk)) {
-            wk->wu.rl_flag = wk->wu.rl_flag + 1 & 1;
+            wk->wu.facing_flag = wk->wu.facing_flag + 1 & 1;
             wk->wu.xyz[0].disp.pos =
-                wk->wu.rl_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
+                wk->wu.facing_flag ? g_state.bg_w.bgw[1].l_limit2 - 192 : g_state.bg_w.bgw[1].r_limit2 + 192;
             set_char_move_init(&wk->wu, 5, 65);
             wk->wu.routine_no[3] = 5;
             wk->wu.cg_type = 0;
@@ -419,7 +419,7 @@ static void Att_AIRDASH(PLW* wk) {
 }
 
 /** @brief Twelve: checks if character has reached a stage wall (variant 3). */
-static s32 kabe_check3(PLW* wk) {
+static s32 kabe_check3(PlayerEntity* wk) {
     if (get_lever_dir(wk) != 1) {
         return 0;
     }
@@ -428,18 +428,18 @@ static s32 kabe_check3(PLW* wk) {
         return 0;
     }
 
-    return (wk->wu.rl_flag + wk->close_proximity_flag == 2);
+    return (wk->wu.facing_flag + wk->close_proximity_flag == 2);
 }
 
 /** @brief Twelve: special action (tokushu koudou). */
-static void Att_pl19_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_pl19_TOKUSHUKOUDOU(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
 
-        if (wk->sa->ok == -1) {
+        if (wk->sa->can_activate == -1) {
             wk->wu.routine_no[3] = 2;
             set_char_move_init(&wk->wu, 5, 62);
             break;
@@ -478,7 +478,7 @@ static void Att_pl19_TOKUSHUKOUDOU(PLW* wk) {
 }
 
 /** @brief Twelve: airborne A.X.E. attack. */
-static void Att_AIR_A_X_E(PLW* wk) {
+static void Att_AIR_A_X_E(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -533,7 +533,7 @@ static void Att_AIR_A_X_E(PLW* wk) {
 }
 
 /** @brief Twelve: returns directional lever input for air control. */
-static u8 get_lever_dir(PLW* wk) {
+static u8 get_lever_dir(PlayerEntity* wk) {
     u8 num;
 
     if (wk->wu.work_id == 1) {
@@ -549,7 +549,7 @@ static u8 get_lever_dir(PLW* wk) {
     return num;
 }
 
-void (*const pl19_exatt_table[18])(PLW*) = {
+void (*const pl19_exatt_table[18])(PlayerEntity*) = {
     Att_HADOUKEN,     Att_AIRDASH,   Att_KUUCHUUHISSATU,     Att_HADOUKEN,       Att_HADOUKEN,       Att_EX__D_R_A,
     Att_METAMORPHOSE, Att_AIR_A_X_E, Att_HADOUKEN,           Att_JINNCHUUWATARI, Att_SLIDE_and_JUMP, Att_SA__D_R_A,
     Att_DUMMY,        Att_DUMMY,     Att_pl19_TOKUSHUKOUDOU, Att_DUMMY,          Att_METAMOR_WAIT,   Att_METAMOR_REBIRTH

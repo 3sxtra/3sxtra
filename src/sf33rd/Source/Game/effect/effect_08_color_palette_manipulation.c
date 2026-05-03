@@ -84,7 +84,7 @@ s32 effect_08_init(s8 sc_num, s8 x, s8 y, u16 atr, s16 color_type) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 8;
     ewk->wu.work_id = 16;
     ewk->wu.type = sc_num + 0;

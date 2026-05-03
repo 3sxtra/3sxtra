@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 
-static void mvxy_table_reader(PLW* wk);
+static void mvxy_table_reader(PlayerEntity* wk);
 
 const u8 tenguiwa_stand_by[2][8] = { { 24, 25, 26, 27, 28, 29, 30, 30 }, { 31, 32, 33, 34, 35, 34, 33, 31 } };
 
@@ -41,21 +41,21 @@ const s16 homing_kop[2][4] = { { 1, 14, 0, 2 }, { 0, 14, 0, 2 } };
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl09_exatt_table[18])(PLW*);
+void (*const pl09_exatt_table[18])(PlayerEntity*);
 
 /** @brief Oro: extra attack dispatcher. */
-void pl_oro_extra_attack(PLW* wk) {
+void pl_oro_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl09_exatt_table[idx](wk);
 }
 
 /** @brief Oro: Yagyoudama (bouncing ball SA). */
-static void Att_SP_YAGYOUDAMA(PLW* wk) {
+static void Att_SP_YAGYOUDAMA(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         wk->wu.mvxy.index = wk->as->r_no;
@@ -108,7 +108,7 @@ static void Att_SP_YAGYOUDAMA(PLW* wk) {
 }
 
 /** @brief Oro: creates and configures Tengu Stone projectiles. */
-s32 set_tenguiwa(PLW* wk, u8 data) {
+s32 set_tenguiwa(PlayerEntity* wk, u8 data) {
     s16 i;
     s16 j;
     u16 num;
@@ -133,8 +133,8 @@ s32 set_tenguiwa(PLW* wk, u8 data) {
                 tmw->old_pos[0] = tengu_rock_pos_adjust[j][0];
                 tmw->old_pos[1] = tengu_rock_pos_adjust[j][1];
                 tmw->old_pos[2] = tengu_rock_pos_adjust[j][2];
-                tmw->scr_mv_x = tengu_rock_pos_adjust[j][3];
-                tmw->scr_mv_y = tengu_rock_pos_adjust[j][4];
+                tmw->screen_move_x = tengu_rock_pos_adjust[j][3];
+                tmw->screen_move_y = tengu_rock_pos_adjust[j][4];
                 tmw->direction = tengu_rock_pos_adjust[j][5];
 
                 j++;
@@ -162,8 +162,8 @@ s32 set_tenguiwa(PLW* wk, u8 data) {
                 tmw->old_pos[0] = tengu_rock_pos_adjust2[j][0];
                 tmw->old_pos[1] = tengu_rock_pos_adjust2[j][1];
                 tmw->old_pos[2] = tengu_rock_pos_adjust2[j][2];
-                tmw->scr_mv_x = tengu_rock_pos_adjust2[j][3];
-                tmw->scr_mv_y = tengu_rock_pos_adjust2[j][4];
+                tmw->screen_move_x = tengu_rock_pos_adjust2[j][3];
+                tmw->screen_move_y = tengu_rock_pos_adjust2[j][4];
                 tmw->direction = tengu_rock_pos_adjust2[j][5];
 
                 j++;
@@ -179,14 +179,14 @@ s32 set_tenguiwa(PLW* wk, u8 data) {
 }
 
 /** @brief Oro: special action (tokushu koudou). */
-static void Att_PL09_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL09_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->tk_success = 0;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->target_combo_success = 0;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -202,8 +202,8 @@ static void Att_PL09_TOKUSHUKOUDOU(PLW* wk) {
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
 
-            if (++wk->tk_success > 13) {
-                wk->tk_success = 13;
+            if (++wk->target_combo_success > 13) {
+                wk->target_combo_success = 13;
             }
         }
 
@@ -213,7 +213,7 @@ static void Att_PL09_TOKUSHUKOUDOU(PLW* wk) {
             break;
         }
 
-        wk->py->now.timer -= wk->py->recover * pl09_tk_table[wk->tk_success] / 100;
+        wk->py->now.timer -= wk->py->recover * pl09_tk_table[wk->target_combo_success] / 100;
 
         if (wk->py->now.quantity.h <= 0) {
             wk->py->now.timer = 0;
@@ -233,11 +233,11 @@ static void Att_PL09_TOKUSHUKOUDOU(PLW* wk) {
 }
 
 /** @brief Oro: EX Jinchuu Watari (wall jump). */
-static void Att_JINNCHUUWATARI_EX(PLW* wk) {
+static void Att_JINNCHUUWATARI_EX(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         wk->pl09_dat_index = wk->as->r_no;
@@ -277,10 +277,10 @@ static void Att_JINNCHUUWATARI_EX(PLW* wk) {
 }
 
 /** @brief Oro: movement XY table reader for multi-segment moves. */
-static void mvxy_table_reader(PLW* wk) {
-    PLW* twk = (PLW*)wk->wu.target_adrs;
+static void mvxy_table_reader(PlayerEntity* wk) {
+    PlayerEntity* twk = (PlayerEntity*)wk->wu.target_adrs;
     const s16* curr_kop = &homing_kop[wk->pl09_dat_index][0];
-    s16 ex;
+    s16 ex_mode;
     s16 ey;
 
     if (wk->wu.cg_type == 30) {
@@ -290,42 +290,42 @@ static void mvxy_table_reader(PLW* wk) {
         switch (curr_kop[0]) {
         case 0:
             if (wk->wu.xyz[0].disp.pos < twk->wu.xyz[0].disp.pos) {
-                ex = twk->wu.xyz[0].disp.pos - homing_hos[wk->pl09_dat_index][twk->player_number][0];
+                ex_mode = twk->wu.xyz[0].disp.pos - homing_hos[wk->pl09_dat_index][twk->player_number][0];
 
-                if (!wk->wu.rl_flag) {
-                    ex = wk->wu.xyz[0].disp.pos - (ex - wk->wu.xyz[0].disp.pos);
+                if (!wk->wu.facing_flag) {
+                    ex_mode = wk->wu.xyz[0].disp.pos - (ex_mode - wk->wu.xyz[0].disp.pos);
                 }
             } else {
-                ex = twk->wu.xyz[0].disp.pos + homing_hos[wk->pl09_dat_index][twk->player_number][0];
+                ex_mode = twk->wu.xyz[0].disp.pos + homing_hos[wk->pl09_dat_index][twk->player_number][0];
 
-                if (wk->wu.rl_flag) {
-                    ex = wk->wu.xyz[0].disp.pos + (wk->wu.xyz[0].disp.pos - ex);
+                if (wk->wu.facing_flag) {
+                    ex_mode = wk->wu.xyz[0].disp.pos + (wk->wu.xyz[0].disp.pos - ex_mode);
                 }
             }
 
             ey = homing_hos[wk->pl09_dat_index][twk->player_number][1];
             wk->wu.mvxy.a[0].sp = 0;
-            cal_initial_speed(&wk->wu, curr_kop[1], ex, ey);
+            cal_initial_speed(&wk->wu, curr_kop[1], ex_mode, ey);
             wk->pl09_dat_index++;
             break;
 
         case 1:
-            ex = wk->wu.xyz[0].disp.pos;
+            ex_mode = wk->wu.xyz[0].disp.pos;
 
             if (wk->wu.xyz[0].disp.pos < twk->wu.xyz[0].disp.pos) {
-                ex += (twk->wu.xyz[0].disp.pos - wk->wu.xyz[0].disp.pos) / 2;
+                ex_mode += (twk->wu.xyz[0].disp.pos - wk->wu.xyz[0].disp.pos) / 2;
             } else {
-                ex -= (wk->wu.xyz[0].disp.pos - twk->wu.xyz[0].disp.pos) / 2;
+                ex_mode -= (wk->wu.xyz[0].disp.pos - twk->wu.xyz[0].disp.pos) / 2;
             }
 
             ey = homing_hos[wk->pl09_dat_index][twk->player_number][1];
             wk->wu.mvxy.a[0].sp = 0;
-            cal_initial_speed(&wk->wu, curr_kop[1], ex, ey);
+            cal_initial_speed(&wk->wu, curr_kop[1], ex_mode, ey);
             wk->pl09_dat_index++;
             break;
         }
 
-        if (wk->wu.rl_flag == 0) {
+        if (wk->wu.facing_flag == 0) {
             wk->wu.mvxy.a[0].sp = -wk->wu.mvxy.a[0].sp;
             wk->wu.mvxy.d[0].sp = -wk->wu.mvxy.d[0].sp;
         }
@@ -345,16 +345,16 @@ static void mvxy_table_reader(PLW* wk) {
 }
 
 /** @brief Oro: EX Tengu Stone Super Art. */
-static void Att_PL09_EX_TENGUIWA(PLW* wk) {
+static void Att_PL09_EX_TENGUIWA(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
-        wk->sa->dtm_mul = 2;
+        wk->sa->damage_time_multiplier = 2;
         break;
 
     case 1:
@@ -364,16 +364,16 @@ static void Att_PL09_EX_TENGUIWA(PLW* wk) {
 }
 
 /** @brief Oro: EX Kishin Riki (close-range grab SA). */
-static void Att_PL09_EX_KISHINRIKI(PLW* wk) {
+static void Att_PL09_EX_KISHINRIKI(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
-        wk->sa->dtm_mul = 16;
+        wk->sa->damage_time_multiplier = 16;
         break;
 
     case 1:
@@ -399,7 +399,7 @@ static void Att_PL09_EX_KISHINRIKI(PLW* wk) {
     }
 }
 
-void (*const pl09_exatt_table[18])(PLW*) = {
+void (*const pl09_exatt_table[18])(PlayerEntity*) = {
     Att_HADOUKEN,      Att_SHOURYUUKEN,      Att_KUUCHUUNICHIRINSHOU,   Att_HADOUKEN,       Att_HADOUKEN,
     Att_HADOUKEN,      Att_HADOUKEN,         Att_KUUCHUUJINNCHUUWATARI, Att_JINNCHUUWATARI, Att_JINNCHUUWATARI_EX,
     Att_SP_YAGYOUDAMA, Att_PL09_EX_TENGUIWA, Att_PL09_EX_KISHINRIKI,    Att_DUMMY,          Att_PL09_TOKUSHUKOUDOU,

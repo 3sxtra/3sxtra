@@ -15,7 +15,7 @@ typedef struct {
     u16 left : 1;
     u16 right : 1;
     u16 lp : 1;
-    u16 mp : 1;
+    u16 meter_points : 1;
     u16 hp : 1;
     u16 lk : 1;
     u16 mk : 1;

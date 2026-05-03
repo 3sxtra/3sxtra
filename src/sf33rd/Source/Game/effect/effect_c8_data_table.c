@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -18,7 +18,7 @@
 const s32 effc8_data_tbl[4] = { 0x30000, 0x200, 0, -0x1800 };
 
 void effect_C8_move(State_Other* ewk) {
-    PLW* oya_pl = (PLW*)ewk->my_master;
+    PlayerEntity* oya_pl = (PlayerEntity*)ewk->my_master;
     s16 work;
     const s32* ptr;
 
@@ -78,7 +78,7 @@ void effect_C8_move(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             add_x_sub(&ewk->wu);
             add_y_sub(&ewk->wu);
             char_move(&ewk->wu);
@@ -103,7 +103,7 @@ void effect_C8_move(State_Other* ewk) {
     }
 }
 
-s32 effect_C8_init(PLW* wk) {
+s32 effect_C8_init(PlayerEntity* wk) {
     State_Other* ewk;
     s16 ix;
 
@@ -112,12 +112,12 @@ s32 effect_C8_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 128;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_family = 2;
-    ewk->wu.rl_flag = wk->wu.rl_flag;
+    ewk->wu.facing_flag = wk->wu.facing_flag;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_priority = ewk->wu.position_z = 20;
     *ewk->wu.char_table = _etc_char_table;
@@ -126,7 +126,7 @@ s32 effect_C8_init(PLW* wk) {
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = wk->wu.xyz[0].disp.pos;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = wk->wu.xyz[1].disp.pos;
     ewk->wu.xyz[0].disp.low = ewk->wu.xyz[1].disp.low = 0;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

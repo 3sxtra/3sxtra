@@ -59,7 +59,7 @@ s32 effect_14_init(s16 id, s16 x, s16 y, s16 atr) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 14;
     ewk->wu.work_id = 16;
     ewk->wu.type = id;

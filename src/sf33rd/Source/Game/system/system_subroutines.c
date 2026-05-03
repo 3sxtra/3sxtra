@@ -28,7 +28,7 @@
 #include "port/mods/modded_stage.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
-#include "sf33rd/Source/Game/com/com_datu.h"
+#include "sf33rd/Source/Game/com/ai_data_utility.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect_93_quake_jump_table.h"
 #include "sf33rd/Source/Game/effect/effect_b8_quake.h"
@@ -37,8 +37,8 @@
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/game.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/menu/menu.h"
 #include "sf33rd/Source/Game/rendering/memory_texture_control.h"
 #include "sf33rd/Source/Game/screen/entry.h"
@@ -567,7 +567,7 @@ void BG_Draw_System() {
         } else {
             for (i = 0; i < 4; i++, s2 = mask *= 2) {
                 if (g_state.Screen_Switch_Buffer & mask) {
-                    scr_trans(i);
+                    screen_transform(i);
                 }
             }
         }

@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/effect/effect_06_data_screen_object.h"
 #include "sf33rd/Source/Game/effect/effect_68_visual_generic.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
@@ -157,7 +157,7 @@ void bg090_demo_check() {
 void demo90_base() {
     s16 chk_pl;
 
-    if (g_state.EXE_flag || g_state.Game_pause) {
+    if (g_state.execute_flag || g_state.Game_pause) {
         return;
     }
 
@@ -205,7 +205,7 @@ void demo90_base() {
 
 /** @brief Win animation background handler for Santos Harbor, Brazil. */
 void jijii_win_bg() {
-    if ((g_state.EXE_flag || g_state.Game_pause)) {
+    if ((g_state.execute_flag || g_state.Game_pause)) {
         return;
     }
 
@@ -231,7 +231,7 @@ void jijii_win_bg2() {
     s16 zuu_work;
     s32 sp_work;
 
-    if ((g_state.EXE_flag || g_state.Game_pause)) {
+    if ((g_state.execute_flag || g_state.Game_pause)) {
         return;
     }
 

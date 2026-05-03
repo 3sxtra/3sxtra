@@ -120,7 +120,7 @@ s32 effect_A2_init(s32 arg) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 102;
     ewk->wu.work_id = 16;
     ewk->wu.direction = 1;

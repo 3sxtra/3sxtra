@@ -191,7 +191,7 @@ s32 effect_93_init(s8 Move_Type, s16 Time) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0x5D;
     ewk->wu.dir_timer = Time;
     ewk->wu.routine_no[0] = Move_Type;

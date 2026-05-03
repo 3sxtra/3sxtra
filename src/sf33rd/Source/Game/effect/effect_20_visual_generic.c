@@ -66,12 +66,12 @@ s32 effect_20_init(State_Other* oya) {
     ewk = (State_Other*)frw[ix];
     ewk->my_master = oya;
     ewk->master_id = oya->wu.id;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 20;
     ewk->wu.work_id = 16;
     ewk->wu.my_priority = 0x40;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.rl_flag = g_state.plw[g_state.Winner_id].wu.rl_flag;
+    ewk->wu.facing_flag = g_state.plw[g_state.Winner_id].wu.facing_flag;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _etc2_char_table;
     ewk->wu.my_family = 8;
@@ -82,7 +82,7 @@ s32 effect_20_init(State_Other* oya) {
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
     ewk->wu.my_priority = ewk->wu.position_z = 16;
     ewk->wu.char_index = 49;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

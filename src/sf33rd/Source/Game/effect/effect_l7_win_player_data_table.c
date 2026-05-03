@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -26,14 +26,14 @@ const s16 effl7_data_tbl[16];
 void effect_L7_move(State_Other* ewk) {
     State* oya_ptr = (State*)ewk->my_master;
 
-    if (g_state.Suicide[0] || (ewk->wu.dead_f)) {
+    if (g_state.Suicide[0] || (ewk->wu.death_timer)) {
         ewk->wu.routine_no[0] = 1;
         ewk->wu.disp_flag = 0;
     }
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if ((!g_state.EXE_flag) && (!g_state.Game_pause)) {
+        if ((!g_state.execute_flag) && (!g_state.Game_pause)) {
             effl7_move(ewk);
         }
 
@@ -98,7 +98,7 @@ void effl7_move(State_Other* ewk) {
 
         if (ewk->wu.cg_type == 9) {
             ewk->wu.routine_no[1] += 1;
-            ewk->wu.rl_flag ^= 1;
+            ewk->wu.facing_flag ^= 1;
         }
 
         break;
@@ -110,7 +110,7 @@ void effl7_move(State_Other* ewk) {
             ewk->wu.routine_no[1] += 1;
             set_char_move_init2(&ewk->wu, 0, 0, 3, 1);
 
-            if (ewk->wu.rl_flag) {
+            if (ewk->wu.facing_flag) {
                 ewk->wu.mvxy.a[0].sp = 0x20000;
             } else {
                 ewk->wu.mvxy.a[0].sp = -0x20000;
@@ -145,7 +145,7 @@ s32 effect_L7_init(State* wk, s32 /* unused */) {
     s16 ix;
     s16 kind_w;
 
-    if ((wk->work_id == 1) && (((PLW*)wk)->player_number != g_state.My_char[wk->id])) {
+    if ((wk->work_id == 1) && (((PlayerEntity*)wk)->player_number != g_state.My_char[wk->id])) {
         return 0;
     }
 
@@ -166,7 +166,7 @@ s32 effect_L7_init(State* wk, s32 /* unused */) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 217;
     ewk->wu.work_id = 16;
     ewk->master_id = wk->id;
@@ -175,9 +175,9 @@ s32 effect_L7_init(State* wk, s32 /* unused */) {
     ewk->wu.my_col_code = wk->my_col_code + 1;
     ewk->wu.my_family = wk->my_family;
     ewk->my_master = wk;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.facing_flag = wk->facing_flag;
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         if (wk->xyz[0].disp.pos < g_state.bg_w.bgw[1].wxy[0].disp.pos) {
             ewk->wu.xyz[0].disp.pos = wk->xyz[0].disp.pos - 256;
         } else {
@@ -206,8 +206,8 @@ s32 effect_L7_init(State* wk, s32 /* unused */) {
     kind_w = random_16();
     ewk->wu.old_routine_no[2] = effl7_data_tbl[kind_w];
     g_state.poison_flag[wk->id] = 1;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }
 

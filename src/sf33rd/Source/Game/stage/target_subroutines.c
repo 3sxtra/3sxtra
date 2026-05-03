@@ -23,8 +23,8 @@ s16 eff_hit_data[4][4] = { { -67, 59, 13, 29 }, { 31, 95, 24, 15 }, { 4, 123, 28
 
 // sbss
 
-static s32 eff_hit_check_sub(State_Other* ewk, PLW* pl);
-static s32 eff_hit_check_sub2(State_Other* ewk, PLW* pl, s16 where_type);
+static s32 eff_hit_check_sub(State_Other* ewk, PlayerEntity* pl);
+static s32 eff_hit_check_sub2(State_Other* ewk, PlayerEntity* pl, s16 where_type);
 static s16 hit_check_subroutine_yu(State* tpl, State* tef, s16* hd1, s16* hd2);
 
 /** @brief Synchronize family layer position for a foreground object. */
@@ -277,7 +277,7 @@ const s16 pl_hit_eff[25][4] = { { -11, 56, 33, 38 }, { -11, 56, 35, 53 }, { -13,
                                 { -11, 56, 33, 38 } };
 
 /** @brief Sub-routine for effect-player collision detection. */
-static s32 eff_hit_check_sub(State_Other* ewk, PLW* pl) {
+static s32 eff_hit_check_sub(State_Other* ewk, PlayerEntity* pl) {
     if (pl->wu.routine_no[1] == 1) {
         if (pl->wu.routine_no[2] < 14 || pl->wu.routine_no[2] >= 24) {
             return 0;
@@ -310,7 +310,7 @@ s16 eff_hit_check2(State_Other* ewk, s16 type, s16 where_type) {
 }
 
 /** @brief Sub-routine for effect collision with zone type. */
-static s32 eff_hit_check_sub2(State_Other* ewk, PLW* pl, s16 where_type) {
+static s32 eff_hit_check_sub2(State_Other* ewk, PlayerEntity* pl, s16 where_type) {
     s16* hd1 = pl->wu.body_hurtbox->body_dm[where_type];
 
     if (hit_check_subroutine_yu(&pl->wu, &ewk->wu, hd1, eff_hit_data[ewk->wu.type])) {
@@ -328,7 +328,7 @@ static s16 hit_check_subroutine_yu(State* tpl, State* tef, s16* hd1, s16* hd2) {
     s16 d3;
     s16 flag;
 
-    if (tpl->rl_flag) {
+    if (tpl->facing_flag) {
         d0 = -d0;
         d0 -= d1;
     }
@@ -337,7 +337,7 @@ static s16 hit_check_subroutine_yu(State* tpl, State* tef, s16* hd1, s16* hd2) {
     d2 = *hd2++;
     d3 = *hd2++;
 
-    if (tef->rl_flag) {
+    if (tef->facing_flag) {
         d2 = -d2;
         d2 -= d3;
     }
@@ -381,7 +381,7 @@ s32 compel_dead_check(State_Other* ewk) {
     s32 var_s0 = 0;
 
     if (g_state.bg_w.compel_flag) {
-        if (ewk->wu.dead_f) {
+        if (ewk->wu.death_timer) {
             var_s0 = 1;
         }
     }

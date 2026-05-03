@@ -16,8 +16,8 @@ u32 spmv_ng_save[2];
 const s16 pl17_0_00[12];
 
 void effect_L8_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
-    s16* save_old_col_ptr = (s16*)&ewk->wu.zu_flag;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
+    s16* save_old_col_ptr = (s16*)&ewk->wu.head_invuln_flag;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -33,7 +33,7 @@ void effect_L8_move(State_Other* ewk) {
         break;
 
     case 1:
-        if ((mwk->sa->ok == -1) && (ewk->wu.dead_f == 0)) {
+        if ((mwk->sa->can_activate == -1) && (ewk->wu.death_timer == 0)) {
             break;
         }
 
@@ -84,7 +84,7 @@ void load_old_color_data(s16* wram, s16* tram) {
     }
 }
 
-s32 effect_L8_init(PLW* wk) {
+s32 effect_L8_init(PlayerEntity* wk) {
     State_Other* ewk;
     s16 ix;
 
@@ -97,7 +97,7 @@ s32 effect_L8_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 218;
     ewk->wu.work_id = 16;
     ewk->my_master = wk;

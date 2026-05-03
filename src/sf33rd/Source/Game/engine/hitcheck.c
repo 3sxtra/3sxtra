@@ -22,9 +22,9 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/player_special_attacks.h"
-#include "sf33rd/Source/Game/engine/pow_pow.h"
+#include "sf33rd/Source/Game/engine/damage_calculator.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 u8 last_parry_red[2];
@@ -168,7 +168,7 @@ void check_result_extra() {
 
             g_state.plw[0].wu.damage_hit_stop = g_state.plw[1].wu.damage_hit_stop = 0;
             g_state.plw[0].wu.damage_screen_shake = g_state.plw[1].wu.damage_screen_shake = 0;
-            g_state.plw[0].wu.dm_nodeathattack = g_state.plw[1].wu.dm_nodeathattack = 0;
+            g_state.plw[0].wu.damage_no_death_attack = g_state.plw[1].wu.damage_no_death_attack = 0;
         }
 
         return;
@@ -178,8 +178,8 @@ void check_result_extra() {
 /** @brief Handles caught/thrown status setup when a catch (throw) connects. */
 void set_caught_status(s16 ix) {
     s16 ix2 = hs[ix].dm_me;
-    PLW* as = (PLW*)q_hit_push[ix2];
-    PLW* ds = (PLW*)q_hit_push[ix];
+    PlayerEntity* as = (PlayerEntity*)q_hit_push[ix2];
+    PlayerEntity* ds = (PlayerEntity*)q_hit_push[ix];
     s16 blocking_status = check_blocking_flag(as, ds);
     s8 gddir;
 
@@ -234,7 +234,7 @@ void set_caught_status(s16 ix) {
                 break;
 
             default:
-                as->cat_break_reserve = ds->cat_break_reserve = 1;
+                as->catch_break_reserve = ds->catch_break_reserve = 1;
                 break;
             }
         }
@@ -256,10 +256,10 @@ void set_caught_status(s16 ix) {
     ds->wu.dmg_adrs = as;
     as->wu.hit_work_id = ds->wu.work_id;
     ds->wu.dmg_work_id = as->wu.work_id;
-    ds->dm_point = 1;
+    ds->damage_point = 1;
     gddir = get_guard_direction(&as->wu, &ds->wu);
     setup_latest_stick_dir(ds, gddir);
-    setup_dm_rl(&as->wu, &ds->wu);
+    setup_damage_facing(&as->wu, &ds->wu);
     set_catch_hit_mark_pos(&as->wu, &ds->wu);
     set_damage_and_piyo(as, ds);
     ds->wu.dm_guard_success = -1;
@@ -311,7 +311,7 @@ void set_caught_status(s16 ix) {
         var_s4 = 1;
     }
 
-    switch (var_s4 + (((as->wu.rl_flag + ds->wu.rl_flag) & 1) * 2)) {
+    switch (var_s4 + (((as->wu.facing_flag + ds->wu.facing_flag) & 1) * 2)) {
     case 0:
     case 3:
         as->wu.routine_no[1] = as->wu.cmd_catch_release.kind_of_char;
@@ -346,13 +346,13 @@ void set_caught_status(s16 ix) {
         ds->wu.xyz[1].disp.pos = as->wu.xyz[1].disp.pos;
     }
 
-    effect_02_init(&as->wu, ds->dm_point, 1, ds->wu.dm_rl);
+    effect_02_init(&as->wu, ds->damage_point, 1, ds->wu.damage_facing);
     dm_status_copy(&as->wu, &ds->wu);
     ds->wu.damage_vitality = 0;
     as->wu.hit_stop = ds->wu.damage_hit_stop = 0;
     as->wu.script_register_bank[8]++;
     as->wu.script_register_bank[0xF]++;
-    ds->wu.dm_count_up++;
+    ds->wu.damage_count_up++;
     hit_pattern_extdat_check(&as->wu);
     g_state.parry_ctr_vs[g_state.Play_Type][ds->wu.id] = 0;
     g_state.parry_counter[ds->wu.id] = 0;
@@ -380,8 +380,8 @@ s32 check_pat_status(State* wk) {
 }
 
 /** @brief Checks whether the defender is in a valid blocking state against the attacker. */
-s16 check_blocking_flag(PLW* as, PLW* ds) {
-    WORK_CP* wp;
+s16 check_blocking_flag(PlayerEntity* as, PlayerEntity* ds) {
+    CommandInputState* wp;
     s16 num;
 
     wp = ds->cp;
@@ -393,7 +393,7 @@ s16 check_blocking_flag(PLW* as, PLW* ds) {
 
 /** @brief Sets up the attack-hit data for a catch (throw) connection. */
 void setup_catch_atthit(State* as, State* ds) {
-    set_damage_and_piyo((PLW*)as, (PLW*)ds);
+    set_damage_and_piyo((PlayerEntity*)as, (PlayerEntity*)ds);
     dm_status_copy(as, ds);
     as->hit_stop = ds->damage_hit_stop = 0;
 }
@@ -401,7 +401,7 @@ void setup_catch_atthit(State* as, State* ds) {
 /** @brief Calculates the hit-mark sprite position for a catch (throw). */
 void set_catch_hit_mark_pos(State* as, State* ds) {
     if (as->att.hit_mark_index) {
-        if (as->rl_flag) {
+        if (as->facing_flag) {
             as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.hit_mark_index][0];
         } else {
             as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_adjust_table[as->att.hit_mark_index][0];
@@ -460,7 +460,7 @@ void set_struck_status(s16 ix) {
 /** @brief Calculates the hit-mark spark position from overlapping hitboxes. */
 void cal_hit_mark_pos(State* as, State* ds, s16 ix2, s16 ix) {
     if (as->att.hit_mark_index) {
-        if (as->rl_flag) {
+        if (as->facing_flag) {
             as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.hit_mark_index][0];
         } else {
             as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_adjust_table[as->att.hit_mark_index][0];
@@ -477,7 +477,7 @@ void cal_hit_mark_pos(State* as, State* ds, s16 ix2, s16 ix) {
 const s16 Dsas_dir_table[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0 };
 
 /** @brief Processes player-vs-player damage — guard, block, or hit depending on state. */
-void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
+void plef_at_vs_player_damage_union(PlayerEntity* as, PlayerEntity* ds, s8 gddir) {
     ds->wu.dm_guard_success = -1;
 
     if (ds->guard_flag == 3 || as->wu.att.guard == 0 || ds->py->flag != 0) {
@@ -532,15 +532,15 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
         ds->wu.is_taking_chip_damage = 0;
         dm_reaction_init_set(as, ds);
 
-        if (as->wu.zu_flag == 0) {
+        if (as->wu.head_invuln_flag == 0) {
             if (ds->wu.pat_status >= 32) {
                 ds->wu.routine_no[2] = get_kagami_damage(ds->wu.routine_no[2]);
             } else {
-                switch (ds->dm_point) {
+                switch (ds->damage_point) {
                 case 0:
                 case 1:
                     if (check_head_damage(ds->wu.routine_no[2])) {
-                        ds->wu.routine_no[2] = get_kind_of_head_dm(as->wu.dir_atthit, ds->wu.dm_rl);
+                        ds->wu.routine_no[2] = get_kind_of_head_dm(as->wu.dir_atthit, ds->wu.damage_facing);
                     }
 
                     break;
@@ -554,7 +554,7 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
 
                 default:
                     if (check_trunk_damage(ds->wu.routine_no[2])) {
-                        ds->wu.routine_no[2] = get_kind_of_trunk_dm(as->wu.dir_atthit, ds->wu.dm_rl);
+                        ds->wu.routine_no[2] = get_kind_of_trunk_dm(as->wu.dir_atthit, ds->wu.damage_facing);
                     }
                 }
             }
@@ -565,12 +565,12 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
     ds->wu.routine_no[3] = 0;
     grade_add_clean_hits((State_Other*)as);
     check_guard_miss(&as->wu, ds, gddir);
-    effect_02_init(&as->wu, ds->dm_point, 1, ds->wu.dm_rl);
+    effect_02_init(&as->wu, ds->damage_point, 1, ds->wu.damage_facing);
     dm_status_copy(&as->wu, &ds->wu);
     same_dm_stop(&as->wu, &ds->wu);
     as->wu.script_register_bank[8]++;
     as->wu.script_register_bank[15]++;
-    ds->wu.dm_count_up++;
+    ds->wu.damage_count_up++;
 
     if (ds->wu.xyz[1].disp.pos < 0) {
         ds->wu.xyz[1].cal = 0;
@@ -579,7 +579,7 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
     add_combo_work(as, ds);
     hit_pattern_extdat_check(&as->wu);
 
-    if (ds->parry_flag && ds->parry_point != ds->dm_point) {
+    if (ds->parry_flag && ds->parry_point != ds->damage_point) {
         ds->parry_flag = 0;
     }
 
@@ -598,11 +598,11 @@ set_paring_status:
 }
 
 /** @brief Initializes damage-reaction data (hitstop, pushback) on a hit. */
-void dm_reaction_init_set(PLW* as, PLW* ds) {
+void dm_reaction_init_set(PlayerEntity* as, PlayerEntity* ds) {
     ds->wu.routine_no[2] = as->wu.att.reaction;
 
     if (ds->wu.routine_no[2] == 89 || ds->wu.routine_no[2] == 90) {
-        if (ds->running_f == 1 && Dsas_dir_table[as->wu.att.dir]) {
+        if (ds->running_flag == 1 && Dsas_dir_table[as->wu.att.dir]) {
             if (check_work_position(&as->wu, &ds->wu)) {
                 if (ds->move_distance > 0) {
                     ds->wu.routine_no[2] = 99;
@@ -613,11 +613,11 @@ void dm_reaction_init_set(PLW* as, PLW* ds) {
         }
     }
 
-    ds->wu.routine_no[2] = change_damage_attribute(as, as->wu.at_attribute, ds->wu.routine_no[2]);
+    ds->wu.routine_no[2] = change_damage_attribute(as, as->wu.attack_attribute, ds->wu.routine_no[2]);
 }
 
 /** @brief Handles guard status — chip damage, guard break, and pushback. */
-void set_guard_status(PLW* as, PLW* ds) {
+void set_guard_status(PlayerEntity* as, PlayerEntity* ds) {
     if (as->wu.att.hitstop_you == 0 && as->wu.att.hitstop_me == 0) {
         ds->wu.routine_no[2] = ds->wu.old_routine_no[2];
     } else {
@@ -625,7 +625,7 @@ void set_guard_status(PLW* as, PLW* ds) {
         ds->wu.routine_no[3] = 0;
 
         if (ds->spmv_ng_flag & DIP_SEMI_AUTO_PARRY_DISABLED) {
-            effect_02_init(&as->wu, ds->dm_point, 2, ds->wu.dm_rl);
+            effect_02_init(&as->wu, ds->damage_point, 2, ds->wu.damage_facing);
         }
 
         dm_status_copy(&as->wu, &ds->wu);
@@ -638,7 +638,7 @@ void set_guard_status(PLW* as, PLW* ds) {
         ds->wu.damage_stun_value = 0;
         as->wu.script_register_bank[8]++;
         add_sp_arts_gauge_guard(as);
-        ds->wu.dm_arts_point = 0;
+        ds->wu.damage_arts_point = 0;
         grade_add_guard_success(ds->wu.id);
     }
 
@@ -650,7 +650,7 @@ const s8 sel_sp_ch_tbl[12] = { 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0 };
 const s16 sel_hs_add_tbl[6] = { 4, 3, 2, 1, 0, 0 };
 
 /** @brief Handles parry (blocking) status — SA gauge reward, grade tracking. */
-void set_paring_status(PLW* as, PLW* ds) {
+void set_paring_status(PlayerEntity* as, PlayerEntity* ds) {
     s16 hsadix;
 
     if ((as->wu.att.hitstop_you == 0) && (as->wu.att.hitstop_me == 0)) {
@@ -688,7 +688,7 @@ void set_paring_status(PLW* as, PLW* ds) {
             ds->wu.xyz[1].cal = 0;
         }
 
-        ds->wu.dm_arts_point = 0;
+        ds->wu.damage_arts_point = 0;
 
         if (as->wu.pat_status >= 0xE && as->wu.pat_status < 31 && as->wu.work_id == 1 &&
             sel_sp_ch_tbl[as->wu.attack_type >> 3] == 0) {
@@ -752,7 +752,7 @@ void hit_pattern_extdat_check(State* as) {
     }
 
     if (as->work_id == 1) {
-        if ((((PLW*)as)->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && as->cg_cancel & 8 && !(as->move_type & 0xF8)) {
+        if ((((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && as->cg_cancel & 8 && !(as->move_type & 0xF8)) {
             if (as->move_type & 6) {
                 as->cg_cancel &= 0xF7;
                 as->cg_tc_state = 0;
@@ -764,16 +764,16 @@ void hit_pattern_extdat_check(State* as) {
             }
         }
 
-        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) && as->move_type & 0x60) {
+        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) && as->move_type & 0x60) {
             as->cg_cancel |= 0x40;
         }
 
-        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(as->move_type & 0x60) &&
+        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(as->move_type & 0x60) &&
             as->move_type & 0xF8) {
             as->cg_cancel |= 0x60;
         }
 
-        if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_ALL_NORMALS_CANCELLABLE_DISABLED) && !(as->move_type & 0xF8)) {
+        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_ALL_NORMALS_CANCELLABLE_DISABLED) && !(as->move_type & 0xF8)) {
             switch (plpat_rno_filter[as->routine_no[2]]) {
             case 9:
                 if (as->routine_no[3] != 1) {
@@ -799,18 +799,18 @@ void hit_pattern_extdat_check(State* as) {
                 /* fallthrough */
 
             case 1:
-                if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
+                if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
                     as->cg_cancel |= 1;
                 }
 
-                if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_DASH_DISABLED)) {
+                if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_DASH_DISABLED)) {
                     as->cg_cancel |= 2;
                 }
 
-                if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_GROUND_CHAIN_COMBO_DISABLED)) {
+                if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_GROUND_CHAIN_COMBO_DISABLED)) {
                     i = 0;
 
-                    if (((PLW*)as)->player_number == 4) {
+                    if (((PlayerEntity*)as)->player_number == 4) {
                         as->cg_tc_state = ground_knockback_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     } else {
@@ -822,10 +822,10 @@ void hit_pattern_extdat_check(State* as) {
                 break;
 
             case 2:
-                if (!(((PLW*)as)->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(as)) {
+                if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(as)) {
                     i = 0;
 
-                    if (((PLW*)as)->player_number == 7) {
+                    if (((PlayerEntity*)as)->player_number == 7) {
                         as->cg_tc_state = air_knockback_table[as->move_type & 7];
                         as->cg_cancel |= 8;
                     } else {
@@ -921,8 +921,8 @@ s16 check_dm_att_blocking(State* as, State* ds, s16 dnum) {
 }
 
 /** @brief Applies damage and stun (stun_effect) values to the defender. */
-void set_damage_and_piyo(PLW* as, PLW* ds) {
-    cal_damage_vitality(as, ds);
+void set_damage_and_piyo(PlayerEntity* as, PlayerEntity* ds) {
+    calculate_damage_vitality(as, ds);
     ds->wu.damage_stun_value = _add_piyo_gauge[as->player_number][as->wu.att.stun_effect];
     ds->wu.damage_stun_value = ds->wu.damage_stun_value * stun_gauge_omake[omop_stun_gauge_add[(ds->wu.id + 1) & 1]] / 32;
 
@@ -938,7 +938,7 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
     training_state_add_combo_hit(ds->wu.id, ds->wu.damage_stun_value);
     // Notify trials mode of the hit (P1's player_number == 0 is the attacker)
     if (as->wu.work_id == 1) {
-        trials_on_hit_registered(((PLW*)as)->player_number, as->wu.attack_type);
+        trials_on_hit_registered(((PlayerEntity*)as)->player_number, as->wu.attack_type);
     }
 
     if (ds->wu.damage_vitality) {
@@ -972,7 +972,7 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
         ds->received_stun_scaling = as->stun_scaling;
     }
 
-    as->wu.at_ten_ix = remake_score_index(ds->wu.damage_vitality);
+    as->wu.attack_chain_index = remake_score_index(ds->wu.damage_vitality);
     cal_combo_waribiki(as, ds);
     cal_dm_vital_gauge_adjust(ds);
     cal_combo_waribiki2(ds);
@@ -1032,7 +1032,7 @@ void same_dm_stop(State* as, State* ds) {
  * Every air-parry path in defense_sky sets the same constants, so no extra
  * parameters are needed beyond the attacker/defender pair.
  */
-static s32 apply_air_parry_result(PLW* as, PLW* ds) {
+static s32 apply_air_parry_result(PlayerEntity* as, PlayerEntity* ds) {
     blocking_point_count_up(ds);
     as->wu.hf.hit.player = 0x80;
     ds->wu.routine_no[2] = 0x22;
@@ -1045,7 +1045,7 @@ static s32 apply_air_parry_result(PLW* as, PLW* ds) {
 }
 
 /** @brief Processes air defence — guard or parry while airborne. */
-s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
+s32 defense_sky(PlayerEntity* as, PlayerEntity* ds, s8 gddir) {
     s8 just_now;
     s8 attr_att;
     s8 abs;
@@ -1054,7 +1054,7 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
     abs = (ds->spmv_ng_flag & DIP_AUTO_PARRY_DISABLED) == 0;
     ags = (ds->spmv_ng_flag & DIP_AUTO_GUARD_DISABLED) == 0;
 
-    if (ds->dead_flag) {
+    if (ds->death_timerlag) {
         ds->guard_flag = 3;
     }
 
@@ -1112,7 +1112,7 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
 }
 
 /** @brief Increments blocking (parry) point counter for SA gauge charging. */
-void blocking_point_count_up(PLW* wk) {
+void blocking_point_count_up(PlayerEntity* wk) {
     wk->kind_of_blocking = 0;
 
     if (wk->wu.routine_no[1] == 0 && wk->wu.routine_no[2] > 30 && wk->wu.routine_no[2] < 36) {
@@ -1134,7 +1134,7 @@ void blocking_point_count_up(PLW* wk) {
  * @param routine_no  Defender routine to set (31/32 for stand-parry, 33 for crouch-parry).
  * @param dnum        Chip-damage divisor passed to check_dm_att_blocking (5 or 6).
  */
-static s32 apply_ground_parry_result(PLW* as, PLW* ds, s16 routine_no, s16 dnum) {
+static s32 apply_ground_parry_result(PlayerEntity* as, PlayerEntity* ds, s16 routine_no, s16 dnum) {
     blocking_point_count_up(ds);
     as->wu.hf.hit.player = 64;
     ds->wu.routine_no[2] = routine_no;
@@ -1147,7 +1147,7 @@ static s32 apply_ground_parry_result(PLW* as, PLW* ds, s16 routine_no, s16 dnum)
 }
 
 /** @brief Processes ground defence — stand/crouch guard or parry. */
-s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
+s32 defense_ground(PlayerEntity* as, PlayerEntity* ds, s8 gddir) {
     s8 just_now;
     s8 attr_att;
     s8 abs;
@@ -1156,7 +1156,7 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
     abs = (ds->spmv_ng_flag & DIP_AUTO_PARRY_DISABLED) == 0;
     ags = (ds->spmv_ng_flag & DIP_AUTO_GUARD_DISABLED) == 0;
 
-    if (ds->dead_flag) {
+    if (ds->death_timerlag) {
         ds->guard_flag = 3;
     }
 
@@ -1274,11 +1274,11 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
 }
 
 /** @brief Sets up damage reaction left/right direction for the defender. */
-void setup_dm_rl(State* as, State* ds) {
+void setup_damage_facing(State* as, State* ds) {
     s16 pw;
 
     if (as->work_id != 1 || check_ttk_damage_request(as->att.reaction)) {
-        ds->dm_rl = as->rl_flag;
+        ds->damage_facing = as->facing_flag;
         return;
     }
 
@@ -1288,7 +1288,7 @@ void setup_dm_rl(State* as, State* ds) {
     case 0:
     case 2:
         if (!(as->att.dipsw & 0x60)) {
-            ds->dm_rl = as->rl_flag;
+            ds->damage_facing = as->facing_flag;
             return;
         }
 
@@ -1297,53 +1297,53 @@ void setup_dm_rl(State* as, State* ds) {
 
     if (pw) {
         if (pw > 0) {
-            ds->dm_rl = 1;
+            ds->damage_facing = 1;
         } else {
-            ds->dm_rl = 0;
+            ds->damage_facing = 0;
         }
     } else {
-        ds->dm_rl = as->rl_flag;
+        ds->damage_facing = as->facing_flag;
     }
 }
 
 /** @brief Copies damage status from attacker to defender work. */
 void dm_status_copy(State* as, State* ds) {
-    ds->dm_attlv = as->att.level;
-    ds->dm_impact = as->att.impact;
-    ds->dm_dir = as->dir_atthit;
+    ds->damage_attack_level = as->att.level;
+    ds->damage_impact = as->att.impact;
+    ds->damage_direction = as->dir_atthit;
     ds->damage_hit_stop = as->att.hitstop_you;
     ds->damage_screen_shake = as->att.hitstop_you;
-    ds->dm_weight = as->weight_level;
+    ds->damage_weight = as->weight_level;
     ds->damage_knockback_type = as->att.button_index;
     ds->damage_invuln = as->attack_invuln;
-    ds->dm_attribute = as->at_attribute;
-    ds->dm_ten_ix = as->at_ten_ix;
+    ds->damage_attribute = as->attack_attribute;
+    ds->damage_chain_index = as->attack_chain_index;
     ds->damage_kind_of_arts = as->attack_art_type;
-    ds->hm_dm_side = as->att.dmg_mark;
-    ds->dm_work_id = as->work_id;
+    ds->hitmark_damage_side = as->att.dmg_mark;
+    ds->damage_work_id = as->work_id;
     as->hit_stop = as->att.hitstop_me;
-    ds->dm_arts_point = as->add_arts_point;
+    ds->damage_arts_point = as->add_arts_point;
     ds->damage_attack_type = as->attack_type;
-    ds->dm_nodeathattack = as->no_death_attack;
-    ds->dm_jump_att_flag = as->jump_att_flag;
+    ds->damage_no_death_attack = as->no_death_attack;
+    ds->damage_jump_attack_flag = as->jump_att_flag;
 
     if (ds->damage_screen_shake < 0) {
         ds->damage_screen_shake = -ds->damage_screen_shake;
     }
 
     if (as->work_id == 1) {
-        ds->dm_exdm_ix = ((PLW*)as)->exdm_ix;
-        ds->dm_plnum = ((PLW*)as)->player_number;
+        ds->damage_extra_index = ((PlayerEntity*)as)->exdamage_index;
+        ds->damage_player_num = ((PlayerEntity*)as)->player_number;
         pp_pulpara_remake_at_hit(as);
     } else {
-        ds->dm_plnum = ((PLW*)((State_Other*)as)->my_master)->player_number;
+        ds->damage_player_num = ((PlayerEntity*)((State_Other*)as)->my_master)->player_number;
     }
 
     as->frame_link_hit_flag = 1;
 }
 
 /** @brief Core combo counter update — increments hit tracking arrays. */
-static void add_combo_work_impl(PLW* as, PLW* ds) {
+static void add_combo_work_impl(PlayerEntity* as, PlayerEntity* ds) {
     s16* move_type;
     s16* cal;
 
@@ -1359,7 +1359,7 @@ static void add_combo_work_impl(PLW* as, PLW* ds) {
 }
 
 /** @brief Adds a hit to the combo counter and updates combo display work. */
-void add_combo_work(PLW* as, PLW* ds) {
+void add_combo_work(PlayerEntity* as, PlayerEntity* ds) {
     if (ds->chip_death_flag) {
         return;
     }
@@ -1368,7 +1368,7 @@ void add_combo_work(PLW* as, PLW* ds) {
 }
 
 /** @brief Adds fake combo hits (for multi-hit moves that don't combo normally). */
-void nise_combo_work(PLW* as, PLW* ds, s16 num) {
+void nise_combo_work(PlayerEntity* as, PlayerEntity* ds, s16 num) {
     s16 i;
 
     for (i = 0; i < num; i++) {
@@ -1377,7 +1377,7 @@ void nise_combo_work(PLW* as, PLW* ds, s16 num) {
 }
 
 /** @brief Calculates combo damage scaling (waribiki) for the current combo length. */
-void cal_combo_waribiki(PLW* as, PLW* ds) {
+void cal_combo_waribiki(PlayerEntity* as, PlayerEntity* ds) {
     POWER* power;
     KOATT* koatt;
     s16 i;
@@ -1413,7 +1413,7 @@ void cal_combo_waribiki(PLW* as, PLW* ds) {
 
     power = (POWER*)_exchange_pow[as->wu.attack_type >> 1];
 
-    if ((as->player_number == 3 || as->player_number == 10) && (as->sa->kind_of_arts == 2 && as->sa->ok == -1)) {
+    if ((as->player_number == 3 || as->player_number == 10) && (as->sa->kind_of_arts == 2 && as->sa->can_activate == -1)) {
         power = (POWER*)_exchange_pow_pl03_sa3[as->wu.attack_type >> 1];
     }
 
@@ -1430,7 +1430,7 @@ void cal_combo_waribiki(PLW* as, PLW* ds) {
 }
 
 /** @brief Calculates combo damage scaling variant 2 (for specific multi-hit patterns). */
-void cal_combo_waribiki2(PLW* ds) {
+void cal_combo_waribiki2(PlayerEntity* ds) {
     s16 num;
 
     if (ds->wu.damage_stun_value == 0) {
@@ -1510,7 +1510,7 @@ void catch_hit_check() {
             }
 
             if (!(mad->att.guard & 0x18)) {
-                if (!((PLW*)sad)->throw_invuln_flag) {
+                if (!((PlayerEntity*)sad)->throw_invuln_flag) {
                     if (!(mad->att.dipsw & 0x60)) {
                         if ((sad->routine_no[1] == 1) && (sad->routine_no[3] != 0)) {
                             if (sad->routine_no[2] != 0x19) {
@@ -1637,12 +1637,12 @@ void attack_hit_check() {
                     }
 
                     if ((lp2 > 3) && (lp2 < 0xA)) {
-                        if (!(((mad->rl_flag) + (sad->rl_flag)) & 1)) {
+                        if (!(((mad->facing_flag) + (sad->facing_flag)) & 1)) {
                             // turbo
                             // What: Convert unpredictable direction checks into branchless arithmetic.
                             // Target: CPU Branch Prediction
                             int diff = mad->xyz[0].disp.pos - sad->xyz[0].disp.pos;
-                            int dir_mask = (mad->rl_flag << 1) - 1;
+                            int dir_mask = (mad->facing_flag << 1) - 1;
                             if ((diff * dir_mask) > 0) {
                                 continue;
                             }
@@ -1696,7 +1696,7 @@ s16 hit_check_subroutine(State* wk1, State* wk2, const s16* hd1, const s16* hd2)
     // turbo
     // What: Convert AABB bounding box coordinate calculations into branchless logic.
     // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
-    m1 = -(s16)wk1->rl_flag;
+    m1 = -(s16)wk1->facing_flag;
     d0 = (d0 ^ m1) - m1;
     d0 -= (d1 & m1);
 
@@ -1707,7 +1707,7 @@ s16 hit_check_subroutine(State* wk1, State* wk2, const s16* hd1, const s16* hd2)
     // turbo
     // What: Convert AABB bounding box coordinate calculations into branchless logic.
     // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
-    m2 = -(s16)wk2->rl_flag;
+    m2 = -(s16)wk2->facing_flag;
     d2 = (d2 ^ m2) - m2;
     d2 -= (d3 & m2);
 
@@ -1748,7 +1748,7 @@ s32 hit_check_x_only(State* wk1, State* wk2, s16* hd1, s16* hd2) {
     // turbo
     // What: Convert AABB bounding box coordinate calculations into branchless logic.
     // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
-    m1 = -(s16)wk1->rl_flag;
+    m1 = -(s16)wk1->facing_flag;
     d0 = (d0 ^ m1) - m1;
     d0 -= (d1 & m1);
 
@@ -1759,7 +1759,7 @@ s32 hit_check_x_only(State* wk1, State* wk2, s16* hd1, s16* hd2) {
     // turbo
     // What: Convert AABB bounding box coordinate calculations into branchless logic.
     // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
-    m2 = -(s16)wk2->rl_flag;
+    m2 = -(s16)wk2->facing_flag;
     d2 = (d2 ^ m2) - m2;
     d2 -= (d3 & m2);
 
@@ -1785,7 +1785,7 @@ void cal_hit_mark_position(State* wk1, State* wk2, s16* hd1, s16* hd2) {
     // turbo
     // What: Convert AABB bounding box coordinate calculations into branchless logic.
     // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
-    m1 = -(s16)wk1->rl_flag;
+    m1 = -(s16)wk1->facing_flag;
     d0 = (d0 ^ m1) - m1;
     d0 -= (d1 & m1);
 
@@ -1797,7 +1797,7 @@ void cal_hit_mark_position(State* wk1, State* wk2, s16* hd1, s16* hd2) {
     // turbo
     // What: Convert AABB bounding box coordinate calculations into branchless logic.
     // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
-    m2 = -(s16)wk2->rl_flag;
+    m2 = -(s16)wk2->facing_flag;
     d2 = (d2 ^ m2) - m2;
     d2 -= (d3 & m2);
 
@@ -1844,7 +1844,7 @@ void get_target_att_position(State* wk, s16* tx, s16* ty) {
             continue;
         }
 
-        if (wk->rl_flag) {
+        if (wk->facing_flag) {
             *tx -= ta[0][0] + (ta[0][1] / 2);
         } else {
             *tx += ta[0][0] + (ta[0][1] / 2);
@@ -1872,7 +1872,7 @@ s16 get_att_head_position(State* wk) {
 
     for (i = 0; i < 3; i++) {
         if (*ta) {
-            if (wk->rl_flag) {
+            if (wk->facing_flag) {
                 kx = tx - *ta;
 
                 if (tx < kx) {
@@ -1915,12 +1915,12 @@ void clear_hit_queue() {
 }
 
 /** @brief Converts a raw damage attribute to a character-specific variant. */
-s16 change_damage_attribute(PLW* as, u16 atr, u16 ix) {
+s16 change_damage_attribute(PlayerEntity* as, u16 atr, u16 ix) {
     switch (atr) {
     case 1:
-        if (as->wu.work_id == 1 && as->player_number == 0 && as->wu.rl_flag) {
+        if (as->wu.work_id == 1 && as->player_number == 0 && as->wu.facing_flag) {
             ix = attr_freeze_tbl[ix - 32];
-            as->wu.at_attribute = 3;
+            as->wu.attack_attribute = 3;
         } else {
             ix = attr_flame_tbl[ix - 32];
         }
@@ -1931,9 +1931,9 @@ s16 change_damage_attribute(PLW* as, u16 atr, u16 ix) {
         break;
 
     case 3:
-        if (as->wu.work_id == 1 && as->player_number == 0 && as->wu.rl_flag) {
+        if (as->wu.work_id == 1 && as->player_number == 0 && as->wu.facing_flag) {
             ix = attr_flame_tbl[ix - 32];
-            as->wu.at_attribute = 1;
+            as->wu.attack_attribute = 1;
         } else {
             ix = attr_freeze_tbl[ix - 32];
         }

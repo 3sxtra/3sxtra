@@ -33,7 +33,7 @@ static s32 Check_Break_Into_59(State_Other* ewk);
 void effect_59_move(State_Other* ewk) {
     State_Other* mwk = (State_Other*)ewk->my_master;
 
-    if (mwk->wu.be_flag == 0) {
+    if (mwk->wu.active_flag == 0) {
         ewk->wu.disp_flag = 0;
         ewk->wu.routine_no[0] = 3;
         Release_Effect(&ewk->wu);
@@ -130,7 +130,7 @@ s32 effect_59_init(State_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) 
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 59;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2000;
@@ -148,8 +148,8 @@ s32 effect_59_init(State_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) 
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos = mwk->wu.xyz[2].disp.pos + ewk->wu.direction;
     ewk->wu.my_col_code = 0x1FF;
     ewk->wu.my_clear_level = 128;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     switch (arg_ID) {
     case 4:

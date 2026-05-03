@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_e3_move(State_Other* ewk);
-s32 effect_e3_init(PLW* wk);
+s32 effect_e3_init(PlayerEntity* wk);
 
 #endif

@@ -13,23 +13,23 @@
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl03_exatt_table[18])(PLW*);
+void (*const pl03_exatt_table[18])(PlayerEntity*);
 
 /** @brief Yun: extra attack dispatcher. */
-void pl_yun_extra_attack(PLW* wk) {
+void pl_yun_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl03_exatt_table[idx](wk);
 }
 
 /** @brief Yun: special action (tokushu koudou). */
-static void Att_PL03_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL03_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -72,7 +72,7 @@ static void Att_PL03_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl03_exatt_table[18])(PLW*) = {
+void (*const pl03_exatt_table[18])(PlayerEntity*) = {
     Att_HADOUKEN, Att_SHOURYUUKEN, Att_SENPUUKYAKU,        Att_HADOUKEN, Att_SLIDE_and_JUMP, Att_SLIDE_and_JUMP,
     Att_HADOUKEN, Att_DUMMY,       Att_SLIDE_and_JUMP,     Att_DUMMY,    Att_DUMMY,          Att_DUMMY,
     Att_DUMMY,    Att_DUMMY,       Att_PL03_TOKUSHUKOUDOU, Att_DUMMY,    Att_METAMOR_WAIT,   Att_METAMOR_REBIRTH

@@ -10,9 +10,9 @@
 s16 col;
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_main.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/ui/hud_subroutines.h"
 
@@ -72,9 +72,9 @@ static void render_sa_gauge_frame(s8 Stpl_Num, s8 Spg_Col);
 static void spgauge_init_player(s8 pl, s8 full) {
     if (full) {
         demo_set_sa_full(&g_state.super_arts[pl]);
-        g_state.spg_dat[pl].current_spg = g_state.super_arts[pl].gauge_len;
-        g_state.spg_dat[pl].old_spg = g_state.super_arts[pl].gauge_len;
-        g_state.spg_dat[pl].spg_level = g_state.super_arts[pl].store;
+        g_state.spg_dat[pl].current_spg = g_state.super_arts[pl].gauge_length;
+        g_state.spg_dat[pl].old_spg = g_state.super_arts[pl].gauge_length;
+        g_state.spg_dat[pl].spg_level = g_state.super_arts[pl].stock;
     } else {
         g_state.spg_dat[pl].current_spg = 0;
         g_state.spg_dat[pl].old_spg = 0;
@@ -82,9 +82,9 @@ static void spgauge_init_player(s8 pl, s8 full) {
     }
 
     g_state.spg_dat[pl].spgtbl_ptr = spgauge_puttbl[pl];
-    g_state.spg_dat[pl].spg_maxlevel = g_state.super_arts[pl].store_max;
-    g_state.spg_dat[pl].spg_len = g_state.super_arts[pl].gauge_len / 8;
-    g_state.spg_dat[pl].spg_dotlen = g_state.super_arts[pl].gauge_len;
+    g_state.spg_dat[pl].spg_maxlevel = g_state.super_arts[pl].stock_max;
+    g_state.spg_dat[pl].spg_len = g_state.super_arts[pl].gauge_length / 8;
+    g_state.spg_dat[pl].spg_dotlen = g_state.super_arts[pl].gauge_length;
     g_state.spg_dat[pl].flag = full ? 1 : 0;
     g_state.spg_dat[pl].flag2 = 0;
     g_state.spg_dat[pl].level_flag = 0;
@@ -188,7 +188,7 @@ void spgauge_cont_demo_init() {
 }
 
 /** @brief Per-frame Super Art gauge main update — runs gauge control for both sides. */
-void spgauge_cont_main() {
+void super_gauge_control_main() {
     u8 i;
 
     for (i = 0; i < 2; i++) {
@@ -196,7 +196,7 @@ void spgauge_cont_main() {
             spgauge_base_put(i, g_state.spg_dat[i].spg_len);
     }
 
-    if ((g_state.Game_pause & 0x80) || g_state.EXE_flag) {
+    if ((g_state.Game_pause & 0x80) || g_state.execute_flag) {
         return;
     }
 
@@ -231,7 +231,7 @@ void sag_bug_fix(s32 side) {
 
 /** @brief Controls a single SA gauge stock: fill level, flash, and stock transitions. */
 static void spgauge_control(s8 Spg_Num) {
-    if (g_state.sa_gauge_flash[Spg_Num] != 0 && g_state.plw[Spg_Num].sa->ex == -1) {
+    if (g_state.sa_gauge_flash[Spg_Num] != 0 && g_state.plw[Spg_Num].sa->ex_mode == -1) {
         spgauge_sound_request(Spg_Num);
 
         if (g_state.Conclusion_Flag != 0) {
@@ -253,7 +253,7 @@ static void spgauge_control(s8 Spg_Num) {
                g_state.sa_gauge_flash[Spg_Num] != 0) {
         spgauge_sound_request(Spg_Num);
 
-        if (g_state.super_arts[Spg_Num].gt2 == 1) {
+        if (g_state.super_arts[Spg_Num].gauge_type_2 == 1) {
             g_state.spg_dat[Spg_Num].time = 1;
             g_state.time_flag[Spg_Num] = 1;
         } else {
@@ -261,7 +261,7 @@ static void spgauge_control(s8 Spg_Num) {
             g_state.time_flag[Spg_Num] = 0;
         }
 
-        if (g_state.plw[Spg_Num].sa->store == g_state.plw[Spg_Num].sa->store_max &&
+        if (g_state.plw[Spg_Num].sa->stock == g_state.plw[Spg_Num].sa->stock_max &&
             g_state.spg_dat[Spg_Num].max_old == 0 && g_state.spg_dat[Spg_Num].max == 0) {
             g_state.spg_dat[Spg_Num].max = 1;
         } else {
@@ -276,7 +276,7 @@ static void spgauge_control(s8 Spg_Num) {
         g_state.spg_dat[Spg_Num].kind = 0;
         g_state.spg_dat[Spg_Num].no_chgcol = 0;
 
-        if (g_state.plw[Spg_Num].sa->ok == -1 || g_state.plw[Spg_Num].sa->mp == -1) {
+        if (g_state.plw[Spg_Num].sa->can_activate == -1 || g_state.plw[Spg_Num].sa->meter_points == -1) {
             g_state.spg_dat[Spg_Num].sa_flag = 1;
             g_state.spg_dat[Spg_Num].timer = 51;
 
@@ -285,7 +285,7 @@ static void spgauge_control(s8 Spg_Num) {
                     g_state.spg_dat[Spg_Num].time_no_clear = 1;
                 }
 
-                if (g_state.My_char[Spg_Num] == 0 && ((g_state.plw[Spg_Num].sa->ok) == -1)) {
+                if (g_state.My_char[Spg_Num] == 0 && ((g_state.plw[Spg_Num].sa->can_activate) == -1)) {
                     g_state.spg_dat[Spg_Num].sa_mukou = 0;
                 } else {
                     g_state.spg_dat[Spg_Num].sa_mukou = 1;
@@ -305,7 +305,7 @@ static void spgauge_control(s8 Spg_Num) {
         sast_control(Spg_Num);
     }
 
-    if ((g_state.plw[Spg_Num].sa->ex != 0 || g_state.spg_dat[Spg_Num].ex_flag == 1 ||
+    if ((g_state.plw[Spg_Num].sa->ex_mode != 0 || g_state.spg_dat[Spg_Num].ex_flag == 1 ||
          g_state.spg_dat[Spg_Num].sa_flag == 1) &&
         !g_state.Game_pause) {
         sagauge_color_chenge(Spg_Num);
@@ -360,10 +360,10 @@ static void wipe_check() {
 
     } else {
         for (s8 pl = 0; pl < 2; pl++) {
-            if (g_state.spg_dat[pl].time_no_clear == 1 || g_state.plw[pl].sa->ok == -1) {
-                g_state.plw[pl].sa->ok = 0;
+            if (g_state.spg_dat[pl].time_no_clear == 1 || g_state.plw[pl].sa->can_activate == -1) {
+                g_state.plw[pl].sa->can_activate = 0;
                 g_state.time_clear[pl] = 1;
-                g_state.spg_dat[pl].spg_level = g_state.plw[pl].sa->store;
+                g_state.spg_dat[pl].spg_level = g_state.plw[pl].sa->stock;
             }
         }
     }
@@ -373,7 +373,7 @@ static void wipe_check() {
 static void satime_ko_after_clear(s8 Stpl_Num) {
     g_state.spg_dat[Stpl_Num].max = 0;
 
-    if (g_state.plw[Stpl_Num].sa->store == g_state.spg_dat[Stpl_Num].spg_maxlevel) {
+    if (g_state.plw[Stpl_Num].sa->stock == g_state.spg_dat[Stpl_Num].spg_maxlevel) {
         g_state.spg_dat[Stpl_Num].max_old = 1;
         g_state.spg_dat[Stpl_Num].max_rno = 2;
     } else {
@@ -385,8 +385,8 @@ static void satime_ko_after_clear(s8 Stpl_Num) {
     g_state.spg_dat[Stpl_Num].timer2 = 2;
     g_state.spg_dat[Stpl_Num].time_rno = 5;
     g_state.spg_dat[Stpl_Num].time_no_clear = 0;
-    g_state.plw[Stpl_Num].sa->gauge.s.h = g_state.spg_dat[Stpl_Num].current_spg = g_state.plw[Stpl_Num].sa->bacckup_g_h;
-    g_state.plw[Stpl_Num].sa->bacckup_g_h = 0;
+    g_state.plw[Stpl_Num].sa->gauge.s.h = g_state.spg_dat[Stpl_Num].current_spg = g_state.plw[Stpl_Num].sa->backup_gauge_high;
+    g_state.plw[Stpl_Num].sa->backup_gauge_high = 0;
 }
 
 /** @brief Sends the SA time text sprites to the display system. */
@@ -426,7 +426,7 @@ static void samoji_control(s8 Stpl_Num) {
         g_state.max2[Stpl_Num] = 0;
         g_state.max_rno2[Stpl_Num] = 1;
         sa_moji_trans(Stpl_Num, 0, 1);
-        g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->store;
+        g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->stock;
         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, 1, Stpl_Num);
         render_sa_gauge_frame(Stpl_Num, 1);
         sagauge_color_chenge(Stpl_Num);
@@ -479,13 +479,13 @@ static void sast_control(s8 Stpl_Num) {
     if (g_state.spg_dat[Stpl_Num].time) {
         switch (g_state.spg_dat[Stpl_Num].time_rno) {
         case 0:
-            if (g_state.plw[Stpl_Num].sa->ok == -1) {
+            if (g_state.plw[Stpl_Num].sa->can_activate == -1) {
                 g_state.spg_dat[Stpl_Num].time_rno = 1;
             } else {
-                if (g_state.plw[Stpl_Num].sa->store > g_state.spg_dat[Stpl_Num].spg_level) {
+                if (g_state.plw[Stpl_Num].sa->stock > g_state.spg_dat[Stpl_Num].spg_level) {
                     g_state.spg_dat[Stpl_Num].current_spg = g_state.spg_dat[Stpl_Num].spg_dotlen;
                     sa_gauge_trans(Stpl_Num);
-                    g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->store;
+                    g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->stock;
                     sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
                 }
 
@@ -499,7 +499,7 @@ static void sast_control(s8 Stpl_Num) {
             g_state.spg_dat[Stpl_Num].timer--;
 
             if ((!g_state.spg_dat[Stpl_Num].sa_mukou || g_state.spg_dat[Stpl_Num].timer != 0) &&
-                (g_state.spg_dat[Stpl_Num].spg_level == g_state.plw[Stpl_Num].sa->store)) {
+                (g_state.spg_dat[Stpl_Num].spg_level == g_state.plw[Stpl_Num].sa->stock)) {
                 g_state.spg_dat[Stpl_Num].timer2--;
 
                 if (g_state.spg_dat[Stpl_Num].kind == 0) {
@@ -535,7 +535,7 @@ static void sast_control(s8 Stpl_Num) {
             goto jump;
 
         case 2:
-            if (g_state.spg_dat[Stpl_Num].current_spg > 0 && g_state.plw[Stpl_Num].sa->ok == -1) {
+            if (g_state.spg_dat[Stpl_Num].current_spg > 0 && g_state.plw[Stpl_Num].sa->can_activate == -1) {
                 if (g_state.spg_dat[Stpl_Num].current_spg != g_state.spg_dat[Stpl_Num].old_spg) {
                     sa_gauge_trans(Stpl_Num);
                 }
@@ -578,7 +578,7 @@ static void sast_control(s8 Stpl_Num) {
                 break;
             }
 
-            if (g_state.plw[Stpl_Num].sa->store == g_state.plw[Stpl_Num].sa->store_max) {
+            if (g_state.plw[Stpl_Num].sa->stock == g_state.plw[Stpl_Num].sa->stock_max) {
                 g_state.max2[Stpl_Num] = 1;
             }
 
@@ -598,7 +598,7 @@ static void sast_control(s8 Stpl_Num) {
         jump:
             g_state.time_operate[Stpl_Num] = 0;
             sast_color_chenge(Stpl_Num);
-            g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->store;
+            g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->stock;
             sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
             render_sa_gauge_frame(Stpl_Num, col);
 
@@ -645,10 +645,10 @@ static void sast_control(s8 Stpl_Num) {
 
     switch (g_state.spg_dat[Stpl_Num].max_rno) {
     case 0:
-        if (g_state.plw[Stpl_Num].sa->store > g_state.spg_dat[Stpl_Num].spg_level) {
+        if (g_state.plw[Stpl_Num].sa->stock > g_state.spg_dat[Stpl_Num].spg_level) {
             g_state.spg_dat[Stpl_Num].current_spg = g_state.spg_dat[Stpl_Num].spg_dotlen;
             sa_gauge_trans(Stpl_Num);
-            g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->store;
+            g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->stock;
             sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
         }
 
@@ -678,7 +678,7 @@ static void sast_control(s8 Stpl_Num) {
             return;
         }
 
-        if (g_state.plw[Stpl_Num].sa->store == g_state.plw[Stpl_Num].sa->store_max) {
+        if (g_state.plw[Stpl_Num].sa->stock == g_state.plw[Stpl_Num].sa->stock_max) {
             g_state.max2[Stpl_Num] = 1;
         }
 
@@ -697,7 +697,7 @@ static void sast_control(s8 Stpl_Num) {
         }
 
         sast_color_chenge(Stpl_Num);
-        g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->store;
+        g_state.spg_dat[Stpl_Num].spg_level = g_state.plw[Stpl_Num].sa->stock;
         sa_stock_trans(g_state.spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
         render_sa_gauge_frame(Stpl_Num, col);
 
@@ -741,11 +741,11 @@ static void sast_control(s8 Stpl_Num) {
 
 /** @brief Cycles colors for the SA stock indicator sprites. */
 static void sast_color_chenge(s8 Stpl_Num) {
-    if (g_state.plw[Stpl_Num].sa->gauge_type == 1 && g_state.plw[Stpl_Num].sa->ok == -1) {
+    if (g_state.plw[Stpl_Num].sa->gauge_type == 1 && g_state.plw[Stpl_Num].sa->can_activate == -1) {
         col = 1;
         g_state.spg_dat[Stpl_Num].spgcol_number = spg_player_colors[Stpl_Num][SPG_COL_TIMED];
         return;
-    } else if (g_state.plw[Stpl_Num].sa->store) {
+    } else if (g_state.plw[Stpl_Num].sa->stock) {
         col = 1;
         g_state.spg_dat[Stpl_Num].spgcol_number = spg_player_colors[Stpl_Num][SPG_COL_FILLED];
     } else {
@@ -867,7 +867,7 @@ static void sa_gauge_trans(s8 pl_kind) {
     g_state.spg_work = 0;
     g_state.spg_number = 0;
     sa_char_ptr = *spgauge_puttbl;
-    len = g_state.super_arts[pl_kind].gauge_len / 8;
+    len = g_state.super_arts[pl_kind].gauge_length / 8;
 
     for (i = 0; i < len; i++) {
         g_state.spg_work += 8;
@@ -904,21 +904,21 @@ static void sa_gauge_trans(s8 pl_kind) {
 
 /** @brief Requests the SA gauge fill sound effect when a stock fills up. */
 static void spgauge_sound_request(s8 Stpl_Num) {
-    if (g_state.plw[Stpl_Num].sa->store > g_state.spg_dat[Stpl_Num].spg_level) {
+    if (g_state.plw[Stpl_Num].sa->stock > g_state.spg_dat[Stpl_Num].spg_level) {
         Sound_SE(Stpl_Num + 107);
     }
 }
 
 /** @brief Clears all SA gauge work variables for a given stock. */
 static void spgauge_work_clear(s8 Stpl_Num) {
-    g_state.plw[Stpl_Num].sa->gauge.s.h = g_state.spg_dat[Stpl_Num].current_spg = g_state.plw[Stpl_Num].sa->bacckup_g_h;
-    g_state.plw[Stpl_Num].sa->bacckup_g_h = 0;
+    g_state.plw[Stpl_Num].sa->gauge.s.h = g_state.spg_dat[Stpl_Num].current_spg = g_state.plw[Stpl_Num].sa->backup_gauge_high;
+    g_state.plw[Stpl_Num].sa->backup_gauge_high = 0;
     g_state.spg_dat[Stpl_Num].old_spg = g_state.spg_dat[Stpl_Num].current_spg;
     g_state.spg_dat[Stpl_Num].flag = 0;
     g_state.spg_dat[Stpl_Num].flag2 = 0;
     g_state.spg_dat[Stpl_Num].level_flag = 0;
 
-    if (g_state.plw[Stpl_Num].sa->store) {
+    if (g_state.plw[Stpl_Num].sa->stock) {
         g_state.spg_dat[Stpl_Num].timer = 0;
         g_state.spg_dat[Stpl_Num].time_rno = 5;
     } else {

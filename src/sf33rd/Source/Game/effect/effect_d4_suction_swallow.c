@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effect_g3_visual_generic.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 
 static s32 distance2speed(State_Other* ewk, State* wk, s32 dir);
@@ -49,8 +49,8 @@ const s32 swallow_speeds[16] = { 0,       0x8000,  0x10000, 0x18000, 0x20000, 0x
                                  0x40000, 0x48000, 0x50000, 0x58000, 0x60000, 0x68000, 0x70000, 0x78000 };
 
 void effect_D4_move(State_Other* ewk) {
-    PLW* wk = (PLW*)ewk->wu.target_adrs;
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* wk = (PlayerEntity*)ewk->wu.target_adrs;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
     State* swk;
     s32 rl;
     s32 add_x;
@@ -68,7 +68,7 @@ void effect_D4_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.routine_no[0]++;
             break;
         }
@@ -79,7 +79,7 @@ void effect_D4_move(State_Other* ewk) {
             break;
         }
 
-        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
+        if (g_state.execute_flag != 0 || g_state.Game_pause != 0) {
             break;
         }
 
@@ -97,7 +97,7 @@ void effect_D4_move(State_Other* ewk) {
         }
 
         if ((ewk->wu.damage_calc_divider || mwk->sa_stop_flag) &&
-            (!ewk->wu.damage_calc_divider || rl != ewk->wu.rl_flag || mwk->sa_stop_flag)) {
+            (!ewk->wu.damage_calc_divider || rl != ewk->wu.facing_flag || mwk->sa_stop_flag)) {
             break;
         }
 
@@ -138,7 +138,7 @@ void effect_D4_move(State_Other* ewk) {
 
             swk = (State*)frw[wk->wu.shell_ix[j]];
 
-            if (!swk->be_flag) {
+            if (!swk->active_flag) {
                 continue;
             }
 
@@ -216,7 +216,7 @@ s32 effect_D4_init(State* wk, u8 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 134;
     ewk->wu.work_id = 16;
     ewk->wu.type = data;
@@ -234,7 +234,7 @@ s32 effect_D4_init(State* wk, u8 data) {
     ewk->wu.position_x = wk->position_x;
     ewk->wu.position_y = wk->position_y;
     ewk->wu.position_z = wk->position_z;
-    ewk->wu.rl_flag = wk->rl_flag + sel_suikomi_tbl[data][1] & 1;
+    ewk->wu.facing_flag = wk->facing_flag + sel_suikomi_tbl[data][1] & 1;
     ewk->wu.damage_calc_divider = sel_suikomi_tbl[data][2];
     ewk->wu.damage_calc_multiplier = sel_suikomi_tbl[data][3];
     ewk->wu.dir_timer = sel_suikomi_tbl[data][4];

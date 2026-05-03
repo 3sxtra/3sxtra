@@ -15,7 +15,7 @@ const u32 bunkai_table[8] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000
 
 const u16 bunkai_numobj[10] = { 32474, 32475, 32476, 32477, 32478, 32479, 32480, 32481, 32482, 32483 };
 
-const CONN bbbs_score[4][8] = { { { -64, 164, 0, 32474 },
+const SpriteConnection bbbs_score[4][8] = { { { -64, 164, 0, 32474 },
                                   { -80, 164, 0, 32474 },
                                   { -96, 164, 0, 32474 },
                                   { -112, 164, 0, 32474 },
@@ -49,7 +49,7 @@ const CONN bbbs_score[4][8] = { { { -64, 164, 0, 32474 },
                                   { 0, 0, 0, 0 } } };
 
 static void eff16_trans(State* ewk);
-static s16 score_bunkai_eff16(WORK_Other_CONN* ewk, u32 tsc);
+static s16 score_bunkai_eff16(EffectMultiSprite* ewk, u32 tsc);
 
 void effect_16_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -59,7 +59,7 @@ void effect_16_move(State_Other* ewk) {
             ewk->wu.routine_no[1]++;
             ewk->wu.disp_flag = 1;
             ewk->wu.old_cgnum = 0;
-            ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk,
+            ewk->free = score_bunkai_eff16((EffectMultiSprite*)ewk,
                                            g_state.Continue_Coin[ewk->wu.type] + g_state.Score[ewk->wu.type][0]);
             ewk->wu.direction = ewk->free;
             ewk->free = 0;
@@ -92,14 +92,14 @@ void effect_16_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
             break;
         }
 
-        ewk->free = score_bunkai_eff16((WORK_Other_CONN*)ewk,
+        ewk->free = score_bunkai_eff16((EffectMultiSprite*)ewk,
                                        g_state.Continue_Coin[ewk->wu.type] + g_state.Score[ewk->wu.type][0]);
         eff16_trans(&ewk->wu);
         break;
@@ -120,7 +120,7 @@ static void eff16_trans(State* ewk) {
     sort_push_request3(ewk);
 }
 
-static s16 score_bunkai_eff16(WORK_Other_CONN* ewk, u32 tsc) {
+static s16 score_bunkai_eff16(EffectMultiSprite* ewk, u32 tsc) {
     s16 noobjans = 0;
     s16 i;
     s16 ixs[8];
@@ -142,8 +142,8 @@ static s16 score_bunkai_eff16(WORK_Other_CONN* ewk, u32 tsc) {
     return noobjans;
 }
 
-s32 effect_16_init(PLW* wk, s16 flag) {
-    WORK_Other_CONN* ewk;
+s32 effect_16_init(PlayerEntity* wk, s16 flag) {
+    EffectMultiSprite* ewk;
     s16 ix;
     s16 i;
 
@@ -151,11 +151,11 @@ s32 effect_16_init(PLW* wk, s16 flag) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 16;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.my_family = 3;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.type = (wk->wu.id + 1) & 1;

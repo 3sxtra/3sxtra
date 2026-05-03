@@ -10,14 +10,14 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void urian_guard_se_check(State_Other* ewk, PLW* twk, u16 oto);
+static void urian_guard_se_check(State_Other* ewk, PlayerEntity* twk, u16 oto);
 
 const s16 hit_mark_dir_table[16] = { 0, -1, -2, -3, -4, -5, -6, -7, 8, 7, 6, 5, 4, 3, 2, 1 };
 
@@ -152,7 +152,7 @@ void effect_02_move(State_Other* ewk) {
 
         if (tad->hits == 0) {
             if (tad->se) {
-                urian_guard_se_check(ewk, (PLW*)ewk->wu.target_adrs, tad->se);
+                urian_guard_se_check(ewk, (PlayerEntity*)ewk->wu.target_adrs, tad->se);
             } else {
                 g_state.Last_Called_SE = 0;
             }
@@ -173,8 +173,8 @@ void effect_02_move(State_Other* ewk) {
         }
 
         if (tad->status & 0x40) {
-            if (((PLW*)ewk->wu.target_adrs)->wu.work_id == 1) {
-                ewk->wu.dir_timer = ((PLW*)ewk->wu.target_adrs)->player_number;
+            if (((PlayerEntity*)ewk->wu.target_adrs)->wu.work_id == 1) {
+                ewk->wu.dir_timer = ((PlayerEntity*)ewk->wu.target_adrs)->player_number;
             } else {
                 ewk->wu.dir_timer = ((State_Other*)ewk->wu.target_adrs)->master_player;
             }
@@ -183,17 +183,17 @@ void effect_02_move(State_Other* ewk) {
         if (tad->col) {
             ewk->wu.my_col_code = hcct[tad->col];
         } else if (tad->status & 0x80) {
-            ewk->wu.my_col_code = ((PLW*)ewk->wu.target_adrs)->wu.my_col_code;
+            ewk->wu.my_col_code = ((PlayerEntity*)ewk->wu.target_adrs)->wu.my_col_code;
         }
 
         if (tad->se) {
-            urian_guard_se_check(ewk, (PLW*)ewk->wu.target_adrs, tad->se);
+            urian_guard_se_check(ewk, (PlayerEntity*)ewk->wu.target_adrs, tad->se);
         } else {
             g_state.Last_Called_SE = 0;
         }
 
         if (tad->status & 4) {
-            ewk->wu.rl_flag = ewk->wu.dm_rl;
+            ewk->wu.facing_flag = ewk->wu.damage_facing;
         }
 
         if (tad->status & 0x10) {
@@ -203,7 +203,7 @@ void effect_02_move(State_Other* ewk) {
                 edt = &explem[tad->myhix];
             }
 
-            if (ewk->wu.rl_flag) {
+            if (ewk->wu.facing_flag) {
                 ewk->wu.xyz[0].disp.pos -= *(s16*)&edt->hx;
             } else {
                 ewk->wu.xyz[0].disp.pos += *(s16*)&edt->hx;
@@ -216,7 +216,7 @@ void effect_02_move(State_Other* ewk) {
         }
 
         if (ewk->wu.weight_level) {
-            ewk->wu.xyz[0].disp.pos += ((PLW*)ewk->my_master)->forced_movement;
+            ewk->wu.xyz[0].disp.pos += ((PlayerEntity*)ewk->my_master)->forced_movement;
         }
 
         if (tad->status & 2) {
@@ -224,8 +224,8 @@ void effect_02_move(State_Other* ewk) {
             ewk->wu.xyz[1].disp.pos += (random_16() & 7) - 3;
         }
 
-        ewk->wu.scr_mv_x = gqdt[tad->quake][0];
-        ewk->wu.scr_mv_y = gqdt[tad->quake][1];
+        ewk->wu.screen_move_x = gqdt[tad->quake][0];
+        ewk->wu.screen_move_y = gqdt[tad->quake][1];
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos;
         ewk->wu.position_z = ewk->wu.xyz[2].disp.pos;
@@ -239,7 +239,7 @@ void effect_02_move(State_Other* ewk) {
                 ewk->wu.dir_old = hit_mark_dir_table[ewk->wu.direction];
 
                 if (ewk->wu.dir_old < 0) {
-                    ewk->wu.rl_flag = 1;
+                    ewk->wu.facing_flag = 1;
                     ewk->wu.dir_old = -ewk->wu.dir_old;
                 }
             }
@@ -261,7 +261,7 @@ void effect_02_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[6] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[6] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -271,7 +271,7 @@ void effect_02_move(State_Other* ewk) {
             break;
         }
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 0xFF) {
@@ -280,8 +280,8 @@ void effect_02_move(State_Other* ewk) {
                 break;
             }
 
-            if (ewk->wu.scr_mv_x && --ewk->wu.scr_mv_x == 0) {
-                g_state.bg_w.quake_y_index = ewk->wu.scr_mv_y;
+            if (ewk->wu.screen_move_x && --ewk->wu.screen_move_x == 0) {
+                g_state.bg_w.quake_y_index = ewk->wu.screen_move_y;
                 pp_screen_quake(g_state.bg_w.quake_y_index);
             }
         }
@@ -300,7 +300,7 @@ void effect_02_move(State_Other* ewk) {
     }
 }
 
-static void urian_guard_se_check(State_Other* ewk, PLW* twk, u16 oto) {
+static void urian_guard_se_check(State_Other* ewk, PlayerEntity* twk, u16 oto) {
     if (twk->player_number == 13 && (oto == 266 || oto == 267)) {
         Se_Dispatch(280, 280, ewk);
         g_state.Last_Called_SE = 280;
@@ -325,12 +325,12 @@ s32 effect_02_init(State* wk, s8 dmgp, s8 mkst, s8 dmrl) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 2;
     ewk->wu.work_id = 64;
     ewk->wu.vital_new = dmgp;
     ewk->wu.vital_old = mkst;
-    ewk->wu.dm_rl = dmrl;
+    ewk->wu.damage_facing = dmrl;
     ewk->wu.kind_of_hit_mark = wk->att.hit_mark;
     ewk->wu.direction = wk->dir_atthit;
     ewk->wu.damage_vitality = wk->chip_damage_power;
@@ -351,7 +351,7 @@ s32 effect_02_init(State* wk, s8 dmgp, s8 mkst, s8 dmrl) {
         ewk->master_work_id = wk->work_id;
         ewk->wu.target_adrs = wk->target_adrs;
         ewk->wu.my_col_code = wk->my_col_code;
-        ewk->master_player = ewk->wu.dir_timer = ((PLW*)wk)->player_number;
+        ewk->master_player = ewk->wu.dir_timer = ((PlayerEntity*)wk)->player_number;
         ewk->wu.weight_level = 1;
     } else {
         dwk = (State_Other*)wk;

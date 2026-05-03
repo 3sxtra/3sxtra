@@ -18,7 +18,7 @@
 void effect_80_move(State_Other* ewk) {
     State_Other* mwk = (State_Other*)ewk->my_master;
 
-    if (mwk->wu.be_flag == 0) {
+    if (mwk->wu.active_flag == 0) {
         ewk->wu.disp_flag = 0;
         ewk->wu.routine_no[0] = 3;
         return;
@@ -66,7 +66,7 @@ s32 effect_80_init(State_Other* mwk, s16 PL_id, s16 Plate_id, s16 Target_BG) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 80;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x90;
@@ -75,8 +75,8 @@ s32 effect_80_init(State_Other* mwk, s16 PL_id, s16 Plate_id, s16 Target_BG) {
     ewk->master_id = PL_id;
     ewk->master_player = Plate_id;
     ewk->my_master = mwk;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.char_index = 7;
     ewk->wu.dir_step = Plate_id + (g_state.My_char[PL_id] * 3) + (PL_id * 60);
     return 0;

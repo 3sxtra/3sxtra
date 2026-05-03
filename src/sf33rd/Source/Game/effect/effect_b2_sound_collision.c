@@ -226,7 +226,7 @@ s32 effect_B2_init() {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0x70;
     ewk->wu.work_id = 0x10;
     ewk->wu.my_family = 4;

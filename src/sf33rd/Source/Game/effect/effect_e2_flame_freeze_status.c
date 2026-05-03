@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -149,7 +149,7 @@ static void effE2_sort_push(State* ewk, State* mwk);
 static void effe2_erase_or_die(State* wk);
 
 void effect_E2_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
 
     ewk->wu.hit_stop = mwk->wu.hit_stop;
 
@@ -169,7 +169,7 @@ void effect_E2_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             break;
@@ -177,7 +177,7 @@ void effect_E2_move(State_Other* ewk) {
 
         switch (ewk->wu.routine_no[1]) {
         case 0:
-            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+            if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
                 char_move(&ewk->wu);
 
                 if (ewk->wu.cg_type) {
@@ -195,8 +195,8 @@ void effect_E2_move(State_Other* ewk) {
                 }
             }
 
-            if (ewk->wu.dir_old != mwk->wu.dm_count_up) {
-                if (ewk->wu.dm_attribute == mwk->wu.dm_attribute) {
+            if (ewk->wu.dir_old != mwk->wu.damage_count_up) {
+                if (ewk->wu.damage_attribute == mwk->wu.damage_attribute) {
                     ewk->wu.disp_flag = 0;
                     ewk->wu.routine_no[0] = 2;
                     break;
@@ -220,7 +220,7 @@ void effect_E2_move(State_Other* ewk) {
             break;
 
         default:
-            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+            if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
                 char_move(&ewk->wu);
 
                 if (ewk->wu.cg_type && ewk->wu.cg_type == 0xFF) {
@@ -248,7 +248,7 @@ void effect_E2_move(State_Other* ewk) {
 }
 
 static void effE2_sort_push(State* ewk, State* mwk) {
-    if (ewk->rl_flag) {
+    if (ewk->facing_flag) {
         ewk->position_x = mwk->xyz[0].disp.pos + ewk->old_pos[0];
     } else {
         ewk->position_x = mwk->xyz[0].disp.pos - ewk->old_pos[0];
@@ -273,7 +273,7 @@ static void effe2_erase_or_die(State* wk) {
     }
 }
 
-s32 effect_E2_init(PLW* wk, const s16* data, s16 color_code, u8 ff) {
+s32 effect_E2_init(PlayerEntity* wk, const s16* data, s16 color_code, u8 ff) {
     State_Other* ewk;
     s16* bxt;
     s16 ix;
@@ -293,18 +293,18 @@ s32 effect_E2_init(PLW* wk, const s16* data, s16 color_code, u8 ff) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 142;
     ewk->wu.work_id = 16;
 
-    if (wk->wu.rl_flag) {
-        ewk->wu.rl_flag = 0;
+    if (wk->wu.facing_flag) {
+        ewk->wu.facing_flag = 0;
     } else {
-        ewk->wu.rl_flag = 1;
+        ewk->wu.facing_flag = 1;
     }
 
-    ewk->wu.dir_old = wk->wu.dm_count_up;
-    ewk->wu.dm_attribute = wk->wu.dm_attribute;
+    ewk->wu.dir_old = wk->wu.damage_count_up;
+    ewk->wu.damage_attribute = wk->wu.damage_attribute;
     ewk->wu.type = wk->wu.pat_status;
     ewk->wu.blink_timing = wk->wu.blink_timing;
     ewk->wu.old_pos[2] = -1;
@@ -336,7 +336,7 @@ s32 effect_E2_init(PLW* wk, const s16* data, s16 color_code, u8 ff) {
     return 0;
 }
 
-s32 setup_accessories(PLW* wk, u8 data) {
+s32 setup_accessories(PlayerEntity* wk, u8 data) {
     s16 i;
 
     if (wk->wu.work_id != 1) {
@@ -345,17 +345,17 @@ s32 setup_accessories(PLW* wk, u8 data) {
 
     switch (data) {
     case 0:
-        if (wk->wu.dm_attribute == 1) {
+        if (wk->wu.damage_attribute == 1) {
             for (i = 0; i < 4; i++) {
                 effect_E2_init(wk, flames_stand[wk->player_number][i], 32, 1);
             }
         }
 
-        if (wk->wu.dm_attribute == 2) {
+        if (wk->wu.damage_attribute == 2) {
             effect_E2_init(wk, thunder_set_pos_SKB[wk->player_number], 32, 0);
         }
 
-        if (wk->wu.dm_attribute == 3) {
+        if (wk->wu.damage_attribute == 3) {
             for (i = 0; i < 4; i++) {
                 effect_E2_init(wk, freeze_stand[wk->player_number][i], 32, 0);
             }
@@ -364,17 +364,17 @@ s32 setup_accessories(PLW* wk, u8 data) {
         break;
 
     case 32:
-        if (wk->wu.dm_attribute == 1) {
+        if (wk->wu.damage_attribute == 1) {
             for (i = 0; i < 4; i++) {
                 effect_E2_init(wk, flames_crunch[wk->player_number][i], 32, 1);
             }
         }
 
-        if (wk->wu.dm_attribute == 2) {
+        if (wk->wu.damage_attribute == 2) {
             effect_E2_init(wk, thunder_set_pos_SKB[wk->player_number], 32, 0);
         }
 
-        if (wk->wu.dm_attribute == 3) {
+        if (wk->wu.damage_attribute == 3) {
             for (i = 0; i < 4; i++) {
                 effect_E2_init(wk, freeze_crunch[wk->player_number][i], 32, 0);
             }
@@ -383,17 +383,17 @@ s32 setup_accessories(PLW* wk, u8 data) {
         break;
 
     default:
-        if (wk->wu.dm_attribute == 1) {
+        if (wk->wu.damage_attribute == 1) {
             for (i = 0; i < 4; i++) {
                 effect_E2_init(wk, flames_ariel[wk->player_number][i], 32, 1);
             }
         }
 
-        if (wk->wu.dm_attribute == 2) {
+        if (wk->wu.damage_attribute == 2) {
             effect_E2_init(wk, thunder_set_pos_SKB[wk->player_number], 32, 0);
         }
 
-        if (wk->wu.dm_attribute == 3) {
+        if (wk->wu.damage_attribute == 3) {
             for (i = 0; i < 4; i++) {
                 effect_E2_init(wk, freeze_set_pos_B[wk->player_number][i], 32, 0);
             }

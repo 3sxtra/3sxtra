@@ -70,7 +70,7 @@ s32 effect_I6_init(State_Other* oya) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0xBA;
     ewk->wu.work_id = 0x10;
     ewk->wu.graphic_rom_type = 1;
@@ -78,8 +78,8 @@ s32 effect_I6_init(State_Other* oya) {
     ewk->wu.my_family = 4;
     ewk->wu.my_col_code = 0x52;
     ewk->wu.my_priority = ewk->wu.position_z = 10;
-    ewk->wu.my_mts = 0xE;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 0xE;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     *ewk->wu.char_table = (u32*)_etc_char_table;
     ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[ewk->wu.my_family - 1].position_x + g_state.bg_w.pos_offset;
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos;

@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-void Player_attack(PLW* wk);
-void force_grounded_state(PLW* wk);
+void Player_attack(PlayerEntity* wk);
+void force_grounded_state(PlayerEntity* wk);
 
 #endif

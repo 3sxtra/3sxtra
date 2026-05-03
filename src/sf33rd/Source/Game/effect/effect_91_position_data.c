@@ -24,7 +24,7 @@ void effect_91_move(State_Other* ewk) {
         return;
     }
 
-    if (ewk->wu.be_flag == 0) {
+    if (ewk->wu.active_flag == 0) {
         return;
     }
 
@@ -58,7 +58,7 @@ s32 effect_91_init(s16 master_id, s16 type, s16 target_bg, s16 char_ix, s16 char
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 91;
     ewk->wu.work_id = 16;
@@ -68,8 +68,8 @@ s32 effect_91_init(s16 master_id, s16 type, s16 target_bg, s16 char_ix, s16 char
     ewk->wu.char_table[0] = _sel_pl_char_table;
     ewk->wu.type = type;
     ewk->master_player = master_player;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.position_x =
         g_state.bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos + EFF91_Pos_Data[master_id][ewk->wu.type][0];
     ewk->wu.position_y =

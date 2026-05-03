@@ -132,15 +132,15 @@ s32 effect_48_init(s16 type) {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 0x30;
         ewk->wu.work_id = 0x10;
         ewk->wu.type = type;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = 0x12C;
         ewk->wu.my_family = 3;
-        ewk->wu.my_mts = 9;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 9;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
         ewk->wu.old_routine_no[4] = i;
         ewk->wu.char_table[0] = _op_char_table;
         ewk->wu.routine_no[0] = *data_ptr++;

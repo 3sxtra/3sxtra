@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/effect/effect_h6_code_table_ending.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/sound/sound_ids.h"
 #include "sf33rd/Source/Game/stage/bg.h"

@@ -12,13 +12,13 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void EFF61_WAIT(WORK_Other_CONN* ewk);
-static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
-static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
-static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
+static void EFF61_WAIT(EffectMultiSprite* ewk);
+static void EFF61_SLIDE_IN(EffectMultiSprite* ewk);
+static void EFF61_SLIDE_OUT(EffectMultiSprite* /* unused */);
+static void EFF61_SUDDENLY(EffectMultiSprite* ewk);
 
 const s8* Menu_Letter_Data[99] = { "ARCADE",
                                    "VERSUS",
@@ -88,7 +88,7 @@ const s8* Menu_Letter_Data[99] = { "ARCADE",
                                    "EXIT",
                                    "TRIALS",
                                    "LOCAL NETWORK",
-                                   "AUTO-CONN",
+                                   "AUTO-SpriteConnection",
                                    "CONNECT",
                                    "AUTO-ACPT",
                                    "AUTO-SEARCH",
@@ -101,7 +101,7 @@ const s8* Menu_Letter_Data[99] = { "ARCADE",
                                    "PROFILE",
                                    "EXIT",
                                    /* LAN-only lobby strings [80-82] */
-                                   "AUTO-CONN",
+                                   "AUTO-SpriteConnection",
                                    "CONNECT",
                                    "EXIT",
                                    "RANKED MATCHMAKING",
@@ -128,7 +128,7 @@ void Menu_UpdateNetworkLabel(void) {}
 
 void (*const EFF61_Jmp_Tbl[4])() = { EFF61_WAIT, EFF61_SLIDE_IN, EFF61_SLIDE_OUT, EFF61_SUDDENLY };
 
-void effect_61_move(WORK_Other_CONN* ewk) {
+void effect_61_move(EffectMultiSprite* ewk) {
     if (Check_Die_61((State_Other*)ewk)) {
         Release_Effect(&ewk->wu);
         return;
@@ -136,7 +136,7 @@ void effect_61_move(WORK_Other_CONN* ewk) {
 
     EFF61_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag == 0) {
+    if (ewk->wu.active_flag == 0) {
         return;
     }
 
@@ -183,13 +183,13 @@ void effect_61_move(WORK_Other_CONN* ewk) {
     sort_push_request3(&ewk->wu);
 }
 
-static void EFF61_WAIT(WORK_Other_CONN* ewk) {
+static void EFF61_WAIT(EffectMultiSprite* ewk) {
     if ((ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk) {
+static void EFF61_SLIDE_IN(EffectMultiSprite* ewk) {
     if (g_state.Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = g_state.Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -234,9 +234,9 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */) {}
+void EFF61_SLIDE_OUT(EffectMultiSprite* /* unused */) {}
 
-static void EFF61_SUDDENLY(WORK_Other_CONN* ewk) {
+static void EFF61_SUDDENLY(EffectMultiSprite* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--g_state.Order_Timer[ewk->wu.dir_old]) {
@@ -270,7 +270,7 @@ s32 Check_Die_61(State_Other* ewk) {
 
 s32 effect_61_init(s16 master, u8 dir_old, s16 sync_bg, s16 master_player, s16 char_ix, s16 cursor_index,
                    u16 letter_type) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
     u16 x;
     s16 offset_x;
@@ -280,8 +280,8 @@ s32 effect_61_init(s16 master, u8 dir_old, s16 sync_bg, s16 master_player, s16 c
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 61;
     ewk->wu.work_id = 16;
     ewk->master_id = master;
@@ -332,7 +332,7 @@ s32 effect_61_init(s16 master, u8 dir_old, s16 sync_bg, s16 master_player, s16 c
     }
 
     ewk->num_of_conn = ix;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

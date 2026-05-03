@@ -18,7 +18,7 @@ u16 sw_work;
 T_PL_LVR* chk_pl;
 s16 move_type[2];
 MOVE_WORK* move_ptr;
-PLW* cmd_pl;
+PlayerEntity* cmd_pl;
 
 // rodata
 

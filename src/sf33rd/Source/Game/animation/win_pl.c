@@ -30,35 +30,35 @@
 #include "sf33rd/Source/Game/stage/target_subroutines.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-static void Win_00000(PLW* wk);
-static void Win_01000(PLW* wk);
-static void jijii_nebukuro(PLW* wk);
-static void jijii_jump(PLW* wk);
-static void jijii_full(PLW* wk);
-static void Win_02000(PLW* wk);
-static void Win_03000(PLW* wk);
-static void Win_04000(PLW* wk);
-static void Normal_normal_Winner(PLW* wk);
-static void Judge_normal_winner(PLW* wk);
-static void Win_05000(PLW* wk);
-static void Win_06000(PLW* wk);
-static void Win_07000(PLW* wk);
-static void Win_08000(PLW* wk);
-static void Win_09000(PLW* wk);
-static void Win_10000(PLW* wk);
-static void q_keeping_action(PLW* wk);
-static void q_leave_after_action(PLW* wk);
-static void Win_11000(PLW* wk);
-static void twelve_win_away(PLW* wk);
-static void twelve_win_backjump(PLW* wk);
-static void Win_12000(PLW* wk);
-static void Win_13000(PLW* wk);
-static void Win_14000(PLW* wk);
-static void urien_dash(PLW* wk);
-static void Win_15000(PLW* wk);
-static s16 win_select(PLW* /* unused */, s16 num);
-static void bonus_game_win_pause(PLW* wk);
-static void meta_win_pause(PLW* wk);
+static void Win_00000(PlayerEntity* wk);
+static void Win_01000(PlayerEntity* wk);
+static void jijii_nebukuro(PlayerEntity* wk);
+static void jijii_jump(PlayerEntity* wk);
+static void jijii_full(PlayerEntity* wk);
+static void Win_02000(PlayerEntity* wk);
+static void Win_03000(PlayerEntity* wk);
+static void Win_04000(PlayerEntity* wk);
+static void Normal_normal_Winner(PlayerEntity* wk);
+static void Judge_normal_winner(PlayerEntity* wk);
+static void Win_05000(PlayerEntity* wk);
+static void Win_06000(PlayerEntity* wk);
+static void Win_07000(PlayerEntity* wk);
+static void Win_08000(PlayerEntity* wk);
+static void Win_09000(PlayerEntity* wk);
+static void Win_10000(PlayerEntity* wk);
+static void q_keeping_action(PlayerEntity* wk);
+static void q_leave_after_action(PlayerEntity* wk);
+static void Win_11000(PlayerEntity* wk);
+static void twelve_win_away(PlayerEntity* wk);
+static void twelve_win_backjump(PlayerEntity* wk);
+static void Win_12000(PlayerEntity* wk);
+static void Win_13000(PlayerEntity* wk);
+static void Win_14000(PlayerEntity* wk);
+static void urien_dash(PlayerEntity* wk);
+static void Win_15000(PlayerEntity* wk);
+static s16 win_select(PlayerEntity* /* unused */, s16 num);
+static void bonus_game_win_pause(PlayerEntity* wk);
+static void meta_win_pause(PlayerEntity* wk);
 
 s16 a_rno;
 
@@ -68,7 +68,7 @@ s16 a_rno;
 const s16 winner_type_tbl[CHARACTER_COUNT] = { 6, 0, 0, 6, 2, 7, 9, 3, 4, 1, 12, 0, 5, 14, 8, 13, 6, 10, 11, 15 };
 
 /** @brief Top-level winner dispatch — select type-specific win handler. */
-void win_player(PLW* wk) {
+void win_player(PlayerEntity* wk) {
     if (g_state.My_char[wk->wu.id] != wk->player_number) {
         meta_win_pause(wk);
         return;
@@ -143,14 +143,14 @@ void win_player(PLW* wk) {
 }
 
 /** @brief Win type 0 — standard win pose (delegates to Normal_normal_Winner). */
-static void Win_00000(PLW* wk) {
+static void Win_00000(PlayerEntity* wk) {
     Normal_normal_Winner(wk);
 }
 
 const s16 win_10000_tbl[2][8] = { { 32, 33, 34, 32, 36, 37, 38, 33 }, { 35, 39, 34, 35, 36, 37, 38, 39 } };
 
 /** @brief Win type 1 — Oro’s win (sleeping bag, jump, full-power variants). */
-static void Win_01000(PLW* wk) {
+static void Win_01000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -218,7 +218,7 @@ static void Win_01000(PLW* wk) {
 }
 
 /** @brief Oro sleeping-bag win sub-sequence. */
-static void jijii_nebukuro(PLW* wk) {
+static void jijii_nebukuro(PlayerEntity* wk) {
     g_state.bg_app_stop = 1;
 
     switch (g_state.win_rno[1]) {
@@ -257,7 +257,7 @@ static void jijii_nebukuro(PLW* wk) {
 }
 
 /** @brief Oro jump-away win sub-sequence. */
-static void jijii_jump(PLW* wk) {
+static void jijii_jump(PlayerEntity* wk) {
     s16 id_w;
 
     g_state.bg_app_stop = 1;
@@ -271,7 +271,7 @@ static void jijii_jump(PLW* wk) {
         if (wk->wu.cg_type == 9) {
             g_state.win_rno[1]++;
 
-            if (wk->wu.rl_flag) {
+            if (wk->wu.facing_flag) {
                 wk->wu.mvxy.a[0].sp = 0x60000;
                 wk->wu.mvxy.d[0].sp = 0x1000;
             } else {
@@ -293,7 +293,7 @@ static void jijii_jump(PLW* wk) {
         add_x_sub((State_Other*)wk);
         add_y_sub((State_Other*)wk);
 
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             if (wk->wu.xyz[0].disp.pos > g_state.bg_w.bgw[1].xy[0].disp.pos + 320) {
                 g_state.win_rno[1]++;
                 effect_work_kill(3, 13);
@@ -324,7 +324,7 @@ static void jijii_jump(PLW* wk) {
 
         g_state.win_rno[1]++;
 
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             wk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].xy[0].disp.pos - 328;
             wk->wu.mvxy.a[0].sp = 0x18000;
         } else {
@@ -345,7 +345,7 @@ static void jijii_jump(PLW* wk) {
 }
 
 /** @brief Oro full-power win sub-sequence. */
-static void jijii_full(PLW* wk) {
+static void jijii_full(PlayerEntity* wk) {
     g_state.bg_app_stop = 1;
 
     switch (g_state.win_rno[1]) {
@@ -380,7 +380,7 @@ static void jijii_full(PLW* wk) {
 const s16 win_2000_tbl[18] = { 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1 };
 
 /** @brief Win type 2 — win with stage-dependent variant. */
-static void Win_02000(PLW* wk) {
+static void Win_02000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -422,7 +422,7 @@ const s16 Win_3000_tbl[16] = { 42, 34, 33, 42, 32, 42, 32, 35, 42, 34, 33, 42, 3
 const s8 Win_3001_tbl[16] = { 36, 40, 41, 40, 41, 38, 40, 39, 36, 40, 41, 39, 41, 37, 39, 40 };
 
 /** @brief Win type 3 — win with vanish and stage-specific poses. */
-static void Win_03000(PLW* wk) {
+static void Win_03000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -474,7 +474,7 @@ static void Win_03000(PLW* wk) {
 }
 
 /** @brief Win type 4 — win with continued-animation variant. */
-static void Win_04000(PLW* wk) {
+static void Win_04000(PlayerEntity* wk) {
     s16 work;
     s16 work2;
 
@@ -525,7 +525,7 @@ static void Win_04000(PLW* wk) {
 }
 
 /** @brief Standard normal-round winner animation (random pose pick). */
-static void Normal_normal_Winner(PLW* wk) {
+static void Normal_normal_Winner(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -549,7 +549,7 @@ static void Normal_normal_Winner(PLW* wk) {
 }
 
 /** @brief Judge-round winner animation (random verdict pose). */
-static void Judge_normal_winner(PLW* wk) {
+static void Judge_normal_winner(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -574,7 +574,7 @@ static void Judge_normal_winner(PLW* wk) {
 }
 
 /** @brief Win type 5 — Dudley leap-away / final-round special. */
-static void Win_05000(PLW* wk) {
+static void Win_05000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -588,7 +588,7 @@ static void Win_05000(PLW* wk) {
             g_state.PL_Wins[wk->wu.id] >= CurrentSave()->Battle_Number[g_state.Play_Type]) {
             set_char_move_init(&wk->wu, 9, 36);
 
-            if (wk->wu.rl_flag) {
+            if (wk->wu.facing_flag) {
                 wk->wu.mvxy.a[0].sp = 0x20000;
             } else {
                 wk->wu.mvxy.a[0].sp = -0x20000;
@@ -638,7 +638,7 @@ static void Win_05000(PLW* wk) {
 }
 
 /** @brief Win type 6 — generic win with round-dependent pose selection. */
-static void Win_06000(PLW* wk) {
+static void Win_06000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -670,7 +670,7 @@ static void Win_06000(PLW* wk) {
 }
 
 /** @brief Win type 7 — Hugo’s win with optional Poison/Hugo effects. */
-static void Win_07000(PLW* wk) {
+static void Win_07000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -750,7 +750,7 @@ static void Win_07000(PLW* wk) {
 }
 
 /** @brief Win type 8 — Ibuki’s win with super-finish variant. */
-static void Win_08000(PLW* wk) {
+static void Win_08000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -784,7 +784,7 @@ static void Win_08000(PLW* wk) {
 }
 
 /** @brief Win type 9 — Necro’s win with poison and L6 effects. */
-static void Win_09000(PLW* wk) {
+static void Win_09000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -868,7 +868,7 @@ static void Win_09000(PLW* wk) {
 }
 
 /** @brief Win type 10 — Q’s win with keeping/leave-after actions. */
-static void Win_10000(PLW* wk) {
+static void Win_10000(PlayerEntity* wk) {
     s16 work;
     s16 work2;
     s16 id_w;
@@ -950,12 +950,12 @@ const s16 q_em_distance_tbl[20][2] = { { -96, -16 }, { -104, 0 },  { -90, -16 },
                                        { -90, -16 }, { 0, -96 },   { -2, -112 }, { -112, 4 },  { -96, -6 } };
 
 /** @brief Check Q’s distance from the enemy for win animation. */
-static s16 q_em_distance_chk(PLW* wk) {
+static s16 q_em_distance_chk(PlayerEntity* wk) {
     s16 work;
     s16 id_w = wk->wu.id ^ 1;
-    s16 rl_w = wk->wu.rl_flag ^ g_state.plw[id_w].wu.rl_flag;
+    s16 rl_w = wk->wu.facing_flag ^ g_state.plw[id_w].wu.facing_flag;
 
-    if (wk->wu.rl_flag) {
+    if (wk->wu.facing_flag) {
         work = wk->wu.xyz[0].disp.pos - g_state.plw[id_w].wu.xyz[0].disp.pos;
 
         if (work >= q_em_distance_tbl[g_state.plw[id_w].player_number][rl_w]) {
@@ -973,7 +973,7 @@ static s16 q_em_distance_chk(PLW* wk) {
 }
 
 /** @brief Determine Q’s facing direction relative to the enemy. */
-static s32 q_em_dir(PLW* wk) {
+static s32 q_em_dir(PlayerEntity* wk) {
     s16 work;
     s16 pos_w;
     s16 id_w = wk->wu.id ^ 1;
@@ -997,7 +997,7 @@ static s32 q_em_dir(PLW* wk) {
             set_char_move_init(&wk->wu, 9, 36);
         }
 
-        wk->wu.direction = wk->wu.rl_flag;
+        wk->wu.direction = wk->wu.facing_flag;
         g_state.win_rno[1] = 4;
         wk->wu.xyz[0].disp.pos = pos_w;
         return 0;
@@ -1008,21 +1008,21 @@ static s32 q_em_dir(PLW* wk) {
 }
 
 /** @brief Q’s keeping-action win sub-sequence (stance hold). */
-static void q_keeping_action(PLW* wk) {
+static void q_keeping_action(PlayerEntity* wk) {
     switch (g_state.win_rno[1]) {
     case 0:
         if (!q_em_dir(wk)) {
             break;
         }
 
-        if (wk->wu.direction == wk->wu.rl_flag) {
+        if (wk->wu.direction == wk->wu.facing_flag) {
             g_state.win_rno[1] = 2;
             break;
         }
 
         g_state.win_rno[1] = 1;
         set_char_move_init(&wk->wu, 9, 40);
-        wk->wu.rl_flag ^= 1;
+        wk->wu.facing_flag ^= 1;
         break;
 
     case 1:
@@ -1040,7 +1040,7 @@ static void q_keeping_action(PLW* wk) {
         set_char_move_init(&wk->wu, 9, 41);
         wk->wu.mvxy.d[0].sp = 0;
 
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             wk->wu.mvxy.a[0].sp = 0x1C000;
             break;
         }
@@ -1073,7 +1073,7 @@ static void q_keeping_action(PLW* wk) {
 }
 
 /** @brief Q’s leave-after-action win sub-sequence (walk away). */
-static void q_leave_after_action(PLW* wk) {
+static void q_leave_after_action(PlayerEntity* wk) {
     s16 work;
 
     switch (g_state.win_rno[1]) {
@@ -1082,12 +1082,12 @@ static void q_leave_after_action(PLW* wk) {
             break;
         }
 
-        if (wk->wu.direction == wk->wu.rl_flag) {
+        if (wk->wu.direction == wk->wu.facing_flag) {
             g_state.win_rno[1] = 2;
         } else {
             g_state.win_rno[1] = 1;
             set_char_move_init(&wk->wu, 9, 40);
-            wk->wu.rl_flag ^= 1;
+            wk->wu.facing_flag ^= 1;
         }
 
         break;
@@ -1106,7 +1106,7 @@ static void q_leave_after_action(PLW* wk) {
         set_char_move_init(&wk->wu, 9, 41);
         wk->wu.mvxy.d[0].sp = 0;
 
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             wk->wu.mvxy.a[0].sp = 0x1C000;
         } else {
             wk->wu.mvxy.a[0].sp = -0x1C000;
@@ -1138,7 +1138,7 @@ static void q_leave_after_action(PLW* wk) {
             set_char_move_init(&wk->wu, 9, 41);
             wk->wu.mvxy.d[0].sp = 0;
 
-            if (wk->wu.rl_flag) {
+            if (wk->wu.facing_flag) {
                 wk->wu.mvxy.a[0].sp = 0x1C000;
             } else {
                 wk->wu.mvxy.a[0].sp = -0x1C000;
@@ -1151,7 +1151,7 @@ static void q_leave_after_action(PLW* wk) {
         char_move(&wk->wu);
         add_x_sub((State_Other*)wk);
 
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             work = g_state.bg_w.bgw[1].wxy[0].disp.pos + g_state.bg_w.pos_offset;
             work += 64;
 
@@ -1174,7 +1174,7 @@ static void q_leave_after_action(PLW* wk) {
 }
 
 /** @brief Win type 11 — Twelve’s win (walk-away or backjump variants). */
-static void Win_11000(PLW* wk) {
+static void Win_11000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -1236,7 +1236,7 @@ static void Win_11000(PLW* wk) {
 }
 
 /** @brief Twelve walk-away win sub-sequence. */
-static void twelve_win_away(PLW* wk) {
+static void twelve_win_away(PlayerEntity* wk) {
     switch (g_state.win_rno[1]) {
     case 0:
         char_move(&wk->wu);
@@ -1262,7 +1262,7 @@ static void twelve_win_away(PLW* wk) {
         g_state.win_rno[1]++;
         wk->wu.mvxy.d[0].sp = 0;
 
-        if (wk->wu.rl_flag) {
+        if (wk->wu.facing_flag) {
             wk->wu.mvxy.a[0].sp = 0x80000;
         } else {
             wk->wu.mvxy.a[0].sp = -0x80000;
@@ -1288,7 +1288,7 @@ static void twelve_win_away(PLW* wk) {
 }
 
 /** @brief Twelve backjump win sub-sequence. */
-static void twelve_win_backjump(PLW* wk) {
+static void twelve_win_backjump(PlayerEntity* wk) {
     switch (g_state.win_rno[1]) {
     case 0:
         char_move(&wk->wu);
@@ -1300,7 +1300,7 @@ static void twelve_win_backjump(PLW* wk) {
             wk->wu.mvxy.a[1].sp = 0x78000;
             wk->wu.mvxy.d[1].sp = -0x5000;
 
-            if (wk->wu.rl_flag) {
+            if (wk->wu.facing_flag) {
                 wk->wu.mvxy.a[0].sp = -wk->wu.mvxy.a[0].sp;
             }
         }
@@ -1353,7 +1353,7 @@ static void twelve_win_backjump(PLW* wk) {
 }
 
 /** @brief Win type 12 — Makoto’s win with taunt. */
-static void Win_12000(PLW* wk) {
+static void Win_12000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -1383,7 +1383,7 @@ static void Win_12000(PLW* wk) {
 }
 
 /** @brief Win type 13 — Remy’s win animation. */
-static void Win_13000(PLW* wk) {
+static void Win_13000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -1425,7 +1425,7 @@ static void Win_13000(PLW* wk) {
 }
 
 /** @brief Win type 14 — Urien’s win with dash and M2 effect. */
-static void Win_14000(PLW* wk) {
+static void Win_14000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -1467,7 +1467,7 @@ static void Win_14000(PLW* wk) {
 }
 
 /** @brief Check if Urien should dash toward the enemy for his win. */
-static s32 urien_dash_chk(PLW* wk) {
+static s32 urien_dash_chk(PlayerEntity* wk) {
     s16 id_w = wk->wu.id ^ 1;
     s16 pos_w = wk->wu.xyz[0].disp.pos - g_state.plw[id_w].wu.xyz[0].disp.pos;
 
@@ -1489,7 +1489,7 @@ static s32 urien_dash_chk(PLW* wk) {
 }
 
 /** @brief Urien dash-toward-enemy win sub-sequence. */
-static void urien_dash(PLW* wk) {
+static void urien_dash(PlayerEntity* wk) {
     switch (g_state.win_rno[1]) {
     case 0:
         g_state.win_rno[1]++;
@@ -1497,7 +1497,7 @@ static void urien_dash(PLW* wk) {
         if (urien_dash_chk(wk)) {
             g_state.win_rno[1] = 5;
         } else {
-            wk->wu.rl_flag = wk->wu.active_move;
+            wk->wu.facing_flag = wk->wu.active_move;
             set_char_move_init(&wk->wu, 0, 4);
             setup_mvxy_data(&wk->wu, 2);
         }
@@ -1569,7 +1569,7 @@ static void urien_dash(PLW* wk) {
 const s16 Win_15000_tbl[8] = { 38, 37, 40, 39, 38, 40, 39, 36 };
 
 /** @brief Win type 15 — Gill’s win animation. */
-static void Win_15000(PLW* wk) {
+static void Win_15000(PlayerEntity* wk) {
     s16 work;
 
     g_state.bg_app_stop = 1;
@@ -1601,14 +1601,14 @@ static void Win_15000(PLW* wk) {
 }
 
 /** @brief Select a random win-pose index masked to num+1 variants. */
-static s16 win_select(PLW* /* unused */, s16 num) {
+static s16 win_select(PlayerEntity* /* unused */, s16 num) {
     s16 work = random_16();
     work &= num;
     return work;
 }
 
 /** @brief Bonus-game win-pause animation. */
-static void bonus_game_win_pause(PLW* wk) {
+static void bonus_game_win_pause(PlayerEntity* wk) {
     g_state.bg_app_stop = 1;
 
     switch (wk->wu.routine_no[3]) {
@@ -1649,7 +1649,7 @@ static void bonus_game_win_pause(PLW* wk) {
         if (g_state.Bonus_Game_result == 20 || g_state.Bonus_Game_ex_result == 20) {
             g_state.win_rno[0] = 1;
 
-            if (wk->wu.rl_flag) {
+            if (wk->wu.facing_flag) {
                 wk->wu.mvxy.a[0].sp = 0x20000;
             } else {
                 wk->wu.mvxy.a[0].sp = -0x20000;
@@ -1685,7 +1685,7 @@ const s16 meta_win_tbl[CHARACTER_COUNT] = { 33, 32, 32, 32, 32, 32, 33, 32, 32, 
                                             32, 32, 32, 32, 34, 32, 32, 32, 32, 32 };
 
 /** @brief Meta-character (Gill) win-pause animation. */
-static void meta_win_pause(PLW* wk) {
+static void meta_win_pause(PlayerEntity* wk) {
     g_state.bg_app_stop = 1;
 
     switch (wk->wu.routine_no[3]) {

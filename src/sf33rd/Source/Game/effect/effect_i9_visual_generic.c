@@ -8,7 +8,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/effect/effect_j0_visual_generic.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 
 static void push_image_buff(State_Other* wk, ImageBuff* image_buff);
@@ -35,7 +35,7 @@ void effect_I9_move(State_Other* ewk) {
     case 1:
         push_image_buff(mwk, image_buff);
 
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.routine_no[0]++;
             break;
         }
@@ -46,7 +46,7 @@ void effect_I9_move(State_Other* ewk) {
             break;
         }
 
-        if (!g_state.EXE_flag && !g_state.Game_pause && mwk->wu.hit_stop <= 0 && --ewk->wu.dir_timer == 0) {
+        if (!g_state.execute_flag && !g_state.Game_pause && mwk->wu.hit_stop <= 0 && --ewk->wu.dir_timer == 0) {
             ewk->wu.routine_no[0] = 2;
         }
 
@@ -94,7 +94,7 @@ s32 effect_I9_init(State_Other* wk, s16 total, s16 interval, s16 life) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 189;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = wk->wu.my_family;

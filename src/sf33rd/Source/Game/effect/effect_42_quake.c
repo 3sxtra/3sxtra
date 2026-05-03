@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
@@ -31,7 +31,7 @@ void (*const EFF42_Jmp_Tbl[5])();
 void effect_42_move(State_Other* ewk) {
     EFF42_Jmp_Tbl[g_state.Order[ewk->wu.dir_old]](ewk);
 
-    if (ewk->wu.be_flag != 0) {
+    if (ewk->wu.active_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
         if (!rmlui_char_select_visible)
@@ -226,7 +226,7 @@ s32 effect_42_init(s16 type) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 42;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
@@ -235,8 +235,8 @@ s32 effect_42_init(s16 type) {
     ewk->wu.active_move = g_state.Select_Timer;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.dir_old = type;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     if (type & 1) {
         ewk->wu.direction = 4;

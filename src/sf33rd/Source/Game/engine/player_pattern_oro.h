@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-void pl_oro_extra_attack(PLW* wk);
-s32 set_tenguiwa(PLW* wk, u8 data);
+void pl_oro_extra_attack(PlayerEntity* wk);
+s32 set_tenguiwa(PlayerEntity* wk, u8 data);
 
 #endif

@@ -137,7 +137,7 @@ void Purge_memory_of_kind_of_key(u8 kokey) {
 /** @brief Store a file size into the given RAM key entry. */
 void Set_size_data_ramcnt_key(s16 key, u32 size) {
     if (key <= 0) {
-        // An attempt was made to store a file size in an unused memory key.\n
+        // An attempt was made to stock a file size in an unused memory key.\n
         flLogOut("未使用のメモリキーへファイルサイズを格納しようとしました。\n");
         ERR_STOP;
     }

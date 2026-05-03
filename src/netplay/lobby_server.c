@@ -440,25 +440,25 @@ bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name,
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/presence", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/presence", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_StartSearching(const char* player_id) {
     char* body = json_body_pid(player_id);
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/searching/start", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/searching/start", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_StopSearching(const char* player_id) {
     char* body = json_body_pid(player_id);
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/searching/stop", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/searching/stop", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const char* region_filter) {
@@ -506,9 +506,9 @@ int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const ch
 bool LobbyServer_Leave(const char* player_id) {
     char* body = json_body_pid(player_id);
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/leave", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/leave", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_DeclineInvite(const char* player_id, const char* declined_player_id) {
@@ -519,9 +519,9 @@ bool LobbyServer_DeclineInvite(const char* player_id, const char* declined_playe
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/decline", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/decline", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 /* === Room Discovery === */
@@ -585,10 +585,10 @@ bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id, Match
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/match_result", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/match_result", body, response, sizeof(response));
     free(body);
 
-    if (ok) {
+    if (can_activate) {
         SDL_Log("[LobbyServer] Match result reported: winner=%s", result->winner_id);
         cJSON* resp_json = cJSON_Parse(response);
         if (resp_json) {
@@ -616,7 +616,7 @@ bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id, Match
                 *out_match_id = -1;
         }
     }
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t replay_size) {
@@ -882,12 +882,12 @@ bool LobbyServer_ReportDisconnect(const char* player_id, const char* opponent_id
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/match_disconnect", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/match_disconnect", body, response, sizeof(response));
     free(body);
-    if (ok) {
+    if (can_activate) {
         SDL_Log("[LobbyServer] Disconnect reported: reporter=%s disconnecter=%s", player_id, opponent_id);
     }
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
@@ -1062,10 +1062,10 @@ bool LobbyServer_CreateRoom(const char* name, int ft, const char* password, int 
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/create", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/create", body, response, sizeof(response));
     free(body);
 
-    if (!ok) {
+    if (!can_activate) {
         return false;
     }
 
@@ -1107,10 +1107,10 @@ bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/join", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/join", body, response, sizeof(response));
     free(body);
 
-    if (!ok) {
+    if (!can_activate) {
         // Try to extract error message from server response
         if (out_error && error_size > 0 && response[0]) {
             cJSON* err_json = cJSON_Parse(response);
@@ -1150,7 +1150,7 @@ bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState
             cJSON_Delete(root);
         }
     }
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_LeaveRoom(const char* room_code) {
@@ -1159,9 +1159,9 @@ bool LobbyServer_LeaveRoom(const char* room_code) {
 
     char* body = json_body_pid_room(Identity_GetPlayerId(), room_code);
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/leave", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/leave", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_JoinQueue(const char* room_code) {
@@ -1170,9 +1170,9 @@ bool LobbyServer_JoinQueue(const char* room_code) {
 
     char* body = json_body_pid_room(Identity_GetPlayerId(), room_code);
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/queue/join", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/queue/join", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_LeaveQueue(const char* room_code) {
@@ -1181,9 +1181,9 @@ bool LobbyServer_LeaveQueue(const char* room_code) {
 
     char* body = json_body_pid_room(Identity_GetPlayerId(), room_code);
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/queue/leave", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/queue/leave", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_SendChat(const char* room_code, const char* text) {
@@ -1199,9 +1199,9 @@ bool LobbyServer_SendChat(const char* room_code, const char* text) {
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/chat", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/chat", body, response, sizeof(response));
     free(body);
-    return ok;
+    return can_activate;
 }
 
 // === GET /room/state (read-only, no side effects) ===
@@ -1233,13 +1233,13 @@ bool LobbyServer_ReportMatchEnd(const char* room_code, const char* winner_id) {
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/match/end", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/match/end", body, response, sizeof(response));
     free(body);
 
-    if (ok) {
+    if (can_activate) {
         SDL_Log("[LobbyServer] Match end reported: room=%s winner=%s", room_code, winner_id);
     }
-    return ok;
+    return can_activate;
 }
 
 // === Phase 6: Match Accept/Decline ===
@@ -1250,13 +1250,13 @@ bool LobbyServer_AcceptMatch(const char* room_code) {
 
     char* body = json_body_pid_room(Identity_GetPlayerId(), room_code);
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/match/accept", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/match/accept", body, response, sizeof(response));
     free(body);
 
-    if (ok) {
+    if (can_activate) {
         SDL_Log("[LobbyServer] Match accepted: room=%s", room_code);
     }
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_DeclineMatch(const char* room_code) {
@@ -1265,13 +1265,13 @@ bool LobbyServer_DeclineMatch(const char* room_code) {
 
     char* body = json_body_pid_room(Identity_GetPlayerId(), room_code);
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/match/decline", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/match/decline", body, response, sizeof(response));
     free(body);
 
-    if (ok) {
+    if (can_activate) {
         SDL_Log("[LobbyServer] Match declined: room=%s", room_code);
     }
-    return ok;
+    return can_activate;
 }
 
 // === Tournament Bracket Management ===
@@ -1359,10 +1359,10 @@ bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format,
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", "/room/create", body, response, sizeof(response));
+    bool can_activate = http_request("POST", "/room/create", body, response, sizeof(response));
     free(body);
 
-    if (!ok)
+    if (!can_activate)
         return false;
 
     if (out_room) {
@@ -1396,12 +1396,12 @@ bool LobbyServer_StartBracket(const char* room_code) {
 
     char* body = json_body_pid(Identity_GetPlayerId());
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", path, body, response, sizeof(response));
+    bool can_activate = http_request("POST", path, body, response, sizeof(response));
     free(body);
 
-    if (ok)
+    if (can_activate)
         SDL_Log("[LobbyServer] Bracket started: room=%s", room_code);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_GetBracket(const char* room_code, TournamentState* out) {
@@ -1439,12 +1439,12 @@ bool LobbyServer_BracketOverride(const char* room_code, int match_index, const c
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", path, body, response, sizeof(response));
+    bool can_activate = http_request("POST", path, body, response, sizeof(response));
     free(body);
 
-    if (ok)
+    if (can_activate)
         SDL_Log("[LobbyServer] Bracket override: room=%s match=%d winner=%s", room_code, match_index, winner_id);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_BracketDQ(const char* room_code, const char* player_id) {
@@ -1461,12 +1461,12 @@ bool LobbyServer_BracketDQ(const char* room_code, const char* player_id) {
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", path, body, response, sizeof(response));
+    bool can_activate = http_request("POST", path, body, response, sizeof(response));
     free(body);
 
-    if (ok)
+    if (can_activate)
         SDL_Log("[LobbyServer] Player DQ'd: room=%s player=%s", room_code, player_id);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_BracketPause(const char* room_code, bool pause) {
@@ -1483,13 +1483,13 @@ bool LobbyServer_BracketPause(const char* room_code, bool pause) {
     cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", path, body, response, sizeof(response));
+    bool can_activate = http_request("POST", path, body, response, sizeof(response));
     free(body);
 
-    if (ok) {
+    if (can_activate) {
         SDL_Log("[LobbyServer] Tournament %s in room %s", pause ? "PAUSED" : "RESUMED", room_code);
     }
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_BracketRestartMatch(const char* room_code, int match_index) {
@@ -1506,13 +1506,13 @@ bool LobbyServer_BracketRestartMatch(const char* room_code, int match_index) {
     snprintf(path, sizeof(path), "/room/%s/bracket/restart", room_code);
 
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", path, body, response, sizeof(response));
+    bool can_activate = http_request("POST", path, body, response, sizeof(response));
     free(body);
 
-    if (ok) {
+    if (can_activate) {
         SDL_Log("[LobbyServer] Tournament Match %d restarted in room %s", match_index, room_code);
     }
-    return ok;
+    return can_activate;
 }
 
 /* ======== SSE raw socket connect ========
@@ -1823,7 +1823,7 @@ static int sse_thread_fn(void* userdata) {
             char* json_start = data_prefix + 6;
             *line_end = '\0';
 
-            // Parse and store the event
+            // Parse and stock the event
             SSEEvent evt;
             sse_parse_event(json_start, &evt);
 
@@ -2204,12 +2204,12 @@ bool LobbyServer_ReportSpectateStart(const char* room_code) {
 
     char* body = json_body_pid(Identity_GetPlayerId());
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("POST", path, body, response, sizeof(response));
+    bool can_activate = http_request("POST", path, body, response, sizeof(response));
     free(body);
 
-    if (ok)
+    if (can_activate)
         SDL_Log("[LobbyServer] Spectate start: room=%s", room_code);
-    return ok;
+    return can_activate;
 }
 
 bool LobbyServer_ReportSpectateStop(const char* room_code) {
@@ -2221,10 +2221,10 @@ bool LobbyServer_ReportSpectateStop(const char* room_code) {
 
     char* body = json_body_pid(Identity_GetPlayerId());
     char response[HTTP_BUF_SIZE];
-    bool ok = http_request("DELETE", path, body, response, sizeof(response));
+    bool can_activate = http_request("DELETE", path, body, response, sizeof(response));
     free(body);
 
-    if (ok)
+    if (can_activate)
         SDL_Log("[LobbyServer] Spectate stop: room=%s", room_code);
-    return ok;
+    return can_activate;
 }

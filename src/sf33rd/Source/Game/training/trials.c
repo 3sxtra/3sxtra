@@ -142,8 +142,8 @@ void trials_update(void) {
         return;
 
     TrainingPlayerState* p2 = &g_training_state.p2;
-    PLW* pl1 = &g_state.plw[0];
-    PLW* pl2 = &g_state.plw[1];
+    PlayerEntity* pl1 = &g_state.plw[0];
+    PlayerEntity* pl2 = &g_state.plw[1];
 
     s32 current_hits = p2->combo_hits;
 
@@ -156,8 +156,8 @@ void trials_update(void) {
     // Handle Gauge Max
     if (cur_trial->gauge_max) {
         if (pl1->sa) {
-            pl1->sa->store = pl1->sa->store_max;
-            pl1->sa->gauge.s.h = pl1->sa->gauge_len;
+            pl1->sa->stock = pl1->sa->stock_max;
+            pl1->sa->gauge.s.h = pl1->sa->gauge_length;
         }
     }
 

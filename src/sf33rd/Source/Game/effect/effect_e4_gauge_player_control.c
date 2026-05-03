@@ -15,12 +15,12 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 void effect_E4_move(State_Other* ewk) {
-    PLW* mwk = (PLW*)ewk->my_master;
+    PlayerEntity* mwk = (PlayerEntity*)ewk->my_master;
     s16 num;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        if (mwk->wu.effect_e4_index != ewk->wu.myself || ewk->wu.dead_f != 0 ||
+        if (mwk->wu.effect_e4_index != ewk->wu.myself || ewk->wu.death_timer != 0 ||
             (g_state.Mode_Type != MODE_NORMAL_TRAINING && g_state.Mode_Type != MODE_PARRY_TRAINING &&
              g_state.Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
@@ -99,7 +99,7 @@ void effect_E4_move(State_Other* ewk) {
     }
 }
 
-s32 effect_E4_init(PLW* wk) {
+s32 effect_E4_init(PlayerEntity* wk) {
     State_Other* ewk;
     s16 ix;
 
@@ -108,7 +108,7 @@ s32 effect_E4_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 144;
     ewk->wu.work_id = 16;
     ewk->my_master = wk;

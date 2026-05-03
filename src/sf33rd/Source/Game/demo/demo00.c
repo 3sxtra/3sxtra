@@ -21,7 +21,7 @@
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/gd3rd.h"
+#include "sf33rd/Source/Game/io/afs_loader.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/rendering/rendering_transform.h"

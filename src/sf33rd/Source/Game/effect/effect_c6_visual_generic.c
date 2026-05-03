@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -27,7 +27,7 @@ void effect_C6_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             if (oya->wu.routine_no[0] >= 2) {
                 ewk->wu.routine_no[0]++;
 
@@ -47,7 +47,7 @@ void effect_C6_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             char_move(&ewk->wu);
 
             if (ewk->wu.cg_type == 1) {
@@ -81,7 +81,7 @@ s32 effect_C6_init(State_Other* oya) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 126;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
@@ -93,11 +93,11 @@ s32 effect_C6_init(State_Other* oya) {
     ewk->wu.my_priority = ewk->wu.position_z = oya->wu.my_priority - 1;
     ewk->wu.xyz[0].cal = oya->wu.xyz[0].cal;
     ewk->wu.xyz[1].cal = oya->wu.xyz[1].cal;
-    ewk->wu.rl_flag = oya->wu.rl_flag;
+    ewk->wu.facing_flag = oya->wu.facing_flag;
     *ewk->wu.char_table = _etc_char_table;
     ewk->wu.my_col_code = oya->wu.my_col_code;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     suzi_offset_set(ewk);
     return 0;
 }

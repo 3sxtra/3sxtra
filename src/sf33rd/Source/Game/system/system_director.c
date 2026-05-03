@@ -25,7 +25,7 @@ s16 omop_guard_distance_ix[2];
 s16 omop_sa_gauge_ix[2];
 s16 omop_stun_gauge_add[2];
 s16 omop_stun_gauge_rcv[2];
-s16 omop_stun_gauge_len[2];
+s16 omop_stun_gauge_length[2];
 s16 omop_otedama_ix[2];
 s16 omop_b_block_ix[2];
 s16 omop_r_block_ix[2];
@@ -71,7 +71,7 @@ const s16 stun_gauge_omake[4] = { 0, 24, 32, 44 };
 
 const s16 stun_gauge_r_omake[4] = { 0, 20, 32, 44 };
 
-const s16 stun_gauge_len_omake[5] = { -16, -8, 0, 8, 16 };
+const s16 stun_gauge_length_omake[5] = { -16, -8, 0, 8, 16 };
 
 const s16 blok_b_omake[4] = { -2, 0, 2, 4 };
 
@@ -187,8 +187,8 @@ void get_extra_option_parameter(_EXTRA_OPTION* omop_extra) {
     omop_sag_len_ix[1] = omop_extra->contents[1][5];
     omop_sa_gauge_ix[0] = omop_extra->contents[1][6];
     omop_sa_gauge_ix[1] = omop_extra->contents[1][6];
-    omop_stun_gauge_len[0] = omop_extra->contents[2][0];
-    omop_stun_gauge_len[1] = omop_extra->contents[2][1];
+    omop_stun_gauge_length[0] = omop_extra->contents[2][0];
+    omop_stun_gauge_length[1] = omop_extra->contents[2][1];
     omop_stun_gauge_add[0] = omop_extra->contents[2][2];
     omop_stun_gauge_add[1] = omop_extra->contents[2][2];
     omop_stun_gauge_rcv[0] = omop_extra->contents[2][3];

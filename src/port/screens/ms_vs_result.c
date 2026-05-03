@@ -32,7 +32,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h" /* plsw, Menu_Cursor_*, g_state.Order/Timer, g_state.VS_Win_Record, g_state.Sel_PL_Complete, g_state.Sel_Arts_Complete, g_state.Suicide, g_state.Cursor_Y_Pos, g_state.Mode_Type etc. */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init, Menu_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub, VS_Result_Select_Sub, Setup_VS_Mode, Setup_Win_Lose_OBJ */
-#include "sf33rd/Source/Game/sound/se.h"       /* BGM_Request_Code_Check, BGM_Stop */
+#include "sf33rd/Source/Game/sound/sound_effects.h"       /* BGM_Request_Code_Check, BGM_Stop */
 #include "sf33rd/Source/Game/system/system_subroutines.h" /* System_all_clear_Level_B, Clear_Flash_Init, Clear_Flash_Sub */
 #include "sf33rd/Source/Game/ui/hud_subroutines.h"      /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                           /* struct _TASK */

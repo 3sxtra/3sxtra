@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/target_subroutines.h"
@@ -24,7 +24,7 @@ void effect_53_move(State_Other* ewk) {
         return;
     }
 
-    if (g_state.EXE_flag || g_state.Game_pause || !g_state.EXE_obroll) {
+    if (g_state.execute_flag || g_state.Game_pause || !g_state.EXE_obroll) {
         return;
     }
 
@@ -84,7 +84,7 @@ s32 effect_53_init() {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 53;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;

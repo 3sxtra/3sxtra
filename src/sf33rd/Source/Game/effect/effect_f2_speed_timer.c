@@ -99,7 +99,7 @@ s32 effect_F2_init() {
 
         ewk = (State_Other*)frw[ix];
         ewk->wu.id = 152;
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.work_id = 0x10;
         ewk->wu.graphic_rom_type = 1;
         ewk->wu.type = i;
@@ -116,8 +116,8 @@ s32 effect_F2_init() {
         ewk->wu.my_priority = ewk->wu.position_z = *data_ptr++;
         ewk->wu.char_index = 1;
         ewk->wu.old_routine_no[1] = 1;
-        ewk->wu.my_mts = 8;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 8;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     }
 
     return 0;

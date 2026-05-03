@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_control_2.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
@@ -22,7 +22,7 @@ void (*const player_bonus2_process[3])() = { plcnt_b_init, plcnt_b2_move, plcnt_
 
 /** @brief Main player controller for the car-crush bonus stage. */
 s32 Player_control_bonus2() {
-    if (((g_state.pcon_rno[0] + g_state.pcon_rno[1]) == 0) || (!g_state.Game_pause && !g_state.EXE_flag)) {
+    if (((g_state.pcon_rno[0] + g_state.pcon_rno[1]) == 0) || (!g_state.Game_pause && !g_state.execute_flag)) {
         g_state.players_timer++;
         g_state.players_timer &= 0x7FFF;
         player_bonus2_process[g_state.pcon_rno[0]]();
@@ -91,7 +91,7 @@ static void plcnt_b2_die() {
 
     switch (g_state.pcon_rno[2]) {
     case 0:
-        g_state.plw[0].wkey_flag = g_state.plw[1].wkey_flag = 1;
+        g_state.plw[0].wakeup_key_flag = g_state.plw[1].wakeup_key_flag = 1;
         g_state.plw[0].image_setup_flag = g_state.plw[1].image_setup_flag = 0;
         g_state.pcon_rno[2]++;
         /* fallthrough */

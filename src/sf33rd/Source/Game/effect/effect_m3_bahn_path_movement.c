@@ -21,7 +21,7 @@ void effect_M3_move(State_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0] = 1;
         ewk->wu.disp_flag = 0;
-        ewk->wu.my_mts = 13;
+        ewk->wu.my_sprite_sheet = 13;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = 0x90;
         ewk->wu.my_family = 3;
@@ -33,7 +33,7 @@ void effect_M3_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[2] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[2] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -107,7 +107,7 @@ static void effM3_trans(State* ewk) {
     sort_push_request4(ewk);
 }
 
-s32 effect_M3_init(WORK_Other_CONN* wk, s16 num) {
+s32 effect_M3_init(EffectMultiSprite* wk, s16 num) {
     State_Other* ewk;
     s16 ix;
 
@@ -116,7 +116,7 @@ s32 effect_M3_init(WORK_Other_CONN* wk, s16 num) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 223;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;

@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -27,7 +27,7 @@ void effect_78_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll && crow_fuss_check(ewk)) {
+        if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll && crow_fuss_check(ewk)) {
             char_move(&ewk->wu);
         }
 
@@ -35,7 +35,7 @@ void effect_78_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
+        if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             crow_fuss_move(ewk);
         }
 
@@ -189,18 +189,18 @@ s32 effect_78_init() {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 78;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.type = i;
-        ewk->wu.dead_f = 0;
+        ewk->wu.death_timer = 0;
         ewk->wu.my_family = 2;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = 8492;
-        ewk->wu.my_mts = 7;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 7;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = *data_ptr++;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = *data_ptr++;
         ewk->wu.position_z = ewk->wu.my_priority = 83;

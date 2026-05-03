@@ -10,18 +10,18 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static void Check_Die_G0(WORK_Other_CONN* ewk);
+static void Check_Die_G0(EffectMultiSprite* ewk);
 static void effG0_trans(State* ewk);
-static void Flash_G0(WORK_Other_CONN* ewk);
+static void Flash_G0(EffectMultiSprite* ewk);
 
 const u32 bunkai_table_G0[6] = { 1, 10, 100, 1000, 10000, 100000 };
 
 const u16 bunkai_numobj_G0[10] = { 27159, 27160, 27161, 27162, 27163, 27164, 27165, 27166, 27167, 27168 };
 
-const CONN Result_Score[6] = { { 40, 0, 0, 27159 }, { 32, 0, 0, 27159 }, { 24, 0, 0, 27159 },
+const SpriteConnection Result_Score[6] = { { 40, 0, 0, 27159 }, { 32, 0, 0, 27159 }, { 24, 0, 0, 27159 },
                                { 16, 0, 0, 27159 }, { 8, 0, 0, 27159 },  { 0, 0, 0, 27159 } };
 
 void effect_G0_move(State_Other* ewk) {
@@ -47,7 +47,7 @@ void effect_G0_move(State_Other* ewk) {
         break;
 
     case 1:
-        Check_Die_G0((WORK_Other_CONN*)ewk);
+        Check_Die_G0((EffectMultiSprite*)ewk);
 
         switch (ewk->wu.routine_no[1]) {
         case 0:
@@ -68,7 +68,7 @@ void effect_G0_move(State_Other* ewk) {
                 break;
 
             case 1:
-                Flash_G0((WORK_Other_CONN*)ewk);
+                Flash_G0((EffectMultiSprite*)ewk);
                 break;
             }
 
@@ -88,7 +88,7 @@ void effect_G0_move(State_Other* ewk) {
     }
 }
 
-static void Check_Die_G0(WORK_Other_CONN* ewk) {
+static void Check_Die_G0(EffectMultiSprite* ewk) {
     if (g_state.Suicide[2]) {
         ewk->wu.disp_flag = 0;
         ewk->wu.type = 0;
@@ -108,7 +108,7 @@ static void effG0_trans(State* ewk) {
     sort_push_request3(ewk);
 }
 
-static void Flash_G0(WORK_Other_CONN* ewk) {
+static void Flash_G0(EffectMultiSprite* ewk) {
     s16 ix;
 
     switch (ewk->wu.routine_no[2]) {
@@ -154,7 +154,7 @@ static void Flash_G0(WORK_Other_CONN* ewk) {
     }
 }
 
-static s16 score_bunkai_G0(WORK_Other_CONN* ewk, u32 tsc) {
+static s16 score_bunkai_G0(EffectMultiSprite* ewk, u32 tsc) {
     s16 noobjans = 0;
     s16 i;
     s16 ixs[6];
@@ -181,15 +181,15 @@ static s16 score_bunkai_G0(WORK_Other_CONN* ewk, u32 tsc) {
 }
 
 s32 effect_G0_init(s16 arg_Order, s16 Time, u32 arg_Score, s16 Pos_Index) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 ix;
 
     if ((ix = Acquire_Effect(4)) == -1) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 160;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = 2;
@@ -197,8 +197,8 @@ s32 effect_G0_init(s16 arg_Order, s16 Time, u32 arg_Score, s16 Pos_Index) {
     ewk->wu.dir_timer = Time;
     ewk->wu.damage_knockback_type = arg_Score;
     ewk->wu.my_col_code = 82;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->num_of_conn = 6;
 
     for (ix = 0; ix < 6; ix++) {
@@ -218,6 +218,6 @@ s32 effect_G0_init(s16 arg_Order, s16 Time, u32 arg_Score, s16 Pos_Index) {
     ewk->wu.my_priority = ewk->wu.position_z = 5;
     ewk->wu.mvxy.a[0].sp = 0xFFFE8000;
     ewk->wu.mvxy.d[0].sp = 0xFFFD8000;
-    ewk->num_of_conn = score_bunkai_G0((WORK_Other_CONN*)ewk, arg_Score);
+    ewk->num_of_conn = score_bunkai_G0((EffectMultiSprite*)ewk, arg_Score);
     return 0;
 }

@@ -121,15 +121,15 @@ s32 effect_06_init() {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 6;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.char_table[0] = char_add[g_state.bg_w.bg_index];
         ewk->wu.type = i;
-        ewk->wu.dead_f = *data_ptr++;
+        ewk->wu.death_timer = *data_ptr++;
         ewk->wu.my_family = *data_ptr++;
         ewk->wu.my_col_code = *data_ptr++;
         ewk->wu.xyz[0].disp.pos = *data_ptr++;
@@ -138,8 +138,8 @@ s32 effect_06_init() {
         ewk->wu.char_index = *data_ptr++;
         ewk->wu.sync_bg_strip = *data_ptr++;
         suzi_offset_set(ewk);
-        ewk->wu.my_mts = 7;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 7;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     }
 
     return 0;

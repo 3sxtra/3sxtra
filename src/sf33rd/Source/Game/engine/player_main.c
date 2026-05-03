@@ -8,7 +8,7 @@
 #include "common.h"
 #include "constants.h"
 #include "sf33rd/Source/Game/animation/appear.h"
-#include "sf33rd/Source/Game/com/com_pl.h"
+#include "sf33rd/Source/Game/com/ai_player_control.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/calculate_direction.h"
@@ -31,17 +31,17 @@
 #include "sf33rd/Source/Game/system/system_director.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 
-static void plmv_1010(PLW* wk);
-static void plmv_1020(PLW* wk, s16 step);
-static void mpg_union(PLW* wk);
-static void eag_union(PLW* wk);
-static void sag_union(PLW* wk);
+static void plmv_1010(PlayerEntity* wk);
+static void plmv_1020(PlayerEntity* wk, s16 step);
+static void mpg_union(PlayerEntity* wk);
+static void eag_union(PlayerEntity* wk);
+static void sag_union(PlayerEntity* wk);
 static void addSAAttribute(u8* move_type, u16* koa);
-static void check_omop_vital(PLW* wk);
+static void check_omop_vital(PlayerEntity* wk);
 static s16 select_hit_stop(s16 ms, s16 sb);
 
 /** @brief Top-level per-frame player move update — processes input, state, and gauge. */
-void Player_move(PLW* wk, u16 lv_data) {
+void Player_move(PlayerEntity* wk, u16 lv_data) {
     s16 i;
 
 #if CPS3
@@ -79,15 +79,15 @@ void Player_move(PLW* wk, u16 lv_data) {
     }
 #endif
 
-    if (wk->dead_flag) {
+    if (wk->death_timerlag) {
         wk->cp->input_held = 0;
     }
 
-    if (wk->wkey_flag) {
+    if (wk->wakeup_key_flag) {
         wk->cp->input_held = 0;
     }
 
-    if ((wk->dead_flag + wk->wkey_flag) == 0) {
+    if ((wk->death_timerlag + wk->wakeup_key_flag) == 0) {
         wk->cannot_turn_flag = 0;
     }
 
@@ -110,8 +110,8 @@ void Player_move(PLW* wk, u16 lv_data) {
         key_thru(wk);
     }
 
-    wk->wu.script_register_bank[10] = wk->cp->lgp;
-    wk->wu.script_register_bank[11] += wk->cp->lgp;
+    wk->wu.script_register_bank[10] = wk->cp->lever_grace_period;
+    wk->wu.script_register_bank[11] += wk->cp->lever_grace_period;
     wk->wu.script_register_bank[11] &= 0x7FFF;
     wk->wu.script_register_bank[12] = wk->cp->input_pressed;
     wk->wu.script_register_bank[13] = wk->cp->input_current;
@@ -129,7 +129,7 @@ u16 check_illegal_lever_data(u16 data) {
 #endif
 
 /** @brief Player move phase 0 — initial setup and work initialization. */
-static void player_mv_0000(PLW* wk) {
+static void player_mv_0000(PlayerEntity* wk) {
     s16 i;
 
     for (i = 0; i < 8; i++) {
@@ -138,7 +138,7 @@ static void player_mv_0000(PLW* wk) {
 
     setup_vitality(&wk->wu, (wk->player_number));
     set_player_shadow(wk);
-    wk->bullet_hcnt = wk->bhcnt_timer = 0;
+    wk->bullet_hit_count = wk->bullet_hit_count_timer = 0;
     wk->auto_guard = 0;
     wk->wu.hit_stop = wk->wu.damage_hit_stop = 0;
     wk->wu.hit_quake = wk->wu.damage_screen_shake = 0;
@@ -153,17 +153,17 @@ static void player_mv_0000(PLW* wk) {
 #endif
 
     wk->recovery_roll_ok_timer = 0;
-    wk->uot_cd_ok_flag = 0;
+    wk->ukemi_cooldown_ok = 0;
     wk->recovery_roll_success = 0;
     clear_my_shell_ix(&wk->wu);
-    wk->sa->mp = 0;
-    wk->sa->ok = 0;
-    wk->sa->ex = 0;
-    wk->sa->mp_rno = 0;
-    wk->sa->mp_rno2 = 0;
-    wk->sa->sa_rno = 0;
-    wk->sa->sa_rno2 = 0;
-    wk->sa->ex_rno = 0;
+    wk->sa->meter_points = 0;
+    wk->sa->can_activate = 0;
+    wk->sa->ex_mode = 0;
+    wk->sa->meter_routine_no = 0;
+    wk->sa->meter_routine_no_2 = 0;
+    wk->sa->super_art_routine_no = 0;
+    wk->sa->super_art_routine_no_2 = 0;
+    wk->sa->ex_routine_no = 0;
     wk->metamorphose = 0;
     wk->metamor_over = 0;
     wk->sa_healing = 0;
@@ -172,7 +172,7 @@ static void player_mv_0000(PLW* wk) {
     wk->resurrection_resv = 0;
 #endif
 
-    wk->dm_hos_flag = 0;
+    wk->damage_pushbox_flag = 0;
     wk->chip_death_flag = 0;
     wk->wu.floor = 0;
     wk->bs2_area_car = 0;
@@ -193,7 +193,7 @@ static void player_mv_0000(PLW* wk) {
     wk->wu.script_register_bank[0] = 0;
 
 #if !CPS3
-    wk->omop_vital_timer = 40;
+    wk->emergency_vital_timer = 40;
 
     if (wk->player_number == 18) {
         metamor_color_restore(wk->wu.id);
@@ -223,7 +223,7 @@ static void player_mv_0000(PLW* wk) {
 }
 
 /** @brief Player move phase 1 — appearance / entrance animation. */
-static void player_mv_1000(PLW* wk) {
+static void player_mv_1000(PlayerEntity* wk) {
     switch (g_state.appear_type) {
     case APPEAR_TYPE_NON_ANIMATED:
         plmv_1010(wk);
@@ -266,7 +266,7 @@ static void player_mv_1000(PLW* wk) {
 }
 
 /** @brief Sub-phase of entrance: sets initial routine numbers and display flags. */
-static void plmv_1010(PLW* wk) {
+static void plmv_1010(PlayerEntity* wk) {
     wk->wu.routine_no[0] = 3;
     wk->wu.routine_no[1] = 0;
     wk->wu.routine_no[2] = 1;
@@ -278,13 +278,13 @@ static void plmv_1010(PLW* wk) {
 }
 
 /** @brief Sub-phase of entrance: positions the player at the spawn offset. */
-static void plmv_1020(PLW* wk, s16 step) {
+static void plmv_1020(PlayerEntity* wk, s16 step) {
     if (wk->wu.id) {
-        wk->wu.rl_flag = 0;
+        wk->wu.facing_flag = 0;
         wk->wu.xyz[0].disp.pos = step + get_center_position();
         wk->wu.xyz[1].disp.pos = 0;
     } else {
-        wk->wu.rl_flag = 1;
+        wk->wu.facing_flag = 1;
         wk->wu.xyz[0].disp.pos = get_center_position() - step;
         wk->wu.xyz[1].disp.pos = 0;
     }
@@ -295,7 +295,7 @@ static void plmv_1020(PLW* wk, s16 step) {
 }
 
 /** @brief Player move phase 2 — intro/cinematic wait state. */
-static void player_mv_2000(PLW* wk) {
+static void player_mv_2000(PlayerEntity* wk) {
     if (wk->wu.routine_no[2] == 1) {
         wk->wu.routine_no[0] = 3;
 
@@ -314,7 +314,7 @@ static void player_mv_2000(PLW* wk) {
 }
 
 /** @brief Player move phase 3 — idle/standby before fight start. */
-static void player_mv_3000(PLW* wk) {
+static void player_mv_3000(PlayerEntity* wk) {
     if (g_state.gouki_app) {
         gouki_appear(wk);
     } else {
@@ -327,8 +327,8 @@ static void player_mv_3000(PLW* wk) {
 }
 
 /** @brief Player move phase 4 — active gameplay state, processes all combat. */
-static void player_mv_4000(PLW* wk) {
-    wk->permited_koa = 0;
+static void player_mv_4000(PlayerEntity* wk) {
+    wk->permitted_art_type = 0;
     check_extra_jump_timer(wk);
 
     if (wk->sa_stop_flag != 1) {
@@ -365,7 +365,7 @@ static void player_mv_4000(PLW* wk) {
 }
 
 /** @brief Checks and processes hit-stop freeze frames for a player. */
-s16 check_hit_stop(PLW* wk) {
+s16 check_hit_stop(PlayerEntity* wk) {
     s16 num;
     State* emwk = (State*)wk->wu.target_adrs;
 
@@ -393,8 +393,8 @@ s16 check_hit_stop(PLW* wk) {
                     wk->wu.hit_stop++;
                 }
 
-                if (wk->wu.hit_stop <= wk->sa_stop_sai) {
-                    wk->sa_stop_lvdir = wk->cp->input_held;
+                if (wk->wu.hit_stop <= wk->super_art_stop_index) {
+                    wk->super_art_stop_lever_dir = wk->cp->input_held;
                     wk->sa_stop_flag = 1;
                 }
             }
@@ -441,32 +441,32 @@ static s16 select_hit_stop(s16 ms, s16 sb) {
 }
 
 /** @brief Decrements and manages miscellaneous per-player timers each frame. */
-void look_after_timers(PLW* wk) {
+void look_after_timers(PlayerEntity* wk) {
     if (wk->throw_invuln_flag) {
         wk->throw_invuln_flag--;
     }
 
-    if (wk->cat_break_ok_timer) {
-        wk->cat_break_ok_timer--;
+    if (wk->catch_break_ok_timer) {
+        wk->catch_break_ok_timer--;
     }
 
-    if (wk->uot_cd_ok_flag) {
+    if (wk->ukemi_cooldown_ok) {
         wk->recovery_roll_ok_timer--;
 
         if (wk->recovery_roll_ok_timer <= 0) {
             wk->recovery_roll_ok_timer = 0;
-            wk->uot_cd_ok_flag = 0;
+            wk->ukemi_cooldown_ok = 0;
             wk->recovery_roll_success = 0;
         } else if (check_ukemi_flag(wk)) {
             wk->recovery_roll_ok_timer = 0;
-            wk->uot_cd_ok_flag = 0;
+            wk->ukemi_cooldown_ok = 0;
             wk->recovery_roll_success = 1;
         }
     }
 
-    if (wk->bullet_hcnt) {
-        if (--wk->bhcnt_timer <= 0) {
-            wk->bullet_hcnt = 0;
+    if (wk->bullet_hit_count) {
+        if (--wk->bullet_hit_count_timer <= 0) {
+            wk->bullet_hit_count = 0;
         }
     }
 
@@ -480,8 +480,8 @@ void look_after_timers(PLW* wk) {
 
 #if DEBUG
     if (Debug_w[DEBUG_1SHOT_SA]) {
-        const s16 sa_ixs[] = { wk->sa->nmsa_g_ix, wk->sa->exsa_g_ix, wk->sa->exs2_g_ix,
-                               wk->sa->nmsa_a_ix, wk->sa->exsa_a_ix, wk->sa->exs2_a_ix };
+        const s16 sa_ixs[] = { wk->sa->normal_sa_graphic_ix, wk->sa->ex_sa_graphic_ix, wk->sa->ex_sa2_graphic_ix,
+                               wk->sa->normal_sa_anim_ix, wk->sa->ex_sa_anim_ix, wk->sa->ex_sa2_anim_ix };
         s16 si;
 
         for (si = 0; si < 6; si++) {
@@ -494,7 +494,7 @@ void look_after_timers(PLW* wk) {
 }
 
 /** @brief Processes gauge-related logic (stun recovery, SA charge, MP, EX). */
-void about_gauge_process(PLW* wk) {
+void about_gauge_process(PlayerEntity* wk) {
     eag_union(wk);
     sag_union(wk);
     mpg_union(wk);
@@ -505,33 +505,33 @@ void about_gauge_process(PLW* wk) {
 }
 
 /** @brief Updates the MP gauge (general meter) for a player. */
-static void mpg_union(PLW* wk) {
-    switch (wk->sa->mp_rno) {
+static void mpg_union(PlayerEntity* wk) {
+    switch (wk->sa->meter_routine_no) {
     case 0:
-        if (wk->sa->store == wk->sa->store_max) {
-            wk->sa->mp_rno = 1;
-            wk->sa->mp = 1;
+        if (wk->sa->stock == wk->sa->stock_max) {
+            wk->sa->meter_routine_no = 1;
+            wk->sa->meter_points = 1;
         }
 
-        wk->sa->saeff_mp = 0;
+        wk->sa->super_effect_meter = 0;
         break;
 
     case 1:
-        if (wk->sa->store < wk->sa->store_max) {
-            wk->sa->mp_rno = 0;
-            wk->sa->mp = 0;
-        } else if (wk->sa->mp == -1) {
-            wk->sa->mp_rno = 2;
-            wk->sa->saeff_mp = 1;
+        if (wk->sa->stock < wk->sa->stock_max) {
+            wk->sa->meter_routine_no = 0;
+            wk->sa->meter_points = 0;
+        } else if (wk->sa->meter_points == -1) {
+            wk->sa->meter_routine_no = 2;
+            wk->sa->super_effect_meter = 1;
         }
 
         break;
 
     case 2:
-        switch (wk->sa->saeff_mp) {
+        switch (wk->sa->super_effect_meter) {
         case -1:
             if (!g_state.pcon_dp_flag) {
-                wk->sa->store = 0;
+                wk->sa->stock = 0;
                 wk->sa->gauge.i = 0;
             }
 
@@ -539,9 +539,9 @@ static void mpg_union(PLW* wk) {
             sag_bug_fix(wk->wu.id);
 #endif
 
-            wk->sa->saeff_mp = 0;
-            wk->sa->mp_rno = 0;
-            wk->sa->mp = 0;
+            wk->sa->super_effect_meter = 0;
+            wk->sa->meter_routine_no = 0;
+            wk->sa->meter_points = 0;
 
 #if !CPS3
             g_state.sag_inc_timer[(wk->wu.id)] = 20;
@@ -556,40 +556,40 @@ static void mpg_union(PLW* wk) {
             /* fallthrough */
 
         default:
-            wk->sa->saeff_mp = 0;
-            wk->sa->mp_rno = 0;
-            wk->sa->mp = 0;
+            wk->sa->super_effect_meter = 0;
+            wk->sa->meter_routine_no = 0;
+            wk->sa->meter_points = 0;
             break;
         }
 
         break;
 
     default:
-        wk->sa->mp_rno = 0;
-        wk->sa->mp = 0;
-        wk->sa->store = 0;
+        wk->sa->meter_routine_no = 0;
+        wk->sa->meter_points = 0;
+        wk->sa->stock = 0;
         wk->sa->gauge.i = 0;
-        wk->sa->saeff_mp = 0;
+        wk->sa->super_effect_meter = 0;
         break;
     }
 }
 
 /** @brief Updates the EX gauge for a player. */
-static void eag_union(PLW* wk) {
-    switch (wk->sa->ex_rno) {
+static void eag_union(PlayerEntity* wk) {
+    switch (wk->sa->ex_routine_no) {
     case 0:
         if (wk->player_number == 14 || wk->player_number == 0) {
-            if (wk->sa->store != 0) {
-                wk->sa->ex_rno = 1;
-                wk->sa->ex = 1;
+            if (wk->sa->stock != 0) {
+                wk->sa->ex_routine_no = 1;
+                wk->sa->ex_mode = 1;
             }
 
             break;
         }
 
-        if ((wk->sa->store != 0) || (wk->sa->gauge.s.h >= use_ex_gauge[omop_use_ex_gauge_ix[wk->wu.id]])) {
-            wk->sa->ex_rno = 1;
-            wk->sa->ex = 1;
+        if ((wk->sa->stock != 0) || (wk->sa->gauge.s.h >= use_ex_gauge[omop_use_ex_gauge_ix[wk->wu.id]])) {
+            wk->sa->ex_routine_no = 1;
+            wk->sa->ex_mode = 1;
             break;
         }
 
@@ -597,19 +597,19 @@ static void eag_union(PLW* wk) {
 
     case 1:
         if (wk->player_number == 14 || wk->player_number == 0) {
-            if (wk->sa->store == 0) {
-                wk->sa->ex_rno = 0;
-                wk->sa->ex = 0;
+            if (wk->sa->stock == 0) {
+                wk->sa->ex_routine_no = 0;
+                wk->sa->ex_mode = 0;
                 break;
             }
-        } else if ((wk->sa->store == 0) && (wk->sa->gauge.s.h < use_ex_gauge[omop_use_ex_gauge_ix[wk->wu.id]])) {
-            wk->sa->ex_rno = 0;
-            wk->sa->ex = 0;
+        } else if ((wk->sa->stock == 0) && (wk->sa->gauge.s.h < use_ex_gauge[omop_use_ex_gauge_ix[wk->wu.id]])) {
+            wk->sa->ex_routine_no = 0;
+            wk->sa->ex_mode = 0;
             break;
         }
 
-        if (wk->sa->ex == -1) {
-            wk->sa->ex_rno = 2;
+        if (wk->sa->ex_mode == -1) {
+            wk->sa->ex_routine_no = 2;
             g_state.sa_gauge_flash[wk->wu.id] |= 2;
         }
 
@@ -617,133 +617,133 @@ static void eag_union(PLW* wk) {
 
     case 2:
         if (!g_state.pcon_dp_flag) {
-            if (wk->sa->gauge_type == 1 && wk->sa->store == wk->sa->store_max) {
+            if (wk->sa->gauge_type == 1 && wk->sa->stock == wk->sa->stock_max) {
                 wk->sa->gauge.i = 0;
             }
 
             if (wk->sa->gauge.s.h >= use_ex_gauge[omop_use_ex_gauge_ix[wk->wu.id]]) {
                 wk->sa->gauge.s.h -= use_ex_gauge[omop_use_ex_gauge_ix[wk->wu.id]];
             } else {
-                wk->sa->store--;
-                wk->sa->gauge.s.h += wk->sa->gauge_len - use_ex_gauge[omop_use_ex_gauge_ix[wk->wu.id]];
+                wk->sa->stock--;
+                wk->sa->gauge.s.h += wk->sa->gauge_length - use_ex_gauge[omop_use_ex_gauge_ix[wk->wu.id]];
             }
         }
 
         sag_bug_fix(wk->wu.id);
-        wk->sa->ex_rno = 0;
-        wk->sa->ex = 0;
+        wk->sa->ex_routine_no = 0;
+        wk->sa->ex_mode = 0;
         g_state.sag_inc_timer[wk->wu.id] = 20;
         break;
 
     default:
-        wk->sa->ex_rno = 0;
-        wk->sa->ex = 0;
-        wk->sa->store = 0;
+        wk->sa->ex_routine_no = 0;
+        wk->sa->ex_mode = 0;
+        wk->sa->stock = 0;
         wk->sa->gauge.i = 0;
         break;
     }
 }
 
-/** @brief Decrement SA store, respecting g_state.pcon_dp_flag and ex4th_exec. */
-static void sag_decrement_store(PLW* wk) {
+/** @brief Decrement SA stock, respecting g_state.pcon_dp_flag and ex4th_exec. */
+static void sag_decrement_store(PlayerEntity* wk) {
     if (!g_state.pcon_dp_flag) {
         if (wk->sa->ex4th_exec) {
-            wk->sa->store = 0;
+            wk->sa->stock = 0;
         } else {
-            wk->sa->store--;
+            wk->sa->stock--;
         }
     }
 }
 
 /** @brief Updates the Super Art gauge charge and stock for a player. */
 #if CPS3
-void sag_union_0(PLW* wk) {
-    switch (wk->sa->sa_rno) {
+void sag_union_0(PlayerEntity* wk) {
+    switch (wk->sa->super_art_routine_no) {
     case 0:
-        if (wk->sa->store != 0) {
-            wk->sa->sa_rno = 1;
-            wk->sa->ok = 1;
-            wk->sa->id_arts += 1;
+        if (wk->sa->stock != 0) {
+            wk->sa->super_art_routine_no = 1;
+            wk->sa->can_activate = 1;
+            wk->sa->super_art_id += 1;
         }
 
-        wk->sa->saeff_ok = 0;
+        wk->sa->super_effect_can_activate = 0;
         break;
 
     case 1:
-        if (wk->sa->store == 0) {
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
-        } else if (wk->sa->ok == -1) {
-            wk->sa->sa_rno = 2;
-            wk->sa->saeff_ok = 1;
+        if (wk->sa->stock == 0) {
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
+        } else if (wk->sa->can_activate == -1) {
+            wk->sa->super_art_routine_no = 2;
+            wk->sa->super_effect_can_activate = 1;
         }
 
         break;
 
     case 2:
-        if (wk->sa->saeff_ok == -1) {
+        if (wk->sa->super_effect_can_activate == -1) {
             if (!g_state.pcon_dp_flag) {
-                wk->sa->store -= 1;
+                wk->sa->stock -= 1;
             }
 
-            wk->sa->saeff_ok = 0;
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
-        } else if ((wk->sa->saeff_ok != 1) || (wk->wu.routine_no[1] != 4)) {
-            wk->sa->saeff_ok = 0;
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
+            wk->sa->super_effect_can_activate = 0;
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
+        } else if ((wk->sa->super_effect_can_activate != 1) || (wk->wu.routine_no[1] != 4)) {
+            wk->sa->super_effect_can_activate = 0;
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
         }
 
         break;
 
     default:
-        wk->sa->sa_rno = 0;
-        wk->sa->ok = 0;
-        wk->sa->store = 0;
-        wk->sa->saeff_ok = 0;
+        wk->sa->super_art_routine_no = 0;
+        wk->sa->can_activate = 0;
+        wk->sa->stock = 0;
+        wk->sa->super_effect_can_activate = 0;
         break;
     }
 }
 
-void sag_union_1(PLW* wk) {
-    switch (wk->sa->sa_rno) {
+void sag_union_1(PlayerEntity* wk) {
+    switch (wk->sa->super_art_routine_no) {
     case 0:
-        if (wk->sa->store != 0) {
-            wk->sa->sa_rno = 1;
-            wk->sa->ok = 1;
-            wk->sa->id_arts += 1;
+        if (wk->sa->stock != 0) {
+            wk->sa->super_art_routine_no = 1;
+            wk->sa->can_activate = 1;
+            wk->sa->super_art_id += 1;
         }
 
-        wk->sa->saeff_ok = 0;
+        wk->sa->super_effect_can_activate = 0;
         break;
 
     case 1:
-        if (wk->sa->store == 0) {
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
-        } else if (wk->sa->ok == -1) {
-            wk->sa->sa_rno = 2;
-            wk->sa->saeff_ok = 1;
+        if (wk->sa->stock == 0) {
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
+        } else if (wk->sa->can_activate == -1) {
+            wk->sa->super_art_routine_no = 2;
+            wk->sa->super_effect_can_activate = 1;
         }
 
         break;
 
     case 2:
-        if (wk->sa->saeff_ok == -1) {
+        if (wk->sa->super_effect_can_activate == -1) {
             if (!g_state.pcon_dp_flag) {
-                wk->sa->store -= -1;
+                wk->sa->stock -= -1;
             }
 
-            wk->sa->gauge.s.h = wk->sa->gauge_len;
+            wk->sa->gauge.s.h = wk->sa->gauge_length;
             wk->sa->gauge.s.l = -1;
-            wk->sa->sa_rno = 3;
-            wk->sa->saeff_ok = 0;
-        } else if ((wk->sa->saeff_ok != 1) || (wk->wu.routine_no[1] != 4)) {
-            wk->sa->saeff_ok = 0;
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
-            wk->sa->dtm_mul = 1;
+            wk->sa->super_art_routine_no = 3;
+            wk->sa->super_effect_can_activate = 0;
+        } else if ((wk->sa->super_effect_can_activate != 1) || (wk->wu.routine_no[1] != 4)) {
+            wk->sa->super_effect_can_activate = 0;
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
+            wk->sa->damage_time_multiplier = 1;
         }
 
         break;
@@ -753,19 +753,19 @@ void sag_union_1(PLW* wk) {
             break;
         }
 
-        wk->sa->sa_rno = 4;
+        wk->sa->super_art_routine_no = 4;
         /* fallthrough */
 
     case 4:
-        if ((wk->sa_stop_flag != 1) && (((PLW*)wk->wu.target_adrs)->sa_stop_flag != 1)) {
-            wk->sa->gauge.i -= wk->sa->dtm * wk->sa->dtm_mul;
+        if ((wk->sa_stop_flag != 1) && (((PlayerEntity*)wk->wu.target_adrs)->sa_stop_flag != 1)) {
+            wk->sa->gauge.i -= wk->sa->damage_time * wk->sa->damage_time_multiplier;
         }
 
         if (wk->sa->gauge.s.h < 1) {
             wk->sa->gauge.i = 0;
-            wk->sa->ok = 0;
-            wk->sa->sa_rno = 0;
-            wk->sa->dtm_mul = 1;
+            wk->sa->can_activate = 0;
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->damage_time_multiplier = 1;
         } else {
             if (g_state.My_char[wk->wu.id] == CHAR_YUN) {
                 wk->wu.attack_type |= 0x20;
@@ -795,47 +795,47 @@ void sag_union_1(PLW* wk) {
         break;
 
     default:
-        wk->sa->sa_rno = 0;
-        wk->sa->ok = 0;
-        wk->sa->store = 0;
-        wk->sa->saeff_ok = 0;
-        wk->sa->dtm_mul = 1;
+        wk->sa->super_art_routine_no = 0;
+        wk->sa->can_activate = 0;
+        wk->sa->stock = 0;
+        wk->sa->super_effect_can_activate = 0;
+        wk->sa->damage_time_multiplier = 1;
         break;
     }
 }
 
-void sag_union_3(PLW* wk) {
-    switch (wk->sa->sa_rno) {
+void sag_union_3(PlayerEntity* wk) {
+    switch (wk->sa->super_art_routine_no) {
     case 0:
-        if (wk->sa->store != 0) {
-            wk->sa->sa_rno = 1;
-            wk->sa->ok = 1;
+        if (wk->sa->stock != 0) {
+            wk->sa->super_art_routine_no = 1;
+            wk->sa->can_activate = 1;
         }
 
-        wk->sa->saeff_ok = 0;
+        wk->sa->super_effect_can_activate = 0;
         break;
 
     case 1:
-        if (wk->sa->store == 0) {
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
-        } else if (wk->sa->ok == -1) {
-            wk->sa->sa_rno = 2;
-            wk->sa->saeff_ok = 1;
+        if (wk->sa->stock == 0) {
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
+        } else if (wk->sa->can_activate == -1) {
+            wk->sa->super_art_routine_no = 2;
+            wk->sa->super_effect_can_activate = 1;
         }
 
         break;
 
     case 2:
-        if (wk->sa->saeff_ok == -1) {
-            wk->sa->store = wk->sa->store + -1;
+        if (wk->sa->super_effect_can_activate == -1) {
+            wk->sa->stock = wk->sa->stock + -1;
             wk->sa->gauge.i = 0;
-            wk->sa->saeff_ok = 0;
-            wk->sa->sa_rno = 3;
-        } else if (wk->sa->saeff_ok != 1) {
-            wk->sa->saeff_ok = 0;
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
+            wk->sa->super_effect_can_activate = 0;
+            wk->sa->super_art_routine_no = 3;
+        } else if (wk->sa->super_effect_can_activate != 1) {
+            wk->sa->super_effect_can_activate = 0;
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
         }
 
         break;
@@ -845,40 +845,40 @@ void sag_union_3(PLW* wk) {
         break;
 
     default:
-        wk->sa->sa_rno = 0;
-        wk->sa->ok = 0;
-        wk->sa->store = 0;
-        wk->sa->saeff_ok = 0;
+        wk->sa->super_art_routine_no = 0;
+        wk->sa->can_activate = 0;
+        wk->sa->stock = 0;
+        wk->sa->super_effect_can_activate = 0;
         break;
     }
 }
 #else
-void sag_union_ps2(PLW* wk) {
-    switch (wk->sa->sa_rno) {
+void sag_union_ps2(PlayerEntity* wk) {
+    switch (wk->sa->super_art_routine_no) {
     case 0:
-        if (wk->sa->store) {
-            wk->sa->sa_rno = 1;
-            wk->sa->ok = 1;
-            wk->sa->id_arts++;
+        if (wk->sa->stock) {
+            wk->sa->super_art_routine_no = 1;
+            wk->sa->can_activate = 1;
+            wk->sa->super_art_id++;
         }
 
-        wk->sa->saeff_ok = 0;
+        wk->sa->super_effect_can_activate = 0;
         break;
 
     case 1:
-        if (wk->sa->store == 0) {
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
+        if (wk->sa->stock == 0) {
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
             break;
         }
 
-        if (wk->sa->ok == -1) {
-            wk->sa->sa_rno = 2;
-            wk->sa->sa_rno2 = 0;
-            wk->sa->saeff_ok = 1;
+        if (wk->sa->can_activate == -1) {
+            wk->sa->super_art_routine_no = 2;
+            wk->sa->super_art_routine_no_2 = 0;
+            wk->sa->super_effect_can_activate = 1;
 
-            if (wk->sa->gt2 == 0) {
-                wk->sa->bacckup_g_h = 0;
+            if (wk->sa->gauge_type_2 == 0) {
+                wk->sa->backup_gauge_high = 0;
                 break;
             }
         }
@@ -886,56 +886,56 @@ void sag_union_ps2(PLW* wk) {
         break;
 
     case 2:
-        switch (wk->sa->gt2) {
+        switch (wk->sa->gauge_type_2) {
         case 0:
-            switch (wk->sa->saeff_ok) {
+            switch (wk->sa->super_effect_can_activate) {
             case -1:
                 sag_decrement_store(wk);
                 sag_bug_fix(wk->wu.id);
-                wk->sa->saeff_ok = 0;
-                wk->sa->sa_rno = 0;
-                wk->sa->ok = 0;
+                wk->sa->super_effect_can_activate = 0;
+                wk->sa->super_art_routine_no = 0;
+                wk->sa->can_activate = 0;
                 g_state.sag_inc_timer[wk->wu.id] = 20;
                 break;
 
             case 1:
                 if (wk->wu.routine_no[1] != 4) {
                 default:
-                    wk->sa->saeff_ok = 0;
-                    wk->sa->sa_rno = 0;
-                    wk->sa->ok = 0;
+                    wk->sa->super_effect_can_activate = 0;
+                    wk->sa->super_art_routine_no = 0;
+                    wk->sa->can_activate = 0;
                 }
             }
 
             break;
 
         case 1:
-            switch (wk->sa->sa_rno2) {
+            switch (wk->sa->super_art_routine_no_2) {
             case 0:
-                switch (wk->sa->saeff_ok) {
+                switch (wk->sa->super_effect_can_activate) {
                 case -1:
                     sag_decrement_store(wk);
                     sag_bug_fix(wk->wu.id);
 
-                    if (wk->sa->mp == 1) {
-                        wk->sa->bacckup_g_h = 0;
+                    if (wk->sa->meter_points == 1) {
+                        wk->sa->backup_gauge_high = 0;
                     } else {
-                        wk->sa->bacckup_g_h = wk->sa->gauge.s.h;
+                        wk->sa->backup_gauge_high = wk->sa->gauge.s.h;
                     }
 
-                    wk->sa->gauge.s.h = wk->sa->gauge_len;
+                    wk->sa->gauge.s.h = wk->sa->gauge_length;
                     wk->sa->gauge.s.l = -1;
-                    wk->sa->sa_rno2 = 1;
-                    wk->sa->saeff_ok = 0;
+                    wk->sa->super_art_routine_no_2 = 1;
+                    wk->sa->super_effect_can_activate = 0;
                     break;
 
                 case 1:
                     if (wk->wu.routine_no[1] != 4) {
                     default:
-                        wk->sa->saeff_ok = 0;
-                        wk->sa->sa_rno = 0;
-                        wk->sa->ok = 0;
-                        wk->sa->dtm_mul = 1;
+                        wk->sa->super_effect_can_activate = 0;
+                        wk->sa->super_art_routine_no = 0;
+                        wk->sa->can_activate = 0;
+                        wk->sa->damage_time_multiplier = 1;
                     }
                 }
 
@@ -946,20 +946,20 @@ void sag_union_ps2(PLW* wk) {
                     break;
                 }
 
-                wk->sa->sa_rno2 = 2;
+                wk->sa->super_art_routine_no_2 = 2;
                 /* fallthrough */
 
             case 2:
-                if ((wk->sa_stop_flag != 1) && (((PLW*)wk->wu.target_adrs)->sa_stop_flag != 1)) {
-                    wk->sa->gauge.i -= wk->sa->dtm * wk->sa->dtm_mul;
+                if ((wk->sa_stop_flag != 1) && (((PlayerEntity*)wk->wu.target_adrs)->sa_stop_flag != 1)) {
+                    wk->sa->gauge.i -= wk->sa->damage_time * wk->sa->damage_time_multiplier;
                 }
 
                 if (wk->sa->gauge.s.h <= 0 || g_state.Suicide[6] != 0) {
                     wk->sa->gauge.i = 0;
-                    wk->sa->ok = 0;
-                    wk->sa->sa_rno = 0;
-                    wk->sa->dtm_mul = 1;
-                    wk->sa->gauge.s.h = wk->sa->bacckup_g_h;
+                    wk->sa->can_activate = 0;
+                    wk->sa->super_art_routine_no = 0;
+                    wk->sa->damage_time_multiplier = 1;
+                    wk->sa->gauge.s.h = wk->sa->backup_gauge_high;
                     g_state.sag_inc_timer[wk->wu.id] = 20;
                     break;
                 }
@@ -984,23 +984,23 @@ void sag_union_ps2(PLW* wk) {
             break;
 
         case 3:
-            switch (wk->sa->sa_rno2) {
+            switch (wk->sa->super_art_routine_no_2) {
             case 0:
-                switch (wk->sa->saeff_ok) {
+                switch (wk->sa->super_effect_can_activate) {
                 case -1:
                     sag_bug_fix(wk->wu.id);
-                    wk->sa->store--;
-                    wk->sa->saeff_ok = 0;
-                    wk->sa->sa_rno2 = 1;
+                    wk->sa->stock--;
+                    wk->sa->super_effect_can_activate = 0;
+                    wk->sa->super_art_routine_no_2 = 1;
                     break;
 
                 case 1:
                     break;
 
                 default:
-                    wk->sa->saeff_ok = 0;
-                    wk->sa->sa_rno = 0;
-                    wk->sa->ok = 0;
+                    wk->sa->super_effect_can_activate = 0;
+                    wk->sa->super_art_routine_no = 0;
+                    wk->sa->can_activate = 0;
                 }
 
                 break;
@@ -1012,10 +1012,10 @@ void sag_union_ps2(PLW* wk) {
             break;
 
         default:
-            wk->sa->sa_rno = 0;
-            wk->sa->ok = 0;
-            wk->sa->store = 0;
-            wk->sa->saeff_ok = 0;
+            wk->sa->super_art_routine_no = 0;
+            wk->sa->can_activate = 0;
+            wk->sa->stock = 0;
+            wk->sa->super_effect_can_activate = 0;
             break;
         }
 
@@ -1024,7 +1024,7 @@ void sag_union_ps2(PLW* wk) {
 }
 #endif
 
-static void sag_union(PLW* wk) {
+static void sag_union(PlayerEntity* wk) {
 #if CPS3
     sag_union_jump_table[wk->sa->gauge_type](wk);
 #else
@@ -1052,26 +1052,26 @@ static void addSAAttribute(u8* move_type, u16* koa) {
 #endif
 
 /** @brief Force-fills the SA gauge to max during demo playback. */
-void demo_set_sa_full(SA_WORK* sa) {
-    sa->sa_rno = 1;
-    sa->ok = 1;
-    sa->store = sa->store_max;
-    sa->id_arts++;
+void demo_set_sa_full(SuperArtGauge* sa) {
+    sa->super_art_routine_no = 1;
+    sa->can_activate = 1;
+    sa->stock = sa->stock_max;
+    sa->super_art_id++;
 
 #if CPS3
     if (sa->gauge_type == 1) {
-        sa->gauge.s.h = sa->gauge_len;
-        sa->dtm_mul = 1;
+        sa->gauge.s.h = sa->gauge_length;
+        sa->damage_time_multiplier = 1;
     }
 #else
     sa->gauge.s.h = 0;
     sa->gauge.s.l = 0;
-    sa->dtm_mul = 1;
+    sa->damage_time_multiplier = 1;
 #endif
 }
 
 /** @brief Records recent movement amount for gameplay calculations. */
-void get_recent_movement_delta(PLW* wk) {
+void get_recent_movement_delta(PlayerEntity* wk) {
     s16 i;
 
     for (i = 0; i < 7; i++) {
@@ -1089,15 +1089,15 @@ void clear_attack_num(State* wk) {
     s16 i;
 
     for (i = 0; i < 4; i++) {
-        wk->uketa_att[i] = 0;
+        wk->received_attack[i] = 0;
     }
 
     wk->attack_num = 0;
 }
 
 /** @brief Clears throw/grab-related tracking flags for a player. */
-void clear_tk_flags(PLW* wk) {
-    wk->tk_success = 0;
+void clear_tk_flags(PlayerEntity* wk) {
+    wk->target_combo_success = 0;
     wk->strike_scaling = 0;
     wk->throw_scaling = 0;
     wk->stun_scaling = 0;
@@ -1106,14 +1106,14 @@ void clear_tk_flags(PLW* wk) {
     wk->def_plus = 8;
 }
 
-void (*const plmain_lv_00[5])(PLW* wk) = {
+void (*const plmain_lv_00[5])(PlayerEntity* wk) = {
     player_mv_0000, player_mv_1000, player_mv_2000, player_mv_3000, player_mv_4000
 };
 
-void (*const plmain_lv_02[5])(PLW* wk) = { Player_normal, Player_damage, Player_catch, Player_caught, Player_attack };
+void (*const plmain_lv_02[5])(PlayerEntity* wk) = { Player_normal, Player_damage, Player_catch, Player_caught, Player_attack };
 
 #if CPS3
-void (*const sag_union_jump_table[4])(PLW* wk) = { sag_union_0, sag_union_1, sag_union_0, sag_union_3 };
+void (*const sag_union_jump_table[4])(PlayerEntity* wk) = { sag_union_0, sag_union_1, sag_union_0, sag_union_3 };
 #else
 
 const u8 plpnm_mvkind[59] = { 0, 3, 3, 3, 3, 1, 1, 3, 3, 3, 3, 0, 0, 0, 0, 0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3,
@@ -1125,12 +1125,12 @@ const u8 plpdm_mvkind[32] = { 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 const u8 plpxx_kind[5] = { 0, 1, 0, 1, 0 };
 
 /** @brief Applies operator-mode vitality adjustments based on settings. */
-static void check_omop_vital(PLW* wk) {
+static void check_omop_vital(PlayerEntity* wk) {
     if (g_state.pcon_dp_flag) {
         return;
     }
 
-    if (wk->dead_flag) {
+    if (wk->death_timerlag) {
         return;
     }
 
@@ -1180,7 +1180,7 @@ static void check_omop_vital(PLW* wk) {
         if (wk->wu.vital_new < 0) {
             wk->wu.vital_new = -1;
             wk->wu.damage_kind_of_arts = 4;
-            wk->dead_flag = 1;
+            wk->death_timerlag = 1;
             wk->guard_flag = 3;
             ca_check_flag = 0;
             break;
@@ -1216,11 +1216,11 @@ static void check_omop_vital(PLW* wk) {
         }
 
         if (plpxx_kind[wk->wu.old_routine_no[1]]) {
-            wk->omop_vital_timer = 40;
+            wk->emergency_vital_timer = 40;
         }
 
-        if (wk->omop_vital_timer) {
-            wk->omop_vital_timer--;
+        if (wk->emergency_vital_timer) {
+            wk->emergency_vital_timer--;
             break;
         }
 

@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_C8_move(State_Other* ewk);
-s32 effect_C8_init(PLW* wk);
+s32 effect_C8_init(PlayerEntity* wk);
 
 #endif

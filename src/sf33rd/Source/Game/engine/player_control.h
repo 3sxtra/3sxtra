@@ -7,17 +7,17 @@
 #include <stdbool.h>
 
 typedef struct {
-    u8 nmsa_g_ix;
-    u8 exsa_g_ix;
-    u8 exs2_g_ix;
-    u8 nmsa_a_ix;
-    u8 exsa_a_ix;
-    u8 exs2_a_ix;
+    u8 normal_sa_graphic_ix;
+    u8 ex_sa_graphic_ix;
+    u8 ex_sa2_graphic_ix;
+    u8 normal_sa_anim_ix;
+    u8 ex_sa_anim_ix;
+    u8 ex_sa2_anim_ix;
     u8 ex4th_full;
     s8 gauge_type;
-    s16 gauge_len;
-    s16 store_max;
-    s32 dtm;
+    s16 gauge_length;
+    s16 stock_max;
+    s32 damage_time;
 } SA_DATA;
 
 typedef enum AppearanceType {
@@ -30,8 +30,8 @@ typedef enum AppearanceType {
 extern const s8 plid_data[20];
 extern const s16** kizetsu_timer_table[];
 
-extern PLW plw[2];
-extern SA_WORK super_arts[2];
+extern PlayerEntity plw[2];
+extern SuperArtGauge super_arts[2];
 extern ZanzouTableEntry afterimage_table[2][48];
 extern StunState stun_state[2];
 extern AppearanceType appear_type;
@@ -69,19 +69,19 @@ extern char no_sa[2];
 void Player_control();
 void reqPlayerDraw();
 void erase_extra_plef_work();
-void set_base_data_metamorphose(PLW* wk, s16 dmid);
-void set_player_shadow(PLW* wk);
+void set_base_data_metamorphose(PlayerEntity* wk, s16 dmid);
+void set_player_shadow(PlayerEntity* wk);
 void clear_chainex_check(s16 ix);
 void set_kizetsu_status(s16 ix);
-void clear_kizetsu_point(PLW* wk);
+void clear_kizetsu_point(PlayerEntity* wk);
 void set_super_arts_status(s16 ix);
-void clear_super_arts_point(PLW* wk);
+void clear_super_arts_point(PlayerEntity* wk);
 s16 check_combo_end(s16 ix);
-void set_quake(PLW* wk);
-void add_next_position(PLW* wk);
+void set_quake(PlayerEntity* wk);
+void add_next_position(PlayerEntity* wk);
 void store_player_after_image_data();
 void setup_base_and_other_data();
-s32 check_sa_type_rebirth(PLW* wk);
+s32 check_sa_type_rebirth(PlayerEntity* wk);
 void pli_0002();
 void set_super_arts_status_dc(s16 ix);
 

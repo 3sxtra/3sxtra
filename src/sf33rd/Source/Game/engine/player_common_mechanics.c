@@ -23,7 +23,7 @@
     } while (0)
 
 /** @brief Sets routine numbers, clearing rno[1] and rno[3] to 0. */
-static inline void set_routine(PLW* wk, u8 rno2) {
+static inline void set_routine(PlayerEntity* wk, u8 rno2) {
     wk->wu.routine_no[1] = 0;
     wk->wu.routine_no[2] = rno2;
     wk->wu.routine_no[3] = 0;
@@ -59,7 +59,7 @@ s32 sa_stop_check() {
 }
 
 /** @brief Deactivates the player's own throw power-up flag. */
-void check_my_tk_power_off(PLW* wk, PLW* /* unused */) {
+void check_my_tk_power_off(PlayerEntity* wk, PlayerEntity* /* unused */) {
     if (wk->wu.old_routine_no[1] == 1) {
         if (wk->wu.old_routine_no[2] < 8 && wk->wu.old_routine_no[2] > 3) {
             return;
@@ -79,7 +79,7 @@ void check_my_tk_power_off(PLW* wk, PLW* /* unused */) {
 }
 
 /** @brief Deactivates the enemy's throw power-up flag. */
-void check_em_tk_power_off(PLW* wk, PLW* tk) {
+void check_em_tk_power_off(PlayerEntity* wk, PlayerEntity* tk) {
     if (about_rno[wk->wu.old_routine_no[1]] != 1) {
         return;
     }
@@ -95,17 +95,17 @@ void check_em_tk_power_off(PLW* wk, PLW* tk) {
 }
 
 /** @brief Returns the ukemi (tech-roll) flag for the player. */
-s16 check_ukemi_flag(PLW* wk) {
+s16 check_ukemi_flag(PlayerEntity* wk) {
     return wk->cp->move_state_flags[7];
 }
 
 /** @brief Returns the left/right facing flag. */
-s32 check_rl_flag(State* wk) {
-    return wk->rl_flag == wk->active_move;
+s32 check_facing_flag(State* wk) {
+    return wk->facing_flag == wk->active_move;
 }
 
 /** @brief Sets the left/right facing for the current move. */
-void set_rl_move(PLW* wk) {
+void set_rl_move(PlayerEntity* wk) {
     State* em;
     s16 result;
 
@@ -123,7 +123,7 @@ void set_rl_move(PLW* wk) {
                 }
             }
 
-            wk->wu.active_move = wk->wu.rl_flag;
+            wk->wu.active_move = wk->wu.facing_flag;
             return;
         }
 
@@ -147,7 +147,7 @@ void set_rl_move(PLW* wk) {
 }
 
 /** @brief Checks if the player is on top of the bonus-stage car. */
-s16 check_rl_on_car(PLW* wk) {
+s16 check_rl_on_car(PlayerEntity* wk) {
     s16 rnum;
 
     if (g_state.Bonus_Game_Flag != 20) {
@@ -183,7 +183,7 @@ s16 check_rl_on_car(PLW* wk) {
 }
 
 /** @brief Returns latest bonus-stage car area check result. */
-s32 latest_bs2_area_car(PLW* wk) {
+s32 latest_bs2_area_car(PlayerEntity* wk) {
     wk->bs2_area_car2 = 0;
     wk->bs2_over_car2 = 0;
 
@@ -215,7 +215,7 @@ s32 latest_bs2_area_car(PLW* wk) {
 }
 
 /** @brief Returns whether the player is standing on the car in bonus stage 2. */
-s8 latest_bs2_on_car(PLW* wk) {
+s8 latest_bs2_on_car(PlayerEntity* wk) {
     if (wk->bs2_on_car && (wk->wu.xyz[1].disp.pos > (g_state.bs2_floor[2] + 2))) {
         wk->bs2_on_car = 0;
     }
@@ -224,7 +224,7 @@ s8 latest_bs2_on_car(PLW* wk) {
 }
 
 /** @brief Checks if the player can perform an air jump (double-jump). */
-s32 check_air_jump(PLW* wk) {
+s32 check_air_jump(PlayerEntity* wk) {
     if (wk->spmv_ng_flag & DIP_AIR_JUMP_DISABLED) {
         return 0;
     }
@@ -255,7 +255,7 @@ s32 check_air_jump(PLW* wk) {
 }
 
 /** @brief Checks if the player can perform a wall-kick (triangle jump). */
-s32 check_sankaku_tobi(PLW* wk) {
+s32 check_sankaku_tobi(PlayerEntity* wk) {
     if (wk->spmv_ng_flag & DIP_WALL_JUMP_DISABLED) {
         return 0;
     }
@@ -284,7 +284,7 @@ s32 check_sankaku_tobi(PLW* wk) {
 }
 
 /** @brief Manages the extra-jump timer and clears the flag when expired. */
-void check_extra_jump_timer(PLW* wk) {
+void check_extra_jump_timer(PlayerEntity* wk) {
     if (wk->air_jump_ok_time) {
         wk->air_jump_ok_time--;
     }
@@ -309,18 +309,18 @@ void check_extra_jump_timer(PLW* wk) {
 /** @brief Rebuilds movement X/Y speeds after a wall-kick. */
 void remake_sankaku_tobi_mvxy(State* wk, u8 kabe) {
     if (kabe == 1) {
-        wk->rl_flag = 0;
+        wk->facing_flag = 0;
     }
 
     if (kabe == 2) {
-        wk->rl_flag = 1;
+        wk->facing_flag = 1;
     }
 
     if (kabe == 0) {
         if (wk->position_x > get_center_position()) {
-            wk->rl_flag = 0;
+            wk->facing_flag = 0;
         } else {
-            wk->rl_flag = 1;
+            wk->facing_flag = 1;
         }
     }
 
@@ -347,7 +347,7 @@ void remake_sankaku_tobi_mvxy(State* wk, u8 kabe) {
 }
 
 /** @brief Checks if forward or backward dash input was detected. */
-s16 check_F_R_dash(PLW* wk) {
+s16 check_F_R_dash(PlayerEntity* wk) {
     s16 num;
     s16 rnum;
 
@@ -401,7 +401,7 @@ s16 check_F_R_dash(PLW* wk) {
 }
 
 /** @brief Checks if the player has jump-ready input (up direction). */
-s32 check_jump_ready(PLW* wk) {
+s32 check_jump_ready(PlayerEntity* wk) {
     if (!(wk->cp->input_pressed & 1)) {
         return 0;
     }
@@ -422,7 +422,7 @@ s32 check_jump_ready(PLW* wk) {
 }
 
 /** @brief Checks if high-jump only (up+button) input was entered. */
-s32 check_hijump_only(PLW* wk) {
+s32 check_hijump_only(PlayerEntity* wk) {
     if (wk->spmv_ng_flag & DIP_HIGH_JUMP_DISABLED) {
         return 0;
     }
@@ -446,7 +446,7 @@ s32 check_hijump_only(PLW* wk) {
 }
 
 /** @brief Checks if the player should bend/crouch from standing. */
-s32 check_bend_myself(PLW* wk) {
+s32 check_bend_myself(PlayerEntity* wk) {
     if (!(wk->cp->input_pressed & 2)) {
         return 0;
     }
@@ -456,7 +456,7 @@ s32 check_bend_myself(PLW* wk) {
 }
 
 /** @brief Checks if forward or backward walk input is held. */
-s16 check_F_R_walk(PLW* wk) {
+s16 check_F_R_walk(PlayerEntity* wk) {
     s16 rnum = 0;
 
     switch (wk->cp->lever_dir) {
@@ -475,13 +475,13 @@ s16 check_F_R_walk(PLW* wk) {
 }
 
 /** @brief Checks if the player has turned to face backwards. */
-s32 check_turn_to_back(PLW* wk) {
+s32 check_turn_to_back(PlayerEntity* wk) {
     if (wk->cannot_turn_flag) {
         return 0;
     }
 
     if (g_state.Bonus_Game_Flag == 20) {
-        if (check_rl_flag(&wk->wu)) {
+        if (check_facing_flag(&wk->wu)) {
             return 0;
         }
     } else if (check_hurimuki(&wk->wu)) {
@@ -506,16 +506,16 @@ s32 check_hurimuki(State* wk) {
 
     if (result) {
         if (result > 0) {
-            return wk->rl_flag == 0;
+            return wk->facing_flag == 0;
         }
-        return wk->rl_flag;
+        return wk->facing_flag;
     }
 
     return 1;
 }
 
 /** @brief Returns the walking lever direction relative to the current facing. */
-s16 check_walking_lv_dir(PLW* wk) {
+s16 check_walking_lv_dir(PlayerEntity* wk) {
     s16 rnum = 0;
 
     switch (wk->cp->lever_dir) {
@@ -550,7 +550,7 @@ s16 check_walking_lv_dir(PLW* wk) {
 }
 
 /** @brief Checks if the player should stand up from crouching. */
-s32 check_stand_up(PLW* wk) {
+s32 check_stand_up(PlayerEntity* wk) {
     if (wk->cp->input_pressed & 2) {
         return 0;
     }
@@ -560,7 +560,7 @@ s32 check_stand_up(PLW* wk) {
 }
 
 /** @brief Checks if the player is holding a defensive lever direction. */
-s32 check_defense_lever(PLW* wk) {
+s32 check_defense_lever(PlayerEntity* wk) {
 #if !CPS3
     if (wk->spmv_ng_flag & DIP_GUARD_DISABLED) {
         return 0;
@@ -582,8 +582,8 @@ s32 check_defense_lever(PLW* wk) {
 }
 
 /** @brief Checks if the enemy is attempting a catch/grab. */
-s32 check_em_catt(PLW* wk) {
-    PLW* em = (PLW*)wk->wu.target_adrs;
+s32 check_em_catt(PlayerEntity* wk) {
+    PlayerEntity* em = (PlayerEntity*)wk->wu.target_adrs;
     s16 xd;
     s8 rlf;
 
@@ -591,7 +591,7 @@ s32 check_em_catt(PLW* wk) {
         return 0;
     }
 
-    if ((rlf = (wk->wu.rl_flag + em->wu.rl_flag) & 1) == 0) {
+    if ((rlf = (wk->wu.facing_flag + em->wu.facing_flag) & 1) == 0) {
         return 0;
     }
 
@@ -613,7 +613,7 @@ s32 check_em_catt(PLW* wk) {
 }
 
 /** @brief Returns the attack box direction relative to the opponent. */
-s16 check_attbox_dir(PLW* wk) {
+s16 check_attbox_dir(PlayerEntity* wk) {
     s16 target_pos_x;
     s16 target_pos_y;
     s16 emdir;
@@ -622,7 +622,7 @@ s16 check_attbox_dir(PLW* wk) {
     get_target_att_position((State*)wk->wu.target_adrs, &target_pos_x, &target_pos_y);
     dttbl = (s16*)sel_hd_fg_hos[wk->player_number];
 
-    if (wk->wu.rl_flag) {
+    if (wk->wu.facing_flag) {
         emdir = caldir_pos_032(
             wk->wu.xyz[0].disp.pos - dttbl[0], wk->wu.xyz[1].disp.pos + dttbl[1], target_pos_x, target_pos_y);
     } else {
@@ -641,7 +641,7 @@ s16 check_attbox_dir(PLW* wk) {
 }
 
 /** @brief Determines the type of defense (high, low, crouch). */
-u16 check_defense_kind(PLW* wk) {
+u16 check_defense_kind(PlayerEntity* wk) {
     u16 rnum = 0;
 
     switch (wk->wu.routine_no[2]) {
@@ -697,12 +697,12 @@ void jumping_union_process(State* wk, s16 num) {
     cal_mvxy_speed(wk);
     char_move(wk);
 
-    if ((g_state.Bonus_Game_Flag == 20) && (wk->pl_operator != 0) && (latest_bs2_area_car((PLW*)wk) == 0)) {
+    if ((g_state.Bonus_Game_Flag == 20) && (wk->pl_operator != 0) && (latest_bs2_area_car((PlayerEntity*)wk) == 0)) {
         if (!(wk->xyz[1].disp.pos + wk->cg_jphos > g_state.bs2_floor[2])) {
             wk->position_y = wk->xyz[1].disp.pos = g_state.bs2_floor[2];
             wk->mvxy.a[1].sp = 0;
             wk->routine_no[3] = num;
-            ((PLW*)wk)->bs2_on_car = 1;
+            ((PlayerEntity*)wk)->bs2_on_car = 1;
             char_move_cmja(wk);
         }
 
@@ -719,7 +719,7 @@ void jumping_union_process(State* wk, s16 num) {
 }
 
 /** @brief Checks if the player is above the floor level. */
-s32 check_floor(PLW* wk) {
+s32 check_floor(PlayerEntity* wk) {
     if (wk->bs2_on_car == 0) {
         return 0;
     }
@@ -732,7 +732,7 @@ s32 check_floor(PLW* wk) {
 }
 
 /** @brief Checks if the player's feet are below the ground (footwork check). */
-s32 check_ashimoto(PLW* wk) {
+s32 check_ashimoto(PlayerEntity* wk) {
     if (check_floor(wk) == 0) {
         return 0;
     }
@@ -743,7 +743,7 @@ s32 check_ashimoto(PLW* wk) {
 }
 
 /** @brief Extended floor check with landing height threshold. */
-s32 check_floor_2(PLW* wk) {
+s32 check_floor_2(PlayerEntity* wk) {
     if (check_floor(wk) == 0) {
         return 0;
     }
@@ -758,7 +758,7 @@ s32 check_floor_2(PLW* wk) {
 }
 
 /** @brief Extended footwork check with height threshold. */
-s32 check_ashimoto_ex(PLW* wk) {
+s32 check_ashimoto_ex(PlayerEntity* wk) {
     if (check_floor_2(wk) == 0) {
         return 0;
     }

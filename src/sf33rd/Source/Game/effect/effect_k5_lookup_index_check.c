@@ -94,13 +94,13 @@ void effect_k5_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             return;
         }
 
-        if (((PLW*)mwk)->bbox_ram_index != ewk->wu.myself) {
+        if (((PlayerEntity*)mwk)->bbox_ram_index != ewk->wu.myself) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             return;
@@ -433,7 +433,7 @@ static s32 get_cal_work(State* wk) {
 
     fwk = (State*)frw[ix];
     wk->target_adrs = fwk;
-    fwk->be_flag = 1;
+    fwk->active_flag = 1;
     fwk->id = 0xCD;
     return 0;
 }
@@ -450,7 +450,7 @@ static void k5_add_sub(MVJ* mvj) {
     }
 }
 
-s32 effect_k5_init(PLW* wk) {
+s32 effect_k5_init(PlayerEntity* wk) {
     State_Other* ewk;
     s16 ix;
 
@@ -463,7 +463,7 @@ s32 effect_k5_init(PLW* wk) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 0xCD;
     ewk->wu.work_id = 0x10;
     ewk->my_master = wk;

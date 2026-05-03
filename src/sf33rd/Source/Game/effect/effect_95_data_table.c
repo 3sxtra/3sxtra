@@ -137,11 +137,11 @@ s32 effect_95_init(s16 vital_new) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 95;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.my_col_code = 0x2090;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.direction = 3;

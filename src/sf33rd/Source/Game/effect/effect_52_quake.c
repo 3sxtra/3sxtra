@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/screen/sel_data.h"
+#include "sf33rd/Source/Game/screen/character_select_data.h"
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 
 static void Setup_Char_52(State_Other* ewk);
@@ -30,7 +30,7 @@ void (*const EFF52_Jmp_Tbl[5])();
 void effect_52_move(State_Other* ewk) {
     EFF52_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag != 0) {
+    if (ewk->wu.active_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
         if (!(rmlui_char_select_visible && ewk->wu.dir_old == 37))
@@ -185,7 +185,7 @@ s32 effect_52_init(s16 PL_id, s16 dir_old) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 52;
     ewk->wu.work_id = 16;
     ewk->wu.my_col_code = 0x2090;
@@ -193,11 +193,11 @@ s32 effect_52_init(s16 PL_id, s16 dir_old) {
     ewk->wu.dir_step = 1;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->master_id = PL_id;
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.dir_old = dir_old;
     ewk->wu.dir_timer = g_state.Order_Timer[dir_old];
-    ewk->wu.rl_flag = PL_id;
+    ewk->wu.facing_flag = PL_id;
     ewk->wu.position_z = 74;
     Setup_Char_52(ewk);
     Setup_Pos_52(ewk);

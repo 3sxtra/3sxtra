@@ -2,8 +2,8 @@
  * @file pause.h
  * @brief Public API for the game pause/unpause system.
  */
-#ifndef PAUSE_H
-#define PAUSE_H
+#ifndef PAUSOUND_EFFECTS_H
+#define PAUSOUND_EFFECTS_H
 
 #include "structs.h"
 #include "types.h"

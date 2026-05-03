@@ -16,7 +16,7 @@ const s16 EFF62_Correct_Data[1][2] = { { 0, 0 } };
 void effect_62_move(State_Other* ewk) {
     State_Other* mwk = (State_Other*)ewk->my_master;
 
-    if (mwk->wu.be_flag == 0) {
+    if (mwk->wu.active_flag == 0) {
         Release_Effect(&ewk->wu);
         return;
     }
@@ -36,7 +36,7 @@ s32 effect_62_init(State_Other* mwk, s16 arg_ID) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.disp_flag = 1;
     ewk->wu.id = 62;
     ewk->wu.work_id = 16;
@@ -47,8 +47,8 @@ s32 effect_62_init(State_Other* mwk, s16 arg_ID) {
     ewk->wu.my_family = mwk->wu.my_family;
     ewk->wu.vital_new = EFF62_Correct_Data[arg_ID][0];
     ewk->wu.vital_old = EFF62_Correct_Data[arg_ID][1];
-    ewk->wu.my_mts = 13;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 13;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.my_col_code = 1;
     ewk->wu.my_clear_level = 179;
     ewk->wu.shell_ix[0] = -190;

@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_k5_move(State_Other* ewk);
-s32 effect_k5_init(PLW* wk);
+s32 effect_k5_init(PlayerEntity* wk);
 
 #endif

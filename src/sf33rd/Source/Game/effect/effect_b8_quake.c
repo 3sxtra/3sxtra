@@ -17,12 +17,12 @@
 
 static u16 effb8_normal_or_senyou();
 static u16 effb8_sel_1_by_8();
-static void wk_set(WORK_Other_CONN* ewk);
+static void wk_set(EffectMultiSprite* ewk);
 
-void effect_B8_move(WORK_Other_CONN* ewk) {
+void effect_B8_move(EffectMultiSprite* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
-        ewk->wu.my_mts = 12;
+        ewk->wu.my_sprite_sheet = 12;
         g_state.mes_timer = g_state.mes_timer - 1;
 
         if (--g_state.mes_timer > 0) {
@@ -83,8 +83,8 @@ void effect_B8_move(WORK_Other_CONN* ewk) {
 }
 
 s32 effect_B8_init(s8 WIN_PL_NO, s16 timer) {
-    PLW* wk;
-    WORK_Other_CONN* ewk;
+    PlayerEntity* wk;
+    EffectMultiSprite* ewk;
     s16 ix;
     u16 mes_no;
 
@@ -95,7 +95,7 @@ s32 effect_B8_init(s8 WIN_PL_NO, s16 timer) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
+    ewk = (EffectMultiSprite*)frw[ix];
     ewk->wu.routine_no[0] = 0;
     wk_set(ewk);
     g_state.mes_timer = timer;
@@ -155,11 +155,11 @@ static u16 effb8_sel_1_by_8() {
     return mes_no;
 }
 
-static void wk_set(WORK_Other_CONN* ewk) {
-    ewk->wu.be_flag = 1;
+static void wk_set(EffectMultiSprite* ewk) {
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 118;
     ewk->wu.work_id = 16;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.sync_bg_strip = 0;
     ewk->wu.my_col_mode = 0x4200;

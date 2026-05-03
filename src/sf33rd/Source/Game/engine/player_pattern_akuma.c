@@ -18,23 +18,23 @@ const s16 pl14_HYAKKI_dat[20] = { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 7, 6, 6, 4, 
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl14_exatt_table[18])(PLW*);
+void (*const pl14_exatt_table[18])(PlayerEntity*);
 
 /** @brief Akuma: extra attack dispatcher. */
-void pl_akuma_extra_attack(PLW* wk) {
+void pl_akuma_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl14_exatt_table[idx](wk);
 }
 
 /** @brief Akuma: attack 1 (Hyakki Goushou dive). */
-static void Att_PL14_AT1(PLW* wk) {
+static void Att_PL14_AT1(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         force_grounded_state(wk);
-        wk->wu.rl_flag = wk->wu.active_move;
-        wk->rl_save = wk->wu.rl_flag;
+        wk->wu.facing_flag = wk->wu.active_move;
+        wk->rl_save = wk->wu.facing_flag;
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
@@ -83,7 +83,7 @@ static void Att_PL14_AT1(PLW* wk) {
         }
 
         wk->wu.xyz[1].cal += wk->wu.mvxy.a[1].sp;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
 
         if ((wk->wu.mvxy.a[0].sp != 0) && wk->old_pos_data[0] == wk->old_pos_data[1]) {
             char_move_z(&wk->wu);
@@ -108,7 +108,7 @@ static void Att_PL14_AT1(PLW* wk) {
 }
 
 /** @brief Akuma: attack 2 (Ashura Senku teleport). */
-static void Att_PL14_AT2(PLW* wk) {
+static void Att_PL14_AT2(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -156,14 +156,14 @@ static void Att_PL14_AT2(PLW* wk) {
 }
 
 /** @brief Akuma: attack 3 (Shun Goku Satsu / Raging Demon). */
-static void Att_PL14_AT3(PLW* wk) {
-    PLW* twk = (PLW*)wk->wu.target_adrs;
+static void Att_PL14_AT3(PlayerEntity* wk) {
+    PlayerEntity* twk = (PlayerEntity*)wk->wu.target_adrs;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         force_grounded_state(wk);
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         reset_mvxy_data(&wk->wu);
         wk->wu.mvxy.index = wk->as->r_no;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
@@ -265,13 +265,13 @@ static void Att_PL14_AT3(PLW* wk) {
 }
 
 /** @brief Akuma: special action (tokushu koudou). */
-static void Att_PL14_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL14_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -304,7 +304,7 @@ static void Att_PL14_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl14_exatt_table[18])(PLW*) = { Att_HADOUKEN,
+void (*const pl14_exatt_table[18])(PlayerEntity*) = { Att_HADOUKEN,
                                              Att_SHOURYUUKEN,
                                              Att_SENPUUKYAKU,
                                              Att_KUUCHUUJINNCHUUWATARI,

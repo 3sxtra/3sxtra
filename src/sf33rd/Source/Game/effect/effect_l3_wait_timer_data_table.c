@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -44,7 +44,7 @@ void effect_L3_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             effl3_jp[ewk->wu.routine_no[1]](ewk);
         }
 
@@ -65,7 +65,7 @@ static void effl3_0000(State_Other* ewk) {
         ewk->wu.disp_flag = 1;
         set_char_move_init(&ewk->wu, 0, 2);
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.mvxy.a[0].sp = 0x28000;
         } else {
             ewk->wu.mvxy.a[0].sp = -0x28000;
@@ -77,7 +77,7 @@ static void effl3_0000(State_Other* ewk) {
         char_move(&ewk->wu);
         add_x_sub(&ewk->wu);
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             if (ewk->wu.xyz[0].disp.pos > ewk->wu.old_routine_no[0]) {
                 ewk->wu.routine_no[2]++;
                 set_char_move_init(&ewk->wu, 0, 11);
@@ -217,7 +217,7 @@ static void effl3_tobi(State_Other* ewk) {
         ewk->wu.routine_no[4]++;
         ewk->wu.mvxy.d[0].sp = 0;
 
-        if (ewk->wu.rl_flag) {
+        if (ewk->wu.facing_flag) {
             ewk->wu.mvxy.a[0].sp = 0x80000;
         } else {
             ewk->wu.mvxy.a[0].sp = -0x80000;
@@ -267,7 +267,7 @@ static void effl3_kie(State_Other* ewk) {
     }
 }
 
-s32 effect_L3_init(PLW* oya) {
+s32 effect_L3_init(PlayerEntity* oya) {
     State_Other* ewk;
     s16 ix;
     s16 i;
@@ -287,7 +287,7 @@ s32 effect_L3_init(PLW* oya) {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 213;
         ewk->wu.work_id = 16;
         ewk->my_master = oya;
@@ -304,7 +304,7 @@ s32 effect_L3_init(PLW* oya) {
         ewk->wu.position_z = g_state.plw[id_w].wu.position_z;
         ewk->wu.position_z += *(s16*)data_ptr++;
         ewk->wu.my_priority = ewk->wu.position_z;
-        ewk->wu.rl_flag = *data_ptr++;
+        ewk->wu.facing_flag = *data_ptr++;
         ewk->wu.shadow_char = *data_ptr++;
         ewk->wu.old_routine_no[0] = g_state.plw[id_w].wu.xyz[0].disp.pos;
         ewk->wu.old_routine_no[0] += *(s16*)data_ptr++;
@@ -317,8 +317,8 @@ s32 effect_L3_init(PLW* oya) {
         ewk->wu.shadow_x = 6;
         ewk->wu.shadow_y = 0;
         ewk->wu.shadow_prio = ewk->wu.position_z + 5;
-        ewk->wu.my_mts = oya->wu.my_mts;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = oya->wu.my_sprite_sheet;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     }
 
     return 0;

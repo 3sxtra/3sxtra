@@ -9,7 +9,7 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -29,7 +29,7 @@ void effect_55_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.xyz[1].cal += 0x3000;
 
             if (ewk->wu.xyz[1].disp.pos >= 128) {
@@ -42,7 +42,7 @@ void effect_55_move(State_Other* ewk) {
         break;
 
     case 2:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] < 0) {
@@ -54,7 +54,7 @@ void effect_55_move(State_Other* ewk) {
         break;
 
     case 3:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.xyz[1].cal -= 0x4000;
 
             if (ewk->wu.xyz[1].disp.pos < 97) {
@@ -67,7 +67,7 @@ void effect_55_move(State_Other* ewk) {
         break;
 
     case 4:
-        if (!g_state.EXE_flag && !g_state.Game_pause) {
+        if (!g_state.execute_flag && !g_state.Game_pause) {
             ewk->wu.old_routine_no[0]--;
 
             if (ewk->wu.old_routine_no[0] < 0) {
@@ -94,16 +94,16 @@ s32 effect_55_init() {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 55;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_family = 2;
     ewk->wu.my_col_code = 8492;
-    ewk->wu.my_mts = 7;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 7;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.xyz[0].disp.pos = 511;
     ewk->wu.xyz[1].disp.pos = 96;
     ewk->wu.my_priority = 86;

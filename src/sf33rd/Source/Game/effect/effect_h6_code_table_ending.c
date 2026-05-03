@@ -274,7 +274,7 @@ void effect_H6_move(State_Other* ewk) {
 }
 
 s32 effect_H6_init(s16 timer, s8* str, s16 X, s16 Y, s16 Original_Color, s32 /* unused */) {
-    WORK_Other_CONN* ewk;
+    EffectMultiSprite* ewk;
     s16 i;
     s16 x;
     s16 c;
@@ -284,16 +284,16 @@ s32 effect_H6_init(s16 timer, s8* str, s16 X, s16 Y, s16 Original_Color, s32 /* 
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[x];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[x];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 176;
     ewk->wu.type = 0;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_family = 6;
     ewk->wu.my_priority = ewk->wu.position_z = 20;
-    ewk->wu.my_mts = 8;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 8;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
     if (Original_Color == 8) {
         Original_Color = 6;

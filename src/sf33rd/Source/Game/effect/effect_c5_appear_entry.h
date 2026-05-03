@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_C5_move(State_Other* ewk);
-s32 effect_C5_init(PLW* oya, s16 reverse_f);
+s32 effect_C5_init(PlayerEntity* oya, s16 reverse_f);
 
 #endif

@@ -29,7 +29,7 @@ void predict_physics_state(PredictedGameState* out, s16 frames_ahead) {
     if (!out)
         return;
 
-    // Initialize from current true PLW state
+    // Initialize from current true PlayerEntity state
     // P1
     out->p1.pos_x = g_state.plw[0].wu.xyz[0].disp.pos;
     out->p1.pos_y = g_state.plw[0].wu.xyz[1].disp.pos;

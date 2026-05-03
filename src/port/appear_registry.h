@@ -68,7 +68,7 @@ typedef enum AppearTypeId {
 
 /** @brief Callback table for a single appear animation type. */
 typedef struct AppearTypeCallbacks {
-    void (*on_tick)(PLW* wk); /**< Per-frame animation driver */
+    void (*on_tick)(PlayerEntity* wk); /**< Per-frame animation driver */
 } AppearTypeCallbacks;
 
 /**

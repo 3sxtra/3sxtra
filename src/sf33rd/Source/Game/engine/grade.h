@@ -46,7 +46,7 @@ void grade_add_target_combo(s16 ix);
 void grade_add_command_move(s16 ix);
 void grade_add_super_arts(s16 ix, s16 num);
 void grade_store_vitality(s16 ix);
-void grade_add_blocking(PLW* wk);
+void grade_add_blocking(PlayerEntity* wk);
 void grade_get_first_attack(s16 ix);
 void grade_set_round_result(s16 ix);
 void grade_add_personal_action(s16 ix);
@@ -56,6 +56,6 @@ s16 grade_get_my_grade(s16 ix);
 s16 grade_get_my_point_percentage(s16 ix, s16 flag);
 s16 grade_get_cm_point_percentage(s16 ix, s16 flag);
 s16 get_grade_ix(s16 pts);
-void check_guard_miss(State* as, PLW* ds, s8 gddir);
+void check_guard_miss(State* as, PlayerEntity* ds, s8 gddir);
 
 #endif

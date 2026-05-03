@@ -78,15 +78,15 @@ bool palmod_save(const char* category, const char* sub_name, const char* pal_nam
     if (!json_str)
         return false;
 
-    bool ok = SDL_SaveFile(filepath, json_str, strlen(json_str));
+    bool can_activate = SDL_SaveFile(filepath, json_str, strlen(json_str));
     cJSON_free(json_str);
 
-    if (ok) {
+    if (can_activate) {
         SDL_Log("[PalMod Storage] Saved: %s", filepath);
     } else {
         SDL_Log("[PalMod Storage] Failed to save: %s (%s)", filepath, SDL_GetError());
     }
-    return ok;
+    return can_activate;
 }
 
 /* ── Load ─────────────────────────────────────────────────────────── */

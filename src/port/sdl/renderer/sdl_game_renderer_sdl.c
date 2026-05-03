@@ -391,7 +391,7 @@ static void destroy_textures(void) {
     textures_to_destroy_count = 0;
 }
 
-// ⚡ Bake: convert indexed surface+palette → RGBA SDL_Texture, store in LRU slot.
+// ⚡ Bake: convert indexed surface+palette → RGBA SDL_Texture, stock in LRU slot.
 // Called only on cache miss. Direct pixel conversion avoids SDL_BlitSurface overhead.
 static SDL_Texture* bake_idx_tex(SDL_Renderer* renderer, int ti, int palette_handle) {
     SDL_Surface* surf = surfaces[ti];

@@ -14,21 +14,21 @@
 
 #define EXATT_TABLE_SIZE 18
 
-void (*const pl06_exatt_table[18])(PLW*);
+void (*const pl06_exatt_table[18])(PlayerEntity*);
 
 /** @brief Hugo: extra attack dispatcher. */
-void pl_hugo_extra_attack(PLW* wk) {
+void pl_hugo_extra_attack(PlayerEntity* wk) {
     s16 idx = wk->wu.routine_no[2] - 16;
     if (idx >= 0 && idx < EXATT_TABLE_SIZE)
         pl06_exatt_table[idx](wk);
 }
 
 /** @brief Hugo: running throw (running throw) attack. */
-static void Att_PL06_HASHIRI_NAGE(PLW* wk) {
+static void Att_PL06_HASHIRI_NAGE(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         reset_mvxy_data(&wk->wu);
@@ -129,7 +129,7 @@ static void Att_PL06_HASHIRI_NAGE(PLW* wk) {
         add_mvxy_speed(&wk->wu);
         cal_mvxy_speed(&wk->wu);
 
-        if (wk->wu.routine_no[3] != 1 && wk->hos_fi_flag | wk->hos_em_flag) {
+        if (wk->wu.routine_no[3] != 1 && wk->pushbox_finish_flag | wk->pushbox_emergency_flag) {
             char_move_cmj4(&wk->wu);
             wk->wu.routine_no[3] = 1;
         }
@@ -139,13 +139,13 @@ static void Att_PL06_HASHIRI_NAGE(PLW* wk) {
 }
 
 /** @brief Hugo: special action (tokushu koudou). */
-static void Att_PL06_TOKUSHUKOUDOU(PLW* wk) {
+static void Att_PL06_TOKUSHUKOUDOU(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         force_grounded_state(wk);
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         break;
@@ -193,7 +193,7 @@ static void Att_PL06_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void (*const pl06_exatt_table[18])(PLW*) = { Att_HADOUKEN2,
+void (*const pl06_exatt_table[18])(PlayerEntity*) = { Att_HADOUKEN2,
                                              Att_HADOUKEN2,
                                              Att_CHOUCHUURENGEKI,
                                              Att_HADOUKEN2,

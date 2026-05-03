@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/country_region.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 #include "port/I_System.h"
@@ -304,7 +304,7 @@ void effect_work_kill(s16 index, s16 kill_id) {
     if (kill_id == -1) {
         while (aix != -1) {
             c_addr = (State*)frw[aix];
-            c_addr->dead_f = 1;
+            c_addr->death_timer = 1;
             aix = c_addr->behind;
         }
 
@@ -315,7 +315,7 @@ void effect_work_kill(s16 index, s16 kill_id) {
         c_addr = (State*)frw[aix];
 
         if (c_addr->id == kill_id) {
-            c_addr->dead_f = 1;
+            c_addr->death_timer = 1;
         }
 
         aix = c_addr->behind;
@@ -338,13 +338,13 @@ s32 erase_my_shell_ix(State* wk, s16 ix) {
 
     for (i = 0; i < 8; i++) {
         if (wk->shell_ix[i] == ix) {
-            goto ok;
+            goto can_activate;
         }
     }
 
     return 0;
 
-ok:
+can_activate:
     for (j = i; j < 7; j++) {
         wk->shell_ix[j] = wk->shell_ix[j + 1];
     }
@@ -360,7 +360,7 @@ s32 get_my_shell_ix(State* wk, s16 ix, State** tmw) {
 
     *tmw = (State*)frw[wk->shell_ix[ix]];
 
-    if ((*tmw)->be_flag) {
+    if ((*tmw)->active_flag) {
         return 1;
     }
 
@@ -402,7 +402,7 @@ void setup_shell_hit_stop(State* wk, s16 tm, s16 fl) {
     }
 }
 
-s32 shell_live_check(PLW* wk, s16 wix) {
+s32 shell_live_check(PlayerEntity* wk, s16 wix) {
     State_Other* tmw;
     s16 i;
 
@@ -442,12 +442,12 @@ s32 shell_live_check(PLW* wk, s16 wix) {
     return 0;
 }
 
-s32 clear_caution_flag(PLW* wk, u8 /* unused */) {
+s32 clear_caution_flag(PlayerEntity* wk, u8 /* unused */) {
     wk->caution_flag = 0;
     return 0;
 }
 
-s32 set_caution_flag(PLW* wk, u8 /* unused */) {
+s32 set_caution_flag(PlayerEntity* wk, u8 /* unused */) {
     wk->caution_flag = 1;
     return 0;
 }
@@ -462,8 +462,8 @@ s32 reset_extra_bg_flag(State* wk, u8 /* unused */) {
     return 0;
 }
 
-s32 flip_my_rl_flag(State* wk, u8 /* unused */) {
-    wk->rl_flag = wk->rl_flag + 1U & 1;
+s32 flip_my_facing_flag(State* wk, u8 /* unused */) {
+    wk->facing_flag = wk->facing_flag + 1U & 1;
     return 0;
 }
 
@@ -482,7 +482,7 @@ s32 exec_char_asxy(State* wk, u8 data) {
     st = *from_rom2++;
     st *= 256;
 
-    if (wk->rl_flag) {
+    if (wk->facing_flag) {
         wk->xyz[0].cal += st;
     } else {
         wk->xyz[0].cal -= st;
@@ -519,12 +519,12 @@ s32 setup_bg_quake_y(s32 /* unused */, u8 data) {
     return 0;
 }
 
-s32 setup_exdm_ix(PLW* wk, u8 data) {
-    wk->exdm_ix = data;
+s32 setup_exdamage_index(PlayerEntity* wk, u8 data) {
+    wk->exdamage_index = data;
     return 0;
 }
 
-s32 setup_dmv_use_flag(PLW* wk, u8 data) {
+s32 setup_dmv_use_flag(PlayerEntity* wk, u8 data) {
     wk->dm_vital_use = data;
     return 0;
 }
@@ -534,7 +534,7 @@ s32 setup_disp_flag(State* wk, u8 data) {
     return 0;
 }
 
-s32 setup_command_number(PLW* wk, u8 data) {
+s32 setup_command_number(PlayerEntity* wk, u8 data) {
     wk->cmd_request = data;
     return 0;
 }

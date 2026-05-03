@@ -7,20 +7,20 @@
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect_02_hit_marks_sparks.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
-#include "sf33rd/Source/Game/engine/pow_pow.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/engine/damage_calculator.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 
 /** @brief Resolves player-vs-effect hit collision (attacking a projectile). */
 void player_at_vs_effect_dm(s16 ix2, s16 ix) {
-    PLW* as = (PLW*)q_hit_push[ix2];
+    PlayerEntity* as = (PlayerEntity*)q_hit_push[ix2];
     State_Other* ds = (State_Other*)q_hit_push[ix];
 
     pp_pulpara_hit(&as->wu);
-    ds->wu.dm_rl = as->wu.rl_flag;
+    ds->wu.damage_facing = as->wu.facing_flag;
     cal_hit_mark_pos(&as->wu, &ds->wu, ix2, ix);
 
     if (ds->wu.id == 122 || ds->wu.id == 123) {
-        cal_damage_vitality(as, (PLW*)ds);
+        calculate_damage_vitality(as, (PlayerEntity*)ds);
     } else {
         ds->wu.damage_vitality = 256;
     }
@@ -42,11 +42,11 @@ void player_at_vs_effect_dm(s16 ix2, s16 ix) {
 
     if (ds->wu.work_id != 2 || ds->wu.id != 0x87) {
         if (ds->wu.att.dipsw & 2) {
-            effect_02_init(&as->wu, 2, 2, ds->wu.dm_rl);
+            effect_02_init(&as->wu, 2, 2, ds->wu.damage_facing);
         } else if (ds->wu.id != 13) {
-            effect_02_init(&as->wu, 2, 1, ds->wu.dm_rl);
+            effect_02_init(&as->wu, 2, 1, ds->wu.damage_facing);
         } else if (ds->wu.charset_id == 2) {
-            effect_02_init(&as->wu, 2, 2, ds->wu.dm_rl);
+            effect_02_init(&as->wu, 2, 2, ds->wu.damage_facing);
         }
     }
 

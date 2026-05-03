@@ -7,7 +7,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/stage/stage_data.h"
 
@@ -41,12 +41,12 @@ void effect_I3_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.routine_no[0]++;
             break;
         }
 
-        if (g_state.EXE_flag != 0 || g_state.Game_pause != 0) {
+        if (g_state.execute_flag != 0 || g_state.Game_pause != 0) {
             break;
         }
 
@@ -75,7 +75,7 @@ s32 effect_I3_init(State* wk, u8 tix) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 183;
     ewk->wu.work_id = 16;
     ewk->my_master = wk;

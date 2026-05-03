@@ -7,19 +7,19 @@
 #include "game_state.h"
 #include "common.h"
 #include "sf33rd/Source/Game/effect/effect.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
 const s16 effB1_wait_table[4] = { 2, 2, 2, 2 };
 
 const s16 effB1_wait_tbl_2[4] = { 2, 2, 2, 2 };
 
-const CONN bbbs_clear = { 0, 0, 2, 36 };
+const SpriteConnection bbbs_clear = { 0, 0, 2, 36 };
 
-const CONN bbbs_blocking[20] = { { -172, -12, 0, 32484 }, { -154, -12, 0, 32484 }, { -136, -12, 0, 32484 },
+const SpriteConnection bbbs_blocking[20] = { { -172, -12, 0, 32484 }, { -154, -12, 0, 32484 }, { -136, -12, 0, 32484 },
                                  { -118, -12, 0, 32484 }, { -100, -12, 0, 32484 }, { -82, -12, 0, 32484 },
                                  { -64, -12, 0, 32484 },  { -46, -12, 0, 32484 },  { -28, -12, 0, 32484 },
                                  { -10, -12, 0, 32484 },  { -172, 4, 0, 32484 },   { -154, 4, 0, 32484 },
@@ -28,10 +28,10 @@ const CONN bbbs_blocking[20] = { { -172, -12, 0, 32484 }, { -154, -12, 0, 32484 
                                  { -136, 20, 0, 32484 },  { -172, 36, 0, 32484 } };
 
 static void effB1_trans(State* ewk);
-static void effB1_mark_change(WORK_Other_CONN* ewk);
-static void effB1_mark_exchange(WORK_Other_CONN* ewk);
+static void effB1_mark_change(EffectMultiSprite* ewk);
+static void effB1_mark_exchange(EffectMultiSprite* ewk);
 
-void effect_B1_move(WORK_Other_CONN* ewk) {
+void effect_B1_move(EffectMultiSprite* ewk) {
     s16 i;
 
     switch (ewk->wu.routine_no[0]) {
@@ -59,7 +59,7 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
                 break;
             }
 
-            if (g_state.EXE_flag) {
+            if (g_state.execute_flag) {
                 break;
             }
 
@@ -86,7 +86,7 @@ void effect_B1_move(WORK_Other_CONN* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.type = 0;
             ewk->wu.routine_no[0] = 2;
@@ -145,7 +145,7 @@ static void effB1_trans(State* ewk) {
     sort_push_request3(ewk);
 }
 
-static void effB1_mark_change(WORK_Other_CONN* ewk) {
+static void effB1_mark_change(EffectMultiSprite* ewk) {
     s16 i;
 
     for (i = 0; i < g_state.Bonus_Game_result; i++) {
@@ -169,7 +169,7 @@ static void effB1_mark_change(WORK_Other_CONN* ewk) {
     }
 }
 
-static void effB1_mark_exchange(WORK_Other_CONN* ewk) {
+static void effB1_mark_exchange(EffectMultiSprite* ewk) {
     s16 i;
 
     for (i = 0; i < ewk->wu.direction; i++) {
@@ -201,8 +201,8 @@ static void effB1_mark_exchange(WORK_Other_CONN* ewk) {
     }
 }
 
-s32 effect_B1_init(PLW* wk, s32 flag) {
-    WORK_Other_CONN* ewk;
+s32 effect_B1_init(PlayerEntity* wk, s32 flag) {
+    EffectMultiSprite* ewk;
     s16 ix;
     s16 i;
 
@@ -210,11 +210,11 @@ s32 effect_B1_init(PLW* wk, s32 flag) {
         return -1;
     }
 
-    ewk = (WORK_Other_CONN*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk = (EffectMultiSprite*)frw[ix];
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 111;
     ewk->wu.work_id = 16;
-    ewk->wu.my_mts = 14;
+    ewk->wu.my_sprite_sheet = 14;
     ewk->wu.my_family = 3;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.shadow_prio = flag;
@@ -230,7 +230,7 @@ s32 effect_B1_init(PLW* wk, s32 flag) {
         ewk->conn[i + 20] = bbbs_clear;
     }
 
-    if (wk->wu.rl_flag) {
+    if (wk->wu.facing_flag) {
         for (i = 0; i < 20; i++) {
             ewk->conn[i].nx = -ewk->conn[i].nx;
         }

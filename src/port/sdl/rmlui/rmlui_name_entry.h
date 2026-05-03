@@ -1,7 +1,7 @@
 #pragma once
 /**
  * @file rmlui_name_entry.h
- * @brief RmlUi name entry / ranking screen — replaces n_input.c rendering.
+ * @brief RmlUi name entry / ranking screen — replaces name_input.c rendering.
  */
 
 #ifdef __cplusplus

@@ -26,7 +26,7 @@ typedef enum MenuTaskPhase {
     MTP_IN_GAME = 7,         /**< manage.c: in-game menu (pause UI, training, etc.) */
     MTP_SCREEN_DISPATCH = 8, /**< game.c: post-match/pre-match screen dispatch */
     MTP_GOTO_GAME = 9,       /**< game.c: transition into gameplay */
-    MTP_TRAINING = 10,       /**< manage.c/ioconv.c: training mode dispatcher */
+    MTP_TRAINING = 10,       /**< manage.c/input_converter.c: training mode dispatcher */
     MTP_RESET = 13,          /**< sys_sub.c: soft reset flow */
     MTP_PHASE_MAX_           /**< sentinel — do not use as a value */
 } MenuTaskPhase;

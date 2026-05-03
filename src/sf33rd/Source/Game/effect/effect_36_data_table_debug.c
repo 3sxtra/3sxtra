@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
-#include "sf33rd/Source/Game/sound/se.h"
+#include "sf33rd/Source/Game/sound/sound_effects.h"
 #include "sf33rd/Source/Game/stage/target_subroutines.h"
 
 // forward decls
@@ -333,15 +333,15 @@ s32 effect_36_init(u8 typenum) {
     ewk = (State_Other*)frw[ix];
     data_ptr = eff36_data_tbl[typenum];
     ewk->wu.id = 0x24;
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.work_id = 0x10;
     ewk->wu.type = typenum;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.char_table[0] = _op_char_table;
     ewk->wu.my_family = 2;
-    ewk->wu.my_mts = 9;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 9;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     ewk->wu.my_col_code = 0x12C;
     ewk->wu.my_col_code += *data_ptr++;
     ewk->wu.routine_no[1] = *data_ptr++;

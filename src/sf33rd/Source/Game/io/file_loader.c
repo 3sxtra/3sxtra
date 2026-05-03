@@ -3,7 +3,7 @@
 #include "port/io/afs.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
-#include "sf33rd/Source/Game/io/fs_sys.h"
+#include "sf33rd/Source/Game/io/filesystem.h"
 #include "sf33rd/Source/Game/system/ram_control.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 

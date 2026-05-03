@@ -12,7 +12,7 @@
 #include "port/config/paths.h"
 #include "port/input_definition.h"
 #include "sdl_pad.h"
-#include "sf33rd/Source/Game/io/ioconv.h"
+#include "sf33rd/Source/Game/io/input_converter.h"
 #include <algorithm>
 #include <fstream>
 #include <map>

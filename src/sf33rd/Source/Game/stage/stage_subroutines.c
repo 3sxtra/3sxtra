@@ -58,11 +58,11 @@ void check_cg_zoom() {
 
     for (i = 0; i < 2; i++) {
         if (g_state.plw[i].scr_pos_set_flag) {
-            g_state.plw[i].wu.scr_mv_x = g_state.plw[i].wu.xyz[0].disp.pos;
-            g_state.plw[i].wu.scr_mv_y = g_state.plw[i].wu.xyz[1].disp.pos;
+            g_state.plw[i].wu.screen_move_x = g_state.plw[i].wu.xyz[0].disp.pos;
+            g_state.plw[i].wu.screen_move_y = g_state.plw[i].wu.xyz[1].disp.pos;
         } else if (g_state.plw[i].is_being_thrown) {
-            g_state.plw[i].wu.scr_mv_x = g_state.plw[(i + 1) & 1].wu.xyz[0].disp.pos;
-            g_state.plw[i].wu.scr_mv_y = g_state.plw[(i + 1) & 1].wu.xyz[1].disp.pos;
+            g_state.plw[i].wu.screen_move_x = g_state.plw[(i + 1) & 1].wu.xyz[0].disp.pos;
+            g_state.plw[i].wu.screen_move_y = g_state.plw[(i + 1) & 1].wu.xyz[1].disp.pos;
         }
     }
 
@@ -455,7 +455,7 @@ void scr_10_20() {}
 /** @brief Scroll handler for stage 10, screen layer 1. */
 void scr_10_21() {
     s16 meri;
-    meri = g_state.plw[1].wu.scr_mv_x - satse[g_state.plw[1].player_number];
+    meri = g_state.plw[1].wu.screen_move_x - satse[g_state.plw[1].player_number];
     meri = meri - (g_state.ideal_w.iw[0].disp.pos - g_state.bg_w.pos_offset + SCR_ZONE_LEFT);
 
     x_left_check(meri);
@@ -464,7 +464,7 @@ void scr_10_21() {
 /** @brief Scroll handler for stage 10, screen layer 2. */
 void scr_10_22() {
     s16 meri;
-    meri = g_state.plw[1].wu.scr_mv_x + satse[g_state.plw[1].player_number];
+    meri = g_state.plw[1].wu.screen_move_x + satse[g_state.plw[1].player_number];
     meri = meri - (g_state.ideal_w.iw[0].disp.pos + g_state.bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
 
     x_right_check(meri);
@@ -473,7 +473,7 @@ void scr_10_22() {
 /** @brief Scroll handler for stage 11, screen layer 0. */
 void scr_11_20() {
     s16 meri;
-    meri = g_state.plw[0].wu.scr_mv_x - satse[g_state.plw[0].player_number];
+    meri = g_state.plw[0].wu.screen_move_x - satse[g_state.plw[0].player_number];
     meri = meri - (g_state.ideal_w.iw[0].disp.pos - g_state.bg_w.pos_offset + SCR_ZONE_LEFT);
 
     x_left_check(meri);
@@ -483,10 +483,10 @@ void scr_11_20() {
 void scr_11_21() {
     s16 meri;
 
-    if (g_state.plw[0].wu.scr_mv_x < g_state.plw[1].wu.scr_mv_x) {
-        meri = g_state.plw[0].wu.scr_mv_x - satse[g_state.plw[0].player_number];
+    if (g_state.plw[0].wu.screen_move_x < g_state.plw[1].wu.screen_move_x) {
+        meri = g_state.plw[0].wu.screen_move_x - satse[g_state.plw[0].player_number];
     } else {
-        meri = g_state.plw[1].wu.scr_mv_x - satse[g_state.plw[1].player_number];
+        meri = g_state.plw[1].wu.screen_move_x - satse[g_state.plw[1].player_number];
     }
 
     meri = meri - (g_state.ideal_w.iw[0].disp.pos - g_state.bg_w.pos_offset + SCR_ZONE_LEFT);
@@ -501,7 +501,7 @@ void scr_11_22() {
 
     meri = (satse[g_state.plw[1].player_number] - satse[g_state.plw[0].player_number]);
     meri >>= 1;
-    meri2 = g_state.plw[0].wu.scr_mv_x + g_state.plw[1].wu.scr_mv_x;
+    meri2 = g_state.plw[0].wu.screen_move_x + g_state.plw[1].wu.screen_move_x;
     meri2 >>= 1;
     meri2 += meri;
     meri2 -= g_state.ideal_w.iw[0].disp.pos;
@@ -518,7 +518,7 @@ void scr_11_22() {
 /** @brief Scroll handler for stage 12, screen layer 0. */
 void scr_12_20() {
     s16 meri;
-    meri = g_state.plw[0].wu.scr_mv_x + satse[g_state.plw[0].player_number];
+    meri = g_state.plw[0].wu.screen_move_x + satse[g_state.plw[0].player_number];
     meri = meri - (g_state.ideal_w.iw[0].disp.pos + g_state.bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
 
     x_right_check(meri);
@@ -531,7 +531,7 @@ void scr_12_21() {
 
     meri = (satse[g_state.plw[0].player_number] - satse[g_state.plw[1].player_number]);
     meri >>= 1;
-    meri2 = g_state.plw[0].wu.scr_mv_x + g_state.plw[1].wu.scr_mv_x;
+    meri2 = g_state.plw[0].wu.screen_move_x + g_state.plw[1].wu.screen_move_x;
     meri2 >>= 1;
     meri2 += meri;
     meri2 -= g_state.ideal_w.iw[0].disp.pos;
@@ -549,10 +549,10 @@ void scr_12_21() {
 void scr_12_22() {
     s16 meri;
 
-    if (g_state.plw[0].wu.scr_mv_x > g_state.plw[1].wu.scr_mv_x) {
-        meri = g_state.plw[0].wu.scr_mv_x + satse[g_state.plw[0].player_number];
+    if (g_state.plw[0].wu.screen_move_x > g_state.plw[1].wu.screen_move_x) {
+        meri = g_state.plw[0].wu.screen_move_x + satse[g_state.plw[0].player_number];
     } else {
-        meri = g_state.plw[1].wu.scr_mv_x + satse[g_state.plw[1].player_number];
+        meri = g_state.plw[1].wu.screen_move_x + satse[g_state.plw[1].player_number];
     }
 
     meri = meri - (g_state.ideal_w.iw[0].disp.pos + g_state.bg_w.pos_offset - SCR_ZONE_LEFT_ADJ);
@@ -569,18 +569,18 @@ void bg_base_x_move_sub() {
 
     calculated_bg_pos = g_state.ideal_w.iw[0].disp.pos - g_state.bg_w.pos_offset;
 
-    if (g_state.plw[0].wu.scr_mv_x < g_state.ideal_w.iw[0].disp.pos) {
-        work[0] = g_state.plw[0].wu.scr_mv_x - *&satse[g_state.plw[0].player_number];
+    if (g_state.plw[0].wu.screen_move_x < g_state.ideal_w.iw[0].disp.pos) {
+        work[0] = g_state.plw[0].wu.screen_move_x - *&satse[g_state.plw[0].player_number];
     } else {
-        work[0] = g_state.plw[0].wu.scr_mv_x + *&satse[g_state.plw[0].player_number];
+        work[0] = g_state.plw[0].wu.screen_move_x + *&satse[g_state.plw[0].player_number];
     }
 
     work[0] -= calculated_bg_pos;
 
-    if (g_state.plw[1].wu.scr_mv_x < g_state.ideal_w.iw[0].disp.pos) {
-        work[1] = g_state.plw[1].wu.scr_mv_x - *&satse[g_state.plw[1].player_number];
+    if (g_state.plw[1].wu.screen_move_x < g_state.ideal_w.iw[0].disp.pos) {
+        work[1] = g_state.plw[1].wu.screen_move_x - *&satse[g_state.plw[1].player_number];
     } else {
-        work[1] = g_state.plw[1].wu.scr_mv_x + *&satse[g_state.plw[1].player_number];
+        work[1] = g_state.plw[1].wu.screen_move_x + *&satse[g_state.plw[1].player_number];
     }
 
     work[1] -= calculated_bg_pos;
@@ -701,10 +701,10 @@ void bg_base_y_move_check() {
         if (g_state.bg_app_stop)
             goto end;
 
-        if (g_state.plw[0].wu.scr_mv_y > g_state.plw[1].wu.scr_mv_y) {
-            hi_pos = g_state.plw[0].wu.scr_mv_y;
+        if (g_state.plw[0].wu.screen_move_y > g_state.plw[1].wu.screen_move_y) {
+            hi_pos = g_state.plw[0].wu.screen_move_y;
         } else {
-            hi_pos = g_state.plw[1].wu.scr_mv_y;
+            hi_pos = g_state.plw[1].wu.screen_move_y;
         }
     }
 

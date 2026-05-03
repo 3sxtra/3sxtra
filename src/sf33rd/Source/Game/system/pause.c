@@ -20,7 +20,7 @@
 #include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 #include "sf33rd/Source/Game/menu/menu.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/system/reset.h"
@@ -33,7 +33,7 @@
 /** @brief Top-level pause task states (replaces Main_Jmp_Tbl indices). */
 typedef enum {
     PAUSE_CHECK = 0, /**< Polling both players for pause/disconnect input */
-    PAUSE_MOVE = 1,  /**< g_state.Pause active � waiting for menu to signal exit  */
+    PAUSE_MOVE = 1,  /**< g_state.Pause active � waiting for menu to signal exit  */
     PAUSE_SLEEP = 2, /**< Sleeping (no-op)                                */
     PAUSE_DIE = 3,   /**< Dead (no-op)                                    */
     PAUSE_STATE_COUNT
@@ -41,7 +41,7 @@ typedef enum {
 
 /** @brief Flash overlay sub-states (replaces Flash_Jmp_Tbl indices). */
 typedef enum {
-    FLASH_SLEEP = 0, /**< Idle � no flash overlay active           */
+    FLASH_SLEEP = 0, /**< Idle � no flash overlay active           */
     FLASH_1ST = 1,   /**< Initial delay before showing pause text  */
     FLASH_2ND = 2,   /**< Displaying "1P PAUSE" / "2P PAUSE" text  */
     FLASH_3RD = 3,   /**< No-op (killed / gap state)               */
@@ -49,7 +49,7 @@ typedef enum {
     FLASH_STATE_COUNT
 } FlashPauseState;
 
-#define PAUSE_HOLD_FRAMES 150 /**< Start must be held this many frames to pause (2.5s � 60fps) */
+#define PAUSOUND_EFFECTS_HOLD_FRAMES 150 /**< Start must be held this many frames to pause (2.5s � 60fps) */
 
 u8 PAUSE_X;
 static u16 start_hold_frames[2]; /**< Per-player frame counter for Start hold */
@@ -75,7 +75,7 @@ static void Setup_Pause(struct _TASK* task_ptr);
 static void Setup_Come_Out(struct _TASK* task_ptr);
 static s32 Check_Play_Status(s16 PL_id);
 
-/** @brief Main pause task entry point � dispatches sub-states and flash effects. */
+/** @brief Main pause task entry point � dispatches sub-states and flash effects. */
 void Pause_Task(struct _TASK* task_ptr) {
     if (!nowSoftReset() && g_state.Mode_Type != MODE_NETWORK && g_state.Mode_Type != MODE_NORMAL_TRAINING &&
         g_state.Mode_Type != MODE_PARRY_TRAINING && g_state.Mode_Type != MODE_TRIALS) {
@@ -118,7 +118,7 @@ static void Pause_Check(struct _TASK* task_ptr) {
     }
 }
 
-/** @brief g_state.Pause active state � wait for the menu system to signal exit. */
+/** @brief g_state.Pause active state � wait for the menu system to signal exit. */
 static void Pause_Move(struct _TASK* task_ptr) {
     if (g_state.Exit_Menu) {
         Exit_Pause(task_ptr);
@@ -159,7 +159,7 @@ static void Flash_Pause(struct _TASK* task_ptr) {
 /** @brief Flash pause sleep state (no-op). */
 static void Flash_Pause_Sleep(struct _TASK* unused1) {}
 
-/** @brief Flash pause 1st phase � initial delay before showing the pause message. */
+/** @brief Flash pause 1st phase � initial delay before showing the pause message. */
 static void Flash_Pause_1st(struct _TASK* task_ptr) {
     if (--task_ptr->free[0] == 0) {
         task_ptr->r_no[2] = FLASH_2ND;
@@ -167,7 +167,7 @@ static void Flash_Pause_1st(struct _TASK* task_ptr) {
     }
 }
 
-/** @brief Flash pause 2nd phase � display the "1P PAUSE" or "2P PAUSE" text. */
+/** @brief Flash pause 2nd phase � display the "1P PAUSE" or "2P PAUSE" text. */
 static void Flash_Pause_2nd(struct _TASK* task_ptr) {
     if (--task_ptr->free[0]) {
         if (!use_rmlui || !rmlui_screen_pause) {
@@ -187,7 +187,7 @@ static void Flash_Pause_2nd(struct _TASK* task_ptr) {
 /** @brief Flash pause 3rd phase (no-op). */
 static void Flash_Pause_3rd(struct _TASK* unused1) {}
 
-/** @brief Flash pause 4th phase � handle controller-disconnected state. */
+/** @brief Flash pause 4th phase � handle controller-disconnected state. */
 static void Flash_Pause_4th(struct _TASK* task_ptr) {
     if (Interface_Type[g_state.Pause_ID] == 0) {
         dispControllerWasRemovedMessage(0x84, 0x52, 0x10);
@@ -238,7 +238,7 @@ static s32 Check_Pause_Term(u16 sw, u8 PL_id) {
     }
 
     if (sw & SWK_START) {
-        if (++start_hold_frames[PL_id] >= PAUSE_HOLD_FRAMES) {
+        if (++start_hold_frames[PL_id] >= PAUSOUND_EFFECTS_HOLD_FRAMES) {
             start_hold_frames[PL_id] = 0;
             g_state.Pause_Type = 1;
             return PAUSE_X = 1;
@@ -341,9 +341,9 @@ static void Setup_Come_Out(struct _TASK* task_ptr) {
     setup_pause_common(task_ptr, FLASH_4TH);
 }
 
-/* ══════════════════════════════════════════════════════════════════════════�
- *  Accessor functions � decouple menu_input.c from TASK_PAUSE internals
- * ══════════════════════════════════════════════════════════════════════════�
+/* ══════════════════════════════════════════════════════════════════════════�
+ *  Accessor functions � decouple menu_input.c from TASK_PAUSE internals
+ * ══════════════════════════════════════════════════════════════════════════�
  */
 
 /** @brief Set the flash overlay sub-state (used by menu_input.c). */

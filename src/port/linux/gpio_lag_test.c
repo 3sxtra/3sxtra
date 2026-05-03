@@ -22,7 +22,7 @@
 
 #include "port/linux/gpio_lag_test.h"
 #include "game_state.h"
-#include "sf33rd/Source/Game/io/ioconv.h"
+#include "sf33rd/Source/Game/io/input_converter.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/engine/player_control.h"

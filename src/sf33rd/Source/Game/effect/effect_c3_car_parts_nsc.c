@@ -16,7 +16,7 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_main.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
@@ -1056,7 +1056,7 @@ void effect_C3_move(State_Other* ewk) {
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1) {
+        if (ewk->wu.death_timer == 1) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0] = 2;
             ewk->wu.routine_no[1] = 1;
@@ -1065,7 +1065,7 @@ void effect_C3_move(State_Other* ewk) {
 
         ewk->wu.dir_old = bs2_sync_bomb(&ewk->wu);
 
-        if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+        if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
             effC3_main_process(ewk);
         }
 
@@ -1140,7 +1140,7 @@ static void set_display_car_parts(State_Other* wk) {
     const u16* adrs;
 
     bs2_get_parts_break(&wk->wu);
-    adrs = car_parts[wk->wu.type - 1][wk->wu.scr_mv_y][wk->wu.scr_mv_x - 1];
+    adrs = car_parts[wk->wu.type - 1][wk->wu.screen_move_y][wk->wu.screen_move_x - 1];
     wk->wu.cg_number = adrs[0];
     wk->wu.body_hurtbox = wk->wu.body_adrs + (wk->wu.anim_hurtbox_index = adrs[1]);
 }
@@ -1161,7 +1161,7 @@ static void effC3_main_process(State_Other* ewk) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[2] = 0;
         bs2_get_parts_break(&ewk->wu);
-        set_char_move_init2(&ewk->wu, 0, ewk->wu.dir_step + 7, ewk->wu.scr_mv_x, 0);
+        set_char_move_init2(&ewk->wu, 0, ewk->wu.dir_step + 7, ewk->wu.screen_move_x, 0);
 
         if (ewk->wu.vital_old < 7) {
             setup_effK2_sync_bomb(&ewk->wu);
@@ -1230,10 +1230,10 @@ s32 effect_C3_init(State_Other* wk, s16 data) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 123;
     ewk->wu.type = data;
-    ewk->wu.my_mts = 5;
+    ewk->wu.my_sprite_sheet = 5;
     ewk->my_master = wk->my_master;
     ewk->wu.target_adrs = wk->wu.target_adrs;
     ewk->wu.my_effadrs = wk;

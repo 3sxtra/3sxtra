@@ -35,17 +35,17 @@
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 
 static s16 ja_nmj_rno_change(State* wk);
-static void Attack_07000(PLW* wk);
-static void attack_ground_init(PLW* wk);
-static void attack_special_init(PLW* wk);
-static void get_cancel_timer(PLW* wk);
-static void check_jump_attack_dummy_rtn(PLW* wk);
-static u8 get_cjdR(PLW*);
+static void Attack_07000(PlayerEntity* wk);
+static void attack_ground_init(PlayerEntity* wk);
+static void attack_special_init(PlayerEntity* wk);
+static void get_cancel_timer(PlayerEntity* wk);
+static void check_jump_attack_dummy_rtn(PlayerEntity* wk);
+static u8 get_cjdR(PlayerEntity*);
 
-void (*const plpat_lv_00[16])(PLW* wk);
+void (*const plpat_lv_00[16])(PlayerEntity* wk);
 void (*const plxx_extra_attack_table[])();
 
 const u8* cancel_whiff_table[20];
@@ -54,27 +54,27 @@ const u8* cancel_block_table[20];
 const u8* cancel_defense_table[20];
 
 /** @brief Main player attack dispatcher — routes to attack level sub-handlers. */
-void Player_attack(PLW* wk) {
+void Player_attack(PlayerEntity* wk) {
     wk->wu.next_z = wk->wu.my_priority;
-    wk->running_f = 0;
+    wk->running_flag = 0;
     wk->py->flag = 0;
     wk->guard_flag = 3;
     wk->guard_active = 0;
     wk->is_throwing = false;
     wk->is_being_thrown = false;
     wk->scr_pos_set_flag = 1;
-    wk->dm_hos_flag = 0;
+    wk->damage_pushbox_flag = 0;
     wk->recovery_roll_success = 0;
     wk->slide_timer = 0;
     wk->slide_index_counter = 0;
     wk->sa_stop_flag = 0;
     wk->recovery_roll_success = 0;
     wk->recovery_roll_ok_timer = 0;
-    wk->uot_cd_ok_flag = 0;
+    wk->ukemi_cooldown_ok = 0;
     wk->inescapable_flag = 0;
-    wk->cat_break_reserve = 0;
+    wk->catch_break_reserve = 0;
     wk->wu.swallow_no_effect = 0;
-    check_em_tk_power_off(wk, (PLW*)wk->wu.target_adrs);
+    check_em_tk_power_off(wk, (PlayerEntity*)wk->wu.target_adrs);
 
     if (wk->wu.routine_no[3] == 0) {
         wk->caution_flag = 1;
@@ -95,12 +95,12 @@ void Player_attack(PLW* wk) {
     if (wk->wu.routine_no[2] > 15) {
         plxx_extra_attack_table[wk->player_number](wk);
     } else {
-        wk->sa->saeff_ok = 0;
-        wk->sa->saeff_mp = 0;
+        wk->sa->super_effect_can_activate = 0;
+        wk->sa->super_effect_meter = 0;
         plpat_lv_00[wk->wu.routine_no[2]](wk);
     }
 
-    wk->wu.next_z = ((PLW*)wk->wu.target_adrs)->wu.my_priority - 3;
+    wk->wu.next_z = ((PlayerEntity*)wk->wu.target_adrs)->wu.my_priority - 3;
 
     if (wk->wu.cg_prio) {
         if (wk->wu.cg_prio == 1) {
@@ -112,23 +112,23 @@ void Player_attack(PLW* wk) {
 }
 
 /** @brief Common case-0 preamble for ground-based attack init. */
-static void attack_ground_init(PLW* wk) {
+static void attack_ground_init(PlayerEntity* wk) {
     wk->wu.routine_no[3]++;
     force_grounded_state(wk);
-    wk->wu.rl_flag = wk->wu.active_move;
+    wk->wu.facing_flag = wk->wu.active_move;
     setup_lvdir_after_autodir(wk);
     get_cancel_timer(wk);
     set_char_move_init(&wk->wu, 4, wk->as->char_ix);
 }
 
 /** @brief Common case-0 preamble for special/follow-up attacks (ground init + mvxy). */
-static void attack_special_init(PLW* wk) {
+static void attack_special_init(PlayerEntity* wk) {
     attack_ground_init(wk);
     setup_mvxy_data(&wk->wu, wk->as->data_ix);
 }
 
 /** @brief Attack level 0: Ground normal attack start. */
-static void Attack_00000(PLW* wk) {
+static void Attack_00000(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -150,7 +150,7 @@ static void Attack_00000(PLW* wk) {
 }
 
 /** @brief Attack level 1: Normal attack follow-up (cancel chain). */
-static void Attack_01000(PLW* wk) {
+static void Attack_01000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         attack_special_init(wk);
@@ -179,7 +179,7 @@ static void Attack_01000(PLW* wk) {
 }
 
 /** @brief Attack level 2: Special move attack execution. */
-static void Attack_02000(PLW* wk) {
+static void Attack_02000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         attack_special_init(wk);
@@ -215,14 +215,14 @@ static void Attack_02000(PLW* wk) {
 }
 
 /** @brief Attack level 3: Super Art activation and execution. */
-static void Attack_03000(PLW* wk) {
+static void Attack_03000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         get_cancel_timer(wk);
         if ((g_state.Bonus_Game_Flag == 20 && wk->bs2_on_car) || (wk->wu.xyz[1].disp.pos <= 0)) {
             force_grounded_state(wk);
-            wk->wu.rl_flag = wk->wu.active_move;
+            wk->wu.facing_flag = wk->wu.active_move;
             setup_lvdir_after_autodir(wk);
             Normal_18000_init_unit(wk, wk->wu.pat_status);
         }
@@ -319,7 +319,7 @@ static s16 ja_nmj_rno_change(State* wk) {
 }
 
 /** @brief Checks and handles dummy RTN for jump normal/special transitions. */
-static void check_jump_attack_dummy_rtn(PLW* wk) {
+static void check_jump_attack_dummy_rtn(PlayerEntity* wk) {
     if (wk->wu.xyz[1].disp.pos <= 0) {
         wk->jump_attack_routine = 0;
         return;
@@ -368,7 +368,7 @@ static void check_jump_attack_dummy_rtn(PLW* wk) {
 }
 
 /** @brief Gets the cancel-jump-dash routing data for the current state. */
-static u8 get_cjdR(PLW* wk) {
+static u8 get_cjdR(PlayerEntity* wk) {
     s16 w_ix = (wk->wu.attack_type & 6);
     w_ix += ((wk->wu.hf.hit.player & 0xA2) != 0);
 
@@ -402,7 +402,7 @@ case3:
 }
 
 /** @brief Attack level 4: EX special move execution. */
-static void Attack_04000(PLW* wk) {
+static void Attack_04000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         attack_ground_init(wk);
@@ -422,10 +422,10 @@ static void Attack_04000(PLW* wk) {
 }
 
 /** @brief Attack level 5: Command throw execution. */
-static void Attack_05000(PLW* wk) {
+static void Attack_05000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
 
         if (wk->wu.xyz[1].disp.pos > 0) {
@@ -463,13 +463,13 @@ static void Attack_05000(PLW* wk) {
 }
 
 /** @brief Attack level 6: Placeholder/unused attack level. */
-static void Attack_06000(PLW* wk) {
+static void Attack_06000(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
     Attack_07000(wk);
 }
 
 /** @brief Attack level 7: Air throw execution. */
-static void Attack_07000(PLW* wk) {
+static void Attack_07000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -479,7 +479,7 @@ static void Attack_07000(PLW* wk) {
 
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
-            wk->wu.rl_flag = wk->wu.active_move;
+            wk->wu.facing_flag = wk->wu.active_move;
             break;
         }
 
@@ -490,7 +490,7 @@ static void Attack_07000(PLW* wk) {
 
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
-            wk->wu.rl_flag = wk->wu.active_move;
+            wk->wu.facing_flag = wk->wu.active_move;
         }
 
         break;
@@ -498,7 +498,7 @@ static void Attack_07000(PLW* wk) {
 }
 
 /** @brief Attack level 8: Target combo execution. */
-static void Attack_08000(PLW* wk) {
+static void Attack_08000(PlayerEntity* wk) {
     s16 ixx;
 
     switch (wk->wu.routine_no[3]) {
@@ -506,7 +506,7 @@ static void Attack_08000(PLW* wk) {
         wk->wu.routine_no[3]++;
 
         if (wk->wu.xyz[1].disp.pos <= 0) {
-            wk->wu.rl_flag = wk->wu.active_move;
+            wk->wu.facing_flag = wk->wu.active_move;
             wk->wu.xyz[1].disp.pos = 0;
 
             ixx = ((wk->wu.pat_status - 20) / 2 & 3) + 9;
@@ -558,7 +558,7 @@ static void Attack_08000(PLW* wk) {
 }
 
 /** @brief Attack level 9: Chain combo execution. */
-static void Attack_09000(PLW* wk) {
+static void Attack_09000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -569,7 +569,7 @@ static void Attack_09000(PLW* wk) {
 
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
-            wk->wu.rl_flag = wk->wu.active_move;
+            wk->wu.facing_flag = wk->wu.active_move;
             break;
         }
 
@@ -580,7 +580,7 @@ static void Attack_09000(PLW* wk) {
 
         if (wk->wu.cg_type == 20) {
             wk->wu.cg_type = 0;
-            wk->wu.rl_flag = wk->wu.active_move;
+            wk->wu.facing_flag = wk->wu.active_move;
         }
 
         if (wk->wu.cg_type == 1) {
@@ -603,12 +603,12 @@ static void Attack_09000(PLW* wk) {
 }
 
 /** @brief Attack level 10: Leap attack (overhead) execution. */
-static void Attack_10000(PLW* wk) {
+static void Attack_10000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         force_grounded_state(wk);
-        wk->wu.rl_flag = wk->wu.active_move;
+        wk->wu.facing_flag = wk->wu.active_move;
         set_char_move_init(&wk->wu, 5, wk->as->char_ix);
         setup_mvxy_data(&wk->wu, wk->as->data_ix);
         wk->cancel_timer = 0;
@@ -674,14 +674,14 @@ static void Attack_10000(PLW* wk) {
 }
 
 /** @brief Attack level 14: Kara-cancel attack execution. */
-static void Attack_14000(PLW* wk) {
+static void Attack_14000(PlayerEntity* wk) {
     wk->scr_pos_set_flag = 0;
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
         force_grounded_state(wk);
-        wk->wu.rl_flag = wk->wu.active_move;
-        wk->cat_break_ok_timer = 6;
+        wk->wu.facing_flag = wk->wu.active_move;
+        wk->catch_break_ok_timer = 6;
         setup_lvdir_after_autodir(wk);
         set_char_move_init(&wk->wu, 4, wk->as->char_ix);
         break;
@@ -691,37 +691,37 @@ static void Attack_14000(PLW* wk) {
         break;
     }
 
-    if (wk->cat_break_ok_timer) {
-        wk->cat_break_reserve = 1;
+    if (wk->catch_break_ok_timer) {
+        wk->catch_break_reserve = 1;
     }
 }
 
 /** @brief Attack level 15: Personal action (taunt) execution. */
-static void Attack_15000(PLW* wk) {
+static void Attack_15000(PlayerEntity* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
 
         if (wk->wu.xyz[1].disp.pos <= 0) {
-            wk->wu.rl_flag = wk->wu.active_move;
+            wk->wu.facing_flag = wk->wu.active_move;
             setup_lvdir_after_autodir(wk);
             wk->wu.xyz[1].disp.pos = 0;
             Normal_18000_init_unit(wk, wk->wu.pat_status);
         }
 
-        wk->cat_break_ok_timer = 6;
+        wk->catch_break_ok_timer = 6;
         set_char_move_init(&wk->wu, 4, wk->as->char_ix);
 
-        if (wk->cat_break_ok_timer) {
-            wk->cat_break_reserve = 1;
+        if (wk->catch_break_ok_timer) {
+            wk->catch_break_reserve = 1;
             break;
         }
 
         break;
 
     case 1:
-        if (wk->cat_break_ok_timer) {
-            wk->cat_break_reserve = 1;
+        if (wk->catch_break_ok_timer) {
+            wk->catch_break_reserve = 1;
         }
 
         if ((wk->wu.mvxy.a[1].sp > 0) && (wk->wu.xyz[1].disp.pos < 0)) {
@@ -735,8 +735,8 @@ static void Attack_15000(PLW* wk) {
     case 2:
         jumping_union_process(&wk->wu, 3);
 
-        if ((wk->wu.routine_no[3] != 3) && wk->cat_break_ok_timer) {
-            wk->cat_break_reserve = 1;
+        if ((wk->wu.routine_no[3] != 3) && wk->catch_break_ok_timer) {
+            wk->catch_break_reserve = 1;
             break;
         }
 
@@ -749,7 +749,7 @@ static void Attack_15000(PLW* wk) {
 }
 
 /** @brief Retrieves the cancel timer value from the attack pattern data. */
-static void get_cancel_timer(PLW* wk) {
+static void get_cancel_timer(PlayerEntity* wk) {
     if (wk->tc_1st_flag) {
         wk->cancel_timer = 0;
         return;
@@ -764,7 +764,7 @@ static void get_cancel_timer(PLW* wk) {
 }
 
 /** @brief Forces a landing if the player is airborne as a safety check. */
-void force_grounded_state(PLW* wk) {
+void force_grounded_state(PlayerEntity* wk) {
     if ((g_state.Bonus_Game_Flag == 20) && wk->bs2_on_car) {
         wk->wu.xyz[1].disp.pos = g_state.bs2_floor[2];
         return;
@@ -773,7 +773,7 @@ void force_grounded_state(PLW* wk) {
     wk->wu.xyz[1].disp.pos = 0;
 }
 
-void (*const plpat_lv_00[16])(PLW* wk) = { Attack_00000, Attack_01000, Attack_02000, Attack_03000,
+void (*const plpat_lv_00[16])(PlayerEntity* wk) = { Attack_00000, Attack_01000, Attack_02000, Attack_03000,
                                            Attack_04000, Attack_05000, Attack_06000, Attack_07000,
                                            Attack_08000, Attack_09000, Attack_10000, Attack_00000,
                                            Attack_00000, Attack_00000, Attack_14000, Attack_15000 };

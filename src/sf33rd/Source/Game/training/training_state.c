@@ -17,7 +17,7 @@ TrainingGameState g_training_state = { 0 };
 bool g_lua_dummy_active = false;
 s16 g_lua_dummy_player_id = -1;
 
-static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* opponent_wk) {
+static void update_player_state(TrainingPlayerState* state, PlayerEntity* wk, PlayerEntity* opponent_wk) {
     if (!wk)
         return;
 
@@ -151,7 +151,7 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
     // Priority order: Down > Blockstun > Hitstun > Active > Startup/Recovery > Idle
     // IMPORTANT: Blockstun must be checked BEFORE hitstun because the engine also sets
     // cg_type >= 0x40 on blocking characters (they share the damage-state range).
-    // The authoritative signal for "currently blocking" is guard_flag == 3 on the PLW.
+    // The authoritative signal for "currently blocking" is guard_flag == 3 on the PlayerEntity.
     u8 cg = wk->wu.char_state.body.fields.cg_type;
 
     if (cg >= 0x54) {

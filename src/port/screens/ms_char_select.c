@@ -6,18 +6,18 @@
  * MENU_SCREEN_CHAR_SELECT.
  *
  * The character select screen was originally driven by Select_Player()
- * in sel_pl.c, called synchronously from Game_CharSelect().  This file provides
+ * in character_select_player.c, called synchronously from Game_CharSelect().  This file provides
  * the MenuScreen lifecycle layer so Select_Player() can delegate to
  * the registry, following the same thin-wrapper pattern used by
  * Continue_Scene() (continue.c) and Play_Demo() (demo02.c).
  *
  * The internal jump tables and state arrays remain untouched inside
- * sel_pl.c — only the top-level dispatcher is wrapped.
+ * character_select_player.c — only the top-level dispatcher is wrapped.
  */
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/screen/sel_pl.h"
+#include "sf33rd/Source/Game/screen/character_select_player.h"
 
 static void ms_char_select_enter(struct _TASK* tp) {
     tp->timer = 0; /* Skip WAIT/FADE_IN — char select manages its own transitions */
@@ -53,8 +53,8 @@ __attribute__((constructor)) static void register_ms_char_select(void) {
                                                         .on_exit = ms_char_select_exit,
                                                         .cursor_max = 0,
                                                         .cancel_item = -1,
-                                                        .rmlui_show = NULL, /* Managed internally in sel_pl.c */
-                                                        .rmlui_hide = NULL, /* Managed internally in sel_pl.c */
+                                                        .rmlui_show = NULL, /* Managed internally in character_select_player.c */
+                                                        .rmlui_hide = NULL, /* Managed internally in character_select_player.c */
                                                         .header_type = (MenuHeader)-1,
                                                         .effect_slot = 0 };
 }

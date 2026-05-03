@@ -32,7 +32,7 @@ void effect_74_move(State_Other* ewk) {
 
     EFF74_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
-    if (ewk->wu.be_flag == 0) {
+    if (ewk->wu.active_flag == 0) {
         return;
     }
 

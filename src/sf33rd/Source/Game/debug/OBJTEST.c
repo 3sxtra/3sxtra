@@ -10,14 +10,14 @@
 #include "sf33rd/Source/Game/debug/OBJTEST.h"
 #include "common.h"
 #include "sf33rd/Source/Game/debug/OTESTDAT.h"
-#include "sf33rd/Source/Game/io/pulpul.h"
+#include "sf33rd/Source/Game/io/rumble.h"
 
 // sbss
 PPWORK_SUB_SUB ot_pulreq_xx[OT_PULREQ_XX_MAX];
 
 // bss
-PULREQ ot_pulreq[OT_PULREQ_MAX];
-PULPARA ot_pulpara[OT_PULPARA_MAX];
+RumbleRequest ot_pulreq[OT_PULREQ_MAX];
+RumbleParams ot_pulpara[OT_PULPARA_MAX];
 
 /** @brief Snapshot live vibration/force-feedback data into local buffers. */
 void ot_make_curr_vib_data() {

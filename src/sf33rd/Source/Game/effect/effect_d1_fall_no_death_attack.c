@@ -107,7 +107,7 @@ static void fall_data_set(State_Other* ewk) {
     pos_work = g_state.plw[oya_ef->master_id].wu.xyz[0].disp.pos - g_state.plw[id_work].wu.xyz[0].disp.pos;
     ewk->wu.old_routine_no[2] = -8;
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.xyz[0].disp.pos += 32;
 
         if (pos_work > 0) {
@@ -145,7 +145,7 @@ s32 effect_D1_init(State_Other* oya, s32 /* unused */) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 131;
     ewk->wu.work_id = 16;
     ewk->wu.graphic_rom_type = 1;
@@ -157,7 +157,7 @@ s32 effect_D1_init(State_Other* oya, s32 /* unused */) {
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_priority = ewk->wu.position_z = oya->wu.position_z;
     ewk->wu.sync_bg_strip = 0;
-    ewk->wu.rl_flag = oya->wu.rl_flag;
+    ewk->wu.facing_flag = oya->wu.facing_flag;
 
     if (oya->master_id) {
         ewk->wu.my_col_code = 22;
@@ -169,7 +169,7 @@ s32 effect_D1_init(State_Other* oya, s32 /* unused */) {
     ewk->wu.xyz[1].disp.pos = oya->wu.xyz[1].disp.pos + 138;
     ewk->wu.xyz[0].disp.pos = oya->wu.xyz[0].disp.pos;
     ewk->wu.no_death_attack = 0;
-    ewk->wu.my_mts = 14;
-    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
     return 0;
 }

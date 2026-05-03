@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
@@ -37,7 +37,7 @@ void effect_J8_move(State_Other* ewk) {
             break;
         }
 
-        if (!g_state.EXE_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
+        if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
             dragonfly_move(ewk);
         }
 
@@ -61,7 +61,7 @@ void dragonfly_move(State_Other* ewk) {
 void dragonfly_l_move_0(State_Other* ewk) {
     s16 work;
 
-    ewk->wu.rl_flag = 1;
+    ewk->wu.facing_flag = 1;
     ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].r_limit2 + g_state.bg_w.pos_offset + 32;
     work = random_16();
     work &= 7;
@@ -167,7 +167,7 @@ void dragonfly_l_move(State_Other* ewk) {
 void dragonfly_r_move_0(State_Other* ewk) {
     s16 work;
 
-    ewk->wu.rl_flag = 0;
+    ewk->wu.facing_flag = 0;
     ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].l_limit2 - g_state.bg_w.pos_offset - 32;
     work = random_16();
     work &= 7;
@@ -275,7 +275,7 @@ void dragonfly_move_0000(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
-        ewk->wu.rl_flag = 1;
+        ewk->wu.facing_flag = 1;
         ewk->wu.xyz[0].disp.pos = g_state.bg_w.bgw[1].r_limit2 + g_state.bg_w.pos_offset + 32;
         ewk->wu.xyz[0].disp.low = 0;
         ewk->wu.xyz[1].disp.pos = 107;
@@ -324,7 +324,7 @@ void dragonfly_move_0001(State_Other* ewk) {
     case 0:
         char_move(&ewk->wu);
         ewk->wu.routine_no[2]++;
-        ewk->wu.rl_flag = 1;
+        ewk->wu.facing_flag = 1;
         dragonfly_stop_timer(ewk);
         break;
 
@@ -380,7 +380,7 @@ void dragonfly_move_0004(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         dragonfly_stop_timer(ewk);
         break;
 
@@ -422,7 +422,7 @@ void dragonfly_move_0005(State_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         dragonfly_stop_timer(ewk);
         break;
 
@@ -519,18 +519,18 @@ s32 effect_J8_init() {
         }
 
         ewk = (State_Other*)frw[ix];
-        ewk->wu.be_flag = 1;
+        ewk->wu.active_flag = 1;
         ewk->wu.id = 198;
         ewk->wu.work_id = 16;
         ewk->wu.graphic_rom_type = 1;
-        ewk->wu.rl_flag = 0;
+        ewk->wu.facing_flag = 0;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.type = i;
-        ewk->wu.dead_f = 1;
+        ewk->wu.death_timer = 1;
         ewk->wu.my_family = 2;
         ewk->wu.my_col_code = 8492;
-        ewk->wu.my_mts = 7;
-        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
+        ewk->wu.my_sprite_sheet = 7;
+        ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_sprite_sheet);
 
         switch (ewk->wu.type) {
         case 0:

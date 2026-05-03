@@ -15,14 +15,14 @@
 #include "sf33rd/Source/Game/engine/hitcheck.h"
 #include "sf33rd/Source/Game/engine/player_common_mechanics.h"
 #include "sf33rd/Source/Game/engine/player_system_utilities.h"
-#include "sf33rd/Source/Game/engine/slowf.h"
+#include "sf33rd/Source/Game/engine/slow_motion.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
-#include "sf33rd/Source/Game/sound/se_data.h"
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
 
 static void effD5_main_process(State_Other* ewk);
-static void cal_speeds(State_Other* ewk, PLW* /* unused */, PLW* twk);
-static s32 my_rose_live_check(PLW* wk);
+static void cal_speeds(State_Other* ewk, PlayerEntity* /* unused */, PlayerEntity* twk);
+static s32 my_rose_live_check(PlayerEntity* wk);
 
 const s16 dm_sp_sel_tbl[4][2] = { { 0, 14 }, { 1, 16 }, { 2, 18 }, { 3, 20 } };
 
@@ -44,14 +44,14 @@ void effect_D5_move(State_Other* ewk) {
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_prio = 71;
         ewk->wu.shadow_char = 0;
-        cal_speeds(ewk, (PLW*)ewk->my_master, (PLW*)ewk->wu.target_adrs);
+        cal_speeds(ewk, (PlayerEntity*)ewk->my_master, (PlayerEntity*)ewk->wu.target_adrs);
         add_mvxy_speed(&ewk->wu);
         set_char_move_init(&ewk->wu, 0, 0x7C);
         sort_push_request(&ewk->wu);
         break;
 
     case 1:
-        if (ewk->wu.dead_f == 1 || g_state.Suicide[0] != 0) {
+        if (ewk->wu.death_timer == 1 || g_state.Suicide[0] != 0) {
             ewk->wu.disp_flag = 0;
             ewk->wu.routine_no[0]++;
             break;
@@ -62,7 +62,7 @@ void effect_D5_move(State_Other* ewk) {
                 ewk->wu.hit_stop = -ewk->wu.hit_stop;
             }
 
-            if (g_state.EXE_flag == 0 && g_state.Game_pause == 0) {
+            if (g_state.execute_flag == 0 && g_state.Game_pause == 0) {
                 effD5_main_process(ewk);
 
                 if (ewk->wu.cg_type == 0xFF) {
@@ -131,7 +131,7 @@ static void effD5_main_process(State_Other* ewk) {
                 ewk->wu.mvxy.a[1].sp = 0;
                 ewk->wu.direction = 2;
 
-                if (ewk->wu.rl_flag) {
+                if (ewk->wu.facing_flag) {
                     ewk->wu.direction = cal_attdir_flip(ewk->wu.direction);
                 }
 
@@ -139,7 +139,7 @@ static void effD5_main_process(State_Other* ewk) {
             } else if (ewk->wu.hf.hit.player & 0xC0) {
                 ewk->wu.routine_no[1] = 0;
                 ewk->refrected = 1;
-                ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+                ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
                 ewk->wu.mvxy.a[0].sp = 0x60000;
                 ewk->wu.mvxy.d[0].sp = -0x3000;
                 ewk->wu.mvxy.a[1].sp /= 3;
@@ -147,7 +147,7 @@ static void effD5_main_process(State_Other* ewk) {
                 ewk->wu.hit_stop = 4;
                 ewk->wu.direction = 0xD;
 
-                if (ewk->wu.rl_flag) {
+                if (ewk->wu.facing_flag) {
                     ewk->wu.direction = cal_attdir_flip(ewk->wu.direction);
                 }
 
@@ -156,13 +156,13 @@ static void effD5_main_process(State_Other* ewk) {
         } else {
             Se_Dispatch(0x10B, 0x10B, ewk);
             ewk->wu.routine_no[1] = 2;
-            ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
+            ewk->wu.facing_flag = (ewk->wu.facing_flag + 1) & 1;
             ewk->wu.disp_flag = 2;
             ewk->wu.type = 0;
             ewk->wu.shadow_flag = 0;
             ewk->wu.dir_timer = 16;
             ewk->wu.hit_stop = 2;
-            ewk->wu.direction = ewk->wu.dm_dir;
+            ewk->wu.direction = ewk->wu.damage_direction;
             dsst = 3;
 
             if (!(ewk->wu.damage_attack_type & 0xF8)) {
@@ -187,11 +187,11 @@ static void effD5_main_process(State_Other* ewk) {
     }
 }
 
-static void cal_speeds(State_Other* ewk, PLW* /* unused */, PLW* twk) {
+static void cal_speeds(State_Other* ewk, PlayerEntity* /* unused */, PlayerEntity* twk) {
     s16 tx = twk->wu.position_x;
     s16 rix = 0;
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         tx -= 16;
 
         if (tx > ewk->wu.position_x) {
@@ -214,7 +214,7 @@ static void cal_speeds(State_Other* ewk, PLW* /* unused */, PLW* twk) {
     cal_delta_speed(&ewk->wu, range_time_table[rix], tx, 0, 2, 1);
     ewk->wu.mvxy.physics_curve_type[0] = 1;
 
-    if (ewk->wu.rl_flag == 0) {
+    if (ewk->wu.facing_flag == 0) {
         ewk->wu.mvxy.a[0].sp = -ewk->wu.mvxy.a[0].sp;
         ewk->wu.mvxy.d[0].sp = -ewk->wu.mvxy.d[0].sp;
     }
@@ -224,7 +224,7 @@ s32 effect_D5_init(State* wk, s32 /* unused */) {
     State_Other* ewk;
     s16 ix;
 
-    if (my_rose_live_check((PLW*)wk) != 0) {
+    if (my_rose_live_check((PlayerEntity*)wk) != 0) {
         return -1;
     }
 
@@ -233,18 +233,18 @@ s32 effect_D5_init(State* wk, s32 /* unused */) {
     }
 
     ewk = (State_Other*)frw[ix];
-    ewk->wu.be_flag = 1;
+    ewk->wu.active_flag = 1;
     ewk->wu.id = 135;
     ewk->wu.work_id = 2;
-    ewk->wu.my_mts = 14;
-    ewk->wu.rl_flag = wk->rl_flag;
+    ewk->wu.my_sprite_sheet = 14;
+    ewk->wu.facing_flag = wk->facing_flag;
     ewk->wu.damage_vitality = wk->my_col_code + 6;
     ewk->my_master = wk;
     ewk->wu.target_adrs = wk->target_adrs;
     ewk->master_work_id = wk->work_id;
     ewk->master_id = wk->id;
 
-    if (ewk->wu.rl_flag) {
+    if (ewk->wu.facing_flag) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = wk->position_x + 28;
     } else {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = wk->position_x - 28;
@@ -256,7 +256,7 @@ s32 effect_D5_init(State* wk, s32 /* unused */) {
     return 0;
 }
 
-static s32 my_rose_live_check(PLW* wk) {
+static s32 my_rose_live_check(PlayerEntity* wk) {
     State_Other* twk;
     s16 ix;
 

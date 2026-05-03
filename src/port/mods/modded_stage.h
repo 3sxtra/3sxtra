@@ -4,7 +4,7 @@
  *
  * Provides an optional cosmetic-only replacement for the original PS2 tile-based
  * stage backgrounds. When enabled and assets exist for the current stage, the
- * tile rendering pipeline (scr_trans) is bypassed and HD PNG layers are drawn
+ * tile rendering pipeline (screen_transform) is bypassed and HD PNG layers are drawn
  * with parallax scrolling driven by the live bg_w engine values.
  *
  * All original engine state (scroll, zoom, limits, animations) remains fully

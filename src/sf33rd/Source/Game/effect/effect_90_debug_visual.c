@@ -12,10 +12,10 @@
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-static s32 Check_Disp_90(WORK_Other_CONN* ewk);
-static s16 Check_Disp_Pos_90(WORK_Other_CONN* ewk);
+static s32 Check_Disp_90(EffectMultiSprite* ewk);
+static s16 Check_Disp_Pos_90(EffectMultiSprite* ewk);
 
-void effect_90_move(WORK_Other_CONN* ewk) {
+void effect_90_move(EffectMultiSprite* ewk) {
     Check_Pos_OBJ2((State_Other*)ewk);
 
     if (g_state.Menu_Suicide[ewk->master_player]) {
@@ -36,7 +36,7 @@ void effect_90_move(WORK_Other_CONN* ewk) {
     sort_push_request3(&ewk->wu);
 }
 
-static s32 Check_Disp_90(WORK_Other_CONN* ewk) {
+static s32 Check_Disp_90(EffectMultiSprite* ewk) {
     if (ewk->wu.dir_step == 2 || ewk->wu.dir_step == 6) {
         return 1;
     }
@@ -52,7 +52,7 @@ static s32 Check_Disp_90(WORK_Other_CONN* ewk) {
     return 1;
 }
 
-static s16 Check_Disp_Pos_90(WORK_Other_CONN* ewk) {
+static s16 Check_Disp_Pos_90(EffectMultiSprite* ewk) {
     s16 y;
 
     if (ewk->wu.dir_step == 2 || ewk->wu.dir_step == 6) {
