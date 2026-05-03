@@ -90,9 +90,9 @@ struct _SYSTEM_W {
 };
 
 typedef struct {
-    u16 boix;
-    u16 bhix;
-    u16 haix;
+    u16 body_hurtbox_index;
+    u16 behind_hurtbox_index;
+    u16 hand_hurtbox_index;
     union {
         u16 full;
         struct {
@@ -100,10 +100,10 @@ typedef struct {
             u8 mv;
         } half;
     } mf;
-    u16 caix;
-    u16 cuix;
-    u16 atix;
-    u16 hoix;
+    u16 catch_box_index;
+    u16 caught_box_index;
+    u16 attack_box_index;
+    u16 pushbox_index;
 } HitIndexTable;
 
 typedef struct {
@@ -133,18 +133,18 @@ typedef struct {
 typedef struct {
     u8 reaction;
     u8 level;
-    u8 mkh_ix;
-    u8 but_ix;
+    u8 hit_mark_index;
+    u8 button_index;
     u8 dipsw;
     u8 guard;
     u8 dir;
     u8 free;
     u8 pow;
     u8 impact;
-    u8 piyo;
+    u8 stun_effect;
     u8 ng_type;
-    s8 hs_me;
-    s8 hs_you;
+    s8 hitstop_me;
+    s8 hitstop_you;
     u8 hit_mark;
     u8 dmg_mark;
 } AttackIndexTable;
@@ -177,7 +177,7 @@ typedef struct {
 
 typedef struct {
     u16 code;
-    s16 koc;
+    s16 kind_of_char;
     s16 ix;
     s16 pat;
 } CommandState;
@@ -225,7 +225,7 @@ typedef struct {
     // Offset -2 (relative to old cg_type)
     union {
         struct {
-            s16 cgd_type;
+            s16 char_graphic_data_type;
             u8 pat_status;
             u8 attack_type;
         };
@@ -394,7 +394,7 @@ typedef struct {
     union {
         CharState char_state;
         struct {
-            s16 cgd_type;
+            s16 char_graphic_data_type;
             u8 pat_status;
             u8 attack_type;
             u8 hit_range;
@@ -498,7 +498,7 @@ typedef struct {
     s16 hit_mark_x;
     s16 hit_mark_y;
     s16 hit_mark_z;
-    s16 kohm;
+    s16 kind_of_hit_mark;
     u8 damage_float_state;
     s8 dm_weight;
     u16 damage_knockback_type;

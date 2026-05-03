@@ -138,17 +138,17 @@ void effect_02_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         ewk->wu.char_table[0] = _ef01_char_table;
-        tad = &hmdt[ewk->wu.kohm];
+        tad = &hmdt[ewk->wu.kind_of_hit_mark];
 
         if (ewk->wu.vital_old == 2) {
-            ewk->wu.kohm = tad->deff;
+            ewk->wu.kind_of_hit_mark = tad->deff;
 
             if (ewk->wu.damage_vitality != 0) {
-                ewk->wu.kohm = tad->kezu;
+                ewk->wu.kind_of_hit_mark = tad->kezu;
             }
         }
 
-        tad = &hmdt[ewk->wu.kohm];
+        tad = &hmdt[ewk->wu.kind_of_hit_mark];
 
         if (tad->hits == 0) {
             if (tad->se) {
@@ -331,7 +331,7 @@ s32 effect_02_init(WORK* wk, s8 dmgp, s8 mkst, s8 dmrl) {
     ewk->wu.vital_new = dmgp;
     ewk->wu.vital_old = mkst;
     ewk->wu.dm_rl = dmrl;
-    ewk->wu.kohm = wk->att.hit_mark;
+    ewk->wu.kind_of_hit_mark = wk->att.hit_mark;
     ewk->wu.direction = wk->dir_atthit;
     ewk->wu.damage_vitality = wk->chip_damage_power;
     ewk->wu.graphic_rom_type = 1;

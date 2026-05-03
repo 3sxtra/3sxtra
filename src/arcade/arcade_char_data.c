@@ -172,10 +172,10 @@ static const void* read_char_table(SDL_IOStream* rom, Location location, Charact
         Uint8* p = (Uint8*)result + start_offset;
 
         // Read script header
-        Sint16 cgd_type = 0;
-        SDL_ReadS16BE(rom, &cgd_type);
-        SDL_assert(cgd_type == 1 || cgd_type == 2 || cgd_type == 4 || cgd_type == 6);
-        *(Sint16*)p = cgd_type;
+        Sint16 char_graphic_data_type = 0;
+        SDL_ReadS16BE(rom, &char_graphic_data_type);
+        SDL_assert(char_graphic_data_type == 1 || char_graphic_data_type == 2 || char_graphic_data_type == 4 || char_graphic_data_type == 6);
+        *(Sint16*)p = char_graphic_data_type;
         p += 2;
 
         for (int i = 0; i < 6; i++) {
@@ -192,11 +192,11 @@ static const void* read_char_table(SDL_IOStream* rom, Location location, Charact
                 p += 2;
 
                 for (int i = 0; i < 3; i++) {
-                    SDL_ReadS16BE(rom, p); // koc ... pat
+                    SDL_ReadS16BE(rom, p); // kind_of_char ... pat
                     p += 2;
                 }
 
-                const int left_to_move = SDL_max(cgd_type * 4 - 8, 0);
+                const int left_to_move = SDL_max(char_graphic_data_type * 4 - 8, 0);
                 p += left_to_move;
                 SDL_SeekIO(rom, left_to_move, SDL_IO_SEEK_CUR);
             } else {
@@ -216,7 +216,7 @@ static const void* read_char_table(SDL_IOStream* rom, Location location, Charact
                 *(Uint16*)p = cg_number;
                 p += 2;
 
-                if (cgd_type >= 4) {
+                if (char_graphic_data_type >= 4) {
                     Sint16 anim_hitbox_index = 0;
                     Uint16 anim_hurtbox_index = 0;
                     SDL_ReadS16BE(rom, &anim_hitbox_index);
@@ -233,7 +233,7 @@ static const void* read_char_table(SDL_IOStream* rom, Location location, Charact
                     }
                 }
 
-                if (cgd_type == 6) {
+                if (char_graphic_data_type == 6) {
                     for (int i = 0; i < 3; i++) {
                         SDL_ReadU16BE(rom, p); // cg_zoom ... cg_add_xy
                         p += 2;

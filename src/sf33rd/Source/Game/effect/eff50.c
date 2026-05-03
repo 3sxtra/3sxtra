@@ -66,7 +66,7 @@ void effect_50_move(WORK_Other* ewk) {
             ewk->wu.routine_no[0] = 1;
             ewk->wu.char_index--;
             set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
-            ewk->wu.graphic_index = pwk->wu.graphic_index - ewk->wu.cgd_type;
+            ewk->wu.graphic_index = pwk->wu.graphic_index - ewk->wu.char_graphic_data_type;
             char_move_z(&ewk->wu);
             ewk->wu.cg_ctr = pwk->wu.cg_ctr;
             ewk->wu.damage_calc_multiplier -= 3;

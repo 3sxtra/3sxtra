@@ -2042,7 +2042,7 @@ u32 _effD4_char_table[] = { 0x14,       0x34,   0x0,        0x2,   0x0,        0
  * (ag_00 … ag_07) were immediately followed by the shared sprite /
  * bytecode data (face_panel).  The offsets stored in the headers are
  * byte offsets from the start of ag_00, so the engine's
- *   set_char_ad = &char_table[koc][char_table[koc][index] / 4]
+ *   set_char_ad = &char_table[kind_of_char][char_table[kind_of_char][index] / 4]
  * requires the whole region to be one contiguous allocation.
  *
  * _ag_face_panel_table is defined below as a pointer into this block

@@ -26,7 +26,7 @@ void effect_A7_move(WORK_Other* ewk) {
     case 0:
         ewk->wu.routine_no[0]++;
         *ewk->wu.char_table = _ef01_char_table;
-        tad = &hmdt[ewk->wu.kohm];
+        tad = &hmdt[ewk->wu.kind_of_hit_mark];
 
         if (tad->hits == 0) {
             if (tad->se) {
@@ -187,7 +187,7 @@ s32 effect_A7_init(PLW* wk) {
     ewk->wu.id = 107;
     ewk->wu.work_id = 64;
     ewk->wu.rl_flag = wk->wu.rl_flag;
-    ewk->wu.kohm = wk->wu.hm_dm_side;
+    ewk->wu.kind_of_hit_mark = wk->wu.hm_dm_side;
     ewk->wu.graphic_rom_type = 1;
     ewk->wu.my_col_mode = 0x4200;
     ewk->wu.my_family = 2;

@@ -65,7 +65,22 @@ renames = {
     'cmmd': 'cmd_move_data',
     'cmyd': 'cmd_y_axis_data',
     'cmcf': 'cmd_catch_frame',
-    'cmcr': 'cmd_catch_release'
+    'cmcr': 'cmd_catch_release',
+    'boix': 'body_hurtbox_index',
+    'haix': 'hand_hurtbox_index',
+    'caix': 'catch_box_index',
+    'cuix': 'caught_box_index',
+    'atix': 'attack_box_index',
+    'hoix': 'pushbox_index',
+    'bhix': 'behind_hurtbox_index',
+    'koc': 'kind_of_char',
+    'cgd_type': 'char_graphic_data_type',
+    'kohm': 'kind_of_hit_mark',
+    'piyo': 'stun_effect',
+    'mkh_ix': 'hit_mark_index',
+    'but_ix': 'button_index',
+    'hs_me': 'hitstop_me',
+    'hs_you': 'hitstop_you'
 }
 
 def process_file(filepath):

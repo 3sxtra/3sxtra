@@ -497,7 +497,7 @@ static void Win_04000(PLW* wk) {
         case 1:
         case 3:
             if (wk->wu.now_koc == 0 && wk->wu.char_index == 0) {
-                work2 = wk->wu.graphic_index / wk->wu.cgd_type;
+                work2 = wk->wu.graphic_index / wk->wu.char_graphic_data_type;
                 work2 += 2;
                 set_char_move_init2(&wk->wu, 9, work + 32, work2, 0);
             } else {

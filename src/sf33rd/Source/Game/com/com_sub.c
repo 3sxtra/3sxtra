@@ -309,7 +309,7 @@ void Hold_Attack_Button(PLW* wk, s16 Power_Level) {
             g_state.Lever_Buff[wk->wu.id] = g_state.Lever_LR[wk->wu.id];
             if ((wk->wu.now_koc == 8) && (wk->wu.char_index == 0xD)) {
 
-                xx = wk->wu.graphic_index / wk->wu.cgd_type;
+                xx = wk->wu.graphic_index / wk->wu.char_graphic_data_type;
                 if (xx >= Power_Level) {
                     g_state.CP_Index[wk->wu.id][1] = 0x63;
                 }
@@ -3277,7 +3277,7 @@ s32 Check_Rapid_End(PLW* wk) {
     case 4:
         switch (g_state.Rapid_No[wk->wu.id][3]) {
         case 0:
-            if (wk->wu.cg_ja.atix) {
+            if (wk->wu.cg_ja.attack_box_index) {
                 g_state.Rapid_No[wk->wu.id][3]++;
             }
             break;

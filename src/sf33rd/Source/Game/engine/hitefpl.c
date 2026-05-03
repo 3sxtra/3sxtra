@@ -26,7 +26,7 @@ void effect_at_vs_player_dm(s16 ix2, s16 ix) {
     setup_dm_rl_pldm(&as->wu, &ds->wu);
     cal_hit_mark_pos(&as->wu, &ds->wu, ix2, ix);
     cal_damage_vitality_eff(as, ds);
-    ds->wu.damage_stun_value = _add_piyo_gauge[as->master_player][as->wu.att.piyo];
+    ds->wu.damage_stun_value = _add_piyo_gauge[as->master_player][as->wu.att.stun_effect];
     ds->wu.damage_stun_value = ds->wu.damage_stun_value * stun_gauge_omake[omop_stun_gauge_add[(ds->wu.id + 1) & 1]] / 32;
 
     if ((ds->wu.pat_status == 32 || ds->wu.pat_status == 3) || ds->wu.pat_status == 25) {

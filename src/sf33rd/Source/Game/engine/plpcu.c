@@ -40,7 +40,7 @@ void Player_caught(PLW* wk) {
     setup_caught_process_flags(wk);
 
     if (wk->wu.routine_no[3] == 0) {
-        wk->recovery_roll_ok_timer = wk->backup_ok_timer = emwk->wu.cmd_y_axis_data.koc;
+        wk->recovery_roll_ok_timer = wk->backup_ok_timer = emwk->wu.cmd_y_axis_data.kind_of_char;
         wk->uot_cd_ok_flag = 0;
         wk->recovery_roll_success = 0;
         wk->wu.dir_old = 1;
@@ -199,7 +199,7 @@ static void caught_cg_type_check(PLW* wk, PLW* emwk) {
                 char_move_z(&wk->wu);
             }
 
-            wk->wu.cmd_move_data.koc = 1;
+            wk->wu.cmd_move_data.kind_of_char = 1;
             wk->wu.cmd_move_data.ix = 12;
             wk->wu.cmd_move_data.pat = 1;
         } else if (wk->dead_flag) {
@@ -208,7 +208,7 @@ static void caught_cg_type_check(PLW* wk, PLW* emwk) {
             char_move_z(&wk->wu);
         }
 
-        wk->wu.routine_no[1] = wk->wu.cmd_move_data.koc;
+        wk->wu.routine_no[1] = wk->wu.cmd_move_data.kind_of_char;
         wk->wu.routine_no[2] = wk->wu.cmd_move_data.ix;
         wk->wu.routine_no[3] = wk->wu.cmd_move_data.pat;
         wk->dm_ix = wk->wu.char_index;

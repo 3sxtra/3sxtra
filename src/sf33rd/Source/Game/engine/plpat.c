@@ -327,14 +327,14 @@ static void check_jump_attack_dummy_rtn(PLW* wk) {
 
     switch (wk->jump_attack_routine) {
     case 0:
-        if ((wk->wu.cg_ja.atix != 0) || (wk->wu.cg_ja.caix != 0)) {
+        if ((wk->wu.cg_ja.attack_box_index != 0) || (wk->wu.cg_ja.catch_box_index != 0)) {
             wk->jump_attack_routine = 1;
         }
 
         break;
 
     case 1:
-        if (((wk->wu.cg_ja.atix == 0) && (wk->wu.cg_ja.caix == 0)) || !wk->wu.att_hit_ok) {
+        if (((wk->wu.cg_ja.attack_box_index == 0) && (wk->wu.cg_ja.catch_box_index == 0)) || !wk->wu.att_hit_ok) {
             wk->jump_attack_timer = get_cjdR(wk);
             wk->jump_attack_routine = 2;
         }
@@ -342,7 +342,7 @@ static void check_jump_attack_dummy_rtn(PLW* wk) {
         break;
 
     case 2:
-        if (((wk->wu.cg_ja.atix != 0) || (wk->wu.cg_ja.caix != 0)) && wk->wu.att_hit_ok) {
+        if (((wk->wu.cg_ja.attack_box_index != 0) || (wk->wu.cg_ja.catch_box_index != 0)) && wk->wu.att_hit_ok) {
             wk->jump_attack_routine = 1;
             break;
         }
@@ -354,7 +354,7 @@ static void check_jump_attack_dummy_rtn(PLW* wk) {
         break;
 
     default:
-        if ((wk->wu.cg_ja.atix != 0) || (wk->wu.cg_ja.caix != 0)) {
+        if ((wk->wu.cg_ja.attack_box_index != 0) || (wk->wu.cg_ja.catch_box_index != 0)) {
             if (wk->wu.att_hit_ok) {
                 wk->jump_attack_routine = 1;
                 break;

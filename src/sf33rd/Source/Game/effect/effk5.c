@@ -169,14 +169,14 @@ static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
     s16 exc;
     u16 now_mf;
 
-    if ((mwk->cgd_type != 2) && (mwk->cg_ja.mf.full & 0x1010)) {
+    if ((mwk->char_graphic_data_type != 2) && (mwk->cg_ja.mf.full & 0x1010)) {
         now_mf = mwk->cg_ja.mf.full;
         exc = 0;
         ewk->old_routine_no[0] = mwk->cg_ctr;
         ewk->graphic_index = mwk->graphic_index;
 
         while (1) {
-            ewk->graphic_index += mwk->cgd_type;
+            ewk->graphic_index += mwk->char_graphic_data_type;
             gotcp.cpl = &mwk->set_char_ad[ewk->graphic_index];
 
             if (gotcp.cps[0] >= 0x100) {
@@ -215,19 +215,19 @@ static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
 
             switch (gotcp.cps[0]) {
             case 2:
-                ewk->graphic_index = (gotcp.cps[3] - 2) * mwk->cgd_type;
+                ewk->graphic_index = (gotcp.cps[3] - 2) * mwk->char_graphic_data_type;
                 break;
 
             case 49:
                 if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
-                    ewk->graphic_index += (gotcp.cps[3] - 1) * mwk->cgd_type;
+                    ewk->graphic_index += (gotcp.cps[3] - 1) * mwk->char_graphic_data_type;
                 }
 
                 break;
 
             case 50:
                 if ((g_state.test_flag == 0) || (g_state.ixbfw_cut == 0)) {
-                    ewk->graphic_index -= (gotcp.cps[3] + 1) * mwk->cgd_type;
+                    ewk->graphic_index -= (gotcp.cps[3] + 1) * mwk->char_graphic_data_type;
                 }
 
                 break;
@@ -248,7 +248,7 @@ static void k5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
     get_table_adrs_K5(wk);
     mvsw.swi = decode_mvsw(mf);
 
-    if (wk->cg_ja.boix != mvj[0].index) {
+    if (wk->cg_ja.body_hurtbox_index != mvj[0].index) {
         for (i = 0; i < 4; i++) {
             if (mvj[i].r[1].pos.h != 0) {
                 wk->xyz[0].disp.pos = mvj[i].r[0].pos.h;
@@ -288,11 +288,11 @@ static void k5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
                 mvj[i].rno = 0;
             }
 
-            mvj[i].index = wk->cg_ja.boix;
+            mvj[i].index = wk->cg_ja.body_hurtbox_index;
         }
     }
 
-    if (mvj[4].index != (wk->cg_ja.bhix + wk->cg_ja.haix)) {
+    if (mvj[4].index != (wk->cg_ja.behind_hurtbox_index + wk->cg_ja.hand_hurtbox_index)) {
         for (i = 4; i < 8; i++) {
             if (mvj[i].r[1].pos.h != 0) {
                 wk->xyz[0].disp.pos = mvj[i].r[0].pos.h;
@@ -332,7 +332,7 @@ static void k5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
                 mvj[i].rno = 0;
             }
 
-            mvj[i].index = wk->cg_ja.bhix + wk->cg_ja.haix;
+            mvj[i].index = wk->cg_ja.behind_hurtbox_index + wk->cg_ja.hand_hurtbox_index;
         }
     }
 }
@@ -365,8 +365,8 @@ static u32 decode_mvsw(u16 flag) {
 
 static void get_table_adrs_K5(WORK* wk) {
     wk->cg_ja = wk->hit_ix_table[wk->anim_hurtbox_index];
-    wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.boix];
-    wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
+    wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.body_hurtbox_index];
+    wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.behind_hurtbox_index + wk->cg_ja.hand_hurtbox_index];
 }
 
 static void init_k5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
@@ -397,8 +397,8 @@ static void k5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl) {
         mvj[i].index = ixtbl[lookup_index[i]];
     }
 
-    k5_init_data_copy(mvj, (K5Data*)mwk->body_adrs[mwk->cg_ja.boix].body_dm, 4);
-    k5_init_data_copy(mvj + 4, (K5Data*)mwk->hand_adrs[mwk->cg_ja.bhix + mwk->cg_ja.haix].hand_dm, 4);
+    k5_init_data_copy(mvj, (K5Data*)mwk->body_adrs[mwk->cg_ja.body_hurtbox_index].body_dm, 4);
+    k5_init_data_copy(mvj + 4, (K5Data*)mwk->hand_adrs[mwk->cg_ja.behind_hurtbox_index + mwk->cg_ja.hand_hurtbox_index].hand_dm, 4);
 }
 
 static void k5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num) {

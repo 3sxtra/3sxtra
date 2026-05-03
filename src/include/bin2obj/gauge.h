@@ -3,7 +3,7 @@
  * @brief Super art gauge and stun gauge data table declarations (binary-to-object data).
  *
  * Declares per-character super art gauge increment tables and stun
- * (piyo) gauge data. Generated from CPS3 ROM binary data.
+ * (stun_effect) gauge data. Generated from CPS3 ROM binary data.
  */
 #ifndef BIN2OBJ_GAUGE_H
 #define BIN2OBJ_GAUGE_H

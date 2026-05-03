@@ -37,7 +37,7 @@ void effect_C8_move(WORK_Other* ewk) {
         case 0:
         case 2:
             if (oya_pl->wu.graphic_index != ewk->wu.graphic_index) {
-                work = oya_pl->wu.graphic_index / oya_pl->wu.cgd_type + 1;
+                work = oya_pl->wu.graphic_index / oya_pl->wu.char_graphic_data_type + 1;
                 set_char_move_init2(&ewk->wu, 0, 12, work + 1, 0);
                 ewk->wu.graphic_index = oya_pl->wu.graphic_index;
             }

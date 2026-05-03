@@ -63,7 +63,7 @@ static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
             }
 
             wk->wu.dm_weight = wk->wu.weight_level;
-            wk->wu.damage_knockback_type = wk->wu.att.but_ix;
+            wk->wu.damage_knockback_type = wk->wu.att.button_index;
             wk->wu.damage_invuln = wk->wu.attack_invuln;
             wk->wu.dm_attribute = wk->wu.at_attribute;
             wk->wu.dm_ten_ix = wk->wu.at_ten_ix;

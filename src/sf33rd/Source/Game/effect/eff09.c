@@ -1358,7 +1358,7 @@ static void eff09_22000(WORK_Other* ewk) {
                 ewk->wu.routine_no[1]++;
                 set_char_move_init(&ewk->wu, 0, 62);
             } else if (oya_ptr->graphic_index != ewk->wu.graphic_index) {
-                work = oya_ptr->graphic_index / oya_ptr->cgd_type;
+                work = oya_ptr->graphic_index / oya_ptr->char_graphic_data_type;
                 set_char_move_init2(&ewk->wu, 0, 61, work + 1, 0);
                 ewk->wu.graphic_index = oya_ptr->graphic_index;
             }

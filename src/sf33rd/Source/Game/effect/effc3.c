@@ -1147,12 +1147,12 @@ static void set_display_car_parts(WORK_Other* wk) {
 
 static void clear_parts_hit_data(WORK* wk) {
     wk->cg_ja = wk->hit_ix_table[0];
-    wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.boix];
-    wk->catch_box = &wk->catch_adrs[wk->cg_ja.caix];
-    wk->caught_box = &wk->caught_adrs[wk->cg_ja.cuix];
-    wk->attack_hitbox = &wk->attack_adrs[wk->cg_ja.atix];
-    wk->pushbox = &wk->adjust_adrs[wk->cg_ja.hoix];
-    wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
+    wk->body_hurtbox = &wk->body_adrs[wk->cg_ja.body_hurtbox_index];
+    wk->catch_box = &wk->catch_adrs[wk->cg_ja.catch_box_index];
+    wk->caught_box = &wk->caught_adrs[wk->cg_ja.caught_box_index];
+    wk->attack_hitbox = &wk->attack_adrs[wk->cg_ja.attack_box_index];
+    wk->pushbox = &wk->adjust_adrs[wk->cg_ja.pushbox_index];
+    wk->hand_hurtbox = &wk->hand_adrs[wk->cg_ja.behind_hurtbox_index + wk->cg_ja.hand_hurtbox_index];
 }
 
 static void effC3_main_process(WORK_Other* ewk) {

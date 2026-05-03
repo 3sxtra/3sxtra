@@ -1431,7 +1431,7 @@ void clear_chainex_check(s16 ix) {
     }
 }
 
-/** @brief Sets the stun (kizetsu/piyo) status parameters for a player. */
+/** @brief Sets the stun (kizetsu/stun_effect) status parameters for a player. */
 void set_kizetsu_status(s16 ix) {
     s16 plnum = g_state.My_char[ix];
 
@@ -1578,7 +1578,7 @@ s16 check_combo_end(s16 ix) {
         return 0;
     }
 
-    if (g_state.plw[ix].wu.cg_ja.boix == 0 && g_state.plw[ix].wu.cg_ja.cuix == 0 &&
+    if (g_state.plw[ix].wu.cg_ja.body_hurtbox_index == 0 && g_state.plw[ix].wu.cg_ja.caught_box_index == 0 &&
         g_state.plw[ix].wu.pat_status == 38) {
         return 0;
     }

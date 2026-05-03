@@ -314,13 +314,13 @@ void set_caught_status(s16 ix) {
     switch (var_s4 + (((as->wu.rl_flag + ds->wu.rl_flag) & 1) * 2)) {
     case 0:
     case 3:
-        as->wu.routine_no[1] = as->wu.cmd_catch_release.koc;
+        as->wu.routine_no[1] = as->wu.cmd_catch_release.kind_of_char;
         as->wu.routine_no[2] = as->wu.cmd_catch_release.ix;
         as->wu.char_index = as->wu.cmd_catch_release.pat;
         break;
 
     default:
-        as->wu.routine_no[1] = as->wu.cmd_catch_frame.koc;
+        as->wu.routine_no[1] = as->wu.cmd_catch_frame.kind_of_char;
         as->wu.routine_no[2] = as->wu.cmd_catch_frame.ix;
         as->wu.char_index = as->wu.cmd_catch_frame.pat;
         break;
@@ -400,14 +400,14 @@ void setup_catch_atthit(WORK* as, WORK* ds) {
 
 /** @brief Calculates the hit-mark sprite position for a catch (throw). */
 void set_catch_hit_mark_pos(WORK* as, WORK* ds) {
-    if (as->att.mkh_ix) {
+    if (as->att.hit_mark_index) {
         if (as->rl_flag) {
-            as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.mkh_ix][0];
+            as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.hit_mark_index][0];
         } else {
-            as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_adjust_table[as->att.mkh_ix][0];
+            as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_adjust_table[as->att.hit_mark_index][0];
         }
 
-        as->hit_mark_y = as->xyz[1].disp.pos + hit_mark_adjust_table[as->att.mkh_ix][1];
+        as->hit_mark_y = as->xyz[1].disp.pos + hit_mark_adjust_table[as->att.hit_mark_index][1];
         return;
     }
 
@@ -459,14 +459,14 @@ void set_struck_status(s16 ix) {
 
 /** @brief Calculates the hit-mark spark position from overlapping hitboxes. */
 void cal_hit_mark_pos(WORK* as, WORK* ds, s16 ix2, s16 ix) {
-    if (as->att.mkh_ix) {
+    if (as->att.hit_mark_index) {
         if (as->rl_flag) {
-            as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.mkh_ix][0];
+            as->hit_mark_x = as->xyz[0].disp.pos - hit_mark_adjust_table[as->att.hit_mark_index][0];
         } else {
-            as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_adjust_table[as->att.mkh_ix][0];
+            as->hit_mark_x = as->xyz[0].disp.pos + hit_mark_adjust_table[as->att.hit_mark_index][0];
         }
 
-        as->hit_mark_y = as->xyz[1].disp.pos + hit_mark_adjust_table[as->att.mkh_ix][1];
+        as->hit_mark_y = as->xyz[1].disp.pos + hit_mark_adjust_table[as->att.hit_mark_index][1];
     } else {
         cal_hit_mark_position(ds, as, hs[ix].dh, hs[ix2].ah);
     }
@@ -618,7 +618,7 @@ void dm_reaction_init_set(PLW* as, PLW* ds) {
 
 /** @brief Handles guard status — chip damage, guard break, and pushback. */
 void set_guard_status(PLW* as, PLW* ds) {
-    if (as->wu.att.hs_you == 0 && as->wu.att.hs_me == 0) {
+    if (as->wu.att.hitstop_you == 0 && as->wu.att.hitstop_me == 0) {
         ds->wu.routine_no[2] = ds->wu.old_routine_no[2];
     } else {
         ds->wu.routine_no[1] = 1;
@@ -653,7 +653,7 @@ const s16 sel_hs_add_tbl[6] = { 4, 3, 2, 1, 0, 0 };
 void set_paring_status(PLW* as, PLW* ds) {
     s16 hsadix;
 
-    if ((as->wu.att.hs_you == 0) && (as->wu.att.hs_me == 0)) {
+    if ((as->wu.att.hitstop_you == 0) && (as->wu.att.hitstop_me == 0)) {
         ds->wu.routine_no[2] = ds->wu.old_routine_no[2];
     } else {
         hsadix = 4;
@@ -734,7 +734,7 @@ void hit_pattern_extdat_check(WORK* as) {
 
     case 0x81:
         setup_comm_abbak(as);
-        as->graphic_index = ((as->cg_extdat & 0x3F) - 1) * as->cgd_type - as->cgd_type;
+        as->graphic_index = ((as->cg_extdat & 0x3F) - 1) * as->char_graphic_data_type - as->char_graphic_data_type;
         as->cg_next_ix = 0;
         char_move_z(as);
         break;
@@ -745,7 +745,7 @@ void hit_pattern_extdat_check(WORK* as) {
 
     case 0x1:
         setup_comm_abbak(as);
-        as->graphic_index = ((as->cg_extdat & 0x3F) - 1) * as->cgd_type - as->cgd_type;
+        as->graphic_index = ((as->cg_extdat & 0x3F) - 1) * as->char_graphic_data_type - as->char_graphic_data_type;
         as->cg_next_ix = 0;
         as->cg_extdat = 0;
         break;
@@ -920,10 +920,10 @@ s16 check_dm_att_blocking(WORK* as, WORK* ds, s16 dnum) {
     return rnum;
 }
 
-/** @brief Applies damage and stun (piyo) values to the defender. */
+/** @brief Applies damage and stun (stun_effect) values to the defender. */
 void set_damage_and_piyo(PLW* as, PLW* ds) {
     cal_damage_vitality(as, ds);
-    ds->wu.damage_stun_value = _add_piyo_gauge[as->player_number][as->wu.att.piyo];
+    ds->wu.damage_stun_value = _add_piyo_gauge[as->player_number][as->wu.att.stun_effect];
     ds->wu.damage_stun_value = ds->wu.damage_stun_value * stun_gauge_omake[omop_stun_gauge_add[(ds->wu.id + 1) & 1]] / 32;
 
     if ((ds->wu.pat_status == 32 || ds->wu.pat_status == 3) || ds->wu.pat_status == 25) {
@@ -1010,17 +1010,17 @@ s16 remake_score_index(s16 dmv) {
 /** @brief Handles same-frame simultaneous damage (double hit) hitstop. */
 void same_dm_stop(WORK* as, WORK* ds) {
     if (as->work_id == 1 && as->att.dipsw & 1 && (ds->xyz[1].disp.pos > 0 || (ds->vital_new - ds->damage_vitality) < -2)) {
-        switch ((ds->damage_hit_stop < 0) + ((as->att.hs_me < 0) * 2)) {
+        switch ((ds->damage_hit_stop < 0) + ((as->att.hitstop_me < 0) * 2)) {
         case 1:
-            ds->damage_hit_stop = -as->att.hs_me;
+            ds->damage_hit_stop = -as->att.hitstop_me;
             /* fallthrough */
 
         case 2:
-            ds->damage_hit_stop = -as->att.hs_me;
+            ds->damage_hit_stop = -as->att.hitstop_me;
             break;
 
         default:
-            ds->damage_hit_stop = as->att.hs_me;
+            ds->damage_hit_stop = as->att.hitstop_me;
             break;
         }
     }
@@ -1311,17 +1311,17 @@ void dm_status_copy(WORK* as, WORK* ds) {
     ds->dm_attlv = as->att.level;
     ds->dm_impact = as->att.impact;
     ds->dm_dir = as->dir_atthit;
-    ds->damage_hit_stop = as->att.hs_you;
-    ds->damage_screen_shake = as->att.hs_you;
+    ds->damage_hit_stop = as->att.hitstop_you;
+    ds->damage_screen_shake = as->att.hitstop_you;
     ds->dm_weight = as->weight_level;
-    ds->damage_knockback_type = as->att.but_ix;
+    ds->damage_knockback_type = as->att.button_index;
     ds->damage_invuln = as->attack_invuln;
     ds->dm_attribute = as->at_attribute;
     ds->dm_ten_ix = as->at_ten_ix;
     ds->damage_kind_of_arts = as->at_koa;
     ds->hm_dm_side = as->att.dmg_mark;
     ds->dm_work_id = as->work_id;
-    as->hit_stop = as->att.hs_me;
+    as->hit_stop = as->att.hitstop_me;
     ds->dm_arts_point = as->add_arts_point;
     ds->damage_attack_type = as->attack_type;
     ds->dm_nodeathattack = as->no_death_attack;
@@ -1587,7 +1587,7 @@ void attack_hit_check() {
             }
 
             mad = q_hit_push[mi];
-            if (mad->cg_ja.atix == 0) {
+            if (mad->cg_ja.attack_box_index == 0) {
                 continue;
             }
             if (mad->att_hit_ok == 0) {
@@ -1647,7 +1647,7 @@ void attack_hit_check() {
                                 continue;
                             }
                         }
-                        if (mad->att.dipsw & 4 && (lp2 >= 8 || sad->cg_ja.bhix == 0)) {
+                        if (mad->att.dipsw & 4 && (lp2 >= 8 || sad->cg_ja.behind_hurtbox_index == 0)) {
                             continue;
                         }
                     }
@@ -1864,7 +1864,7 @@ s16 get_att_head_position(WORK* wk) {
 
     tx = wk->xyz[0].disp.pos;
 
-    if (wk->cg_ja.atix == 0) {
+    if (wk->cg_ja.attack_box_index == 0) {
         return tx;
     }
 

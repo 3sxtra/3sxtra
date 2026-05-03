@@ -644,7 +644,7 @@ static void Damage_17000(PLW* wk) {
         jumping_union_process(&wk->wu, 3);
         set_dm_hos_flag_sky(wk);
 
-        if (wk->wu.cg_ja.boix == 0) {
+        if (wk->wu.cg_ja.body_hurtbox_index == 0) {
             wk->guard_flag = 0;
         }
 
@@ -1637,7 +1637,7 @@ static void get_damage_reaction_data(PLW* wk) {
 
 /** @brief Sets up the counter-hit (atemi) flag based on attacker and defender state. */
 static void damage_atemi_setup(PLW* wk, PLW* ek) {
-    wk->wu.routine_no[1] = wk->wu.cmd_move_data.koc;
+    wk->wu.routine_no[1] = wk->wu.cmd_move_data.kind_of_char;
     wk->wu.routine_no[2] = wk->wu.cmd_move_data.ix;
     wk->wu.routine_no[3] = wk->wu.cmd_move_data.pat;
     char_move_cmms(&wk->wu);
@@ -1645,8 +1645,8 @@ static void damage_atemi_setup(PLW* wk, PLW* ek) {
     wk->wu.damage_hit_stop = wk->wu.damage_screen_shake = 0;
     wk->wu.hit_stop = wk->wu.hit_quake = 0;
     ek->wu.damage_hit_stop = ek->wu.damage_screen_shake = 0;
-    ek->wu.hit_stop = wk->wu.att.hs_you;
-    ek->wu.hit_quake = wk->wu.att.hs_you / 2;
+    ek->wu.hit_stop = wk->wu.att.hitstop_you;
+    ek->wu.hit_quake = wk->wu.att.hitstop_you / 2;
 }
 
 /** @brief Sets up the crumple-fall (kuzureochi) KO state. */

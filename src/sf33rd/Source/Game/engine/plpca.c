@@ -25,7 +25,7 @@
 static void Check_Throw_Escape(PLW* wk, PLW* tk);
 static s32 cat07_running_check(WORK* wk);
 static void catch_cg_type_check(PLW* wk);
-static void set_char_move_init_ca(PLW* wk, s16 koc, s16 index);
+static void set_char_move_init_ca(PLW* wk, s16 kind_of_char, s16 index);
 
 #define PLPCA_DISPATCH_COUNT 9
 
@@ -514,14 +514,14 @@ static void catch_cg_type_check(PLW* wk) {
 
     case 7:
         wk->wu.cg_type = 0;
-        wk->wu.routine_no[1] = wk->wu.cmd_move_data.koc;
+        wk->wu.routine_no[1] = wk->wu.cmd_move_data.kind_of_char;
         wk->wu.routine_no[2] = wk->wu.cmd_move_data.ix;
         wk->wu.routine_no[3] = wk->wu.cmd_move_data.pat;
         break;
 
     case 8:
         wk->wu.cg_type = 0;
-        emwk->wu.routine_no[1] = wk->wu.cmd_y_axis_data.koc;
+        emwk->wu.routine_no[1] = wk->wu.cmd_y_axis_data.kind_of_char;
         emwk->wu.routine_no[2] = wk->wu.cmd_y_axis_data.ix;
         emwk->wu.routine_no[3] = wk->wu.cmd_y_axis_data.pat;
 
@@ -532,10 +532,10 @@ static void catch_cg_type_check(PLW* wk) {
 }
 
 /** @brief Sets up character move init with catch-specific facing logic. */
-static void set_char_move_init_ca(PLW* wk, s16 koc, s16 index) {
-    set_char_move_init(&wk->wu, koc, index);
-    wk->cat_break_ok_timer = wk->wu.cmd_y_axis_data.koc >> 8;
-    wk->wu.cmd_y_axis_data.koc &= 0xFF;
+static void set_char_move_init_ca(PLW* wk, s16 kind_of_char, s16 index) {
+    set_char_move_init(&wk->wu, kind_of_char, index);
+    wk->cat_break_ok_timer = wk->wu.cmd_y_axis_data.kind_of_char >> 8;
+    wk->wu.cmd_y_axis_data.kind_of_char &= 0xFF;
 }
 
 void (*const plpca_lv_00[9])(PLW*) = { Catch_00000, Catch_01000, Catch_02000, Catch_03000, Catch_04000,

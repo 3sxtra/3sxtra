@@ -62,7 +62,7 @@ static void EFF52_SUDDENLY(WORK_Other* ewk) {
 
     case 1:
         char_move(&ewk->wu);
-        x = ewk->wu.graphic_index / ewk->wu.cgd_type;
+        x = ewk->wu.graphic_index / ewk->wu.char_graphic_data_type;
 
         if (x < ewk->wu.direction) {
             break;

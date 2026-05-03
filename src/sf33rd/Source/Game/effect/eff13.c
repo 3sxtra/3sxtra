@@ -600,7 +600,7 @@ static void set_tengu_my_home(WORK* ewk, WORK* mwk) {
 }
 
 static s32 check_tengu_attack(WORK* ewk, WORK* mwk, TAMA* twk) {
-    if (mwk->cg_ja.atix == 0) {
+    if (mwk->cg_ja.attack_box_index == 0) {
         return 0;
     }
 

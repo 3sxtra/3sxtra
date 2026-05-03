@@ -1178,7 +1178,7 @@ s32 check_renda_cancel(PLW* wk) {
     if (wk->wu.pat_status == renda_status_table[(wk->cp->input_pressed & 3)] &&
         wk->current_attack == (wk->cp->input_current & 0x770)) {
         setup_comm_back(&wk->wu);
-        wk->wu.graphic_index = wk->wu.cg_eftype * wk->wu.cgd_type - (wk->wu.cgd_type * 2);
+        wk->wu.graphic_index = wk->wu.cg_eftype * wk->wu.char_graphic_data_type - (wk->wu.char_graphic_data_type * 2);
         wk->wu.cg_next_ix = 0;
         wk->wu.cg_ctr = 1;
         wk->wu.frame_link_hit_flag = 0;

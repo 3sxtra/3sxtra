@@ -297,8 +297,8 @@ void get_attdata_of_illusion(WORK_Other* ewk) {
         ewk->wu.att.pow = 1;
     }
 
-    ewk->wu.att.piyo = 0;
-    ewk->wu.att.hs_you = 0;
+    ewk->wu.att.stun_effect = 0;
+    ewk->wu.att.hitstop_you = 0;
     ewk->wu.add_arts_point = 0;
     ewk->wu.attack_type = g_state.afterimage_table[ewk->master_id][ewk->wu.type].light_attack_flag;
     ewk->wu.at_koa = acatkoa_table[ewk->wu.attack_type];

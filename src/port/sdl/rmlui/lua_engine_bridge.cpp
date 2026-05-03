@@ -123,9 +123,9 @@ static int l_read_player(lua_State* L) {
 
     // --- Movement type (offset 0x0AD) ---
     // action_type in memory_addresses is at same offset
-    PUSH_INT(L, t, "movement_type", wu->cgd_type);
+    PUSH_INT(L, t, "movement_type", wu->char_graphic_data_type);
     PUSH_INT(L, t, "movement_type2", wu->attack_type);
-    PUSH_INT(L, t, "action_type", wu->cgd_type);
+    PUSH_INT(L, t, "action_type", wu->char_graphic_data_type);
 
     // --- Routine state ---
     PUSH_INT(L, t, "routine_no_0", wu->routine_no[0]);
@@ -146,7 +146,7 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "cg_number", wu->cg_number);
 
     // Animation g_state.ID: compute from char_table byte offset
-    // In CPS3, action_address = char_table_base + char_table[koc][index]
+    // In CPS3, action_address = char_table_base + char_table[kind_of_char][index]
     // The low 16 bits of action_address = framedata key.
     // On host, byte_offset = (u8*)set_char_ad - (u8*)char_table[now_koc]
     // which equals char_table[now_koc][char_index] bytes.

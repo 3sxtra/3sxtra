@@ -58,9 +58,9 @@ static void Att_PL01_DDT(PLW* wk) {
     case 2:
         jumping_union_process(&wk->wu, 3);
 
-        if (wk->wu.routine_no[3] != 3 && wk->wu.cg_ja.caix) {
-            wk->wu.cg_ja.caix = pl01_ddt_dat[twk->player_number][1];
-            wk->wu.catch_box = wk->wu.cg_ja.caix + wk->wu.catch_adrs;
+        if (wk->wu.routine_no[3] != 3 && wk->wu.cg_ja.catch_box_index) {
+            wk->wu.cg_ja.catch_box_index = pl01_ddt_dat[twk->player_number][1];
+            wk->wu.catch_box = wk->wu.cg_ja.catch_box_index + wk->wu.catch_adrs;
         }
 
         break;

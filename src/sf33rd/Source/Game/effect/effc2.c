@@ -664,15 +664,15 @@ static void copy_rno(WORK* wk) {
 void player_hosei_data(WORK_Other* ewk, s16 flag, s16 f2) {
     if (f2) {
         if (ewk->wu.type) {
-            ewk->wu.cg_ja.hoix = get_sel_adjust_tbl_ix(ewk->master_player) + 1 + ((flag == 1) * 2);
-            ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.hoix];
+            ewk->wu.cg_ja.pushbox_index = get_sel_adjust_tbl_ix(ewk->master_player) + 1 + ((flag == 1) * 2);
+            ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.pushbox_index];
         } else {
-            ewk->wu.cg_ja.hoix = get_sel_adjust_tbl_ix(ewk->master_player) + ((flag == 1) * 2);
-            ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.hoix];
+            ewk->wu.cg_ja.pushbox_index = get_sel_adjust_tbl_ix(ewk->master_player) + ((flag == 1) * 2);
+            ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.pushbox_index];
         }
     } else {
-        ewk->wu.cg_ja.hoix = 0;
-        ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.hoix];
+        ewk->wu.cg_ja.pushbox_index = 0;
+        ewk->wu.pushbox = &ewk->wu.adjust_adrs[ewk->wu.cg_ja.pushbox_index];
     }
 }
 
@@ -873,11 +873,11 @@ static void set_bs2_floor(WORK_Other* wk) {
     s16* dad;
 
     player_hosei_data(wk, wk->wu.dir_timer, 1);
-    dad = wk->wu.adjust_adrs[wk->wu.cg_ja.hoix].hos_box;
+    dad = wk->wu.adjust_adrs[wk->wu.cg_ja.pushbox_index].hos_box;
     g_state.bs2_floor[0] = wk->wu.xyz[0].disp.pos + dad[0];
     g_state.bs2_floor[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
     g_state.bs2_floor[2] = dad[2] + dad[3];
-    dad = wk->wu.adjust_adrs[wk->wu.cg_ja.hoix + 1].hos_box;
+    dad = wk->wu.adjust_adrs[wk->wu.cg_ja.pushbox_index + 1].hos_box;
     g_state.bonus_stage2_offset[0] = wk->wu.xyz[0].disp.pos + dad[0];
     g_state.bonus_stage2_offset[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];
     g_state.bonus_stage2_offset[2] = dad[2] + dad[3];

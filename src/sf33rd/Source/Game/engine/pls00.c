@@ -981,7 +981,7 @@ static void nm_27_cg_type_check(PLW* wk) {
             break;
         }
 
-        wk->wu.graphic_index -= wk->wu.cgd_type;
+        wk->wu.graphic_index -= wk->wu.char_graphic_data_type;
         char_move_z(&wk->wu);
         break;
 

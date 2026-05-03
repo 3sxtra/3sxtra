@@ -207,9 +207,9 @@ static void Att_PL14_AT3(PLW* wk) {
             wk->wu.cg_type = 0;
         }
 
-        if ((wk->wu.routine_no[3] != 1) && wk->wu.cg_ja.caix) {
-            wk->wu.cg_ja.caix = pl14_HYAKKI_dat[twk->player_number];
-            wk->wu.catch_box = wk->wu.catch_adrs + wk->wu.cg_ja.caix;
+        if ((wk->wu.routine_no[3] != 1) && wk->wu.cg_ja.catch_box_index) {
+            wk->wu.cg_ja.catch_box_index = pl14_HYAKKI_dat[twk->player_number];
+            wk->wu.catch_box = wk->wu.catch_adrs + wk->wu.cg_ja.catch_box_index;
         }
 
         break;
@@ -255,9 +255,9 @@ static void Att_PL14_AT3(PLW* wk) {
             wk->wu.cg_type = 0;
         }
 
-        if ((wk->wu.routine_no[3] != 2) && wk->wu.cg_ja.caix) {
-            wk->wu.cg_ja.caix = pl14_HYAKKI_dat[(twk->player_number)];
-            wk->wu.catch_box = wk->wu.catch_adrs + wk->wu.cg_ja.caix;
+        if ((wk->wu.routine_no[3] != 2) && wk->wu.cg_ja.catch_box_index) {
+            wk->wu.cg_ja.catch_box_index = pl14_HYAKKI_dat[(twk->player_number)];
+            wk->wu.catch_box = wk->wu.catch_adrs + wk->wu.cg_ja.catch_box_index;
         }
 
         break;

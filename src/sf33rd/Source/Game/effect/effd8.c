@@ -69,7 +69,7 @@ void effect_D8_move(WORK_Other* ewk) {
             }
 
             Setup_EffD8_Pos(ewk, offset_x);
-            set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, (ewk->wu.graphic_index / ewk->wu.cgd_type) + 1, 0);
+            set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, (ewk->wu.graphic_index / ewk->wu.char_graphic_data_type) + 1, 0);
         }
 
         if (g_state.Sel_PL_Complete[ewk->master_id]) {
