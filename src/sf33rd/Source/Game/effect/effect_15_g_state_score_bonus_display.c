@@ -16,15 +16,15 @@
 #include "sf33rd/Source/Game/stage/stage_subroutines.h"
 #include "sf33rd/Source/Game/stage/target_subroutines.h"
 
-static void eff15_koishi(State_Other* ewk);
+static void eff15_pebble(State_Other* ewk);
 
 void effect_15_move(State_Other* ewk) {
     if (ewk->wu.type) {
-        eff15_koishi(ewk);
+        eff15_pebble(ewk);
     }
 }
 
-static void eff15_koishi(State_Other* ewk) {
+static void eff15_pebble(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;

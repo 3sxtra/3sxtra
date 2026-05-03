@@ -22,12 +22,12 @@ const s16 effK4_isp_table[4][4][2] = { { { -512, 768 }, { -768, 768 }, { 512, 76
                                        { { -1280, 1280 }, { -1792, 1280 }, { 1280, 1280 }, { 1792, 1280 } },
                                        { { -1536, 1536 }, { -2048, 1536 }, { 1536, 1536 }, { 2048, 1536 } } };
 
-const s16 effK4_isp_x_hosei[4][8] = { { 0, 128, 256, 384, -128, -256, -384, -512 },
+const s16 effK4_isp_x_correction[4][8] = { { 0, 128, 256, 384, -128, -256, -384, -512 },
                                       { 0, 128, 256, 384, -128, -256, -512, -768 },
                                       { 0, 256, 384, 512, -256, -512, -768, -1024 },
                                       { 0, 256, 512, -256, -512, -768, -1024, -1280 } };
 
-const s16 effK4_isp_y_hosei[4][8] = { { 0, 0, 128, 128, 256, 256, 384, -128 },
+const s16 effK4_isp_y_correction[4][8] = { { 0, 0, 128, 128, 256, 256, 384, -128 },
                                       { 0, 128, 128, 256, 256, 384, 384, -256 },
                                       { 0, 128, 256, 384, 512, -128, -256, -512 },
                                       { 0, 256, 384, 512, 640, -256, -512, -768 } };
@@ -114,9 +114,9 @@ static void get_init_speed_and_timer_effK4(State* wk) {
     data[1] = 0;
     data[3] = -96;
     ix = random_16() & 7;
-    data[0] += effK4_isp_x_hosei[wk->damage_attack_level][ix];
+    data[0] += effK4_isp_x_correction[wk->damage_attack_level][ix];
     ix = random_16() & 7;
-    data[2] += effK4_isp_y_hosei[wk->damage_attack_level][ix];
+    data[2] += effK4_isp_y_correction[wk->damage_attack_level][ix];
     setup_move_data_easy(wk, &data[0], 1, 0);
     wk->shadow_prio = (random_16() & 7) + effK4_life_time[wk->damage_attack_level];
     wk->shadow_y = wk->shadow_prio / 2;

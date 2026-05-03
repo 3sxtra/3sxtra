@@ -16,12 +16,12 @@
 
 // forward declarations
 
-const s16 char_of_koishi[8];
-const s16 num_of_koishi[8];
-const s16 koishi_area_hosei[5];
-const s16 koishi_app_area[8][16];
-const s16 koishi_speed_x[5][8];
-const s16 koishi_speed_y[5][8];
+const s16 pebble_charset_ids[8];
+const s16 pebble_particle_count[8];
+const s16 pebble_area_correction[5];
+const s16 pebble_spawn_area[8][16];
+const s16 pebble_speed_x[5][8];
+const s16 pebble_speed_y[5][8];
 
 void effect_I0_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -30,7 +30,7 @@ void effect_I0_move(State_Other* ewk) {
         ewk->wu.disp_flag = 1;
         ewk->wu.my_col_mode = 0x4200;
         ewk->wu.my_col_code = 0x2020;
-        set_char_move_init(&ewk->wu, 0, char_of_koishi[random_16() & 7]);
+        set_char_move_init(&ewk->wu, 0, pebble_charset_ids[random_16() & 7]);
         /* fallthrough */
     case 1:
         if (ewk->wu.death_timer == 1) {
@@ -115,7 +115,7 @@ s32 effect_I0_init(State* wk, s16 hsx, s16 hsy, s16 spx, s16 spy, s16 nxy) {
     return 0;
 }
 
-s32 setup_koishi_extra(State* wk, u8 num) {
+s32 setup_pebble_extra(State* wk, u8 num) {
     s16* dix;
     s16 i;
     s16 hsx;
@@ -124,40 +124,40 @@ s32 setup_koishi_extra(State* wk, u8 num) {
     s16 spy;
     s16 nxy;
 
-    dix = (s16*)koishi_app_area[random_16() & 7];
+    dix = (s16*)pebble_spawn_area[random_16() & 7];
 
-    for (i = 0; i < num_of_koishi[num]; i++) {
-        hsx = (koishi_area_hosei[dix[i]] + (random_16() - 7));
+    for (i = 0; i < pebble_particle_count[num]; i++) {
+        hsx = (pebble_area_correction[dix[i]] + (random_16() - 7));
         hsy = -(random_16() & 3);
         nxy = (hsy - (random_16() & 3));
-        spx = koishi_speed_x[dix[i]][random_16() & 7];
-        spy = koishi_speed_y[dix[i]][random_16() & 7];
+        spx = pebble_speed_x[dix[i]][random_16() & 7];
+        spy = pebble_speed_y[dix[i]][random_16() & 7];
         effect_I0_init(wk, hsx, hsy, spx, spy, nxy);
     }
 
     return 0;
 }
 
-const s16 char_of_koishi[8] = { 85, 86, 87, 85, 86, 87, 85, 86 };
+const s16 pebble_charset_ids[8] = { 85, 86, 87, 85, 86, 87, 85, 86 };
 
-const s16 num_of_koishi[8] = { 6, 7, 8, 10, 12, 14, 15, 16 };
+const s16 pebble_particle_count[8] = { 6, 7, 8, 10, 12, 14, 15, 16 };
 
-const s16 koishi_area_hosei[5] = { 0, 20, -20, 40, -40 };
+const s16 pebble_area_correction[5] = { 0, 20, -20, 40, -40 };
 
-const s16 koishi_app_area[8][16] = {
+const s16 pebble_spawn_area[8][16] = {
     { 0, 1, 2, 3, 4, 3, 2, 1, 0, 1, 2, 3, 4, 3, 2, 1 }, { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0 },
     { 3, 4, 3, 4, 1, 2, 1, 2, 0, 0, 1, 2, 3, 4, 3, 4 }, { 3, 4, 3, 0, 1, 2, 4, 3, 4, 3, 0, 1, 2, 4, 3, 4 },
     { 1, 2, 1, 2, 3, 4, 3, 4, 0, 0, 1, 2, 1, 2, 3, 4 }, { 0, 2, 4, 1, 3, 1, 3, 2, 4, 0, 1, 2, 3, 4, 1, 2 },
     { 2, 3, 1, 2, 0, 0, 4, 4, 0, 2, 3, 1, 4, 2, 4, 3 }, { 2, 4, 2, 4, 0, 1, 3, 0, 1, 3, 2, 2, 4, 0, 1, 3 }
 };
 
-const s16 koishi_speed_x[5][8] = { { 64, -64, 128, -128, 256, -256, 384, -384 },
+const s16 pebble_speed_x[5][8] = { { 64, -64, 128, -128, 256, -256, 384, -384 },
                                    { -256, -384, -512, -640, -768, -896, -1024, -1280 },
                                    { 384, 512, 640, 768, 896, 1024, 1152, 1408 },
                                    { -768, -896, -1024, -1152, -1280, -1408, -1536, -1664 },
                                    { 896, 1024, 1152, 1280, 1408, 1536, 1664, 2048 } };
 
-const s16 koishi_speed_y[5][8] = { { 768, 1024, 1152, 1280, 1408, 1536, 1792, 2048 },
+const s16 pebble_speed_y[5][8] = { { 768, 1024, 1152, 1280, 1408, 1536, 1792, 2048 },
                                    { 640, 704, 768, 832, 896, 1024, 1280, 1536 },
                                    { 576, 640, 704, 768, 832, 896, 1152, 1408 },
                                    { 512, 576, 640, 704, 768, 896, 1024, 1152 },

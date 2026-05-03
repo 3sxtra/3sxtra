@@ -363,7 +363,7 @@ static void effC2_main_process_first(State_Other* ewk, PlayerEntity* twk) {
         }
     }
 
-    player_hosei_data(ewk, ewk->wu.dir_timer, 1);
+    player_correction_data(ewk, ewk->wu.dir_timer, 1);
     setup_parts_break(&ewk->wu);
     setup_prio_ix(ewk);
     send_to_shizumi_guai(&ewk->wu);
@@ -571,7 +571,7 @@ static void effC2_main_process_second(State_Other* ewk, PlayerEntity* twk) {
 
     setup_prio_ix(ewk);
     set_parts_priority(&ewk->wu);
-    player_hosei_data(ewk, ewk->wu.dir_timer, 1);
+    player_correction_data(ewk, ewk->wu.dir_timer, 1);
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos + ewk->wu.next_x;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos;
     sort_push_request(&ewk->wu);
@@ -661,7 +661,7 @@ static void copy_rno(State* wk) {
     wk->old_routine_no[3] = wk->routine_no[3];
 }
 
-void player_hosei_data(State_Other* ewk, s16 flag, s16 f2) {
+void player_correction_data(State_Other* ewk, s16 flag, s16 f2) {
     if (f2) {
         if (ewk->wu.type) {
             ewk->wu.cg_ja.pushbox_index = get_sel_adjust_tbl_ix(ewk->master_player) + 1 + ((flag == 1) * 2);
@@ -872,7 +872,7 @@ static void set_1st_Bonus_Game_result(State* wk) {
 static void set_bs2_floor(State_Other* wk) {
     s16* dad;
 
-    player_hosei_data(wk, wk->wu.dir_timer, 1);
+    player_correction_data(wk, wk->wu.dir_timer, 1);
     dad = wk->wu.adjust_adrs[wk->wu.cg_ja.pushbox_index].hos_box;
     g_state.bs2_floor[0] = wk->wu.xyz[0].disp.pos + dad[0];
     g_state.bs2_floor[1] = wk->wu.xyz[0].disp.pos + dad[0] + dad[1];

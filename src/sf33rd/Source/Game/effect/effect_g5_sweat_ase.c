@@ -15,18 +15,18 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
-const s16 num_of_ase[4] = { 0, 3, 5, 6 };
+const s16 sweat_particle_count[4] = { 0, 3, 5, 6 };
 
-const s16 ase_dir_hosei[4][6] = {
+const s16 sweat_dir_correction[4][6] = {
     { -2, 3, -1, 30, 1, 33 }, { 2, -3, 1, 33, -1, 30 }, { 1, -2, 2, 34, 0, 31 }, { -1, 2, -2, 31, 0, 34 }
 };
 
-const s16 ase_speed_hosei[4][6] = { { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
+const s16 sweat_speed_correction[4][6] = { { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
                                     { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
                                     { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
                                     { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 } };
 
-const s16 ase_delta_hosei[4][6] = { { -88, -96, -112, -80, -128, -88 },
+const s16 sweat_delta_correction[4][6] = { { -88, -96, -112, -80, -128, -88 },
                                     { -88, -96, -112, -80, -128, -88 },
                                     { -88, -96, -112, -80, -128, -88 },
                                     { -88, -96, -112, -80, -128, -88 } };
@@ -108,13 +108,13 @@ static s32 effect_G5_init(State* wk, s16 dr, s16 sp, s16 dl) {
     return 0;
 }
 
-s32 setup_ase_extra(State* wk, u8 num) {
+s32 setup_sweat_extra(State* wk, u8 num) {
     s16 i;
     s16 way;
     s16 rnd_00;
     s16 rnd_01;
 
-    if (num_of_ase[num] == 0) {
+    if (sweat_particle_count[num] == 0) {
         return 0;
     }
 
@@ -122,9 +122,9 @@ s32 setup_ase_extra(State* wk, u8 num) {
     rnd_00 = random_16() & 3;
     rnd_01 = random_16() & 3;
 
-    for (i = 0; i < num_of_ase[num]; i++) {
+    for (i = 0; i < sweat_particle_count[num]; i++) {
         effect_G5_init(
-            wk, way + ase_dir_hosei[rnd_00][i] & 0x3F, ase_speed_hosei[rnd_01][i], ase_delta_hosei[rnd_01][i]);
+            wk, way + sweat_dir_correction[rnd_00][i] & 0x3F, sweat_speed_correction[rnd_01][i], sweat_delta_correction[rnd_01][i]);
     }
 
     return 0;
