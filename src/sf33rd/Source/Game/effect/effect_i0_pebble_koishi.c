@@ -18,7 +18,7 @@
 
 const s16 pebble_charset_ids[8];
 const s16 pebble_particle_count[8];
-const s16 pebble_area_correction[5];
+const s16 pebble_area_modifier[5];
 const s16 pebble_spawn_area[8][16];
 const s16 pebble_speed_x[5][8];
 const s16 pebble_speed_y[5][8];
@@ -127,7 +127,7 @@ s32 setup_pebble_extra(State* wk, u8 num) {
     dix = (s16*)pebble_spawn_area[random_16() & 7];
 
     for (i = 0; i < pebble_particle_count[num]; i++) {
-        hsx = (pebble_area_correction[dix[i]] + (random_16() - 7));
+        hsx = (pebble_area_modifier[dix[i]] + (random_16() - 7));
         hsy = -(random_16() & 3);
         nxy = (hsy - (random_16() & 3));
         spx = pebble_speed_x[dix[i]][random_16() & 7];
@@ -142,7 +142,7 @@ const s16 pebble_charset_ids[8] = { 85, 86, 87, 85, 86, 87, 85, 86 };
 
 const s16 pebble_particle_count[8] = { 6, 7, 8, 10, 12, 14, 15, 16 };
 
-const s16 pebble_area_correction[5] = { 0, 20, -20, 40, -40 };
+const s16 pebble_area_modifier[5] = { 0, 20, -20, 40, -40 };
 
 const s16 pebble_spawn_area[8][16] = {
     { 0, 1, 2, 3, 4, 3, 2, 1, 0, 1, 2, 3, 4, 3, 2, 1 }, { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0 },

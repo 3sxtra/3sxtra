@@ -63,7 +63,7 @@ void effect_J9_move(State_Other* ewk) {
             break;
         }
 
-        player_correction_data(ewk, c2wk->dir_timer, 0);
+        player_modifier_data(ewk, c2wk->dir_timer, 0);
         effJ9_trans(&ewk->wu);
         break;
 

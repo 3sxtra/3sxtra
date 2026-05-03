@@ -23,12 +23,12 @@ const s16 effK3_isp_table[4][4][2] = { { { -512, 768 }, { -1024, 512 }, { 512, 7
                                        { { -1536, 1792 }, { -2048, 1280 }, { 1536, 1792 }, { 2048, 1280 } },
                                        { { -2048, 2304 }, { -2560, 1664 }, { 2048, 2304 }, { 2560, 1664 } } };
 
-const s16 effK3_isp_x_correction[4][8] = { { 0, 128, 256, 384, 0, -128, -256, -384 },
+const s16 effK3_isp_x_offset[4][8] = { { 0, 128, 256, 384, 0, -128, -256, -384 },
                                       { 0, 128, 256, 384, -128, -384, -512, -640 },
                                       { 0, 256, 384, 512, -256, -512, -768, -1024 },
                                       { 0, 256, 512, 768, -256, -512, -768, -1024 } };
 
-const s16 effK3_isp_y_correction[4][8] = { { 0, 128, 256, 384, 512, 0, -128, -256 },
+const s16 effK3_isp_y_offset[4][8] = { { 0, 128, 256, 384, 512, 0, -128, -256 },
                                       { 0, 128, 256, 384, 512, 0, -128, -256 },
                                       { 0, 128, 128, 256, 256, 384, 384, -256 },
                                       { 0, 256, 512, 0, -256, -512, 384, -384 } };
@@ -108,9 +108,9 @@ static void set_init_posspeed_effK3(State* wk) {
     data[1] = 0;
     data[3] = -96;
     ix = random_16() & 7;
-    data[0] += effK3_isp_x_correction[wk->damage_attack_level][ix];
+    data[0] += effK3_isp_x_offset[wk->damage_attack_level][ix];
     ix = random_16() & 7;
-    data[2] += effK3_isp_y_correction[wk->damage_attack_level][ix];
+    data[2] += effK3_isp_y_offset[wk->damage_attack_level][ix];
     setup_move_data_easy(wk, &data[0], 1, 0);
     wk->shadow_prio = effK3_life_time[wk->damage_attack_level] + (random_16() & 3);
     wk->shadow_y = wk->shadow_prio / 2;

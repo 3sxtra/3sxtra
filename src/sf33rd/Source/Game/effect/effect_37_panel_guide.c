@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 
-const s16 panel_pos_correction[8][4][2] = {
+const s16 panel_pos_offset[8][4][2] = {
     { { 25, 99 }, { 25, 100 }, { 0, 0 }, { 25, 100 } }, { { 43, 103 }, { 42, 106 }, { 0, 0 }, { 42, 106 } },
     { { 18, 115 }, { 0, 0 }, { 0, 0 }, { 18, 115 } },   { { 18, 115 }, { 0, 0 }, { 0, 0 }, { 18, 115 } },
     { { 18, 115 }, { 0, 0 }, { 0, 0 }, { 18, 115 } },   { { 30, 90 }, { 30, 89 }, { 0, 0 }, { 30, 89 } },
@@ -57,12 +57,12 @@ void effect_37_move(State_Other* ewk) {
             }
 
             if (ewk->wu.active_move) {
-                ewk->wu.position_x = mwk->position_x - panel_pos_correction[ewk->wu.charset_id][ix][0];
+                ewk->wu.position_x = mwk->position_x - panel_pos_offset[ewk->wu.charset_id][ix][0];
             } else {
-                ewk->wu.position_x = mwk->position_x + panel_pos_correction[ewk->wu.charset_id][ix][0];
+                ewk->wu.position_x = mwk->position_x + panel_pos_offset[ewk->wu.charset_id][ix][0];
             }
 
-            ewk->wu.position_y = mwk->position_y + panel_pos_correction[ewk->wu.charset_id][ix][1];
+            ewk->wu.position_y = mwk->position_y + panel_pos_offset[ewk->wu.charset_id][ix][1];
         } else {
             ewk->wu.disp_flag = 0;
         }

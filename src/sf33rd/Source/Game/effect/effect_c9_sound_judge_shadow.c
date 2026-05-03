@@ -31,7 +31,7 @@ const u8 sel_ejg_ix_table[2][2][4] = { { { 0, 0, 1, 255 }, { 1, 0, 0, 255 } }, {
 
 const u16 ag_cc_table[8] = { 8257, 8258, 8259, 8260, 8261, 8262, 8263, 8264 };
 
-const s16 app_pos_correction[3][3] = { { -64, -6, -2 }, { 0, -8, -4 }, { 64, -6, -2 } };
+const s16 app_pos_offset[3][3] = { { -64, -6, -2 }, { 0, -8, -4 }, { 64, -6, -2 } };
 
 const s16 judge_gals_kage_tbl[8][4] = { { 0, -6, 32, 12 }, { 0, -6, 32, 14 }, { 0, -6, 32, 8 },  { 0, -6, 32, 8 },
                                         { 0, -6, 32, 8 },  { 0, -6, 32, 10 }, { 0, -6, 32, 12 }, { 0, -6, 32, 16 } };
@@ -67,9 +67,9 @@ void effect_C9_move(State_Other* ewk) {
         ewk->wu.routine_no[0] += 1;
         ewk->wu.disp_flag = 1;
         scrc = get_center_position();
-        ewk->wu.xyz[0].disp.pos = app_pos_correction[ewk->wu.type][0] + scrc;
-        ewk->wu.xyz[1].disp.pos = app_pos_correction[ewk->wu.type][1];
-        ewk->wu.xyz[2].disp.pos = app_pos_correction[ewk->wu.type][2] + 32;
+        ewk->wu.xyz[0].disp.pos = app_pos_offset[ewk->wu.type][0] + scrc;
+        ewk->wu.xyz[1].disp.pos = app_pos_offset[ewk->wu.type][1];
+        ewk->wu.xyz[2].disp.pos = app_pos_offset[ewk->wu.type][2] + 32;
         ewk->wu.shadow_flag = 1;
         ewk->wu.shadow_x = judge_gals_kage_tbl[ewk->wu.charset_id][0];
         ewk->wu.shadow_y = judge_gals_kage_tbl[ewk->wu.charset_id][1];

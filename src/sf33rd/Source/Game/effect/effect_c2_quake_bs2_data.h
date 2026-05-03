@@ -16,7 +16,7 @@ typedef struct {
 void effect_C2_move(State_Other* ewk);
 void setup_demojump(PlayerEntity* twk, s16 ix);
 s32 check_effc2_p2_rno(State* wk);
-void player_correction_data(State_Other* ewk, s16 flag, s16 f2);
+void player_modifier_data(State_Other* ewk, s16 flag, s16 f2);
 void get_bs2_parts_data(State* wk);
 void set_parts_priority(State* wk);
 void c3_new_damage(State* wk);
