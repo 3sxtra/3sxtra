@@ -491,3 +491,31 @@
 | `Common/MemMan.[c|h]` | `Common/memory_manager.[c|h]` |
 | `Common/PPGFile.[c|h]` | `Common/ppg_file.[c|h]` |
 | `Common/PPGWork.[c|h]` | `Common/ppg_work.[c|h]` |
+
+## Phase 20: Effect Module Internal Identifiers
+
+| Legacy Identifier | Modern Semantic Identifier |
+| --- | --- |
+| `ase_dir_hosei` | `sweat_dir_correction` |
+| `ase_speed_hosei` | `sweat_speed_correction` |
+| `ase_delta_hosei` | `sweat_delta_correction` |
+| `setup_ase_extra` | `setup_sweat_extra` |
+| `num_of_ase` | `sweat_particle_count` |
+| `eff15_koishi` | `eff15_pebble` |
+| `char_of_koishi` | `pebble_charset_ids` |
+| `num_of_koishi` | `pebble_particle_count` |
+| `koishi_area_hosei` | `pebble_area_correction` |
+| `koishi_app_area` | `pebble_spawn_area` |
+| `koishi_speed_x` | `pebble_speed_x` |
+| `koishi_speed_y` | `pebble_speed_y` |
+| `setup_koishi_extra` | `setup_pebble_extra` |
+| `hana_dir_hosei` | `flower_dir_correction` |
+| `hana_speed_hosei` | `flower_speed_correction` |
+| `hana_delta_hosei` | `flower_delta_correction` |
+| `player_hosei_data` | `player_correction_data` |
+| `app_pos_hosei` | `app_pos_correction` |
+| `effK3_isp_x_hosei` | `effK3_isp_x_correction` |
+| `effK3_isp_y_hosei` | `effK3_isp_y_correction` |
+| `effK4_isp_x_hosei` | `effK4_isp_x_correction` |
+| `effK4_isp_y_hosei` | `effK4_isp_y_correction` |
+| `panel_pos_hosei` | `panel_pos_correction` |
