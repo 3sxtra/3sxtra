@@ -87,6 +87,9 @@ body#crt-calibration-root {
     left: 0;
     width: 100%;
     height: 100%;
+    box-sizing: border-box;
+    border-width: 1dp;
+    border-color: rgba(255, 255, 255, 255);
 }
 
 .grid-line-h {
