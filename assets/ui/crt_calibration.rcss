@@ -1,0 +1,130 @@
+body#crt-calibration-root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.smpte-container {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.smpte-top {
+    display: block;
+    width: 100%;
+    height: 66.6666%;
+    position: relative;
+}
+
+.smpte-middle {
+    display: block;
+    width: 100%;
+    height: 8.3333%;
+    position: relative;
+}
+
+.smpte-bottom {
+    display: block;
+    width: 100%;
+    height: 25%;
+    position: relative;
+}
+
+.bar {
+    position: absolute;
+    top: 0;
+    width: 14.2857%; /* 1/7th */
+    height: 100%;
+}
+
+/* Base SMPTE Colors (75% amplitude) */
+.bar-white   { background-color: rgb(191,191,191); }
+.bar-yellow  { background-color: rgb(191,191,0); }
+.bar-cyan    { background-color: rgb(0,191,191); }
+.bar-green   { background-color: rgb(0,191,0); }
+.bar-magenta { background-color: rgb(191,0,191); }
+.bar-red     { background-color: rgb(191,0,0); }
+.bar-blue    { background-color: rgb(0,0,191); }
+.bar-black   { background-color: rgb(16,16,16); } /* Standard setup black */
+.bar-gray    { background-color: rgb(38,38,38); } /* Usually ~15% for bottom-right */
+
+/* Bottom section specifics */
+.bar-i       { background-color: rgb(0,68,114); } /* Approximation of I */
+.bar-q       { background-color: rgb(64,0,110); } /* Approximation of Q */
+
+.smpte-bottom .bar-white { background-color: rgb(255,255,255); } /* 100% white pulse */
+
+/* PLUGE (Picture Line-Up Generation Equipment) */
+.pluge-container {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: rgb(0,0,0);
+}
+
+.pluge-bar {
+    position: absolute;
+    top: 0;
+    width: 20%;
+    height: 100%;
+}
+
+/* Standard black is 16, Superblack is 0, Light black is 32 */
+.pluge-container .bar-black { background-color: rgb(16,16,16); }
+.pluge-superblack { background-color: rgb(0,0,0); }
+.pluge-light { background-color: rgb(32,32,32); }
+
+/* Grid Overlay */
+.geometry-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.grid-line-h {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1dp;
+    background-color: rgba(255, 255, 255, 128);
+}
+
+.grid-line-v {
+    position: absolute;
+    top: 0;
+    width: 1dp;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 128);
+}
+
+.grid-center-circle {
+    position: absolute;
+    top: 25%;
+    left: 33.333%;
+    width: 33.333%;
+    height: 50%;
+    border-width: 1dp;
+    border-color: rgba(255, 255, 255, 150);
+    border-radius: 1000dp; /* Large value forces a circle if element is square, here it forms an ellipse fitting the box */
+}
+
+/* Instructions */
+.calibration-instructions {
+    position: absolute;
+    bottom: 5%;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 16dp;
+    color: white;
+    font-family: "DistrictTF-RegularItalic";
+    font-effect: shadow(1dp 1dp black);
+}

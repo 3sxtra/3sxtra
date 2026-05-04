@@ -66,6 +66,7 @@
 #include "port/sdl/rmlui/rmlui_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
+#include "port/sdl/rmlui/rmlui_crt_calibration.h"
 #include "port/sdl/rmlui/rmlui_pause_overlay.h"
 #include "port/sdl/rmlui/rmlui_replay_picker.h"
 #include "port/sdl/rmlui/rmlui_sound_menu.h"
@@ -1056,7 +1057,8 @@ int SDLApp_Init() {
     rmlui_replay_picker_init();
     rmlui_dev_overlay_init();
     rmlui_mods_menu_init();
-    rmlui_palmod_menu_init();
+    rmlui_crt_calibration_init();
+    rmlui_option_menu_init();
     rmlui_shader_menu_init();
     rmlui_stage_config_init();
     rmlui_input_display_init();
@@ -1460,7 +1462,8 @@ void SDLApp_EndFrame() {
     rmlui_ingame_chat_update();
 
     if (use_rmlui) {
-        rmlui_mode_menu_update();
+        rmlui_mods_menu_update();
+        rmlui_crt_calibration_update();
         rmlui_option_menu_update();
         rmlui_game_option_update();
         rmlui_title_screen_update();

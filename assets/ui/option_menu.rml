@@ -67,11 +67,19 @@
                 FX OPTION
             </button>
 
-            <!-- 7 (or 6 when Extra locked): Exit -->
+            <!-- 7 (or 6 when Extra locked): CRT Calibration -->
             <button class="menu-item" id="opt-7"
                     data-class-focused="(extra_option_available ? option_cursor == 7 : option_cursor == 6)"
                     data-event-click="select_item(extra_option_available ? 7 : 6)"
-                    nav-up="opt-6">
+                    nav-up="opt-6" nav-down="opt-8">
+                CRT CALIBRATION
+            </button>
+
+            <!-- 8 (or 7 when Extra locked): Exit -->
+            <button class="menu-item" id="opt-8"
+                    data-class-focused="(extra_option_available ? option_cursor == 8 : option_cursor == 7)"
+                    data-event-click="select_item(extra_option_available ? 8 : 7)"
+                    nav-up="opt-7">
                 EXIT
             </button>
 

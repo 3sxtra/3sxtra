@@ -115,25 +115,25 @@ static void option_select_enter(struct _TASK* task_ptr) {
     }
 
     /* ── Dynamic item count based on Extra_Option unlock ── */
-    /* FX OPTION is always present (+1 to both paths). */
+    /* FX OPTION and CRT CALIBRATION are always present (+2 to both paths). */
     if (CurrentSave()->Extra_Option == 0 && CurrentSave()->Unlock_All == 0) {
-        /* 7 items — no Extra Option, but FX Option present */
+        /* 8 items — no Extra Option, but FX Option and CRT Calibration present */
         if (use_rmlui && rmlui_menu_option) {
             rmlui_option_menu_show();
         } else {
             effect_04_init(1, 4, 0, 0x48);
-            g_state.Menu_Cursor_Move = 7;
+            g_state.Menu_Cursor_Move = 8;
         }
-        g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 6;
+        g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 7;
     } else {
-        /* 8 items — Extra Option unlocked + FX Option */
+        /* 9 items — Extra Option unlocked + FX Option + CRT Calibration */
         if (use_rmlui && rmlui_menu_option) {
             rmlui_option_menu_show();
         } else {
             effect_04_init(1, 1, 0, 0x48);
-            g_state.Menu_Cursor_Move = 8;
+            g_state.Menu_Cursor_Move = 9;
         }
-        g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 7;
+        g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 8;
     }
 }
 
@@ -189,13 +189,13 @@ static void option_select_tick(struct _TASK* task_ptr) {
     }
 
     /* ── Cursor movement ── */
-    if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, ix + 6, 0xFF) == 0) {
-        MC_Move_Sub(Check_Menu_Lever(1, 0), 0, ix + 6, 0xFF);
+    if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, ix + 7, 0xFF) == 0) {
+        MC_Move_Sub(Check_Menu_Lever(1, 0), 0, ix + 7, 0xFF);
     }
 
     /* ── Render NativeUI declaratively to match legacy focus ── */
     if (!use_rmlui || !rmlui_menu_option) {
-        const int OPTION_UNLOCKED_GRAPHIC_START = 91;
+        const int OPTION_UNLOCKED_GRAPHIC_START = 92;
         const int OPTION_LOCKED_GRAPHIC_START = 84;
         NativeUI_SetFocusIndex(g_state.Menu_Cursor_Y[0]);
         NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
@@ -215,6 +215,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
         }
 
         NativeUI_Button("FX OPTION");
+        NativeUI_Button("CRT CALIBRATION");
         NativeUI_Button("EXIT");
 
         NativeUI_End();
@@ -225,7 +226,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
         SE_selected();
 
         /* ── Cancel / last item (EXIT) → back to Mode Select ── */
-        if (g_state.Menu_Cursor_Y[0] == ix + 6 || g_state.IO_Result == 0x200) {
+        if (g_state.Menu_Cursor_Y[0] == ix + 7 || g_state.IO_Result == 0x200) {
             NativeUI_Clear();
             g_state.Menu_Suicide[0] = 0;
             g_state.Menu_Suicide[1] = 1;
@@ -268,6 +269,20 @@ static void option_select_tick(struct _TASK* task_ptr) {
             NativeUI_Clear();
 
             MenuScreen_Goto(MENU_SCREEN_FX_OPTION);
+            return;
+        }
+
+        /* ── CRT CALIBRATION item: ix + 6 (the item just before EXIT) ── */
+        if (g_state.Menu_Cursor_Y[0] == ix + 6) {
+            if (use_rmlui && rmlui_menu_option)
+                rmlui_option_menu_hide();
+
+            /* Save the cursor position so we return exactly here */
+            g_state.Cursor_Y_Pos[0][1] = g_state.Menu_Cursor_Y[0];
+            g_state.Cursor_Y_Pos[1][1] = g_state.Menu_Cursor_Y[1];
+            NativeUI_Clear();
+
+            MenuScreen_Goto(MENU_SCREEN_CRT_CALIBRATION);
             return;
         }
 
@@ -348,7 +363,7 @@ void ms_option_select_register(void) {
         .on_enter = option_select_enter,
         .on_tick = option_select_tick,
         .on_exit = option_select_exit,
-        .cursor_max = 7,   /* default: 8 items (0–7) — on_enter may override to 6 */
+        .cursor_max = 8,   /* default: 9 items (0–8) — on_enter may override to 7 */
         .cancel_item = -1, /* dynamic — handled in on_tick */
         .rmlui_show = option_select_rmlui_show,
         .rmlui_hide = option_select_rmlui_hide,

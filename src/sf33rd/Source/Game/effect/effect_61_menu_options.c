@@ -20,7 +20,7 @@ static void EFF61_SLIDE_IN(EffectMultiSprite* ewk);
 static void EFF61_SLIDE_OUT(EffectMultiSprite* /* unused */);
 static void EFF61_SUDDENLY(EffectMultiSprite* ewk);
 
-const s8* Menu_Letter_Data[99] = { "ARCADE",
+const s8* Menu_Letter_Data[101] = { "ARCADE",
                                    "VERSUS",
                                    "TRAINING",
                                    "NETWORK",
@@ -105,15 +105,16 @@ const s8* Menu_Letter_Data[99] = { "ARCADE",
                                    "CONNECT",
                                    "EXIT",
                                    "RANKED MATCHMAKING",
-                                   /* [84-90] 7-item Options Menu (FX Option, no Extra Option) */
+                                   /* [84-91] 8-item Options Menu (FX Option, no Extra Option) */
                                    "GAME OPTION",
                                    "BUTTON CONFIG.",
                                    "SYSTEM DIRECTION",
                                    "SOUND",
                                    "SAVE#/#LOAD",
                                    "FX OPTION",
+                                   "CRT CALIBRATION",
                                    "EXIT",
-                                   /* [91-98] 8-item Options Menu (FX Option + Extra Option) */
+                                   /* [92-100] 9-item Options Menu (FX Option + Extra Option) */
                                    "GAME OPTION",
                                    "BUTTON CONFIG.",
                                    "SYSTEM DIRECTION",
@@ -121,6 +122,7 @@ const s8* Menu_Letter_Data[99] = { "ARCADE",
                                    "SAVE#/#LOAD",
                                    "EXTRA OPTION",
                                    "FX OPTION",
+                                   "CRT CALIBRATION",
                                    "EXIT" };
 
 /** @brief No-op — NETWORK is now always visible in the Mode Menu. */

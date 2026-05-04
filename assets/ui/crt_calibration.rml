@@ -1,0 +1,93 @@
+<rml>
+<head>
+    <title>CRT Calibration</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="crt_calibration.rcss"/>
+</head>
+<body data-model="crt_calibration" id="crt-calibration-root">
+    <!-- SMPTE Color Bars Container -->
+    <div class="smpte-container">
+        <!-- Top 67%: Seven standard vertical bars -->
+        <div class="smpte-top">
+            <div class="bar bar-white" style="left: 0%;"></div>
+            <div class="bar bar-yellow" style="left: 14.2857%;"></div>
+            <div class="bar bar-cyan" style="left: 28.5714%;"></div>
+            <div class="bar bar-green" style="left: 42.8571%;"></div>
+            <div class="bar bar-magenta" style="left: 57.1428%;"></div>
+            <div class="bar bar-red" style="left: 71.4285%;"></div>
+            <div class="bar bar-blue" style="left: 85.7142%;"></div>
+        </div>
+        <!-- Middle 8%: Reverse castellan bars -->
+        <div class="smpte-middle">
+            <div class="bar bar-blue" style="left: 0%;"></div>
+            <div class="bar bar-black" style="left: 14.2857%;"></div>
+            <div class="bar bar-magenta" style="left: 28.5714%;"></div>
+            <div class="bar bar-black" style="left: 42.8571%;"></div>
+            <div class="bar bar-cyan" style="left: 57.1428%;"></div>
+            <div class="bar bar-black" style="left: 71.4285%;"></div>
+            <div class="bar bar-gray" style="left: 85.7142%;"></div>
+        </div>
+        <!-- Bottom 25%: I, White, Q, Black, Pluge -->
+        <div class="smpte-bottom">
+            <div class="bar bar-i" style="left: 0%;"></div>
+            <div class="bar bar-white" style="left: 14.2857%;"></div>
+            <div class="bar bar-q" style="left: 28.5714%;"></div>
+            <div class="bar bar-black" style="left: 42.8571%;"></div>
+            <div class="bar bar-black" style="left: 57.1428%;"></div>
+            
+            <!-- Pluge section under Red (Col 6) -->
+            <div class="bar pluge-container" style="left: 71.4285%;">
+                <div class="pluge-bar bar-black" style="left: 0%;"></div>
+                <div class="pluge-bar pluge-superblack" style="left: 20%;"></div>
+                <div class="pluge-bar bar-black" style="left: 40%;"></div>
+                <div class="pluge-bar pluge-light" style="left: 60%;"></div>
+                <div class="pluge-bar bar-black" style="left: 80%;"></div>
+            </div>
+            
+            <div class="bar bar-black" style="left: 85.7142%;"></div>
+        </div>
+    </div>
+    
+    <!-- Geometry Grid Overlay (14x12 to align perfectly with SMPTE 66.6% and 75% splits) -->
+    <div class="geometry-grid">
+        <!-- Horizontal Lines (12 rows -> 8.3333% each) -->
+        <div class="grid-line-h" style="top: 8.3333%;"></div>
+        <div class="grid-line-h" style="top: 16.6666%;"></div>
+        <div class="grid-line-h" style="top: 25%;"></div>
+        <div class="grid-line-h" style="top: 33.3333%;"></div>
+        <div class="grid-line-h" style="top: 41.6666%;"></div>
+        <div class="grid-line-h" style="top: 50%;"></div>
+        <div class="grid-line-h" style="top: 58.3333%;"></div>
+        <div class="grid-line-h" style="top: 66.6666%;"></div>
+        <div class="grid-line-h" style="top: 75%;"></div>
+        <div class="grid-line-h" style="top: 83.3333%;"></div>
+        <div class="grid-line-h" style="top: 91.6666%;"></div>
+
+        <!-- Vertical Lines (14 columns -> 7.1428% each) -->
+        <div class="grid-line-v" style="left: 7.1428%;"></div>
+        <div class="grid-line-v" style="left: 14.2857%;"></div>
+        <div class="grid-line-v" style="left: 21.4285%;"></div>
+        <div class="grid-line-v" style="left: 28.5714%;"></div>
+        <div class="grid-line-v" style="left: 35.7142%;"></div>
+        <div class="grid-line-v" style="left: 42.8571%;"></div>
+        <div class="grid-line-v" style="left: 50%;"></div>
+        <div class="grid-line-v" style="left: 57.1428%;"></div>
+        <div class="grid-line-v" style="left: 64.2857%;"></div>
+        <div class="grid-line-v" style="left: 71.4285%;"></div>
+        <div class="grid-line-v" style="left: 78.5714%;"></div>
+        <div class="grid-line-v" style="left: 85.7142%;"></div>
+        <div class="grid-line-v" style="left: 92.8571%;"></div>
+
+        <div class="grid-center-circle"></div>
+        
+        <!-- Crosshairs inside the circle -->
+        <div class="grid-line-h" style="top: 50%; background-color: rgba(255, 0, 0, 150);"></div>
+        <div class="grid-line-v" style="left: 50%; background-color: rgba(255, 0, 0, 150);"></div>
+    </div>
+
+    <!-- Instructions Overlay -->
+    <div class="calibration-instructions">
+        Press ANY BUTTON to return to Option Menu
+    </div>
+</body>
+</rml>
