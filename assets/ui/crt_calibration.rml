@@ -5,89 +5,106 @@
     <link type="text/rcss" href="crt_calibration.rcss"/>
 </head>
 <body data-model="crt_calibration" id="crt-calibration-root">
-    <!-- SMPTE Color Bars Container -->
-    <div class="smpte-container">
-        <!-- Top 67%: Seven standard vertical bars -->
-        <div class="smpte-top">
-            <div class="bar bar-white" style="left: 0%;"></div>
-            <div class="bar bar-yellow" style="left: 14.2857%;"></div>
-            <div class="bar bar-cyan" style="left: 28.5714%;"></div>
-            <div class="bar bar-green" style="left: 42.8571%;"></div>
-            <div class="bar bar-magenta" style="left: 57.1428%;"></div>
-            <div class="bar bar-red" style="left: 71.4285%;"></div>
-            <div class="bar bar-blue" style="left: 85.7142%;"></div>
-        </div>
-        <!-- Middle 8%: Reverse castellan bars -->
-        <div class="smpte-middle">
-            <div class="bar bar-blue" style="left: 0%;"></div>
-            <div class="bar bar-black" style="left: 14.2857%;"></div>
-            <div class="bar bar-magenta" style="left: 28.5714%;"></div>
-            <div class="bar bar-black" style="left: 42.8571%;"></div>
-            <div class="bar bar-cyan" style="left: 57.1428%;"></div>
-            <div class="bar bar-black" style="left: 71.4285%;"></div>
-            <div class="bar bar-gray" style="left: 85.7142%;"></div>
-        </div>
-        <!-- Bottom 25%: I, White, Q, Black, Pluge -->
-        <div class="smpte-bottom">
-            <div class="bar bar-i" style="left: 0%;"></div>
-            <div class="bar bar-white" style="left: 14.2857%;"></div>
-            <div class="bar bar-q" style="left: 28.5714%;"></div>
-            <div class="bar bar-black" style="left: 42.8571%;"></div>
-            <div class="bar bar-black" style="left: 57.1428%;"></div>
-            
-            <!-- Pluge section under Red (Col 6) -->
-            <div class="bar pluge-container" style="left: 71.4285%;">
-                <div class="pluge-bar bar-black" style="left: 0%;"></div>
-                <div class="pluge-bar pluge-superblack" style="left: 20%;"></div>
-                <div class="pluge-bar bar-black" style="left: 40%;"></div>
-                <div class="pluge-bar pluge-light" style="left: 60%;"></div>
-                <div class="pluge-bar bar-black" style="left: 80%;"></div>
-            </div>
-            
-            <div class="bar bar-black" style="left: 85.7142%;"></div>
-        </div>
-    </div>
     
-    <!-- Geometry Grid Overlay (14x12 to align perfectly with SMPTE 66.6% and 75% splits) -->
-    <div class="geometry-grid">
-        <!-- Horizontal Lines (12 rows -> 8.3333% each) -->
-        <div class="grid-line-h" style="top: 8.3333%;"></div>
-        <div class="grid-line-h" style="top: 16.6666%;"></div>
-        <div class="grid-line-h" style="top: 25%;"></div>
-        <div class="grid-line-h" style="top: 33.3333%;"></div>
-        <div class="grid-line-h" style="top: 41.6666%;"></div>
-        <div class="grid-line-h" style="top: 50%;"></div>
-        <div class="grid-line-h" style="top: 58.3333%;"></div>
-        <div class="grid-line-h" style="top: 66.6666%;"></div>
-        <div class="grid-line-h" style="top: 75%;"></div>
-        <div class="grid-line-h" style="top: 83.3333%;"></div>
-        <div class="grid-line-h" style="top: 91.6666%;"></div>
+    <!-- 0: SMPTE Color Bars -->
+    <div class="pattern-container" data-if="pattern_index == 0">
+        <div class="smpte-container">
+            <!-- Top 67%: Seven standard vertical bars -->
+            <div class="smpte-top">
+                <div class="bar bar-white" style="left: 0%;"></div>
+                <div class="bar bar-yellow" style="left: 14.2857%;"></div>
+                <div class="bar bar-cyan" style="left: 28.5714%;"></div>
+                <div class="bar bar-green" style="left: 42.8571%;"></div>
+                <div class="bar bar-magenta" style="left: 57.1428%;"></div>
+                <div class="bar bar-red" style="left: 71.4285%;"></div>
+                <div class="bar bar-blue" style="left: 85.7142%;"></div>
+            </div>
+            <!-- Middle 8%: Reverse castellan bars -->
+            <div class="smpte-middle">
+                <div class="bar bar-blue" style="left: 0%;"></div>
+                <div class="bar bar-black" style="left: 14.2857%;"></div>
+                <div class="bar bar-magenta" style="left: 28.5714%;"></div>
+                <div class="bar bar-black" style="left: 42.8571%;"></div>
+                <div class="bar bar-cyan" style="left: 57.1428%;"></div>
+                <div class="bar bar-black" style="left: 71.4285%;"></div>
+                <div class="bar bar-gray" style="left: 85.7142%;"></div>
+            </div>
+            <!-- Bottom 25%: I, White, Q, Black, Pluge -->
+            <div class="smpte-bottom">
+                <div class="bar bar-i" style="left: 0%;"></div>
+                <div class="bar bar-white" style="left: 14.2857%;"></div>
+                <div class="bar bar-q" style="left: 28.5714%;"></div>
+                <div class="bar bar-black" style="left: 42.8571%;"></div>
+                <div class="bar bar-black" style="left: 57.1428%;"></div>
+                
+                <div class="bar pluge-container" style="left: 71.4285%;">
+                    <div class="pluge-bar bar-black" style="left: 0%;"></div>
+                    <div class="pluge-bar pluge-superblack" style="left: 20%;"></div>
+                    <div class="pluge-bar bar-black" style="left: 40%;"></div>
+                    <div class="pluge-bar pluge-light" style="left: 60%;"></div>
+                    <div class="pluge-bar bar-black" style="left: 80%;"></div>
+                </div>
+                
+                <div class="bar bar-black" style="left: 85.7142%;"></div>
+            </div>
+        </div>
+    </div>
 
-        <!-- Vertical Lines (14 columns -> 7.1428% each) -->
-        <div class="grid-line-v" style="left: 7.1428%;"></div>
-        <div class="grid-line-v" style="left: 14.2857%;"></div>
-        <div class="grid-line-v" style="left: 21.4285%;"></div>
-        <div class="grid-line-v" style="left: 28.5714%;"></div>
-        <div class="grid-line-v" style="left: 35.7142%;"></div>
-        <div class="grid-line-v" style="left: 42.8571%;"></div>
-        <div class="grid-line-v" style="left: 50%;"></div>
-        <div class="grid-line-v" style="left: 57.1428%;"></div>
-        <div class="grid-line-v" style="left: 64.2857%;"></div>
-        <div class="grid-line-v" style="left: 71.4285%;"></div>
-        <div class="grid-line-v" style="left: 78.5714%;"></div>
-        <div class="grid-line-v" style="left: 85.7142%;"></div>
-        <div class="grid-line-v" style="left: 92.8571%;"></div>
-
-        <div class="grid-center-circle"></div>
+    <!-- 1: Geometry Grid (DOM based, exactly 32dp increments for native 384x224 buffer) -->
+    <div class="pattern-container" data-if="pattern_index == 1">
+        <div class="overscan-border overscan-outer"></div>
+        <div class="overscan-border overscan-safe"></div>
         
-        <!-- Crosshairs inside the circle -->
-        <div class="grid-line-h" style="top: 50%; background-color: rgba(255, 0, 0, 150);"></div>
-        <div class="grid-line-v" style="left: 50%; background-color: rgba(255, 0, 0, 150);"></div>
+        <div class="geometry-grid">
+            <!-- 6 Horizontal Lines (Row increments of 32dp) -->
+            <div class="grid-line-h" style="top: 32dp;"></div>
+            <div class="grid-line-h" style="top: 64dp;"></div>
+            <div class="grid-line-h" style="top: 96dp;"></div>
+            <div class="grid-line-h" style="top: 128dp;"></div>
+            <div class="grid-line-h" style="top: 160dp;"></div>
+            <div class="grid-line-h" style="top: 192dp;"></div>
+
+            <!-- 11 Vertical Lines (Col increments of 32dp) -->
+            <div class="grid-line-v" style="left: 32dp;"></div>
+            <div class="grid-line-v" style="left: 64dp;"></div>
+            <div class="grid-line-v" style="left: 96dp;"></div>
+            <div class="grid-line-v" style="left: 128dp;"></div>
+            <div class="grid-line-v" style="left: 160dp;"></div>
+            <div class="grid-line-v" style="left: 192dp;"></div>
+            <div class="grid-line-v" style="left: 224dp;"></div>
+            <div class="grid-line-v" style="left: 256dp;"></div>
+            <div class="grid-line-v" style="left: 288dp;"></div>
+            <div class="grid-line-v" style="left: 320dp;"></div>
+            <div class="grid-line-v" style="left: 352dp;"></div>
+
+            <div class="grid-center-circle"></div>
+            <div class="grid-line-h" style="top: 112dp; background-color: rgba(255, 0, 0, 150);"></div>
+            <div class="grid-line-v" style="left: 192dp; background-color: rgba(255, 0, 0, 150);"></div>
+        </div>
     </div>
 
-    <!-- Instructions Overlay -->
-    <div class="calibration-instructions">
-        Press ANY BUTTON to return to Option Menu
+    <!-- 2: Sharpness -->
+    <div class="pattern-container sharpness-image" data-if="pattern_index == 2">
     </div>
+
+    <!-- 3: Monoscope -->
+    <div class="pattern-container monoscope-image" data-if="pattern_index == 3">
+    </div>
+
+    <!-- 4: PLUGE (Black Level) -->
+    <div class="pattern-container pluge-fullscreen" data-if="pattern_index == 4">
+        <div class="pluge-full-bar pluge-superblack" style="left: 30%;"></div>
+        <div class="pluge-full-bar bar-black" style="left: 50%;"></div>
+        <div class="pluge-full-bar pluge-light" style="left: 70%;"></div>
+    </div>
+
+    <!-- 5: Solid Colors (Purity) -->
+    <div class="pattern-container solid-colors" data-if="pattern_index == 5">
+        <div class="solid-quadrant solid-white" style="top: 0; left: 0;"></div>
+        <div class="solid-quadrant solid-red" style="top: 0; left: 50%;"></div>
+        <div class="solid-quadrant solid-green" style="top: 50%; left: 0;"></div>
+        <div class="solid-quadrant solid-blue" style="top: 50%; left: 50%;"></div>
+    </div>
+
 </body>
 </rml>

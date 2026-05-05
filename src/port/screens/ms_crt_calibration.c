@@ -28,13 +28,26 @@ static void crt_calibration_tick(struct _TASK* task_ptr) {
     if (sw == 0)
         sw = Check_Menu_Lever(1, 0);
 
+    u16 sw_edge = ~g_state.plsw_01[0] & g_state.plsw_00[0];
+    if (sw_edge == 0)
+        sw_edge = ~g_state.plsw_01[1] & g_state.plsw_00[1];
+
     /* Cancel (EAST/B button) or Confirm (SOUTH/A button) or Start -> return to option menu */
-    if ((sw & SWK_EAST) || (sw & SWK_SOUTH) || (sw & SWK_START)) {
+    if ((sw_edge & SWK_EAST) || (sw_edge & SWK_SOUTH) || (sw_edge & SWK_START)) {
         SE_selected();
         rmlui_crt_calibration_hide();
 
         /* Go back to Option Select */
         MenuScreen_Goto(MENU_SCREEN_OPTION_SELECT);
+    } else if ((sw_edge & SWK_LEFT) || (sw & SWK_LEFT)) { /* Allow holding to scroll fast if sw has repeat? Let's just use sw_edge for distinct presses */
+    }
+    
+    if (sw_edge & SWK_LEFT) {
+        SE_cursor_move();
+        rmlui_crt_calibration_prev_pattern();
+    } else if (sw_edge & SWK_RIGHT) {
+        SE_cursor_move();
+        rmlui_crt_calibration_next_pattern();
     }
 }
 

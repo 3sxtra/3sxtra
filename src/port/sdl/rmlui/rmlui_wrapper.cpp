@@ -636,7 +636,8 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         break;
     }
     case RENDERER_SDL2D:
-    case RENDERER_SDL2D_CLASSIC: {
+    case RENDERER_SDL2D_CLASSIC:
+    case RENDERER_SOFTWARE: {
         SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
         s_render_sdl = new GameViewportSDL(renderer);
         s_render_interface = s_render_sdl;
