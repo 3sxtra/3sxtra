@@ -20,26 +20,7 @@
 #define FLOAT_STATE_COUNT 4
 #define FLIP_STATE_COUNT 5
 #include "port/debug_print.h"
-#include "sf33rd/Source/Game/com/active/ai_active_gill.h"
-#include "sf33rd/Source/Game/com/active/ai_active_alex.h"
-#include "sf33rd/Source/Game/com/active/ai_active_ryu.h"
-#include "sf33rd/Source/Game/com/active/ai_active_yun.h"
-#include "sf33rd/Source/Game/com/active/ai_active_dudley.h"
-#include "sf33rd/Source/Game/com/active/ai_active_necro.h"
-#include "sf33rd/Source/Game/com/active/ai_active_hugo.h"
-#include "sf33rd/Source/Game/com/active/ai_active_ibuki.h"
-#include "sf33rd/Source/Game/com/active/ai_active_elena.h"
-#include "sf33rd/Source/Game/com/active/ai_active_oro.h"
-#include "sf33rd/Source/Game/com/active/ai_active_yang.h"
-#include "sf33rd/Source/Game/com/active/ai_active_ken.h"
-#include "sf33rd/Source/Game/com/active/ai_active_sean.h"
-#include "sf33rd/Source/Game/com/active/ai_active_urien.h"
-#include "sf33rd/Source/Game/com/active/ai_active_akuma.h"
-#include "sf33rd/Source/Game/com/active/ai_active_chun_li.h"
-#include "sf33rd/Source/Game/com/active/ai_active_makoto.h"
-#include "sf33rd/Source/Game/com/active/ai_active_q.h"
-#include "sf33rd/Source/Game/com/active/ai_active_twelve.h"
-#include "sf33rd/Source/Game/com/active/ai_active_remy.h"
+#include "sf33rd/Source/Game/com/ai_combat_core.h"
 #include "sf33rd/Source/Game/com/ai_passive_check.h"
 #include "sf33rd/Source/Game/com/ai_data_tables.h"
 #include "sf33rd/Source/Game/com/ai_subroutines.h"
@@ -713,15 +694,22 @@ static void com_dispatch_char(PlayerEntity* wk, void (*const table[CHAR_COUNT])(
     table[wk->player_number](wk);
 }
 
-static void (*const Active_Char_Tbl[CHAR_COUNT])(PlayerEntity*) = { Computer00, Computer01, Computer02, Computer03,
-                                                                    Computer04, Computer05, Computer06, Computer07,
-                                                                    Computer08, Computer09, Computer10, Computer11,
-                                                                    Computer12, Computer13, Computer14, Computer15,
-                                                                    Computer16, Computer17, Computer18, Computer19 };
+/* Legacy per-character dispatch table — replaced by AICore_ExecutePattern VM.
+ * Kept as reference; will be removed after validation.
+ *
+ * static void (*const Active_Char_Tbl[CHAR_COUNT])(PlayerEntity*) = {
+ *     Computer00, Computer01, Computer02, ..., Computer19
+ * };
+ */
 
-/** @brief AI state 2: Execute the active AI pattern for the current character. */
+/** @brief AI state 2: Execute the active AI pattern via the data-driven VM. */
 void Com_Active(PlayerEntity* wk) {
-    com_dispatch_char(wk, Active_Char_Tbl, 0, 0);
+    if (Check_Damage(wk)) return;
+    if (Check_Caught(wk)) return;
+    if (Check_Flip(wk)) return;
+    Pattern_Insurance(wk, 0, 0);
+    if ((u32)wk->player_number >= CHAR_COUNT) return;
+    AICore_ExecutePattern(wk);
 }
 
 static void (*const Follow_Char_Tbl[CHAR_COUNT])(PlayerEntity*) = { Follow02, Follow02, Follow02, Follow02, Follow02,

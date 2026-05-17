@@ -53,6 +53,7 @@
 #include "sf33rd/Source/Game/system/system_subroutines_2.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/training/training_hud.h"
+#include "sf33rd/Source/Game/com/ai_combat_core.h"
 #include "test/test_runner.h"
 
 #include "menu_bridge.h"
@@ -308,6 +309,7 @@ int main(int argc, char* argv[]) {
         TRACE_FRAME_MARK();
     }
 
+    AICore_Shutdown();
     AFS_Finish();
     SDLApp_Quit();
     return 0;
@@ -604,6 +606,7 @@ void njUserInit() {
     Init_sound_system();
     Init_bgm_work();
     sndInitialLoad();
+    AICore_Init();
     cpInitTask();
     cpReadyTask(TASK_INIT, Init_Task);
 }
