@@ -28,3 +28,8 @@ void SPU_VoiceKeyOff(int vnum);
 void SPU_VoiceStop(int vnum);
 
 #endif // SPU_H_
+
+// Dynamic asset loading
+struct SoundEvent; // Forward declaration
+s8* LoadPHDData(int index);
+struct SoundEvent* LoadTSBData(int index);
