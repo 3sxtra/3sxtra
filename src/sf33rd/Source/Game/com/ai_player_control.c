@@ -694,13 +694,6 @@ static void com_dispatch_char(PlayerEntity* wk, void (*const table[CHAR_COUNT])(
     table[wk->player_number](wk);
 }
 
-/* Legacy per-character dispatch table — replaced by AICore_ExecutePattern VM.
- * Kept as reference; will be removed after validation.
- *
- * static void (*const Active_Char_Tbl[CHAR_COUNT])(PlayerEntity*) = {
- *     Computer00, Computer01, Computer02, ..., Computer19
- * };
- */
 
 /** @brief AI state 2: Execute the active AI pattern via the data-driven VM. */
 void Com_Active(PlayerEntity* wk) {

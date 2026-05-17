@@ -14,11 +14,8 @@
 #include "game_state.h"
 #include "common.h"
 #include "port/input.h"
-#include "sf33rd/Source/Game/com/active/ai_action_table_0.h"
-#include "sf33rd/Source/Game/com/active/ai_action_table_1.h"
-#include "sf33rd/Source/Game/com/active/ai_action_table_2.h"
-#include "sf33rd/Source/Game/com/active/ai_action_table_3.h"
-#include "sf33rd/Source/Game/com/active/ai_action_table_4.h"
+#include "sf33rd/Source/Game/com/ai_combat_core.h"
+
 #include "sf33rd/Source/Game/com/ai_passive_check.h"
 #include "sf33rd/Source/Game/com/ai_data_tables.h"
 #include "sf33rd/Source/Game/com/ai_data_utility.h"
@@ -4606,34 +4603,34 @@ void Select_Active(PlayerEntity* wk) {
 
         switch (g_state.Area_Number[wk->wu.id]) {
         case 0:
-            g_state.Pattern_Index[wk->wu.id] = SA_Active_A_Unit_Data[pl_id - 1][Lv][Rnd];
+            g_state.Pattern_Index[wk->wu.id] = AICore_GetActionTableValue(AITABLE_SA_ACTIVE_A, pl_id - 1, Lv, Rnd);
             break;
         case 1:
-            g_state.Pattern_Index[wk->wu.id] = SA_Active_B_Unit_Data[pl_id - 1][Lv][Rnd];
+            g_state.Pattern_Index[wk->wu.id] = AICore_GetActionTableValue(AITABLE_SA_ACTIVE_B, pl_id - 1, Lv, Rnd);
             break;
         case 2:
-            g_state.Pattern_Index[wk->wu.id] = SA_Active_C_Unit_Data[pl_id - 1][Lv][Rnd];
+            g_state.Pattern_Index[wk->wu.id] = AICore_GetActionTableValue(AITABLE_SA_ACTIVE_C, pl_id - 1, Lv, Rnd);
             break;
         default:
-            g_state.Pattern_Index[wk->wu.id] = SA_Active_D_Unit_Data[pl_id - 1][Lv][Rnd];
+            g_state.Pattern_Index[wk->wu.id] = AICore_GetActionTableValue(AITABLE_SA_ACTIVE_D, pl_id - 1, Lv, Rnd);
             break;
         }
     } else {
         switch (g_state.Area_Number[wk->wu.id]) {
         case 0:
-            g_state.Pattern_Index[wk->wu.id] = Active_A_Unit_Data[wk->player_number][Lv][Rnd];
+            g_state.Pattern_Index[wk->wu.id] = AICore_GetActionTableValue(AITABLE_ACTIVE_A, wk->player_number, Lv, Rnd);
             break;
 
         case 1:
-            g_state.Pattern_Index[wk->wu.id] = Active_B_Unit_Data[wk->player_number][Lv][Rnd];
+            g_state.Pattern_Index[wk->wu.id] = AICore_GetActionTableValue(AITABLE_ACTIVE_B, wk->player_number, Lv, Rnd);
             break;
 
         case 2:
-            g_state.Pattern_Index[wk->wu.id] = Active_C_Unit_Data[wk->player_number][Lv][Rnd];
+            g_state.Pattern_Index[wk->wu.id] = AICore_GetActionTableValue(AITABLE_ACTIVE_C, wk->player_number, Lv, Rnd);
             break;
 
         default:
-            g_state.Pattern_Index[wk->wu.id] = Active_D_Unit_Data[wk->player_number][Lv][Rnd];
+            g_state.Pattern_Index[wk->wu.id] = AICore_GetActionTableValue(AITABLE_ACTIVE_D, wk->player_number, Lv, Rnd);
             break;
         }
     }

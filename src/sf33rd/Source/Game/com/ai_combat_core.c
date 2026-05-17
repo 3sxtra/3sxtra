@@ -30,14 +30,27 @@ typedef struct {
     u32 data_offset;
 } AICharDir;
 
+typedef struct {
+    u16 dim0;
+    u16 dim1;
+    u16 dim2;
+    u32 data_offset;
+} AITblDir;
+
 /* ---------- Module state ---------- */
 static u8* s_aivm_data = NULL;
 static u32 s_aivm_size = 0;
 static u16 s_num_chars = 0;
 static AICharDir s_char_dir[MAX_AI_CHARS];
 
-/* Cached pointers: s_pattern_offsets[char_index][pattern_index] -> pointer into s_aivm_data */
+static u8* s_aitbl_data = NULL;
+static u32 s_aitbl_size = 0;
+static u16 s_num_tables = 0;
+static AITblDir s_tbl_dir[16];
+
+/* Cached pointers */
 static const u8* s_char_pattern_data[MAX_AI_CHARS];
+static const u8* s_tbl_data[16];
 
 /* ---------- Helpers ---------- */
 
@@ -291,6 +304,50 @@ void AICore_Init(void) {
 
     SDL_Log("AICore_Init: loaded %u characters from %s (%u bytes)",
                s_num_chars, path, s_aivm_size);
+
+    /* Load action_tables.dat */
+    char tbl_path[1024];
+    snprintf(tbl_path, sizeof(tbl_path), "%sassets/ai/action_tables.dat", base_path ? base_path : "");
+
+    FILE* tf = fopen(tbl_path, "rb");
+    if (!tf) {
+        SDL_Log("AICore_Init: failed to open %s", tbl_path);
+        return;
+    }
+
+    fseek(tf, 0, SEEK_END);
+    s_aitbl_size = (u32)ftell(tf);
+    fseek(tf, 0, SEEK_SET);
+
+    s_aitbl_data = (u8*)malloc(s_aitbl_size);
+    if (s_aitbl_data) {
+        size_t tread = fread(s_aitbl_data, 1, s_aitbl_size, tf);
+        if (tread == s_aitbl_size) {
+            u32 tmagic = *(u32*)s_aitbl_data;
+            if (tmagic == 0x54414941) { /* "AIAT" */
+                s_num_tables = *(u16*)(s_aitbl_data + 6);
+                if (s_num_tables > 16) s_num_tables = 16;
+                const u8* tdir_ptr = s_aitbl_data + 8;
+                for (int i = 0; i < s_num_tables; i++) {
+                    s_tbl_dir[i].dim0 = *(u16*)(tdir_ptr + 0);
+                    s_tbl_dir[i].dim1 = *(u16*)(tdir_ptr + 2);
+                    s_tbl_dir[i].dim2 = *(u16*)(tdir_ptr + 4);
+                    s_tbl_dir[i].data_offset = *(u32*)(tdir_ptr + 6);
+                    s_tbl_data[i] = s_aitbl_data + s_tbl_dir[i].data_offset;
+                    tdir_ptr += 10;
+                }
+                SDL_Log("AICore_Init: loaded %u tables from %s (%u bytes)", s_num_tables, tbl_path, s_aitbl_size);
+            } else {
+                SDL_Log("AICore_Init: bad magic 0x%08X in tables", tmagic);
+                free(s_aitbl_data);
+                s_aitbl_data = NULL;
+            }
+        } else {
+            free(s_aitbl_data);
+            s_aitbl_data = NULL;
+        }
+    }
+    fclose(tf);
 }
 
 void AICore_ExecutePattern(PlayerEntity* wk) {
@@ -348,8 +405,30 @@ void AICore_Shutdown(void) {
         free(s_aivm_data);
         s_aivm_data = NULL;
     }
+    if (s_aitbl_data) {
+        free(s_aitbl_data);
+        s_aitbl_data = NULL;
+    }
     s_aivm_size = 0;
     s_num_chars = 0;
+    s_aitbl_size = 0;
+    s_num_tables = 0;
     memset(s_char_dir, 0, sizeof(s_char_dir));
     memset(s_char_pattern_data, 0, sizeof(s_char_pattern_data));
+    memset(s_tbl_dir, 0, sizeof(s_tbl_dir));
+    memset(s_tbl_data, 0, sizeof(s_tbl_data));
+}
+
+u8 AICore_GetActionTableValue(AIActionTableType table, int dim0, int dim1, int dim2) {
+    int tbl_idx = (int)table;
+    if (tbl_idx < 0 || tbl_idx >= s_num_tables || !s_aitbl_data) {
+        return 0;
+    }
+    const AITblDir* dir = &s_tbl_dir[tbl_idx];
+    if (dim0 < 0 || dim0 >= dir->dim0) dim0 = 0;
+    if (dim1 < 0 || dim1 >= dir->dim1) dim1 = 0;
+    if (dim2 < 0 || dim2 >= dir->dim2) dim2 = 0;
+
+    int flat_idx = (dim0 * dir->dim1 * dir->dim2) + (dim1 * dir->dim2) + dim2;
+    return s_tbl_data[tbl_idx][flat_idx];
 }

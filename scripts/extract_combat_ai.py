@@ -153,35 +153,37 @@ def extract_action_tables(base_dir):
         with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
             content = f.read()
 
-        # Find the array name and dimensions
-        arr_match = re.search(r'const\s+u8\s+(\w+)\[(\d+)\]\[(\d+)\]\[(\d+)\]\s*=', content)
-        if not arr_match:
-            continue
+        # Find all array definitions
+        for arr_match in re.finditer(r'const\s+u8\s+(\w+)\[(\d+)\]\[(\d+)\]\[(\d+)\]\s*=', content):
+            name = arr_match.group(1)
+            dim0 = int(arr_match.group(2))
+            dim1 = int(arr_match.group(3))
+            dim2 = int(arr_match.group(4))
 
-        name = arr_match.group(1)
-        dim0 = int(arr_match.group(2))
-        dim1 = int(arr_match.group(3))
-        dim2 = int(arr_match.group(4))
+            # The array data is between this match and the next ';'
+            end_idx = content.find(';', arr_match.end())
+            if end_idx == -1: end_idx = len(content)
+            array_content = content[arr_match.end():end_idx]
 
-        # Extract all hex/decimal values
-        values = re.findall(r'0x[0-9a-fA-F]+|\d+', content[arr_match.end():])
-        int_values = [int(v, 0) for v in values]
+            # Extract all hex/decimal values
+            values = re.findall(r'0x[0-9a-fA-F]+|\d+', array_content)
+            int_values = [int(v, 0) for v in values]
 
-        # Reshape into [dim0][dim1][dim2]
-        data = []
-        idx = 0
-        for c in range(dim0):
-            char_data = []
-            for l in range(dim1):
-                level_data = int_values[idx:idx + dim2]
-                char_data.append(level_data)
-                idx += dim2
-            data.append(char_data)
+            # Reshape into [dim0][dim1][dim2]
+            data = []
+            idx = 0
+            for c in range(dim0):
+                char_data = []
+                for l in range(dim1):
+                    level_data = int_values[idx:idx + dim2]
+                    char_data.append(level_data)
+                    idx += dim2
+                data.append(char_data)
 
-        tables[name] = {
-            "dimensions": [dim0, dim1, dim2],
-            "data": data
-        }
+            tables[name] = {
+                "dimensions": [dim0, dim1, dim2],
+                "data": data
+            }
 
     return tables
 

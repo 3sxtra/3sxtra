@@ -66,11 +66,25 @@ typedef enum {
     AI_OP_COUNT
 } AIOp;
 
+typedef enum {
+    AITABLE_ACTIVE_A = 0,
+    AITABLE_ACTIVE_B,
+    AITABLE_ACTIVE_C,
+    AITABLE_ACTIVE_D,
+    AITABLE_SA_ACTIVE_A,
+    AITABLE_SA_ACTIVE_B,
+    AITABLE_SA_ACTIVE_C,
+    AITABLE_SA_ACTIVE_D
+} AIActionTableType;
+
 /** @brief Load combat_sequences.dat and action_tables.dat into memory. */
 void AICore_Init(void);
 
 /** @brief Execute the current AI pattern step for a character. */
 void AICore_ExecutePattern(PlayerEntity* wk);
+
+/** @brief Fetch a single byte from a 3D binary action table [char][lv][rnd]. */
+u8 AICore_GetActionTableValue(AIActionTableType table, int dim0, int dim1, int dim2);
 
 /** @brief Free all loaded AI data. */
 void AICore_Shutdown(void);
