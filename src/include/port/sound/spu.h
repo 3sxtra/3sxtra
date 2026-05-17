@@ -27,4 +27,10 @@ bool SPU_VoiceIsFinished(int vnum);
 void SPU_VoiceKeyOff(int vnum);
 void SPU_VoiceStop(int vnum);
 
+// Dynamic asset loading
+#include "structs.h"
+s8* LoadPHDData(int index);
+SoundEvent* LoadTSBData(int index);
+void UnloadSoundAssets(void);
+
 #endif // SPU_H_

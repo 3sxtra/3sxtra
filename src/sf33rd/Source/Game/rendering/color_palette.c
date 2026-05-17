@@ -1,3 +1,4 @@
+#include "port/sound/spu.h"
 /**
  * @file color3rd.c
  * Loading, conversion, and hardware-upload of color palettes
@@ -170,9 +171,9 @@ void q_ldreq_color_data(REQ* curr) {
     case 5:
         if (sndCheckVTransStatus(1) != 0) {
             Push_ramcnt_key(curr->key);
-            mlMemMapSetPhdAddr(curr->id + 1, csePHDDataTable[cfn->data + 1]);
-            mlTsbSetBankAddr(curr->id + 1, cseTSBDataTable[cfn->data + 1]);
-            sdbd[curr->id + 1] = (s8*)cseTSBDataTable[cfn->data + 1];
+            mlMemMapSetPhdAddr(curr->id + 1, LoadPHDData(cfn->data + 1));
+            mlTsbSetBankAddr(curr->id + 1, LoadTSBData(cfn->data + 1));
+            sdbd[curr->id + 1] = (s8*)LoadTSBData(cfn->data + 1);
             *curr->result |= lpr_wrdata[curr->id];
             curr->be = 0;
         }
@@ -429,9 +430,9 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
             waitVsyncDummy();
         }
 
-        mlMemMapSetPhdAddr(id + 1, csePHDDataTable[data + 1]);
-        mlTsbSetBankAddr(id + 1, cseTSBDataTable[data + 1]);
-        sdbd[id + 1] = (s8*)cseTSBDataTable[data + 1];
+        mlMemMapSetPhdAddr(id + 1, LoadPHDData(data + 1));
+        mlTsbSetBankAddr(id + 1, LoadTSBData(data + 1));
+        sdbd[id + 1] = (s8*)LoadTSBData(data + 1);
         Push_ramcnt_key(key);
         break;
 

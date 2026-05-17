@@ -1,3 +1,4 @@
+#include "port/sound/spu.h"
 /**
  * @file sound3rd.c
  * @brief Main sound system controller — BGM and SE engine.
@@ -135,14 +136,6 @@ BGMExecutionData bgm_exdata_arcade[32] = {
 };
 
 // sdata
-SoundEvent* cseTSBDataTable[21] = { TSB_SE,   TSB_PL00, TSB_PL01, TSB_PL02, TSB_PL03, TSB_PL04, TSB_PL05,
-                                    TSB_PL06, TSB_PL07, TSB_PL08, TSB_PL09, TSB_PL10, TSB_PL11, TSB_PL12,
-                                    TSB_PL13, TSB_PL14, TSB_PL15, TSB_PL16, TSB_PL17, TSB_PL18, TSB_PL19 };
-
-s8* csePHDDataTable[21] = { PHD_SE,   PHD_PL00, PHD_PL01, PHD_PL02, PHD_PL03, PHD_PL04, PHD_PL05,
-                            PHD_PL06, PHD_PL07, PHD_PL08, PHD_PL09, PHD_PL10, PHD_PL11, PHD_PL12,
-                            PHD_PL13, PHD_PL14, PHD_PL15, PHD_PL16, PHD_PL17, PHD_PL18, PHD_PL19 };
-
 u8 adx_NowOnMemoryType = 0xFF;
 
 BGMTableEntry* bgm_table[2] = { bgm_table_arranged, bgm_table_arcade };
@@ -191,8 +184,8 @@ s32 sndCheckVTransStatus(s32 type) {
 /** @brief Load the initial SE bank and memory-map it for the SPU. */
 void sndInitialLoad() {
     mlMemMapInit(&SpuMap);
-    mlMemMapSetPhdAddr(0, *csePHDDataTable);
-    mlTsbSetBankAddr(0, *cseTSBDataTable);
+    mlMemMapSetPhdAddr(0, LoadPHDData(0));
+    mlTsbSetBankAddr(0, LoadTSBData(0));
     load_any_color(109, 20); // This loads SE.bd (index 7)
 }
 
@@ -234,6 +227,8 @@ void Exit_sound_system() {
         spu_all_off();
         system_init_level &= ~1;
     }
+
+    UnloadSoundAssets();
 }
 
 /** @brief Clear the BGM execution + request work areas. */
