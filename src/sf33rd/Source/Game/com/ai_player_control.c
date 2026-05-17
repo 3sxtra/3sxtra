@@ -19,7 +19,7 @@
 #define DAMAGE_STATE_COUNT 10
 #define FLOAT_STATE_COUNT 4
 #define FLIP_STATE_COUNT 5
-#include "sf33rd/AcrSDK/ps2/flps2debug.h"
+#include "port/debug_print.h"
 #include "sf33rd/Source/Game/com/active/ai_active_gill.h"
 #include "sf33rd/Source/Game/com/active/ai_active_alex.h"
 #include "sf33rd/Source/Game/com/active/ai_active_ryu.h"

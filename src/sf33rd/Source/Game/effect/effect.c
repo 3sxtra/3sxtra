@@ -6,7 +6,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/AcrSDK/ps2/flps2debug.h"
+#include "port/debug_print.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect_xx_move_and_init_jumptables.h"
 #include "sf33rd/Source/Game/engine/player_control.h"

@@ -23,7 +23,7 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/AcrSDK/common/pad.h"                              /* SWK_UP, SWK_DOWN, etc. */
+#include "port/input.h"                              /* SWK_UP, SWK_DOWN, etc. */
 #include "port/ui/native_imgui.h"                                  /* NativeUI */
 #include "sf33rd/Source/Game/effect/effect_04_projectile_object.h" /* effect_04_init */
 #include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"  /* effect_57_init, MenuHeader */

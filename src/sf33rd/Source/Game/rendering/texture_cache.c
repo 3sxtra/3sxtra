@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/rendering/texture_cache.h"
 #include "common.h"
-#include "sf33rd/AcrSDK/ps2/flps2debug.h"
+#include "port/debug_print.h"
 #include "sf33rd/Source/Common/ppg_file.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"

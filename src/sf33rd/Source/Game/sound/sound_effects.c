@@ -14,7 +14,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "port/I_System.h"
-#include "sf33rd/AcrSDK/ps2/flps2debug.h"
+#include "port/debug_print.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/player_control.h"

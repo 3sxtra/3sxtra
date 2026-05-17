@@ -8,9 +8,8 @@
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/tracy_zones.h"
-#include "sf33rd/AcrSDK/ps2/flps2etc.h"
-#include "sf33rd/AcrSDK/ps2/flps2render.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
+#include "port/rendering.h"
 #include <SDL3/SDL.h>
 
 #include "port/sdl/renderer/sdl_game_renderer_sdl_sw.h"

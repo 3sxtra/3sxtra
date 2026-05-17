@@ -5,7 +5,7 @@
 
 #include "port/menu_screen.h"
 #include "game_state.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "port/sdl/rmlui/rmlui_crt_calibration.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"

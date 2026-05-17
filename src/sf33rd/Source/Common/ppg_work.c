@@ -11,7 +11,7 @@
  */
 #include "sf33rd/Source/Common/ppg_work.h"
 #include "common.h"
-#include "sf33rd/AcrSDK/ps2/flps2vram.h"
+#include "port/rendering.h"
 #include "sf33rd/Source/Game/rendering/sprite_utilities.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 

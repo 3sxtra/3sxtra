@@ -1,7 +1,7 @@
 #include "sf33rd/Source/Game/io/file_loader.h"
 #include "common.h"
 #include "port/io/afs.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/io/filesystem.h"
 #include "sf33rd/Source/Game/system/ram_control.h"

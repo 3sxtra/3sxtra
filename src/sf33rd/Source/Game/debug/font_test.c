@@ -16,7 +16,7 @@
 #include "common.h"
 #include "main.h"
 #include "port/rendering/renderer.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "sf33rd/Source/Common/ppg_file.h"
 #include "sf33rd/Source/Common/ppg_work.h"
 #include "sf33rd/Source/Game/engine/state_user.h"

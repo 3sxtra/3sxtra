@@ -16,7 +16,7 @@
 #include "port/task_api.h"
 #include "common.h"
 #include "main.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/engine/state_user.h"

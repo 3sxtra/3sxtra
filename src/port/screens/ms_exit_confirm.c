@@ -42,7 +42,7 @@
 #include "port/sdl/input/controller_image_overlay.h" /* ControllerImageOverlay_Init/Shutdown */
 
 /* Pad definitions */
-#include "sf33rd/AcrSDK/common/pad.h" /* SWK_SOUTH, SWK_EAST */
+#include "port/input.h" /* SWK_SOUTH, SWK_EAST */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal phase state machine

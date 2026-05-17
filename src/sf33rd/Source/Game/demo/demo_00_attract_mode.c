@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include "port/config/config.h"
 #include "port/rendering/renderer.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
 #include "sf33rd/Source/Common/memory_manager.h"
 #include "sf33rd/Source/Common/ppg_file.h"
 #include "sf33rd/Source/Common/ppg_work.h"

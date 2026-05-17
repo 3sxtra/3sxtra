@@ -18,9 +18,8 @@
 #include "port/tracy_zones.h"
 #include "port/render_pass.h"
 #include "port/mods/modded_stage.h"
-#include "sf33rd/AcrSDK/ps2/flps2etc.h"
-#include "sf33rd/AcrSDK/ps2/flps2render.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
+#include "port/rendering.h"
 
 #include <libgraph.h>
 

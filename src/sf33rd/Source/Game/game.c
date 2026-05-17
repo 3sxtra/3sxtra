@@ -34,7 +34,7 @@
 #include "port/sdl/rmlui/rmlui_title_screen.h"
 #include "port/sdl/rmlui/rmlui_win_screen.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "sf33rd/Source/Common/ppg_work.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/demo/demo_00_attract_mode.h"

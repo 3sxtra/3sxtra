@@ -9,7 +9,7 @@
 #include "common.h"
 #include "constants.h"
 #include "main.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect_a2_color_table.h"
 #include "sf33rd/Source/Game/ending/end_data.h"

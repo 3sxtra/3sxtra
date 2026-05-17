@@ -8,7 +8,7 @@
 #ifndef INPUT_CONVERTER_H
 #define INPUT_CONVERTER_H
 
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "types.h"
 
 #ifdef __cplusplus

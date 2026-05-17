@@ -16,7 +16,7 @@
 #include "main.h"
 #include "port/menu_task.h"
 #include "port/task_api.h"
-#include "sf33rd/AcrSDK/ps2/flps2debug.h"
+#include "port/debug_print.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect_b8_quake.h"
 #include "sf33rd/Source/Game/engine/state_user.h"

@@ -8,7 +8,7 @@
 #include "common.h"
 #include "main.h"
 #include "arcade/arcade_char_data.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
 #include "sf33rd/Source/Game/engine/charid.h"
 #include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/io/afs_loader.h"

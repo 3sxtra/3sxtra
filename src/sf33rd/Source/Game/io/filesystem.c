@@ -1,7 +1,7 @@
 #include "sf33rd/Source/Game/io/filesystem.h"
 #include "common.h"
 #include "port/io/afs.h"
-#include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.h"
+#include "port/sound/cse_sound.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 
 static AFSHandle afs_handle = AFS_NONE;

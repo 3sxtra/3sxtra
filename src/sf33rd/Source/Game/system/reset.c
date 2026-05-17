@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/system/reset.h"
 #include "game_state.h"
 #include "netplay/netplay.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/io/afs_loader.h"

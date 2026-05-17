@@ -10,7 +10,7 @@
 #include <string.h>
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charid.h"

@@ -13,7 +13,7 @@
 #include "game_state.h"
 #include "port/config/config.h"
 #include "port/config/paths.h"
-#include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/cse.h"
+#include "port/sound/cse_sound.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>

@@ -9,7 +9,7 @@
 #include "arcade/arcade_char_data.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "sf33rd/Source/Game/com/ai_data_tables.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect_38_quake_base_xy.h"

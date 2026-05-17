@@ -11,8 +11,7 @@
 #include "port/text_renderer_vtable.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_text_renderer_internal.h"
-#include "sf33rd/AcrSDK/ps2/flps2etc.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
 #include "types.h"
 #include <assert.h>
 

@@ -13,7 +13,7 @@
 #include "game_state.h"
 #include "common.h"
 #include "main.h"
-#include "sf33rd/AcrSDK/common/mlPAD.h"
+#include "port/input.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/state_user.h"
 #include "sf33rd/Source/Game/menu/extra_data.h"

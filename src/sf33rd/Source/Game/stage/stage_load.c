@@ -15,7 +15,7 @@
 #include "port/renderer_plugin.h"
 #include "port/sdl/renderer/sprite_override.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
-#include "sf33rd/AcrSDK/ps2/flps2render.h"
+#include "port/rendering.h"
 #include "sf33rd/Source/Common/memory_manager.h"
 #include "sf33rd/Source/Common/ppg_file.h"
 #include "sf33rd/Source/Common/ppg_work.h"
@@ -24,7 +24,7 @@
 #include "sf33rd/Source/Game/io/afs_loader.h"
 #include "sf33rd/Source/Game/rendering/color_palette.h"
 #include "sf33rd/Source/Game/system/ram_control.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
 #include "structs.h"
 
 int bg_texture_type = 0; // tracks ramcnt type: 0x12=gameplay, 0x18=select, etc

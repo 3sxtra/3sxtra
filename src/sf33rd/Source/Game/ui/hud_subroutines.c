@@ -20,7 +20,7 @@
 
 #include "port/rendering/renderer.h"
 #include "sf33rd/Source/Game/rendering/rendering_transform.h"
-#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/system.h"
 #include "sf33rd/Source/Common/ppg_file.h"
 #include "sf33rd/Source/Common/ppg_work.h"
 #include "sf33rd/Source/Game/engine/state_user.h"

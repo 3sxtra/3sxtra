@@ -16,7 +16,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "sf33rd/Source/Game/menu/menu_input_constants.h"
 #include "port/sdl/input/controller_image_overlay.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect_04_projectile_object.h"

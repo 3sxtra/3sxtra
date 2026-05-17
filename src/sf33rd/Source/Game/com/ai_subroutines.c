@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file ai_subroutines.c
  * @brief CPU-controlled character AI subroutines.
  *
@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/com/ai_subroutines.h"
 #include "game_state.h"
 #include "common.h"
-#include "sf33rd/AcrSDK/common/pad.h"
+#include "port/input.h"
 #include "sf33rd/Source/Game/com/active/ai_action_table_0.h"
 #include "sf33rd/Source/Game/com/active/ai_action_table_1.h"
 #include "sf33rd/Source/Game/com/active/ai_action_table_2.h"
