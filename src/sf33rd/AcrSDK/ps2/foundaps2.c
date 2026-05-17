@@ -13,7 +13,6 @@
 #include "common.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.h"
 #include "sf33rd/AcrSDK/common/fbms.h"
-#include "sf33rd/AcrSDK/common/memfound.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/AcrSDK/common/prilay.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
@@ -74,9 +73,6 @@ static s32 system_work_init() {
     }
 
     fmsInitialize(&flFMS, temp, FMS_HEAP_SIZE, FMS_ALIGNMENT);
-    const int system_memory_size = 0xA00000;
-    temp = flAllocMemoryS(system_memory_size);
-    mflInit(temp, system_memory_size, FMS_ALIGNMENT);
 
     return 1;
 }

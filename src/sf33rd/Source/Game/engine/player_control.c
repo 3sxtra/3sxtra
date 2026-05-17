@@ -380,9 +380,9 @@ const s16 super_arts_nage_02[16] = { 270, 270, 270, 270, 270, 270, 230, 230, 230
 
 const s16* super_art_throw_stun[4] = { super_arts_nage_00, super_arts_nage_01, super_arts_nage_02, super_arts_nage_02 };
 
-const s16** kizetsu_timer_table[9] = { normal_strike_stun,   special_strike_stun,   normal_throw_stun,
-                                       special_throw_stun,     super_art_strike_stun, super_art_throw_stun,
-                                       super_art_strike_stun, super_art_throw_stun,   super_art_strike_stun };
+const s16** kizetsu_timer_table[9] = { normal_strike_stun,    special_strike_stun,   normal_throw_stun,
+                                       special_throw_stun,    super_art_strike_stun, super_art_throw_stun,
+                                       super_art_strike_stun, super_art_throw_stun,  super_art_strike_stun };
 
 /** @brief Main player controller — dispatches per-player state updates for both sides. */
 void Player_control() {

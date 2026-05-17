@@ -15,11 +15,11 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, g_state.Menu_Cursor_Move, etc. */
+#include "sf33rd/Source/Game/engine/state_user.h"  /* g_state.Menu_Cursor_Y, g_state.Menu_Cursor_Move, etc. */
 #include "sf33rd/Source/Game/io/rumble.h"          /* pulpul_stop()  */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init(), Check_Menu_Lever() */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub(), Exit_Sub(), Back_to_Mode_Select() */
-#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h" /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 
 /* ═══════════════════════════════════════════════════════════════════════════

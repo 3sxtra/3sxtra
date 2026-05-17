@@ -1735,7 +1735,8 @@ static s32 check_cg_cancel_data(PlayerEntity* wk) {
         return 1;
     }
 
-    if ((wk->wu.cg_cancel & 4) && ((wk->cp->input_current & 0x770) != ((wk->current_attack))) && (check_nm_attack(wk) != 0)) {
+    if ((wk->wu.cg_cancel & 4) && ((wk->cp->input_current & 0x770) != ((wk->current_attack))) &&
+        (check_nm_attack(wk) != 0)) {
         return 1;
     }
 
@@ -1770,8 +1771,8 @@ void (*const plpnm_xxxxx[59])(PlayerEntity* wk) = {
     nm_49000, nm_51000, nm_52000, nm_52000, nm_51000, nm_55000, nm_55000, nm_57000, nm_55000
 };
 
-void (*const plpdm_xxxxx[32])(PlayerEntity* wk) = { dm_00000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000,
-                                           dm_04000, dm_08000, dm_08000, dm_08000, dm_08000, dm_04000, dm_04000,
-                                           dm_18000, dm_18000, dm_04000, dm_17000, dm_18000, dm_18000, dm_18000,
-                                           dm_18000, dm_18000, dm_18000, dm_00000, dm_25000, dm_18000, dm_18000,
-                                           dm_18000, dm_18000, dm_18000, dm_18000 };
+void (*const plpdm_xxxxx[32])(PlayerEntity* wk) = {
+    dm_00000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000, dm_04000, dm_08000, dm_08000, dm_08000,
+    dm_08000, dm_04000, dm_04000, dm_18000, dm_18000, dm_04000, dm_17000, dm_18000, dm_18000, dm_18000, dm_18000,
+    dm_18000, dm_18000, dm_00000, dm_25000, dm_18000, dm_18000, dm_18000, dm_18000, dm_18000, dm_18000
+};

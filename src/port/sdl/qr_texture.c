@@ -49,13 +49,13 @@ bool QRTexture_GenerateBMP(const char* text, const char* path, int scale) {
     uint8_t temp_buf[qrcodegen_BUFFER_LEN_MAX];
 
     bool can_activate = qrcodegen_encodeText(text,
-                                   temp_buf,
-                                   qr_buf,
-                                   qrcodegen_Ecc_LOW, /* Low ECC for shorter URLs, denser QR */
-                                   qrcodegen_VERSION_MIN,
-                                   qrcodegen_VERSION_MAX,
-                                   qrcodegen_Mask_AUTO,
-                                   true /* Boost ECC if possible */
+                                             temp_buf,
+                                             qr_buf,
+                                             qrcodegen_Ecc_LOW, /* Low ECC for shorter URLs, denser QR */
+                                             qrcodegen_VERSION_MIN,
+                                             qrcodegen_VERSION_MAX,
+                                             qrcodegen_Mask_AUTO,
+                                             true /* Boost ECC if possible */
     );
     if (!can_activate) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[QR] Failed to encode: %s", text);

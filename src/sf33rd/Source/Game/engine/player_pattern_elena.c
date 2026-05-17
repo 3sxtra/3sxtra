@@ -117,8 +117,8 @@ static void Att_PL08_TOKUSHUKOUDOU(PlayerEntity* wk) {
 }
 
 void (*const pl08_exatt_table[18])(PlayerEntity*) = { Att_SHOURYUUKEN,   Att_SENPUUKYAKU,    Att_SENPUUKYAKU,
-                                             Att_SHOURYUUREPPA, Att_SHOURYUUREPPA,  Att_PL08_HEALING,
-                                             Att_DUMMY,         Att_SLIDE_and_JUMP, Att_HADOUKEN,
-                                             Att_DUMMY,         Att_DUMMY,          Att_DUMMY,
-                                             Att_DUMMY,         Att_DUMMY,          Att_PL08_TOKUSHUKOUDOU,
-                                             Att_DUMMY,         Att_METAMOR_WAIT,   Att_METAMOR_REBIRTH };
+                                                      Att_SHOURYUUREPPA, Att_SHOURYUUREPPA,  Att_PL08_HEALING,
+                                                      Att_DUMMY,         Att_SLIDE_and_JUMP, Att_HADOUKEN,
+                                                      Att_DUMMY,         Att_DUMMY,          Att_DUMMY,
+                                                      Att_DUMMY,         Att_DUMMY,          Att_PL08_TOKUSHUKOUDOU,
+                                                      Att_DUMMY,         Att_METAMOR_WAIT,   Att_METAMOR_REBIRTH };

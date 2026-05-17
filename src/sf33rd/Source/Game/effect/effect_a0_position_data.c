@@ -26,7 +26,8 @@ void effect_A0_move(EffectMultiSprite* ewk) {
     sort_push_request3(&ewk->wu);
 }
 
-s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_routine_no, s16 zero, s16 target_bg, s16 master_player) {
+s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_routine_no, s16 zero, s16 target_bg,
+                   s16 master_player) {
     EffectMultiSprite* ewk;
     s16 ix;
 

@@ -539,4 +539,4 @@ static void set_char_move_init_ca(PlayerEntity* wk, s16 kind_of_char, s16 index)
 }
 
 void (*const plpca_lv_00[9])(PlayerEntity*) = { Catch_00000, Catch_01000, Catch_02000, Catch_03000, Catch_04000,
-                                       Catch_05000, Catch_06000, Catch_07000, Catch_08000 };
+                                                Catch_05000, Catch_06000, Catch_07000, Catch_08000 };

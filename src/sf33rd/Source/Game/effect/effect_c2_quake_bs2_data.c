@@ -330,7 +330,8 @@ static void effC2_main_process_first(State_Other* ewk, PlayerEntity* twk) {
                 set_char_move_init(&ewk->wu,
                                    0,
                                    (twk->bs2_on_car * 6) +
-                                       ((ewk->wu.damage_facing == 0) + sel_dm_quake[ewk->wu.damage_attack_level][ewk->wu.active_move]));
+                                       ((ewk->wu.damage_facing == 0) +
+                                        sel_dm_quake[ewk->wu.damage_attack_level][ewk->wu.active_move]));
 
                 if (ewk->wu.shell_ix[0] < 0) {
                     ewk->wu.dir_old = 1;

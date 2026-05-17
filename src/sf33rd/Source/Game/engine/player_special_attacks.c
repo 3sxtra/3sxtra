@@ -82,7 +82,8 @@ static s32 check_full_gauge_attack_inner(PlayerEntity* wk, s8 always, u8 g_ix, u
             return 0;
         }
 
-        if ((wk->special_move_disabled_flag2 & DIP2_CHAIN_INTO_SUPER_ART_DISABLED) && (chainex_check[wk->wu.id][g_ix - 20])) {
+        if ((wk->special_move_disabled_flag2 & DIP2_CHAIN_INTO_SUPER_ART_DISABLED) &&
+            (chainex_check[wk->wu.id][g_ix - 20])) {
             return 0;
         }
 
@@ -258,12 +259,14 @@ s32 check_super_arts_attack_dc(PlayerEntity* wk) {
             return 0;
         }
 
-        if (((wk->cp->button_index[wk->sa->normal_sa_graphic_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[wk->sa->normal_sa_graphic_ix])) {
+        if (((wk->cp->button_index[wk->sa->normal_sa_graphic_ix] & 0xFF) != 0x80) &&
+            (wk->cp->move_state_flags[wk->sa->normal_sa_graphic_ix])) {
             cusw = conpane[wk->cp->button_index[wk->sa->normal_sa_graphic_ix] & 0xFF];
 
             for (j = 3; j >= 0; j--) {
                 if (j == 3) {
-                    if (!(wk->cp->button_index[wk->sa->normal_sa_graphic_ix] & 0x600) || ((wk->sa->ex4th_full) && (wk->sa->meter_points != 1))) {
+                    if (!(wk->cp->button_index[wk->sa->normal_sa_graphic_ix] & 0x600) ||
+                        ((wk->sa->ex4th_full) && (wk->sa->meter_points != 1))) {
                         continue;
                     }
                 }
@@ -312,12 +315,14 @@ s32 check_super_arts_attack_dc(PlayerEntity* wk) {
         return 0;
     }
 
-    if (((wk->cp->button_index[wk->sa->normal_sa_anim_ix] & 0xFF) != 0x80) && (wk->cp->move_state_flags[wk->sa->normal_sa_anim_ix])) {
+    if (((wk->cp->button_index[wk->sa->normal_sa_anim_ix] & 0xFF) != 0x80) &&
+        (wk->cp->move_state_flags[wk->sa->normal_sa_anim_ix])) {
         cusw = conpane[wk->cp->button_index[wk->sa->normal_sa_anim_ix] & 0xFF];
 
         for (j = 3; j >= 0; j--) {
             if (j == 3) {
-                if (!(wk->cp->button_index[wk->sa->normal_sa_anim_ix] & 0x600) || (wk->sa->ex4th_full && (wk->sa->meter_points != 1))) {
+                if (!(wk->cp->button_index[wk->sa->normal_sa_anim_ix] & 0x600) ||
+                    (wk->sa->ex4th_full && (wk->sa->meter_points != 1))) {
                     continue;
                 }
             }
@@ -367,7 +372,8 @@ s32 execute_super_arts(PlayerEntity* wk) {
         }
 
         setup_comm_back(&wk->wu);
-        wk->as = _assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->normal_sa_graphic_ix)] + (wk->sa->normal_sa_graphic_ix - 20) * 4;
+        wk->as = _assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->normal_sa_graphic_ix)] +
+                 (wk->sa->normal_sa_graphic_ix - 20) * 4;
         wk->sa->ex4th_exec = 0;
         wk->wu.cg_cancel = 0;
         wk->sa->can_activate = -1;
@@ -390,7 +396,8 @@ s32 execute_super_arts(PlayerEntity* wk) {
     }
 
     setup_comm_back(&wk->wu);
-    wk->as = _assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->normal_sa_anim_ix)] + (wk->sa->normal_sa_anim_ix - 38) * 4;
+    wk->as =
+        _assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->normal_sa_anim_ix)] + (wk->sa->normal_sa_anim_ix - 38) * 4;
     wk->sa->ex4th_exec = 0;
     wk->wu.cg_cancel = 0;
     wk->sa->can_activate = -1;
@@ -420,7 +427,8 @@ s32 check_special_attack(PlayerEntity* wk) {
         conpane = (u16*)wk->cp;
 
         for (i = 28; i < 38; i++) {
-            if ((wk->special_move_disabled_flag2 & DIP2_CHAIN_INTO_SPECIAL_DISABLED) && chainex_check[wk->wu.id][i - 20]) {
+            if ((wk->special_move_disabled_flag2 & DIP2_CHAIN_INTO_SPECIAL_DISABLED) &&
+                chainex_check[wk->wu.id][i - 20]) {
                 continue;
             }
 

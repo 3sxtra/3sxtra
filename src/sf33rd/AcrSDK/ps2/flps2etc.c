@@ -12,12 +12,12 @@
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/common/fbms.h"
-#include "sf33rd/AcrSDK/common/memfound.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "structs.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 #define SYSTEM_TMP_BUFF_SIZE 0x80000
 
@@ -56,34 +56,62 @@ void* flAllocMemoryS(s32 size) {
 }
 
 // ============================================================================
-// System Memory Management
+// System Memory Management (Decoupled from plmem)
 // ============================================================================
 
-/** @brief Register a system memory handle, compacting if needed. */
+#define MAX_SYS_MEM_HANDLES 4096
+static void* sys_mem_ptrs[MAX_SYS_MEM_HANDLES] = { NULL };
+
+/** @brief Register a system memory handle using standard malloc. */
 u32 flPS2GetSystemMemoryHandle(s32 len, s32 type) {
-    u32 handle = mflRegisterS(len);
+    void* ptr = malloc(len);
+    if (!ptr) {
+        flPS2SystemError(0, "ERROR flPS2GetSystemMemoryHandle malloc failed");
+        return 0;
+    }
 
-    if (handle == 0) {
-        mflCompact();
-        handle = mflRegister(len);
-
-        if (handle == 0) {
-            flPS2SystemError(0, "ERROR flPS2GetSystemMemoryHandle flps2etc.c");
-            while (1) {}
+    // Handle 0 is invalid
+    for (u32 i = 1; i < MAX_SYS_MEM_HANDLES; i++) {
+        if (sys_mem_ptrs[i] == NULL) {
+            sys_mem_ptrs[i] = ptr;
+            return i;
         }
     }
 
-    return handle;
+    free(ptr);
+    flPS2SystemError(0, "ERROR flPS2GetSystemMemoryHandle out of handles");
+    return 0;
 }
 
-/** @brief Release a system memory handle. */
+/** @brief Release a system memory handle using standard free. */
 void flPS2ReleaseSystemMemory(u32 handle) {
-    mflRelease(handle);
+    if (handle > 0 && handle < MAX_SYS_MEM_HANDLES) {
+        if (sys_mem_ptrs[handle]) {
+            free(sys_mem_ptrs[handle]);
+            sys_mem_ptrs[handle] = NULL;
+        }
+    }
 }
 
 /** @brief Retrieve the address of a system memory handle. */
 void* flPS2GetSystemBuffAdrs(u32 handle) {
-    return mflRetrieve(handle);
+    if (handle > 0 && handle < MAX_SYS_MEM_HANDLES) {
+        return sys_mem_ptrs[handle];
+    }
+    return NULL;
+}
+
+#define TEMPORARY_USE_SCRATCHPAD_SIZE (1024 * 1024 * 16) // 16MB
+static u8 temporary_use_scratchpad[TEMPORARY_USE_SCRATCHPAD_SIZE];
+
+/** @brief Provide a static scratchpad for temporary memory use, replacing plmem temporary buffer. */
+void* mflTemporaryUse(s32 len) {
+    if (len > TEMPORARY_USE_SCRATCHPAD_SIZE) {
+        flPS2SystemError(0, "ERROR mflTemporaryUse size too large");
+        return NULL;
+    }
+    // Return an address at the end of the scratchpad
+    return (void*)(temporary_use_scratchpad + TEMPORARY_USE_SCRATCHPAD_SIZE - len);
 }
 
 // ============================================================================

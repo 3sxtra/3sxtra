@@ -281,13 +281,15 @@ static void scdmd_16000(PlayerEntity* wk) {
 /** @brief Sets up caught-damage init data for states 17, 28 (air hit/stun KO). */
 static void scdmd_17000(PlayerEntity* wk) {
     setup_butt_own_data(&wk->wu);
-    cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+    cal_initial_speed_y(
+        &wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
 }
 
 /** @brief Sets up caught-damage init data for state 18 (attribute air hit). */
 static void scdmd_18000(PlayerEntity* wk) {
     setup_butt_own_data(&wk->wu);
-    cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+    cal_initial_speed_y(
+        &wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
 
     if (!wk->wu.damage_attribute) {
         return;
@@ -329,9 +331,10 @@ static void scdmd_noop(PlayerEntity* wk) {
                                                   17         18         19         20         21
                                                   22         23         24         25         26
                                                   27         28         29         30         31  */
-void (*const setup_cu_dm_init_data[20])(PlayerEntity* wk) = { scdmd_12000, scdmd_12000, scdmd_14000, scdmd_14000, scdmd_16000,
-                                                     scdmd_17000, scdmd_18000, scdmd_16000, scdmd_20000, scdmd_14000,
-                                                     scdmd_14000, scdmd_23000, scdmd_24000, scdmd_noop,  scdmd_20000,
-                                                     scdmd_14000, scdmd_17000, scdmd_noop,  scdmd_16000, scdmd_20000 };
+void (*const setup_cu_dm_init_data[20])(PlayerEntity* wk) = { scdmd_12000, scdmd_12000, scdmd_14000, scdmd_14000,
+                                                              scdmd_16000, scdmd_17000, scdmd_18000, scdmd_16000,
+                                                              scdmd_20000, scdmd_14000, scdmd_14000, scdmd_23000,
+                                                              scdmd_24000, scdmd_noop,  scdmd_20000, scdmd_14000,
+                                                              scdmd_17000, scdmd_noop,  scdmd_16000, scdmd_20000 };
 
 void (*const plpcu_lv_00[4])(PlayerEntity*, PlayerEntity*) = { Caught_00000, Caught_01000, Caught_02000, Caught_03000 };

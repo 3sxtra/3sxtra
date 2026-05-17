@@ -150,11 +150,13 @@ static void compare_main_values(SDL_IOStream* io) {
         stop_if(stun_3sx != stun_cps3);
 
         const s16 sa_gauge_3sx = g_state.super_arts[i].gauge.s.h;
-        const s16 sa_gauge_cps3 = read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SuperArtGauge) + offsetof(SuperArtGauge, gauge));
+        const s16 sa_gauge_cps3 =
+            read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SuperArtGauge) + offsetof(SuperArtGauge, gauge));
         stop_if(sa_gauge_3sx != sa_gauge_cps3);
 
         const s16 sa_store_3sx = g_state.super_arts[i].stock;
-        const s16 sa_store_cps3 = read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SuperArtGauge) + offsetof(SuperArtGauge, stock));
+        const s16 sa_store_cps3 =
+            read_s16(io, SUPER_ARTS_WORK_OFFSET + i * sizeof(SuperArtGauge) + offsetof(SuperArtGauge, stock));
         stop_if(sa_store_3sx != sa_store_cps3);
     }
 }

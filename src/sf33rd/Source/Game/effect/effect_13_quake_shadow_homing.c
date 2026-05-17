@@ -523,7 +523,8 @@ static void projectile_process_02000(State_Other* ewk, ProjectileEntity* project
             if (ewk->wu.dir_step > 8) {
                 ewk->wu.routine_no[2] = 1;
                 ewk->wu.dir_timer = 8;
-                cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider, 2, 2);
+                cal_all_speed_data(
+                    &ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider, 2, 2);
             }
 
             break;
@@ -537,7 +538,8 @@ static void projectile_process_02000(State_Other* ewk, ProjectileEntity* project
                 ewk->wu.att_hit_ok = 0;
                 ewk->wu.dir_timer = projectile->pushbox_x;
                 set_tengu_my_home(&ewk->wu, &mwk->wu);
-                cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider, 2, 2);
+                cal_all_speed_data(
+                    &ewk->wu, ewk->wu.dir_timer, ewk->wu.damage_calc_multiplier, ewk->wu.damage_calc_divider, 2, 2);
             }
 
             break;
@@ -596,7 +598,8 @@ static void set_tengu_my_home(State* ewk, State* mwk) {
         ewk->damage_calc_divider = mwk->xyz[1].disp.pos + ewk->screen_move_y;
     }
 
-    ewk->dir_step = cal_move_quantity2(ewk->xyz[0].disp.pos, ewk->xyz[1].disp.pos, ewk->damage_calc_multiplier, ewk->damage_calc_divider);
+    ewk->dir_step = cal_move_quantity2(
+        ewk->xyz[0].disp.pos, ewk->xyz[1].disp.pos, ewk->damage_calc_multiplier, ewk->damage_calc_divider);
 }
 
 static s32 check_tengu_attack(State* ewk, State* mwk, ProjectileEntity* projectile) {
@@ -879,7 +882,8 @@ static void projectile_process_06000(State_Other* ewk, ProjectileEntity* project
         case 0:
             ewk->wu.routine_no[3]++;
             ewk->wu.is_taking_chip_damage = 6;
-            ewk->wu.direction = ewk->wu.facing_flag ? projectile->custom_data_1 : 256 - projectile->custom_data_1 & 0xFF;
+            ewk->wu.direction =
+                ewk->wu.facing_flag ? projectile->custom_data_1 : 256 - projectile->custom_data_1 & 0xFF;
             effect_I9_init(ewk, 2, 3, 0x77);
             break;
 
@@ -894,7 +898,8 @@ static void projectile_process_06000(State_Other* ewk, ProjectileEntity* project
 
         case 2:
             *target_x = homing_empos_hos[0][ewk->master_player][0];
-            *target_x = mwk->wu.facing_flag ? emwk->wu.xyz[0].disp.pos - *target_x : emwk->wu.xyz[0].disp.pos + *target_x;
+            *target_x =
+                mwk->wu.facing_flag ? emwk->wu.xyz[0].disp.pos - *target_x : emwk->wu.xyz[0].disp.pos + *target_x;
             *target_y = homing_empos_hos[0][ewk->master_player][1] + emwk->wu.xyz[1].disp.pos;
             dir = ewk->wu.direction;
             emdir = caldir_pos_256(ewk->wu.xyz[0].disp.pos, ewk->wu.xyz[1].disp.pos, *target_x, *target_y);
@@ -2134,9 +2139,12 @@ const s16 tcct[36] = { 8192, 8192, 8192, 8208, 8192, 8192, 8192, 8208, 8192, 820
                        8212, 8196, 8212, 8196, 8212, 8196, 8212, 8196, 8212, 8196, 8212, 8196,
                        8212, 8196, 8212, 8192, 8196, 8212, 8198, 8214, 8196, 8212, 8196, 8212 };
 
-void (*const projectile_process[17])() = { projectile_process_00000, projectile_process_01000, projectile_process_02000, projectile_process_03000, projectile_process_04000, projectile_process_05000,
-                                             projectile_process_06000, projectile_process_07000, projectile_process_08000, projectile_process_09000, projectile_process_10000, projectile_process_11000,
-                                             projectile_process_12000, projectile_process_13000, projectile_process_14000, projectile_process_15000, projectile_process_16000 };
+void (*const projectile_process[17])() = { projectile_process_00000, projectile_process_01000, projectile_process_02000,
+                                           projectile_process_03000, projectile_process_04000, projectile_process_05000,
+                                           projectile_process_06000, projectile_process_07000, projectile_process_08000,
+                                           projectile_process_09000, projectile_process_10000, projectile_process_11000,
+                                           projectile_process_12000, projectile_process_13000, projectile_process_14000,
+                                           projectile_process_15000, projectile_process_16000 };
 
 const s16 kage_tbl[6][4] = { { 0, 0, 71, 0 }, { 0, 0, 71, 3 }, { 0, 0, 71, 4 },
                              { 0, 0, 71, 9 }, { 0, 0, 71, 1 }, { 0, 0, 71, 0 } };

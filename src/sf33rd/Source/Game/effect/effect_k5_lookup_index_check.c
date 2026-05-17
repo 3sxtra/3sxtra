@@ -398,7 +398,8 @@ static void k5_init_data(State* mwk, MVJ* mvj, u16* ixtbl) {
     }
 
     k5_init_data_copy(mvj, (K5Data*)mwk->body_adrs[mwk->cg_ja.body_hurtbox_index].body_dm, 4);
-    k5_init_data_copy(mvj + 4, (K5Data*)mwk->hand_adrs[mwk->cg_ja.behind_hurtbox_index + mwk->cg_ja.hand_hurtbox_index].hand_dm, 4);
+    k5_init_data_copy(
+        mvj + 4, (K5Data*)mwk->hand_adrs[mwk->cg_ja.behind_hurtbox_index + mwk->cg_ja.hand_hurtbox_index].hand_dm, 4);
 }
 
 static void k5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num) {

@@ -21,7 +21,7 @@ static void efff5_B000(State_Other* /* unused */);
 
 void effect_F5_move(State_Other* ewk) {
     void (*efff5_jp[12])(State_Other*) = { efff5_0000, efff5_1000, efff5_2000, efff5_3000, efff5_4000, efff5_5000,
-                                          efff5_6000, efff5_7000, efff5_8000, efff5_9000, efff5_A000, efff5_B000 };
+                                           efff5_6000, efff5_7000, efff5_8000, efff5_9000, efff5_A000, efff5_B000 };
 
     efff5_jp[ewk->wu.routine_no[0]](ewk);
 }

@@ -227,7 +227,8 @@ static int SDLCALL async_room_fn(void* data) {
     bool can_activate = false;
 
     if (d->action == 1) {
-        can_activate = LobbyServer_CreateRoom(d->name, d->ft, d->password[0] ? d->password : NULL, d->visibility, &room);
+        can_activate =
+            LobbyServer_CreateRoom(d->name, d->ft, d->password[0] ? d->password : NULL, d->visibility, &room);
     } else if (d->action == 2) {
         char err[128] = { 0 };
         can_activate = LobbyServer_JoinRoom(d->code, d->password[0] ? d->password : NULL, &room, err, sizeof(err));
@@ -236,13 +237,13 @@ static int SDLCALL async_room_fn(void* data) {
         }
     } else if (d->action == 3) {
         can_activate = LobbyServer_CreateTournamentRoom(d->name,
-                                              (TournamentFormat)d->tournament_fmt,
-                                              16,
-                                              d->ft,
-                                              "rating",
-                                              d->password[0] ? d->password : NULL,
-                                              d->visibility,
-                                              &room);
+                                                        (TournamentFormat)d->tournament_fmt,
+                                                        16,
+                                                        d->ft,
+                                                        "rating",
+                                                        d->password[0] ? d->password : NULL,
+                                                        d->visibility,
+                                                        &room);
     }
 
     if (can_activate) {

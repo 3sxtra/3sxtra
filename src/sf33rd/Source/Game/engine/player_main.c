@@ -481,7 +481,7 @@ void look_after_timers(PlayerEntity* wk) {
 #if DEBUG
     if (Debug_w[DEBUG_1SHOT_SA]) {
         const s16 sa_ixs[] = { wk->sa->normal_sa_graphic_ix, wk->sa->ex_sa_graphic_ix, wk->sa->ex_sa2_graphic_ix,
-                               wk->sa->normal_sa_anim_ix, wk->sa->ex_sa_anim_ix, wk->sa->ex_sa2_anim_ix };
+                               wk->sa->normal_sa_anim_ix,    wk->sa->ex_sa_anim_ix,    wk->sa->ex_sa2_anim_ix };
         s16 si;
 
         for (si = 0; si < 6; si++) {
@@ -1110,7 +1110,9 @@ void (*const plmain_lv_00[5])(PlayerEntity* wk) = {
     player_mv_0000, player_mv_1000, player_mv_2000, player_mv_3000, player_mv_4000
 };
 
-void (*const plmain_lv_02[5])(PlayerEntity* wk) = { Player_normal, Player_damage, Player_catch, Player_caught, Player_attack };
+void (*const plmain_lv_02[5])(PlayerEntity* wk) = {
+    Player_normal, Player_damage, Player_catch, Player_caught, Player_attack
+};
 
 #if CPS3
 void (*const sag_union_jump_table[4])(PlayerEntity* wk) = { sag_union_0, sag_union_1, sag_union_0, sag_union_3 };

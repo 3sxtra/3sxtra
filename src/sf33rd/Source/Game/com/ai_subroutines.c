@@ -86,7 +86,8 @@ void Check_SA(PlayerEntity* wk, s16 Next_Action, s16 Next_Menu);
 void Check_EX(PlayerEntity* wk, s16 Next_Action, s16 Next_Menu);
 void Check_SA_Full(PlayerEntity* wk, s16 Next_Action, s16 Next_Menu);
 void Branch_By_Distance(PlayerEntity* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03);
-void AI_Random_Action_Select(PlayerEntity* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03, s16 Rnd_Type);
+void AI_Random_Action_Select(PlayerEntity* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03,
+                             s16 Rnd_Type);
 void Branch_Wait_Area(PlayerEntity* wk, s16 Time_00, s16 Time_01, s16 Time_02, s16 Time_03);
 void Wait(PlayerEntity* wk, s16 Time); // unused arg
 void Look(PlayerEntity* wk, s16 Time);
@@ -99,7 +100,8 @@ void Wait_Attack_Complete(PlayerEntity* wk, u16 Lever_Data, s16 Option);
 s32 Check_Exit_Guard(PlayerEntity* wk, s16 Option);
 void Short_Range_Attack(PlayerEntity* wk, s16 Reaction, u16 Lever_Data, s16 Next_Action, s16 Next_Menu);
 void Check_Enemy_Distance(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Exit_Number, s16 Next_Action, s16 Next_Menu);
-void Check_Projectile_Impact_Time(PlayerEntity* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu, s16 unused); // unused arg
+void Check_Projectile_Impact_Time(PlayerEntity* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu,
+                                  s16 unused); // unused arg
 s32 Check_Term_Sub_Air(PlayerEntity* wk, s16 Distance, s16 Range);
 s32 Check_Term_Sub(PlayerEntity* wk, s16 Distance, s16 Range);
 s32 Correct_Unit_PL(PlayerEntity* wk);
@@ -109,19 +111,19 @@ void Hi_Jump(PlayerEntity* wk, s16 Pl_Number, s16 Jump_Dir);
 s32 Check_Start_Hi_Jump(PlayerEntity* wk);
 s32 Check_Air_Guard(PlayerEntity* wk);
 void Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Jump_Dir);
-void Check_Jump_Attack_Conditions(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
-                      s16 Range_JY, s16 J_Lever_Data);
+void Check_Jump_Attack_Conditions(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data,
+                                  s16 Jump_Dir, s16 Range_JX, s16 Range_JY, s16 J_Lever_Data);
 s32 Check_SP_Jump_Attack(PlayerEntity* wk, s16 Lever_Data);
 s32 Check_VS_Air_Attack(PlayerEntity* wk, s16 Range_JX, s16 Range_JY, s16 J_Lever_Data);
 void Hi_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Jump_Dir);
-void Hi_Jump_Attack_Term(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
-                         s16 Range_JY, u16 J_Lever_Data);
+void Hi_Jump_Attack_Term(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir,
+                         s16 Range_JX, s16 Range_JY, u16 J_Lever_Data);
 s32 Check_Term_ABS_Distance(PlayerEntity* wk);
 s32 Check_Com_Add_Y(PlayerEntity* wk, s16 Pos_Y, s16 Range);
-void Oro_Check_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
-                 s16 RJY, u16 JLD);
-void Oro_Check_High_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
-                  s16 RJY, u16 JLD);
+void Oro_Check_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY,
+                           u16 Lever_Data, s16 RJX, s16 RJY, u16 JLD);
+void Oro_Check_High_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY,
+                                u16 Lever_Data, s16 RJX, s16 RJY, u16 JLD);
 void Command_Attack(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot);
 s32 Hadou_Check(PlayerEntity* wk, u16 Tech_Number);
 s32 Check_Resume_Lever(PlayerEntity* wk);
@@ -133,14 +135,15 @@ s32 Setup_Rapid_Time(PlayerEntity* wk, u16 Tech_Number); // unused all args
 void Rapid_Sub(PlayerEntity* wk);
 s32 Check_Rapid_End(PlayerEntity* wk);
 s32 Check_Start_Command_Attack(PlayerEntity* wk, s16 Reaction, u16 Tech_Number);
-void Oro_Check_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
-                  s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD);
-void Oro_Check_High_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
-                   s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD);
-void Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX, s16 RY,
-                              s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD);
-void Hi_Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX, s16 RY,
-                                 s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD);
+void Oro_Check_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY,
+                                   u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD);
+void Oro_Check_High_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX,
+                                        s16 RY, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY,
+                                        u16 JLD);
+void Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX,
+                              s16 RY, s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD);
+void Hi_Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX,
+                                 s16 RY, s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD);
 s32 Check_Landed(PlayerEntity* wk, s16 Reaction);
 s32 Check_Dash_Hit(PlayerEntity* wk, u16 Tech_Number);
 s32 Setup_Front_or_Back(PlayerEntity* wk, s16 xx);
@@ -1155,7 +1158,8 @@ void Branch_By_Distance(PlayerEntity* wk, s16 Next_Action, s16 Menu_00, s16 Menu
 }
 
 /** @brief Randomly select one of four menus based on difficulty-weighted RNG. */
-void AI_Random_Action_Select(PlayerEntity* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03, s16 Rnd_Type) {
+void AI_Random_Action_Select(PlayerEntity* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03,
+                             s16 Rnd_Type) {
     s16 xx[4];
     s16 zz;
 
@@ -1619,7 +1623,8 @@ void Check_Enemy_Distance(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Exit_N
 }
 
 /** @brief Check projectile distance and decide: dodge, guard, or counter. */
-void Check_Projectile_Impact_Time(PlayerEntity* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu, s16 unused) {
+void Check_Projectile_Impact_Time(PlayerEntity* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu,
+                                  s16 unused) {
     State* em;
     State_Other* tmw;
     s16 xx;
@@ -2024,8 +2029,8 @@ void Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, 
 }
 
 /** @brief  */
-void Check_Jump_Attack_Conditions(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
-                      s16 Range_JY, s16 J_Lever_Data) {
+void Check_Jump_Attack_Conditions(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data,
+                                  s16 Jump_Dir, s16 Range_JX, s16 Range_JY, s16 J_Lever_Data) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:
@@ -2326,8 +2331,8 @@ void Hi_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Time_Data, u16 Lever_Dat
 }
 
 /** @brief  */
-void Hi_Jump_Attack_Term(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
-                         s16 Range_JY, u16 J_Lever_Data) {
+void Hi_Jump_Attack_Term(PlayerEntity* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir,
+                         s16 Range_JX, s16 Range_JY, u16 J_Lever_Data) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:
@@ -2536,8 +2541,8 @@ s32 Check_Com_Add_Y(PlayerEntity* wk, s16 Pos_Y, s16 Range) {
 }
 
 /** @brief  */
-void Oro_Check_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
-                 s16 RJY, u16 JLD) {
+void Oro_Check_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY,
+                           u16 Lever_Data, s16 RJX, s16 RJY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:
@@ -2673,8 +2678,8 @@ void Oro_Check_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY,
 }
 
 /** @brief  */
-void Oro_Check_High_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
-                  s16 RJY, u16 JLD) {
+void Oro_Check_High_Jump_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY,
+                                u16 Lever_Data, s16 RJX, s16 RJY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:
@@ -3325,8 +3330,8 @@ s32 Check_Start_Command_Attack(PlayerEntity* wk, s16 Reaction, u16 Tech_Number) 
 }
 
 /** @brief  */
-void Oro_Check_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
-                  s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD) {
+void Oro_Check_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY,
+                                   u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:
@@ -3447,8 +3452,9 @@ void Oro_Check_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir,
 }
 
 /** @brief  */
-void Oro_Check_High_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
-                   s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD) {
+void Oro_Check_High_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX,
+                                        s16 RY, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY,
+                                        u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:
@@ -3586,8 +3592,8 @@ void Oro_Check_High_Jump_Command_Attack(PlayerEntity* wk, s16 Reaction, s16 Jump
 }
 
 /** @brief  */
-void Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX, s16 RY,
-                              s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD) {
+void Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX,
+                              s16 RY, s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:
@@ -3691,8 +3697,8 @@ void Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s
 }
 
 /** @brief  */
-void Hi_Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX, s16 RY,
-                                 s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD) {
+void Hi_Jump_Command_Attack_Term(PlayerEntity* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX,
+                                 s16 RY, s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD) {
     switch (g_state.CP_Index[wk->wu.id][1]) {
 
     case 0:
@@ -5759,8 +5765,10 @@ s32 Check_SHINRYU(PlayerEntity* wk) {
     return 1;
 }
 
-const Term_Tbl_t Check_Misc_Cond_Tbl[10] = { Check_Misc_Cond_0000, Check_Misc_Cond_0001, Check_Misc_Cond_0002, Check_Misc_Cond_0003, Check_Misc_Cond_0004,
-                                      Check_Misc_Cond_0005, Check_Misc_Cond_0006, Check_Misc_Cond_0007, Check_Misc_Cond_0008, Check_Misc_Cond_0009 };
+const Term_Tbl_t Check_Misc_Cond_Tbl[10] = { Check_Misc_Cond_0000, Check_Misc_Cond_0001, Check_Misc_Cond_0002,
+                                             Check_Misc_Cond_0003, Check_Misc_Cond_0004, Check_Misc_Cond_0005,
+                                             Check_Misc_Cond_0006, Check_Misc_Cond_0007, Check_Misc_Cond_0008,
+                                             Check_Misc_Cond_0009 };
 
 /** @brief  */
 void Check_BOSS(PlayerEntity* wk, u32 Next_Action, u16 Next_Menu) {

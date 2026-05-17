@@ -24,7 +24,7 @@ const s16 eff25_data_0000[16] = { 0, 2, 300, 160, 32, 71, 6, 0, 0, 0, 6, 6, 66, 
 const s16* scr_obj_data25[1] = { eff25_data_0000 };
 
 void (*eff25_jp_tbl[10])(State_Other* ewk) = { eff25_00, eff25_00, eff25_02, eff25_02, eff25_04,
-                                              eff25_04, eff25_06, eff25_06, eff25_08, eff25_08 };
+                                               eff25_04, eff25_06, eff25_06, eff25_08, eff25_08 };
 
 void effect_25_move(State_Other* ewk) {
     if (compel_dead_check(ewk)) {

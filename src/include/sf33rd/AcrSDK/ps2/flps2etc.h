@@ -27,5 +27,6 @@ void* flPS2GetSystemBuffAdrs(u32 handle);
 void flPS2SystemTmpBuffInit();
 void flPS2SystemTmpBuffFlush();
 uintptr_t flPS2GetSystemTmpBuff(s32 len, s32 align);
+void* mflTemporaryUse(s32 len);
 
 #endif // FLPS2ETC_H

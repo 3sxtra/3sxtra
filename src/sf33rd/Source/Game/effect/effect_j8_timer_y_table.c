@@ -53,8 +53,8 @@ void effect_J8_move(State_Other* ewk) {
 
 void dragonfly_move(State_Other* ewk) {
     void (*const dragonfly_move_jp1[8])(State_Other*) = { dragonfly_move_0000, dragonfly_move_0001, dragonfly_r_move,
-                                                         dragonfly_l_move,    dragonfly_move_0004, dragonfly_move_0005,
-                                                         dragonfly_l_move,    dragonfly_r_move };
+                                                          dragonfly_l_move,    dragonfly_move_0004, dragonfly_move_0005,
+                                                          dragonfly_l_move,    dragonfly_r_move };
     dragonfly_move_jp1[ewk->wu.routine_no[1]](ewk);
 }
 

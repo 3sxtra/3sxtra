@@ -197,5 +197,5 @@ static void Shell05_0010(PlayerEntity* wk) {
 }
 
 static void (*const Shell05_Tbl[11])(PlayerEntity*) = { Shell05_0000, Shell05_0001, Shell05_0002, Shell05_0003,
-                                               Shell05_0004, Shell05_0005, Shell05_0006, Shell05_0007,
-                                               Shell05_0008, Shell05_0009, Shell05_0010 };
+                                                        Shell05_0004, Shell05_0005, Shell05_0006, Shell05_0007,
+                                                        Shell05_0008, Shell05_0009, Shell05_0010 };

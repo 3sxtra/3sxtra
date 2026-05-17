@@ -33,7 +33,8 @@ void effect_68_move(State_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.routine_no[4] = 50;
-                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[3], 1, 1);
+                cal_all_speed_data(
+                    &ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[3], 1, 1);
                 ewk->wu.char_index = ewk->wu.routine_no[6];
                 set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
             }
@@ -49,7 +50,8 @@ void effect_68_move(State_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.routine_no[4] = 50;
-                cal_delta_speed(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[4], ewk->wu.old_routine_no[5], 2, 2);
+                cal_delta_speed(
+                    &ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[4], ewk->wu.old_routine_no[5], 2, 2);
                 ewk->wu.char_index = ewk->wu.routine_no[6];
                 set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
             }
@@ -68,7 +70,8 @@ void effect_68_move(State_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.routine_no[4] = 40;
-                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[6], ewk->wu.old_routine_no[7], 1, 1);
+                cal_all_speed_data(
+                    &ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[6], ewk->wu.old_routine_no[7], 1, 1);
             }
 
             add_x_sub(&ewk->wu);
@@ -86,7 +89,8 @@ void effect_68_move(State_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0]++;
                 ewk->wu.routine_no[4] = 60;
-                cal_delta_speed(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], 2, 2);
+                cal_delta_speed(
+                    &ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[0], ewk->wu.old_routine_no[1], 2, 2);
                 ewk->wu.char_index = ewk->wu.routine_no[5];
                 set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
             }
@@ -106,7 +110,8 @@ void effect_68_move(State_Other* ewk) {
             if (ewk->wu.routine_no[4] < 1) {
                 ewk->wu.routine_no[0] = 2;
                 ewk->wu.routine_no[4] = 50;
-                cal_all_speed_data(&ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[3], 1, 1);
+                cal_all_speed_data(
+                    &ewk->wu, ewk->wu.routine_no[4], ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[3], 1, 1);
                 ewk->wu.char_index = ewk->wu.routine_no[6];
                 set_char_move_init(&ewk->wu, 0, ewk->wu.char_index);
             }

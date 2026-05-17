@@ -630,7 +630,8 @@ static void Damage_17000(PlayerEntity* wk) {
         check_dmpat_to_dmpat(wk);
         buttobi_add_y_check(wk);
         setup_butt_own_data(&wk->wu);
-        cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+        cal_initial_speed_y(
+            &wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
         get_sky_dm_timer(wk);
         break;
 
@@ -686,7 +687,8 @@ static void Damage_18000(PlayerEntity* wk) {
         check_dmpat_to_dmpat(wk);
         buttobi_add_y_check(wk);
         setup_butt_own_data(&wk->wu);
-        cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+        cal_initial_speed_y(
+            &wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
         get_sky_dm_timer(wk);
 
         if (wk->wu.damage_attribute) {
@@ -1026,7 +1028,8 @@ static void Damage_28000(PlayerEntity* wk) {
         set_char_move_init(&wk->wu, 6, wk->as->char_ix);
         buttobi_add_y_check(wk);
         setup_butt_own_data(&wk->wu);
-        cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+        cal_initial_speed_y(
+            &wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
         get_sky_dm_timer(wk);
         break;
 
@@ -1088,7 +1091,8 @@ static void Damage_29000(PlayerEntity* wk) {
             char_move_wca_init(&wk->wu);
             buttobi_add_y_check(wk);
             setup_butt_own_data(&wk->wu);
-            cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+            cal_initial_speed_y(
+                &wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
         } else {
             setup_butt_own_data(&wk->wu);
             set_char_move_init(&wk->wu, 6, wk->as->char_ix);
@@ -1138,7 +1142,8 @@ static void Damage_30000(PlayerEntity* wk) {
         set_char_move_init(&wk->wu, 6, wk->as->data_ix);
         wk->wu.damage_knockback_type++;
         setup_butt_own_data(&wk->wu);
-        cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->as->data_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+        cal_initial_speed_y(
+            &wk->wu, _buttobi_time_table[wk->as->data_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
         get_sky_dm_timer(wk);
 
         if (wk->wu.damage_attribute) {
@@ -1219,7 +1224,8 @@ static void Damage_31000(PlayerEntity* wk) {
         wk->wu.routine_no[2] = 18;
         wk->wu.routine_no[3] = 2;
         setup_butt_own_data(&wk->wu);
-        cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+        cal_initial_speed_y(
+            &wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
         get_sky_dm_timer(wk);
         break;
     }
@@ -1303,8 +1309,8 @@ static void buttobi_chakuchi_cg_type_check(PlayerEntity* wk) {
         break;
 
     case 5:
-        if (!(wk->special_move_disabled_flag2 & DIP2_QUICK_STAND_DISABLED) && wk->recovery_roll_success && (wk->death_timerlag == 0) &&
-            (wk->py->flag == 0) && (wk->wu.vital_new > 0) && (g_state.pcon_dp_flag == 0)) {
+        if (!(wk->special_move_disabled_flag2 & DIP2_QUICK_STAND_DISABLED) && wk->recovery_roll_success &&
+            (wk->death_timerlag == 0) && (wk->py->flag == 0) && (wk->wu.vital_new > 0) && (g_state.pcon_dp_flag == 0)) {
             wk->wu.routine_no[2] = oki_select_table2[wk->wu.active_move + (wk->wu.facing_flag * 2)];
             wk->wu.routine_no[3] = 0;
             add_sp_arts_gauge_ukemi(wk);
@@ -1487,7 +1493,8 @@ static void subtract_dm_vital_core(PlayerEntity* wk, bool add_sa_gauge) {
         return;
     }
 
-    if (wk->wu.damage_vitality && (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
+    if (wk->wu.damage_vitality &&
+        (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
         additional_score_damage((State_Other*)wk->wu.dmg_adrs, wk->wu.damage_chain_index);
     }
 
@@ -1601,7 +1608,8 @@ static void get_damage_reaction_data(PlayerEntity* wk) {
         wk->wu.routine_no[2] = 91;
     }
 
-    if (!(((PlayerEntity*)wk->wu.target_adrs)->spmv_ng_flag & DIP_AIR_KNOCKDOWNS_DISABLED) && wk->wu.routine_no[2] == 88) {
+    if (!(((PlayerEntity*)wk->wu.target_adrs)->spmv_ng_flag & DIP_AIR_KNOCKDOWNS_DISABLED) &&
+        wk->wu.routine_no[2] == 88) {
         wk->wu.routine_no[2] = 91;
     }
 
@@ -1686,7 +1694,8 @@ static s32 setup_kuuchuu_nmdm(PlayerEntity* wk) {
     set_char_move_init(&wk->wu, 6, 0);
     check_dmpat_to_dmpat(wk);
     setup_butt_own_data(&wk->wu);
-    cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
+    cal_initial_speed_y(
+        &wk->wu, _buttobi_time_table[wk->as->char_ix][wk->wu.damage_attack_level], wk->wu.xyz[1].disp.pos);
     return 1;
 }
 

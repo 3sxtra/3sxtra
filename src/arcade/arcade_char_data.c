@@ -174,7 +174,8 @@ static const void* read_char_table(SDL_IOStream* rom, Location location, Charact
         // Read script header
         Sint16 char_graphic_data_type = 0;
         SDL_ReadS16BE(rom, &char_graphic_data_type);
-        SDL_assert(char_graphic_data_type == 1 || char_graphic_data_type == 2 || char_graphic_data_type == 4 || char_graphic_data_type == 6);
+        SDL_assert(char_graphic_data_type == 1 || char_graphic_data_type == 2 || char_graphic_data_type == 4 ||
+                   char_graphic_data_type == 6);
         *(Sint16*)p = char_graphic_data_type;
         p += 2;
 

@@ -34,7 +34,7 @@ void eff85_0000(State_Other* ewk) {
 
 void eff85_0100(State_Other* ewk) {
     void (*const eff85_move_tbl[9])(State_Other*) = { eff85_1000,   eff85_common, eff85_3000, eff85_common, eff85_5000,
-                                                     eff85_common, eff85_7000,   eff85_8000, eff85_9000 };
+                                                      eff85_common, eff85_7000,   eff85_8000, eff85_9000 };
 
     if (!g_state.execute_flag && !g_state.Game_pause && !g_state.EXE_obroll) {
         eff85_move_tbl[ewk->wu.routine_no[1]](ewk);

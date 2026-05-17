@@ -365,7 +365,7 @@ static void dead_check27(State_Other* ewk) {
 }
 
 void (*eff27_jp_tbl[11])(State_Other*) = { eff27_00, eff27_00, eff27_02, eff27_03, eff27_04, eff27_05,
-                                          eff27_06, eff27_06, eff27_07, eff27_08, eff27_09 };
+                                           eff27_06, eff27_06, eff27_07, eff27_08, eff27_09 };
 
 s32 effect_27_init(State_Other* oya, s16 type) {
     State_Other* ewk;

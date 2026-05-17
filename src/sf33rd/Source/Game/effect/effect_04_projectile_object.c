@@ -41,7 +41,8 @@ void effect_04_move(State_Other* ewk) {
         /* fallthrough */
 
     case 1:
-        ewk->wu.position_x = EFF04_Cursor_Data[ewk->wu.type][g_state.Menu_Cursor_Y[0]][0] + ewk->wu.damage_calc_multiplier;
+        ewk->wu.position_x =
+            EFF04_Cursor_Data[ewk->wu.type][g_state.Menu_Cursor_Y[0]][0] + ewk->wu.damage_calc_multiplier;
         ewk->wu.position_y = EFF04_Cursor_Data[ewk->wu.type][g_state.Menu_Cursor_Y[0]][1] + 0;
         char_move(&ewk->wu);
         sort_push_request4(&ewk->wu);

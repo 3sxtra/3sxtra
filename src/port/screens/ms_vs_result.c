@@ -26,16 +26,16 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h"    /* effect_66_init */
-#include "sf33rd/Source/Game/effect/effect_91_position_data.h"    /* effect_91_init */
-#include "sf33rd/Source/Game/effect/effect_a0_position_data.h"    /* effect_A0_init */
+#include "sf33rd/Source/Game/effect/effect_66_quake_half_object_flash.h" /* effect_66_init */
+#include "sf33rd/Source/Game/effect/effect_91_position_data.h"           /* effect_91_init */
+#include "sf33rd/Source/Game/effect/effect_a0_position_data.h"           /* effect_A0_init */
 #include "sf33rd/Source/Game/engine/state_user.h" /* plsw, Menu_Cursor_*, g_state.Order/Timer, g_state.VS_Win_Record, g_state.Sel_PL_Complete, g_state.Sel_Arts_Complete, g_state.Suicide, g_state.Cursor_Y_Pos, g_state.Mode_Type etc. */
-#include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init, Menu_Init */
+#include "sf33rd/Source/Game/menu/menu.h"         /* Menu_Common_Init, Menu_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub, VS_Result_Select_Sub, Setup_VS_Mode, Setup_Win_Lose_OBJ */
 #include "sf33rd/Source/Game/sound/sound_effects.h"       /* BGM_Request_Code_Check, BGM_Stop */
 #include "sf33rd/Source/Game/system/system_subroutines.h" /* System_all_clear_Level_B, Clear_Flash_Init, Clear_Flash_Sub */
-#include "sf33rd/Source/Game/ui/hud_subroutines.h"      /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                           /* struct _TASK */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"        /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                                      /* struct _TASK */
 
 /* RmlUi Phase 3 */
 #include "port/sdl/rmlui/rmlui_vs_result.h"      /* rmlui_vs_result_show/hide */

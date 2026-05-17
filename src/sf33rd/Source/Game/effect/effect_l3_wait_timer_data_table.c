@@ -118,7 +118,8 @@ static void effl3_0001(State_Other* ewk) {
         ewk->wu.disp_flag = 1;
         set_char_move_init(&ewk->wu, 1, 49);
         ewk->wu.old_routine_no[2] = 60;
-        cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[0], ewk->wu.xyz[1].disp.pos - 32, 2, 2);
+        cal_all_speed_data(
+            &ewk->wu, ewk->wu.old_routine_no[2], ewk->wu.old_routine_no[0], ewk->wu.xyz[1].disp.pos - 32, 2, 2);
         break;
 
     case 1:

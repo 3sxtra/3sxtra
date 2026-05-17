@@ -15,7 +15,6 @@ static int s_pattern_index = 0;
 
 #define NUM_PATTERNS 6
 
-
 extern "C" void rmlui_crt_calibration_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
@@ -62,9 +61,11 @@ extern "C" void rmlui_crt_calibration_shutdown(void) {
 }
 
 static void update_pattern_state(void) {
-    if (s_pattern_index < 0) s_pattern_index = NUM_PATTERNS - 1;
-    if (s_pattern_index >= NUM_PATTERNS) s_pattern_index = 0;
-    
+    if (s_pattern_index < 0)
+        s_pattern_index = NUM_PATTERNS - 1;
+    if (s_pattern_index >= NUM_PATTERNS)
+        s_pattern_index = 0;
+
     if (s_model_registered && s_model_handle) {
         s_model_handle.DirtyVariable("pattern_index");
     }

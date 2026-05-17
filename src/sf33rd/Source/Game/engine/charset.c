@@ -233,8 +233,8 @@ void exset_char_move_init(State* wk, s16 kind_of_char, s16 index) {
     wk->cmd_roa_state.kind_of_char = wk->current_char_type;
     wk->cmd_roa_state.ix = wk->char_index;
     wk->cmd_roa_state.pat = 1;
-    wk->phase_k5_init_flag = 1;  // TODO: Confirm CPS3 match
-    check_cgd_patdat2(wk); // TODO: Confirm CPS3 match
+    wk->phase_k5_init_flag = 1; // TODO: Confirm CPS3 match
+    check_cgd_patdat2(wk);      // TODO: Confirm CPS3 match
 }
 
 /** @brief Advances the character animation Z-axis frame. */
@@ -313,7 +313,8 @@ void char_move_cmoa(State* wk) {
 /** @brief Character move with command-move-set. */
 void char_move_cmms(State* wk) {
     setup_comm_back(wk);
-    set_char_move_init2(wk, wk->cmd_move_jump_addr.kind_of_char, wk->cmd_move_jump_addr.ix, wk->cmd_move_jump_addr.pat, 0);
+    set_char_move_init2(
+        wk, wk->cmd_move_jump_addr.kind_of_char, wk->cmd_move_jump_addr.ix, wk->cmd_move_jump_addr.pat, 0);
 }
 
 /** @brief Extended command-move-set with additional state check. */
@@ -382,11 +383,14 @@ s32 char_move_cmms3(PlayerEntity* wk) {
     dst[-1] = src[-1];
     dst[-2] = src[-2];
 #else
-    wk->wu.set_char_ad = &wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_index] / 4];
+    wk->wu.set_char_ad =
+        &wk->wu
+             .char_table[wk->wu.current_char_type][wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_index] / 4];
     setupCharTableData(&wk->wu, 0, 1);
 #endif
 
-    wk->wu.graphic_index = wk->wu.cmd_move_jump_addr.pat * wk->wu.char_graphic_data_type - wk->wu.char_graphic_data_type;
+    wk->wu.graphic_index =
+        wk->wu.cmd_move_jump_addr.pat * wk->wu.char_graphic_data_type - wk->wu.char_graphic_data_type;
 
 #if !CPS3
     wk->wu.move_type = wk->wu.attack_type;
@@ -430,7 +434,11 @@ void char_move_cmd_hit_stop(PlayerEntity* wk) {
     if (wk->high_jump_ok != 0) {
         setup_comm_back(&wk->wu);
         wk->high_jump_ok = 0;
-        set_char_move_init2(&wk->wu, wk->wu.cmd_hit_stop_backup.kind_of_char, wk->wu.cmd_hit_stop_backup.ix, wk->wu.cmd_hit_stop_backup.pat, 0);
+        set_char_move_init2(&wk->wu,
+                            wk->wu.cmd_hit_stop_backup.kind_of_char,
+                            wk->wu.cmd_hit_stop_backup.ix,
+                            wk->wu.cmd_hit_stop_backup.pat,
+                            0);
     }
 }
 
@@ -517,7 +525,8 @@ static s32 comm_jsr(State* wk, CommandState* ctc) {
 
 /** @brief Script command: RET — return from subroutine. */
 static s32 comm_ret(State* wk, CommandState* /* unused */) {
-    set_char_move_init2(wk, wk->cmd_subroutine_return.kind_of_char, wk->cmd_subroutine_return.ix, wk->cmd_subroutine_return.pat, 0);
+    set_char_move_init2(
+        wk, wk->cmd_subroutine_return.kind_of_char, wk->cmd_subroutine_return.ix, wk->cmd_subroutine_return.pat, 0);
     return 0;
 }
 
@@ -605,7 +614,8 @@ static s32 comm_for(State* wk, CommandState* ctc) {
 /** @brief Script command: NEX — next iteration of counted loop. */
 static s32 comm_nex(State* wk, CommandState* ctc) {
     if (wk->cmd_loop_counter_1.code && --wk->cmd_loop_counter_1.code > 0) {
-        set_char_move_init2(wk, wk->cmd_loop_counter_1.kind_of_char, wk->cmd_loop_counter_1.ix, wk->cmd_loop_counter_1.pat, 1);
+        set_char_move_init2(
+            wk, wk->cmd_loop_counter_1.kind_of_char, wk->cmd_loop_counter_1.ix, wk->cmd_loop_counter_1.pat, 1);
         return 0;
     } else {
         return 1;
@@ -629,7 +639,8 @@ static s32 comm_for2(State* wk, CommandState* ctc) {
 /** @brief Script command: NEX2 — next iteration (variant 2). */
 static s32 comm_nex2(State* wk, CommandState* ctc) {
     if (wk->cmd_loop_counter_2.code && --wk->cmd_loop_counter_2.code > 0) {
-        set_char_move_init2(wk, wk->cmd_loop_counter_2.kind_of_char, wk->cmd_loop_counter_2.ix, wk->cmd_loop_counter_2.pat, 1);
+        set_char_move_init2(
+            wk, wk->cmd_loop_counter_2.kind_of_char, wk->cmd_loop_counter_2.ix, wk->cmd_loop_counter_2.pat, 1);
         return 0;
     } else {
         return 1;
@@ -752,7 +763,8 @@ static s32 comm_rmja(State* wk, CommandState* ctc) {
 /** @brief Script command: UMJA — unconditional move-jump A. */
 static s32 comm_umja(State* wk, CommandState* /* unused */) {
     setup_comm_back(wk);
-    set_char_move_init2(wk, wk->cmd_move_jump_addr.kind_of_char, wk->cmd_move_jump_addr.ix, wk->cmd_move_jump_addr.pat, 0);
+    set_char_move_init2(
+        wk, wk->cmd_move_jump_addr.kind_of_char, wk->cmd_move_jump_addr.ix, wk->cmd_move_jump_addr.pat, 0);
     return 0;
 }
 
@@ -1103,8 +1115,8 @@ static s32 comm_if_s(State* wk, CommandState* ctc) {
 
     shdat = get_comm_if_shot(wk);
 
-    if (wk->work_id == 1 && ((PlayerEntity*)wk)->player_number == 16 && ((PlayerEntity*)wk)->spmv_ng_flag & DIP_TAUNT_AFTER_KO_DISABLED &&
-        my_shdat == 0x440 && g_state.pcon_dp_flag) {
+    if (wk->work_id == 1 && ((PlayerEntity*)wk)->player_number == 16 &&
+        ((PlayerEntity*)wk)->spmv_ng_flag & DIP_TAUNT_AFTER_KO_DISABLED && my_shdat == 0x440 && g_state.pcon_dp_flag) {
         shdat = 0;
     }
 
@@ -1337,7 +1349,8 @@ static s32 comm_schy(State* wk, CommandState* ctc) {
 
 /** @brief Script command: BACK — stock backup state. */
 static s32 comm_back(State* wk, CommandState* /* unused */) {
-    set_char_move_init2(wk, wk->cmd_state_backup_1.kind_of_char, wk->cmd_state_backup_1.ix, wk->cmd_state_backup_1.pat, 0);
+    set_char_move_init2(
+        wk, wk->cmd_state_backup_1.kind_of_char, wk->cmd_state_backup_1.ix, wk->cmd_state_backup_1.pat, 0);
     return 0;
 }
 
@@ -1352,7 +1365,8 @@ static s32 comm_sajp(State* wk, CommandState* ctc) {
     PlayerEntity* pwk;
 
     if (wk->work_id == 1) {
-        if (g_state.My_char[wk->id] != 18 && ((PlayerEntity*)wk)->sa->kind_of_arts == ctc->kind_of_char && ((PlayerEntity*)wk)->sa->can_activate == -1) {
+        if (g_state.My_char[wk->id] != 18 && ((PlayerEntity*)wk)->sa->kind_of_arts == ctc->kind_of_char &&
+            ((PlayerEntity*)wk)->sa->can_activate == -1) {
             return decord_if_jump(wk, ctc, ctc->ix);
         }
     } else {
@@ -1915,7 +1929,9 @@ static s32 comm_retmj(PlayerEntity* wk, CommandState* /* unused */) {
     wk->wu.current_char_type = wk->wu.cmd_state_backup_2.kind_of_char;
     wk->wu.char_index = wk->wu.cmd_state_backup_2.ix;
     wk->wu.graphic_index = wk->wu.cmd_state_backup_2.pat;
-    wk->wu.set_char_ad = &wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_index] / 4];
+    wk->wu.set_char_ad =
+        &wk->wu
+             .char_table[wk->wu.current_char_type][wk->wu.char_table[wk->wu.current_char_type][wk->wu.char_index] / 4];
     setupCharTableData(&wk->wu, 0, 1);
     wk->link_jump_flag = 0;
     return 0;
@@ -2265,7 +2281,8 @@ static s32 comm_ifs2(State* wk, CommandState* ctc) {
 
 /** @brief Script command: ABBAK — absolute back position restore. */
 static s32 comm_abbak(State* wk, CommandState* /* unused */) {
-    set_char_move_init2(wk, wk->cmd_state_backup_3.kind_of_char, wk->cmd_state_backup_3.ix, wk->cmd_state_backup_3.pat, 0);
+    set_char_move_init2(
+        wk, wk->cmd_state_backup_3.kind_of_char, wk->cmd_state_backup_3.ix, wk->cmd_state_backup_3.pat, 0);
     return 0;
 }
 
@@ -2340,7 +2357,11 @@ static s32 comm_rhsja(PlayerEntity* wk, CommandState* ctc) {
 static s32 comm_uhsja(PlayerEntity* wk, CommandState* /* unused */) {
     setup_comm_back(&wk->wu);
     wk->high_jump_ok = 0;
-    set_char_move_init2(&wk->wu, wk->wu.cmd_hit_stop_backup.kind_of_char, wk->wu.cmd_hit_stop_backup.ix, wk->wu.cmd_hit_stop_backup.pat, 0);
+    set_char_move_init2(&wk->wu,
+                        wk->wu.cmd_hit_stop_backup.kind_of_char,
+                        wk->wu.cmd_hit_stop_backup.ix,
+                        wk->wu.cmd_hit_stop_backup.pat,
+                        0);
     return 0;
 }
 
@@ -2624,7 +2645,8 @@ void check_cgd_patdat(State* wk) {
         if (wk->cg_rival == 0) {
             wk->curr_rca = NULL;
         } else {
-            wk->curr_rca = wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PlayerEntity*)wk)->throw_target_id));
+            wk->curr_rca =
+                wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PlayerEntity*)wk)->throw_target_id));
         }
 
         wk->graphic_overlap_index = wk->olc_ix_table[wk->anim_overlap_col_index];
@@ -2641,7 +2663,8 @@ void check_cgd_patdat(State* wk) {
     }
 
     if (wk->work_id == 1) {
-        if ((WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) && !(wk->move_type & 0xF8)) {
+        if ((WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && (wk->cg_cancel & 8) &&
+            !(wk->move_type & 0xF8)) {
             if (wk->move_type & 6) {
                 wk->cg_cancel &= 0xF7;
                 wk->cg_tc_state = 0;
@@ -2661,8 +2684,8 @@ void check_cgd_patdat(State* wk) {
             wk->frame_link_hit_flag = 1;
         }
 
-        if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(wk->move_type & 0x60) &&
-            (wk->move_type & 0xF8) && (wk->cg_cancel & 0x40)) {
+        if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) &&
+            !(wk->move_type & 0x60) && (wk->move_type & 0xF8) && (wk->cg_cancel & 0x40)) {
             wk->cg_cancel |= 0x60;
         }
 
@@ -2676,7 +2699,8 @@ void check_cgd_patdat(State* wk) {
                 /* fallthrough */
 
             case 1:
-                if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
+                if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 &
+                      DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
                     wk->cg_cancel |= 1;
                 }
 
@@ -2699,7 +2723,8 @@ void check_cgd_patdat(State* wk) {
                 break;
 
             case 2:
-                if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(wk)) {
+                if (!(WK_AS_PlayerEntity->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) &&
+                    !hikusugi_check(wk)) {
                     if (WK_AS_PlayerEntity->player_number == 7) {
                         wk->cg_tc_state = air_knockback_table[wk->move_type & 7];
                         wk->cg_cancel |= 8;
@@ -2790,7 +2815,8 @@ static void check_cgd_patdat2(State* wk) {
         if (wk->cg_rival == 0) {
             wk->curr_rca = NULL;
         } else {
-            wk->curr_rca = wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PlayerEntity*)wk)->throw_target_id));
+            wk->curr_rca =
+                wk->rival_catch_tbl + (wk->cg_rival + catch_table_offset(((PlayerEntity*)wk)->throw_target_id));
         }
     }
 

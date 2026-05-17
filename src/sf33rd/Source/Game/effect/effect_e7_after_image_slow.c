@@ -54,7 +54,8 @@ void effect_E7_move(State_Other* ewk) {
                 break;
             }
 
-            pricol = ewk->wu.damage_calc_divider - (ewk->wu.dir_timer + ewk->wu.damage_calc_multiplier - 1) / ewk->wu.damage_calc_multiplier;
+            pricol = ewk->wu.damage_calc_divider -
+                     (ewk->wu.dir_timer + ewk->wu.damage_calc_multiplier - 1) / ewk->wu.damage_calc_multiplier;
             ewk->wu.old_routine_no[6] = pricol;
 
             if (ewk->wu.old_routine_no[0]) {

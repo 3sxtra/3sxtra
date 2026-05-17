@@ -385,7 +385,8 @@ static void satime_ko_after_clear(s8 Stpl_Num) {
     g_state.spg_dat[Stpl_Num].timer2 = 2;
     g_state.spg_dat[Stpl_Num].time_rno = 5;
     g_state.spg_dat[Stpl_Num].time_no_clear = 0;
-    g_state.plw[Stpl_Num].sa->gauge.s.h = g_state.spg_dat[Stpl_Num].current_spg = g_state.plw[Stpl_Num].sa->backup_gauge_high;
+    g_state.plw[Stpl_Num].sa->gauge.s.h = g_state.spg_dat[Stpl_Num].current_spg =
+        g_state.plw[Stpl_Num].sa->backup_gauge_high;
     g_state.plw[Stpl_Num].sa->backup_gauge_high = 0;
 }
 
@@ -911,7 +912,8 @@ static void spgauge_sound_request(s8 Stpl_Num) {
 
 /** @brief Clears all SA gauge work variables for a given stock. */
 static void spgauge_work_clear(s8 Stpl_Num) {
-    g_state.plw[Stpl_Num].sa->gauge.s.h = g_state.spg_dat[Stpl_Num].current_spg = g_state.plw[Stpl_Num].sa->backup_gauge_high;
+    g_state.plw[Stpl_Num].sa->gauge.s.h = g_state.spg_dat[Stpl_Num].current_spg =
+        g_state.plw[Stpl_Num].sa->backup_gauge_high;
     g_state.plw[Stpl_Num].sa->backup_gauge_high = 0;
     g_state.spg_dat[Stpl_Num].old_spg = g_state.spg_dat[Stpl_Num].current_spg;
     g_state.spg_dat[Stpl_Num].flag = 0;

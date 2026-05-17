@@ -66,7 +66,8 @@ void effect_M3_move(State_Other* ewk) {
 
         case 2:
             cal_mvxy_speed(&ewk->wu);
-            ewk->wu.mvxy.d[0].sp = (ewk->wu.mvxy.d[0].sp * ewk->wu.damage_calc_multiplier) / ewk->wu.damage_calc_divider;
+            ewk->wu.mvxy.d[0].sp =
+                (ewk->wu.mvxy.d[0].sp * ewk->wu.damage_calc_multiplier) / ewk->wu.damage_calc_divider;
 
             if (!ewk->wu.mvxy.a[0].real.h) {
                 ewk->wu.routine_no[1]++;

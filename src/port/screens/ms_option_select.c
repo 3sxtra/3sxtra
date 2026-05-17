@@ -23,21 +23,21 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "sf33rd/AcrSDK/common/pad.h"              /* SWK_UP, SWK_DOWN, etc. */
-#include "port/ui/native_imgui.h"                  /* NativeUI */
-#include "sf33rd/Source/Game/effect/effect_04_projectile_object.h"       /* effect_04_init */
-#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"       /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/effect_61_menu_options.h"       /* effect_61_init */
-#include "sf33rd/Source/Game/engine/state_user.h"    /* g_state.Menu_Cursor_Y, save_w, etc. */
-#include "sf33rd/Source/Game/io/rumble.h"          /* pulpul_stop */
-#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
-#include "sf33rd/Source/Game/rendering/texture_group.h" /* checkSelObjFileLoaded */
-#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"       /* g_state.Suicide */
-#include "sf33rd/Source/Game/system/system_subroutines.h"     /* Check_Change_Contents, Copy_Check_w */
+#include "sf33rd/AcrSDK/common/pad.h"                              /* SWK_UP, SWK_DOWN, etc. */
+#include "port/ui/native_imgui.h"                                  /* NativeUI */
+#include "sf33rd/Source/Game/effect/effect_04_projectile_object.h" /* effect_04_init */
+#include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h"  /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/effect_61_menu_options.h"      /* effect_61_init */
+#include "sf33rd/Source/Game/engine/state_user.h"                  /* g_state.Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/io/rumble.h"                          /* pulpul_stop */
+#include "sf33rd/Source/Game/menu/menu.h"                          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h"                 /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
+#include "sf33rd/Source/Game/rendering/texture_group.h"            /* checkSelObjFileLoaded */
+#include "sf33rd/Source/Game/sound/sound3rd.h"                     /* SE_selected */
+#include "sf33rd/Source/Game/system/reset.h"                       /* g_state.Suicide */
+#include "sf33rd/Source/Game/system/system_subroutines.h"          /* Check_Change_Contents, Copy_Check_w */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* g_state.X_Adjust_Buff, g_state.Y_Adjust_Buff, save_w */
-#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h" /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 
 #include "port/sdl/input/sdl_pad.h" /* SDLPad_GetButtonState — shoulder buttons */

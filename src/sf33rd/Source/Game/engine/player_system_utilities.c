@@ -134,7 +134,7 @@ const s16 dir32_grddm[32] = { 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 39, 39
                               40, 40, 39, 39, 39, 39, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91 };
 
 const u8 convert_latest_stick_dir[2][16] = { { 0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 2, 0, 0, 0, 0, 0 },
-                                          { 0, 0, 0, 0, 2, 2, 2, 0, 1, 1, 1, 0, 0, 0, 0, 0 } };
+                                             { 0, 0, 0, 0, 2, 2, 2, 0, 1, 1, 1, 0, 0, 0, 0, 0 } };
 
 const s16 dead_voice_table[20][2] = { { 864, 865 }, { 928, 929 }, { 512, 513 }, { 608, 609 }, { 896, 897 },
                                       { 800, 801 }, { 832, 833 }, { 352, 353 }, { 672, 673 }, { 576, 577 },
@@ -188,8 +188,9 @@ void setup_mvxy_data(State* wk, u16 ix) {
 /** @brief Sets up own blow-away trajectory data. */
 void setup_butt_own_data(State* wk) {
     wk->mvxy.index = wk->damage_knockback_type;
-    read_adrs_store_mvxy(
-        wk, (s16*)((char*)parabora_own_table[wk->damage_player_num] + wk->damage_knockback_type * 48 + wk->weight_level * 12));
+    read_adrs_store_mvxy(wk,
+                         (s16*)((char*)parabora_own_table[wk->damage_player_num] + wk->damage_knockback_type * 48 +
+                                wk->weight_level * 12));
 }
 
 /** @brief Reads movement address data and stores into work XY. */
@@ -850,7 +851,8 @@ void cal_dm_vital_gauge_adjust(PlayerEntity* wk) {
             cnjix = 5;
         }
 
-        wk->wu.damage_vitality = wk->wu.damage_vitality * konjyou_tbl[wk->player_number][cnjix] / wk->wu.damage_calc_multiplier;
+        wk->wu.damage_vitality =
+            wk->wu.damage_vitality * konjyou_tbl[wk->player_number][cnjix] / wk->wu.damage_calc_multiplier;
     }
 
     wk->wu.damage_vitality = wk->wu.damage_vitality * (32 - wk->guts_scaling) / wk->wu.damage_calc_multiplier;
@@ -882,7 +884,8 @@ void add_sp_arts_gauge_init(PlayerEntity* wk) {
     if (wk->wu.work_id != 1) {
         mwk = (PlayerEntity*)wk->cp;
 
-        if ((mwk->wu.work_id == 1) && !(mwk->special_move_disabled_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
+        if ((mwk->wu.work_id == 1) &&
+            !(mwk->special_move_disabled_flag2 & DIP2_WHIFFED_NORMALS_BUILD_SA_GAUGE_DISABLED)) {
             asag = _add_arts_gauge[mwk->player_number][wk->wu.add_arts_point][0];
             add_super_arts_gauge(mwk->sa, mwk->wu.id, asag, mwk->metamorphose);
         }

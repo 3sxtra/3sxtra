@@ -39,9 +39,10 @@ static void crt_calibration_tick(struct _TASK* task_ptr) {
 
         /* Go back to Option Select */
         MenuScreen_Goto(MENU_SCREEN_OPTION_SELECT);
-    } else if ((sw_edge & SWK_LEFT) || (sw & SWK_LEFT)) { /* Allow holding to scroll fast if sw has repeat? Let's just use sw_edge for distinct presses */
+    } else if ((sw_edge & SWK_LEFT) || (sw & SWK_LEFT)) { /* Allow holding to scroll fast if sw has repeat? Let's just
+                                                             use sw_edge for distinct presses */
     }
-    
+
     if (sw_edge & SWK_LEFT) {
         SE_cursor_move();
         rmlui_crt_calibration_prev_pattern();

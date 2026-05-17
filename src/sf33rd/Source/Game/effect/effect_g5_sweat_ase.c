@@ -22,14 +22,14 @@ const s16 sweat_dir_modifier[4][6] = {
 };
 
 const s16 sweat_speed_modifier[4][6] = { { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
-                                    { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
-                                    { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
-                                    { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 } };
+                                         { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
+                                         { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 },
+                                         { 0x480, 0x500, 0x680, 0x400, 0x700, 0x500 } };
 
 const s16 sweat_delta_modifier[4][6] = { { -88, -96, -112, -80, -128, -88 },
-                                    { -88, -96, -112, -80, -128, -88 },
-                                    { -88, -96, -112, -80, -128, -88 },
-                                    { -88, -96, -112, -80, -128, -88 } };
+                                         { -88, -96, -112, -80, -128, -88 },
+                                         { -88, -96, -112, -80, -128, -88 },
+                                         { -88, -96, -112, -80, -128, -88 } };
 
 void effect_G5_move(State_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -123,8 +123,10 @@ s32 setup_sweat_extra(State* wk, u8 num) {
     rnd_01 = random_16() & 3;
 
     for (i = 0; i < sweat_particle_count[num]; i++) {
-        effect_G5_init(
-            wk, way + sweat_dir_modifier[rnd_00][i] & 0x3F, sweat_speed_modifier[rnd_01][i], sweat_delta_modifier[rnd_01][i]);
+        effect_G5_init(wk,
+                       way + sweat_dir_modifier[rnd_00][i] & 0x3F,
+                       sweat_speed_modifier[rnd_01][i],
+                       sweat_delta_modifier[rnd_01][i]);
     }
 
     return 0;

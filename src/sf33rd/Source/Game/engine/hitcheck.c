@@ -752,7 +752,8 @@ void hit_pattern_extdat_check(State* as) {
     }
 
     if (as->work_id == 1) {
-        if ((((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && as->cg_cancel & 8 && !(as->move_type & 0xF8)) {
+        if ((((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_TARGET_COMBO_DISABLED) && as->cg_cancel & 8 &&
+            !(as->move_type & 0xF8)) {
             if (as->move_type & 6) {
                 as->cg_cancel &= 0xF7;
                 as->cg_tc_state = 0;
@@ -764,16 +765,18 @@ void hit_pattern_extdat_check(State* as) {
             }
         }
 
-        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) && as->move_type & 0x60) {
+        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_SA_TO_SA_CANCEL_DISABLED) &&
+            as->move_type & 0x60) {
             as->cg_cancel |= 0x40;
         }
 
-        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) && !(as->move_type & 0x60) &&
-            as->move_type & 0xF8) {
+        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_SPECIAL_TO_SPECIAL_CANCEL_DISABLED) &&
+            !(as->move_type & 0x60) && as->move_type & 0xF8) {
             as->cg_cancel |= 0x60;
         }
 
-        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_ALL_NORMALS_CANCELLABLE_DISABLED) && !(as->move_type & 0xF8)) {
+        if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_ALL_NORMALS_CANCELLABLE_DISABLED) &&
+            !(as->move_type & 0xF8)) {
             switch (plpat_rno_filter[as->routine_no[2]]) {
             case 9:
                 if (as->routine_no[3] != 1) {
@@ -799,7 +802,8 @@ void hit_pattern_extdat_check(State* as) {
                 /* fallthrough */
 
             case 1:
-                if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
+                if (!(((PlayerEntity*)as)->special_move_disabled_flag2 &
+                      DIP2_ALL_MOVES_CANCELLABLE_BY_HIGH_JUMP_DISABLED)) {
                     as->cg_cancel |= 1;
                 }
 
@@ -822,7 +826,8 @@ void hit_pattern_extdat_check(State* as) {
                 break;
 
             case 2:
-                if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) && !hikusugi_check(as)) {
+                if (!(((PlayerEntity*)as)->special_move_disabled_flag2 & DIP2_AIR_CHAIN_COMBO_DISABLED) &&
+                    !hikusugi_check(as)) {
                     i = 0;
 
                     if (((PlayerEntity*)as)->player_number == 7) {
@@ -868,7 +873,8 @@ s16 check_dm_att_guard(State* as, State* ds, s16 kom) {
             }
 
             if (ds->damage_vitality > ds->vital_new) {
-                if (as->no_death_attack || (g_state.plw[curr_id].special_move_disabled_flag2 & DIP2_CHIP_DAMAGE_KO_DISABLED)) {
+                if (as->no_death_attack ||
+                    (g_state.plw[curr_id].special_move_disabled_flag2 & DIP2_CHIP_DAMAGE_KO_DISABLED)) {
                     ds->damage_vitality = ds->vital_new;
                 } else {
                     ds->dm_guard_success = ds->routine_no[2];
@@ -924,7 +930,8 @@ s16 check_dm_att_blocking(State* as, State* ds, s16 dnum) {
 void set_damage_and_piyo(PlayerEntity* as, PlayerEntity* ds) {
     calculate_damage_vitality(as, ds);
     ds->wu.damage_stun_value = _add_piyo_gauge[as->player_number][as->wu.att.stun_effect];
-    ds->wu.damage_stun_value = ds->wu.damage_stun_value * stun_gauge_omake[omop_stun_gauge_add[(ds->wu.id + 1) & 1]] / 32;
+    ds->wu.damage_stun_value =
+        ds->wu.damage_stun_value * stun_gauge_omake[omop_stun_gauge_add[(ds->wu.id + 1) & 1]] / 32;
 
     if ((ds->wu.pat_status == 32 || ds->wu.pat_status == 3) || ds->wu.pat_status == 25) {
         ds->wu.damage_vitality = (ds->wu.damage_vitality * 125) / 100;
@@ -1009,7 +1016,8 @@ s16 remake_score_index(s16 dmv) {
 
 /** @brief Handles same-frame simultaneous damage (double hit) hitstop. */
 void same_dm_stop(State* as, State* ds) {
-    if (as->work_id == 1 && as->att.dipsw & 1 && (ds->xyz[1].disp.pos > 0 || (ds->vital_new - ds->damage_vitality) < -2)) {
+    if (as->work_id == 1 && as->att.dipsw & 1 &&
+        (ds->xyz[1].disp.pos > 0 || (ds->vital_new - ds->damage_vitality) < -2)) {
         switch ((ds->damage_hit_stop < 0) + ((as->att.hitstop_me < 0) * 2)) {
         case 1:
             ds->damage_hit_stop = -as->att.hitstop_me;
@@ -1179,7 +1187,8 @@ s32 defense_ground(PlayerEntity* as, PlayerEntity* ds, s8 gddir) {
                 }
             } else if (!(ds->spmv_ng_flag & DIP_STAND_PARRY_DISABLED)) {
                 if (as->wu.jump_att_flag) {
-                    if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->move_state_flags[12] != 0 || abs)) {
+                    if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) &&
+                        (ds->cp->move_state_flags[12] != 0 || abs)) {
                         last_parry_red[ds->wu.id] = 0;
                         return apply_ground_parry_result(as, ds, stand_rno, 5);
                     }
@@ -1199,7 +1208,8 @@ s32 defense_ground(PlayerEntity* as, PlayerEntity* ds, s8 gddir) {
                 }
             } else if (!(ds->spmv_ng_flag & DIP_CROUCH_PARRY_DISABLED)) {
                 if (as->wu.jump_att_flag) {
-                    if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->move_state_flags[4] != 0 || abs)) {
+                    if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) &&
+                        (ds->cp->move_state_flags[4] != 0 || abs)) {
                         last_parry_red[ds->wu.id] = 0;
                         return apply_ground_parry_result(as, ds, 33, 6);
                     }
@@ -1413,7 +1423,8 @@ void cal_combo_waribiki(PlayerEntity* as, PlayerEntity* ds) {
 
     power = (POWER*)_exchange_pow[as->wu.attack_type >> 1];
 
-    if ((as->player_number == 3 || as->player_number == 10) && (as->sa->kind_of_arts == 2 && as->sa->can_activate == -1)) {
+    if ((as->player_number == 3 || as->player_number == 10) &&
+        (as->sa->kind_of_arts == 2 && as->sa->can_activate == -1)) {
         power = (POWER*)_exchange_pow_pl03_sa3[as->wu.attack_type >> 1];
     }
 

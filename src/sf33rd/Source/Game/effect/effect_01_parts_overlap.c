@@ -45,8 +45,10 @@ void effect_01_move(State_Other* ewk) {
         }
 
         if (!g_state.Game_pause && !g_state.execute_flag) {
-            if (ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] != mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type]) {
-                ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] = ewk->wu.graphic_index = mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type];
+            if (ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] !=
+                mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type]) {
+                ewk->wu.graphic_overlap_index.overlap_col_index[ewk->wu.type] = ewk->wu.graphic_index =
+                    mwk->graphic_overlap_index.overlap_col_index[ewk->wu.type];
                 ewk->wu.current_char_type = ewk->wu.graphic_index;
 
                 if (ewk->wu.type == 0 && ((PlayerEntity*)mwk)->player_number == 0 && mwk->facing_flag) {

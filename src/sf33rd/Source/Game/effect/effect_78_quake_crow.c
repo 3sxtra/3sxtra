@@ -133,7 +133,8 @@ void crow_fuss_move(State_Other* ewk) {
             ewk->wu.dir_timer = 48;
             ewk->wu.old_routine_no[1] = eff78_data_tbl[ewk->wu.type << 1];
             ewk->wu.old_routine_no[2] = eff78_data_tbl[(ewk->wu.type << 1) + 1];
-            cal_all_speed_data(&ewk->wu, ewk->wu.dir_timer, ewk->wu.old_routine_no[1], ewk->wu.old_routine_no[2] + 4, 0, 0);
+            cal_all_speed_data(
+                &ewk->wu, ewk->wu.dir_timer, ewk->wu.old_routine_no[1], ewk->wu.old_routine_no[2] + 4, 0, 0);
         }
 
         break;

@@ -774,25 +774,25 @@ void force_grounded_state(PlayerEntity* wk) {
 }
 
 void (*const plpat_lv_00[16])(PlayerEntity* wk) = { Attack_00000, Attack_01000, Attack_02000, Attack_03000,
-                                           Attack_04000, Attack_05000, Attack_06000, Attack_07000,
-                                           Attack_08000, Attack_09000, Attack_10000, Attack_00000,
-                                           Attack_00000, Attack_00000, Attack_14000, Attack_15000 };
+                                                    Attack_04000, Attack_05000, Attack_06000, Attack_07000,
+                                                    Attack_08000, Attack_09000, Attack_10000, Attack_00000,
+                                                    Attack_00000, Attack_00000, Attack_14000, Attack_15000 };
 
-void (*const plxx_extra_attack_table[])() = {
-    pl_gill_extra_attack, pl_alex_extra_attack, pl_ryu_extra_attack, pl_yun_extra_attack, pl_dudley_extra_attack,
-    pl_necro_extra_attack, pl_hugo_extra_attack, pl_ibuki_extra_attack, pl_elena_extra_attack, pl_oro_extra_attack,
-    pl_yang_extra_attack, pl_ken_extra_attack, pl_sean_extra_attack, pl_urien_extra_attack, pl_akuma_extra_attack,
-    pl_chun_li_extra_attack, pl_makoto_extra_attack, pl_q_extra_attack, pl_twelve_extra_attack, pl_remy_extra_attack
-};
+void (*const plxx_extra_attack_table[])() = { pl_gill_extra_attack,    pl_alex_extra_attack,   pl_ryu_extra_attack,
+                                              pl_yun_extra_attack,     pl_dudley_extra_attack, pl_necro_extra_attack,
+                                              pl_hugo_extra_attack,    pl_ibuki_extra_attack,  pl_elena_extra_attack,
+                                              pl_oro_extra_attack,     pl_yang_extra_attack,   pl_ken_extra_attack,
+                                              pl_sean_extra_attack,    pl_urien_extra_attack,  pl_akuma_extra_attack,
+                                              pl_chun_li_extra_attack, pl_makoto_extra_attack, pl_q_extra_attack,
+                                              pl_twelve_extra_attack,  pl_remy_extra_attack };
 
 const u8 cancel_whiff_type3[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
 
-const u8* cancel_whiff_table[20] = {
-    cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
-    cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
-    cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
-    cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3
-};
+const u8* cancel_whiff_table[20] = { cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
+                                     cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
+                                     cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
+                                     cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3,
+                                     cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3, cancel_whiff_type3 };
 
 const u8 cancel_hit_type3[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
 
@@ -817,7 +817,7 @@ const u8* cancel_block_table[20] = {
 const u8 cjdr_defense_type3[8] = { 255, 255, 255, 255, 255, 255, 255, 255 };
 
 const u8* cancel_defense_table[20] = { cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
-                                     cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
-                                     cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
-                                     cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
-                                     cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3 };
+                                       cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
+                                       cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
+                                       cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3,
+                                       cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3, cjdr_defense_type3 };

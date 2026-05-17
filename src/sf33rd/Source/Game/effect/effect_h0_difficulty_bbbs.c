@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 
 const SpriteConnection bbbs_nando_small[2][2] = { { { 176, -16, 0, 32490 }, { 132, -16, 0, 32489 } },
-                                      { { -104, -16, 0, 32490 }, { -148, -16, 0, 32489 } } };
+                                                  { { -104, -16, 0, 32490 }, { -148, -16, 0, 32489 } } };
 
 static void effH0_trans(State* ewk);
 

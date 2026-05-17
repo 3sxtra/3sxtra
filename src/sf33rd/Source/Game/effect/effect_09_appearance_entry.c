@@ -231,7 +231,8 @@ static void eff09_2000(State_Other* ewk) {
             ewk->wu.mvxy.d[0].sp = -ewk->wu.mvxy.d[0].sp;
         }
 
-        ewk->wu.old_routine_no[0] = ewk->wu.old_routine_no[1] = ewk->wu.old_routine_no[2] = ewk->wu.old_routine_no[3] = 0;
+        ewk->wu.old_routine_no[0] = ewk->wu.old_routine_no[1] = ewk->wu.old_routine_no[2] = ewk->wu.old_routine_no[3] =
+            0;
         sync_bg_strip_position(ewk);
         sort_push_request(&ewk->wu);
         return;
@@ -1108,7 +1109,8 @@ static void eff09_18000(State_Other* ewk) {
         ewk->wu.xyz[1].disp.pos = g_state.base_y_pos + 160;
         ewk->wu.old_routine_no[0] = 35;
         ewk->wu.old_routine_no[1] = oya_ptr->xyz[1].disp.pos + 106 + g_state.base_y_pos;
-        cal_all_speed_data(&ewk->wu, ewk->wu.old_routine_no[0], oya_ptr->xyz[0].disp.pos, ewk->wu.old_routine_no[1], 0, 0);
+        cal_all_speed_data(
+            &ewk->wu, ewk->wu.old_routine_no[0], oya_ptr->xyz[0].disp.pos, ewk->wu.old_routine_no[1], 0, 0);
         break;
 
     case 1:
@@ -1895,7 +1897,7 @@ s32 effect_09_init2(State* wk, u8 data) {
 }
 
 void (*eff09_tbl[28])(State_Other*) = { eff09_0000,  eff09_1000,  eff09_2000,  eff09_3000,  eff09_4000,  eff09_5000,
-                                       eff09_6000,  eff09_7000,  eff09_8000,  eff09_9000,  eff09_10000, eff09_11000,
-                                       eff09_12000, eff09_13000, eff09_14000, eff09_15000, eff09_16000, eff09_17000,
-                                       eff09_18000, eff09_19000, eff09_20000, eff09_21000, eff09_22000, eff09_23000,
-                                       eff09_24000, eff09_25000, eff09_26000, eff09_27000 };
+                                        eff09_6000,  eff09_7000,  eff09_8000,  eff09_9000,  eff09_10000, eff09_11000,
+                                        eff09_12000, eff09_13000, eff09_14000, eff09_15000, eff09_16000, eff09_17000,
+                                        eff09_18000, eff09_19000, eff09_20000, eff09_21000, eff09_22000, eff09_23000,
+                                        eff09_24000, eff09_25000, eff09_26000, eff09_27000 };

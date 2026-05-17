@@ -437,7 +437,10 @@ void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_check
         fprintf(f, "Local checksum:  0x%08x\n", local_checksum);
         fprintf(f, "Remote checksum: 0x%08x\n", remote_checksum);
         fprintf(f, "STATE_BUFFER_MAX: %d\n", STATE_BUFFER_MAX);
-        fprintf(f, "sizeof(PlayerEntity): %zu  sizeof(RollbackState): %zu\n\n", sizeof(PlayerEntity), sizeof(RollbackState));
+        fprintf(f,
+                "sizeof(PlayerEntity): %zu  sizeof(RollbackState): %zu\n\n",
+                sizeof(PlayerEntity),
+                sizeof(RollbackState));
 
         fprintf(f, "--- Per-section checksums (ring buffer) ---\n");
         fprintf(f,

@@ -127,7 +127,7 @@ static void animal_init(State_Other* ewk) {
 
 static void animal_control(State_Other* ewk) {
     void (*animal_jp[7])(State_Other* ewk) = { animal_0000, animal_0001, animal_0002, animal_0001,
-                                              animal_0004, animal_0005, animal_0000 };
+                                               animal_0004, animal_0005, animal_0000 };
     animal_jp[ewk->wu.type](ewk);
 }
 

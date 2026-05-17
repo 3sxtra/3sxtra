@@ -346,8 +346,8 @@ static bool try_hd_sprite_override(State* wk, s32 flip_flags, s32 group_index, c
  *
  * @return true if the HD override was drawn; false if no override exists.
  */
-static bool try_hd_sprite_override_ext(State* wk, s32 flip_flags, s32 group_index, const TileMapEntry* trsptr, s32 count,
-                                       const u32* textbl) {
+static bool try_hd_sprite_override_ext(State* wk, s32 flip_flags, s32 group_index, const TileMapEntry* trsptr,
+                                       s32 count, const u32* textbl) {
     SpriteBox box;
     compute_tile_bbox_ext(trsptr, count, textbl, flip_flags, &box);
 
@@ -1937,7 +1937,8 @@ void mlt_obj_matrix(State* wk, s32 base_y) {
     njTranslate(NULL, wk->position_x, wk->position_y + base_y, PrioBase[wk->position_z]);
 
     if (wk->mirror_flag) {
-        njScale(NULL, (1.0f / 64.0f) * (wk->mirror_scale.size.x + 1), (1.0f / 64.0f) * (wk->mirror_scale.size.y + 1), 1.0f);
+        njScale(
+            NULL, (1.0f / 64.0f) * (wk->mirror_scale.size.x + 1), (1.0f / 64.0f) * (wk->mirror_scale.size.y + 1), 1.0f);
     }
 
     // ⚡ Opt3: Cache matrix elements for inlined transform.

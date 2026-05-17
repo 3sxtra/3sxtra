@@ -58,12 +58,12 @@ const s16 grade_t_max_combo[19][2] = { { 0, 0 },    { 2, 10 },   { 3, 30 },   { 
                                        { 20, 185 }, { 24, 190 }, { 28, 195 }, { 32, 200 } };
 
 const s16 grade_defense_multiplier2[14][2] = { { 0, 10 },   { 10, 20 },  { 20, 40 },  { 30, 60 },  { 40, 80 },
-                                          { 50, 100 }, { 60, 120 }, { 70, 140 }, { 80, 160 }, { 85, 180 },
-                                          { 90, 200 }, { 95, 220 }, { 98, 230 }, { 100, 250 } };
+                                               { 50, 100 }, { 60, 120 }, { 70, 140 }, { 80, 160 }, { 85, 180 },
+                                               { 90, 200 }, { 95, 220 }, { 98, 230 }, { 100, 250 } };
 
 const s16 grade_defense_multiplier3[13][2] = { { 0, 10 },   { 10, 20 },  { 20, 30 },  { 30, 40 }, { 40, 50 },
-                                          { 50, 60 },  { 60, 70 },  { 70, 80 },  { 80, 90 }, { 85, 100 },
-                                          { 90, 110 }, { 95, 130 }, { 100, 150 } };
+                                               { 50, 60 },  { 60, 70 },  { 70, 80 },  { 80, 90 }, { 85, 100 },
+                                               { 90, 110 }, { 95, 130 }, { 100, 150 } };
 
 const s16 grade_t_nokori_vital[13][2] = { { 0, 60 },   { 1, 0 },     { 16, 10 },  { 32, 20 },  { 48, 30 },
                                           { 64, 40 },  { 80, 50 },   { 96, 60 },  { 112, 70 }, { 128, 80 },
@@ -87,7 +87,7 @@ const s16 grade_t_target_combo[8][2] = { { 0, 0 },  { 1, 40 },   { 2, 50 },   { 
                                          { 8, 80 }, { 12, 100 }, { 16, 120 }, { 24, 140 } };
 
 const s16 grade_t_normal_throw[10][2] = { { 0, 0 },  { 1, 50 }, { 2, 60 }, { 3, 70 },  { 4, 75 },
-                                      { 5, 80 }, { 6, 60 }, { 8, 40 }, { 10, 20 }, { 12, 0 } };
+                                          { 5, 80 }, { 6, 60 }, { 8, 40 }, { 10, 20 }, { 12, 0 } };
 
 const s16 grade_t_grap_def[6][2] = { { 0, 0 }, { 1, 60 }, { 2, 80 }, { 4, 100 }, { 8, 120 }, { 16, 140 } };
 
@@ -108,10 +108,10 @@ const s16 grade_t_sa_stock_2[6][2] = { { 0, 0 }, { 1, 55 }, { 2, 65 }, { 3, 75 }
 const s16 grade_t_sa_stock_1[6][2] = { { 0, 0 }, { 1, 60 }, { 2, 70 }, { 3, 80 }, { 4, 90 }, { 5, 100 } };
 
 const s16 grade_t_health_difference[21][2] = { { 0, 0 },     { 9, 10 },    { 17, 20 },   { 25, 30 },   { 33, 40 },
-                                        { 41, 50 },   { 49, 60 },   { 57, 80 },   { 65, 100 },  { 73, 120 },
-                                        { 81, 140 },  { 89, 160 },  { 97, 180 },  { 105, 200 }, { 113, 220 },
-                                        { 121, 240 }, { 129, 260 }, { 137, 270 }, { 145, 280 }, { 153, 290 },
-                                        { 160, 300 } };
+                                               { 41, 50 },   { 49, 60 },   { 57, 80 },   { 65, 100 },  { 73, 120 },
+                                               { 81, 140 },  { 89, 160 },  { 97, 180 },  { 105, 200 }, { 113, 220 },
+                                               { 121, 240 }, { 129, 260 }, { 137, 270 }, { 145, 280 }, { 153, 290 },
+                                               { 160, 300 } };
 
 const s16 grade_t_app_nmlblock[7][2] = { { 0, 120 }, { 1, 110 }, { 9, 100 }, { 17, 80 },
                                          { 33, 50 }, { 49, 30 }, { 81, 15 } };
@@ -124,10 +124,10 @@ const s16 grade_t_app_grdblock[7][2] = { { 0, 150 }, { 1, 140 }, { 9, 120 }, { 1
                                          { 33, 70 }, { 49, 40 }, { 81, 20 } };
 
 const s16 grade_t_win_streak[8][2] = { { 0, 0 },    { 2, 20 },   { 5, 50 },   { 8, 80 },
-                                    { 11, 100 }, { 16, 120 }, { 21, 160 }, { 31, 200 } };
+                                       { 11, 100 }, { 16, 120 }, { 21, 160 }, { 31, 200 } };
 
 const s16 grade_t_enemy_win_streak[8][2] = { { 0, 0 },   { 2, 20 },   { 4, 50 },   { 6, 80 },
-                                       { 9, 100 }, { 12, 120 }, { 16, 160 }, { 20, 200 } };
+                                             { 9, 100 }, { 12, 120 }, { 16, 160 }, { 20, 200 } };
 
 const s16 grade_t_straight[11][2] = { { 0, 0 },   { 2, 40 },  { 3, 60 },  { 4, 80 },   { 5, 100 }, { 6, 120 },
                                       { 7, 140 }, { 8, 160 }, { 9, 180 }, { 10, 190 }, { 11, 200 } };
@@ -459,7 +459,8 @@ void grade_makeup_stage_parameter(s16 ix) {
         } else if (g_state.judge_item[ix][g_state.Play_Type].win_streak) {
             point += grade_table_lookup(grade_t_win_streak, 7, g_state.judge_item[ix][g_state.Play_Type].win_streak);
         } else {
-            point += grade_table_lookup(grade_t_enemy_win_streak, 7, g_state.judge_item[ix][g_state.Play_Type].enemy_win_streak);
+            point += grade_table_lookup(
+                grade_t_enemy_win_streak, 7, g_state.judge_item[ix][g_state.Play_Type].enemy_win_streak);
         }
     }
 
@@ -721,7 +722,8 @@ s16 get_ex_point_total(s16 ix, s16 wf) {
     point = 0;
 
     if (wf) {
-        point += grade_table_lookup(grade_t_health_difference, 20, g_state.judge_item[ix][g_state.Play_Type].health_difference);
+        point += grade_table_lookup(
+            grade_t_health_difference, 20, g_state.judge_item[ix][g_state.Play_Type].health_difference);
         point += grade_t_round_result[g_state.judge_item[ix][g_state.Play_Type].finishing_move];
     }
 

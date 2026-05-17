@@ -628,7 +628,7 @@ typedef struct GameState {
 
     s16 slowmo_timer; ///< @netplay_sync Checksummed
     s16 slowmo_flag;  ///< @netplay_sync Checksummed
-    s16 execute_flag;   ///< @netplay_sync Checksummed
+    s16 execute_flag; ///< @netplay_sync Checksummed
 
     // grade
 

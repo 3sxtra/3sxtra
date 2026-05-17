@@ -28,11 +28,11 @@
 #include "game_state.h"
 
 #include "sf33rd/Source/Game/engine/state_user.h" /* g_state.Menu_Cursor_X, g_state.Order, g_state.Order_Dir, g_state.Order_Timer */
-#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init, Setup_Save_Replay_2nd */
-#include "sf33rd/Source/Game/menu/menu_internal.h" /* Setup_Save_Replay_1st, Save_Replay_MC_Sub */
-#include "sf33rd/Source/Game/system/system_subroutines.h"     /* Clear_Flash_Sub, Clear_Flash_Init */
-#include "sf33rd/Source/Game/ui/hud_subroutines.h"          /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                               /* struct _TASK */
+#include "sf33rd/Source/Game/menu/menu.h"                 /* Menu_Common_Init, Setup_Save_Replay_2nd */
+#include "sf33rd/Source/Game/menu/menu_internal.h"        /* Setup_Save_Replay_1st, Save_Replay_MC_Sub */
+#include "sf33rd/Source/Game/system/system_subroutines.h" /* Clear_Flash_Sub, Clear_Flash_Init */
+#include "sf33rd/Source/Game/ui/hud_subroutines.h"        /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                                      /* struct _TASK */
 
 /* Native save */
 #include "port/save/native_save.h" /* NativeSave_SaveReplay */

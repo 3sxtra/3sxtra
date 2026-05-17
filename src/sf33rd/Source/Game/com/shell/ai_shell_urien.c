@@ -209,5 +209,5 @@ static void Shell13_0011(PlayerEntity* wk) {
 }
 
 static void (*const Shell13_Tbl[12])(PlayerEntity*) = { Shell13_0000, Shell13_0001, Shell13_0002, Shell13_0003,
-                                               Shell13_0004, Shell13_0005, Shell13_0006, Shell13_0007,
-                                               Shell13_0008, Shell13_0009, Shell13_0010, Shell13_0011 };
+                                                        Shell13_0004, Shell13_0005, Shell13_0006, Shell13_0007,
+                                                        Shell13_0008, Shell13_0009, Shell13_0010, Shell13_0011 };

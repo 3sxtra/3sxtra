@@ -125,7 +125,8 @@ static void effe8_zanzou_process(State_Other* ewk, PlayerEntity* mwk) {
 
     if (ewk->wu.old_routine_no[4]) {
         if (ewk->wu.olc_work_ix[2] && mwk->metamorphose) {
-            ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.active_move - 1][(ewk->master_id + 1) & 1];
+            ewk->wu.extra_col =
+                after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.active_move - 1][(ewk->master_id + 1) & 1];
         } else {
             ewk->wu.extra_col = after_image_color[ewk->wu.old_routine_no[4] + ewk->wu.active_move - 1][ewk->master_id];
         }

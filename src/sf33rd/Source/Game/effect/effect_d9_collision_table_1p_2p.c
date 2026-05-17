@@ -75,8 +75,8 @@ void effect_D9_move(State_Other* ewk) {
             break;
         }
 
-        if ((ewk->wu.vital_old & 2) == 0 || g_state.execute_flag != 0 || g_state.Game_pause != 0 || mwk->wu.hit_stop > 0 ||
-            (--ewk->wu.dir_timer >= 0)) {
+        if ((ewk->wu.vital_old & 2) == 0 || g_state.execute_flag != 0 || g_state.Game_pause != 0 ||
+            mwk->wu.hit_stop > 0 || (--ewk->wu.dir_timer >= 0)) {
             if ((ewk->wu.vital_old & 4) != 0) {
                 if (ewk->wu.dir_old == mwk->wu.damage_count_up) {
                     if ((ewk->wu.type != 0) && (ewk->wu.type != 32)) {

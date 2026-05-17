@@ -23,8 +23,8 @@
 extern "C" {
 #include "sf33rd/Source/Game/effect/effect_76_quake.h" /* chkNameAkuma */
 #include "sf33rd/Source/Game/engine/combo_window.h" /* CMST_BUFF, g_state.cmst_buff[2][5], g_state.cmb_stock[2], g_state.cst_read[2] */
-#include "sf33rd/Source/Game/engine/player_control.h"    /* g_state.stun_state[2] (StunState), g_state.plw[2] */
-#include "sf33rd/Source/Game/engine/super_gauge.h"  /* SPG_DAT, g_state.spg_dat[2] — SA gauge */
+#include "sf33rd/Source/Game/engine/player_control.h" /* g_state.stun_state[2] (StunState), g_state.plw[2] */
+#include "sf33rd/Source/Game/engine/super_gauge.h"    /* SPG_DAT, g_state.spg_dat[2] — SA gauge */
 #include "sf33rd/Source/Game/engine/state_user.h" /* PlayerEntity, g_state.Super_Arts, g_state.My_char, g_state.Win_Record, g_state.Max_vitality, g_state.Mode_Type … (pulls structs.h) */
 #include "sf33rd/Source/Game/training/training_state.h" /* g_training_state — combo stun */
 

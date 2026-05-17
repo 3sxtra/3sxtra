@@ -62,9 +62,9 @@ static void Att_PL05_TOKUSHUKOUDOU(PlayerEntity* wk) {
     }
 }
 
-void (*const pl05_exatt_table[18])(PlayerEntity* wk) = { Att_CHOUCHUURENGEKI, Att_HADOUKEN,       Att_HADOUKEN,
-                                                Att_HADOUKEN,        Att_HADOUKEN,       Att_SENPUUKYAKU,
-                                                Att_HADOUKEN,        Att_HADOUKEN,       Att_HADOUKEN,
-                                                Att_JINNCHUUWATARI,  Att_SLIDE_and_JUMP, Att_DUMMY,
-                                                Att_DUMMY,           Att_DUMMY,          Att_PL05_TOKUSHUKOUDOU,
-                                                Att_DUMMY,           Att_METAMOR_WAIT,   Att_METAMOR_REBIRTH };
+void (*const pl05_exatt_table[18])(PlayerEntity* wk) = {
+    Att_CHOUCHUURENGEKI, Att_HADOUKEN,     Att_HADOUKEN,       Att_HADOUKEN, Att_HADOUKEN,
+    Att_SENPUUKYAKU,     Att_HADOUKEN,     Att_HADOUKEN,       Att_HADOUKEN, Att_JINNCHUUWATARI,
+    Att_SLIDE_and_JUMP,  Att_DUMMY,        Att_DUMMY,          Att_DUMMY,    Att_PL05_TOKUSHUKOUDOU,
+    Att_DUMMY,           Att_METAMOR_WAIT, Att_METAMOR_REBIRTH
+};

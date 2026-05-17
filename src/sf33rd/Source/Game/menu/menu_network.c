@@ -1334,7 +1334,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         g_state.Order[EFF_SLOT_CURSOR_BG] = 3;
         g_state.Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
 
-        /* Menu items: 3 items (AUTO-SpriteConnection, CONNECT, EXIT), EFF_FONT_COMPACT = compact 8px font, master_player=1 */
+        /* Menu items: 3 items (AUTO-SpriteConnection, CONNECT, EXIT), EFF_FONT_COMPACT = compact 8px font,
+         * master_player=1 */
         {
             static const s16 lan_lobby_strings[] = { 80, 81, 82 };
             for (ix = 0; ix < 3; ix++) {

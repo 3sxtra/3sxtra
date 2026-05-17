@@ -1240,7 +1240,8 @@ void check_18() {
 
                 if (sw_lever == sw_work) {
                     move_ptr->w_int = move_ptr->free1;
-                    g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] = g_state.wcp[cmd_id].reset[move_type[cmd_id]];
+                    g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] =
+                        g_state.wcp[cmd_id].reset[move_type[cmd_id]];
                 }
             }
         } else if (move_ptr->w_lvr == 0) {
@@ -1273,7 +1274,8 @@ void check_19() {
             if (chk_pl->now_lvbt & CMD_LEVER_MASK) {
                 sw_work = move_ptr->w_lvr & CMD_LEVER_MASK;
                 if (sw_lever == sw_work) {
-                    g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] = g_state.wcp[cmd_id].reset[move_type[cmd_id]];
+                    g_state.wcp[cmd_id].move_state_flags[move_type[cmd_id]] =
+                        g_state.wcp[cmd_id].reset[move_type[cmd_id]];
                     check_next();
                 }
             }

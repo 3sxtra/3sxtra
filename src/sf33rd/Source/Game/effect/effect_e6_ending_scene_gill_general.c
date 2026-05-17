@@ -121,11 +121,11 @@ const s16 effe6_data_tbl[180][8] = {
 
 void effect_E6_move(State_Other* ewk) {
     void (*effe6_jp[34])(State_Other*) = { effe6_0000, effe6_0001, effe6_0002, effe6_0003, effe6_0004, effe6_0005,
-                                          effe6_0006, effe6_0007, effe6_0007, effe6_0009, effe6_0010, effe6_0011,
-                                          effe6_0012, effe6_0013, effe6_0014, effe6_0015, effe6_0016, effe6_0017,
-                                          effe6_0018, effe6_0019, effe6_0020, effe6_0021, effe6_0022, effe6_0023,
-                                          effe6_0024, effe6_0025, effe6_0026, effe6_0027, effe6_0028, effe6_0029,
-                                          effe6_0030, effe6_0031, effe6_0032, effe6_0033 };
+                                           effe6_0006, effe6_0007, effe6_0007, effe6_0009, effe6_0010, effe6_0011,
+                                           effe6_0012, effe6_0013, effe6_0014, effe6_0015, effe6_0016, effe6_0017,
+                                           effe6_0018, effe6_0019, effe6_0020, effe6_0021, effe6_0022, effe6_0023,
+                                           effe6_0024, effe6_0025, effe6_0026, effe6_0027, effe6_0028, effe6_0029,
+                                           effe6_0030, effe6_0031, effe6_0032, effe6_0033 };
 
     switch (ewk->wu.routine_no[2]) {
     case 0x0:

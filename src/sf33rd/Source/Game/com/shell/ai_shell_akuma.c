@@ -220,6 +220,7 @@ static void Shell14_0012(PlayerEntity* wk) {
     }
 }
 
-static void (*const Shell14_Tbl[13])(PlayerEntity*) = { Shell14_0000, Shell14_0001, Shell14_0002, Shell14_0003, Shell14_0004,
-                                               Shell14_0005, Shell14_0006, Shell14_0007, Shell14_0008, Shell14_0009,
-                                               Shell14_0010, Shell14_0011, Shell14_0012 };
+static void (*const Shell14_Tbl[13])(PlayerEntity*) = { Shell14_0000, Shell14_0001, Shell14_0002, Shell14_0003,
+                                                        Shell14_0004, Shell14_0005, Shell14_0006, Shell14_0007,
+                                                        Shell14_0008, Shell14_0009, Shell14_0010, Shell14_0011,
+                                                        Shell14_0012 };
