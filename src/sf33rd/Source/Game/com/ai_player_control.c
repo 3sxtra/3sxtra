@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/com/ai_player_control.h"
+#include "sf33rd/Source/Game/com/ai_combat_core.h"
 #include "game_state.h"
 #include "common.h"
 
@@ -721,7 +722,7 @@ static void (*const Active_Char_Tbl[CHAR_COUNT])(PlayerEntity*) = { Computer00, 
 
 /** @brief AI state 2: Execute the active AI pattern for the current character. */
 void Com_Active(PlayerEntity* wk) {
-    com_dispatch_char(wk, Active_Char_Tbl, 0, 0);
+    AICore_ExecutePattern(wk);
 }
 
 static void (*const Follow_Char_Tbl[CHAR_COUNT])(PlayerEntity*) = { Follow02, Follow02, Follow02, Follow02, Follow02,

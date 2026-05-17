@@ -11,6 +11,7 @@ from tools.util.bridge_state import INPUT_START, INPUT_LK, INPUT_RIGHT
 
 class MockState:
     def __init__(self):
+        self.nav_My_char = [-1, -1]
         self.nav_G_No = [0, 0, 0, 0]
         self.nav_Cursor_Char = [0, 0]
         self.menu_input_active = 0
@@ -29,6 +30,8 @@ class MockState:
             if self.__dict__["call_count"] >= 2:
                 self.nav_Cursor_Char[0] = 3  # Found!
 
+        if name == "p1_input" and value == INPUT_LK and self.nav_Cursor_Char[0] == 3:
+            self.nav_My_char[0] = 3
         super().__setattr__(name, value)
 
 

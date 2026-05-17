@@ -162,6 +162,9 @@ static void Set_Appear_Type_For_Mode() {
  * @param task_ptr Task system pointer passed down to handlers.
  * @param is_last_frame 1 if this is the final tick of the frame (controls rendering trans flag).
  */
+
+static bool s_ai_vm_initialized = false;
+
 static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
     if (is_last_frame) {
         No_Trans = 0;
@@ -175,6 +178,11 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
         g_state.system_timer += 1;
     }
 
+    if (!s_ai_vm_initialized) {
+        extern void AICore_Init(void);
+        AICore_Init();
+        s_ai_vm_initialized = true;
+    }
     Init_Texture_Cache_Before_Process();
 
     seqsBeforeProcess();

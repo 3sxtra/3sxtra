@@ -1,0 +1,13 @@
+{
+  "characters": {
+    "02": {
+        "patterns": [
+            [
+                {"op": "WAIT", "time": 10},
+                {"op": "ATTACK", "reaction": 9, "lever": 258},
+                {"op": "END_PATTERN"}
+            ]
+        ]
+    }
+  }
+}

@@ -209,6 +209,8 @@ static void step_1() {
 
 /** @brief Application entry point. Parses CLI, runs SDL frame loop. */
 int main(int argc, char* argv[]) {
+    extern void AICore_Init(void);
+    AICore_Init();
     bool is_running = true;
 
     ParseCLI(argc, argv);
@@ -308,6 +310,8 @@ int main(int argc, char* argv[]) {
         TRACE_FRAME_MARK();
     }
 
+    extern void AICore_Cleanup(void);
+    AICore_Cleanup();
     AFS_Finish();
     SDLApp_Quit();
     return 0;
