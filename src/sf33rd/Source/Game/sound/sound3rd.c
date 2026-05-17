@@ -34,6 +34,7 @@
 #include "sf33rd/Source/Game/system/ram_control.h"
 #include "sf33rd/Source/Game/system/system_subroutines.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
+#include "sf33rd/Source/PS2/cseDataFiles/CSEData.h"
 #include "structs.h"
 
 #include "port/I_System.h"
@@ -226,6 +227,8 @@ void Exit_sound_system() {
         spu_all_off();
         system_init_level &= ~1;
     }
+
+    UnloadSoundAssets();
 }
 
 /** @brief Clear the BGM execution + request work areas. */

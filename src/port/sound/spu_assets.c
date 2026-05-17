@@ -37,8 +37,14 @@ s8* LoadPHDData(int index) {
     fseek(f, 0, SEEK_SET);
 
     s8* data = (s8*)malloc(size);
-    fread(data, 1, size, f);
+    size_t read = fread(data, 1, size, f);
     fclose(f);
+
+    if (read != (size_t)size) {
+        printf("Partial read for %s: got %zu of %ld bytes\n", filepath, read, size);
+        free(data);
+        return NULL;
+    }
 
     loaded_phd[index] = data;
     return data;
@@ -62,8 +68,14 @@ SoundEvent* LoadTSBData(int index) {
     fseek(f, 0, SEEK_SET);
 
     SoundEvent* data = (SoundEvent*)malloc(size);
-    fread(data, 1, size, f);
+    size_t read = fread(data, 1, size, f);
     fclose(f);
+
+    if (read != (size_t)size) {
+        printf("Partial read for %s: got %zu of %ld bytes\n", filepath, read, size);
+        free(data);
+        return NULL;
+    }
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     int num_events = size / sizeof(SoundEvent);
@@ -81,3 +93,17 @@ SoundEvent* LoadTSBData(int index) {
     loaded_tsb[index] = data;
     return data;
 }
+
+void UnloadSoundAssets(void) {
+    for (int i = 0; i < 21; i++) {
+        if (loaded_phd[i]) {
+            free(loaded_phd[i]);
+            loaded_phd[i] = NULL;
+        }
+        if (loaded_tsb[i]) {
+            free(loaded_tsb[i]);
+            loaded_tsb[i] = NULL;
+        }
+    }
+}
+
