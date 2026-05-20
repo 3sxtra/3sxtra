@@ -16,7 +16,7 @@
 #include "port/I_System.h"
 #include "port/sdl/input/control_mapping_bindings.h"
 #include "port/sdl/input/sdl_pad.h"
-#include "port/linux/gpio_lag_test.h"
+#include "port/sdl/lag_test.h"
 #include "port/input.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/state_user.h"

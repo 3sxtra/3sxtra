@@ -20,7 +20,7 @@
 
 #include "port/sdl/lagtest_renderer.h"
 #include "game_state.h"
-#include "port/linux/gpio_lag_test.h"
+#include "port/sdl/lag_test.h"
 #include "sf33rd/Source/Game/ui/hud_subroutines.h"
 #include "sf33rd/Source/Game/engine/state_system.h"
 
@@ -71,6 +71,14 @@ void LagtestRenderer_Render(void) {
     GpioLagTestState st = GpioLagTest_GetState();
     if (!st.enabled) {
         return;
+    }
+
+    if (st.input_held) {
+        /* Draw a massive visual indicator (for high-speed camera tracking) */
+        /* Center "ON" with a massive scale (10x) near the top of the screen */
+        float text_width = 2.0f * 8.0f * 10.0f; /* 2 chars * 8px * 10.0 scale */
+        float x = (SCREEN_W - text_width) * 0.5f;
+        SSPutStrPro_Scale(0, x, 20.0f, LAG_ATR, COL_WHITE, (s8*)"ON", 10.0f);
     }
 
     char buf[48];

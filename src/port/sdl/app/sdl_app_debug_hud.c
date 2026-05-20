@@ -6,7 +6,7 @@
  * FPS history buffer, and text rendering for the debug HUD on all backends.
  */
 #include "port/sdl/app/sdl_app_debug_hud.h"
-#include "port/linux/gpio_lag_test.h"
+#include "port/sdl/lag_test.h"
 
 #include "port/config/config.h"
 #include "port/rendering/sdl_bezel.h"

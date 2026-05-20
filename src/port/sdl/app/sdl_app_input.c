@@ -24,7 +24,7 @@
 #include "port/sdl/rmlui/rmlui_dev_overlay.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
-#include "port/linux/gpio_lag_test.h"
+#include "port/sdl/lag_test.h"
 
 // Key handlers
 static void handle_menu_toggle(SDL_KeyboardEvent* event) {

@@ -657,10 +657,6 @@ elseif(UNIX AND NOT APPLE)
         
         target_sources(3sx PRIVATE src/port/linux/broadcast_pipewire.cpp)
     endif()
-    if(ENABLE_GPIO_LAG_TEST)
-        target_sources(3sx PRIVATE src/port/linux/gpio_lag_test.c)
-        message(STATUS "GPIO lag test: ENABLED (GPIO 17 → MK injection)")
-    endif()
 endif()
 
 # ======================================
