@@ -397,6 +397,10 @@ static void AsyncUpdatePresence(const char* pid, const char* disp, const char* r
         return; // Previous request still in-flight; skip to avoid thread accumulation
     SDL_SetAtomicInt(&async_presence_active, 1);
     AsyncPresenceData* d = (AsyncPresenceData*)malloc(sizeof(AsyncPresenceData));
+    if (!d) {
+        SDL_SetAtomicInt(&async_presence_active, 0);
+        return;
+    }
     memset(d, 0, sizeof(*d));
     // Truncation is intentional — AsyncPresenceData fields are fixed-size buffers.
 #if defined(__GNUC__) && !defined(__clang__)
@@ -455,6 +459,10 @@ static void AsyncLobbyAction(const char* pid, int action) {
         return; // Previous action still in-flight; skip to avoid thread accumulation
     SDL_SetAtomicInt(&async_action_active, 1);
     AsyncActionData* d = (AsyncActionData*)malloc(sizeof(AsyncActionData));
+    if (!d) {
+        SDL_SetAtomicInt(&async_action_active, 0);
+        return;
+    }
     snprintf(d->player_id, sizeof(d->player_id), "%s", pid);
     d->action = action;
     SDL_Thread* t = SDL_CreateThread(async_action_fn, "AsyncAction", d);

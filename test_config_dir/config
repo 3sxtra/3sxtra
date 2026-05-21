@@ -1,0 +1,60 @@
+# 3SX Configuration — auto-generated, hand-editable
+# Lines starting with '#' are comments. Delete this file to reset to defaults.
+
+# ── Window ──────────────────────────────────────────────
+fullscreen = true
+fullscreen-exclusive = false
+scale-stretch = false
+fullscreen-width = 0
+fullscreen-height = 0
+window-width = 1920
+window-height = 1080
+
+# ── Rendering ───────────────────────────────────────────
+# scale-mode: nearest | soft-linear
+# renderer: auto | gl | gpu | sdl | classic (auto uses platform default)
+scale-mode = nearest
+renderer = gl
+draw-rect-borders = false
+dump-textures = false
+
+# ── Broadcast ───────────────────────────────────────────
+# broadcast-source: 0=Game, 1=Window
+broadcast-enabled = false
+broadcast-source = 0
+broadcast-show-ui = false
+
+# ── Training Mode ───────────────────────────────────────
+training-hitboxes = true
+training-pushboxes = true
+training-hurtboxes = true
+training-attackboxes = true
+training-throwboxes = true
+training-advantage = false
+training-stun = true
+training-inputs = true
+training-frame-meter = true
+
+# ── Netplay / Lobby ──────────────────────────────────────
+# netplay-ft: first-to-N wins (1-10)
+# netplay-max-ping: 0=any, otherwise max ms
+netplay-auto-connect = true
+lobby-auto-connect = true
+lobby-auto-search = true
+skip-intro = false
+netplay-ft = 2
+
+# ── Mods ────────────────────────────────────────────────
+modded-bgm-enabled = false
+modded-voice-enabled = false
+lobby-client-id = 80d2d2f80eae126532abf67a4a55bfbe
+test_int = 42
+test_bool = true
+
+# ── Custom Server ───────────────────────────────────────
+# To use a custom matchmaking server, uncomment and edit:
+# lobby-server-url = http://your-server-ip:3000
+# lobby-server-key = your-secret-hmac-key
+
+# Set your online display name (shown to other players):
+# lobby-display-name = YourName

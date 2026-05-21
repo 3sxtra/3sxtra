@@ -615,7 +615,7 @@ void pli_0002() {
 
 /** @brief Per-frame player movement and state update (the core player tick). */
 static void plcnt_move() {
-    if (g_state.Mode_Type == MODE_NORMAL_TRAINING) {
+    if (g_state.Mode_Type == MODE_NORMAL_TRAINING || g_state.Mode_Type == MODE_TRIALS) {
         update_training_state();
     }
 

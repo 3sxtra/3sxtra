@@ -287,6 +287,13 @@ static void AsyncCreateRoom(const char* name, const char* password, int visibili
     SDL_SetAtomicInt(&s_room_async_active, 1);
     SDL_SetAtomicInt(&s_room_async_done, 0);
     AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
+    if (!d) {
+        SDL_SetAtomicInt(&s_room_async_active, 0);
+        s_room_status = "OOM";
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("room_status");
+        return;
+    }
     d->action = 1;
     d->ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
     d->visibility = visibility;
@@ -308,6 +315,13 @@ static void AsyncJoinRoom(const char* code, const char* password) {
     SDL_SetAtomicInt(&s_room_async_active, 1);
     SDL_SetAtomicInt(&s_room_async_done, 0);
     AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
+    if (!d) {
+        SDL_SetAtomicInt(&s_room_async_active, 0);
+        s_room_status = "OOM";
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("room_status");
+        return;
+    }
     d->action = 2;
     snprintf(d->code, sizeof(d->code), "%s", code);
     if (password && password[0])
@@ -1006,6 +1020,13 @@ extern "C" void rmlui_network_lobby_create_room(void) {
         SDL_SetAtomicInt(&s_room_async_active, 1);
         SDL_SetAtomicInt(&s_room_async_done, 0);
         AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
+        if (!d) {
+            SDL_SetAtomicInt(&s_room_async_active, 0);
+            s_room_status = "OOM";
+            if (s_model_handle)
+                s_model_handle.DirtyVariable("room_status");
+            return;
+        }
         d->action = 3; // tournament create
         d->ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
         d->room_type = ROOM_TYPE_TOURNAMENT;

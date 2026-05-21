@@ -282,6 +282,10 @@ static bool http_request(const char* method, const char* path, const char* body,
     size_t body_len = body ? strlen(body) : 0;
     size_t payload_len = strlen(timestamp) + strlen(method) + strlen(path) + body_len;
     char* payload = (char*)malloc(payload_len + 1);
+    if (!payload) {
+        curl_easy_cleanup(curl);
+        return false;
+    }
     snprintf(payload, payload_len + 1, "%s%s%s%s", timestamp, method, path, body ? body : "");
 
     char signature[66];
@@ -314,8 +318,12 @@ static bool http_request(const char* method, const char* path, const char* body,
 
     /* Response buffer */
     CurlBuffer resp = { .data = (char*)malloc(4096), .size = 0, .capacity = 4096 };
-    if (resp.data)
-        resp.data[0] = '\0';
+    if (!resp.data) {
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+        return false;
+    }
+    resp.data[0] = '\0';
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_cb);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
 
@@ -836,8 +844,12 @@ size_t LobbyServer_DownloadReplay(int match_id, void** out_data) {
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
     CurlBuffer resp = { .data = (char*)malloc(65536), .size = 0, .capacity = 65536 };
-    if (resp.data)
-        resp.data[0] = '\0';
+    if (!resp.data) {
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+        return 0;
+    }
+    resp.data[0] = '\0';
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_cb);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
 

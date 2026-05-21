@@ -351,6 +351,8 @@ void trials_on_hit_registered(s16 attacker_id, s16 attack_type) {
 void trials_on_parry(s16 defender_id) {
     if (g_state.Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
+    if (defender_id != 0)
+        return;
 
     // Parry is used by specific trial steps (Ken Trial 8 — parry Chun-Li's SA)
     const TrialDef* cur_trial = trials_get_current_def();

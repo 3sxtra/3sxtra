@@ -708,6 +708,7 @@ void set_paring_status(PlayerEntity* as, PlayerEntity* ds) {
         }
 
         as->wu.script_register_bank[8]++;
+        trials_on_parry(ds->wu.id);
     }
 
     hit_pattern_extdat_check(&as->wu);

@@ -86,74 +86,75 @@ static void Paths_Normalize(char* path) {
 /** @brief Get the application base directory path (lazy-initialized, cached). */
 const char* Paths_GetBasePath() {
     static char s_base_path[1024] = { 0 };
-    if (s_base_path[0] == '\0') {
-#ifdef _WIN32
-        wchar_t w_path[MAX_PATH];
-        if (GetModuleFileNameW(NULL, w_path, MAX_PATH) > 0) {
-            // Convert to UTF-8
-            char utf8_path[1024];
-            int size = WideCharToMultiByte(CP_UTF8, 0, w_path, -1, utf8_path, sizeof(utf8_path), NULL, NULL);
-            if (size > 0) {
-                char current[1024];
-                SDL_strlcpy(current, utf8_path, sizeof(current));
-                Paths_Normalize(current);
-
-                // Strip filename
-                char* last_slash = strrchr(current, '/');
-                if (last_slash)
-                    *last_slash = '\0';
-
-                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Searching for root from (Win32): %s", current);
-
-                bool found_root = false;
-                while (true) {
-                    char check_path[1024];
-                    snprintf(check_path, sizeof(check_path), "%s/assets/ASSET_VERSION", current);
-
-                    SDL_IOStream* io = SDL_IOFromFile(check_path, "rb");
-                    if (io) {
-                        SDL_CloseIO(io);
-                        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] FOUND PROJECT ROOT AT: %s", current);
-                        found_root = true;
-                        break;
-                    }
-
-                    char* up = strrchr(current, '/');
-                    if (!up || (up > current && *(up - 1) == ':'))
-                        break;
-                    *up = '\0';
-                }
-
-                if (found_root) {
-                    snprintf(s_base_path, sizeof(s_base_path), "%s/", current);
-                } else {
-                    // Fallback to exe directory
-                    SDL_strlcpy(s_base_path, utf8_path, sizeof(s_base_path));
-                    last_slash = strrchr(s_base_path, '/');
-                    if (last_slash)
-                        *(last_slash + 1) = '\0';
-                }
-            }
-        }
-#endif
-        // Fallback or multi-platform
-        if (s_base_path[0] == '\0') {
-#ifdef __ANDROID__
-            /* On Android, assets must be accessed via relative paths to
-             * utilize the AssetManager. Keep base path empty. */
-            s_base_path[0] = '\0';
-#else
-            const char* sdl_base = SDL_GetBasePath();
-            if (sdl_base) {
-                SDL_strlcpy(s_base_path, sdl_base, sizeof(s_base_path));
-                Paths_Normalize(s_base_path);
-            } else {
-                SDL_strlcpy(s_base_path, "./", sizeof(s_base_path));
-            }
-#endif
-        }
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Base path initialized to: %s", s_base_path);
+    if (s_base_path[0] != '\0') {
+        return s_base_path;
     }
+#ifdef _WIN32
+    wchar_t w_path[MAX_PATH];
+    if (GetModuleFileNameW(NULL, w_path, MAX_PATH) > 0) {
+        // Convert to UTF-8
+        char utf8_path[1024];
+        int size = WideCharToMultiByte(CP_UTF8, 0, w_path, -1, utf8_path, sizeof(utf8_path), NULL, NULL);
+        if (size > 0) {
+            char current[1024];
+            SDL_strlcpy(current, utf8_path, sizeof(current));
+            Paths_Normalize(current);
+
+            // Strip filename
+            char* last_slash = strrchr(current, '/');
+            if (last_slash)
+                *last_slash = '\0';
+
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Searching for root from (Win32): %s", current);
+
+            bool found_root = false;
+            while (true) {
+                char check_path[1024];
+                snprintf(check_path, sizeof(check_path), "%s/assets/ASSET_VERSION", current);
+
+                SDL_IOStream* io = SDL_IOFromFile(check_path, "rb");
+                if (io) {
+                    SDL_CloseIO(io);
+                    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] FOUND PROJECT ROOT AT: %s", current);
+                    found_root = true;
+                    break;
+                }
+
+                char* up = strrchr(current, '/');
+                if (!up || (up > current && *(up - 1) == ':'))
+                    break;
+                *up = '\0';
+            }
+
+            if (found_root) {
+                snprintf(s_base_path, sizeof(s_base_path), "%s/", current);
+            } else {
+                // Fallback to exe directory
+                SDL_strlcpy(s_base_path, utf8_path, sizeof(s_base_path));
+                last_slash = strrchr(s_base_path, '/');
+                if (last_slash)
+                    *(last_slash + 1) = '\0';
+            }
+        }
+    }
+#endif
+    // Fallback or multi-platform
+    if (s_base_path[0] == '\0') {
+#ifdef __ANDROID__
+        /* On Android, assets must be accessed via relative paths to
+         * utilize the AssetManager. Keep base path empty. */
+        s_base_path[0] = '\0';
+#else
+        const char* sdl_base = SDL_GetBasePath();
+        if (sdl_base) {
+            SDL_strlcpy(s_base_path, sdl_base, sizeof(s_base_path));
+            Paths_Normalize(s_base_path);
+        } else {
+            SDL_strlcpy(s_base_path, "./", sizeof(s_base_path));
+        }
+#endif
+    }
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Base path initialized to: %s", s_base_path);
     return s_base_path;
 }
 

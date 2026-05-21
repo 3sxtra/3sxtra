@@ -173,7 +173,7 @@ static u16 CPU_Sub(PlayerEntity* wk) {
     // When Lua drives the dummy, skip the COM AI entirely.
     // Lua has already written g_state.Lever_Buff[id] via joypad.set()
     // in emu.registerbefore() (fired from update_training_state).
-    if (g_lua_dummy_active) {
+    if (g_lua_dummy_active && wk->wu.id == g_lua_dummy_player_id) {
         g_state.Lever_Buff[wk->wu.id] = check_illegal_lever_data(g_state.Lever_Buff[wk->wu.id]);
         Check_Store_Lv(wk);
         Shift_Resume_Lv(wk);

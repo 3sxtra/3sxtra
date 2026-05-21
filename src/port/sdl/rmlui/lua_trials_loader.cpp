@@ -418,7 +418,7 @@ static void flatten_to_c_structs() {
         TrialCharacterDef cd;
         cd.chara_id = CHARA_IDS[chara_lua_idx];
         cd.num_trials = (s16)(s_flat_def_ptrs.size() - ptr_start);
-        cd.trials = &s_flat_def_ptrs[ptr_start];
+        cd.trials = (cd.num_trials > 0) ? (s_flat_def_ptrs.data() + ptr_start) : nullptr;
         cd.chara_name = CHARA_NAMES[chara_lua_idx];
         s_char_defs.push_back(cd);
     }

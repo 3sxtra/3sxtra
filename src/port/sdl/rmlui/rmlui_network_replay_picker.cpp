@@ -149,6 +149,16 @@ static void AsyncFetchPage(int page) {
     SDL_SetAtomicInt(&s_fetch_done, 0);
 
     int* arg = (int*)malloc(sizeof(int));
+    if (!arg) {
+        s_loading = false;
+        s_error = "OOM";
+        if (s_model) {
+            s_model.DirtyVariable("nrp_loading");
+            s_model.DirtyVariable("nrp_error");
+        }
+        SDL_SetAtomicInt(&s_fetch_active, 0);
+        return;
+    }
     *arg = page;
     SDL_Thread* t = SDL_CreateThread(async_fetch_fn, "AsyncFetchReplays", arg);
     if (t) {
@@ -192,6 +202,16 @@ static void AsyncDownloadReplay(int match_id) {
     SDL_SetAtomicInt(&s_download_ok, 0);
 
     DownloadArg* arg = (DownloadArg*)calloc(1, sizeof(DownloadArg));
+    if (!arg) {
+        s_downloading = false;
+        s_error = "OOM";
+        if (s_model) {
+            s_model.DirtyVariable("nrp_downloading");
+            s_model.DirtyVariable("nrp_error");
+        }
+        SDL_SetAtomicInt(&s_download_active, 0);
+        return;
+    }
     arg->match_id = match_id;
     SDL_Thread* t = SDL_CreateThread(async_download_fn, "AsyncDownloadReplay", arg);
     if (t) {

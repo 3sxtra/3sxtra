@@ -314,6 +314,13 @@ extern "C" void rmlui_leaderboard_fetch_page(int page) {
     SDL_SetAtomicInt(&s_fetch_done, 0);
 
     int* p = (int*)malloc(sizeof(int));
+    if (!p) {
+        SDL_SetAtomicInt(&s_fetch_active, 0);
+        s_loading = false;
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("loading");
+        return;
+    }
     *p = page;
     SDL_Thread* t = SDL_CreateThread(async_fetch_fn, "AsyncLeaderboard", p);
     if (t) {
@@ -322,6 +329,8 @@ extern "C" void rmlui_leaderboard_fetch_page(int page) {
         free(p);
         SDL_SetAtomicInt(&s_fetch_active, 0);
         s_loading = false;
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("loading");
     }
 }
 

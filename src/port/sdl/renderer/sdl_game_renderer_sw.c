@@ -301,9 +301,25 @@ static void sort_quads_fast() {
         int new_cap = sort_cap ? sort_cap : 256;
         while (new_cap < n)
             new_cap *= 2;
-        sort_idx = (uint16_t*)realloc(sort_idx, new_cap * sizeof(uint16_t));
-        sort_scratch = (SWQuad*)realloc(sort_scratch, new_cap * sizeof(SWQuad));
-        sort_keys64 = (uint64_t*)realloc(sort_keys64, new_cap * sizeof(uint64_t));
+
+        uint16_t* new_idx = (uint16_t*)realloc(sort_idx, new_cap * sizeof(uint16_t));
+        if (!new_idx) {
+            return;
+        }
+        sort_idx = new_idx;
+
+        SWQuad* new_scratch = (SWQuad*)realloc(sort_scratch, new_cap * sizeof(SWQuad));
+        if (!new_scratch) {
+            return;
+        }
+        sort_scratch = new_scratch;
+
+        uint64_t* new_keys64 = (uint64_t*)realloc(sort_keys64, new_cap * sizeof(uint64_t));
+        if (!new_keys64) {
+            return;
+        }
+        sort_keys64 = new_keys64;
+
         sort_cap = new_cap;
     }
     for (int i = 0; i < n; i++) {

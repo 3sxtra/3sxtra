@@ -74,10 +74,18 @@ void SDLAppDebugHud_UpdateFPS(void) {
 
     // Push into FPS history (grows dynamically)
     if (fps_history_count >= fps_history_capacity) {
-        fps_history_capacity = fps_history_capacity ? fps_history_capacity * 2 : 1024;
-        fps_history = (float*)realloc(fps_history, fps_history_capacity * sizeof(float));
+        int new_capacity = fps_history_capacity ? fps_history_capacity * 2 : 1024;
+        float* new_history = (float*)realloc(fps_history, new_capacity * sizeof(float));
+        if (new_history == NULL) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to reallocate FPS history buffer");
+        } else {
+            fps_history = new_history;
+            fps_history_capacity = new_capacity;
+        }
     }
-    fps_history[fps_history_count++] = (float)fps;
+    if (fps_history != NULL && fps_history_count < fps_history_capacity) {
+        fps_history[fps_history_count++] = (float)fps;
+    }
 }
 
 void SDLAppDebugHud_Render(int win_w, int win_h, const SDL_FRect* viewport) {
