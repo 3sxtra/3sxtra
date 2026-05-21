@@ -17,18 +17,20 @@ static void test_stun_encode_decode_ipv4(void **state) {
     (void) state;
 
     char code[64];
-    Stun_EncodeEndpoint("192.168.1.100", 7000, code);
+    Stun_EncodeEndpoint("192.168.1.100", 7000, 7000, code);
 
-    /* Format: "192.168.1.100|7000" */
-    assert_string_equal(code, "192.168.1.100|7000");
+    /* Format: "192.168.1.100|7000|7000" */
+    assert_string_equal(code, "192.168.1.100|7000|7000");
 
     char ip[64];
     uint16_t port = 0;
-    bool ok = Stun_DecodeEndpoint(code, ip, &port);
+    uint16_t local_port = 0;
+    bool ok = Stun_DecodeEndpoint(code, ip, &port, &local_port);
 
     assert_true(ok);
     assert_string_equal(ip, "192.168.1.100");
     assert_int_equal(port, 7000);
+    assert_int_equal(local_port, 7000);
 }
 
 /* IPv6 round-trip */
@@ -36,17 +38,19 @@ static void test_stun_encode_decode_ipv6(void **state) {
     (void) state;
 
     char code[64];
-    Stun_EncodeEndpoint("2001:8a0:587b:a01::1", 55688, code);
+    Stun_EncodeEndpoint("2001:8a0:587b:a01::1", 55688, 55688, code);
 
-    assert_string_equal(code, "2001:8a0:587b:a01::1|55688");
+    assert_string_equal(code, "2001:8a0:587b:a01::1|55688|55688");
 
     char ip[64];
     uint16_t port = 0;
-    bool ok = Stun_DecodeEndpoint(code, ip, &port);
+    uint16_t local_port = 0;
+    bool ok = Stun_DecodeEndpoint(code, ip, &port, &local_port);
 
     assert_true(ok);
     assert_string_equal(ip, "2001:8a0:587b:a01::1");
     assert_int_equal(port, 55688);
+    assert_int_equal(local_port, 55688);
 }
 
 /* IPv6 full form (worst-case length) */
@@ -56,15 +60,17 @@ static void test_stun_encode_decode_ipv6_full(void **state) {
     /* Full 39-char IPv6 + |port = ~45 chars total — fits in char[64] */
     const char* full_ipv6 = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
     char code[64];
-    Stun_EncodeEndpoint(full_ipv6, 65535, code);
+    Stun_EncodeEndpoint(full_ipv6, 65535, 65535, code);
 
     char ip[64];
     uint16_t port = 0;
-    bool ok = Stun_DecodeEndpoint(code, ip, &port);
+    uint16_t local_port = 0;
+    bool ok = Stun_DecodeEndpoint(code, ip, &port, &local_port);
 
     assert_true(ok);
     assert_string_equal(ip, full_ipv6);
     assert_int_equal(port, 65535);
+    assert_int_equal(local_port, 65535);
 }
 
 /* Deterministic: encoding the same input twice gives the same output */
@@ -74,8 +80,8 @@ static void test_stun_encode_deterministic(void **state) {
     char code1[64];
     char code2[64];
 
-    Stun_EncodeEndpoint("10.0.0.1", 12345, code1);
-    Stun_EncodeEndpoint("10.0.0.1", 12345, code2);
+    Stun_EncodeEndpoint("10.0.0.1", 12345, 12345, code1);
+    Stun_EncodeEndpoint("10.0.0.1", 12345, 12345, code2);
 
     assert_string_equal(code1, code2);
 }
@@ -88,9 +94,9 @@ static void test_stun_decode_no_separator(void **state) {
     uint16_t port = 0;
 
     /* Just an IP, no |port */
-    assert_false(Stun_DecodeEndpoint("192.168.1.1", ip, &port));
+    assert_false(Stun_DecodeEndpoint("192.168.1.1", ip, &port, NULL));
     /* IPv6 with colons but no pipe */
-    assert_false(Stun_DecodeEndpoint("2001:8a0:587b:a", ip, &port));
+    assert_false(Stun_DecodeEndpoint("2001:8a0:587b:a", ip, &port, NULL));
 }
 
 /* Decode rejects empty string */
@@ -99,7 +105,7 @@ static void test_stun_decode_empty(void **state) {
 
     char ip[64];
     uint16_t port = 0;
-    assert_false(Stun_DecodeEndpoint("", ip, &port));
+    assert_false(Stun_DecodeEndpoint("", ip, &port, NULL));
 }
 
 /* Decode rejects NULL inputs */
@@ -108,9 +114,9 @@ static void test_stun_decode_null(void **state) {
 
     char ip[64];
     uint16_t port = 0;
-    assert_false(Stun_DecodeEndpoint(NULL, ip, &port));
-    assert_false(Stun_DecodeEndpoint("1.2.3.4|5", NULL, &port));
-    assert_false(Stun_DecodeEndpoint("1.2.3.4|5", ip, NULL));
+    assert_false(Stun_DecodeEndpoint(NULL, ip, &port, NULL));
+    assert_false(Stun_DecodeEndpoint("1.2.3.4|5", NULL, &port, NULL));
+    assert_false(Stun_DecodeEndpoint("1.2.3.4|5", ip, NULL, NULL));
 }
 
 /* Port 0 edge case */
@@ -119,10 +125,12 @@ static void test_stun_decode_port_zero(void **state) {
 
     char ip[64];
     uint16_t port = 99;
-    bool ok = Stun_DecodeEndpoint("127.0.0.1|0", ip, &port);
+    uint16_t local_port = 99;
+    bool ok = Stun_DecodeEndpoint("127.0.0.1|0", ip, &port, &local_port);
     assert_true(ok);
     assert_string_equal(ip, "127.0.0.1");
     assert_int_equal(port, 0);
+    assert_int_equal(local_port, 0);
 }
 
 /* Stun_Discover with NULL result returns false without crashing */

@@ -1,6 +1,6 @@
-#include "sf33rd/Source/Game/engine/cmb_win.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
-#include "sf33rd/Source/Game/engine/spgauge.h"
+#include "sf33rd/Source/Game/engine/combo_window.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
+#include "sf33rd/Source/Game/engine/super_gauge.h"
 #include "sf33rd/Source/Game/engine/stun.h"
 #include "sf33rd/Source/Game/engine/vital.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -53,8 +53,8 @@ const u8* ci_pointer;
 u8 ci_col;
 u8 ci_timer;
 
-UNK_1 rambod[2];
-UNK_2 ramhan[2];
+CollisionHurtbox rambod[2];
+CollisionHurtboxExt ramhan[2];
 u16 vital_inc_timer;
 u16 vital_dec_timer;
 s16 sag_inc_timer[2];
@@ -150,7 +150,7 @@ bool pcon_dp_flag;
 s32 Game_timer;
 s32 wcp;
 u8 My_char[2];
-PLW plw[2];
+PlayerEntity plw[2];
 s32 Max_vitality;
 s32 att_req;
 BG bg_w;
@@ -187,7 +187,7 @@ s16 tail_ix[8];
 int Netplay_GetPlayerHandle(void) { return 0; }
 int Netplay_GetBattleStartFrame(void) { return -1; }
 #endif
-#include "sf33rd/Source/Game/sound/se_data.h"
-void Se_Dispatch(u16 index, u16 code, WORK_Other* ewk) {}
+#include "sf33rd/Source/Game/sound/sound_effect_data.h"
+void Se_Dispatch(u16 index, u16 code, State_Other* ewk) {}
 
 void MenuTask_SetPhase(int phase) {}

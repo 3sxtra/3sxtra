@@ -129,16 +129,20 @@ void Snapshot_SaveFromState(int frame, const GameState* state, uint32_t checksum
     if (!initialized)
         Snapshot_Init();
 
+    if (frame < 0)
+        return;
+
     int is_keyframe = (frame % SNAPSHOT_KEYFRAME_STRIDE == 0);
-    int prev_idx = (ring_head - 1 + SNAPSHOT_RING_SIZE) % SNAPSHOT_RING_SIZE;
+    int prev_idx = (frame - 1 + SNAPSHOT_RING_SIZE) % SNAPSHOT_RING_SIZE;
 
     if (!is_keyframe) {
-        if (ring[prev_idx].frame != frame - 1) {
+        if (ring[prev_idx].frame != frame - 1 || ring[prev_idx].size <= 0) {
             is_keyframe = 1;
         }
     }
 
-    SnapshotEntry* entry = &ring[ring_head];
+    int target_idx = frame % SNAPSHOT_RING_SIZE;
+    SnapshotEntry* entry = &ring[target_idx];
     entry->frame = frame;
     entry->checksum = checksum;
 
@@ -168,8 +172,6 @@ void Snapshot_SaveFromState(int frame, const GameState* state, uint32_t checksum
             }
         }
     }
-
-    ring_head = (ring_head + 1) % SNAPSHOT_RING_SIZE;
 }
 
 int Snapshot_Get(int frame, GameState* out_state, uint32_t* out_checksum) {
@@ -195,7 +197,7 @@ int Snapshot_Get(int frame, GameState* out_state, uint32_t* out_checksum) {
             return -1; // Cycle detection
 
         seq[seq_cnt++] = curr_idx;
-        int prev_idx = (ring[curr_idx].frame - 1) % SNAPSHOT_RING_SIZE;
+        int prev_idx = (ring[curr_idx].frame - 1 + SNAPSHOT_RING_SIZE) % SNAPSHOT_RING_SIZE;
         if (ring[prev_idx].frame != ring[curr_idx].frame - 1 || ring[prev_idx].size <= 0) {
             return -1; // Chain broken
         }

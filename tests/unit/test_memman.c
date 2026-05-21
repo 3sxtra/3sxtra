@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <cmocka.h>
 
-#include "sf33rd/Source/Common/MemMan.h"
+#include "sf33rd/Source/Common/memory_manager.h"
 
 static void test_mmRoundUp(void **state) {
     (void) state;

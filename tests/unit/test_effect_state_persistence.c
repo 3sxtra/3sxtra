@@ -23,11 +23,11 @@ static void test_effect_persistence(void **state) {
 
     // 2. Save
     GekkoGameEvent event;
-    State saved_state_storage;
+    RollbackState saved_state_storage;
     // Initialize storage to 0 to avoid garbage
-    memset(&saved_state_storage, 0, sizeof(State));
+    memset(&saved_state_storage, 0, sizeof(RollbackState));
     
-    unsigned int len = sizeof(State);
+    unsigned int len = sizeof(RollbackState);
     uint32_t checksum = 0;
 
     event.type = GekkoSaveEvent;

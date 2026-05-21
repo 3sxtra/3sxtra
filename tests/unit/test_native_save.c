@@ -13,20 +13,19 @@ extern "C" {
 
 #include "types.h"
 #include "structs.h"
+#include "game_state.h"
 
 // Globals
 struct _SAVE_W save_w[6];
 struct _SYSTEM_W sys_w;
 s16 bgm_level;
 s16 se_level;
-s32 X_Adjust;
-s32 Y_Adjust;
 u8 Disp_Size_H;
 u8 Disp_Size_V;
-s16 Present_Mode = 1; // Assuming 1 is a valid mode
 SystemDir system_dir[6];
 _REPLAY_W Replay_w;
 struct _REP_GAME_INFOR Rep_Game_Infor[11];
+GameState g_state = { .Present_Mode = 1 };
 
 // Mocks
 s16 Check_SysDir_Page() {
@@ -47,7 +46,7 @@ void dspwhUnpack(u8 src, u8* xdsp, u8* ydsp) {
     *xdsp = 100 - ((src >> 4) & 0xF);
     *ydsp = 100 - (src & 0xF);
 }
-int chkNameAkuma(int id) { return 0; }
+s32 chkNameAkuma(s32 plnum, s32 rnum) { return 0; }
 
 // Function to test
 extern int NativeSave_LoadOptions(void);
@@ -139,7 +138,7 @@ static void test_load_options_success(void **state) {
     int result = NativeSave_LoadOptions();
     assert_int_equal(result, 0);
     
-    struct _SAVE_W* sw = &save_w[1]; // Present_Mode = 1
+    struct _SAVE_W* sw = &save_w[g_state.Present_Mode];
     
     // Check Controller
     // The load code puts the values at index 4 and 5 as well as 1:
@@ -202,8 +201,8 @@ static void test_load_options_success(void **state) {
     assert_int_equal(sys_w.sound_mode, 0);
     assert_int_equal(bgm_level, 12);
     assert_int_equal(se_level, 14);
-    assert_int_equal(X_Adjust, -5);
-    assert_int_equal(Y_Adjust, 10);
+    assert_int_equal(g_state.X_Adjust, -5);
+    assert_int_equal(g_state.Y_Adjust, 10);
     assert_int_equal(sys_w.screen_mode, 1);
     
     // Check dspwhUnpack side effects (50 -> 0x32)

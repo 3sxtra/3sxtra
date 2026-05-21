@@ -74,6 +74,15 @@ void Back_to_Mode_Select(struct _TASK* task_ptr) {
     /* no-op for test */
 }
 
+/* sf33rd/Source/Game/rendering/texture_group.h */
+void purge_texture_group_of_this(u16 patnum) {
+    (void)patnum;
+}
+s32 load_any_texture_patnum(u16 patnum, u8 kokey, u8 _unused) {
+    (void)patnum; (void)kokey; (void)_unused;
+    return 1;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
  *  Dummy global stubs that menu_internal.h / menu.h transitively need.
  *  (Only link symbols — never actually used by registry.c at runtime.)

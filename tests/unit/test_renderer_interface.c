@@ -7,8 +7,8 @@
 #include "port/rendering/renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "structs.h" // For WORK definition
-#include "sf33rd/Source/Game/rendering/aboutspr.h" // For shadow_drawing signature
-#include "sf33rd/Source/Common/PPGFile.h" // For ppgRenewDotDataSeqs signature
+#include "sf33rd/Source/Game/rendering/sprite_utilities.h" // For shadow_drawing signature
+#include "sf33rd/Source/Common/ppg_file.h" // For ppgRenewDotDataSeqs signature
 
 // --- Mocks ---
 
@@ -31,7 +31,7 @@ void SDLGameRenderer_SetTexture(unsigned int texture_handle) {
 }
 
 // Mocking shadow_drawing from aboutspr.c
-void shadow_drawing(WORK* wk, s16 bsy) {
+void shadow_drawing(State* wk, s16 bsy) {
     check_expected(wk);
     check_expected(bsy);
 }
@@ -57,6 +57,22 @@ s32 flLogOut(s8* format, ...) {
     return 0;
 }
 
+void SDLGameRenderer_SetBlendMode(RendererBlendMode mode) {
+    (void)mode;
+}
+
+s32 ppgWriteQuadWithST_B2(Vertex* pos, u32 col, PPGDataList* tb, s32 tix, s32 cix) {
+    (void)pos; (void)col; (void)tb; (void)tix; (void)cix;
+    return 1;
+}
+
+void SDLGameRenderer_DrawSprite2(const Sprite2* sprite2) {
+    (void)sprite2;
+}
+
+void seqsBeforeProcess(void) {}
+void seqsAfterProcess(void) {}
+
 // --- Tests ---
 
 static void test_draw_textured_quad(void **state) {
@@ -71,7 +87,7 @@ static void test_draw_textured_quad(void **state) {
 
     expect_value(SDLGameRenderer_DrawTexturedQuad, color, 0xFF0000FF);
     
-    Renderer_DrawTexturedQuad(v, 4);
+    Renderer_DrawTexturedQuadVtx(v, 4);
 }
 
 static void test_queue_and_flush_2d_primitives(void **state) {
@@ -90,7 +106,7 @@ static void test_queue_and_flush_2d_primitives(void **state) {
     // pos: {y-offset} (stored in v[0].y)
     f32 pos2[] = { 5.0f }; 
     f32 prio2 = 2.0f;
-    WORK mockWork; // Address will be used
+    State mockWork; // Address will be used
     Renderer_Queue2DPrimitive(pos2, prio2, (uintptr_t)&mockWork, 1);
 
     // Expect calls in Flush

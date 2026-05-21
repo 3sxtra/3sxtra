@@ -161,93 +161,84 @@ void MenuScreen_Tick(struct _TASK* task_ptr) {
     const MenuScreen* scr = &g_screens[g_current_screen];
 
     /* ── Phase state machine pump ── */
-    bool run_again = true;
-    while (run_again) {
-        run_again = false;
+    switch (g_phase) {
 
-        switch (g_phase) {
+    case MENU_PHASE_ENTER:
+        /* One-shot: call on_enter, advance to WAIT.
+         * RmlUI show is NOT called here — screens call their own
+         * rmlui_*_show() from on_enter when appropriate. */
+        if (scr->header_type != (MenuHeader)-1) {
+            // Guaranteed header spritesheet preload. We do this in ENTER
+            // so the async texture load has the entire WAIT/FADE_IN duration
+            // (typically ~16 frames) to populate VRAM before ACTIVE phase natively draws it.
+            // WE MUST PURGE IT FIRST: If a sub-menu overwrote the VRAM slot but didn't clear the can_activate flag,
+            // the load request will be silently dismissed, resulting in VRAM corruption upon native draw!
+            purge_texture_group_of_this(0x7F30);
+            load_any_texture_patnum(0x7F30, 0xC, 0);
+        }
 
-        case MENU_PHASE_ENTER:
-            /* One-shot: call on_enter, advance to WAIT.
-             * RmlUI show is NOT called here — screens call their own
-             * rmlui_*_show() from on_enter when appropriate. */
-            if (scr->header_type != (MenuHeader)-1) {
-                // Guaranteed header spritesheet preload. We do this in ENTER
-                // so the async texture load has the entire WAIT/FADE_IN duration
-                // (typically ~16 frames) to populate VRAM before ACTIVE phase natively draws it.
-                // WE MUST PURGE IT FIRST: If a sub-menu overwrote the VRAM slot but didn't clear the can_activate flag,
-                // the load request will be silently dismissed, resulting in VRAM corruption upon native draw!
-                purge_texture_group_of_this(0x7F30);
-                load_any_texture_patnum(0x7F30, 0xC, 0);
-            }
+        if (scr->on_enter) {
+            scr->on_enter(task_ptr);
+        }
+        g_phase = MENU_PHASE_WAIT;
+        break;
 
-            if (scr->on_enter) {
-                scr->on_enter(task_ptr);
-            }
-            g_phase = MENU_PHASE_WAIT;
-            run_again = true; /* pump immediately */
-            break;
-
-        case MENU_PHASE_WAIT:
-            /* If timer is already <= 0 (screen set timer=0 in on_enter to
-             * bypass the standard WAIT/FADE_IN), skip directly to ACTIVE.
-             * Menu_Sub_case1 decrements timer THEN checks == 0, so timer=0
-             * would wrap to -1 and never trigger — causing an infinite
-             * WAIT-phase softlock (~65536 frames until s16 wraps). */
-            if (task_ptr->timer <= 0) {
-                g_phase = MENU_PHASE_ACTIVE;
-                run_again = true; /* pump immediately */
-                break;
-            }
-            /* Wait for the timer set by on_enter (Menu_Sub_case1 pattern).
-             * Menu_Sub_case1() returns non-zero when the timer expires.
-             * Once done, init fade and advance. */
-            if (Menu_Sub_case1(task_ptr) != 0) {
-                FadeInit();
-                g_phase = MENU_PHASE_FADE_IN;
-                run_again = true; /* pump immediately so FadeIn starts this frame */
-            }
-            break;
-
-        case MENU_PHASE_FADE_IN:
-            /* FadeIn returns non-zero when the fade is complete */
-            if (FadeIn(1, 0x19, 8) != 0) {
-                g_phase = MENU_PHASE_ACTIVE;
-            }
-            break;
-
-        case MENU_PHASE_ACTIVE:
-            /* Per-frame input handling — the screen's on_tick does the work.
-             * on_tick may call MenuScreen_Goto/Back which sets g_next_screen;
-             * the transition is processed on the NEXT frame, never re-entrant. */
-            if (scr->on_tick) {
-                scr->on_tick(task_ptr);
-            }
-            break;
-
-        case MENU_PHASE_FADE_OUT:
-            /* FadeOut returns non-zero when complete */
-            if (FadeOut(1, 0x19, 8) != 0) {
-                g_phase = MENU_PHASE_EXIT;
-                run_again = true; /* pump immediately to clean up */
-            }
-            break;
-
-        case MENU_PHASE_EXIT:
-            /* One-shot cleanup for "exit to non-registry code" paths.
-             * Normal Goto/Back transitions handle on_exit in the deferred
-             * block above; this path is for MenuScreen_ExitToLegacy or
-             * screens that drive their own fade-out then manually call
-             * Goto/Back after checking GetPhase() == EXIT. */
-            if (scr->on_exit) {
-                scr->on_exit(task_ptr);
-            }
-            if (scr->rmlui_hide) {
-                scr->rmlui_hide();
-            }
-            g_current_screen = MENU_SCREEN_NONE;
+    case MENU_PHASE_WAIT:
+        /* If timer is already <= 0 (screen set timer=0 in on_enter to
+         * bypass the standard WAIT/FADE_IN), skip directly to ACTIVE.
+         * Menu_Sub_case1 decrements timer THEN checks == 0, so timer=0
+         * would wrap to -1 and never trigger — causing an infinite
+         * WAIT-phase softlock (~65536 frames until s16 wraps). */
+        if (task_ptr->timer <= 0) {
+            g_phase = MENU_PHASE_ACTIVE;
             break;
         }
+        /* Wait for the timer set by on_enter (Menu_Sub_case1 pattern).
+         * Menu_Sub_case1() returns non-zero when the timer expires.
+         * Once done, init fade and advance. */
+        if (Menu_Sub_case1(task_ptr) != 0) {
+            FadeInit();
+            g_phase = MENU_PHASE_FADE_IN;
+        }
+        break;
+
+    case MENU_PHASE_FADE_IN:
+        /* FadeIn returns non-zero when the fade is complete */
+        if (FadeIn(1, 0x19, 8) != 0) {
+            g_phase = MENU_PHASE_ACTIVE;
+        }
+        break;
+
+    case MENU_PHASE_ACTIVE:
+        /* Per-frame input handling — the screen's on_tick does the work.
+         * on_tick may call MenuScreen_Goto/Back which sets g_next_screen;
+         * the transition is processed on the NEXT frame, never re-entrant. */
+        if (scr->on_tick) {
+            scr->on_tick(task_ptr);
+        }
+        break;
+
+    case MENU_PHASE_FADE_OUT:
+        /* FadeOut returns non-zero when complete */
+        if (FadeOut(1, 0x19, 8) != 0) {
+            g_phase = MENU_PHASE_EXIT;
+        }
+        break;
+
+    case MENU_PHASE_EXIT:
+        /* One-shot cleanup for "exit to non-registry code" paths.
+         * Normal Goto/Back transitions handle on_exit in the deferred
+         * block above; this path is for MenuScreen_ExitToLegacy or
+         * screens that drive their own fade-out then manually call
+         * Goto/Back after checking GetPhase() == EXIT. */
+        if (scr->on_exit) {
+            scr->on_exit(task_ptr);
+        }
+        if (scr->rmlui_hide) {
+            scr->rmlui_hide();
+        }
+        g_current_screen = MENU_SCREEN_NONE;
+        break;
     }
 }
 

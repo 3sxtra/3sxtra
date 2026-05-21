@@ -11,7 +11,7 @@
 #include "netplay/discovery.h"
 
 // Globals used by netplay.c
-extern GameState g_GameState;
+extern GameState g_state;
 
 // Need to reset session state for testing. Since Netplay_GetSessionState is available, we can read it.
 // We can manipulate it by calling HandleMenuExit to go to EXITING, then Run to IDLE.
@@ -58,12 +58,12 @@ static void test_netplay_run_transitioning(void **state) {
     assert_int_equal(Netplay_GetSessionState(), NETPLAY_SESSION_TRANSITIONING);
 
     // Simulate game not ready
-    G_No[1] = 0;
+    g_state.fsm[1] = 0;
     Netplay_Run();
     assert_int_equal(Netplay_GetSessionState(), NETPLAY_SESSION_TRANSITIONING);
 
-    // Simulate game ready (G_No[1] == 1)
-    G_No[1] = 1;
+    // Simulate game ready (g_state.fsm[1] == 1)
+    g_state.fsm[1] = 1;
     Netplay_Run(); // Transition_ready_frames = 1
     assert_int_equal(Netplay_GetSessionState(), NETPLAY_SESSION_TRANSITIONING);
 

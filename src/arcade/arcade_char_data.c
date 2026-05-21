@@ -460,6 +460,8 @@ void ArcadeCharData_Init() {
         dst->atit = read_u8_array(io, locations->atit);
         dst->prot = read_s16_array(io, locations->prot);
 
+        CharData_ApplyFixups(dst, character);
+
 #if DEBUG && DUMP_CHAR_DATA
         dump_data(dst, character);
 #endif
@@ -476,6 +478,14 @@ const CharInitData* ArcadeCharData_Get(Character character) {
     }
 
     return &data[character];
+}
+
+void CharData_ApplyFixups(CharInitData* char_data, int character_id) {
+    if (char_data != NULL && char_data->hiit != NULL && character_id == 14) {
+        for (int i = 0x5A; i <= 0x5D; i++) {
+            char_data->hiit[i].caught_box_index = 0;
+        }
+    }
 }
 
 static const int cg_number_offsets[NUM_CHARS] = {

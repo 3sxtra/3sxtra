@@ -5,13 +5,12 @@
 #include <string.h>
 #include "cmocka.h"
 
+#include "game_state.h"
 #include "sf33rd/Source/Game/training/trials.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 
 // --- Mocks ---
 // 0 = Alex
-extern u8 My_char[2];
-s16 Mode_Type = MODE_TRIALS;
 u16 p1sw_0 = 0;
 u16 p1sw_1 = 0;
 
@@ -33,8 +32,8 @@ const TrialCharacterDef* lua_trials_get_characters(int* out_count) {
 static void test_trial_navigation(void **state) {
     (void) state;
 
-    My_char[0] = 1; // Alex
-    Mode_Type = MODE_TRIALS;
+    g_state.My_char[0] = 1; // Alex
+    g_state.Mode_Type = MODE_TRIALS;
     
     trials_init();
     assert_true(g_trials_state.is_active);
@@ -59,7 +58,7 @@ static void test_trial_navigation(void **state) {
 static void test_trial_validation_flow(void **state) {
     (void) state;
 
-    My_char[0] = 1; // Alex
+    g_state.My_char[0] = 1; // Alex
     trials_init();
     
     // Set up Alex's first trial: SCLP -> CLP -> EX Air Knee Smash

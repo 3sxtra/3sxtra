@@ -246,9 +246,11 @@ int NativeSave_LoadOptions(void) {
 
     FILE* f = fopen(path, "r");
     struct _SAVE_W* sw = CurrentSave();
+    int result = 0;
 
     if (!f) {
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] No options.ini found — using defaults");
+        result = -1;
     } else {
 
         /* Controller */
@@ -343,7 +345,7 @@ int NativeSave_LoadOptions(void) {
     sys_w.screen_mode = sw->Screen_Mode;
 
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] Options loaded from %s", path);
-    return 0;
+    return result;
 }
 
 /** @brief Save current options from CurrentSave() to options.ini. */

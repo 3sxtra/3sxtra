@@ -1,11 +1,12 @@
 #include <stdint.h>
 #include "types.h"
 #include "structs.h"
-#include "sf33rd/Source/Game/engine/cmb_win.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/combo_window.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "game_state.h"
 #include "netplay/discovery.h"
+#include "port/menu_screen.h"
 
 typedef struct _TASK TASK;
 #define TASK_MAX 11
@@ -30,6 +31,7 @@ struct _SAVE_W save_w[6];
 int player_1 = 0;
 int player_2 = 1;
 
+bool g_lobby_reenter_lan_match = false;
 
 void njUserMain(void) {}
 
@@ -70,10 +72,12 @@ void Input_SetGamepadEventCallback(void (*cb)(int gamepad_id, int event_type, in
 
 const char* rmlui_casual_lobby_get_room_code(void) { return ""; }
 void rmlui_casual_lobby_show(void) {}
-void rmlui_casual_lobby_set_room(bool private_room, const char* code, const char* pwd) {}
-void MenuScreen_Goto(int screen_id) {}
+void rmlui_casual_lobby_set_room(const char* room_code) {}
+void MenuScreen_Goto(MenuScreenId screen_id) {}
+MenuScreenId MenuScreen_GetCurrent(void) { return MENU_SCREEN_NONE; }
 #ifndef MOCK_SUPPRESS_UI
 void SDLNetplayUI_SetNativeLobbyActive(bool active) {}
+bool SDLNetplayUI_IsNativeLobbyActive(void) { return false; }
 #endif
 
 // Missing declarations

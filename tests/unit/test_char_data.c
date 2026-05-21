@@ -19,13 +19,13 @@
 #define HIIT_LEN 0x5E
 
 /* Helper: build a CharInitData with hiit filled with a sentinel value */
-static UNK_0 g_hiit[HIIT_LEN];
+static HitIndexTable g_hiit[HIIT_LEN];
 
 static CharInitData make_data_filled(u16 sentinel) {
     CharInitData data;
     memset(&data, 0, sizeof(data));
     for (int i = 0; i < HIIT_LEN; i++) {
-        g_hiit[i].cuix = sentinel;
+        g_hiit[i].caught_box_index = sentinel;
     }
     data.hiit = g_hiit;
     return data;
@@ -41,12 +41,12 @@ static void test_akuma_fixup_zeroes_cuix_range(void **state) {
 
     /* Entries 0x5A..0x5D must be zeroed */
     for (int i = 0x5A; i <= 0x5D; i++) {
-        assert_int_equal(data.hiit[i].cuix, 0);
+        assert_int_equal(data.hiit[i].caught_box_index, 0);
     }
 
     /* Entries outside that range must be unchanged */
     for (int i = 0; i < 0x5A; i++) {
-        assert_int_equal(data.hiit[i].cuix, 0xBEEF);
+        assert_int_equal(data.hiit[i].caught_box_index, 0xBEEF);
     }
 }
 
@@ -60,7 +60,7 @@ static void test_non_akuma_chars_unmodified(void **state) {
         CharData_ApplyFixups(&data, test_chars[c]);
 
         for (int i = 0; i < HIIT_LEN; i++) {
-            assert_int_equal(data.hiit[i].cuix, 0x1234);
+            assert_int_equal(data.hiit[i].caught_box_index, 0x1234);
         }
     }
 }
@@ -71,7 +71,7 @@ static void test_char_13_not_akuma(void **state) {
     CharData_ApplyFixups(&data, 13); /* Urien — must NOT apply fixup */
 
     for (int i = 0; i < HIIT_LEN; i++) {
-        assert_int_equal(data.hiit[i].cuix, 0xFFFF);
+        assert_int_equal(data.hiit[i].caught_box_index, 0xFFFF);
     }
 }
 
@@ -81,7 +81,7 @@ static void test_char_15_not_akuma(void **state) {
     CharData_ApplyFixups(&data, 15); /* Chun-Li — must NOT apply fixup */
 
     for (int i = 0; i < HIIT_LEN; i++) {
-        assert_int_equal(data.hiit[i].cuix, 0xAAAA);
+        assert_int_equal(data.hiit[i].caught_box_index, 0xAAAA);
     }
 }
 
@@ -94,7 +94,7 @@ static void test_akuma_fixup_idempotent(void **state) {
     CharData_ApplyFixups(&data, 14);
 
     for (int i = 0x5A; i <= 0x5D; i++) {
-        assert_int_equal(data.hiit[i].cuix, 0);
+        assert_int_equal(data.hiit[i].caught_box_index, 0);
     }
 }
 
@@ -110,7 +110,7 @@ static void test_negative_char_id_no_crash(void **state) {
     CharData_ApplyFixups(&data, -1); /* Invalid ID — should be ignored */
 
     for (int i = 0; i < HIIT_LEN; i++) {
-        assert_int_equal(data.hiit[i].cuix, 0x5555);
+        assert_int_equal(data.hiit[i].caught_box_index, 0x5555);
     }
 }
 
@@ -120,8 +120,21 @@ static void test_large_char_id_no_crash(void **state) {
     CharData_ApplyFixups(&data, 9999); /* Out-of-range — should be ignored */
 
     for (int i = 0; i < HIIT_LEN; i++) {
-        assert_int_equal(data.hiit[i].cuix, 0x3333);
+        assert_int_equal(data.hiit[i].caught_box_index, 0x3333);
     }
+}
+
+/* ────────────────────────────────────── Mocks ────────── */
+
+char* Resources_GetPath(const char* file_path) {
+    (void)file_path;
+    return NULL;
+}
+
+void* Rom_Load(const char* path, size_t* size) {
+    (void)path;
+    (void)size;
+    return NULL;
 }
 
 /* ─────────────────────────────────────── Test runner ─── */

@@ -32,5 +32,6 @@ typedef enum Character {
 
 void ArcadeCharData_Init();
 const CharInitData* ArcadeCharData_Get(Character character);
+void CharData_ApplyFixups(CharInitData* char_data, int character_id);
 
 #endif

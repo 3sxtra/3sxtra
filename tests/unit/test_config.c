@@ -62,8 +62,8 @@ static void test_config_init_missing_file_fallback(void **state) {
     assert_true(Config_GetBool(CFG_KEY_FULLSCREEN));
 
     /* Default window dimensions */
-    assert_int_equal(Config_GetInt(CFG_KEY_WINDOW_WIDTH), 640);
-    assert_int_equal(Config_GetInt(CFG_KEY_WINDOW_HEIGHT), 480);
+    assert_int_equal(Config_GetInt(CFG_KEY_WINDOW_WIDTH), 1920);
+    assert_int_equal(Config_GetInt(CFG_KEY_WINDOW_HEIGHT), 1080);
 
     Config_Destroy();
 }

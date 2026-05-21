@@ -24,9 +24,9 @@
 // Includes required to define the mocked globals types
 #include "game_state.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/engine/spgauge.h"
+#include "sf33rd/Source/Game/engine/super_gauge.h"
 #include "sf33rd/Source/Game/engine/stun.h"
-#include "sf33rd/Source/Game/engine/plcnt.h"
+#include "sf33rd/Source/Game/engine/player_control.h"
 
 // ==========================================================================
 // STUBS FOR LINKING — all globals referenced by menu_bridge.c
@@ -41,7 +41,7 @@ u16 p2sw_buff;
 // PreTick: player control mode (from pulpul.h / slowf.h / workuser.h)
 u8 Replay_Status[2];
 s8 Operator_Status[2];
-PLW plw[2];
+PlayerEntity plw[2];
 
 // PreTick: RNG (from workuser.h)
 s16 Random_ix16;

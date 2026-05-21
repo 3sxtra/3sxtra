@@ -34,8 +34,8 @@ static void test_save_get_roundtrip(void **state) {
 
     /* Set known globals via g_state */
     g_state.Round_num = 3;
-    g_state.G_No[0] = 7;
-    g_state.G_No[1] = 2;
+    g_state.fsm[0] = 7;
+    g_state.fsm[1] = 2;
     g_state.My_char[0] = 5;
     g_state.My_char[1] = 10;
 
@@ -54,8 +54,8 @@ static void test_save_get_roundtrip(void **state) {
     assert_int_equal(Snapshot_Get(0, &out_gs, &out_chk), 0);
     assert_int_equal(out_chk, gs.state_checksum);
     assert_int_equal(out_gs.Round_num, 3);
-    assert_int_equal(out_gs.G_No[0], 7);
-    assert_int_equal(out_gs.G_No[1], 2);
+    assert_int_equal(out_gs.fsm[0], 7);
+    assert_int_equal(out_gs.fsm[1], 2);
     assert_int_equal(out_gs.My_char[0], 5);
     assert_int_equal(out_gs.My_char[1], 10);
 }
@@ -170,10 +170,10 @@ static void test_full_restore_via_ring(void **state) {
 
     /* Set known values via g_state */
     g_state.Round_num = 7;
-    g_state.G_No[0] = 11;
-    g_state.G_No[1] = 22;
-    g_state.G_No[2] = 33;
-    g_state.G_No[3] = 44;
+    g_state.fsm[0] = 11;
+    g_state.fsm[1] = 22;
+    g_state.fsm[2] = 33;
+    g_state.fsm[3] = 44;
     g_state.plw[0].wu.position_x = 12345;
     g_state.plw[1].wu.position_x = 30000;
     g_state.Mode_Type = MODE_VERSUS;
@@ -185,8 +185,8 @@ static void test_full_restore_via_ring(void **state) {
 
     /* Mutate all globals */
     g_state.Round_num = 0;
-    g_state.G_No[0] = 0;
-    g_state.G_No[1] = 0;
+    g_state.fsm[0] = 0;
+    g_state.fsm[1] = 0;
     g_state.plw[0].wu.position_x = 0;
     g_state.plw[1].wu.position_x = 0;
     g_state.Mode_Type = MODE_ARCADE;
@@ -198,10 +198,10 @@ static void test_full_restore_via_ring(void **state) {
 
     /* Verify all globals restored */
     assert_int_equal(g_state.Round_num, 7);
-    assert_int_equal(g_state.G_No[0], 11);
-    assert_int_equal(g_state.G_No[1], 22);
-    assert_int_equal(g_state.G_No[2], 33);
-    assert_int_equal(g_state.G_No[3], 44);
+    assert_int_equal(g_state.fsm[0], 11);
+    assert_int_equal(g_state.fsm[1], 22);
+    assert_int_equal(g_state.fsm[2], 33);
+    assert_int_equal(g_state.fsm[3], 44);
     assert_int_equal(g_state.plw[0].wu.position_x, 12345);
     assert_int_equal(g_state.plw[1].wu.position_x, 30000);
     assert_int_equal(g_state.Mode_Type, MODE_VERSUS);

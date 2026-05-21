@@ -45,11 +45,7 @@ endif() # ENABLE_NETPLAY
 # Decomposed game globals (was game_globals.c, now split into domain files)
 # =============================================================================
 set(GAME_GLOBALS_SOURCES
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/player_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/timer_hud_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/score_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/match_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/combo_stage_globals.c
+    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/game_state_globals.c
 )
 
 # =============================================================================
@@ -60,7 +56,7 @@ add_unit_test(test_smoke test_smoke.c)
 
 add_unit_test(test_memman 
     test_memman.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Common/MemMan.c
+    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Common/memory_manager.c
 )
 
 add_unit_test(test_charset_poc
@@ -263,7 +259,8 @@ add_unit_test(test_char_data
     test_char_data.c
     ${PROJECT_SOURCE_DIR}/src/arcade/arcade_char_data.c
 )
-target_include_directories(test_char_data PRIVATE ${PROJECT_SOURCE_DIR}/src/include)
+target_include_directories(test_char_data PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
+target_link_sdl3(test_char_data)
 
 add_unit_test(test_native_save
     test_native_save.c
@@ -352,6 +349,7 @@ endif() # ENABLE_BROADCAST
 add_unit_test(test_menu_bridge
     test_menu_bridge.c
     ${PROJECT_SOURCE_DIR}/src/port/menu_bridge.c
+    ${GAME_GLOBALS_SOURCES}
 )
 target_include_directories(test_menu_bridge PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_menu_bridge)
@@ -363,8 +361,14 @@ add_unit_test(test_menu_screen
 target_include_directories(test_menu_screen PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_menu_screen)
 
-add_unit_test(test_trials test_trials.c ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/training/trials.c mocks_globals.c)
+add_unit_test(test_trials
+    test_trials.c
+    ${GAME_GLOBALS_SOURCES}
+    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/training/trials.c
+    mocks_globals.c
+)
 target_include_directories(test_trials PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_definitions(test_trials PRIVATE MOCK_SUPPRESS_CONFLICTS)
 
 add_unit_test(test_radix_sort test_radix_sort.c)
 target_include_directories(test_radix_sort PRIVATE ${PROJECT_SOURCE_DIR}/src)
