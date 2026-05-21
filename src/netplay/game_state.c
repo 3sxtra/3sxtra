@@ -315,12 +315,12 @@ uint32_t save_current_state(void* buffer, int frame) {
             const size_t count = sizeof(PlayerEntity) / sizeof(uint64_t);
             for (size_t i = 0; i < count; i++) {
                 uint64_t v = words[i];
-                // Portable userspace pointer check: above 4GB (rules out
-                // small integers) and below 128TB (covers both x86-64
-                // canonical and ARM64 with PAC/MTE upper-bit metadata stripped)
-                if (v > 0x100000000ULL && v < 0x800000000000ULL) {
-                    words[i] = 0;
-                }
+                // turbo
+                // What: Replace branching pointer check with branchless bitwise mask subtraction.
+                // Why: Avoids pipeline branch misprediction stalls in a hot frame-rate loop.
+                // Expected Impact: Marginally lowers per-frame simulation timing overhead.
+                uint64_t mask = ((v - 0x100000001ULL) < 0x7FFEFFFFFFFFULL) ? 0ULL : ~0ULL;
+                words[i] &= mask;
             }
 #endif
         }

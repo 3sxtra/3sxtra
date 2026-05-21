@@ -10,7 +10,7 @@
 #include "port/menu_screen.h"
 #include "game_state.h"
 
-#include "port/input.h"                             /* SWK_UP, etc. */
+#include "port/input.h"                                           /* SWK_UP, etc. */
 #include "sf33rd/Source/Game/effect/effect_57_header_for_menus.h" /* effect_57_init */
 #include "sf33rd/Source/Game/engine/state_user.h"                 /* g_state.Menu_Cursor_Y */
 #include "sf33rd/Source/Game/menu/menu.h"                         /* Menu_Common_Init */

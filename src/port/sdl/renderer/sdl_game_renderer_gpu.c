@@ -1034,8 +1034,8 @@ void SDLGameRendererGPU_FreeOverlayLayers(void) {
  *
  * For standalone overlays:  standalone_tex != NULL, layer = -2 (sentinel)
  */
-static void push_overlay_quad(float x, float y, float w, float h, float z, int flip_x,
-                              int flip_y, SDL_GPUTexture* standalone_tex) {
+static void push_overlay_quad(float x, float y, float w, float h, float z, int flip_x, int flip_y,
+                              SDL_GPUTexture* standalone_tex) {
     int p = (z < 0.1f) ? 1 : 2;
     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES || pass_state[p].quad_count >= MAX_QUADS)
         return;
@@ -1083,8 +1083,8 @@ void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, in
     push_overlay_quad(x, y, w, h, z, flip_x, flip_y, texture);
 }
 
-static void push_overlay_subquad(float x, float y, float w, float h, float u0, float v0, float u1, float v1,
-                                 float z, SDL_GPUTexture* standalone_tex) {
+static void push_overlay_subquad(float x, float y, float w, float h, float u0, float v0, float u1, float v1, float z,
+                                 SDL_GPUTexture* standalone_tex) {
     int p = (z < 0.1f) ? 1 : 2;
     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES || pass_state[p].quad_count >= MAX_QUADS)
         return;
@@ -1133,8 +1133,7 @@ void SDLGameRendererGPU_DrawOverlayQuadEx(void* texture, float x, float y, float
     GPUTextureMetadataC meta;
     if (!TextureUtil_GetGPUMetadata(texture, &meta))
         return;
-    SDLGameRendererGPU_QueueDeferredBlit(
-        (SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, z, flip_x, flip_y);
+    SDLGameRendererGPU_QueueDeferredBlit((SDL_GPUTexture*)meta.texture, meta.w, meta.h, x, y, w, h, z, flip_x, flip_y);
 }
 
 void SDLGameRendererGPU_DrawOverlaySubQuadEx(void* texture, float x, float y, float w, float h, float u0, float v0,

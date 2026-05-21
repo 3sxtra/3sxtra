@@ -192,8 +192,6 @@ void GpioLagTest_OnInputPoll(void) {
     /* Track button state for rising-edge detection */
     s_button_prev = s_button_held;
 
-
-
     /* Rising edge: button just pressed */
     if (s_button_held && !s_button_prev) {
         /* Debounce: ignore any rising edges within 30 frames (0.5s) of the last one
@@ -293,4 +291,3 @@ GpioLagTestState GpioLagTest_GetState(void) {
     }
     return state;
 }
-

@@ -694,14 +694,17 @@ static void com_dispatch_char(PlayerEntity* wk, void (*const table[CHAR_COUNT])(
     table[wk->player_number](wk);
 }
 
-
 /** @brief AI state 2: Execute the active AI pattern via the data-driven VM. */
 void Com_Active(PlayerEntity* wk) {
-    if (Check_Damage(wk)) return;
-    if (Check_Caught(wk)) return;
-    if (Check_Flip(wk)) return;
+    if (Check_Damage(wk))
+        return;
+    if (Check_Caught(wk))
+        return;
+    if (Check_Flip(wk))
+        return;
     Pattern_Insurance(wk, 0, 0);
-    if ((u32)wk->player_number >= CHAR_COUNT) return;
+    if ((u32)wk->player_number >= CHAR_COUNT)
+        return;
     AICore_ExecutePattern(wk);
 }
 

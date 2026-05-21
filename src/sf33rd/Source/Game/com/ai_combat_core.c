@@ -18,7 +18,7 @@
 #include <string.h>
 
 /* ---------- Binary format constants ---------- */
-#define AIVM_MAGIC 0x4D564941  /* "AIVM" little-endian */
+#define AIVM_MAGIC 0x4D564941 /* "AIVM" little-endian */
 #define AIVM_VERSION 1
 #define MAX_AI_CHARS 20
 #define MAX_ARGS 16
@@ -68,19 +68,21 @@ static const u8* read_step(const u8* ptr, u8* out_op, u8* out_argc, s16 out_args
 /** @brief Skip N steps in the binary stream (to seek to a specific step index). */
 static const u8* skip_steps(const u8* ptr, int count) {
     for (int i = 0; i < count; i++) {
-        ptr++;  /* opcode */
+        ptr++; /* opcode */
         u8 argc = *ptr++;
-        ptr += argc * 2;  /* args */
+        ptr += argc * 2; /* args */
     }
     return ptr;
 }
 
 /** @brief Find the pattern data pointer for a character+pattern index. */
 static const u8* find_pattern(int char_dir_idx, int pattern_idx) {
-    if (char_dir_idx < 0 || char_dir_idx >= s_num_chars) return NULL;
+    if (char_dir_idx < 0 || char_dir_idx >= s_num_chars)
+        return NULL;
 
     const u8* base = s_char_pattern_data[char_dir_idx];
-    if (!base) return NULL;
+    if (!base)
+        return NULL;
 
     /* Walk through patterns sequentially to find the right one */
     const u8* ptr = base;
@@ -94,7 +96,8 @@ static const u8* find_pattern(int char_dir_idx, int pattern_idx) {
 /** @brief Find the directory index for a character ID. */
 static int find_char_dir_index(int char_id) {
     for (int i = 0; i < s_num_chars; i++) {
-        if (s_char_dir[i].char_id == char_id) return i;
+        if (s_char_dir[i].char_id == char_id)
+            return i;
     }
     return -1;
 }
@@ -231,10 +234,12 @@ static void dispatch_op(PlayerEntity* wk, u8 op, u8 argc, const s16* a) {
         Oro_Check_High_Jump_Attack(wk, a[0], a[1], a[2], a[3], a[4], a[5], (u16)a[6], a[7], a[8], (u16)a[9]);
         break;
     case AI_OP_ORO_CHECK_JUMP_COMMAND_ATTACK:
-        Oro_Check_Jump_Command_Attack(wk, a[0], a[1], a[2], a[3], a[4], a[5], (u16)a[6], a[7], a[8], a[9], a[10], (u16)a[11]);
+        Oro_Check_Jump_Command_Attack(
+            wk, a[0], a[1], a[2], a[3], a[4], a[5], (u16)a[6], a[7], a[8], a[9], a[10], (u16)a[11]);
         break;
     case AI_OP_ORO_CHECK_HIGH_JUMP_COMMAND_ATTACK:
-        Oro_Check_High_Jump_Command_Attack(wk, a[0], a[1], a[2], a[3], a[4], a[5], (u16)a[6], a[7], a[8], a[9], a[10], (u16)a[11]);
+        Oro_Check_High_Jump_Command_Attack(
+            wk, a[0], a[1], a[2], a[3], a[4], a[5], (u16)a[6], a[7], a[8], a[9], a[10], (u16)a[11]);
         break;
     default:
         SDL_Log("AI VM: unknown opcode %d for char %d", op, wk->wu.id);
@@ -290,20 +295,20 @@ void AICore_Init(void) {
     s_num_chars = *(u16*)(s_aivm_data + 6);
     (void)version;
 
-    if (s_num_chars > MAX_AI_CHARS) s_num_chars = MAX_AI_CHARS;
+    if (s_num_chars > MAX_AI_CHARS)
+        s_num_chars = MAX_AI_CHARS;
 
     /* Read character directory */
     const u8* dir_ptr = s_aivm_data + 8;
     for (int i = 0; i < s_num_chars; i++) {
-        s_char_dir[i].char_id      = *(u16*)(dir_ptr + 0);
+        s_char_dir[i].char_id = *(u16*)(dir_ptr + 0);
         s_char_dir[i].pattern_count = *(u16*)(dir_ptr + 2);
-        s_char_dir[i].data_offset  = *(u32*)(dir_ptr + 4);
+        s_char_dir[i].data_offset = *(u32*)(dir_ptr + 4);
         s_char_pattern_data[i] = s_aivm_data + s_char_dir[i].data_offset;
         dir_ptr += 8;
     }
 
-    SDL_Log("AICore_Init: loaded %u characters from %s (%u bytes)",
-               s_num_chars, path, s_aivm_size);
+    SDL_Log("AICore_Init: loaded %u characters from %s (%u bytes)", s_num_chars, path, s_aivm_size);
 
     /* Load action_tables.dat */
     char tbl_path[1024];
@@ -326,7 +331,8 @@ void AICore_Init(void) {
             u32 tmagic = *(u32*)s_aitbl_data;
             if (tmagic == 0x54414941) { /* "AIAT" */
                 s_num_tables = *(u16*)(s_aitbl_data + 6);
-                if (s_num_tables > 16) s_num_tables = 16;
+                if (s_num_tables > 16)
+                    s_num_tables = 16;
                 const u8* tdir_ptr = s_aitbl_data + 8;
                 for (int i = 0; i < s_num_tables; i++) {
                     s_tbl_dir[i].dim0 = *(u16*)(tdir_ptr + 0);
@@ -395,7 +401,7 @@ void AICore_ExecutePattern(PlayerEntity* wk) {
 
     /* Decode and dispatch */
     u8 op, argc;
-    s16 args[MAX_ARGS] = {0};
+    s16 args[MAX_ARGS] = { 0 };
     read_step(step_ptr, &op, &argc, args);
     dispatch_op(wk, op, argc, args);
 }
@@ -425,9 +431,12 @@ u8 AICore_GetActionTableValue(AIActionTableType table, int dim0, int dim1, int d
         return 0;
     }
     const AITblDir* dir = &s_tbl_dir[tbl_idx];
-    if (dim0 < 0 || dim0 >= dir->dim0) dim0 = 0;
-    if (dim1 < 0 || dim1 >= dir->dim1) dim1 = 0;
-    if (dim2 < 0 || dim2 >= dir->dim2) dim2 = 0;
+    if (dim0 < 0 || dim0 >= dir->dim0)
+        dim0 = 0;
+    if (dim1 < 0 || dim1 >= dir->dim1)
+        dim1 = 0;
+    if (dim2 < 0 || dim2 >= dir->dim2)
+        dim2 = 0;
 
     int flat_idx = (dim0 * dir->dim1 * dir->dim2) + (dim1 * dir->dim2) + dim2;
     return s_tbl_data[tbl_idx][flat_idx];

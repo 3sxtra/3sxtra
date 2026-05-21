@@ -6,22 +6,22 @@
 #include <stdlib.h>
 
 #define SWAP16(x) ((u16)((((u16)(x) & 0x00FF) << 8) | (((u16)(x) & 0xFF00) >> 8)))
-#define SWAP32(x) ((u32)((((u32)(x) & 0x000000FF) << 24) | \
-                         (((u32)(x) & 0x0000FF00) <<  8) | \
-                         (((u32)(x) & 0x00FF0000) >>  8) | \
-                         (((u32)(x) & 0xFF000000) >> 24)))
+#define SWAP32(x)                                                                                                      \
+    ((u32)((((u32)(x) & 0x000000FF) << 24) | (((u32)(x) & 0x0000FF00) << 8) | (((u32)(x) & 0x00FF0000) >> 8) |         \
+           (((u32)(x) & 0xFF000000) >> 24)))
 
-static s8* loaded_phd[21] = {NULL};
-static SoundEvent* loaded_tsb[21] = {NULL};
+static s8* loaded_phd[21] = { NULL };
+static SoundEvent* loaded_tsb[21] = { NULL };
 
-static const char* char_names[21] = {
-    "se", "pl00", "pl01", "pl02", "pl03", "pl04", "pl05", "pl06", "pl07", "pl08", "pl09",
-    "pl10", "pl11", "pl12", "pl13", "pl14", "pl15", "pl16", "pl17", "pl18", "pl19"
-};
+static const char* char_names[21] = { "se",   "pl00", "pl01", "pl02", "pl03", "pl04", "pl05",
+                                      "pl06", "pl07", "pl08", "pl09", "pl10", "pl11", "pl12",
+                                      "pl13", "pl14", "pl15", "pl16", "pl17", "pl18", "pl19" };
 
 s8* LoadPHDData(int index) {
-    if (index < 0 || index >= 21) return NULL;
-    if (loaded_phd[index] != NULL) return loaded_phd[index];
+    if (index < 0 || index >= 21)
+        return NULL;
+    if (loaded_phd[index] != NULL)
+        return loaded_phd[index];
 
     char filepath[256];
     snprintf(filepath, sizeof(filepath), "assets/sound/%s.phd", char_names[index]);
@@ -51,8 +51,10 @@ s8* LoadPHDData(int index) {
 }
 
 SoundEvent* LoadTSBData(int index) {
-    if (index < 0 || index >= 21) return NULL;
-    if (loaded_tsb[index] != NULL) return loaded_tsb[index];
+    if (index < 0 || index >= 21)
+        return NULL;
+    if (loaded_tsb[index] != NULL)
+        return loaded_tsb[index];
 
     char filepath[256];
     snprintf(filepath, sizeof(filepath), "assets/sound/%s.tsb", char_names[index]);
@@ -106,4 +108,3 @@ void UnloadSoundAssets(void) {
         }
     }
 }
-

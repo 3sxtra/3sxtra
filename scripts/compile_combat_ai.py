@@ -22,54 +22,55 @@ import os
 
 # Opcode mapping — must match ai_combat_core.h AIOp enum exactly
 OPCODES = {
-    "End_Pattern":                       0,
-    "Lever_Off":                         1,
-    "Look":                              2,
-    "Wait":                              3,
-    "Walk":                              4,
-    "Jump":                              5,
-    "Hi_Jump":                           6,
-    "Normal_Attack":                     7,
-    "Normal_Attack_SP":                  8,
-    "Adjust_Attack":                     9,
-    "Lever_Attack":                     10,
-    "Lever_Attack_SP":                  11,
-    "Command_Attack":                   12,
-    "Jump_Attack":                      13,
-    "Jump_Command_Attack":              14,
-    "Rapid_Command_Attack":             15,
-    "Jump_Command_Attack_Term":         16,
-    "Hi_Jump_Attack":                   17,
-    "Hi_Jump_Attack_Term":              18,
-    "Hi_Jump_Command_Attack_Term":      19,
-    "Check_Jump_Attack_Conditions":     20,
-    "Check_Enemy_Distance":             21,
-    "Approach_Walk":                    22,
-    "Check_Super_Art_Conditions":       23,
-    "Check_SA":                         24,
-    "Check_EX":                         25,
-    "Check_SA_Full":                    26,
-    "AI_Random_Action_Select":          27,
-    "Branch_By_Distance":               28,
-    "Enable_Overhead_Attack_Flag":      29,
-    "Lever_On":                         30,
-    "Only_Shot":                        31,
-    "Turn_Over_On":                     32,
-    "Setup_DENJIN_LEVEL":               33,
-    "Hold_Attack_Button":               34,
-    "Keep_Away":                        35,
-    "Check_Safe_Retreat_Space":         36,
-    "Provoke":                          37,
-    "Next_Another_Menu":                38,
-    "Check_Miscellaneous_Conditions":   39,
-    "Oro_Check_Jump_Attack":            40,
-    "Oro_Check_High_Jump_Attack":       41,
-    "Oro_Check_Jump_Command_Attack":    42,
+    "End_Pattern": 0,
+    "Lever_Off": 1,
+    "Look": 2,
+    "Wait": 3,
+    "Walk": 4,
+    "Jump": 5,
+    "Hi_Jump": 6,
+    "Normal_Attack": 7,
+    "Normal_Attack_SP": 8,
+    "Adjust_Attack": 9,
+    "Lever_Attack": 10,
+    "Lever_Attack_SP": 11,
+    "Command_Attack": 12,
+    "Jump_Attack": 13,
+    "Jump_Command_Attack": 14,
+    "Rapid_Command_Attack": 15,
+    "Jump_Command_Attack_Term": 16,
+    "Hi_Jump_Attack": 17,
+    "Hi_Jump_Attack_Term": 18,
+    "Hi_Jump_Command_Attack_Term": 19,
+    "Check_Jump_Attack_Conditions": 20,
+    "Check_Enemy_Distance": 21,
+    "Approach_Walk": 22,
+    "Check_Super_Art_Conditions": 23,
+    "Check_SA": 24,
+    "Check_EX": 25,
+    "Check_SA_Full": 26,
+    "AI_Random_Action_Select": 27,
+    "Branch_By_Distance": 28,
+    "Enable_Overhead_Attack_Flag": 29,
+    "Lever_On": 30,
+    "Only_Shot": 31,
+    "Turn_Over_On": 32,
+    "Setup_DENJIN_LEVEL": 33,
+    "Hold_Attack_Button": 34,
+    "Keep_Away": 35,
+    "Check_Safe_Retreat_Space": 36,
+    "Provoke": 37,
+    "Next_Another_Menu": 38,
+    "Check_Miscellaneous_Conditions": 39,
+    "Oro_Check_Jump_Attack": 40,
+    "Oro_Check_High_Jump_Attack": 41,
+    "Oro_Check_Jump_Command_Attack": 42,
     "Oro_Check_High_Jump_Command_Attack": 43,
 }
 
+
 def compile_combat_ai(json_path, bin_path):
-    with open(json_path, 'r') as f:
+    with open(json_path, "r") as f:
         data = json.load(f)
 
     characters = data["characters"]
@@ -89,15 +90,20 @@ def compile_combat_ai(json_path, bin_path):
                 op_name = step["op"]
                 opcode = OPCODES.get(op_name)
                 if opcode is None:
-                    print(f"ERROR: Unknown opcode '{op_name}' in char {char_id}", file=sys.stderr)
+                    print(
+                        f"ERROR: Unknown opcode '{op_name}' in char {char_id}",
+                        file=sys.stderr,
+                    )
                     sys.exit(1)
                 args = step["args"]
-                pat_bytes.append(opcode)             # opcode (u8)
-                pat_bytes.append(len(args))           # arg_count (u8)
+                pat_bytes.append(opcode)  # opcode (u8)
+                pat_bytes.append(len(args))  # arg_count (u8)
                 for arg in args:
                     # Clamp to s16 range
                     val = int(arg) & 0xFFFF
-                    pat_bytes.extend(struct.pack("<H", val))  # arg (u16, treated as s16)
+                    pat_bytes.extend(
+                        struct.pack("<H", val)
+                    )  # arg (u16, treated as s16)
 
         char_entries.append((char_id, len(patterns), pat_bytes))
 
@@ -121,14 +127,14 @@ def compile_combat_ai(json_path, bin_path):
     for _, _, pat_bytes in char_entries:
         out.extend(pat_bytes)
 
-    with open(bin_path, 'wb') as f:
+    with open(bin_path, "wb") as f:
         f.write(out)
 
     print(f"Wrote {bin_path} ({len(out)} bytes, {num_chars} characters)")
 
 
 def compile_action_tables(json_path, bin_path):
-    with open(json_path, 'r') as f:
+    with open(json_path, "r") as f:
         tables = json.load(f)
 
     num_tables = len(tables)
@@ -159,7 +165,7 @@ def compile_action_tables(json_path, bin_path):
     for _, _, flat_data in table_entries:
         out.extend(flat_data)
 
-    with open(bin_path, 'wb') as f:
+    with open(bin_path, "wb") as f:
         f.write(out)
 
     print(f"Wrote {bin_path} ({len(out)} bytes, {num_tables} tables)")
@@ -172,7 +178,10 @@ def main():
     tbl_bin = os.path.join("assets", "ai", "action_tables.dat")
 
     if not os.path.exists(ai_json):
-        print(f"ERROR: {ai_json} not found. Run extract_combat_ai.py first.", file=sys.stderr)
+        print(
+            f"ERROR: {ai_json} not found. Run extract_combat_ai.py first.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     compile_combat_ai(ai_json, ai_bin)
