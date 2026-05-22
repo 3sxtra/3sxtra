@@ -30,7 +30,7 @@
 
 #define LAG_SCALE 2.5f                       /* 2.5x native 8px font = 20px tall glyphs */
 #define LAG_CHAR_W (8.0f * LAG_SCALE)        /* Approximate glyph width */
-#define LAG_LINE_H (8.0f * LAG_SCALE + 4.0f) /* Line height with 4px gap */
+#define LAG_LINE_H ((8.0f * LAG_SCALE) + 4.0f) /* Line height with 4px gap */
 #define LAG_ATR 6                            /* Palette index (matches netstats) */
 
 /* Native CPS3 screen dimensions */
@@ -52,8 +52,10 @@ static void draw_centered(float y, uint8_t atr, uint32_t color, const char* text
     int len = (int)SDL_strlen(text);
     float text_width = (float)len * LAG_CHAR_W;
     float x = (SCREEN_W - text_width) * 0.5f;
-    if (x < 0.0f)
+    if (x < 0.0f) {
         x = 0.0f;
+    }
+    SSPutStrPro_Scale(0, x + 1.0f, y + 1.0f, atr, 0xFF000000, (s8*)text, LAG_SCALE);
     SSPutStrPro_Scale(0, x, y, atr, color, (s8*)text, LAG_SCALE);
 }
 
@@ -78,6 +80,7 @@ void LagtestRenderer_Render(void) {
         /* Center "ON" with a massive scale (10x) near the top of the screen */
         float text_width = 2.0f * 8.0f * 10.0f; /* 2 chars * 8px * 10.0 scale */
         float x = (SCREEN_W - text_width) * 0.5f;
+        SSPutStrPro_Scale(0, x + 2.0f, 22.0f, LAG_ATR, 0xFF000000, (s8*)"ON", 10.0f);
         SSPutStrPro_Scale(0, x, 20.0f, LAG_ATR, COL_WHITE, (s8*)"ON", 10.0f);
     }
 

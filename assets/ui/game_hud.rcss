@@ -6,7 +6,7 @@
 /* ── Root body ─────────────────────────────────────────────── */
 body {
     width: 384dp;
-    height: 100%;
+    height: 224dp;
     font-family: "DistrictTF-RegularItalic";
     font-size: 15dp;
 }

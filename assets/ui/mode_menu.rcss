@@ -3,6 +3,11 @@
  *  Inherits: base.rcss → menu_shared.rcss → this               *
  * ============================================================ */
 
+body {
+    width: 384dp;
+    height: 224dp;
+}
+
 /* (panel styling inherited from .menu-panel in menu_shared.rcss) */
 
 /* (title styling inherited from menu_shared.rcss) */

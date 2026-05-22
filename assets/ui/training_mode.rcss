@@ -3,6 +3,11 @@
  *  Inherits: base.rcss → menu_shared.rcss → this               *
  * ============================================================ */
 
+body {
+    width: 384dp;
+    height: 224dp;
+}
+
 /* Panel + title + item styling inherited from menu_shared.rcss.
  * Add per-menu overrides below as needed. */
 #tr-mode-panel { }

@@ -289,9 +289,11 @@ void trials_draw(void) {
              cdef->chara_name,
              g_trials_state.current_trial_index + 1,
              cdef->num_trials);
+    SSPutStrPro_Scale(0, 17.0f, 41.0f, 9, 0xFF000000, (s8*)buf, 1.0f); // shadow
     SSPutStrPro_Scale(0, 16.0f, 40.0f, 9, 0xFFFFFFFF, (s8*)buf, 1.0f); // White header
 
     if (cur_trial->gauge_max) {
+        SSPutStrPro_Scale(0, 241.0f, 41.0f, 9, 0xFF000000, (s8*)"MAX GAUGE", 1.0f); // shadow
         SSPutStrPro_Scale(0, 240.0f, 40.0f, 9, 0xFF00FFFF, (s8*)"MAX GAUGE", 1.0f); // Yellow alert
     }
 
@@ -313,6 +315,8 @@ void trials_draw(void) {
             color = 0xFF888888; // gray (pending)
         }
 
+        SSPutStrPro_Scale(
+            0, 17.0f, (f32)(start_y + (i * 14) + 1), 9, 0xFF000000, (s8*)step->display_name, 1.0f); // shadow
         SSPutStrPro_Scale(0, 16.0f, (f32)(start_y + (i * 14)), 9, color, (s8*)step->display_name, 1.0f);
 
         // Draw kadai input on the active step
@@ -320,6 +324,7 @@ void trials_draw(void) {
             s16 text_y = start_y + (cur_trial->num_steps * 14) + 15;
             char kadai_buf[256];
             snprintf(kadai_buf, sizeof(kadai_buf), "INPUT: %s", step->kadai_input);
+            SSPutStrPro_Scale(0, 17.0f, (f32)(text_y + 1), 9, 0xFF000000, (s8*)kadai_buf, 1.0f); // shadow
             SSPutStrPro_Scale(0, 16.0f, (f32)text_y, 9, 0xFF00AACC, (s8*)kadai_buf, 1.0f);
         }
     }
@@ -328,6 +333,7 @@ void trials_draw(void) {
     if (g_trials_state.completed) {
         // Flash color based on timer (white / green)
         u32 flash = (g_trials_state.success_timer / 4) % 2 ? 0xFF00FF00 : 0xFFFFFFFF;
+        SSPutStrPro_Scale(0, 151.0f, 151.0f, 9, 0xFF000000, (s8*)"COMPLETE!", 1.0f); // shadow
         SSPutStrPro_Scale(0, 150.0f, 150.0f, 9, flash, (s8*)"COMPLETE!", 1.0f);
     }
 }

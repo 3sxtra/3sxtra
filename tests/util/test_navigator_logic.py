@@ -13,6 +13,7 @@ class MockState:
     def __init__(self):
         self.nav_G_No = [0, 0, 0, 0]
         self.nav_Cursor_Char = [0, 0]
+        self.nav_My_char = [0, 0]
         self.menu_input_active = 0
         self.p1_input = 0
         self.p2_input = 0
@@ -28,6 +29,9 @@ class MockState:
             self.__dict__["call_count"] = self.__dict__.get("call_count", 0) + 1
             if self.__dict__["call_count"] >= 2:
                 self.nav_Cursor_Char[0] = 3  # Found!
+
+        if name == "p1_input" and value == INPUT_LK:
+            self.nav_My_char[0] = 3
 
         super().__setattr__(name, value)
 

@@ -2,6 +2,11 @@
 /* 384×224 game canvas — strict dp metrics                        */
 /* Modeled after leaderboard.rcss — full-screen dark panel        */
 
+body {
+    width: 384dp;
+    height: 224dp;
+}
+
 #rp-panel {
     display: block;
     position: absolute;

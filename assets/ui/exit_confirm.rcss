@@ -3,6 +3,11 @@
  *  Inherits: base.rcss → menu_shared.rcss → this               *
  * ============================================================ */
 
+body {
+    width: 384dp;
+    height: 224dp;
+}
+
 /* ── Centered panel ────────────────────────────────────────── */
 #exit-panel {
     display: block;

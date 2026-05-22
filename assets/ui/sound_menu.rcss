@@ -4,6 +4,11 @@
  *            this                                                *
  * ============================================================ */
 
+body {
+    width: 384dp;
+    height: 224dp;
+}
+
 /* ── Outer panel (position & size) ─────────────────────────── */
 #sound-panel {
     display: block;
