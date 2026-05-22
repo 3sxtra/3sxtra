@@ -88,8 +88,16 @@ static LibrashaderManagerGPU* LibrashaderManager_Init_Vulkan(const char* preset_
     // Find Graphics Queue Family
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, NULL);
+    if (queueFamilyCount == 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Librashader: No queue families found");
+        return NULL;
+    }
     VkQueueFamilyProperties* queueProps =
         (VkQueueFamilyProperties*)SDL_malloc(sizeof(VkQueueFamilyProperties) * queueFamilyCount);
+    if (!queueProps) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Librashader: Failed to allocate VkQueueFamilyProperties");
+        return NULL;
+    }
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueProps);
 
     uint32_t graphicsQueueIndex = (uint32_t)-1;
@@ -117,6 +125,10 @@ static LibrashaderManagerGPU* LibrashaderManager_Init_Vulkan(const char* preset_
 
     // --- Initialize Librashader ---
     LibrashaderManagerGPU* manager = (LibrashaderManagerGPU*)calloc(1, sizeof(LibrashaderManagerGPU));
+    if (!manager) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Librashader: Failed to allocate LibrashaderManagerGPU");
+        return NULL;
+    }
     manager->vk_device = device;
     manager->vk_physical_device = physicalDevice;
     manager->vk_instance = instance;

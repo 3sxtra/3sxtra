@@ -441,6 +441,14 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
 
             vs_source = (char*)malloc(buf_size);
             fs_source = (char*)malloc(buf_size);
+            if (!vs_source || !fs_source) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to allocate memory for shader sources");
+                free(vs_source);
+                free(fs_source);
+                free(pass_source);
+                ShaderManager_Free(manager);
+                return NULL;
+            }
 
             // Only define PARAMETER_UNIFORM if we actually have parameters
             const char* param_def = (manager->parameter_count > 0)
@@ -513,6 +521,13 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
             size_t src_len = strlen(pass_source);
             size_t buf_size = src_len + 1024;
             fs_source = (char*)malloc(buf_size);
+            if (!fs_source) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to allocate memory for fragment shader source");
+                free(vs_source);
+                free(pass_source);
+                ShaderManager_Free(manager);
+                return NULL;
+            }
 
             // Only define PARAMETER_UNIFORM if we actually have parameters
             const char* param_def = (manager->parameter_count > 0)

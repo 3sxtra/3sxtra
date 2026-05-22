@@ -162,6 +162,10 @@ static void AsyncDownloadProfileReplay(int match_id) {
     SDL_SetAtomicInt(&s_download_ok, 0);
 
     DownloadArg* arg = (DownloadArg*)calloc(1, sizeof(DownloadArg));
+    if (!arg) {
+        SDL_SetAtomicInt(&s_download_active, 0);
+        return;
+    }
     arg->match_id = match_id;
     SDL_Thread* t = SDL_CreateThread(async_download_fn, "AsyncDownloadReplay", arg);
     if (t) {
